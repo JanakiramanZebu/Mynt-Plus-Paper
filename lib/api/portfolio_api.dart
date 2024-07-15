@@ -1,0 +1,161 @@
+import '../models/portfolio_model/holdings_model.dart';
+import '../models/portfolio_model/mf_holdings_model.dart';
+import '../models/portfolio_model/mf_quotes.dart';
+import '../models/portfolio_model/position_book_model.dart';
+import '../models/portfolio_model/position_convertion_model.dart';
+import 'core/api_core.dart';
+import 'core/api_link.dart';
+
+mixin PortfolioAPI on ApiCore {
+  Future<List<HoldingsModel>> getHolding() async {
+    try {
+      final uri = Uri.parse(apiLinks.getHoldings);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","prd":"C"}&jKey=${prefs.clientSession}''');
+      // log("Holdings res=>${res.body} ");
+      final List<HoldingsModel> data = [];
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        try {
+          if (json['stat'] == 'Not_Ok') {
+            final HoldingsModel ord =
+                HoldingsModel.fromJson(json as Map<String, dynamic>);
+            return [ord];
+          } else {
+            for (final item in json) {
+              data.add(HoldingsModel.fromJson(item as Map<String, dynamic>));
+            }
+          }
+        } catch (e) {
+          if (res.statusCode == 200) {
+            for (final item in json) {
+              data.add(HoldingsModel.fromJson(item as Map<String, dynamic>));
+            }
+          }
+        }
+      }
+
+      return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<MFHoldingsModel>> getMFHolding() async {
+    try {
+      final uri = Uri.parse(apiLinks.getMFHoldings);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","prd":"C"}&jKey=${prefs.clientSession}''');
+      //  log("MF Holdings res=>${res.body} ");
+      final List<MFHoldingsModel> data = [];
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        try {
+          if (json['stat'] == 'Not_Ok') {
+            final MFHoldingsModel ord =
+                MFHoldingsModel.fromJson(json as Map<String, dynamic>);
+            return [ord];
+          } else {
+            for (final item in json) {
+              data.add(MFHoldingsModel.fromJson(item as Map<String, dynamic>));
+            }
+          }
+        } catch (e) {
+          if (res.statusCode == 200) {
+            for (final item in json) {
+              data.add(MFHoldingsModel.fromJson(item as Map<String, dynamic>));
+            }
+          }
+        }
+      }
+
+      return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<MFQuotes> getMFQutoes(String exch, String token) async {
+    try {
+      final uri = Uri.parse(apiLinks.getQuotesMF);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders, body: '''jData={"uid":"${prefs.clientId}",
+          "exch":"$exch","token":"$token"}&jKey=${prefs.clientSession}''');
+
+      // log("MF Quotes => ${res.body}");
+      final json = jsonDecode(res.body);
+
+      return MFQuotes.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<PositionBookModel>> getPositionBook() async {
+    try {
+      final uri = Uri.parse(apiLinks.getPosition);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
+      // log("PositionBook => ${res.body}");
+
+      final List<PositionBookModel> data = [];
+
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        try {
+          if (json['stat'] == 'Not_Ok') {
+            final PositionBookModel ord =
+                PositionBookModel.fromJson(json as Map<String, dynamic>);
+            return [ord];
+          } else {
+            for (final item in json) {
+              data.add(
+                  PositionBookModel.fromJson(item as Map<String, dynamic>));
+            }
+          }
+        } catch (e) {
+          if (res.statusCode == 200) {
+            for (final item in json) {
+              data.add(
+                  PositionBookModel.fromJson(item as Map<String, dynamic>));
+            }
+          }
+        }
+      }
+      return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<PositionConvertionModel> getPositionConvertion(
+      PositionConvertionInput positionConvertionInput) async {
+    try {
+      final uri = Uri.parse(apiLinks.positionConvert);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders, body: '''jData={"uid":"${prefs.clientId}",
+              "actid":"${prefs.clientId}",
+              "exch":"${positionConvertionInput.exch}",
+              "tsym":"${positionConvertionInput.tsym}",
+              "qty":"${positionConvertionInput.qty}",
+              "prd":"${positionConvertionInput.prd}",
+              "prevprd":"${positionConvertionInput.prevprd}",
+              "trantype":"${positionConvertionInput.trantype}",
+              "postype":"${positionConvertionInput.postype}",
+              "ordersource":"${ApiLinks.source}"}&jKey=${prefs.clientSession}''');
+
+      // log("Position Convertion => ${res.body}");
+      final json = jsonDecode(res.body);
+
+      return PositionConvertionModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+}

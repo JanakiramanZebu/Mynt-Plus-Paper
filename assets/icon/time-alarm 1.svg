@@ -1,0 +1,19 @@
+<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="time-alarm 1" clip-path="url(#clip0_5992_21299)">
+<g id="Group">
+<g id="Group_2">
+<path id="Vector" d="M6 3.5V6H8.5" stroke="#666666" stroke-miterlimit="10" stroke-linecap="square"/>
+<path id="Vector_2" d="M1.5 11.5001L3.066 9.41211" stroke="#666666" stroke-miterlimit="10"/>
+<path id="Vector_3" d="M6 10.5C8.48528 10.5 10.5 8.48528 10.5 6C10.5 3.51472 8.48528 1.5 6 1.5C3.51472 1.5 1.5 3.51472 1.5 6C1.5 8.48528 3.51472 10.5 6 10.5Z" stroke="#666666" stroke-miterlimit="10" stroke-linecap="square"/>
+<path id="Vector_4" d="M0.5 3L3 0.5" stroke="#666666" stroke-miterlimit="10"/>
+<path id="Vector_5" d="M8.93359 9.41211L10.4996 11.5001" stroke="#666666" stroke-miterlimit="10"/>
+<path id="Vector_6" d="M11.5 3L9 0.5" stroke="#666666" stroke-miterlimit="10"/>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_5992_21299">
+<rect width="12" height="12" fill="white"/>
+</clipPath>
+</defs>
+</svg>

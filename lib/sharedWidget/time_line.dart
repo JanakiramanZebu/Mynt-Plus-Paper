@@ -1,0 +1,87 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import 'package:timeline_tile/timeline_tile.dart'; 
+import '../../provider/thems.dart';
+import '../models/order_book_model/order_history_model.dart';
+import '../res/res.dart';
+import 'functions.dart';
+
+class TimeLineWidget extends StatelessWidget {
+  final bool isfFrist;
+  final bool isLast;
+  final OrderHistoryModel orderHistoryData;
+
+  const TimeLineWidget(
+      {super.key,
+      required this.isfFrist,
+      required this.isLast,
+      required this.orderHistoryData});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.read(themeProvider);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: 65,
+      child: TimelineTile(
+          hasIndicator: true,
+          isFirst: isfFrist,
+          isLast: isLast,
+          afterLineStyle: LineStyle(
+              thickness: 2,
+              color: Color(orderHistoryData.status == "COMPLETE"
+                  ? 0xff2DB266
+                  : orderHistoryData.status == "CANCELED" ||
+                          orderHistoryData.status == "REJECTED"
+                      ? 0xffDC2626
+                      : 0xffFFB038)),
+          beforeLineStyle: LineStyle(
+              thickness: 2,
+              color: Color(orderHistoryData.status == "COMPLETE"
+                  ? 0xff2DB266
+                  : orderHistoryData.status == "CANCELED" ||
+                          orderHistoryData.status == "REJECTED"
+                      ? 0xffDC2626
+                      : 0xffFFB038)),
+          indicatorStyle: IndicatorStyle(
+              width: 20,
+              color: Color(orderHistoryData.status == "COMPLETE"
+                  ? 0xff2DB266
+                  : orderHistoryData.status == "CANCELED" ||
+                          orderHistoryData.status == "REJECTED"
+                      ? 0xffDC2626
+                      : 0xffFFB038),
+              iconStyle: IconStyle(
+                iconData: orderHistoryData.status == "COMPLETE"
+                    ? Icons.done
+                    : orderHistoryData.status == "CANCELED" ||
+                            orderHistoryData.status == "REJECTED"
+                        ? Icons.clear
+                        : Icons.more_horiz_outlined,
+                fontSize: 12,
+                color: const Color(0xffffffff),
+              )),
+          endChild: ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 0, horizontal: 14),
+            dense: true,
+            title: Text(
+                "${orderHistoryData.stIntrn![0].toUpperCase()}${orderHistoryData.stIntrn!.substring(1).toLowerCase().replaceAll("_", " ")}",
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w500)),
+            subtitle: Text(formatDateTime(value: orderHistoryData.norentm!),
+                style: textStyle(const Color(0xff666666), 10, FontWeight.w500)),
+          )),
+    );
+  }
+
+  TextStyle textStyle(Color color, double fontSize, fWeight) {
+    return GoogleFonts.inter(
+        textStyle:
+            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  }
+}

@@ -1,0 +1,392 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart'; 
+
+import '../../../models/marketwatch_model/scrip_overview/stock_data.dart';
+import '../../../provider/market_watch_provider.dart'; 
+import '../../../provider/stocks_provider.dart';
+import '../../../provider/thems.dart';
+import '../../../res/res.dart';
+import '../../../sharedWidget/no_data_found.dart';
+import 'chart.dart';
+import 'stock_row_data.dart';
+
+class FinancialWidget extends ConsumerWidget {
+  const FinancialWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, ScopedReader watch) {
+    final finData = watch(stocksProvide);
+    final provideData = watch(marketWatchProvider);
+    final theme = context.read(themeProvider);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text("Financial",
+          style: textStyle(
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              20,
+              FontWeight.w600)),
+      const SizedBox(height: 5),
+      Text(
+          "Fundamental breakdown of ${watch(marketWatchProvider).getQuotes!.tsym!.replaceAll("-EQ", "")} information",
+          style: textStyle(
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              12,
+              FontWeight.w500)),
+      const SizedBox(height: 16),
+      SizedBox(
+          height: 36,
+          child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: finData.finacialType.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                        color: Color(
+
+                                !theme.isDarkMode?
+                          
+                          finData.selctedFinType == finData.finacialType[index]
+                                ? 0xff000000
+                                : 0xffffffff:0xff999999)
+                            .withOpacity(.08),
+                        border: Border.all(
+                            color: Color(
+                                finData.selctedFinType == finData.finacialType[index]
+                                    ? 0xff000000
+                                    : 0xffECEDEE)),
+                        borderRadius: BorderRadius.circular(98)),
+                    child: InkWell(
+                        onTap: () async {
+                          finData
+                              .chngfinancilaType(finData.finacialType[index]);
+                        },
+                        child: Text(finData.finacialType[index],
+                            style: textStyle(
+                                theme.isDarkMode?
+                                
+                                colors.colorWhite:colors.colorBlack,
+                                14,
+                                finData.selctedFinType == finData.finacialType[index]
+                                    ? FontWeight.w500
+                                    : FontWeight.w400))));
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return const SizedBox(width: 10);
+              })),
+      const SizedBox(height: 16),
+      if (finData.selctedFinType == "Income") ...[
+        provideData.fundamentalData!.stockFinancialsConsolidated!.incomeSheet!
+                    .isEmpty ||
+                provideData.fundamentalData!.stockFinancialsStandalone!
+                    .incomeSheet!.isEmpty
+            ? const Center(child: NoDataFound())
+            : const FIncomeChart()
+      ] else if (finData.selctedFinType == "Balance sheet") ...[
+        const FBalSheetCahrt()
+      ] else ...[
+        const FCashFlowChart()
+      ],
+      const SizedBox(height: 2),
+      Divider(color: colors.colorDivider),
+      const SizedBox(height: 10),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("${finData.selctedFinType} statement",
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      16,
+                      FontWeight.w600)),
+              const SizedBox(height: 3),
+              Text("All figures in Cr",
+                  style:
+                      textStyle(const Color(0xff666666), 13, FontWeight.w500)),
+            ],
+          ),
+          DropdownButtonHideUnderline(
+              child: DropdownButton2(
+            dropdownStyleData: DropdownStyleData(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: !theme.isDarkMode
+                      ? colors.colorWhite
+                      : const Color.fromARGB(255, 18, 18, 18))
+            ),
+            menuItemStyleData: MenuItemStyleData(
+                customHeights:
+                    provideData.getCustomItemsHeight(provideData.finType)),
+            buttonStyleData: ButtonStyleData(
+                height: 40,
+                width: 138,
+                decoration: BoxDecoration(
+                     color: theme.isDarkMode
+                                        ? const Color(0xffB5C0CF).withOpacity(.15)
+                                        : const Color(0xffF1F3F8),
+                    // border: Border.all(color: Colors.grey),
+                    borderRadius: const BorderRadius.all(Radius.circular(32)))),
+            // buttonDecoration: const BoxDecoration(
+            //     color: Color(0xffF1F3F8),
+            //     // border: Border.all(color: Colors.grey),
+            //     borderRadius: BorderRadius.all(Radius.circular(32))),
+            // buttonSplashColor: Colors.transparent,
+            isExpanded: true,
+            style: textStyle(
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                13,
+                FontWeight.w500),
+            hint: Text(provideData.selcteFinType,
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorBlack : colors.colorBlack,
+                    13,
+                    FontWeight.w500)),
+            items: provideData.addDividersAfterStock(provideData.finType),
+            // customItemsHeights: provideData
+            //     .getStochCustomItemsHeight(provideData.finType),
+            value: provideData.selcteFinType,
+            onChanged: (value) async {
+              provideData.chngFinType("$value");
+            },
+            // buttonHeight: 40,
+            // buttonWidth: 138
+          ))
+        ],
+      ),
+      const SizedBox(height: 10),
+      Container(
+        padding: const EdgeInsets.only(bottom: 6),
+        decoration: const BoxDecoration(
+            border: Border(
+                bottom: BorderSide(color: Color(0xff999999), width: .5))),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Financial Years",
+                style: textStyle(const Color(0xff666666), 14, FontWeight.w500)),
+            DropdownButtonHideUnderline(
+                child: DropdownButton2( dropdownStyleData: DropdownStyleData(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: !theme.isDarkMode
+                      ? colors.colorWhite
+                      : const Color.fromARGB(255, 18, 18, 18))
+            ),
+              menuItemStyleData: MenuItemStyleData(
+                  customHeights: provideData
+                      .getCustomItemsHeight(provideData.finnceYears)),
+              buttonStyleData: ButtonStyleData(
+                  height: 40,
+                  width: 100,
+                  decoration: BoxDecoration(
+                       color: theme.isDarkMode
+                                        ? const Color(0xffB5C0CF).withOpacity(.15)
+                                        : const Color(0xffF1F3F8),
+                      // border: Border.all(color: Colors.grey),
+                      borderRadius: const BorderRadius.all(Radius.circular(32)))),
+              // buttonDecoration: const BoxDecoration(
+              //     color: Color(0xffF1F3F8),
+              //     // border: Border.all(color: Colors.grey),
+              //     borderRadius: BorderRadius.all(Radius.circular(32))),
+              // buttonSplashColor: Colors.transparent,
+              isExpanded: true,
+                 style: textStyle(
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                13,
+                FontWeight.w500),
+            hint: Text(provideData.selcteFinYear,
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorBlack : colors.colorBlack,
+                    13,
+                    FontWeight.w500)),
+             
+              items: provideData.addDividersAfterStock(provideData.finnceYears),
+              // customItemsHeights: provideData
+              //     .getStochCustomItemsHeight(provideData.finnceYears),
+              value: provideData.selcteFinYear,
+              onChanged: (value) async {
+                provideData.chngFinYear("$value");
+              },
+              // buttonHeight: 40,
+              // buttonWidth: 100
+            ))
+          ],
+        ),
+      ),
+      const SizedBox(height: 10),
+      if (finData.selctedFinType == "Income") ...[
+        IncomeSheetData(
+            incomSheet: provideData.selcteFinType == "Consolidated"
+                ? provideData
+                    .fundamentalData!.stockFinancialsConsolidated!.incomeSheet!
+                : provideData
+                    .fundamentalData!.stockFinancialsStandalone!.incomeSheet!,
+            financialYear: provideData.selcteFinYear)
+      ] else if (finData.selctedFinType == "Balance sheet") ...[
+        BalanceSheetData(
+            balanceSheet: provideData.selcteFinType == "Consolidated"
+                ? provideData
+                    .fundamentalData!.stockFinancialsConsolidated!.balanceSheet!
+                : provideData
+                    .fundamentalData!.stockFinancialsStandalone!.balanceSheet!,
+            financialYear: provideData.selcteFinYear)
+      ] else ...[
+        CashFlowSheetData(
+            cashFlowSheet: provideData.selcteFinType == "Consolidated"
+                ? provideData.fundamentalData!.stockFinancialsConsolidated!
+                    .cashflowSheet!
+                : provideData
+                    .fundamentalData!.stockFinancialsStandalone!.cashflowSheet!,
+            financialYear: provideData.selcteFinYear)
+      ],
+      const SizedBox(height: 8),
+      Divider(color: colors.colorDivider),
+      const SizedBox(height: 8),
+    ]);
+  }
+
+  TextStyle textStyle(Color color, double fontSize, fWeight) {
+    return GoogleFonts.inter(
+        textStyle:
+            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  }
+}
+
+class BalanceSheetData extends StatelessWidget {
+  final List<BalanceSheet> balanceSheet;
+  final String financialYear;
+  const BalanceSheetData(
+      {super.key, required this.balanceSheet, required this.financialYear});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (BuildContext context, int index) {
+        return financialYear == balanceSheet[index].convDate
+            ? Column(
+                children: [
+                  const SizedBox(height: 4),
+                  StockRowTable(
+                      title: "Current Asstes",
+                      value: "${balanceSheet[index].totalCurrentAssets}",
+                      showIcon: true),
+                  Divider(color: colors.colorDivider),
+                  StockRowTable(
+                      title: "Non Current Asstes",
+                      value: "${balanceSheet[index].nonCurrentAssets}",
+                      showIcon: true),
+                  Divider(color: colors.colorDivider),
+                  StockRowTable(
+                      title: "Current Liabilities",
+                      value: "${balanceSheet[index].totalCurrentLiabilities}",
+                      showIcon: true),
+                ],
+              )
+            : Container();
+      },
+      itemCount: balanceSheet.length,
+    );
+  }
+}
+
+class IncomeSheetData extends StatelessWidget {
+  final List<IncomeSheet> incomSheet;
+  final String financialYear;
+  const IncomeSheetData(
+      {super.key, required this.incomSheet, required this.financialYear});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (BuildContext context, int index) {
+        return financialYear == incomSheet[index].convDate
+            ? Column(
+                children: [
+                  const SizedBox(height: 4),
+                  StockRowTable(
+                      title: "Revenue",
+                      value: "${incomSheet[index].revenue}",
+                      showIcon: true),
+                  Divider(color: colors.colorDivider),
+                  StockRowTable(
+                      title: "Expenditure",
+                      value: "${incomSheet[index].expenditure}",
+                      showIcon: true),
+                  Divider(color: colors.colorDivider),
+                  StockRowTable(
+                      title: "Operating Profit",
+                      value: "${incomSheet[index].operatingProfit}",
+                      showIcon: true),
+                  Divider(color: colors.colorDivider),
+                  StockRowTable(
+                      title: "Profit Before Tax",
+                      value: "${incomSheet[index].profitBeforeTax}",
+                      showIcon: true),
+                  Divider(color: colors.colorDivider),
+                  StockRowTable(
+                      title: "Tax",
+                      value: "${incomSheet[index].tax}",
+                      showIcon: true),
+                  Divider(color: colors.colorDivider),
+                  StockRowTable(
+                      title: "Profit After Tax",
+                      value: "${incomSheet[index].profitBeforeTax}",
+                      showIcon: true),
+                ],
+              )
+            : Container();
+      },
+      itemCount: incomSheet.length,
+    );
+  }
+}
+
+class CashFlowSheetData extends StatelessWidget {
+  final List<CashflowSheet> cashFlowSheet;
+  final String financialYear;
+  const CashFlowSheetData(
+      {super.key, required this.cashFlowSheet, required this.financialYear});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (BuildContext context, int index) {
+        return financialYear == cashFlowSheet[index].convDate
+            ? Column(
+                children: [
+                  const SizedBox(height: 4),
+                  StockRowTable(
+                      title: "Cash Flow From Investing Activities",
+                      value:
+                          "${cashFlowSheet[index].cashFromFinancingActivities}",
+                      showIcon: true),
+                  Divider(color: colors.colorDivider),
+                  StockRowTable(
+                      title: "Cash From Financing Activities",
+                      value:
+                          "${cashFlowSheet[index].cashFromFinancingActivities}",
+                      showIcon: true),
+                  Divider(color: colors.colorDivider),
+                  StockRowTable(
+                      title: "Cash From Operating Activities",
+                      value:
+                          "${cashFlowSheet[index].cashFromOperatingActivities}",
+                      showIcon: true),
+                ],
+              )
+            : Container();
+      },
+      itemCount: cashFlowSheet.length,
+    );
+  }
+}

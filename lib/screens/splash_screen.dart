@@ -1,0 +1,79 @@
+import 'dart:developer';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+
+import '../locator/locator.dart';
+import '../locator/preference.dart';
+import '../provider/auth_provider.dart';
+import '../provider/network_state_provider.dart';
+import '../res/res.dart';
+import '../routes/route_names.dart';
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      initializeResources(context: context);
+          context.read(networkStateProvider).networkStream();
+      context.read(networkStateProvider).getContext(context);
+      initialRoute();
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: Stack(children: [
+      Center(
+        child: SvgPicture.asset("assets/icon/zebulogo.svg",
+            height: 80, width: 150, fit: BoxFit.contain),
+      ),
+    ]));
+  }
+
+  initialRoute() async {
+    final Preferences pref = locator<Preferences>();
+    try {
+      print("Device  Name  ${pref.deviceName!}");
+      if (pref.deviceName!.isEmpty) {
+        await context.read(authProvider).getDeviceDetails();
+      }
+      if (pref.clientId!.isEmpty && pref.clientSession!.isEmpty) {
+        Navigator.pushNamedAndRemoveUntil(
+            context, Routes.loginScreen, arguments: "login", (route) => false);
+      } else {
+        if (pref.logoutClient == "Logout") {
+          context.read(authProvider).loginMethCtrl.text = pref.clientId!;
+          Navigator.pushNamedAndRemoveUntil(
+              context, Routes.loginScreen, (route) => false,
+              arguments: "deviceLogin");
+        } else {
+          await context
+              .read(authProvider)
+              .fetchMobileLogin(context, "", pref.clientId!, false);
+        }
+      }
+
+      // }
+
+      // context.read(marketWatchProvider).fetchScripMaster();
+    } catch (e) {
+      log("faild to build --- $e");
+    }
+  }
+}
