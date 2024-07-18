@@ -2,7 +2,7 @@ class ApiLinks {
   static String source = "API";
   // static String userID = "ZVK0106";
   // static String session = "";
-    static String wsURL = 'wss://go.mynt.in/NorenWSWeb/';
+  static String wsURL = 'wss://go.mynt.in/NorenWSWeb/';
   static String otp = "";
   static String userName = "";
   static bool showAppTutorial = true;
@@ -124,7 +124,6 @@ class ApiLinks {
 
   String get mainBaseURL1 => 'http://192.168.5.82:5000';
   // String get mainBaseURL1 => 'http://192.168.5.83:5000';
-  String get getGlobalIndex => '$mainBaseURL1/getGlobalIndex';
   String get getClientTrades => '$mainBaseURL1/getClientTrades';
 
   String get gsecdetails => 'https://besim.zebull.in/getcurrentNCB_Gsecdetails';
@@ -132,8 +131,16 @@ class ApiLinks {
 
   // Stock data URL
 
-  String stockUrl = "https://v3.mynt.in/equity";
+  String stockUrl = "https://v3.mynt.in";
 
-  String get fundamentalDetail => '$stockUrl/stockFundamentalDetails';
-  String get topListStock => '$stockUrl/TopList';
+  // String tradeAction = "https://v3.mynt.in/equity/getadindicesAdvdec";
+
+  String get fundamentalDetail => '$stockUrl/equity/stockFundamentalDetails';
+  String get topListStock => '$stockUrl/equity/TopList';
+  String get getGlobalIndex => '$stockUrl/equity/getGlobalIndex';
+
+  String get getadindices => '$stockUrl/equity/getadindices';
+  String get getadindicesAdvdec => '$stockUrl/equity/getadindicesAdvdec';
+
+  String get getCorporateAction => '$stockUrl/ipo/getCorporateAction';
 }

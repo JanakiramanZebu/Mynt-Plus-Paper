@@ -32,17 +32,17 @@ import '../screens/profile_screen/my_ac_screens/bank_detail.dart';
 import '../screens/profile_screen/my_ac_screens/my_acc.dart';
 import '../screens/profile_screen/my_ac_screens/profile_details.dart';
 import '../screens/profile_screen/my_ac_screens/set_auto_pay.dart';
-import '../screens/profile_screen/my_ac_screens/setautopayscreen.dart';
-import '../screens/profile_screen/need_help_screen.dart';
+import '../screens/profile_screen/my_ac_screens/setautopayscreen.dart'; 
 import '../screens/profile_screen/notification_screens/notification_screen.dart';
 import '../screens/profile_screen/setting_screen/notification_setting.dart';
 import '../screens/profile_screen/setting_screen/settingmaincscreen.dart';
 import '../screens/profile_screen/setting_screen/window_settings.dart';
 import '../screens/profile_screen/settingui.dart';
-import '../screens/splash_screen.dart';
-import '../screens/stocks/indices/all_index_screen.dart';
-import '../screens/stocks/news/news_listdata.dart';
-import '../screens/stocks/stock_screens.dart';
+import '../screens/splash_screen.dart'; 
+import '../screens/stocks/explore/stocks/indices/all_index_screen.dart';
+import '../screens/stocks/explore/stocks/news/news_listdata.dart';
+import '../screens/stocks/explore/stocks/stock_screens.dart';
+import '../screens/stocks/explore/stocks/trade_action/sector_themeatic_details.dart';
 import 'route_names.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -690,20 +690,27 @@ case Routes.searchScrip:
           },
         );
 
-      case Routes.needHelp:
+      
+
+    case Routes.sectorThematicDetail:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              const  NeedHelpScreen(),
+                SectorThematicDetail(data: args),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final tween = Tween<Offset>(
-                begin: const Offset(0, 1), end: const Offset(.0, .0));
+            const begin = Offset(0.0, 1.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
             return SlideTransition(
               position: animation.drive(tween),
               child: child,
             );
           },
-        );
-
+        ); 
+ 
        
       case Routes.pendingalertdetails:
         return PageRouteBuilder(

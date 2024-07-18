@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus_testing/provider/stocks_provider.dart';
 import 'package:upgrader/upgrader.dart';
 import '../locator/constant.dart';
 import '../models/upgrader_model.dart';
@@ -29,6 +30,7 @@ import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
 import 'profile_screen/logged_user_bottom_sheet.dart';
 import 'profile_screen/profile_main_screen.dart';
+import 'stocks/explore/explore_screens.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -81,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (ConstantName.pageName != "edit") {
         if (context.read(networkStateProvider).connectionStatus !=
             ConnectivityResult.none) {
-          if (context.read(indexListProvider).selectedBtmIndx == 0) {
+          if (context.read(indexListProvider).selectedBtmIndx == 1) {
             // context
             //     .read(marketWatchProvider)
             //     .requestWSMarketWatchScrip(context: context, isSubscribe: true);
@@ -90,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 .read(marketWatchProvider)
                 .requestMWScrip(context: context, isSubscribe: true);
           }
-          if (context.read(indexListProvider).selectedBtmIndx == 1) {
+          if (context.read(indexListProvider).selectedBtmIndx == 2) {
             context
                 .read(portfolioProvider)
                 .requestWSHoldings(context: context, isSubscribe: true);
@@ -115,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final internet = watch(networkStateProvider);
         final portfolio = watch(portfolioProvider);
         final userProfile = watch(userProfileProvider);
-
+        final stockProvide = watch(stocksProvide);
         final theme = context.read(themeProvider);
         // if (context.read(indexListProvider).selectedBtmIndx == 0) {
         //   context
@@ -135,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         : colors.colorDivider,
                     leadingWidth: 205,
                     elevation: .3,
-                    leading: indexProvide.selectedBtmIndx == 0
+                    leading: indexProvide.selectedBtmIndx == 1
                         ? InkWell(
                             onTap: () {
                               FocusScope.of(context).unfocus();
@@ -204,7 +206,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? "Orderbook"
                                       : indexProvide.selectedBtmIndx == 1
                                           ? "Portfolio"
-                                          : "Profile",
+                                          : indexProvide.selectedBtmIndx == 0
+                                              ? stockProvide.exploreName
+                                              : "Profile",
                                   style: textStyles.appBarTitleTxt.copyWith(
                                       color: theme.isDarkMode
                                           ? colors.colorWhite
@@ -213,95 +217,106 @@ class _HomeScreenState extends State<HomeScreen> {
                               ],
                             ),
                           ),
-                    actions: [
-                      if (indexProvide.selectedBtmIndx == 0 &&
-                          marketWatchList.isPreDefWLs != "Yes") ...[
-                        marketWatchList.scrips.length > 1
-                            ? InkWell(
-                                onTap: () {
-                                  //                     context
-                                  //                       .read(showcaseProvide).showToast("Reconnecting",
-                                  //  context);
-                                  FocusScope.of(context).unfocus();
-                                  showModalBottomSheet(
-                                      useSafeArea: true,
-                                      isScrollControlled: true,
-                                      shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(16))),
-                                      context: context,
-                                      builder: (context) {
-                                        return const ScripFilterBottomSheet();
-                                      });
-                                },
-                                child: Container(
-                                    padding: EdgeInsets.only(
-                                        left: 8,
-                                        right: marketWatchList
-                                                    .watchListValues.length >=
-                                                50
-                                            ? 0
-                                            : 8),
-                                    child: SvgPicture.asset(assets.filterLines,
-                                        width: 19, color: colors.colorGrey)),
-                              )
-                            : Container(),
-                        marketWatchList.watchListValues.length >= 50
-                            ? const SizedBox()
-                            : InkWell(
-                                onTap: () {
-                                  context
-                                      .read(marketWatchProvider)
-                                      .requestMWScrip(
-                                          context: context, isSubscribe: false);
-                                  Navigator.pushNamed(
-                                      context, Routes.searchScrip,
-                                      arguments: marketWatchList.wlName);
-                                },
-                                child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        right: 16, left: 8),
-                                    child: SvgPicture.asset(assets.searchIcon,
-                                        width: 19, color: colors.colorGrey)),
-                              ),
-                      ] else if (indexProvide.selectedBtmIndx == 1 &&
-                          portfolio.postionBookModel!.isNotEmpty &&
-                          portfolio.selectedTab == 0) ...[
-                        if (portfolio.postionBookModel![0].stat == "Ok")
-                          Padding(
-                            padding: const EdgeInsets.only(right: 15.0),
-                            child: Row(children: [
-                              Text("DAY",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      13,
-                                      FontWeight.w500)),
-                              const SizedBox(width: 6),
-                              CustomSwitch(
-                                  onChanged: (bool value) {
-                                    portfolio.chngPositionPnl(true);
-                                    portfolio.positionToggle(value, context);
-                                  },
-                                  value: portfolio.isDay),
-                              const SizedBox(width: 6),
-                              Text("NET",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      13,
-                                      FontWeight.w500)),
-                            ]),
-                          )
-                      ]
-                    ],
-                    bottom: indexProvide.selectedBtmIndx == 0
+                    actions: indexProvide.selectedBtmIndx == 0
+                        ? null
+                        : [
+                            if (indexProvide.selectedBtmIndx == 1 &&
+                                marketWatchList.isPreDefWLs != "Yes") ...[
+                              marketWatchList.scrips.length > 1
+                                  ? InkWell(
+                                      onTap: () {
+                                        //                     context
+                                        //                       .read(showcaseProvide).showToast("Reconnecting",
+                                        //  context);
+                                        FocusScope.of(context).unfocus();
+                                        showModalBottomSheet(
+                                            useSafeArea: true,
+                                            isScrollControlled: true,
+                                            shape: const RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.vertical(
+                                                        top: Radius.circular(
+                                                            16))),
+                                            context: context,
+                                            builder: (context) {
+                                              return const ScripFilterBottomSheet();
+                                            });
+                                      },
+                                      child: Container(
+                                          padding: EdgeInsets.only(
+                                              left: 8,
+                                              right: marketWatchList
+                                                          .watchListValues
+                                                          .length >=
+                                                      50
+                                                  ? 0
+                                                  : 8),
+                                          child: SvgPicture.asset(
+                                              assets.filterLines,
+                                              width: 19,
+                                              color: colors.colorGrey)),
+                                    )
+                                  : Container(),
+                              marketWatchList.watchListValues.length >= 50
+                                  ? const SizedBox()
+                                  : InkWell(
+                                      onTap: () {
+                                        context
+                                            .read(marketWatchProvider)
+                                            .requestMWScrip(
+                                                context: context,
+                                                isSubscribe: false);
+                                        Navigator.pushNamed(
+                                            context, Routes.searchScrip,
+                                            arguments: marketWatchList.wlName);
+                                      },
+                                      child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              right: 16, left: 8),
+                                          child: SvgPicture.asset(
+                                              assets.searchIcon,
+                                              width: 19,
+                                              color: colors.colorGrey)),
+                                    ),
+                            ] else if (indexProvide.selectedBtmIndx == 2 &&
+                                portfolio.postionBookModel!.isNotEmpty &&
+                                portfolio.selectedTab == 0) ...[
+                              if (portfolio.postionBookModel![0].stat == "Ok")
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 15.0),
+                                  child: Row(children: [
+                                    Text("DAY",
+                                        style: textStyle(
+                                            theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                            13,
+                                            FontWeight.w500)),
+                                    const SizedBox(width: 6),
+                                    CustomSwitch(
+                                        onChanged: (bool value) {
+                                          portfolio.chngPositionPnl(true);
+                                          portfolio.positionToggle(
+                                              value, context);
+                                        },
+                                        value: portfolio.isDay),
+                                    const SizedBox(width: 6),
+                                    Text("NET",
+                                        style: textStyle(
+                                            theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                            13,
+                                            FontWeight.w500)),
+                                  ]),
+                                )
+                            ]
+                          ],
+                    bottom: indexProvide.selectedBtmIndx == 1
                         ? const PreferredSize(
                             preferredSize: Size(20, 44),
                             child: DefaultIndexList())
-                        : indexProvide.selectedBtmIndx == 3
+                        : indexProvide.selectedBtmIndx == 4
                             ? PreferredSize(
                                 preferredSize: const Size(20, 10),
                                 child: ListTile(
@@ -414,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ? colors.colorBlue
                                             : colors.colorGrey),
                                 const SizedBox(height: 4),
-                                Text("Watchlist",
+                                Text("Explore",
                                     style: textStyle(
                                         theme.isDarkMode &&
                                                 indexProvide.selectedBtmIndx ==
@@ -425,6 +440,74 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 : colors.colorGrey,
                                         12,
                                         indexProvide.selectedBtmIndx == 0
+                                            ? FontWeight.w600
+                                            : FontWeight.w500)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: InkWell(
+                          onTap: internet.connectionStatus ==
+                                  ConnectivityResult.none
+                              ? null
+                              : () async {
+                                  await context
+                                      .read(indexListProvider)
+                                      .checkSession(context);
+                                  await portfolio.requestWSHoldings(
+                                      context: context, isSubscribe: false);
+
+                                  // await context
+                                  //     .read(orderProvider)
+                                  //     .requestWSOrderBook(
+                                  //         context: context,
+                                  //         isSubscribe: false);
+                                  await portfolio.requestWSPosition(
+                                      context: context, isSubscribe: false);
+
+                                  await context
+                                      .read(marketWatchProvider)
+                                      .requestMWScrip(
+                                          context: context, isSubscribe: true);
+
+                                  indexProvide.bottomMenu(1);
+                                },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 7),
+                            decoration: BoxDecoration(
+                                border: indexProvide.selectedBtmIndx == 1
+                                    ? Border(
+                                        top: BorderSide(
+                                            color: theme.isDarkMode
+                                                ? colors.colorLightBlue
+                                                : colors.colorBlue,
+                                            width: 2))
+                                    : null),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                SvgPicture.asset(assets.bookmarkedIcon,
+                                    color: theme.isDarkMode &&
+                                            indexProvide.selectedBtmIndx == 1
+                                        ? colors.colorLightBlue
+                                        : indexProvide.selectedBtmIndx == 1
+                                            ? colors.colorBlue
+                                            : colors.colorGrey),
+                                const SizedBox(height: 4),
+                                Text("Watchlist",
+                                    style: textStyle(
+                                        theme.isDarkMode &&
+                                                indexProvide.selectedBtmIndx ==
+                                                    1
+                                            ? colors.colorLightBlue
+                                            : indexProvide.selectedBtmIndx == 1
+                                                ? colors.colorBlue
+                                                : colors.colorGrey,
+                                        12,
+                                        indexProvide.selectedBtmIndx == 1
                                             ? FontWeight.w600
                                             : FontWeight.w500)),
                               ],
@@ -452,18 +535,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                     //     .read(orderProvider)
                                     //     .requestWSOrderBook(
                                     //         context: context, isSubscribe: false);
-
-                                    // portfolio.requestWSHoldings(
-                                    //     context: context, isSubscribe: true);
-                                    await portfolio.requestWSPosition(
-                                        context: context, isSubscribe: true);
-
-                                    indexProvide.bottomMenu(1);
+                                    if (portfolio.selectedTab == 1) {
+                                      await portfolio.requestWSHoldings(
+                                          context: context, isSubscribe: true);
+                                    }
+                                    if (portfolio.selectedTab == 0) {
+                                      await portfolio.requestWSPosition(
+                                          context: context, isSubscribe: true);
+                                    }
+                                    indexProvide.bottomMenu(2);
                                   },
                         child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 7),
                             decoration: BoxDecoration(
-                                border: indexProvide.selectedBtmIndx == 1
+                                border: indexProvide.selectedBtmIndx == 2
                                     ? Border(
                                         top: BorderSide(
                                             color: theme.isDarkMode
@@ -477,9 +562,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   SvgPicture.asset(assets.barChart,
                                       color: theme.isDarkMode &&
-                                              indexProvide.selectedBtmIndx == 1
+                                              indexProvide.selectedBtmIndx == 2
                                           ? colors.colorLightBlue
-                                          : indexProvide.selectedBtmIndx == 1
+                                          : indexProvide.selectedBtmIndx == 2
                                               ? colors.colorBlue
                                               : colors.colorGrey),
                                   const SizedBox(height: 4),
@@ -488,14 +573,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                           theme.isDarkMode &&
                                                   indexProvide
                                                           .selectedBtmIndx ==
-                                                      1
+                                                      2
                                               ? colors.colorLightBlue
                                               : indexProvide.selectedBtmIndx ==
-                                                      1
+                                                      2
                                                   ? colors.colorBlue
                                                   : colors.colorGrey,
                                           12,
-                                          indexProvide.selectedBtmIndx == 0
+                                          indexProvide.selectedBtmIndx == 2
                                               ? FontWeight.w600
                                               : FontWeight.w500)),
                                 ])),
@@ -525,12 +610,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       .requestWSOrderBook(
                                           context: context, isSubscribe: true);
 
-                                  indexProvide.bottomMenu(2);
+                                  indexProvide.bottomMenu(3);
                                 },
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 7),
                             decoration: BoxDecoration(
-                                border: indexProvide.selectedBtmIndx == 2
+                                border: indexProvide.selectedBtmIndx == 3
                                     ? Border(
                                         top: BorderSide(
                                             color: theme.isDarkMode
@@ -544,9 +629,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 SvgPicture.asset(assets.bag,
                                     color: theme.isDarkMode &&
-                                            indexProvide.selectedBtmIndx == 2
+                                            indexProvide.selectedBtmIndx == 3
                                         ? colors.colorLightBlue
-                                        : indexProvide.selectedBtmIndx == 2
+                                        : indexProvide.selectedBtmIndx == 3
                                             ? colors.colorBlue
                                             : colors.colorGrey),
                                 const SizedBox(height: 4),
@@ -554,13 +639,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: textStyle(
                                         theme.isDarkMode &&
                                                 indexProvide.selectedBtmIndx ==
-                                                    2
+                                                    3
                                             ? colors.colorLightBlue
-                                            : indexProvide.selectedBtmIndx == 2
+                                            : indexProvide.selectedBtmIndx == 3
                                                 ? colors.colorBlue
                                                 : colors.colorGrey,
                                         12,
-                                        indexProvide.selectedBtmIndx == 0
+                                        indexProvide.selectedBtmIndx == 3
                                             ? FontWeight.w600
                                             : FontWeight.w500)),
                               ],
@@ -584,7 +669,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   await context
                                       .read(userProfileProvider)
                                       .fetchprofilemenu();
-                                  indexProvide.bottomMenu(3);
+                                  indexProvide.bottomMenu(4);
                                   marketWatchList.requestMWScrip(
                                       context: context, isSubscribe: false);
                                   portfolio.requestWSHoldings(
@@ -600,7 +685,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 7),
                             decoration: BoxDecoration(
-                                border: indexProvide.selectedBtmIndx == 3
+                                border: indexProvide.selectedBtmIndx == 4
                                     ? Border(
                                         top: BorderSide(
                                             color: theme.isDarkMode
@@ -615,9 +700,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 SvgPicture.asset("assets/profile/userlogo.svg",
                                     height: 18,
                                     color: theme.isDarkMode &&
-                                            indexProvide.selectedBtmIndx == 3
+                                            indexProvide.selectedBtmIndx == 4
                                         ? colors.colorLightBlue
-                                        : indexProvide.selectedBtmIndx == 3
+                                        : indexProvide.selectedBtmIndx == 4
                                             ? colors.colorBlue
                                             : colors.colorGrey),
                                 const SizedBox(height: 5),
@@ -625,13 +710,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: textStyle(
                                         theme.isDarkMode &&
                                                 indexProvide.selectedBtmIndx ==
-                                                    3
+                                                    4
                                             ? colors.colorLightBlue
-                                            : indexProvide.selectedBtmIndx == 3
+                                            : indexProvide.selectedBtmIndx == 4
                                                 ? colors.colorBlue
                                                 : colors.colorGrey,
                                         12,
-                                        indexProvide.selectedBtmIndx == 0
+                                        indexProvide.selectedBtmIndx == 4
                                             ? FontWeight.w600
                                             : FontWeight.w500)),
                               ],
@@ -658,48 +743,14 @@ class _HomeScreenState extends State<HomeScreen> {
   _onItemTapped(index) {
     switch (index) {
       case 0:
-        return
-            // RefreshIndicator(
-            //     onRefresh: () async {
-            //       if (context.read(marketWatchProvider).isPreDefWLs == "Yes") {
-            //         if (context.read(marketWatchProvider).wlName == "My Stocks") {
-            //           await context.read(portfolioProvider).fetchHoldings(context);
-
-            //           context
-            //               .read(portfolioProvider)
-            //               .requestWSHoldings(context: context, isSubscribe: true);
-            //         } else {
-            //           // await context.read(marketWatchProvider).fetchPreDefMWScrip(
-            //           //     context.read(marketWatchProvider).wlName, context);
-            //           // context.read(marketWatchProvider).requestWSMarketWatchScrip(
-            //           //     context: context, isSubscribe: true);
-            //         }
-            //       } else {
-            //         await context.read(marketWatchProvider).fetchMWScrip(
-            //             context.read(marketWatchProvider).wlName, context);
-            //         context.read(marketWatchProvider).requestWSMarketWatchScrip(
-            //             context: context, isSubscribe: true);
-            //       }
-            //     },
-            //     child:
-            //  context.read(marketWatchProvider).wlName == "My Stocks"
-            //     ? const StocksScreen()
-            //     :
-            WatchListScreen();
-      //  );
-      // case 1:
-      //   return RefreshIndicator(
-      //       onRefresh: () async {
-      //         context
-      //             .read(portfolioProvider)
-      //             .fetchHoldings(context, "Holdings");
-      //       },
-      //       child: const HoldingScreen());
+        return ExploreScreens();
       case 1:
-        return const PortfolioScreen();
+        return WatchListScreen();
       case 2:
-        return const OrderBookScreen();
+        return const PortfolioScreen();
       case 3:
+        return const OrderBookScreen();
+      case 4:
         return const UserAccountScreen();
     }
   }

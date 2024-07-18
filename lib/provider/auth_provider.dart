@@ -38,6 +38,7 @@ import 'index_list_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
+import 'stocks_provider.dart';
 import 'user_profile_provider.dart';
 
 final authProvider = ChangeNotifierProvider((ref) => AuthProvider(ref.read));
@@ -714,7 +715,16 @@ class AuthProvider extends DefaultChangeNotifier {
         ConstantName.timer =
             Timer.periodic(const Duration(seconds: 1), (timer) {});
         ConstantName.timer!.cancel();
+        await context.read(indexListProvider).fetchDefTopIndex(context);
 
+        await ref(stocksProvide)
+            .fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
+        await ref(stocksProvide)
+            .fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+        await ref(stocksProvide).fetchCorporateAction();
+        
+        await ref(stocksProvide).fetchIndicesAdvdec();
+        await ref(stocksProvide).getNews();
         await ref(indexListProvider).bottomMenu(0);
         //  ref(indexListProvider).fetchNotifyMsg();
         await ref(portfolioProvider).fetchHoldings(context, "");

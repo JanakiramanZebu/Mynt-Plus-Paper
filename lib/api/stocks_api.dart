@@ -1,7 +1,15 @@
+ 
+
+import 'dart:developer';
+
+import '../models/explore_model/stocks_model/corporate_action_model.dart'; 
+import '../models/explore_model/stocks_model/get_ad_indices.dart';
+import '../models/explore_model/stocks_model/sector_thematric_detail_model.dart';
 import '../models/indices/global_indices_model.dart';
 import '../models/news_model.dart';
-import '../models/stocks_model/toplist_stocks.dart';
+import '../models/explore_model/stocks_model/toplist_stocks.dart';
 import 'core/api_core.dart';
+import 'package:http/http.dart';
 
 mixin StocksAPI on ApiCore {
   Future<List<NewsModel>> fetchNews(String date) async {
@@ -58,6 +66,72 @@ mixin StocksAPI on ApiCore {
       // log("Trade Action data ${res.body}");
 
       return TopListStocks.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Response> getadindicesAdvdec(String indexName) async {
+    try {
+      final uri = Uri.parse(apiLinks.getadindicesAdvdec);
+      final response = await apiClient.post(uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({"index": indexName}));
+
+      
+
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future< List< SectorThematicDetailModel>> getadindices(String indexName) async {
+    try {
+      final uri = Uri.parse(apiLinks.getadindices);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders, body: jsonEncode({"index": indexName}));
+
+      final json = jsonDecode(res.body);
+
+      // log("Trade Action data ${res.body}");
+      final List< SectorThematicDetailModel> data = [];
+
+      for (final item in json) {
+              data.add(SectorThematicDetailModel.fromJson(item as Map<String, dynamic>));
+            }
+
+      return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+    Future< GetAdIndicesModel> getAllAdindices( ) async {
+    try {
+      final uri = Uri.parse(apiLinks.getadindices);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders, body: jsonEncode({"index": ""}));
+
+      final json = jsonDecode(res.body);
+    log("ALL INDICES ${res.body}");
+ 
+
+      return GetAdIndicesModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<CorporateActionModel> getCorporateAction() async {
+    try {
+      final uri = Uri.parse(apiLinks.getCorporateAction);
+      final response = await apiClient
+          .post(uri, headers: {'Content-Type': 'application/json'});
+
+    //  print("Top Indices Data ${response.body}");
+      final json = jsonDecode(response.body);
+      return CorporateActionModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
