@@ -1,14 +1,14 @@
 class ApiLinks {
-  static String source = "API";
+  static String source = "MOB";
   // static String userID = "ZVK0106";
   // static String session = "";
-    static String wsURL = 'wss://go.mynt.in/NorenWSWeb/';
+    static String wsURL = 'wss://go.mynt.in/NorenWS/';
   static String otp = "";
   static String userName = "";
   static bool showAppTutorial = true;
 // GO MYNT
 
-  String get goMyntURL => "https://go.mynt.in/NorenWClientTP";
+  String get goMyntURL => "https://go.mynt.in/NorenWClient";
   String get newsurl => "https://be.mynt.in/news";
 
   ///generate api key
@@ -95,7 +95,9 @@ class ApiLinks {
 
   String get mdifyOrder => '$mainBaseURL/ModifyOrder';
 
-  String get mobileLogin => '$mainBaseURL/mobile_login';
+  // String get mobileLogin => '$mainBaseURL/mobile_login';
+  String get mobileLogin => '$mainBaseURL/MobileLogin';
+  
   String get mobileOtp => '$mainBaseURL/otp_verify';
 
   String get loginOtp => '$mainBaseURL/otp_send_Tv';

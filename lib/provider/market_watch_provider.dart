@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
+import '../locator/preference.dart';
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
 import '../models/marketwatch_model/alert_model/alert_pending_model.dart';
 import '../models/marketwatch_model/alert_model/cancel_alert_model.dart';
@@ -41,7 +42,7 @@ final marketWatchProvider =
 
 class MarketWatchProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
-
+  final Preferences pref = locator<Preferences>();
   final Reader ref;
 
   String _searchErrorText = "Enter more than TWO letters";
@@ -569,7 +570,7 @@ String get fistGetData=>_firstGetData;
       } else {
         if (_marketWatchlist!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
-            _marketWatchlist!.stat == "Not_Ok") {
+            _marketWatchlist!.stat == "Not_Ok") {   pref .clearClientSession();
           ConstantName.sessCheck = false;
           ref(authProvider).loginMethCtrl.text =
               localstorage.getString("userId") ?? "";
@@ -634,7 +635,7 @@ String get fistGetData=>_firstGetData;
       } else {
         if (_marketWatchScrip!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
-            _marketWatchScrip!.stat == "Not_Ok") {
+            _marketWatchScrip!.stat == "Not_Ok") {   pref .clearClientSession();
           ConstantName.sessCheck = false;
           ref(authProvider).loginMethCtrl.text =
               localstorage.getString("userId") ?? "";
@@ -758,7 +759,7 @@ String get fistGetData=>_firstGetData;
         } else {
           if (_marketWatchScrip!.emsg ==
                   "Session Expired :  Invalid Session Key" &&
-              _marketWatchScrip!.stat == "Not_Ok") {
+              _marketWatchScrip!.stat == "Not_Ok") {   pref .clearClientSession();
             ConstantName.sessCheck = false;
             ref(authProvider).loginMethCtrl.text =
                 localstorage.getString("userId") ?? "";
@@ -803,7 +804,7 @@ String get fistGetData=>_firstGetData;
       }
 
       if (_scripInfoModel!.emsg == "Session Expired :  Invalid Session Key" &&
-          _scripInfoModel!.stat == "Not_Ok") {
+          _scripInfoModel!.stat == "Not_Ok") {   pref .clearClientSession();
         ConstantName.sessCheck = false;
         ref(authProvider).loginMethCtrl.text =
             localstorage.getString("userId") ?? "";
@@ -842,7 +843,7 @@ String get fistGetData=>_firstGetData;
         scripQtyCal();
       }
       if (_getQuotes!.emsg == "Session Expired :  Invalid Session Key" &&
-          _getQuotes!.stat == "Not_Ok") {
+          _getQuotes!.stat == "Not_Ok") {   pref .clearClientSession();
         ConstantName.sessCheck = false;
         ref(authProvider).loginMethCtrl.text =
             localstorage.getString("userId") ?? "";
@@ -881,7 +882,7 @@ String get fistGetData=>_firstGetData;
             context: context);
       }
       if (_getStikePrc!.emsg == "Session Expired :  Invalid Session Key" &&
-          _getStikePrc!.stat == "Not_Ok") {
+          _getStikePrc!.stat == "Not_Ok") {   pref .clearClientSession();
         ConstantName.sessCheck = false;
         ref(authProvider).loginMethCtrl.text =
             localstorage.getString("userId") ?? "";
@@ -1024,7 +1025,7 @@ String get fistGetData=>_firstGetData;
 
         if (_searchScripModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
-            _searchScripModel!.stat == "Not_Ok") {
+            _searchScripModel!.stat == "Not_Ok") {   pref .clearClientSession();
           ConstantName.sessCheck = false;
           ref(authProvider).loginMethCtrl.text =
               localstorage.getString("userId") ?? "";
@@ -1200,7 +1201,7 @@ String get fistGetData=>_firstGetData;
         _optChainPut = [];
         if (_optionChainModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
-            _searchScripModel!.stat == "Not_Ok") {
+            _searchScripModel!.stat == "Not_Ok") {   pref .clearClientSession();
           ConstantName.sessCheck = false;
           ref(authProvider).loginMethCtrl.text =
               localstorage.getString("userId") ?? "";
@@ -1243,7 +1244,7 @@ String get fistGetData=>_firstGetData;
       }
 
       if (_techData!.emsg == "Session Expired :  Invalid Session Key" &&
-          _techData!.stat == "Not_Ok") {
+          _techData!.stat == "Not_Ok") {   pref .clearClientSession();
         ConstantName.sessCheck = false;
         ref(authProvider).loginMethCtrl.text =
             localstorage.getString("userId") ?? "";
@@ -1734,6 +1735,7 @@ String get fistGetData=>_firstGetData;
       }
     } else if (_addDeleteScripModel!.emsg ==
         "Session Expired :  Invalid Session Key") {
+           pref .clearClientSession();
       ConstantName.sessCheck = false;
     }
   }

@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
+import '../locator/preference.dart';
 import '../models/order_book_model/place_order_model.dart';
 import '../models/portfolio_model/holdings_model.dart';
 import '../models/portfolio_model/mf_holdings_model.dart';
@@ -28,7 +29,7 @@ final portfolioProvider =
     ChangeNotifierProvider((ref) => PortfolioProvider(ref.read));
 
 class PortfolioProvider extends DefaultChangeNotifier {
-  final api = locator<ApiExporter>();
+  final api = locator<ApiExporter>();  final Preferences pref = locator<Preferences>();
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
   final Reader ref;
@@ -801,7 +802,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     try {
       final localstorage = await SharedPreferences.getInstance();
 
-      // _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+     _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
       if (_placeOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
@@ -813,8 +814,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
         // ref(orderProvider).fetchOrderBook(context, false);
 
-        ref(indexListProvider).bottomMenu(1);
-        Navigator.pop(context);
+      
       } else {
         if (_placeOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
@@ -1148,6 +1148,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
                       ? '${ref(authProvider).deviceInfo["id"]}'
                       : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
               await fetchExitPosition(context, placeOrderInput, true);
+
+              
             }
           } else {
             PlaceOrderInput placeOrderInput = PlaceOrderInput(
@@ -1181,6 +1183,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
         }
       }
     }
+
+      ref(indexListProvider).bottomMenu(1);
+        Navigator.pop(context);
   }
 
   exitAllHoldings(BuildContext context) async {

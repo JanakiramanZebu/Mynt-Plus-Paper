@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart'; 
+import '../locator/preference.dart';
 import '../models/profile_model/apikeymodel.dart';
 import '../models/profile_model/generateapikey_model.dart';
 import '../routes/route_names.dart'; 
@@ -19,7 +20,7 @@ final apikeyprovider =
 
 
 class ApikeyProvider extends DefaultChangeNotifier {
-  final api = locator<ApiExporter>();
+  final api = locator<ApiExporter>();  final Preferences pref = locator<Preferences>();
   final Reader ref;
   ApikeyProvider(this.ref);
 
@@ -39,6 +40,7 @@ class ApikeyProvider extends DefaultChangeNotifier {
        ConstantName.sessCheck=true;
       if (_apikeyres!.emsg == "Session Expired :  Invalid Session Key" &&
           _apikeyres!.stat == "Not_Ok") {
+                  pref .clearClientSession();
              ConstantName.sessCheck=false;
         ref(authProvider).loginMethCtrl.text =
             localstorage.getString("userId") ?? "";
@@ -67,7 +69,7 @@ class ApikeyProvider extends DefaultChangeNotifier {
       _generateApikey = await api.regenerateapikey(month);
         ConstantName.sessCheck=true;
       if (_generateApikey!.emsg == "Session Expired :  Invalid Session Key" &&
-          _generateApikey!.stat == "Not_Ok") {
+          _generateApikey!.stat == "Not_Ok") {             pref .clearClientSession();
              ConstantName.sessCheck=false;
         ref(authProvider).loginMethCtrl.text =
             localstorage.getString("userId") ?? "";

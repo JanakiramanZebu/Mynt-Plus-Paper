@@ -141,6 +141,7 @@ class IndexListProvider extends DefaultChangeNotifier {
       } else {
         if (_indexList!.emsg == "Session Expired :  Invalid Session Key" &&
             _indexList!.stat == "Not_Ok") {
+                    pref .clearClientSession();
           ConstantName.sessCheck = false;
           ref(authProvider).loginMethCtrl.text =
               localstorage.getString("userId") ?? "";
@@ -437,6 +438,7 @@ class IndexListProvider extends DefaultChangeNotifier {
       if (_checkSess!.emsg == "Session Expired :  Invalid Session Key" &&
           _checkSess!.stat == "Not_Ok") {
         ref(authProvider).loginMethCtrl.text = pref.clientId!;
+         pref .clearClientSession();
         ref(authProvider).switchMobToClinent(true);
   
         ScaffoldMessenger.of(context)
@@ -448,6 +450,7 @@ class IndexListProvider extends DefaultChangeNotifier {
             arguments: "deviceLogin",
             (route) => false);
       }
+      notifyListeners();
     } finally {}
   }
 

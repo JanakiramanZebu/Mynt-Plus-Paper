@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart'; 
+import '../locator/preference.dart';
 import '../models/auth_model/forgot_pass_model.dart';
 import '../models/auth_model/mynt_changepass_model.dart';
 import '../routes/route_names.dart'; 
@@ -17,7 +18,7 @@ final changePasswordProvider =
 class ChangePasswordProvider extends DefaultChangeNotifier {
   final Reader ref;
   final api = locator<ApiExporter>();
-
+  final Preferences pref = locator<Preferences>();
   final TextEditingController oldPassword = TextEditingController();
   final TextEditingController newPassword = TextEditingController();
   final TextEditingController forGetloginMethCtrl = TextEditingController();
@@ -171,7 +172,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _forgetPasswordModel!.emsg!));
       } else if (_forgetPasswordModel!.emsg ==
-          "Session Expired :  Invalid Session Key") {
+          "Session Expired :  Invalid Session Key") {             pref .clearClientSession();
         ConstantName.sessCheck = false;
       }
 
@@ -218,7 +219,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
         warningToaster(context,
             _changepasswordmodel!.emsg!.replaceAll("Error Occurred :", ""));
       } else if (_changepasswordmodel!.emsg ==
-          "Session Expired :  Invalid Session Key") {
+          "Session Expired :  Invalid Session Key") {             pref .clearClientSession();
         ConstantName.sessCheck = false;
       }
 

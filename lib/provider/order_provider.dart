@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart'; 
+import '../locator/preference.dart';
 import '../models/order_book_model/cancel_order_model.dart';
 import '../models/order_book_model/get_brokerage.dart';
 import '../models/order_book_model/gtt_order_book.dart';
@@ -54,7 +55,7 @@ class OrderProvider extends DefaultChangeNotifier {
   List<OrderBookModel>? get orderBookModel => _orderBookModel;
   List<GttOrderBookModel>? _gttOrderBookModel = [];
   List<GttOrderBookModel>? get gttOrderBookModel => _gttOrderBookModel;
-
+  final Preferences pref = locator<Preferences>();
   List<TradeBookModel>? _tradeBook;
   List<TradeBookModel>? get tradeBook => _tradeBook;
   List<OrderBookModel>? _allOrder = [];
@@ -201,7 +202,7 @@ class OrderProvider extends DefaultChangeNotifier {
         if (!isExit) {
           Navigator.pop(context);
         } else {
-          Navigator.pop(context);
+         
           Navigator.pop(context);
         }
         ref(indexListProvider).bottomMenu(2);

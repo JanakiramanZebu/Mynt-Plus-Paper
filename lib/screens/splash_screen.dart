@@ -41,6 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
         body: Stack(children: [
       Center(
         child: SvgPicture.asset("assets/icon/zebulogo.svg",
+        color: Color(0xff003F9E),
             height: 80, width: 150, fit: BoxFit.contain),
       ),
     ]));
@@ -49,23 +50,26 @@ class _SplashScreenState extends State<SplashScreen> {
   initialRoute() async {
     final Preferences pref = locator<Preferences>();
     try {
-      print("Device  Name  ${pref.deviceName!}");
+      print("Device  Name  ${pref.deviceName!} - ${pref.clientSession}");
+ context.read(authProvider).loginMethCtrl.text = pref.clientId!;
+  context.read(authProvider).switchMobToClinent( pref.clientId!.isEmpty?false:true);
       if (pref.deviceName!.isEmpty) {
         await context.read(authProvider).getDeviceDetails();
       }
-      if (pref.clientId!.isEmpty && pref.clientSession!.isEmpty) {
+      if ( pref.clientSession!.isEmpty) {
         Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, arguments: "login", (route) => false);
       } else {
         if (pref.logoutClient == "Logout") {
-          context.read(authProvider).loginMethCtrl.text = pref.clientId!;
+         
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.loginScreen, (route) => false,
               arguments: "deviceLogin");
         } else {
+          pref.setMobileLogin(false);
           await context
               .read(authProvider)
-              .fetchMobileLogin(context, "", pref.clientId!, false);
+              .fetchMobileLogin(context, "", pref.clientId! );
         }
       }
 

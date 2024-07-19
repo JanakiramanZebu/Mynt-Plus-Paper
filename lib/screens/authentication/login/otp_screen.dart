@@ -101,7 +101,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                   child: SvgPicture.asset(assets.appLogoIcon,
                                       color: theme.isDarkMode
                                           ? colors.colorWhite
-                                          : colors.colorBlack,
+                                          : colors.logoColor,
                                       height: 60)),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -190,7 +190,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                           hintStyle: textStyle(
                                               Colors.grey, 13, FontWeight.w400),
                                           hintText:
-                                              "Enter 4 digit OTP to begin",
+                                              "Enter 4 digit OTP",
                                            enabledBorder: const UnderlineInputBorder(
                                     borderSide:
                                         BorderSide(color: Color(0xff999999))),

@@ -11,11 +11,17 @@ class Preferences {
     await _prefInstance?.clear();
   }
 
+  Future clearClientSession() async {
+    await _prefInstance?.remove(_clientSession);
+  }
   // setters
 
   Future setTheme(bool theme) async {
     await _prefInstance!.setBool(_userTheme, theme);
   }
+
+  Future setMobileLogin(bool isMobile) async =>
+      await _prefInstance!.setBool(_ismobileLogin, isMobile);
 
   Future setAppTheme(String theme) async {
     await _prefInstance!.setString(_userAppTheme, theme);
@@ -43,6 +49,7 @@ class Preferences {
   // getters
 
   bool? get userTheme => _prefInstance?.getBool(_userTheme);
+  bool? get isMobileLogin => _prefInstance?.getBool(_ismobileLogin) ?? true;
   String? get userAppTheme =>
       _prefInstance?.getString(_userAppTheme) ?? "System Default";
 
@@ -64,6 +71,7 @@ const String _userAppTheme = 'userAppTheme';
 const String _logOutClient = 'logOutClient';
 
 const String _deviceName = 'deviceName';
+const String _ismobileLogin = 'ismobileLogin';
 
 // Cleint Details
 const String _clientId = 'clientId';

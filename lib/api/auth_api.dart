@@ -15,12 +15,11 @@ mixin AuthApi on ApiCore {
       {required String uniqueId,
       required String mobileRclient,
       required String password,
-      required BuildContext context,
-      required bool isClientId}) async {
+      required BuildContext context }) async {
     try {
       final uri = Uri.parse(apiLinks.mobileLogin);
 
-      Map data = isClientId
+      Map data = !prefs.isMobileLogin!
           ? {
               "mobile_unique": uniqueId,
               "clientid": mobileRclient,
@@ -56,23 +55,22 @@ mixin AuthApi on ApiCore {
       {required String uniqueId,
       required String mobileRclient,
       required String otp,
-      required BuildContext context,
-      required bool isClientId}) async {
+      required BuildContext context }) async {
     try {
       final uri = Uri.parse(apiLinks.mobileOtp);
 
-      Map data = isClientId
+      Map data = !prefs.isMobileLogin!
           ? {
               "mobile_unique": uniqueId,
               "clientid": mobileRclient,
-              "otp": otp
-              // "source": "MOB"
+              "otp": otp,
+              "source": "MOB"
             }
           : {
               "mobile_unique": uniqueId,
               "mobile": mobileRclient,
-              "otp": otp
-              // "source": "MOB"
+              "otp": otp,
+               "source": "MOB"
             };
       final res = await apiClient.post(uri,
           headers: defaultHeaders, body: jsonEncode(data));

@@ -6,6 +6,7 @@ import '../api/core/api_export.dart';
 import '../api/core/api_link.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart'; 
+import '../locator/preference.dart';
 import '../models/profile_model/client_detail_model.dart';
 import '../models/profile_model/user_detail_model.dart';
 import '../res/res.dart';
@@ -26,7 +27,7 @@ final userProfileProvider =
 
 class UserProfileProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
-
+  final Preferences pref = locator<Preferences>();
   final Reader ref;
 
   UserDetailModel? _userDetailModel;

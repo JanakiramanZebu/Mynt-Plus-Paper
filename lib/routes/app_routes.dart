@@ -690,19 +690,19 @@ case Routes.searchScrip:
           },
         );
 
-      case Routes.needHelp:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const  NeedHelpScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final tween = Tween<Offset>(
-                begin: const Offset(0, 1), end: const Offset(.0, .0));
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
-        );
+      // case Routes.needHelp:
+      //   return PageRouteBuilder(
+      //     pageBuilder: (context, animation, secondaryAnimation) =>
+      //         const  NeedHelpScreen(),
+      //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      //       final tween = Tween<Offset>(
+      //           begin: const Offset(0, 1), end: const Offset(.0, .0));
+      //       return SlideTransition(
+      //         position: animation.drive(tween),
+      //         child: child,
+      //       );
+      //     },
+      //   );
 
        
       case Routes.pendingalertdetails:

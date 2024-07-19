@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart'; 
+import '../locator/preference.dart';
 import '../models/profile_model/fund_detial_model.dart';
 import '../models/profile_model/hs_token_model.dart';
 import '../routes/route_names.dart'; 
@@ -20,7 +21,7 @@ import 'index_list_provider.dart';
 final fundProvider = ChangeNotifierProvider((ref) => FundProvider(ref.read));
 
 class FundProvider extends DefaultChangeNotifier {
-  final api = locator<ApiExporter>();
+  final api = locator<ApiExporter>();  final Preferences pref = locator<Preferences>();
   FundDetailModel? _fundDetailModel;
   FundDetailModel? get fundDetailModel => _fundDetailModel;
   final FToast _fToast = FToast();
@@ -62,7 +63,7 @@ class FundProvider extends DefaultChangeNotifier {
       final localstorage = await SharedPreferences.getInstance();
       ConstantName.sessCheck = true;
       if (_getHsTokenModel!.emsg == "Session Expired :  Invalid Session Key" &&
-          _getHsTokenModel!.stat == "Not_Ok") {
+          _getHsTokenModel!.stat == "Not_Ok") {   pref .clearClientSession();
         ConstantName.sessCheck = false;
         ref(authProvider).loginMethCtrl.text =
             localstorage.getString("userId") ?? "";
@@ -90,7 +91,7 @@ class FundProvider extends DefaultChangeNotifier {
       _listOfUsedMrgn = [];
       _fundDetailModel = await api.getFunds();
 
-      if (_fundDetailModel!.emsg == "Session Expired :  Invalid Session Key") {
+      if (_fundDetailModel!.emsg == "Session Expired :  Invalid Session Key") {   pref .clearClientSession();
         ConstantName.sessCheck = false;
         ConstantName.timer!.cancel();
         Navigator.pushNamedAndRemoveUntil(

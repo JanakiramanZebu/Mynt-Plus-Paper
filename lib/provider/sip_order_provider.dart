@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart'; 
+import '../locator/preference.dart';
 import '../models/order_book_model/sip_order_book.dart';
 import '../models/order_book_model/sip_order_cancel.dart';
 import '../models/order_book_model/sip_place_order.dart';
@@ -15,7 +16,7 @@ import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart'; 
 final siprovider = ChangeNotifierProvider((ref) => SipProvider(ref.read));
 
-class SipProvider extends DefaultChangeNotifier {
+class SipProvider extends DefaultChangeNotifier {  final Preferences pref = locator<Preferences>();
   final api = locator<ApiExporter>();
   final Reader ref;
   SipProvider(this.ref);

@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../api/core/api_link.dart';
-import '../../../locator/preference.dart';
 import '../../../provider/auth_provider.dart'; 
 import '../../../provider/thems.dart'; 
 import '../../../res/res.dart';
@@ -30,8 +29,6 @@ class LoginScreen extends ConsumerWidget {
      
       final theme = watch(themeProvider);
 
-      Preferences pref=Preferences()
-;
       return GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
@@ -48,7 +45,7 @@ class LoginScreen extends ConsumerWidget {
                           height: 60,
                           color: theme.isDarkMode
                               ? colors.colorWhite
-                              : colors.logoColor),
+                              : colors.colorBlack),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -60,7 +57,7 @@ class LoginScreen extends ConsumerWidget {
                             Text(
                                 routeTo == "deviceLogin"
                                     ? "Welcome"
-                                    : "Login to MYNT Plus",
+                                    : "Login to MYNT +",
                                 style: textStyle(
                                     theme.isDarkMode
                                         ? colors.colorWhite
@@ -81,48 +78,60 @@ class LoginScreen extends ConsumerWidget {
                             ],
                             const SizedBox(height: 30),
                             Text(
-                                 pref.isMobileLogin!
-                                        ? "Mobile Number"
-                                        :"Client ID",
+                                routeTo == "deviceLogin"
+                                    ? "Client ID"
+                                    : auth.isMobileLogin
+                                        ? "Client ID"
+                                        : "Mobile Number",
                                 style: textStyle(
                                     theme.isDarkMode
                                         ? colors.colorWhite
                                         : colors.colorBlack,
                                     14,
                                     FontWeight.w600)),
-                            // if (routeTo == "deviceLogin")
-                            //   const SizedBox(height: 8),
+                            if (routeTo == "deviceLogin")
+                              const SizedBox(height: 8),
                             TextFormField(
                               style: textStyles.textFieldLabelStyle.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack),
-                              onTap:   pref.isMobileLogin!
-                                      ? auth.getCurrentPhone
-                                      : null,
+                              onTap: routeTo == "deviceLogin"
+                                  ? null
+                                  : auth.isMobileLogin
+                                      ? null
+                                      : auth.getCurrentPhone,
                               controller: auth.loginMethCtrl,
                               readOnly: routeTo == "deviceLogin"
                                   ? true
                                   : false,
-                              keyboardType: pref.isMobileLogin!? TextInputType.datetime
-                                      : TextInputType.text,
-                              maxLength: pref.isMobileLogin!
-                                      ? 10
-                                      : null,
-                              textCapitalization: pref.isMobileLogin!
-                                          ? TextCapitalization.none
-                                          : TextCapitalization.characters,
+                              keyboardType: routeTo == "deviceLogin"
+                                  ? TextInputType.text
+                                  : auth.isMobileLogin
+                                      ? TextInputType.text
+                                      : TextInputType.datetime,
+                              maxLength: routeTo == "deviceLogin"
+                                  ? null
+                                  : auth.isMobileLogin
+                                      ? null
+                                      : 10,
+                              textCapitalization:
+                                  routeTo == "deviceLogin"
+                                      ? TextCapitalization.characters
+                                      : auth.isMobileLogin
+                                          ? TextCapitalization.characters
+                                          : TextCapitalization.none,
                               inputFormatters: routeTo == "deviceLogin"
                                   ? [UpperCaseTextFormatter()]
-                                  :  pref.isMobileLogin!
-                                      ? [ FilteringTextInputFormatter
-                                              .digitsOnly,
-                                         
-                                          RemoveEmojiInputFormatter(), 
-                                        ]
-                                      : [UpperCaseTextFormatter(),
+                                  : auth.isMobileLogin
+                                      ? [
+                                          UpperCaseTextFormatter(),
                                           RemoveEmojiInputFormatter(),
                                           FilteringTextInputFormatter.deny(
                                               RegExp('[π£•₹€℅™∆√¶/.,]')),
                                           FilteringTextInputFormatter.deny(
                                               RegExp(r'\s')),
+                                        ]
+                                      : [
+                                          FilteringTextInputFormatter
+                                              .digitsOnly,
                                         ],
                               decoration: InputDecoration(
                                 fillColor: theme.isDarkMode?colors.darkGrey: const Color(0xfff5f5f5),
@@ -139,9 +148,11 @@ class LoginScreen extends ConsumerWidget {
                                   margin:
                                       const EdgeInsets.only(left: 0, right: 15),
                                   child: SvgPicture.asset(
-                                   pref.isMobileLogin!
-                                            ? "assets/keyboardicons/keybord_mobile.svg"
-                                            :"assets/keyboardicons/keyboard_profile.svg",
+                                    routeTo == "deviceLogin"
+                                        ? "assets/keyboardicons/keyboard_profile.svg"
+                                        : auth.isMobileLogin
+                                            ? "assets/keyboardicons/keyboard_profile.svg"
+                                            : "assets/keyboardicons/keybord_mobile.svg",
                                     color: const Color(0xff666666),
                                     width: 20,
                                     // fit: BoxFit.scaleDown,
@@ -171,9 +182,11 @@ class LoginScreen extends ConsumerWidget {
                                     : null,
                                 hintStyle:
                                     textStyle(Colors.grey, 13, FontWeight.w400),
-                                hintText:    pref.isMobileLogin!
-                                        ?"Enter Mobile Number"
-                                        :  "Enter Client ID",
+                                hintText: routeTo == "deviceLogin"
+                                    ? "Enter Client ID to begin"
+                                    : auth.isMobileLogin
+                                        ? "Enter Client ID to begin"
+                                        : "Enter Mobile Number to begin",
                                 enabledBorder: const UnderlineInputBorder(
                                   borderSide:
                                       BorderSide(color: Color(0xff999999)),
@@ -188,9 +201,10 @@ class LoginScreen extends ConsumerWidget {
                                 auth.activeBtnLogin();
                               },
                             ),
-                            pref.isMobileLogin!
-                                ? const SizedBox(height: 4)
-                                : const SizedBox(height: 24),
+                            auth.isMobileLogin ||
+                                    routeTo == "deviceLogin"
+                                ? const SizedBox(height: 26)
+                                : const SizedBox(height: 5),
                             Text("Password",
                                 style: textStyle(
                                     theme.isDarkMode
@@ -230,7 +244,7 @@ class LoginScreen extends ConsumerWidget {
                                       // fit: BoxFit.scaleDown,
                                     )),
                                 contentPadding: const EdgeInsets.only(top: 10),
-                                hintText: "Enter Password",
+                                hintText: "Enter Password to begin",
                                 hintStyle:
                                     textStyle(Colors.grey, 13, FontWeight.w400),
                                 errorStyle: textStyle(
@@ -257,15 +271,11 @@ class LoginScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 12),
                             Row(
-                              mainAxisAlignment: 
-                              
-                              // routeTo == "deviceLogin"
-                              //     ? MainAxisAlignment.end
-                              //     : 
-                                  
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: routeTo == "deviceLogin"
+                                  ? MainAxisAlignment.end
+                                  : MainAxisAlignment.spaceBetween,
                               children: [
-                                
+                                if (routeTo != "deviceLogin")
                                   InkWell(
                                     // style: TextButton.styleFrom(
                                     //     padding: const EdgeInsets.symmetric(
@@ -289,9 +299,9 @@ class LoginScreen extends ConsumerWidget {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8.0, horizontal: 4),
                                       child: Text(
-                                       pref.isMobileLogin!
-                                              ? "Login with Client ID"
-                                              :"Login with Mobile Number",
+                                          auth.isMobileLogin
+                                              ? "Login with Mobile"
+                                              : "Login with Client ID",
                                           style: textStyle(
                                               theme.isDarkMode
                                                   ? colors.colorLightBlue

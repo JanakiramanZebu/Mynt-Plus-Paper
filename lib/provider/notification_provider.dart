@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
+import '../locator/preference.dart';
 import '../models/notification_model/broker_message_model.dart';
 import '../models/notification_model/exchange_message_model.dart';
 import '../models/notification_model/exchange_status_model.dart';
@@ -17,6 +18,7 @@ final notificationprovider =
     ChangeNotifierProvider((ref) => NotificationProvider(ref.read));
 
 class NotificationProvider extends DefaultChangeNotifier {
+    final Preferences pref = locator<Preferences>();
   final api = locator<ApiExporter>();
   final Reader ref;
   NotificationProvider(this.ref);

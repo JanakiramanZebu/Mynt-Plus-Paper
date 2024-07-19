@@ -106,6 +106,9 @@ class AuthProvider extends DefaultChangeNotifier {
 
   loginMethod() {
     _isMobileLogin = !_isMobileLogin;
+
+    pref.setMobileLogin(!pref.isMobileLogin!);
+    
     _isDisableBtn = true;
     clearError();
     clearTextField();
@@ -243,8 +246,7 @@ class AuthProvider extends DefaultChangeNotifier {
       _isMobileLogin = true;
     }
     if (validateLogin(routeTo)) {
-      fetchMobileLogin(context, passCtrl.text, loginMethCtrl.text.toUpperCase(),
-          _isMobileLogin);
+      fetchMobileLogin(context, passCtrl.text, loginMethCtrl.text.toUpperCase() );
     }
   }
 
@@ -255,12 +257,11 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   submitResendOtp(BuildContext context) {
-    resendOtp(context, passCtrl.text, loginMethCtrl.text.toUpperCase(),
-        _isMobileLogin);
+    resendOtp(context, passCtrl.text, loginMethCtrl.text.toUpperCase() );
   }
 
   fetchMobileLogin(BuildContext context, String password, String mobileRclint,
-      bool isClientId) async {
+     ) async {
     try {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
@@ -268,8 +269,7 @@ class AuthProvider extends DefaultChangeNotifier {
           uniqueId: pref.deviceName!,
           mobileRclient: mobileRclint,
           password: password,
-          context: context,
-          isClientId: isClientId);
+          context: context );
 
       // final localstorage = await SharedPreferences.getInstance();
 
@@ -367,8 +367,7 @@ class AuthProvider extends DefaultChangeNotifier {
     }
   }
 
-  resendOtp(BuildContext context, String password, String mobileRclint,
-      bool isClientId) async {
+  resendOtp(BuildContext context, String password, String mobileRclint ) async {
     try {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
@@ -376,8 +375,7 @@ class AuthProvider extends DefaultChangeNotifier {
           uniqueId: pref.deviceName!,
           mobileRclient: mobileRclint,
           password: password,
-          context: context,
-          isClientId: isClientId);
+          context: context );
       otpCtrl.clear();
       _isDisableOtpBtn = true;
       if (_mobileLogin!.stat == "Ok" &&
@@ -408,8 +406,7 @@ class AuthProvider extends DefaultChangeNotifier {
           uniqueId: pref.deviceName!,
           mobileRclient: mobile_client,
           otp: otp,
-          context: context,
-          isClientId: _isMobileLogin);
+          context: context );
 
       // final localstorage = await SharedPreferences.getInstance();
       if (_mobileOtp!.stat == "Ok") {
@@ -421,6 +418,7 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setClientMob("${_mobileOtp!.mobile}");
         pref.setClientSession("${_mobileOtp!.apitoken}");
         pref.setClientName("${_mobileOtp!.name}");
+
         // localstorage.setString("mobileNum", "${_mobileOtp!.mobile}");
         // localstorage.setString("userId", "${_mobileOtp!.clientid}");
         // localstorage.setString("session", "${_mobileOtp!.apitoken}");
