@@ -32,8 +32,7 @@ import '../screens/profile_screen/my_ac_screens/bank_detail.dart';
 import '../screens/profile_screen/my_ac_screens/my_acc.dart';
 import '../screens/profile_screen/my_ac_screens/profile_details.dart';
 import '../screens/profile_screen/my_ac_screens/set_auto_pay.dart';
-import '../screens/profile_screen/my_ac_screens/setautopayscreen.dart';
-import '../screens/profile_screen/need_help_screen.dart';
+import '../screens/profile_screen/my_ac_screens/setautopayscreen.dart'; 
 import '../screens/profile_screen/notification_screens/notification_screen.dart';
 import '../screens/profile_screen/setting_screen/notification_setting.dart';
 import '../screens/profile_screen/setting_screen/settingmaincscreen.dart';
@@ -55,7 +54,7 @@ class AppRoutes {
       case Routes.homeScreen:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       case Routes.loginScreen:
-        return MaterialPageRoute(builder: (_) => LoginScreen(routeTo: args));
+        return MaterialPageRoute(builder: (_) => LoginScreen( ));
       case Routes.loginOtpVerify:
         return MaterialPageRoute(builder: (_) => const OtpScreen());
       case Routes.forgotPass:

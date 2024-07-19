@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
-
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
-import '../locator/locator.dart'; 
+import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/order_book_model/cancel_order_model.dart';
 import '../models/order_book_model/get_brokerage.dart';
@@ -19,7 +17,7 @@ import '../models/order_book_model/order_margin_model.dart';
 import '../models/order_book_model/place_gtt_order.dart';
 import '../models/order_book_model/place_order_model.dart';
 import '../models/order_book_model/trade_book_model.dart';
-import '../routes/route_names.dart'; 
+
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
@@ -147,7 +145,6 @@ class OrderProvider extends DefaultChangeNotifier {
 
   Future fetchPlaceOrder(BuildContext context, PlaceOrderInput placeOrderInput,
       bool isExit) async {
-    
     try {
       placeOrderInput.channel = defaultTargetPlatform == TargetPlatform.android
           ? '${ref(authProvider).deviceInfo["brand"]}'
@@ -161,9 +158,6 @@ class OrderProvider extends DefaultChangeNotifier {
               ? '${ref(authProvider).deviceInfo["id"]}'
               : "${ref(authProvider).deviceInfo["identifierForVendor"]}";
 
-      final localstorage = await SharedPreferences.getInstance();
-
-      
       _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
       if (_placeOrderModel!.stat == "Ok") {
@@ -184,17 +178,7 @@ class OrderProvider extends DefaultChangeNotifier {
             if (_orderBookModel![0].emsg ==
                     "Session Expired :  Invalid Session Key" &&
                 _orderBookModel![0].stat == "Not_Ok") {
-              ConstantName.sessCheck = false;
-              ConstantName.timer!.cancel();
-              ref(authProvider).loginMethCtrl.text =
-                  localstorage.getString("userId") ?? "";
-              // ScaffoldMessenger.of(context)
-              //     .showSnackBar(errorSnackBar('${_orderBookModel![0].emsg}'));
-              Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  Routes.loginScreen,
-                  arguments: "deviceLogin",
-                  (route) => false);
+              ref(authProvider).ifSessionExpired(context);
             }
           }
         }
@@ -202,7 +186,6 @@ class OrderProvider extends DefaultChangeNotifier {
         if (!isExit) {
           Navigator.pop(context);
         } else {
-         
           Navigator.pop(context);
         }
         ref(indexListProvider).bottomMenu(2);
@@ -218,18 +201,11 @@ class OrderProvider extends DefaultChangeNotifier {
         if (_placeOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _placeOrderModel!.stat == "Not_Ok") {
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "deviceLogin",
-              (route) => false);
+          ref(authProvider).ifSessionExpired(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, "${_placeOrderModel!.emsg}"));
         }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "${_placeOrderModel!.emsg}"));
       }
 
       return _placeOrderModel;
@@ -238,9 +214,7 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Place Order", "Error": "$e"});
       notifyListeners();
-    } finally {
-      
-    }
+    } finally {}
   }
 
   Future slicePlaceOrder(
@@ -258,23 +232,11 @@ class OrderProvider extends DefaultChangeNotifier {
               ? '${ref(authProvider).deviceInfo["id"]}'
               : "${ref(authProvider).deviceInfo["identifierForVendor"]}";
 
-      final localstorage = await SharedPreferences.getInstance();
-
       _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
       if (_placeOrderModel!.emsg == "Session Expired :  Invalid Session Key" &&
           _placeOrderModel!.stat == "Not_Ok") {
-        ConstantName.sessCheck = false;
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-        ConstantName.timer!.cancel();
-        Navigator.pushNamedAndRemoveUntil(
-            context,
-            Routes.loginScreen,
-            arguments: "deviceLogin",
-            (route) => false);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "${_placeOrderModel!.emsg}"));
+        ref(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
       }
@@ -289,17 +251,14 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   Future fetchOrderBook(context, bool websocCon) async {
-    // 
+    //
     try {
-      final localstorage = await SharedPreferences.getInstance();
-
       toggleLoadingOn(true);
       _executedOrder = [];
       _openOrder = [];
       _allOrder = [];
       _orderBookModel = [];
 
-      
       _orderBookModel = await api.getOrderBook();
 
       if (_orderBookModel!.isNotEmpty) {
@@ -339,17 +298,7 @@ class OrderProvider extends DefaultChangeNotifier {
           if (_orderBookModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _orderBookModel![0].stat == "Not_Ok") {
-            ConstantName.sessCheck = false;
-            ref(authProvider).loginMethCtrl.text =
-                localstorage.getString("userId") ?? "";
-            ConstantName.timer!.cancel();
-            // ScaffoldMessenger.of(context)
-            //     .showSnackBar(errorSnackBar('${_orderBookModel![0].emsg}'));
-            Navigator.pushNamedAndRemoveUntil(
-                context,
-                Routes.loginScreen,
-                arguments: "deviceLogin",
-                (route) => false);
+            ref(authProvider).ifSessionExpired(context);
           }
         }
       }
@@ -361,18 +310,14 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       print(e);
     } finally {
-      // 
+      //
 
       toggleLoadingOn(false);
     }
   }
 
   Future fetchTradeBook(context) async {
-    
     try {
-      final localstorage = await SharedPreferences.getInstance();
-
-       
       _tradeBook = [];
       _tradeBook = await api.getTradeBook();
       if (_tradeBook!.isNotEmpty) {
@@ -388,15 +333,7 @@ class OrderProvider extends DefaultChangeNotifier {
         }
         if (_tradeBook![0].emsg == "Session Expired :  Invalid Session Key" &&
             _tradeBook![0].stat == "Not_Ok") {
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "deviceLogin",
-              (route) => false);
+          ref(authProvider).ifSessionExpired(context);
         }
         if (_tradeBook![0].stat == "Not_Ok") {
           _tradeBook = [];
@@ -412,16 +349,11 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Trade Book", "Error": "$e"});
       notifyListeners();
-    } finally {
-      
-    }
+    } finally {}
   }
 
   Future fetchGTTOrderBook(context, String initLoad) async {
-    
     try {
-      final localstorage = await SharedPreferences.getInstance();
-      
       _gttOrderBookModel = [];
       _gttOrderBookModel = await api.getGTTOrderBook();
       if (_gttOrderBookModel!.isNotEmpty) {
@@ -445,15 +377,7 @@ class OrderProvider extends DefaultChangeNotifier {
         if (_gttOrderBookModel![0].emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _gttOrderBookModel![0].stat == "Not_Ok") {
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "deviceLogin",
-              (route) => false);
+          ref(authProvider).ifSessionExpired(context);
         }
 
         if (_gttOrderBookModel![0].stat == "Not_Ok") {
@@ -470,28 +394,17 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API GTT Order Book", "Error": "$e"});
       notifyListeners();
-    } finally {
-      
-    }
+    } finally {}
   }
 
   Future fetchOrderHistory(String orderNum, BuildContext context) async {
-    
     try {
-      
-      final localstorage = await SharedPreferences.getInstance();
       _orderHistoryModel = await api.getOrderHistory(orderNum);
       print("${_orderHistoryModel[0].stat}");
-      if (_orderHistoryModel[0].stat == "Not_Ok" && _orderHistoryModel[0].emsg== "Session Expired :  Invalid Session Key" ) {
-        ConstantName.sessCheck = false;
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-        ConstantName.timer!.cancel();
-        Navigator.pushNamedAndRemoveUntil(
-            context,
-            Routes.loginScreen,
-            arguments: "deviceLogin",
-            (route) => false);
+      if (_orderHistoryModel[0].stat == "Not_Ok" &&
+          _orderHistoryModel[0].emsg ==
+              "Session Expired :  Invalid Session Key") {
+        ref(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
       }
@@ -504,9 +417,7 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Single Order His", "Error": "$e"});
       notifyListeners();
-    } finally {
-      
-    }
+    } finally {}
   }
 
   orderBookSearch(String Value) {
@@ -531,9 +442,7 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   Future fetchOrderCancel(String orderNum, context) async {
-    
     try {
-       
       _cancelOrderModel = await api.getCancelOrder(orderNum);
       if (_cancelOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
@@ -544,8 +453,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
         Navigator.pop(context);
       } else {
-        ConstantName.sessCheck = false;
-        ConstantName.timer!.cancel();
+        ref(authProvider).ifSessionExpired(context);
       }
 
       return _cancelOrderModel;
@@ -554,9 +462,7 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Order Canl", "Error": "$e"});
       notifyListeners();
-    } finally {
-      
-    }
+    } finally {}
   }
 
   Future fetchExitSNOOrd(String snoOrdNum, String prd, context) async {
@@ -571,8 +477,7 @@ class OrderProvider extends DefaultChangeNotifier {
             .showSnackBar(successMessage(context, 'Order Exited'));
         Navigator.pop(context);
       } else {
-        ConstantName.sessCheck = false;
-        ConstantName.timer!.cancel();
+        ref(authProvider).ifSessionExpired(context);
       }
 
       return _cancelOrderModel;
@@ -585,9 +490,7 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   Future fetchModifyOrder(ModifyOrderInput input, context) async {
-    
     try {
-       
       _modifyOrderModel = await api.getModifyOrder(input);
       if (_modifyOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
@@ -597,8 +500,7 @@ class OrderProvider extends DefaultChangeNotifier {
             .showSnackBar(successMessage(context, 'Order Modified'));
         Navigator.pop(context);
       } else {
-        ConstantName.sessCheck = false;
-        ConstantName.timer!.cancel();
+        ref(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
       return _modifyOrderModel;
@@ -608,28 +510,15 @@ class OrderProvider extends DefaultChangeNotifier {
           .add({"type": "API Modify Order", "Error": "$e"});
       notifyListeners();
       print(e);
-    } finally {
-      
-    }
+    } finally {}
   }
 
   Future fetchOrderMargin(OrderMarginInput input, BuildContext context) async {
-    
     try {
-      
-      final localstorage = await SharedPreferences.getInstance();
       _orderMarginModel = await api.getOrderMargin(input);
       if (_orderMarginModel!.emsg == "Session Expired :  Invalid Session Key" &&
           _orderMarginModel!.stat == "Not_Ok") {
-        ConstantName.sessCheck = false;
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-        ConstantName.timer!.cancel();
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-            _orderMarginModel!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+        ref(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
       }
@@ -642,29 +531,16 @@ class OrderProvider extends DefaultChangeNotifier {
           .add({"type": "API Order Margin", "Error": "$e"});
       notifyListeners();
       print(e);
-    } finally {
-      
-    }
+    } finally {}
   }
 
   Future fetchGetBrokerage(BrokerageInput input, BuildContext context) async {
-    
     try {
-      final localstorage = await SharedPreferences.getInstance();
-      
       _getBrokerageModel = await api.getBrokerage(input);
       if (_getBrokerageModel!.emsg ==
               "Session Expired :  Invalid Session Key" &&
           _getBrokerageModel!.stat == "Not_Ok") {
-        ConstantName.sessCheck = false;
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-        ConstantName.timer!.cancel();
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-            _getBrokerageModel!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+        ref(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
       }
@@ -677,9 +553,7 @@ class OrderProvider extends DefaultChangeNotifier {
           .add({"type": "API Brokerage", "Error": "$e"});
       notifyListeners();
       print(e);
-    } finally {
-      
-    }
+    } finally {}
   }
 
   requestWSOrderBook(
@@ -793,10 +667,7 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   fetchGttPlaceOrder(PlaceGTTOrderInput input, BuildContext context) async {
-    
     try {
-      final localstorage = await SharedPreferences.getInstance();
-      
       _placeGttOrderModel = await api.getPlaceGTTOrder(input);
 
       if (_placeGttOrderModel!.stat == "OI created") {
@@ -812,18 +683,7 @@ class OrderProvider extends DefaultChangeNotifier {
         if (_placeGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _placeGttOrderModel!.stat == "Not_Ok") {
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              _placeGttOrderModel!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "login",
-              (route) => false);
+          ref(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
@@ -832,15 +692,11 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API GTT Order ", "Error": "$e"});
       notifyListeners();
-    } finally {
-      
-    }
+    } finally {}
   }
 
   fetchModifyGTTOrder(PlaceGTTOrderInput input, BuildContext context) async {
     try {
-      final localstorage = await SharedPreferences.getInstance();
-
       _modifyGttOrderModel = await api.getModifyGTTOrder(input);
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
@@ -858,18 +714,7 @@ class OrderProvider extends DefaultChangeNotifier {
         if (_modifyGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _modifyGttOrderModel!.stat == "Not_Ok") {
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              _modifyGttOrderModel!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "login",
-              (route) => false);
+          ref(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
@@ -882,10 +727,7 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   fetchGttCancelOrder(String canId, BuildContext context) async {
-    
     try {
-      final localstorage = await SharedPreferences.getInstance();
-     
       _placeGttOrderModel = await api.getCancelGTTorder(canId);
 
       if (_placeGttOrderModel!.stat == "OI deleted") {
@@ -898,18 +740,7 @@ class OrderProvider extends DefaultChangeNotifier {
         if (_placeGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _placeGttOrderModel!.stat == "Not_Ok") {
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              _placeGttOrderModel!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "login",
-              (route) => false);
+          ref(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
@@ -918,16 +749,11 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API GTT Order  CANCEL", "Error": "$e"});
       notifyListeners();
-    } finally {
-      
-    }
+    } finally {}
   }
 
   fetchOCOPlaceOrder(PlaceOcoOrderInput input, BuildContext context) async {
-    
     try {
-      final localstorage = await SharedPreferences.getInstance();
-     
       _placeGttOrderModel = await api.getPlaceOcoOrder(input);
 
       if (_placeGttOrderModel!.stat == "OI created") {
@@ -943,18 +769,7 @@ class OrderProvider extends DefaultChangeNotifier {
         if (_placeGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _placeGttOrderModel!.stat == "Not_Ok") {
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              _placeGttOrderModel!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "login",
-              (route) => false);
+          ref(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
@@ -963,15 +778,11 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API OCO Order ", "Error": "$e"});
       notifyListeners();
-    } finally {
-      
-    }
+    } finally {}
   }
 
   fetchOCOModifyOrder(PlaceOcoOrderInput input, BuildContext context) async {
     try {
-      final localstorage = await SharedPreferences.getInstance();
-
       _modifyGttOrderModel = await api.getModifyOcoOrder(input);
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
@@ -989,18 +800,7 @@ class OrderProvider extends DefaultChangeNotifier {
         if (_modifyGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _modifyGttOrderModel!.stat == "Not_Ok") {
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              _modifyGttOrderModel!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "login",
-              (route) => false);
+          ref(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();

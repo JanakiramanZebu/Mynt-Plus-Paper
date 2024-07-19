@@ -172,8 +172,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _forgetPasswordModel!.emsg!));
       } else if (_forgetPasswordModel!.emsg ==
-          "Session Expired :  Invalid Session Key") {             pref .clearClientSession();
-        ConstantName.sessCheck = false;
+          "Session Expired :  Invalid Session Key") {               ref(authProvider). ifSessionExpired(  context);
       }
 
       notifyListeners();
@@ -212,15 +211,14 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
           Navigator.pushNamedAndRemoveUntil(
               context,
               Routes.loginScreen,
-              arguments: "login",
+              
               (route) => false);
         });
       } else if (_changepasswordmodel!.stat == "Not_Ok") {
         warningToaster(context,
             _changepasswordmodel!.emsg!.replaceAll("Error Occurred :", ""));
       } else if (_changepasswordmodel!.emsg ==
-          "Session Expired :  Invalid Session Key") {             pref .clearClientSession();
-        ConstantName.sessCheck = false;
+          "Session Expired :  Invalid Session Key") {              ref(authProvider). ifSessionExpired(  context);
       }
 
       notifyListeners();

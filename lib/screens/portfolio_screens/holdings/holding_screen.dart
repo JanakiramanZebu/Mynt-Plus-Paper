@@ -494,7 +494,7 @@ class HoldingScreen extends ConsumerWidget {
                                                                 marketWatchProvider)
                                                             .fetchLinkeScrip(
                                                                 "${holdingProvide.holdingsModel![index].exchTsym![0].token}",
-                                                                "${holdingProvide.holdingsModel![index].exchTsym![0].exch}");
+                                                                "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",context);
 
                                                         await watch(
                                                                 marketWatchProvider)
@@ -830,7 +830,7 @@ class HoldingScreen extends ConsumerWidget {
                                               .read(marketWatchProvider)
                                               .fetchLinkeScrip(
                                                   "${holdingProvide.holdingSearchItem![index].exchTsym![0].token}",
-                                                  "${holdingProvide.holdingSearchItem![index].exchTsym![0].exch}");
+                                                  "${holdingProvide.holdingSearchItem![index].exchTsym![0].exch}",context);
 
                                           await watch(marketWatchProvider)
                                               .fetchScripQuote(

@@ -56,7 +56,7 @@ class OptChainCallList extends ConsumerWidget {
                   "${callData![index].exch}", context);
 
               await context.read(marketWatchProvider).fetchLinkeScrip(
-                  "${callData![index].token}", "${callData![index].exch}");
+                  "${callData![index].token}", "${callData![index].exch}",context);
 
               await watch(websocketProvider).establishConnection(
                   channelInput:

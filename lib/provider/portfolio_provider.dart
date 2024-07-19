@@ -3,8 +3,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart'; 
 
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
@@ -16,7 +15,7 @@ import '../models/portfolio_model/mf_holdings_model.dart';
 import '../models/portfolio_model/mf_quotes.dart';
 import '../models/portfolio_model/position_book_model.dart';
 import '../models/portfolio_model/position_convertion_model.dart';
-import '../routes/route_names.dart';
+ 
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
@@ -29,7 +28,8 @@ final portfolioProvider =
     ChangeNotifierProvider((ref) => PortfolioProvider(ref.read));
 
 class PortfolioProvider extends DefaultChangeNotifier {
-  final api = locator<ApiExporter>();  final Preferences pref = locator<Preferences>();
+  final api = locator<ApiExporter>();
+  final Preferences pref = locator<Preferences>();
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
   final Reader ref;
@@ -267,8 +267,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchHoldings(context, String initail) async {
     double invest = 0.0;
-    try {
-      final localstorage = await SharedPreferences.getInstance();
+    try { 
       toggleLoadingOn(true);
 
       _holdingsModel = [];
@@ -343,17 +342,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           if (_holdingsModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _holdingsModel![0].stat == "Not_Ok") {
-            ConstantName.sessCheck = false;
-            ref(authProvider).loginMethCtrl.text =
-                localstorage.getString("userId") ?? "";
-            ConstantName.timer!.cancel();
-            // ScaffoldMessenger.of(context)
-            //     .showSnackBar(errorSnackBar('${_holdingsModel![0].emsg}'));
-            Navigator.pushNamedAndRemoveUntil(
-                context,
-                Routes.loginScreen,
-                arguments: "deviceLogin",
-                (route) => false);
+            ref(authProvider).ifSessionExpired(context);
           }
         }
       }
@@ -370,8 +359,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   }
 
   Future fetchMFHoldings(context) async {
-    try {
-      final localstorage = await SharedPreferences.getInstance();
+    try { 
       toggleLoadingOn(true);
 
       // _mfHoldingsModel = [];
@@ -425,17 +413,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           if (_mfHoldingsModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _mfHoldingsModel![0].stat == "Not_Ok") {
-            ConstantName.sessCheck = false;
-            ref(authProvider).loginMethCtrl.text =
-                localstorage.getString("userId") ?? "";
-            ConstantName.timer!.cancel();
-            // ScaffoldMessenger.of(context)
-            //     .showSnackBar(errorSnackBar('${_holdingsModel![0].emsg}'));
-            Navigator.pushNamedAndRemoveUntil(
-                context,
-                Routes.loginScreen,
-                arguments: "deviceLogin",
-                (route) => false);
+            ref(authProvider).ifSessionExpired(context);
           }
         }
       }
@@ -566,8 +544,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   }
 
   Future fetchPositionBook(BuildContext context, bool isDay) async {
-    try {
-      final localstorage = await SharedPreferences.getInstance();
+    try { 
       toggleLoadingOn(true);
       _postionBookModel = [];
       _allPostionList = [];
@@ -588,17 +565,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           if (_postionBookModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _postionBookModel![0].stat == "Not_Ok") {
-            ConstantName.sessCheck = false;
-            ref(authProvider).loginMethCtrl.text =
-                localstorage.getString("userId") ?? "";
-            ConstantName.timer!.cancel();
-            // ScaffoldMessenger.of(context)
-            //     .showSnackBar(errorSnackBar('${_postionBookModel![0].emsg}'));
-            Navigator.pushNamedAndRemoveUntil(
-                context,
-                Routes.loginScreen,
-                arguments: "deviceLogin",
-                (route) => false);
+            ref(authProvider).ifSessionExpired(context);
           }
         }
       }
@@ -634,13 +601,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       } else {
         if (_positionConvertionModel!.emsg ==
             "Session Expired :  Invalid Session Key") {
-          ConstantName.sessCheck = false;
-          ConstantName.timer!.cancel();
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "login",
-              (route) => false);
+          ref(authProvider).ifSessionExpired(context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
               warningMessage(context, "${_positionConvertionModel!.emsg}"));
@@ -799,10 +760,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchExitPosition(BuildContext context,
       PlaceOrderInput placeOrderInput, bool isPosition) async {
-    try {
-      final localstorage = await SharedPreferences.getInstance();
+    try { 
 
-     _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+      _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
       if (_placeOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
@@ -813,24 +773,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
         }
 
         // ref(orderProvider).fetchOrderBook(context, false);
-
-      
       } else {
         if (_placeOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _placeOrderModel!.stat == "Not_Ok") {
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "deviceLogin",
-              (route) => false);
+          ref(authProvider).ifSessionExpired(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, "${_placeOrderModel!.emsg}"));
         }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "${_placeOrderModel!.emsg}"));
       }
 
       return _placeOrderModel;
@@ -1148,8 +1099,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
                       ? '${ref(authProvider).deviceInfo["id"]}'
                       : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
               await fetchExitPosition(context, placeOrderInput, true);
-
-              
             }
           } else {
             PlaceOrderInput placeOrderInput = PlaceOrderInput(
@@ -1184,8 +1133,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
     }
 
-      ref(indexListProvider).bottomMenu(1);
-        Navigator.pop(context);
+    ref(indexListProvider).bottomMenu(1);
+    Navigator.pop(context);
   }
 
   exitAllHoldings(BuildContext context) async {

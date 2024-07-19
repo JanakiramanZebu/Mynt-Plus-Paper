@@ -170,7 +170,7 @@ class OrderBook extends ConsumerWidget {
                             await context
                                 .read(marketWatchProvider)
                                 .fetchLinkeScrip("${orderBook[index].token}",
-                                    "${orderBook[index].exch}");
+                                    "${orderBook[index].exch}",context);
 
                             await watch(marketWatchProvider).fetchScripQuote(
                                 "${orderBook[index].token}",

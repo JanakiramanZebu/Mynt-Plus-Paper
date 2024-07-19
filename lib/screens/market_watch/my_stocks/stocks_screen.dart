@@ -81,7 +81,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                     "Ok") {
                                   await marketWatch.fetchLinkeScrip(
                                       "${holdingProvide[index].exchTsym![0].token}",
-                                      "${holdingProvide[index].exchTsym![0].exch}");
+                                      "${holdingProvide[index].exchTsym![0].exch}",context);
 // if ((holdingProvide[index].exchTsym![0].exch == "NSE" ||
 //                                        holdingProvide[index].exchTsym![0].exch ==
 //                                             "BSE")  ) {

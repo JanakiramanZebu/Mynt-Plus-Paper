@@ -69,7 +69,7 @@ class FutureScreen extends ConsumerWidget {
         return InkWell(
             onTap: () async {
               await context.read(marketWatchProvider).fetchLinkeScrip(
-                  "${future.fut![index].token}", "${future.fut![index].exch}");
+                  "${future.fut![index].token}", "${future.fut![index].exch}",context);
 
               await watch(marketWatchProvider).fetchScripQuote(
                   "${future.fut![index].token}",

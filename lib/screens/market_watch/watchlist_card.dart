@@ -77,7 +77,7 @@ log("dfgdf ${context.read(websocketProvider).socketDatas["${watchListData['token
                                     .read(marketWatchProvider)
                                     .fetchLinkeScrip(
                                         "${watchListData['token']}",
-                                        "${watchListData['exch']}");
+                                        "${watchListData['exch']}",context);
                                 if ((watchListData['exch'] == "NSE" ||
                                         watchListData['exch'] ==
                                             "BSE") &&

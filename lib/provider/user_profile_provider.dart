@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
 import '../api/core/api_export.dart';
-import '../api/core/api_link.dart';
 import '../locator/constant.dart';
-import '../locator/locator.dart'; 
+import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/profile_model/client_detail_model.dart';
 import '../models/profile_model/user_detail_model.dart';
 import '../res/res.dart';
-import '../routes/route_names.dart'; 
-import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'fund_provider.dart';
@@ -85,29 +81,25 @@ class UserProfileProvider extends DefaultChangeNotifier {
   Future fetchUserDetail(BuildContext context, String ueserId, String session,
       String toRoute) async {
     try {
-      final localstorage = await SharedPreferences.getInstance();
       toggleLoadingOn(true);
       _userDetailModel = await api.getUserDetail(ueserId, session);
 
       if (_userDetailModel!.stat == "Ok") {
-        ConstantName.sessCheck = true;
-        localstorage.setString("userName", "${_userDetailModel!.uname}");
-        ApiLinks.userName = localstorage.getString("userName") ?? "";
         // await ref(marketWatchProvider).changeWlName("");
-        if (toRoute == "preLoginDecive") {
-          await ref(portfolioProvider).fetchHoldings(context, "");
+        // if (toRoute == "preLoginDecive") {
+        //   await ref(portfolioProvider).fetchHoldings(context, "");
 
-          await ref(marketWatchProvider).fetchMWList(context);
+        //   await ref(marketWatchProvider).fetchMWList(context);
 
-          await ref(indexListProvider).getDeafultIndexList(context);
-          await ref(portfolioProvider).fetchPositionBook(context, false);
-          await ref(orderProvider).fetchOrderBook(context, false);
-          await ref(orderProvider).fetchTradeBook(context);
+        //   await ref(indexListProvider).getDeafultIndexList(context);
+        //   await ref(portfolioProvider).fetchPositionBook(context, false);
+        //   await ref(orderProvider).fetchOrderBook(context, false);
+        //   await ref(orderProvider).fetchTradeBook(context);
 
-          await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
-          Navigator.pushNamedAndRemoveUntil(
-              context, Routes.homeScreen, (route) => false);
-        }
+        //   await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
+        //   Navigator.pushNamedAndRemoveUntil(
+        //       context, Routes.homeScreen, (route) => false);
+        // }
         if (toRoute == "switchAcc") {
           Navigator.pop(context);
 
@@ -127,20 +119,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         if (_userDetailModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _userDetailModel!.stat == "Not_Ok") {
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-
-          // ScaffoldMessenger.of(context)
-          //     .showSnackBar(errorSnackBar('${_userDetailModel!.emsg}'));
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "deviceLogin",
-              (route) => false);
-
-          ScaffoldMessenger.of(context).showSnackBar(
-              warningMessage(context, '${_userDetailModel!.emsg}'));
+          ref(authProvider).ifSessionExpired(context);
         }
       }
 
@@ -162,12 +141,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
       if (_clientDetailModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
-        ConstantName.sessCheck = false;
-        // ScaffoldMessenger.of(context)
-        //     .showSnackBar(errorSnackBar('${_clientDetailModel!.emsg}'));
-        ConstantName.timer!.cancel();
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+        ref(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
       }

@@ -51,10 +51,9 @@ class OptChainPutList extends ConsumerWidget {
                   "${putData![index].exch}",
                   context);
               await scripData.fetchLinkeScrip(
-                  "${putData![index].token}", "${putData![index].exch}");
+                  "${putData![index].token}", "${putData![index].exch}",context);
 
-              await context.read(marketWatchProvider).fetchLinkeScrip(
-                  "${putData![index].token}", "${putData![index].exch}");
+     
               await watch(websocketProvider).establishConnection(
                   channelInput:
                       "${putData![index].exch}|${putData![index].token}",

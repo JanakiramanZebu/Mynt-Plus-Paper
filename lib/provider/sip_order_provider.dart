@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart'; 
 import '../api/core/api_export.dart';
 import '../locator/locator.dart'; 
 import '../locator/preference.dart';
 import '../models/order_book_model/sip_order_book.dart';
 import '../models/order_book_model/sip_order_cancel.dart';
-import '../models/order_book_model/sip_place_order.dart';
-import '../routes/route_names.dart'; 
+import '../models/order_book_model/sip_place_order.dart'; 
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
@@ -53,7 +51,7 @@ class SipProvider extends DefaultChangeNotifier {  final Preferences pref = loca
     try {
       toggleLoadingOn(true);
       
-      final localstorage = await SharedPreferences.getInstance();
+     
 
       _sipPlaceOrder = await api.getPlaceSipOrder(sipOrderInput);
       if (_sipPlaceOrder!.reqStatus == "OK") {
@@ -63,17 +61,7 @@ class SipProvider extends DefaultChangeNotifier {  final Preferences pref = loca
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "Order is Placed Sucessfully"));
       } else if (_sipPlaceOrder!.stat == "Not_Ok") {
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-
-        Navigator.pushNamedAndRemoveUntil(
-            context,
-            Routes.loginScreen,
-            arguments: "deviceLogin",
-            (route) => false);
-
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _sipPlaceOrder!.emsg!));
+        ref(authProvider). ifSessionExpired(  context);
       }
 
       notifyListeners();

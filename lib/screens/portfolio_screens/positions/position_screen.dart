@@ -430,7 +430,7 @@ class PositionScreen extends ConsumerWidget {
                                           .read(marketWatchProvider)
                                           .fetchLinkeScrip(
                                               "${listofPosition[index].token}",
-                                              "${listofPosition[index].exch}");
+                                              "${listofPosition[index].exch}",context);
 
                                       await watch(marketWatchProvider)
                                           .fetchScripQuote(
@@ -511,7 +511,7 @@ class PositionScreen extends ConsumerWidget {
                               onTap: () async {
                                 await context.read(marketWatchProvider).fetchLinkeScrip(
                                     "${positionBook.positionSearchItem[index].token}",
-                                    "${positionBook.positionSearchItem[index].exch}");
+                                    "${positionBook.positionSearchItem[index].exch}",context);
 
                                 await watch(marketWatchProvider).fetchScripQuote(
                                     "${positionBook.positionSearchItem[index].token}",

@@ -3,17 +3,14 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:fluttertoast/fluttertoast.dart'; 
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart'; 
 import '../locator/preference.dart';
 import '../models/profile_model/fund_detial_model.dart';
 import '../models/profile_model/hs_token_model.dart';
-import '../routes/route_names.dart'; 
-import '../sharedWidget/snack_bar.dart';
+import '../routes/route_names.dart';  
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -59,20 +56,10 @@ class FundProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
 
       final GetHsTokenModel data = await api.getHsToken();
-      _getHsTokenModel = data;
-      final localstorage = await SharedPreferences.getInstance();
+      _getHsTokenModel = data; 
       ConstantName.sessCheck = true;
       if (_getHsTokenModel!.emsg == "Session Expired :  Invalid Session Key" &&
-          _getHsTokenModel!.stat == "Not_Ok") {   pref .clearClientSession();
-        ConstantName.sessCheck = false;
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-            _getHsTokenModel!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+          _getHsTokenModel!.stat == "Not_Ok") {         ref(authProvider). ifSessionExpired(  context);
       }
     } catch (e) {
       log("Failed to fetch Profile Data:: ${e.toString()}");
@@ -91,13 +78,8 @@ class FundProvider extends DefaultChangeNotifier {
       _listOfUsedMrgn = [];
       _fundDetailModel = await api.getFunds();
 
-      if (_fundDetailModel!.emsg == "Session Expired :  Invalid Session Key") {   pref .clearClientSession();
-        ConstantName.sessCheck = false;
-        ConstantName.timer!.cancel();
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, '${_fundDetailModel!.emsg}'));
+      if (_fundDetailModel!.emsg == "Session Expired :  Invalid Session Key") {   
+               ref(authProvider). ifSessionExpired(  context);
       } else {
         ConstantName.sessCheck = true;
         double cash = double.parse(_fundDetailModel!.cash ?? "0.00");

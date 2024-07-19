@@ -51,26 +51,27 @@ class _SplashScreenState extends State<SplashScreen> {
     final Preferences pref = locator<Preferences>();
     try {
       print("Device  Name  ${pref.deviceName!} - ${pref.clientSession}");
- context.read(authProvider).loginMethCtrl.text = pref.clientId!;
+ context.read(authProvider).loginMethCtrl.text = pref.isMobileLogin!?pref.clientMob!: pref.clientId!;
   context.read(authProvider).switchMobToClinent( pref.clientId!.isEmpty?false:true);
       if (pref.deviceName!.isEmpty) {
         await context.read(authProvider).getDeviceDetails();
       }
       if ( pref.clientSession!.isEmpty) {
+        pref.setLogout(true);
         Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+            context, Routes.loginScreen, (route) => false);
       } else {
-        if (pref.logoutClient == "Logout") {
+        // if (pref.logoutClient == "Logout") {
          
-          Navigator.pushNamedAndRemoveUntil(
-              context, Routes.loginScreen, (route) => false,
-              arguments: "deviceLogin");
-        } else {
-          pref.setMobileLogin(false);
+        //   Navigator.pushNamedAndRemoveUntil(
+        //       context, Routes.loginScreen, (route) => false,
+        //       arguments: "deviceLogin");
+        // } else {
+           pref.setMobileLogin(true);
           await context
               .read(authProvider)
               .fetchMobileLogin(context, "", pref.clientId! );
-        }
+        // }
       }
 
       // }

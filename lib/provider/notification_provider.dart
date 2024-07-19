@@ -1,15 +1,13 @@
-// ignore_for_file: use_build_context_synchronously
+ 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/notification_model/broker_message_model.dart';
 import '../models/notification_model/exchange_message_model.dart';
-import '../models/notification_model/exchange_status_model.dart';
-import '../routes/route_names.dart';
+import '../models/notification_model/exchange_status_model.dart'; 
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -61,19 +59,12 @@ class NotificationProvider extends DefaultChangeNotifier {
   }
 
   Future fetchexchagemsg(BuildContext context) async {
-    final localstorage = await SharedPreferences.getInstance();
+    
     try {
       _exchangemessage = await api.getexchmsg();
       if (_exchangemessage![0].emsg ==
           "Session Expired :  Invalid Session Key") {
-        ConstantName.sessCheck = false;
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-        Navigator.pushNamedAndRemoveUntil(
-            context,
-            Routes.loginScreen,
-            arguments: "deviceLogin",
-            (route) => false);
+         ref(authProvider). ifSessionExpired(  context);
       } else {
         ConstantName.sessCheck = true;
       }
@@ -114,20 +105,13 @@ class NotificationProvider extends DefaultChangeNotifier {
   // }
 
   Future fetchbrokermsg(BuildContext context) async {
-    final localstorage = await SharedPreferences.getInstance();
+    
     try {
       _brokermsg = await api.getbrokermsg();
       // print("------------------------------------> ${_brokermsg!.length}");
       // print("------------------------------------> ${_brokermsg![0].emsg}");
       if (_brokermsg![0].emsg == "Session Expired :  Invalid Session Key") {
-        ConstantName.sessCheck = false;
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-        Navigator.pushNamedAndRemoveUntil(
-            context,
-            Routes.loginScreen,
-            arguments: "deviceLogin",
-            (route) => false);
+         ref(authProvider). ifSessionExpired(  context);
       } else {
         ConstantName.sessCheck = true;
       }

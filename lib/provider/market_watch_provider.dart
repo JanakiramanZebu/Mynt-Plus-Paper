@@ -28,7 +28,6 @@ import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_model.dart';
 import '../res/res.dart';
-import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
@@ -272,8 +271,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   StockData? _fundamentalData;
   StockData? get fundamentalData => _fundamentalData;
 
-String _firstGetData="0";
-String get fistGetData=>_firstGetData;
+  String _firstGetData = "0";
+  String get fistGetData => _firstGetData;
 
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
@@ -543,7 +542,6 @@ String get fistGetData=>_firstGetData;
   List get scrips => _scrips;
 
   Future fetchMWList(BuildContext context) async {
-    final localstorage = await SharedPreferences.getInstance();
     try {
       _marketWatchlist = await api.getMWList();
 
@@ -570,18 +568,8 @@ String get fistGetData=>_firstGetData;
       } else {
         if (_marketWatchlist!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
-            _marketWatchlist!.stat == "Not_Ok") {   pref .clearClientSession();
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              _marketWatchlist!.emsg!.replaceAll("Invalid Input :", "* ")));
-          ConstantName.timer!.cancel();
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "deviceLogin",
-              (route) => false);
+            _marketWatchlist!.stat == "Not_Ok") {
+          ref(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
@@ -597,8 +585,6 @@ String get fistGetData=>_firstGetData;
 
   Future fetchMWScrip(String wlname, context) async {
     try {
-      final localstorage = await SharedPreferences.getInstance();
-
       toggleLoadingOn(true);
 
 //  await requestWSMarketWatchScrip(context: context, isSubscribe: false);
@@ -635,19 +621,8 @@ String get fistGetData=>_firstGetData;
       } else {
         if (_marketWatchScrip!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
-            _marketWatchScrip!.stat == "Not_Ok") {   pref .clearClientSession();
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              _marketWatchScrip!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "login",
-              (route) => false);
+            _marketWatchScrip!.stat == "Not_Ok") {
+          ref(authProvider).ifSessionExpired(context);
         }
         _watchListValues = [];
       }
@@ -666,8 +641,6 @@ String get fistGetData=>_firstGetData;
 
   Future fetchPreDefMWScrip(BuildContext context) async {
     try {
-      final localstorage = await SharedPreferences.getInstance();
-
       // requestWSMarketWatchScrip(context: context, isSubscribe: false);
       toggleLoadingOn(true);
 
@@ -759,25 +732,12 @@ String get fistGetData=>_firstGetData;
         } else {
           if (_marketWatchScrip!.emsg ==
                   "Session Expired :  Invalid Session Key" &&
-              _marketWatchScrip!.stat == "Not_Ok") {   pref .clearClientSession();
-            ConstantName.sessCheck = false;
-            ref(authProvider).loginMethCtrl.text =
-                localstorage.getString("userId") ?? "";
-            ConstantName.timer!.cancel();
-            ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-                _marketWatchScrip!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-            Navigator.pushNamedAndRemoveUntil(
-                context,
-                Routes.loginScreen,
-                arguments: "login",
-                (route) => false);
+              _marketWatchScrip!.stat == "Not_Ok") {
+            ref(authProvider).ifSessionExpired(context);
           }
           // _watchListValues = [];
         }
       }
-
-      return _marketWatchScrip;
     } catch (e) {
       ref(indexListProvider)
           .logError
@@ -792,7 +752,6 @@ String get fistGetData=>_firstGetData;
   Future fetchScripInfo(String token, String exch, BuildContext context) async {
     try {
       _scripInfoModel = await api.getScripInfo(token, exch);
-      final localstorage = await SharedPreferences.getInstance();
 
       if (_scripInfoModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
@@ -804,16 +763,8 @@ String get fistGetData=>_firstGetData;
       }
 
       if (_scripInfoModel!.emsg == "Session Expired :  Invalid Session Key" &&
-          _scripInfoModel!.stat == "Not_Ok") {   pref .clearClientSession();
-        ConstantName.sessCheck = false;
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-        ConstantName.timer!.cancel();
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-            _scripInfoModel!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+          _scripInfoModel!.stat == "Not_Ok") {
+        ref(authProvider).ifSessionExpired(context);
       }
       return _scripInfoModel;
     } catch (e) {
@@ -829,7 +780,6 @@ String get fistGetData=>_firstGetData;
       String token, String exch, BuildContext context) async {
     try {
       _getQuotes = await api.getScripQuote(token, exch);
-      final localstorage = await SharedPreferences.getInstance();
 
       if (_getQuotes!.stat == "Ok") {
         ConstantName.sessCheck = true;
@@ -843,16 +793,8 @@ String get fistGetData=>_firstGetData;
         scripQtyCal();
       }
       if (_getQuotes!.emsg == "Session Expired :  Invalid Session Key" &&
-          _getQuotes!.stat == "Not_Ok") {   pref .clearClientSession();
-        ConstantName.sessCheck = false;
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-        ConstantName.timer!.cancel();
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, _getQuotes!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+          _getQuotes!.stat == "Not_Ok") {
+        ref(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
       return _getQuotes;
@@ -867,7 +809,6 @@ String get fistGetData=>_firstGetData;
   Future fetchStikePrc(String token, String exch, BuildContext context) async {
     try {
       _getStikePrc = await api.getScripQuote(token, exch);
-      final localstorage = await SharedPreferences.getInstance();
 
       if (_getStikePrc!.stat == "Ok") {
         ConstantName.sessCheck = true;
@@ -882,16 +823,8 @@ String get fistGetData=>_firstGetData;
             context: context);
       }
       if (_getStikePrc!.emsg == "Session Expired :  Invalid Session Key" &&
-          _getStikePrc!.stat == "Not_Ok") {   pref .clearClientSession();
-        ConstantName.sessCheck = false;
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-        ConstantName.timer!.cancel();
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, _getStikePrc!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+          _getStikePrc!.stat == "Not_Ok") {
+        ref(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
     } catch (e) {
@@ -945,7 +878,7 @@ String get fistGetData=>_firstGetData;
       toggleLoadingOn(true);
 
       _searchScripModel = await api.getSearchScrip(searchText: searchText);
-      final localstorage = await SharedPreferences.getInstance();
+
       _allSearchScrip = [];
       _equitySearchScrip = [];
       _fNoSearchScrip = [];
@@ -1025,19 +958,8 @@ String get fistGetData=>_firstGetData;
 
         if (_searchScripModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
-            _searchScripModel!.stat == "Not_Ok") {   pref .clearClientSession();
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              _searchScripModel!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "login",
-              (route) => false);
+            _searchScripModel!.stat == "Not_Ok") {
+          ref(authProvider).ifSessionExpired(context);
         }
       }
       fetchSearchTabSize();
@@ -1053,7 +975,8 @@ String get fistGetData=>_firstGetData;
     }
   }
 
-  Future fetchLinkeScrip(String token, String exch) async {
+  Future fetchLinkeScrip(
+      String token, String exch, BuildContext context) async {
     try {
       _depthBtns = [
         {
@@ -1159,8 +1082,7 @@ String get fistGetData=>_firstGetData;
           }
         }
       } else {
-        ConstantName.sessCheck = false;
-        ConstantName.timer!.cancel();
+        ref(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();
@@ -1192,7 +1114,6 @@ String get fistGetData=>_firstGetData;
           tradeSym: tradeSym,
           exchange: exchange,
           numofStrike: numofStrike);
-      final localstorage = await SharedPreferences.getInstance();
       if (_optionChainModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
         await splitOptionChain(context);
@@ -1201,19 +1122,8 @@ String get fistGetData=>_firstGetData;
         _optChainPut = [];
         if (_optionChainModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
-            _searchScripModel!.stat == "Not_Ok") {   pref .clearClientSession();
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              _optionChainModel!.emsg!.replaceAll("Invalid Input :", "* ")));
-
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "login",
-              (route) => false);
+            _searchScripModel!.stat == "Not_Ok") {
+          ref(authProvider).ifSessionExpired(context);
         }
       }
 
@@ -1236,7 +1146,6 @@ String get fistGetData=>_firstGetData;
       required BuildContext context}) async {
     try {
       _techData = await api.getTechData(exch, tradeSym);
-      final localstorage = await SharedPreferences.getInstance();
       _returnsGridview = [];
       if (_techData!.stat == "OK") {
         ConstantName.sessCheck = true;
@@ -1244,16 +1153,8 @@ String get fistGetData=>_firstGetData;
       }
 
       if (_techData!.emsg == "Session Expired :  Invalid Session Key" &&
-          _techData!.stat == "Not_Ok") {   pref .clearClientSession();
-        ConstantName.sessCheck = false;
-        ref(authProvider).loginMethCtrl.text =
-            localstorage.getString("userId") ?? "";
-        ConstantName.timer!.cancel();
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, _techData!.emsg!.replaceAll("Invalid Input :", "")));
-
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+          _techData!.stat == "Not_Ok") {
+        ref(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();
@@ -1270,8 +1171,6 @@ String get fistGetData=>_firstGetData;
 
   Future fetchFundamentalData({required String tradeSym}) async {
     try {
- 
-
       _fundamentalData = await api.getFundamentalData(tradeSym);
 
       if (_fundamentalData!.msg != "no data found") {
@@ -1507,9 +1406,7 @@ String get fistGetData=>_firstGetData;
           .add({"type": "API Fundamental ", "Error": "$e"});
       notifyListeners();
       debugPrint(e.toString());
-    } finally {
-     
-    }
+    } finally {}
   }
 
   techDataCalc(String lastPrc) {
@@ -1705,6 +1602,8 @@ String get fistGetData=>_firstGetData;
     if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
       await changeWlName(wlName, "No");
       await fetchMWList(context);
+    } else {
+      ref(authProvider).ifSessionExpired(context);
     }
   }
 
@@ -1735,8 +1634,7 @@ String get fistGetData=>_firstGetData;
       }
     } else if (_addDeleteScripModel!.emsg ==
         "Session Expired :  Invalid Session Key") {
-           pref .clearClientSession();
-      ConstantName.sessCheck = false;
+      ref(authProvider).ifSessionExpired(context);
     }
   }
 
@@ -1968,8 +1866,8 @@ String get fistGetData=>_firstGetData;
         fetchPendingAlert(context);
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, "${_setAlertModel?.stat}"));
-      } else {
-        ConstantName.sessCheck = false;
+      } else if (_setAlertModel!.stat! == "Not_Ok") {
+        ref(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();
@@ -2032,13 +1930,11 @@ String get fistGetData=>_firstGetData;
       _cancelalert = await api.getCancelAlert(alid);
       ConstantName.sessCheck = true;
       if (_cancelalert!.stat == "Not_Ok") {
-        ConstantName.sessCheck = true;
+        ref(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
       return _cancelalert;
     } catch (e) {
-      // print(e);
-
       rethrow;
     }
   }
@@ -2054,8 +1950,8 @@ String get fistGetData=>_firstGetData;
         fetchPendingAlert(context);
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_modifyalertmodel?.stat}"));
-      } else {
-        ConstantName.sessCheck = false;
+      } else if (_modifyalertmodel!.stat == "Not_Ok") {
+        ref(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();

@@ -3,9 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../api/core/api_link.dart';
+import 'package:google_fonts/google_fonts.dart'; 
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
@@ -78,8 +76,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                     itemBuilder: (BuildContext context, int index) {
                       return ListTile(
                         onTap: () async {
-                          final localstorage =
-                              await SharedPreferences.getInstance();
+                          
                           pref.setClientId(
                               loggedUser.loggedMobile[index].clientId);
 
@@ -95,16 +92,15 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                           //     "userId", loggedUser.loggedMobile[index].clientId);
                           // localstorage.setString(
                           //     "session", loggedUser.loggedMobile[index].sesstion);
-                          localstorage.setString("userName",
-                              loggedUser.loggedMobile[index].userName);
+                          // localstorage.setString("userName",
+                          //     loggedUser.loggedMobile[index].userName);
 
                           // ApiLinks.userID =
                           //     localstorage.getString("userId") ?? "";
                           // ApiLinks.session =
                           //     localstorage.getString("session") ?? "";
 
-                          ApiLinks.userName = ApiLinks.userName =
-                              localstorage.getString("userName") ?? "";
+                          
                           marketWatch.changeWlName("", "No");
 
                           await marketWatch.fetchMWList(context);
@@ -205,7 +201,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
                   child: OutlinedButton(
                       onPressed: () {
-                        ApiLinks.userName = "";
+                       pref.setLogout(false);
                         Navigator.pop(context);
                         Navigator.pushNamed(context, Routes.loginScreen,
                             arguments: "login");

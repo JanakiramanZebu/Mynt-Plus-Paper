@@ -339,15 +339,7 @@ class IndexListProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  // Future<Response> fetchLtp( ) async {
-  //   try {
-
-  //     final response = await api.getLTP( );
-  //     return response;
-  //   } catch (e) {
-  //     rethrow;
-  //   }
-  // }
+  
 
   changeIndex(IndexValue addNewIndex, BuildContext context, int index) async {
     final localstorage = await SharedPreferences.getInstance();
@@ -437,21 +429,13 @@ class IndexListProvider extends DefaultChangeNotifier {
           isAdd: false, scripToken: "", wlname: ""); 
       if (_checkSess!.emsg == "Session Expired :  Invalid Session Key" &&
           _checkSess!.stat == "Not_Ok") {
-        ref(authProvider).loginMethCtrl.text = pref.clientId!;
-         pref .clearClientSession();
-        ref(authProvider).switchMobToClinent(true);
-  
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _checkSess!.emsg!));
-
-        Navigator.pushNamedAndRemoveUntil(
-            context,
-            Routes.loginScreen,
-            arguments: "deviceLogin",
-            (route) => false);
+        ref(authProvider). ifSessionExpired(  context);
       }
       notifyListeners();
     } finally {}
+
+
+    
   }
 
 

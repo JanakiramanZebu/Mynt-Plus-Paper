@@ -6,9 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:local_auth/local_auth.dart';
-
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:local_auth/local_auth.dart'; 
 
 import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:sms_autofill/sms_autofill.dart';
@@ -100,7 +98,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
-  String _route = "";
+ 
   ValidateSession? _validateSession;
   ValidateSession? get validSession => _validateSession;
 
@@ -121,7 +119,7 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   activeBtnLogin() {
-    if (validateLogin(_route)) {
+    if (validateLogin( )) {
       _isDisableBtn = false;
     } else {
       _isDisableBtn = true;
@@ -208,19 +206,15 @@ class AuthProvider extends DefaultChangeNotifier {
     };
   }
 
-  bool validateLogin(String routeTo) {
-    _route = routeTo;
+  bool validateLogin( ) {
+    
     clearError();
     if (loginMethCtrl.text.trim().isEmpty) {
-      loginMethError = routeTo == "deviceLogin"
-          ? "Please enter client Id"
-          : _isMobileLogin
+      loginMethError = !pref.isMobileLogin!
               ? "Please enter client Id"
               : "Please enter mobile";
     } else if (!RegExp(r'^[6-9][0-9]{9}$').hasMatch(loginMethCtrl.text)) {
-      loginMethError = routeTo == "deviceLogin"
-          ? null
-          : _isMobileLogin
+      loginMethError =!pref.isMobileLogin!
               ? null
               : "Please enter a valid mobile";
     }
@@ -241,11 +235,11 @@ class AuthProvider extends DefaultChangeNotifier {
     return optError == null;
   }
 
-  submitLogin(BuildContext context, String routeTo) {
-    if (routeTo == "deviceLogin") {
-      _isMobileLogin = true;
-    }
-    if (validateLogin(routeTo)) {
+  submitLogin(BuildContext context ) {
+    // if (routeTo == "deviceLogin") {
+    //   _isMobileLogin = true;
+    // }
+    if (validateLogin( )) {
       fetchMobileLogin(context, passCtrl.text, loginMethCtrl.text.toUpperCase() );
     }
   }
@@ -493,16 +487,17 @@ class AuthProvider extends DefaultChangeNotifier {
 
   fetchLogout(BuildContext context) async {
     try {
-      _logoutModel = await api.getLogout();
-      final localstorage = await SharedPreferences.getInstance();
+      _logoutModel = await api.getLogout(); 
       if (_logoutModel!.stat == "Ok") {
         ConstantName.timer!.cancel();
 
-        _logoutMsg = "Logout";
-        _isMobileLogin = true;
-        localstorage.setString("logout", _logoutMsg);
+        // _logoutMsg = "Logout";
+        // _isMobileLogin = true;
+        // localstorage.setString("logout", _logoutMsg);
+   pref .clearClientSession();
+          pref.setLogout(true);
         ref(indexListProvider).bottomMenu(0);
-        loginMethCtrl.text = localstorage.getString("userId") ?? "";
+        loginMethCtrl.text = pref.isMobileLogin!?pref.clientMob!:pref.clientId!;
         notifyListeners();
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'Logged out'));
@@ -536,7 +531,7 @@ class AuthProvider extends DefaultChangeNotifier {
             loginMethCtrl.text = phone.toString();
           }
           notifyListeners();
-          validateLogin(_route);
+          validateLogin( );
 
           activeBtnLogin();
         } catch (e) {
@@ -752,5 +747,23 @@ class AuthProvider extends DefaultChangeNotifier {
     } finally {
       initLaod(false);
     }
+  }
+
+  ifSessionExpired(BuildContext context){
+     pref.clearClientSession();
+          pref.setLogout(true);
+          ref(indexListProvider).bottomMenu(0);
+
+          pref.clearClientSession();
+          ConstantName.sessCheck = false;
+       loginMethCtrl.text =
+              pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "Session Expired,Kindly login Again!"));
+          ConstantName.timer!.cancel();
+          Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.loginScreen,
+             
+              (route) => false);
   }
 }

@@ -86,7 +86,7 @@ class GttOrderBook extends ConsumerWidget {
                       onTap: () async {
                         await context.read(marketWatchProvider).fetchLinkeScrip(
                             "${gttOrderBook[index].token}",
-                            "${gttOrderBook[index].exch}");
+                            "${gttOrderBook[index].exch}",context);
 
                         await watch(marketWatchProvider).fetchScripQuote(
                             "${gttOrderBook[index].token}",

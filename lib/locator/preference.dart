@@ -23,6 +23,9 @@ class Preferences {
   Future setMobileLogin(bool isMobile) async =>
       await _prefInstance!.setBool(_ismobileLogin, isMobile);
 
+  Future setLogout(bool isLogout) async =>
+      await _prefInstance!.setBool(_isLogout, isLogout);
+
   Future setAppTheme(String theme) async {
     await _prefInstance!.setString(_userAppTheme, theme);
   }
@@ -50,6 +53,7 @@ class Preferences {
 
   bool? get userTheme => _prefInstance?.getBool(_userTheme);
   bool? get isMobileLogin => _prefInstance?.getBool(_ismobileLogin) ?? true;
+  bool? get islogOut => _prefInstance?.getBool(_isLogout) ?? false;
   String? get userAppTheme =>
       _prefInstance?.getString(_userAppTheme) ?? "System Default";
 
@@ -69,7 +73,7 @@ const String _userTheme = 'userTheme';
 const String _userAppTheme = 'userAppTheme';
 
 const String _logOutClient = 'logOutClient';
-
+const String _isLogout = "isLogout";
 const String _deviceName = 'deviceName';
 const String _ismobileLogin = 'ismobileLogin';
 

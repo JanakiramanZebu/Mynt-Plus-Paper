@@ -50,7 +50,7 @@ class TradeBook extends ConsumerWidget {
                       onTap: () async {
                         await context.read(marketWatchProvider).fetchLinkeScrip(
                             "${tradeBook[index].token}",
-                            "${tradeBook[index].exch}");
+                            "${tradeBook[index].exch}",context);
 
                         await watch(marketWatchProvider).fetchScripQuote(
                             "${tradeBook[index].token}",

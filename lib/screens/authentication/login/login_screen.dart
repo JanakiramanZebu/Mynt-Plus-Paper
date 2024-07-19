@@ -6,7 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart'; 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
-import '../../../api/core/api_link.dart';
+ 
 import '../../../locator/preference.dart';
 import '../../../provider/auth_provider.dart'; 
 import '../../../provider/thems.dart'; 
@@ -15,8 +15,8 @@ import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_text_form_field.dart'; 
 
 class LoginScreen extends ConsumerWidget {
-  final String routeTo;
-  const LoginScreen({super.key, required this.routeTo});
+  
+  const LoginScreen({super.key });
 
   @override
   
@@ -58,7 +58,7 @@ class LoginScreen extends ConsumerWidget {
                           children: [
                             const SizedBox(height: 10),
                             Text(
-                                routeTo == "deviceLogin"
+                               pref.clientName!.isNotEmpty && pref.islogOut! 
                                     ? "Welcome"
                                     : "Login to MYNT Plus",
                                 style: textStyle(
@@ -67,10 +67,9 @@ class LoginScreen extends ConsumerWidget {
                                         : colors.colorBlack,
                                     21,
                                     FontWeight.w900)),
-                            if (routeTo == "deviceLogin" &&
-                                ApiLinks.userName != "") ...[
+                            if( pref.clientName!.isNotEmpty && pref.islogOut!) ...[
                               const SizedBox(height: 10),
-                              Text(ApiLinks.userName,
+                              Text(pref.clientName!,
                                   overflow: TextOverflow.ellipsis,
                                   style: textStyle(
                                       theme.isDarkMode
@@ -90,15 +89,15 @@ class LoginScreen extends ConsumerWidget {
                                         : colors.colorBlack,
                                     14,
                                     FontWeight.w600)),
-                            // if (routeTo == "deviceLogin")
-                            //   const SizedBox(height: 8),
+                         if( pref.clientName!.isNotEmpty && pref.islogOut!) 
+                           const SizedBox(height: 8),
                             TextFormField(
                               style: textStyles.textFieldLabelStyle.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack),
                               onTap:   pref.isMobileLogin!
                                       ? auth.getCurrentPhone
                                       : null,
                               controller: auth.loginMethCtrl,
-                              readOnly: routeTo == "deviceLogin"
+                              readOnly: pref.islogOut!
                                   ? true
                                   : false,
                               keyboardType: pref.isMobileLogin!? TextInputType.datetime
@@ -109,7 +108,7 @@ class LoginScreen extends ConsumerWidget {
                               textCapitalization: pref.isMobileLogin!
                                           ? TextCapitalization.none
                                           : TextCapitalization.characters,
-                              inputFormatters: routeTo == "deviceLogin"
+                              inputFormatters: pref.islogOut!
                                   ? [UpperCaseTextFormatter()]
                                   :  pref.isMobileLogin!
                                       ? [ FilteringTextInputFormatter
@@ -126,7 +125,7 @@ class LoginScreen extends ConsumerWidget {
                                         ],
                               decoration: InputDecoration(
                                 fillColor: theme.isDarkMode?colors.darkGrey: const Color(0xfff5f5f5),
-                                filled: routeTo == "deviceLogin"
+                                filled:pref.islogOut!
                                     ? true
                                     : false,
                                 contentPadding: const EdgeInsets.only(top: 4),
@@ -147,15 +146,16 @@ class LoginScreen extends ConsumerWidget {
                                     // fit: BoxFit.scaleDown,
                                   ),
                                 ),
-                                suffix: routeTo == "deviceLogin"
+                                suffix: pref.islogOut!
                                     ? InkWell(
                                         onTap: ()async {
                                           {
-                                            Navigator.pushNamedAndRemoveUntil(
-                                                context,
-                                                Routes.loginScreen,
-                                                arguments: "login",
-                                                (route) => false);
+                                            pref.setLogout(false);
+                                            // Navigator.pushNamedAndRemoveUntil(
+                                            //     context,
+                                            //     Routes.loginScreen,
+                                            //     arguments: "login",
+                                            //     (route) => false);
                                          await   auth.loginMethod();
                                             FocusScope.of(context).unfocus();
                                           }
@@ -184,7 +184,7 @@ class LoginScreen extends ConsumerWidget {
                                 ),
                               ),
                               onChanged: (v) {
-                                auth.validateLogin(routeTo);
+                                auth.validateLogin( );
                                 auth.activeBtnLogin();
                               },
                             ),
@@ -251,7 +251,7 @@ class LoginScreen extends ConsumerWidget {
                               ],
                               obscureText: auth.hidePass,
                               onChanged: (v) {
-                                auth.validateLogin(routeTo);
+                                auth.validateLogin( );
                                 auth.activeBtnLogin();
                               },
                             ),
@@ -259,30 +259,22 @@ class LoginScreen extends ConsumerWidget {
                             Row(
                               mainAxisAlignment: 
                               
-                              // routeTo == "deviceLogin"
-                              //     ? MainAxisAlignment.end
-                              //     : 
+                            pref.islogOut!
+                                  ? MainAxisAlignment.end
+                                  : 
                                   
                                   MainAxisAlignment.spaceBetween,
                               children: [
                                 
-                                  InkWell(
+                                if(!pref.islogOut!)  InkWell(
                                     // style: TextButton.styleFrom(
                                     //     padding: const EdgeInsets.symmetric(
                                     //         horizontal: 0, vertical: 0)),
                                     onTap: () {
-                                      if (routeTo == "deviceLogin") {
-                                        Navigator.pushNamedAndRemoveUntil(
-                                            context,
-                                            Routes.loginScreen,
-                                            arguments: "login",
-                                            (route) => false);
+                                      
                                         auth.loginMethod();
                                         FocusScope.of(context).unfocus();
-                                      } else {
-                                        auth.loginMethod();
-                                        FocusScope.of(context).unfocus();
-                                      }
+                                   
                                     },
 
                                     child: Padding(
@@ -350,7 +342,7 @@ class LoginScreen extends ConsumerWidget {
                                         HapticFeedback.heavyImpact();
                                         SystemSound.play(SystemSoundType.click);
                                         auth.submitLogin(
-                                            context, routeTo);
+                                            context );
                                       },
                                 child: auth.loading
                                     ? const SizedBox(

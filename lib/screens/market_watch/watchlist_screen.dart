@@ -141,7 +141,7 @@ class WatchListScreen extends ConsumerWidget {
                                     .read(marketWatchProvider)
                                     .fetchLinkeScrip(
                                         "${marketWatch.scrips[idx]['token']}",
-                                        "${marketWatch.scrips[idx]['exch']}");
+                                        "${marketWatch.scrips[idx]['exch']}",context);
     
                                  context
                                     .read(marketWatchProvider)
