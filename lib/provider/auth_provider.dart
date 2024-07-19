@@ -102,6 +102,14 @@ class AuthProvider extends DefaultChangeNotifier {
   ValidateSession? _validateSession;
   ValidateSession? get validSession => _validateSession;
 
+  bool _addUser=false;
+  bool get addUser=>_addUser;
+
+addClient(bool val){
+  _addUser=true;
+  notifyListeners();
+}
+
   loginMethod() {
     _isMobileLogin = !_isMobileLogin;
 

@@ -35,6 +35,8 @@ class UserProfileProvider extends DefaultChangeNotifier {
   List _settingMenu = [];
   List get settingmenu => _settingMenu;
 
+
+
   final List _socialMedaiIcons = [
     {"icon": assets.facebook, "link": "https://www.facebook.com/zebuetrade/"},
     {"icon": assets.twitterX, "link": "https://twitter.com/zebuetrade?lang=en"},

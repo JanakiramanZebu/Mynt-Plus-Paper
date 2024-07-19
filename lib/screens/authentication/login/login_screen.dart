@@ -97,7 +97,7 @@ class LoginScreen extends ConsumerWidget {
                                       ? auth.getCurrentPhone
                                       : null,
                               controller: auth.loginMethCtrl,
-                              readOnly: pref.islogOut!
+                              readOnly: pref.islogOut! &&  (pref.clientId!.isNotEmpty||  pref.clientMob!.isNotEmpty)
                                   ? true
                                   : false,
                               keyboardType: pref.isMobileLogin!? TextInputType.datetime
@@ -125,7 +125,7 @@ class LoginScreen extends ConsumerWidget {
                                         ],
                               decoration: InputDecoration(
                                 fillColor: theme.isDarkMode?colors.darkGrey: const Color(0xfff5f5f5),
-                                filled:pref.islogOut!
+                                filled: pref.islogOut! &&  (pref.clientId!.isNotEmpty||  pref.clientMob!.isNotEmpty)
                                     ? true
                                     : false,
                                 contentPadding: const EdgeInsets.only(top: 4),
@@ -146,7 +146,7 @@ class LoginScreen extends ConsumerWidget {
                                     // fit: BoxFit.scaleDown,
                                   ),
                                 ),
-                                suffix: pref.islogOut!
+                                suffix:pref.islogOut! &&  (pref.clientId!.isNotEmpty||  pref.clientMob!.isNotEmpty)
                                     ? InkWell(
                                         onTap: ()async {
                                           {
@@ -259,14 +259,12 @@ class LoginScreen extends ConsumerWidget {
                             Row(
                               mainAxisAlignment: 
                               
-                            pref.islogOut!
-                                  ? MainAxisAlignment.end
-                                  : 
+                             
                                   
                                   MainAxisAlignment.spaceBetween,
                               children: [
                                 
-                                if(!pref.islogOut!)  InkWell(
+                              InkWell(
                                     // style: TextButton.styleFrom(
                                     //     padding: const EdgeInsets.symmetric(
                                     //         horizontal: 0, vertical: 0)),
