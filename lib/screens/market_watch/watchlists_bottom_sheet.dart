@@ -112,7 +112,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                               horizontal: 12, vertical: 0),
                           backgroundColor: theme.isDarkMode
                               ? widget.currentWLName == preDefWl[index]
-                                  ? const Color(0xffF1F3F8)
+                                  ?  colors.colorbluegrey
                                   : const Color(0xffB5C0CF).withOpacity(.15)
                               : widget.currentWLName == preDefWl[index]
                                   ? const Color(0xff000000)

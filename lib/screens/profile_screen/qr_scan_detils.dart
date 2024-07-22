@@ -1,150 +1,186 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 // ignore: implementation_imports
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
- 
- 
- 
 import '../../models/profile_model/qr_response.dart';
+import '../../provider/thems.dart';
 import '../../res/res.dart';
+import '../../sharedWidget/custom_drag_handler.dart';
 
-class QrDetails extends StatelessWidget {
+class QrDetails extends ConsumerWidget {
   final QrResponces details;
   final MobileScannerController camera;
   const QrDetails({super.key, required this.details, required this.camera});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ScopedReader watch) {
+    final theme = context.read(themeProvider);
     return details.uniqueId == null
-        ? Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  width: 40,
-                  height: 5,
-                  decoration: BoxDecoration(
-                      color: const Color(0xff999999),
-                      borderRadius: BorderRadius.circular(20))),
-              const SizedBox(height: 15),
-              SvgPicture.asset(
-                "assets/icon/invalid_qr.svg",
-              ),
-              const SizedBox(height: 15),
-              Text(
-                "Invalid QR Code",
-                style: textStyle(colors.colorBlack, 16, FontWeight.w600),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Text(
-                  "Try again with a different QR code; the one you are trying to scan is incorrect.",
-                  style: textStyle(colors.colorBlack, 14, FontWeight.w500),
+        ? Container(
+           decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: theme.isDarkMode ? Colors.black : Colors.white,
+            boxShadow: const [
+              BoxShadow(
+                  color: Color(0xff999999),
+                  blurRadius: 4.0,
+                  offset: Offset(2.0, 0.0))
+            ]),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+               const CustomDragHandler(),
+                const SizedBox(height: 15),
+                SvgPicture.asset(
+                  "assets/icon/invalid_qr.svg",
+                  color: theme.isDarkMode
+                  ?colors.colorWhite
+                  :colors.colorBlack,
                 ),
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                width: MediaQuery.of(context).size.width,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: const Color(0xff000000),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      )),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    camera.start();
-                  },
+                const SizedBox(height: 15),
+                Text(
+                  "Invalid QR Code",
+                  style: textStyle(
+                    theme.isDarkMode
+                    ?colors.colorWhite
+                    :colors.colorBlack, 16, FontWeight.w600),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: Text(
-                    "Retry",
-                    style: textStyle(colors.colorWhite, 13, FontWeight.w600),
+                    "Try again with a different QR code; the one you are trying to scan is incorrect.",
+                    style: textStyle(
+                      theme.isDarkMode
+                      ?colors.colorWhite
+                      :colors.colorBlack, 14, FontWeight.w500),
                   ),
                 ),
-              ),
-            ],
-          )
-        : Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                  child: Container(
-                      margin: const EdgeInsets.only(top: 20),
-                      width: 40,
-                      height: 5,
-                      decoration: BoxDecoration(
-                          color: const Color(0xff999999),
-                          borderRadius: BorderRadius.circular(20)))),
-              const SizedBox(height: 10),
-              Container(
-                alignment: Alignment.center,
-                child: Text(
-                  "Login Conformation",
-                  style: textStyle(colors.colorBlack, 16, FontWeight.w600),
-                ),
-              ),
-              const SizedBox(height: 16),
-              rowtable("IP Address", details.ip ?? ""),
-              rowtable("Browser", details.browser ?? ""),
-              rowtable("OS", details.os ?? ""),
-              rowtable("City", details.city ?? ""),
-              rowtable("State", details.region ?? ""),
-              rowtable("Country", details.country ?? ""),
-              rowtable("Device", details.device ?? ""),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                        child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: const Color(0xff000000),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          )),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        camera.start();
-                      },
-                      child: Text(
-                        "Cancel",
-                        style:
-                            textStyle(colors.colorWhite, 16, FontWeight.w600),
-                      ),
-                    )),
-                    const SizedBox(
-                      width: 12,
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
+                  width: MediaQuery.of(context).size.width,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: theme.isDarkMode
+                  ?colors.colorbluegrey
+                  :colors.colorBlack,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        )),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      camera.start();
+                    },
+                    child: Text(
+                      "Retry",
+                      style: textStyle( theme.isDarkMode
+                  ?colors.colorBlack
+                  :colors.colorWhite, 13, FontWeight.w600),
                     ),
-                    Expanded(
-                        child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: const Color(0xff000000),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          )),
-                      onPressed: () {},
-                      child: Text(
-                        "Confirm",
-                        style:
-                            textStyle(colors.colorWhite, 16, FontWeight.w600),
-                      ),
-                    )),
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          );
+              ],
+            ),
+        )
+        : Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: theme.isDarkMode ? Colors.black : Colors.white,
+            boxShadow: const [
+              BoxShadow(
+                  color: Color(0xff999999),
+                  blurRadius: 4.0,
+                  offset: Offset(2.0, 0.0))
+            ]),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                 const CustomDragHandler(),
+                const SizedBox(height: 10),
+                Container(
+                  alignment: Alignment.center,
+                  child: Text(
+                    "Login Conformation",
+                    style: textStyle(
+                      theme.isDarkMode
+                      ?colors.colorWhite
+                      :colors.colorBlack, 16, FontWeight.w600),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                rowtable("IP Address", details.ip ?? "",theme),
+                rowtable("Browser", details.browser ?? "",theme),
+                rowtable("OS", details.os ?? "",theme),
+                rowtable("City", details.city ?? "",theme),
+                rowtable("State", details.region ?? "",theme),
+                rowtable("Country", details.country ?? "",theme),
+                rowtable("Device", details.device ?? "",theme),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                          child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: theme.isDarkMode
+                            ?colors.colorbluegrey
+                            :colors.colorBlack,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            )),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          camera.start();
+                        },
+                        child: Text(
+                          "Cancel",
+                          style:
+                              textStyle(
+                                theme.isDarkMode
+                                ?colors.colorBlack
+                                :colors.colorWhite, 16, FontWeight.w600),
+                        ),
+                      )),
+                      const SizedBox(
+                        width: 12,
+                      ),
+                      Expanded(
+                          child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: theme.isDarkMode
+                            ?colors.colorbluegrey
+                            :colors.colorBlack,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            )),
+                        onPressed: () {},
+                        child: Text(
+                          "Confirm",
+                          style:
+                              textStyle(
+                                theme.isDarkMode
+                                ?colors.colorBlack
+                                :colors.colorWhite, 16, FontWeight.w600),
+                        ),
+                      )),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+        );
   }
 }
 
-Padding rowtable(String header, String description) {
+Padding rowtable(String header, String description , ThemesProvider themes) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16),
     child: Row(
@@ -152,14 +188,20 @@ Padding rowtable(String header, String description) {
       children: [
         Text(
           header,
-          style: textStyle(colors.colorBlack, 15, FontWeight.w600),
+          style: textStyle(
+            themes.isDarkMode
+            ?colors.colorGrey
+            :colors.colorBlack, 15, FontWeight.w600),
         ),
         const SizedBox(
           height: 40,
         ),
         Text(
           description,
-          style: textStyle(colors.colorGrey, 15, FontWeight.w600),
+          style: textStyle(
+            themes.isDarkMode
+            ?colors.colorWhite
+            :colors.colorGrey, 15, FontWeight.w600),
         ),
       ],
     ),

@@ -365,10 +365,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                         onPressed: (){
 
                                           Navigator.pushNamed(context, Routes.qrscanner);
+
                                         },
                                        icon: SvgPicture.asset(
                                                   "assets/profile/qr_code.svg",
                                                   width: 20,height: 24,
+                                                  color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  :colors.colorBlack
                                                 ),
                                        ),SizedBox(width:4),
                                       

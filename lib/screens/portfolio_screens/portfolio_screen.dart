@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
@@ -30,23 +30,20 @@ class _PortfolioScreenState extends State<PortfolioScreen>
           .changeTabIndex(context.read(portfolioProvider).portTab.index);
       context.read(portfolioProvider).tabSize();
       if (context.read(portfolioProvider).selectedTab == 0) {
-
         context
             .read(portfolioProvider)
-            .requestWSHoldings(context: context, isSubscribe:false);
+            .requestWSHoldings(context: context, isSubscribe: false);
         context
             .read(portfolioProvider)
             .requestWSPosition(context: context, isSubscribe: true);
-
-      } else   if (context.read(portfolioProvider).selectedTab == 1){
-          context
+      } else if (context.read(portfolioProvider).selectedTab == 1) {
+        context
             .read(portfolioProvider)
             .requestWSPosition(context: context, isSubscribe: false);
         context
             .read(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: true);
-
-      }else{
+      } else {
         context
             .read(portfolioProvider)
             .requestWSPosition(context: context, isSubscribe: false);
@@ -62,26 +59,33 @@ class _PortfolioScreenState extends State<PortfolioScreen>
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
-      final portfolio = watch(portfolioProvider);    final theme = context.read(themeProvider);
+      final portfolio = watch(portfolioProvider);
+      final theme = context.read(themeProvider);
       return Column(
         children: [
           SizedBox(
               width: MediaQuery.of(context).size.width,
-             
               height: 46,
               child: TabBar(
-                
-                 tabAlignment:portfolio.mfHoldingsModel!.isNotEmpty&& portfolio.mfHoldingsModel![0].stat != "Not_Ok" ? TabAlignment.start:TabAlignment.fill,
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          isScrollable:portfolio.mfHoldingsModel!.isNotEmpty&& portfolio.mfHoldingsModel![0].stat != "Not_Ok" ,
-                  indicatorColor:theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
+                  tabAlignment: portfolio.mfHoldingsModel!.isNotEmpty &&
+                          portfolio.mfHoldingsModel![0].stat != "Not_Ok"
+                      ? TabAlignment.start
+                      : TabAlignment.fill,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  isScrollable: portfolio.mfHoldingsModel!.isNotEmpty &&
+                      portfolio.mfHoldingsModel![0].stat != "Not_Ok",
+                  indicatorColor: theme.isDarkMode
+                      ? colors.colorLightBlue
+                      : colors.colorBlue,
                   unselectedLabelColor: const Color(0XFF777777),
                   unselectedLabelStyle: GoogleFonts.inter(
                       textStyle: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                           letterSpacing: -0.28)),
-                  labelColor: theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
+                  labelColor: theme.isDarkMode
+                      ? colors.colorLightBlue
+                      : colors.colorBlue,
                   labelStyle: GoogleFonts.inter(
                       textStyle: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.w600)),
@@ -91,12 +95,11 @@ class _PortfolioScreenState extends State<PortfolioScreen>
               child: TabBarView(controller: portfolio.portTab, children: [
             PositionScreen(listofPosition: portfolio.allPostionList),
             const HoldingScreen(),
-
-               if (portfolio.mfHoldingsModel!.isNotEmpty)...[
-        if (portfolio.mfHoldingsModel![0].stat != "Not_Ok")...[
-
-         const MFHoldingScreen()
-        ]]
+            if (portfolio.mfHoldingsModel!.isNotEmpty) ...[
+              if (portfolio.mfHoldingsModel![0].stat != "Not_Ok") ...[
+                const MFHoldingScreen()
+              ]
+            ]
           ]))
         ],
       );

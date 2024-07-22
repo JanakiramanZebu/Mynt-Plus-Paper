@@ -227,11 +227,11 @@ class GttOrderDetail extends ConsumerWidget {
                       child: Container(
                         height: 40,
                         decoration: BoxDecoration(
-                            color: theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                            color: colors.darkred,
                             borderRadius: BorderRadius.circular(108)),
                         child: Center(
                           child: Text("Cancel Order",
-                              style: textStyle(!theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14,
+                              style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14,
                                   FontWeight.w600)),
                         ),
                       ),

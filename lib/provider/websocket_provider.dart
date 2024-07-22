@@ -16,6 +16,7 @@ import '../locator/preference.dart';
 import 'fund_provider.dart';
 import 'index_list_provider.dart';
 import 'network_state_provider.dart';
+import 'order_provider.dart';
 import 'portfolio_provider.dart';
 
 final websocketProvider =
@@ -437,9 +438,9 @@ class WebSocketProvider extends ChangeNotifier {
                 .add({"type": "Order Response", "Error": "$res"});
             ref(portfolioProvider).fetchHoldings(context, "");
 
-            // ref(orderProvider).fetchOrderBook(context, true);
-            // ref(orderProvider).fetchTradeBook(context);
-            // ref(orderProvider).fetchGTTOrderBook(context, "");
+     ref(orderProvider).fetchOrderBook(context, true);
+              ref(orderProvider).fetchTradeBook(context);
+              ref(orderProvider).fetchGTTOrderBook(context, "");
             ref(fundProvider).fetchFunds(context);
             if (res['status'].toString() == "COMPLETE") {
               Timer(
@@ -449,12 +450,13 @@ class WebSocketProvider extends ChangeNotifier {
             }
           }
 
-          Future.delayed(const Duration(milliseconds: 2000), () {
-            notifyListeners();
-          });
+          // Future.delayed(const Duration(milliseconds: 2000), () {
+           notifyListeners();
+          // });
         },
         onDone: () async {
-          // log("Connection closed ${channel.closeReason} ${channel.closeCode}");
+          // log("Connection closed ${channel.closeRe
+          //ason} ${channel.closeCode}");
           if (channel.closeCode != null) {
             closeSocket();
             _wsConnected = false;
