@@ -1814,8 +1814,8 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                     style: ElevatedButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 10),
-                                        backgroundColor: Color(
-                                            isBuy! ? 0xff43A833 : 0xffFF1717),
+                                        backgroundColor: 
+                                            isBuy! ? colors.ltpgreen : colors.darkred,
                                         shape: const StadiumBorder()),
                                     child: Text(isBuy! ? 'Buy Now' : "Sell Now",
                                         style: textStyle(
@@ -2132,7 +2132,7 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                           style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               backgroundColor:
-                                  Color(isBuy! ? 0xff43A833 : 0xffFF1717),
+                               isBuy! ? colors.ltpgreen : colors.darkred,
                               shape: const StadiumBorder()),
                           child: Text(isBuy! ? 'Buy Now' : "Sell Now",
                               style: textStyle(const Color(0xffffffff), 14,

@@ -98,8 +98,8 @@ class _EditScripState extends State<EditScrip> {
                             horizontal: 14, vertical: 5),
                         decoration: BoxDecoration(
                             color: marketwatch.delScripQty == 0
-                                ? const Color(0xffFF1717).withOpacity(.4)
-                                : const Color(0xffFF1717),
+                                ? colors.darkred.withOpacity(.2)
+                                : colors.darkred,
                             borderRadius: BorderRadius.circular(32)),
                         child: Text(
                           marketwatch.delScripQty == 0
@@ -118,100 +118,107 @@ class _EditScripState extends State<EditScrip> {
               children: [
                 marketwatch.loading
                     ? const Center(child: CircularProgressIndicator())
-                    : ReorderableListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        // shrinkWrap: true,
-
-                        // buildDefaultDragHandles: false,
-                        itemBuilder: (_, int i) => Container(
-                          // padding: const EdgeInsets.on(horizontal: 16),
-                          key: ValueKey(i.toString()),
-                          decoration: BoxDecoration(
-                              border: i == 0
-                                  ? null
-                                  : Border(
-                                      top: BorderSide(
-                                          color: theme.isDarkMode
-                                              ? colors.darkColorDivider
-                                              : colors.colorDivider,
-                                          width: 0))),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.only(right: 16),
-                            dense: true,
-                            minLeadingWidth: 30,
-                            leading: IconButton(
-                              onPressed: () {
-                                marketwatch.selectDeleteScrip(i);
-                              },
-                              icon: SvgPicture.asset(
-                                theme.isDarkMode
-                                    ? marketwatch.scrips[i]['isSelected']
-                                        ? assets.darkCheckedboxIcon
-                                        : assets.darkCheckboxIcon
-                                    : marketwatch.scrips[i]['isSelected']
-                                        ? assets.ckeckedboxIcon
-                                        : assets.ckeckboxIcon,
-                                width: 22,
-                              ),
-                            ),
-                            trailing: ReorderableDragStartListener(
-                                index: i,
-                                child: Icon(Icons.drag_handle_outlined,
-                                    color: const Color(0xffB5C0CF)
-                                        .withOpacity(.15))),
-                            title: Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text("${marketwatch.scrips[i]['symbol']} ",
-                                    style: textStyles.scripNameTxtStyle
-                                        .copyWith(
+                    : Theme(
+                      data: ThemeData(
+                        canvasColor: theme.isDarkMode
+                        ? Color(0xffFFFFFF).withOpacity(.3)
+                        :Color(0xff000000).withOpacity(.3)
+                      ),
+                      child: ReorderableListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          // shrinkWrap: true,
+                      
+                          // buildDefaultDragHandles: false,
+                          itemBuilder: (_, int i) => Container(
+                            // padding: const EdgeInsets.on(horizontal: 16),
+                            key: ValueKey(i.toString()),
+                            decoration: BoxDecoration(
+                                border: i == 0
+                                    ? null
+                                    : Border(
+                                        top: BorderSide(
                                             color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)),
-                                if (marketwatch.scrips[i]['option']
-                                    .toString()
-                                    .isNotEmpty)
-                                  Text("${marketwatch.scrips[i]['option']}",
+                                                ? colors.darkColorDivider
+                                                : colors.colorDivider,
+                                            width: 0))),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.only(right: 16),
+                              dense: true,
+                              minLeadingWidth: 30,
+                              leading: IconButton(
+                                onPressed: () {
+                                  marketwatch.selectDeleteScrip(i);
+                                },
+                                icon: SvgPicture.asset(
+                                  theme.isDarkMode
+                                      ? marketwatch.scrips[i]['isSelected']
+                                          ? assets.darkCheckedboxIcon
+                                          : assets.darkCheckboxIcon
+                                      : marketwatch.scrips[i]['isSelected']
+                                          ? assets.ckeckedboxIcon
+                                          : assets.ckeckboxIcon,
+                                  width: 22,
+                                ),
+                              ),
+                              trailing: ReorderableDragStartListener(
+                                  index: i,
+                                  child: Icon(Icons.drag_handle_outlined,
+                                      color: const Color(0xffB5C0CF)
+                                          .withOpacity(.15))),
+                              title: Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text("${marketwatch.scrips[i]['symbol']} ",
                                       style: textStyles.scripNameTxtStyle
                                           .copyWith(
-                                              color: const Color(0xff666666))),
-                              ],
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Text("${marketwatch.scrips[i]['exch']}  ",
-                                        style: textStyles.scripExchTxtStyle),
-                                    if (marketwatch.scrips[i]['expDate']
-                                        .toString()
-                                        .isNotEmpty)
-                                      Text(
-                                          "${marketwatch.scrips[i]['expDate']}",
-                                          style: textStyles.scripExchTxtStyle
-                                              .copyWith(
-                                                  color: colors.colorBlack)),
-                                  ],
-                                ),
-                              ],
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack)),
+                                  if (marketwatch.scrips[i]['option']
+                                      .toString()
+                                      .isNotEmpty)
+                                    Text("${marketwatch.scrips[i]['option']}",
+                                        style: textStyles.scripNameTxtStyle
+                                            .copyWith(
+                                                color: const Color(0xff666666))),
+                                ],
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Text("${marketwatch.scrips[i]['exch']}  ",
+                                          style: textStyles.scripExchTxtStyle),
+                                      if (marketwatch.scrips[i]['expDate']
+                                          .toString()
+                                          .isNotEmpty)
+                                        Text(
+                                            "${marketwatch.scrips[i]['expDate']}",
+                                            style: textStyles.scripExchTxtStyle
+                                                .copyWith(
+                                                    color: colors.colorBlack)),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
+                          itemCount: marketwatch.scrips.length,
+                          onReorder: (int oldIndex, int newIndex) {
+                            if (internet.connectionStatus !=
+                                ConnectivityResult.none) {
+                              marketwatch.reOrderList(
+                                  context: context,
+                                  newIndex: newIndex,
+                                  oldIndex: oldIndex,
+                                  wlName: widget.wlName);
+                            }
+                          },
                         ),
-                        itemCount: marketwatch.scrips.length,
-                        onReorder: (int oldIndex, int newIndex) {
-                          if (internet.connectionStatus !=
-                              ConnectivityResult.none) {
-                            marketwatch.reOrderList(
-                                context: context,
-                                newIndex: newIndex,
-                                oldIndex: oldIndex,
-                                wlName: widget.wlName);
-                          }
-                        },
-                      ),
+                    ),
                 if (internet.connectionStatus == ConnectivityResult.none) ...[
                   const NoInternetWidget()
                 ]

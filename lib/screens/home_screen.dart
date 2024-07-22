@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -243,7 +242,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ? 0
                                             : 8),
                                     child: SvgPicture.asset(assets.filterLines,
-                                        width: 19, color: colors.colorGrey)),
+                                        width: 19,  color: theme.isDarkMode
+                            ? const Color(0xffBDBDBD)
+                            : colors.colorGrey,)),
                               )
                             : Container(),
                         marketWatchList.watchListValues.length >= 50
@@ -262,7 +263,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     padding: const EdgeInsets.only(
                                         right: 16, left: 8),
                                     child: SvgPicture.asset(assets.searchIcon,
-                                        width: 19, color: colors.colorGrey)),
+                                        width: 19,  color: theme.isDarkMode
+                            ? const Color(0xffBDBDBD)
+                            : colors.colorGrey,)),
                               ),
                       ] else if (indexProvide.selectedBtmIndx == 1 &&
                           portfolio.postionBookModel!.isNotEmpty &&

@@ -89,11 +89,16 @@ class PriceComparision extends ConsumerWidget {
         ),
       ),
       const SizedBox(height: 12),
-      peersdata(peersData.fundamentalData!.peersComparison!.stock!, peersData),
-      Divider(color: colors.colorDivider),
-      peersdata(peersData.fundamentalData!.peersComparison!.peers!, peersData),
+      peersdata(peersData.fundamentalData!.peersComparison!.stock!, peersData, theme),
+      Divider(color: 
+      theme.isDarkMode
+                  ?colors.darkColorDivider
+                  :colors.colorDivider),
+      peersdata(peersData.fundamentalData!.peersComparison!.peers!, peersData,theme),
       const SizedBox(height: 12),
-      Divider(color: colors.colorDivider),
+      Divider(color: theme.isDarkMode
+                  ?colors.darkColorDivider
+                  :colors.colorDivider),
       const SizedBox(height: 8),
       Text("Price Comparison",
           style: textStyle(
@@ -107,18 +112,22 @@ class PriceComparision extends ConsumerWidget {
       const SizedBox(height: 14),
       const PriceComChart(),
       const SizedBox(height: 4),
-      Divider(color: colors.colorDivider),
+      Divider(color: theme.isDarkMode
+                  ?colors.darkColorDivider
+                  :colors.colorDivider),
       const SizedBox(height: 4),
     ]);
   }
 
-  ListView peersdata(List<Stock> list, MarketWatchProvider peersData) {
+  ListView peersdata(List<Stock> list, MarketWatchProvider peersData ,  ThemesProvider themes) {
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemCount: list.length,
       separatorBuilder: (BuildContext context, int index) {
-        return Divider(color: colors.colorDivider);
+        return Divider(color: themes.isDarkMode
+                  ?colors.darkColorDivider
+                  :colors.colorDivider);
       },
       itemBuilder: (BuildContext context, int index) {
         return StockRowTable(

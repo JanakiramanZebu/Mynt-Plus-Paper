@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/res/res.dart';
 
 class FundReturns extends ConsumerWidget {
   const FundReturns({super.key});
@@ -51,8 +52,8 @@ class FundReturns extends ConsumerWidget {
                           children: [
                             Text(index.isEven ? "35.4%" : "-67.90",
                                 style: textStyle(
-                                    Color(
-                                        index.isEven ? 0xff43A833 : 0xffFF1717),
+                                  
+                                        index.isEven ? colors.ltpgreen : colors.darkred,
                                     18,
                                     FontWeight.w500)),
                             Padding(

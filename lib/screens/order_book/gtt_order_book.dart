@@ -188,15 +188,15 @@ class GttOrderBook extends ConsumerWidget {
                                       Text(
                                           " (${gttOrderBook[index].perChange ?? 0.00}%)",
                                           style: textStyle(
-                                              Color(gttOrderBook[index]
+                                             gttOrderBook[index]
                                                       .perChange!
                                                       .startsWith("-")
-                                                  ? 0XFFFF1717
+                                                  ? colors.darkred
                                                   : gttOrderBook[index]
                                                               .perChange ==
                                                           "0.00"
-                                                      ? 0xff666666
-                                                      : 0xff43A833),
+                                                      ? colors.ltpgrey
+                                                      : colors.ltpgreen,
                                               12,
                                               FontWeight.w500)),
                                     ]),
@@ -214,22 +214,21 @@ class GttOrderBook extends ConsumerWidget {
                                         Container(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 8, vertical: 2),
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                                border: Border.all(
-                                                    color: Color(gttOrderBook[index].trantype == "S"
-                                                        ? 0xffFFCDCD
-                                                        : 0xffC1E7BA)),
-                                                color: Color(gttOrderBook[index].trantype == "S"
-                                                    ? 0xffFCF3F3
-                                                    : 0xffECF8F1)),
+                                             decoration: BoxDecoration(
+                                                        borderRadius: BorderRadius.circular(
+                                                            4),
+                                                        color: theme.isDarkMode
+                                                            ? Color(gttOrderBook[index].trantype == "S" ? 0XFFf44336 : 0xff43A833)
+                                                                .withOpacity(.2)
+                                                            : Color(gttOrderBook[index].trantype == "S"
+                                                                ? 0xffFCF3F3
+                                                                : 0xffECF8F1)),
                                             child: Text(
                                                 gttOrderBook[index].trantype == "S"
                                                     ? "SELL"
                                                     : "BUY",
                                                 style: textStyle(
-                                                    Color(gttOrderBook[index].trantype == "S" ? 0xffFF1717 : 0xff43A833),
+                                                   gttOrderBook[index].trantype == "S" ? colors.darkred : colors.ltpgreen,
                                                     12,
                                                     FontWeight.w600))),
                                         Container(
@@ -237,12 +236,16 @@ class GttOrderBook extends ConsumerWidget {
                                                 const EdgeInsets.only(left: 7),
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 7, vertical: 2),
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                                border: Border.all(
-                                                    color: const Color(
-                                                        0xffF1F3F8))),
+                                             decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
+                                                        color: theme.isDarkMode
+                                                            ? Color(0xff666666)
+                                                                .withOpacity(.2)
+                                                            : Color(0xff999999)
+                                                                .withOpacity(
+                                                                    .2)),
                                             child: Text(
                                                 "${gttOrderBook[index].placeOrderParams!.sPrdtAli}",
                                                 style: textStyle(

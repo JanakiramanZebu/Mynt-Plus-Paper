@@ -225,13 +225,14 @@ log("dfgdf ${context.read(websocketProvider).socketDatas["${watchListData['token
                                   Text(
                                     "${watchListData["change"] == "null" ? 0.00 : watchListData['change']} (${watchListData['perChange'] == "null" ? 0.00 : watchListData["perChange"]}%)",
                                     style: textStyle(
-                                        Color(watchListData['change']
+                                          
+                                          watchListData['change']
                                                     .toString()
                                                     .startsWith("-") ||
                                                 watchListData['perChange']
                                                     .toString()
                                                     .startsWith('-')
-                                            ? 0xffFF1717
+                                            ? colors.darkred
                                             : (watchListData['change'].toString() ==
                                                             "null" ||
                                                         watchListData['perChange']
@@ -244,8 +245,10 @@ log("dfgdf ${context.read(websocketProvider).socketDatas["${watchListData['token
                                                                     ['perChange']
                                                                 .toString() ==
                                                             "0.00")
-                                                ? 0xff999999
-                                                : 0xff43A833),
+                                                ? colors.ltpgrey
+                                                :colors.ltpgreen,
+
+                                        
                                         12,
                                         FontWeight.w600),
                                   )

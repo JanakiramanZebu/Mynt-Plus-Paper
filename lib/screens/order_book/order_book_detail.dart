@@ -86,14 +86,14 @@ class OrderBookDetail extends ConsumerWidget {
                     Text(
                         "${double.parse("${orderBookData.change ?? 0.00} ").toStringAsFixed(2)} (${orderBookData.perChange ?? 0.00}%)",
                         style: textStyle(
-                            Color((orderBookData.change == "null" ||
+                          (orderBookData.change == "null" ||
                                         orderBookData.change == null) ||
                                     orderBookData.change == "0.00"
-                                ? 0xff999999
+                                ? colors.ltpgrey
                                 : orderBookData.change!.startsWith("-") ||
                                         orderBookData.perChange!.startsWith("-")
-                                    ? 0xffFF1717
-                                    : 0xff43A833),
+                                    ? colors.darkred
+                                    : colors.ltpgreen,
                             12,
                             FontWeight.w500))
                   ])
@@ -174,7 +174,7 @@ class OrderBookDetail extends ConsumerWidget {
                                     const SizedBox(height: 3),
                                     Text('${orderBookData.rejreason}',
                                         style: textStyle(
-                                            const Color(0XFFFF1717),
+                                            colors.darkred,
                                             14,
                                             FontWeight.w500)),
                                   ]))
@@ -462,7 +462,7 @@ class OrderBookDetail extends ConsumerWidget {
                                                   BorderRadius.circular(4)),
                                           child: Text("${orderBookData.status}",
                                               style: textStyle(
-                                                  const Color(0XFFFF1717),
+                                                  colors.darkred,
                                                   10,
                                                   FontWeight.w600)),
                                         ),
@@ -556,7 +556,7 @@ class OrderBookDetail extends ConsumerWidget {
                     ),
                     decoration: BoxDecoration(
                         color: theme.isDarkMode
-                            ? colors.colorWhite
+                            ? colors.colorbluegrey
                             : colors.colorBlack,
                         borderRadius: BorderRadius.circular(32)),
                     width: MediaQuery.of(context).size.width,

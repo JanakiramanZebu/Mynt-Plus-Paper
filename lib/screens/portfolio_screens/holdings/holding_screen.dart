@@ -84,22 +84,22 @@ class HoldingScreen extends ConsumerWidget {
                                         Text(
                                             "₹${getFormatter(value: holdingProvide.totalPnlHolding, v4d: false, noDecimal: false)} ",
                                             style: textStyle(
-                                                Color(holdingProvide
+                                              holdingProvide
                                                         .totalPnlHolding
                                                         .toString()
                                                         .startsWith("-")
-                                                    ? 0XFFFF1717
-                                                    : 0xff43A833),
+                                                    ? colors.darkred
+                                                    : colors.ltpgreen,
                                                 16,
                                                 FontWeight.w500)),
                                         Text(
                                             "(${holdingProvide.totPnlPercHolding == "NaN" ? 0.00 : holdingProvide.totPnlPercHolding}%)",
                                             style: textStyle(
-                                                Color(holdingProvide
+                                              holdingProvide
                                                         .totPnlPercHolding
                                                         .startsWith("-")
-                                                    ? 0XFFFF1717
-                                                    : 0xff43A833),
+                                                    ? colors.darkred
+                                                    : colors.ltpgreen,
                                                 14,
                                                 FontWeight.w500)),
                                       ],
@@ -145,23 +145,23 @@ class HoldingScreen extends ConsumerWidget {
                                           Text(
                                               "₹${getFormatter(value: holdingProvide.oneDayChng, v4d: false, noDecimal: false)}",
                                               style: textStyle(
-                                                  Color(holdingProvide
+                                                holdingProvide
                                                           .oneDayChng
                                                           .toStringAsFixed(2)
                                                           .startsWith("-")
-                                                      ? 0XFFFF1717
-                                                      : 0xff43A833),
+                                                      ? colors.darkred
+                                                      : colors.ltpgreen,
                                                   16,
                                                   FontWeight.w500)),
                                           Text(
                                               " (${holdingProvide.oneDayChngPer.toStringAsFixed(2)}%)",
                                               style: textStyle(
-                                                  Color(holdingProvide
+                                                  holdingProvide
                                                           .oneDayChngPer
                                                           .toStringAsFixed(2)
                                                           .startsWith("-")
-                                                      ? 0XFFFF1717
-                                                      : 0xff43A833),
+                                                      ? colors.darkred
+                                                      : colors.ltpgreen,
                                                   14,
                                                   FontWeight.w500))
                                         ],
@@ -201,7 +201,7 @@ class HoldingScreen extends ConsumerWidget {
                                                 style: OutlinedButton.styleFrom(
                                                     side: BorderSide(
                                                       color: !theme.isDarkMode
-                                                          ? colors.colorBlack
+                                                          ? colors.colorGrey
                                                           : colors.colorWhite,
                                                     ),
                                                     shape: const RoundedRectangleBorder(
@@ -252,8 +252,9 @@ class HoldingScreen extends ConsumerWidget {
                                                           right: 12),
                                                   child: SvgPicture.asset(
                                                       assets.filterLines,
-                                                      color: const Color(
-                                                          0xff333333)),
+                                                      color: theme.isDarkMode
+                                      ?Color(0xffBDBDBD)
+                                      :colors.colorGrey),
                                                 )),
                                             InkWell(
                                               onTap: () {
@@ -266,8 +267,9 @@ class HoldingScreen extends ConsumerWidget {
                                                 child: SvgPicture.asset(
                                                     assets.searchIcon,
                                                     width: 19,
-                                                    color: const Color(
-                                                        0xff333333)),
+                                                    color: theme.isDarkMode
+                                      ?Color(0xffBDBDBD)
+                                      :colors.colorGrey),
                                               ),
                                             ),
                                           ],
@@ -631,11 +633,11 @@ class HoldingScreen extends ConsumerWidget {
                                                                 Text(
                                                                     " (${holdingProvide.holdingsModel![index].exchTsym![0].perChange}%)",
                                                                     style: textStyle(
-                                                                        Color(holdingProvide.holdingsModel![index].exchTsym![0].perChange!.startsWith("-")
-                                                                            ? 0XFFFF1717
+                                                                      holdingProvide.holdingsModel![index].exchTsym![0].perChange!.startsWith("-")
+                                                                            ? colors.darkred
                                                                             : holdingProvide.holdingsModel![index].exchTsym![0].perChange == "0.00"
-                                                                                ? 0xff666666
-                                                                                : 0xff43A833),
+                                                                                ? colors.ltpgrey
+                                                                                : colors.ltpgreen,
                                                                         12,
                                                                         FontWeight.w500)),
                                                               ],
@@ -707,19 +709,19 @@ class HoldingScreen extends ConsumerWidget {
                                                                     Text(
                                                                         "₹${holdingProvide.holdingsModel![index].exchTsym![0].profitNloss}",
                                                                         style: textStyle(
-                                                                            Color(holdingProvide.holdingsModel![index].exchTsym![0].profitNloss!.startsWith("-")
-                                                                                ? 0XFFFF1717
-                                                                                : 0xff43A833),
+                                                                          holdingProvide.holdingsModel![index].exchTsym![0].profitNloss!.startsWith("-")
+                                                                                ? colors.darkred
+                                                                                : colors.ltpgreen,
                                                                             14,
                                                                             FontWeight.w500)),
                                                                     Text(
                                                                         " (${holdingProvide.holdingsModel![index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdingProvide.holdingsModel![index].exchTsym![0].pNlChng}%)",
                                                                         style: textStyle(
-                                                                            Color(holdingProvide.holdingsModel![index].exchTsym![0].pNlChng!.startsWith("-")
-                                                                                ? 0XFFFF1717
+                                                                            holdingProvide.holdingsModel![index].exchTsym![0].pNlChng!.startsWith("-")
+                                                                                ? colors.darkred
                                                                                 : holdingProvide.holdingsModel![index].exchTsym![0].pNlChng == "NaN"
-                                                                                    ? 0xff666666
-                                                                                    : 0xff43A833),
+                                                                                    ? colors.darkred
+                                                                                    : colors.ltpgreen,
                                                                             12,
                                                                             FontWeight.w500)),
                                                                   ],
@@ -951,7 +953,7 @@ class HoldingScreen extends ConsumerWidget {
                                                       Text(
                                                           " (${holdingProvide.holdingSearchItem![index].exchTsym![0].perChange}%)",
                                                           style: textStyle(
-                                                              Color(holdingProvide
+                                                             holdingProvide
                                                                       .holdingSearchItem![
                                                                           index]
                                                                       .exchTsym![
@@ -959,14 +961,14 @@ class HoldingScreen extends ConsumerWidget {
                                                                       .perChange!
                                                                       .startsWith(
                                                                           "-")
-                                                                  ? 0XFFFF1717
+                                                                  ? colors.darkred
                                                                   : holdingProvide
                                                                               .holdingSearchItem![index]
                                                                               .exchTsym![0]
                                                                               .perChange ==
                                                                           "0.00"
-                                                                      ? 0xff666666
-                                                                      : 0xff43A833),
+                                                                      ? colors.ltpgrey
+                                                                      : colors.ltpgreen,
                                                               12,
                                                               FontWeight.w500)),
                                                     ],
@@ -1044,7 +1046,7 @@ class HoldingScreen extends ConsumerWidget {
                                                           Text(
                                                               "₹${holdingProvide.holdingSearchItem![index].exchTsym![0].profitNloss}",
                                                               style: textStyle(
-                                                                  Color(holdingProvide
+                                                               holdingProvide
                                                                           .holdingSearchItem![
                                                                               index]
                                                                           .exchTsym![
@@ -1052,15 +1054,15 @@ class HoldingScreen extends ConsumerWidget {
                                                                           .profitNloss!
                                                                           .startsWith(
                                                                               "-")
-                                                                      ? 0XFFFF1717
-                                                                      : 0xff43A833),
+                                                                      ? colors.darkred
+                                                                      : colors.ltpgreen,
                                                                   14,
                                                                   FontWeight
                                                                       .w500)),
                                                           Text(
                                                               " (${holdingProvide.holdingSearchItem![index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdingProvide.holdingSearchItem![index].exchTsym![0].pNlChng}%)",
                                                               style: textStyle(
-                                                                  Color(holdingProvide
+                                                                holdingProvide
                                                                           .holdingSearchItem![
                                                                               index]
                                                                           .exchTsym![
@@ -1068,11 +1070,11 @@ class HoldingScreen extends ConsumerWidget {
                                                                           .pNlChng!
                                                                           .startsWith(
                                                                               "-")
-                                                                      ? 0XFFFF1717
+                                                                      ? colors.darkred
                                                                       : holdingProvide.holdingSearchItem![index].exchTsym![0].pNlChng ==
                                                                               "NaN"
-                                                                          ? 0xff666666
-                                                                          : 0xff43A833),
+                                                                          ? colors.ltpgrey
+                                                                          : colors.ltpgreen,
                                                                   12,
                                                                   FontWeight
                                                                       .w500)),

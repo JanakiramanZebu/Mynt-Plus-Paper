@@ -164,10 +164,10 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                       FontWeight.w500)),
                               Text("${orderMargin.remarks}",
                                   style: textStyle(
-                                      Color(orderMargin.remarks ==
+                                      orderMargin.remarks ==
                                               "Insufficient Balance"
-                                          ? 0xffFF1717
-                                          : 0xff43A833),
+                                          ? colors.darkred
+                                          : colors.ltpgreen,
                                       14,
                                       FontWeight.w500))
                             ])

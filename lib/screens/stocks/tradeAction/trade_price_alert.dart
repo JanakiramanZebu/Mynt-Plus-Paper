@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/res/res.dart';
 
 class SetPriceAlert extends StatefulWidget {
   const SetPriceAlert({super.key});
@@ -92,7 +93,7 @@ class _SetPriceAlertState extends State<SetPriceAlert> {
                     '(-30.8%)',
                     style: GoogleFonts.inter(
                         fontSize: 14,
-                        color: const Color(0xffFF1717),
+                        color: colors.darkred,
                         fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -169,9 +170,8 @@ class _SetPriceAlertState extends State<SetPriceAlert> {
                 height: 40,
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xffFF1717),
-                      side: const BorderSide(
-                          width: 1.5, color: Color(0xffFF1717)),
+                      backgroundColor: colors.darkred,
+                     
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30)),
                     ),

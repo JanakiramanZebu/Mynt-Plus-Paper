@@ -152,16 +152,16 @@ class FutureScreen extends ConsumerWidget {
                     "${future.fut![index].change == "null" ? "0.00 " : double.parse("${future.fut![index].change}").toStringAsFixed(2)} "
                     "${future.fut![index].perChange == "null" ? "(0.00%)" : "(${future.fut![index].perChange ?? 0.00}%)"}",
                     style: textStyle(
-                        Color(future.fut![index].change!.startsWith("-") ||
+                        future.fut![index].change!.startsWith("-") ||
                                 future.fut![index].perChange!.startsWith('-')
-                            ? 0xffFF1717
+                            ? colors.darkred
                             : (future.fut![index].change == "null" ||
                                         future.fut![index].perChange ==
                                             "null") ||
                                     (future.fut![index].change == "0.00" ||
                                         future.fut![index].perChange == "0.00")
-                                ? 0xff999999
-                                : 0xff43A833),
+                                ? colors.ltpgrey
+                                : colors.ltpgreen,
                         12,
                         FontWeight.w600),
                   ),

@@ -227,7 +227,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                       "${holdingProvide[index].exchTsym![0].change == "null" ? "0.00 " : holdingProvide[index].exchTsym![0].change} "
                                       "${holdingProvide[index].exchTsym![0].perChange == "null" ? "(0.00%)" : "(${holdingProvide[index].exchTsym![0].perChange ?? 0.00}%)"}",
                                       style: textStyle(
-                                          Color(holdingProvide[index]
+                                        holdingProvide[index]
                                                       .exchTsym![0]
                                                       .change!
                                                       .startsWith("-") ||
@@ -235,7 +235,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                                       .exchTsym![0]
                                                       .perChange!
                                                       .startsWith('-')
-                                              ? 0xffFF1717
+                                              ? colors.darkred
                                               : (holdingProvide[index]
                                                                   .exchTsym![0]
                                                                   .change ==
@@ -252,8 +252,8 @@ class _StocksScreenState extends State<StocksScreen> {
                                                                   .exchTsym![0]
                                                                   .perChange ==
                                                               "0.00")
-                                                  ? 0xff999999
-                                                  : 0xff43A833),
+                                                  ? colors.ltpgrey
+                                                  : colors.ltpgreen,
                                           12,
                                           FontWeight.w600),
                                     ),

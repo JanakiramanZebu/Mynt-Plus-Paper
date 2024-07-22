@@ -49,29 +49,36 @@ CustomExchBadge(exch: "${orderBookList.exch}"),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                              color: Color(orderBookList.trantype == "S"
-                                  ? 0xffFFCDCD
-                                  : 0xffC1E7BA)),
-                          color: Color(orderBookList.trantype == "S"
-                              ? 0xffFCF3F3
-                              : 0xffECF8F1)),
+                                                        borderRadius: BorderRadius.circular(
+                                                            4),
+                                                        color: theme.isDarkMode
+                                                            ? Color(orderBookList.trantype == "S" ? 0XFFf44336 : 0xff43A833)
+                                                                .withOpacity(.2)
+                                                            : Color(orderBookList.trantype == "S"
+                                                                ? 0xffFCF3F3
+                                                                : 0xffECF8F1)),
                       child: Text(
                           orderBookList.trantype == "S" ? "SELL" : "BUY",
                           style: textStyle(
-                              Color(orderBookList.trantype == "S"
-                                  ? 0xffFF1717
-                                  : 0xff43A833),
+                              orderBookList.trantype == "S"
+                                  ? colors.darkred
+                                  : colors.ltpgreen,
                               12,
                               FontWeight.w600))),
                   Container(
                     margin: const EdgeInsets.only(left: 7),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: const Color(0xffF1F3F8))),
+                     decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
+                                                        color: theme.isDarkMode
+                                                            ? Color(0xff666666)
+                                                                .withOpacity(.2)
+                                                            : Color(0xff999999)
+                                                                .withOpacity(
+                                                                    .2)),
                     child: Text("${orderBookList.sPrdtAli}",
                         style: textStyle(
                             const Color(0xff666666), 12, FontWeight.w600)),
@@ -81,8 +88,15 @@ CustomExchBadge(exch: "${orderBookList.exch}"),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: const Color(0xffF1F3F8))),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
+                                                        color: theme.isDarkMode
+                                                            ? Color(0xff666666)
+                                                                .withOpacity(.2)
+                                                            : Color(0xff999999)
+                                                                .withOpacity(
+                                                                    .2)),
                       child: Text("${orderBookList.prctyp}",
                           style: textStyle(
                               const Color(0xff666666), 12, FontWeight.w600)))

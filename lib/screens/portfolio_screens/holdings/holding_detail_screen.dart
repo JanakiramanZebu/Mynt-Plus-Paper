@@ -66,14 +66,14 @@ class HoldingDetailScreen extends ConsumerWidget {
                     Text(
                         "${double.parse("${exchTsym.change ?? 0.00} ").toStringAsFixed(2)} (${exchTsym.perChange ?? 0.00}%)",
                         style: textStyle(
-                            Color((exchTsym.change == "null" ||
+                           (exchTsym.change == "null" ||
                                         exchTsym.change == null) ||
                                     exchTsym.change == "0.00"
-                                ? 0xff999999
+                                ? colors.ltpgrey
                                 : exchTsym.change!.startsWith("-") ||
                                         exchTsym.perChange!.startsWith("-")
-                                    ? 0xffFF1717
-                                    : 0xff43A833),
+                                    ? colors.darkred
+                                    : colors.ltpgreen,
                             12,
                             FontWeight.w500))
                   ])
@@ -117,16 +117,16 @@ class HoldingDetailScreen extends ConsumerWidget {
                           children: [
                             Text("${exchTsym.profitNloss}",
                                 style: textStyle(
-                                    Color(exchTsym.profitNloss!.startsWith("-")
-                                        ? 0XFFFF1717
-                                        : 0xff43A833),
+                                    exchTsym.profitNloss!.startsWith("-")
+                                        ? colors.darkred
+                                        : colors.ltpgreen,
                                     16,
                                     FontWeight.w600)),
                             Text(" (${exchTsym.pNlChng})%",
                                 style: textStyle(
-                                    Color(exchTsym.pNlChng!.startsWith("-")
-                                        ? 0XFFFF1717
-                                        : 0xff43A833),
+                                    exchTsym.pNlChng!.startsWith("-")
+                                        ? colors.darkred
+                                        : colors.ltpgreen,
                                     14,
                                     FontWeight.w500)),
                           ],
@@ -427,8 +427,8 @@ class HoldingDetailScreen extends ConsumerWidget {
                       ),
                       decoration: BoxDecoration(
                           color: holdingData.saleableQty == 0
-                              ? const Color(0XFFD34645).withOpacity(.8)
-                              : const Color(0XFFD34645),
+                              ?  colors.darkred.withOpacity(.8)
+                              : colors.darkred,
                           borderRadius: BorderRadius.circular(32)),
                       width: MediaQuery.of(context).size.width,
                       child: InkWell(

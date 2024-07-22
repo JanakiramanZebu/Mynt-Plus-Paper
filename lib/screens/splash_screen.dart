@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) {
       initializeResources(context: context);
-          context.read(networkStateProvider).networkStream();
+      context.read(networkStateProvider).networkStream();
       context.read(networkStateProvider).getContext(context);
       initialRoute();
     });
@@ -41,8 +41,10 @@ class _SplashScreenState extends State<SplashScreen> {
         body: Stack(children: [
       Center(
         child: SvgPicture.asset("assets/icon/zebulogo.svg",
-        color: Color(0xff003F9E),
-            height: 80, width: 150, fit: BoxFit.contain),
+            color: Color(0xff003F9E),
+            height: 80,
+            width: 150,
+            fit: BoxFit.contain),
       ),
     ]));
   }
@@ -51,26 +53,34 @@ class _SplashScreenState extends State<SplashScreen> {
     final Preferences pref = locator<Preferences>();
     try {
       print("Device  Name  ${pref.deviceName!} - ${pref.clientSession}");
- context.read(authProvider).loginMethCtrl.text = pref.isMobileLogin!?pref.clientMob!: pref.clientId!;
-  context.read(authProvider).switchMobToClinent( pref.clientId!.isEmpty?false:true);
+      context.read(authProvider).loginMethCtrl.text =
+          pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
+      context
+          .read(authProvider)
+          .switchMobToClinent(pref.clientId!.isEmpty ? false : true);
       if (pref.deviceName!.isEmpty) {
         await context.read(authProvider).getDeviceDetails();
       }
-      if ( pref.clientSession!.isEmpty) {
+      if (pref.clientSession!.isEmpty && pref.clientId!.isNotEmpty) {
+        pref.setHideLoginOptBtn(false);
+      } else {
+        pref.setHideLoginOptBtn(true);
+      }
+      if (pref.clientSession!.isEmpty) {
         pref.setLogout(true);
         Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, (route) => false);
       } else {
         // if (pref.logoutClient == "Logout") {
-         
+
         //   Navigator.pushNamedAndRemoveUntil(
         //       context, Routes.loginScreen, (route) => false,
         //       arguments: "deviceLogin");
         // } else {
-           pref.setMobileLogin(true);
-          await context
-              .read(authProvider)
-              .fetchMobileLogin(context, "", pref.clientId! );
+        pref.setMobileLogin(true);
+        await context
+            .read(authProvider)
+            .fetchMobileLogin(context, "", pref.clientId!);
         // }
       }
 

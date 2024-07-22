@@ -20,7 +20,7 @@ class SecureFund extends ConsumerWidget {
         ChartData(
             'Margin Used',
             double.parse("${funds.fundDetailModel?.margincurper ?? 0.00}"),
-         theme.isDarkMode?colors.colorWhite:colors.colorBlack ),
+         theme.isDarkMode?Color(0xffEEEEEE):colors.colorBlack ),
       ChartData(
           'Avialable Margin',
           double.parse("${funds.fundDetailModel?.avlMrgPercentage ?? 0.00}"),
@@ -314,7 +314,9 @@ class SecureFund extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
                       shadowColor: Colors.transparent,
-                      backgroundColor: theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                      backgroundColor: theme.isDarkMode
+                                      ?colors.colorbluegrey
+                                      :colors.colorBlack,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50),
                       )),
@@ -340,7 +342,9 @@ class SecureFund extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
                       shadowColor: Colors.transparent,
-                      backgroundColor: theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                      backgroundColor: theme.isDarkMode
+                                      ?colors.colorbluegrey
+                                      :colors.colorBlack,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50),
                       )),

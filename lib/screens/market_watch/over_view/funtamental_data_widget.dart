@@ -105,7 +105,10 @@ class FundamentalDataWidget extends ConsumerWidget {
                     style: textStyle(
                         theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w600)),
                 const SizedBox(height: 2),
-                Divider(color: colors.colorDivider)
+                Divider(color: 
+                theme.isDarkMode
+                ?colors.darkColorDivider
+                :colors.colorDivider)
               ])),
           const SizedBox(width: 18),
           Expanded(
@@ -122,7 +125,9 @@ class FundamentalDataWidget extends ConsumerWidget {
                       textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
-                Divider(color: colors.colorDivider)
+                Divider(color:  theme.isDarkMode
+                ?colors.darkColorDivider
+                :colors.colorDivider)
               ])),
           const SizedBox(width: 18),
           Expanded(
@@ -137,7 +142,9 @@ class FundamentalDataWidget extends ConsumerWidget {
                     style: textStyle(
                      theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w600)),
                 const SizedBox(height: 2),
-                Divider(color: colors.colorDivider)
+                Divider(color:  theme.isDarkMode
+                ?colors.darkColorDivider
+                :colors.colorDivider)
               ]))
         ]);
   }

@@ -59,10 +59,10 @@ class _NotificationpageState extends State<Notificationpage>
         return Column(
           children: [
             Container(
-                width: MediaQuery.of(context).size.width,
-                decoration: const BoxDecoration(
-                    border:
-                        Border(bottom: BorderSide(color: Color(0xffD7DCE4)))),
+              decoration:   BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(color:theme.isDarkMode?colors.darkColorDivider:colors.colorDivider,width: 0))),
+                width: MediaQuery.of(context).size.width,           
                 height: 46,
                 child: TabBar(
                     indicatorSize: TabBarIndicatorSize.tab,

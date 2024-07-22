@@ -100,7 +100,10 @@ class MutualFundholdings extends ConsumerWidget {
                 shrinkWrap: true,
                 itemCount: shareHoldings.fundamentalData!.mFholdings!.length,
                 separatorBuilder: (BuildContext context, int index) {
-                  return Divider(color: colors.colorDivider);
+                  return Divider(color: 
+                  theme.isDarkMode
+                  ?colors.darkColorDivider
+                  :colors.colorDivider);
                 },
                 itemBuilder: (BuildContext context, int index) {
                   return Padding(

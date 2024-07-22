@@ -62,7 +62,9 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: const Icon(Icons.close_rounded))
+              icon:  Icon(Icons.close_rounded , color: theme.isDarkMode
+                                      ?Color(0xffBDBDBD)
+                                      :colors.colorGrey))
         ],
       ),
       content: SizedBox(
@@ -222,7 +224,7 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
             },
             style: ElevatedButton.styleFrom(
               elevation: 0,
-              backgroundColor: theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+              backgroundColor: theme.isDarkMode?colors.colorbluegrey:colors.colorBlack,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50)),
             ),

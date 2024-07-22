@@ -67,14 +67,14 @@ class GttOrderDetail extends ConsumerWidget {
                     Text(
                         "${double.parse("${gttOrderBook.change ?? 0.00} ").toStringAsFixed(2)} (${gttOrderBook.perChange ?? 0.00}%)",
                         style: textStyle(
-                            Color((gttOrderBook.change == "null" ||
+                            (gttOrderBook.change == "null" ||
                                         gttOrderBook.change == null) ||
                                     gttOrderBook.change == "0.00"
-                                ? 0xff999999
+                                ? colors.ltpgrey
                                 : gttOrderBook.change!.startsWith("-") ||
                                         gttOrderBook.perChange!.startsWith("-")
-                                    ? 0xffFF1717
-                                    : 0xff43A833),
+                                    ? colors.darkred
+                                    : colors.ltpgreen,
                             12,
                             FontWeight.w500))
                   ])
@@ -139,7 +139,7 @@ class GttOrderDetail extends ConsumerWidget {
                       child: Container(
                         height: 40,
                         decoration: BoxDecoration(
-                            border: Border.all(color:theme.isDarkMode?colors.colorWhite:colors.colorBlack,),
+                            border: Border.all(color:theme.isDarkMode?colors.colorbluegrey:colors.colorBlack,),
                             borderRadius: BorderRadius.circular(108)),
                         child: Center(
                           child: Text("Modify Order",

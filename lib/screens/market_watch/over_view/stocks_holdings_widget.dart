@@ -37,14 +37,15 @@ class StocksHoldingsWidget extends ConsumerWidget {
                     alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                        color:
-                            Color(shareHoldings.selectedMfHolddate == shareHoldings.mfHoldingDate[index] ? 0xff000000 : 0xffffffff)
-                                .withOpacity(.08),
-                        border: Border.all(
-                            color: Color(shareHoldings.selectedMfHolddate ==
+                      color: theme.isDarkMode
+                            ? shareHoldings.selectedMfHolddate ==
                                     shareHoldings.mfHoldingDate[index]
-                                ? 0xff000000
-                                : 0xffECEDEE)),
+                                ? Color(0xffB0BEC5)
+                                : Color(0xffB5C0CF).withOpacity(.15)
+                            : shareHoldings.selectedMfHolddate ==
+                                    shareHoldings.mfHoldingDate[index]
+                                ? const Color(0xff000000)
+                                : const Color(0xffF1F3F8),
                         borderRadius: BorderRadius.circular(98)),
                     child: InkWell(
                         onTap: () async {
@@ -53,9 +54,15 @@ class StocksHoldingsWidget extends ConsumerWidget {
                         },
                         child: Text(shareHoldings.mfHoldingDate[index],
                             style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
+                                 theme.isDarkMode
+                                    ? shareHoldings.selectedMfHolddate ==
+                                            shareHoldings.mfHoldingDate[index]
+                                        ? colors.colorBlack
+                                        : colors.colorWhite
+                                    : shareHoldings.selectedMfHolddate ==
+                                            shareHoldings.mfHoldingDate[index]
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
                                 14,
                                 shareHoldings.selectedMfHolddate ==
                                         shareHoldings.mfHoldingDate[index]
@@ -103,25 +110,37 @@ class StocksHoldingsWidget extends ConsumerWidget {
           "${stockHold[shareHoldings.selectedMfHoldindex].promoters}",
           const Color(0xff2e8564),
           theme),
-      const Divider(color: Color(0xffDDE2E7), height: 0),
+      Divider(
+        thickness: 0,
+        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        height: 0),
       holdData(
           "Foriegin Institution",
           "${stockHold[shareHoldings.selectedMfHoldindex].fiiFpi}",
           const Color(0xff7cd36f),
           theme),
-      const Divider(color: Color(0xffDDE2E7), height: 0),
+     Divider(
+        thickness: 0,
+        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        height: 0),
       holdData(
           "Other Domestic Institution",
           "${stockHold[shareHoldings.selectedMfHoldindex].dii}",
           const Color(0xfff7cd6c),
           theme),
-      const Divider(color: Color(0xffDDE2E7), height: 0),
+      Divider(
+        thickness: 0,
+        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        height: 0),
       holdData(
           "Retail and Others",
           "${stockHold[shareHoldings.selectedMfHoldindex].retailAndOthers}",
           const Color(0XFFfbebc4),
           theme),
-      const Divider(color: Color(0xffDDE2E7), height: 0),
+      Divider(
+        thickness: 0,
+        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        height: 0),
       holdData(
           "Mutual Funds",
           "${stockHold[shareHoldings.selectedMfHoldindex].mutualFunds}",
@@ -222,8 +241,12 @@ class StocksHoldingsWidget extends ConsumerWidget {
           style: textStyle(const Color(0xff666666), 13, FontWeight.w500),
           textAlign: TextAlign.left,
           trimLines: 4,
-          moreStyle: textStyles.morestyle,
-          lessStyle: textStyles.morestyle,
+          moreStyle: theme.isDarkMode
+              ? textStyles.darkmorestyle
+              : textStyles.morestyle,
+          lessStyle: theme.isDarkMode
+              ? textStyles.darkmorestyle
+              : textStyles.morestyle,
           colorClickableText: const Color(0xff0037B7),
           trimMode: TrimMode.Line,
           trimCollapsedText: 'Read more',

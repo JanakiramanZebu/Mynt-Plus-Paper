@@ -251,7 +251,7 @@ class _SetAlertState extends State<SetAlert> {
             if (errorText.isNotEmpty) ...[
               Text(errorText,
                   style:
-                      textStyle(const Color(0xffFF1717), 10, FontWeight.w500)),
+                      textStyle(colors.darkred, 10, FontWeight.w500)),
             ],
             const SizedBox(
               height: 16,

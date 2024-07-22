@@ -69,7 +69,7 @@ class _OrderBookScreenState extends State<OrderBookScreen>
                       height: 46,
                       child: TabBar( 
                         tabAlignment:TabAlignment.start,
-                          indicatorSize: TabBarIndicatorSize.label,
+                          indicatorSize: TabBarIndicatorSize.tab,
                           isScrollable: true,
                           indicatorColor:  theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
                           unselectedLabelColor: const Color(0XFF777777),

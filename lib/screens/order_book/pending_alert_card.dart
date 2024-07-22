@@ -92,24 +92,24 @@ class _PendingAlertState extends State<PendingAlert> {
                                           Text(
                                               " (${manage.alertPendingModel![index].perChange ?? 0.00}%)",
                                               style: textStyle(
-                                                  Color(manage
+                                                manage
                                                               .alertPendingModel![
                                                                   index]
                                                               .perChange ==
                                                           null
-                                                      ? 0
+                                                      ? colors.ltpgrey
                                                       : manage
                                                               .alertPendingModel![
                                                                   index]
                                                               .perChange!
                                                               .startsWith(
                                                                   "-")
-                                                          ? 0XFFFF1717
+                                                          ? colors.darkred
                                                           : manage.alertPendingModel![index]
                                                                       .perChange ==
                                                                   "0.00"
-                                                              ? 0xff666666
-                                                              : 0xff43A833),
+                                                              ? colors.ltpgrey
+                                                              : colors.ltpgreen,
                                                   12,
                                                   FontWeight.w500))
                                         ]),
@@ -180,21 +180,17 @@ class _PendingAlertState extends State<PendingAlert> {
                                                                     index]
                                                                 .aiT ==
                                                             "LTP_A"
-                                                        ? const Color(
-                                                            0xff43A833)
+                                                        ? colors.ltpgreen
                                                         : manage
                                                                     .alertPendingModel![
                                                                         index]
                                                                     .aiT ==
                                                                 "LTP_B"
-                                                            ? const Color(
-                                                                0xffFF1717)
+                                                            ? colors.darkred
                                                             : manage.alertPendingModel![index].aiT ==
                                                                     "CH_PER_A"
-                                                                ? const Color(
-                                                                    0xff43A833)
-                                                                : const Color(
-                                                                    0xffFF1717)),
+                                                                ? colors.ltpgreen
+                                                                : colors.darkred),
                                               ),
                                               Text(manage
                                                               .alertPendingModel![

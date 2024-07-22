@@ -264,7 +264,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                                       : colors.colorBlack
                                                   : auth.isDisableOtpBtn
                                                       ? colors.darkGrey
-                                                      : colors.colorWhite,
+                                                      : colors.colorbluegrey,
                                               padding:
                                                   const EdgeInsets.symmetric(
                                                       vertical: 13),

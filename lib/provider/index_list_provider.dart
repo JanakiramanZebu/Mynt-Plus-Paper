@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/provider/thems.dart';
 import 'package:shared_preferences/shared_preferences.dart';
  
 
@@ -115,7 +116,9 @@ class IndexListProvider extends DefaultChangeNotifier {
         //If it's last item, we will not add Divider after it.
         if (item != indexExch.last)
           DropdownMenuItem<String>(
-              enabled: false, child: Divider(color: colors.colorDivider))
+              enabled: false, child: Divider(color: ref(themeProvider).isDarkMode
+              ?colors.colorbluegrey
+              :colors.colorDivider))
       ]);
     }
     return menuItems;

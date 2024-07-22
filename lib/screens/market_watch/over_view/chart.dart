@@ -119,7 +119,12 @@ class FBalSheetCahrtState extends State<FBalSheetCahrt> {
           height: 320,
           width: MediaQuery.of(context).size.width,
           child: SfCartesianChart(
-              legend: Legend(isVisible: true, position: LegendPosition.bottom,image: const AssetImage('assets/img/bought.png'),
+              legend: Legend(
+                 textStyle: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      12,
+                      FontWeight.w400),
+                isVisible: true, position: LegendPosition.bottom,image: const AssetImage('assets/img/bought.png'),
                   overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
                 labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 10, FontWeight.w500),
@@ -197,6 +202,10 @@ class FIncomeChartState extends State<FIncomeChart> {
           width: MediaQuery.of(context).size.width,
           child: SfCartesianChart(
               legend: Legend(
+                 textStyle: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      12,
+                      FontWeight.w400),
                   isVisible: true,
                   position: LegendPosition.bottom,     image: const AssetImage('assets/img/bought.png'),
                   overflowMode: LegendItemOverflowMode.wrap),
@@ -286,7 +295,12 @@ class FCashFlowChartState extends State<FCashFlowChart> {
           height: 320,
           width: MediaQuery.of(context).size.width,
           child: SfCartesianChart(
-              legend: Legend(isVisible: true, position: LegendPosition.bottom,image: const AssetImage('assets/img/bought.png'),
+              legend: Legend(
+                 textStyle: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      12,
+                      FontWeight.w400),
+                isVisible: true, position: LegendPosition.bottom,image: const AssetImage('assets/img/bought.png'),
                   overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
                 labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 10, FontWeight.w500),
@@ -365,6 +379,11 @@ class PriceComChartState extends State<PriceComChart> {
           width: MediaQuery.of(context).size.width,
           child: SfCartesianChart(
               legend: Legend(
+              
+                  textStyle: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      12,
+                      FontWeight.w400),
                   isVisible: true,
                   image: const AssetImage('assets/img/bought.png'),
                   position: LegendPosition.bottom,

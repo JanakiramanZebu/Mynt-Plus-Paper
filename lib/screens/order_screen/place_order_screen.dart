@@ -233,7 +233,13 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                             children: [
                               OrderScreenHeader(headerData: widget.orderArg),
                               Row(children: [
-                                SvgPicture.asset(assets.buyIcon),
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                        isBuy = true;
+                                      });
+                                  },
+                                  child: SvgPicture.asset(assets.buyIcon)),
                                 const SizedBox(width: 6),
                                 CustomSwitch(
                                     onChanged: (bool value) {
@@ -244,7 +250,13 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                     },
                                     value: isBuy!),
                                 const SizedBox(width: 6),
-                                SvgPicture.asset(assets.sellIcon)
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                        isBuy = false;
+                                      });
+                                  },
+                                  child: SvgPicture.asset(assets.sellIcon))
                               ])
                             ])
                       ]),
@@ -565,7 +577,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                               priceTypes[index]
                                                                   ['type']
                                                           ? colors.darkGrey
-                                                          : colors.colorWhite,
+                                                          : colors.colorbluegrey,
                                                   shape: const StadiumBorder()),
                                               child: Text(
                                                   priceTypes[index]['type'],
@@ -1143,7 +1155,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                                         ? colors
                                                                             .darkGrey
                                                                         : colors
-                                                                            .colorWhite,
+                                                                            .colorbluegrey,
                                                                 shape:
                                                                     const StadiumBorder()),
                                                         child: Text(
@@ -2027,9 +2039,9 @@ theme.isDarkMode? Color(orderInput.investType ==
                                         style: ElevatedButton.styleFrom(
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 10),
-                                            backgroundColor: Color(isBuy!
-                                                ? 0xff43A833
-                                                : 0xffFF1717),
+                                            backgroundColor: isBuy!
+                                                ? colors.ltpgreen
+                                                : colors.darkred,
                                             shape: const StadiumBorder()),
                                         child: Text(
                                             isBuy! ? 'Buy Now' : "Sell Now",
@@ -2388,7 +2400,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                           style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               backgroundColor:
-                                  Color(isBuy! ? 0xff43A833 : 0xffFF1717),
+                                  isBuy! ? colors.ltpgreen : colors.darkred,
                               shape: const StadiumBorder()),
                           child: Text(isBuy! ? 'Buy Now' : "Sell Now",
                               style: textStyle(const Color(0xffffffff), 14,

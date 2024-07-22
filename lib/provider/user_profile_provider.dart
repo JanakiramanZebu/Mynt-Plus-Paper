@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/provider/thems.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
@@ -171,12 +172,12 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/icon/key-01.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
-      // {
-      //   "title": "Theme",
-      //   "subTitle": ref(themeProvider).deviceTheme,
-      //   "leading": "assets/icon/theme_icon.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg"
-      // },
+      {
+        "title": "Theme",
+        "subTitle": ref(themeProvider).deviceTheme,
+        "leading": "assets/icon/theme_icon.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
       {
         "title": "Log",
         "subTitle": "Log message",
@@ -294,14 +295,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       //   "key": ref(showcaseProvide).theamcase,
       //   "case": "Click here to view the Theme page."
       // },
-      // {
-      //   "title": "Log",
-      //   "subTitle": "Log message",
-      //   "leading": "assets/profile/privacy_settings.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).logcase,
-      //   "case": "Click here to view the Log message."
-      // },
+     
       // {
       //   "title": "Stocks",
       //   "subTitle": "Stocks Screen",

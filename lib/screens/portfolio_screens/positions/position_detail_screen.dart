@@ -79,14 +79,14 @@ class PositionDetailScreen extends ConsumerWidget {
                     Text(
                         "${double.parse("${positionList.chng ?? 0.00} ").toStringAsFixed(2)} (${positionList.perChange ?? 0.00}%)",
                         style: textStyle(
-                            Color((positionList.chng == "null" ||
+                            (positionList.chng == "null" ||
                                         positionList.chng == null) ||
                                     positionList.chng == "0.00"
-                                ? 0xff999999
+                                ? colors.ltpgrey
                                 : positionList.chng!.startsWith("-") ||
                                         positionList.perChange!.startsWith("-")
-                                    ? 0xffFF1717
-                                    : 0xff43A833),
+                                    ? colors.darkred
+                                    : colors.ltpgreen,
                             12,
                             FontWeight.w500))
                   ])
@@ -118,7 +118,7 @@ class PositionDetailScreen extends ConsumerWidget {
                     },
                     child: Container(
                         decoration: BoxDecoration(
-                            border: Border.all(color:theme.isDarkMode?colors.colorWhite:colors.colorBlack),
+                            border: Border.all(color:theme.isDarkMode?colors.colorGrey:colors.colorBlack),
                             borderRadius: BorderRadius.circular(32)),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
@@ -141,28 +141,28 @@ class PositionDetailScreen extends ConsumerWidget {
                           Text(
                               "₹${positionList.profitNloss ?? positionList.rpnl}",
                               style: textStyle(
-                                  Color(positionList.profitNloss != null
+                                 positionList.profitNloss != null
                                       ? positionList.profitNloss!
                                               .startsWith("-")
-                                          ? 0XFFFF1717
+                                          ? colors.darkred
                                           : positionList.profitNloss == "0.00"
-                                              ? 0xff999999
-                                              : 0xff43A833
+                                              ? colors.ltpgrey
+                                              : colors.ltpgreen
                                       : positionList.rpnl!.startsWith("-")
-                                          ? 0XFFFF1717
+                                          ? colors.darkred
                                           : positionList.rpnl == "0.00"
-                                              ? 0xff999999
-                                              : 0xff43A833),
+                                              ? colors.ltpgrey
+                                              : colors.ltpgreen,
                                   15,
                                   FontWeight.w600))
                         ] else ...[
                           Text("₹${positionList.mTm}",
                               style: textStyle(
-                                  Color(positionList.mTm!.startsWith("-")
-                                      ? 0XFFFF1717
+                                  positionList.mTm!.startsWith("-")
+                                      ?  colors.darkred
                                       : positionList.mTm == "0.00"
-                                          ? 0xff999999
-                                          : 0xff43A833),
+                                          ? colors.ltpgrey
+                                          : colors.ltpgreen,
                                   15,
                                   FontWeight.w600))
                         ]
@@ -508,7 +508,7 @@ class PositionDetailScreen extends ConsumerWidget {
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                                color: const Color(0XFFD34645),
+                                color: colors.darkred,
                                 borderRadius: BorderRadius.circular(32)),
                             width: MediaQuery.of(context).size.width,
                             child: InkWell(

@@ -148,12 +148,13 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                                 bottom: BorderSide(color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider,width: 0))),
                         height: 40,
                         child: TabBar(
+                          
                             isScrollable: true,
                             indicatorSize: TabBarIndicatorSize.tab,
                             indicatorColor: colors.colorBlack,
                             indicator: BoxDecoration(
                                 borderRadius: BorderRadius.circular(30),
-                                color: theme.isDarkMode? colors.colorWhite: colors.colorBlack),
+                                color: theme.isDarkMode? colors.colorbluegrey: colors.colorBlack),
                             unselectedLabelColor: colors.colorGrey,
                             unselectedLabelStyle: GoogleFonts.inter(
                                 textStyle: const TextStyle(

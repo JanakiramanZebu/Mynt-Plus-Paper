@@ -31,12 +31,15 @@ class StockEvents extends ConsumerWidget {
                       alignment: Alignment.center,
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                         decoration: BoxDecoration(
-                           color: Color( stockEve.selectedevent == stockEve.eveType[index]
-                                ?0xff000000: 0xffffffff).withOpacity(.08),
-                        border: Border.all(
-                            color: Color( stockEve.selectedevent == stockEve.eveType[index]
-                                ? 0xff000000
-                                : 0xffECEDEE)),
+                            color: theme.isDarkMode
+                              ? stockEve.selectedevent ==
+                                      stockEve.eveType[index]
+                                  ? const Color(0xffB0BEC5)
+                                  : const Color(0xffB5C0CF).withOpacity(.15)
+                              : stockEve.selectedevent ==
+                                      stockEve.eveType[index]
+                                  ? const Color(0xff000000)
+                                  : const Color(0xffF1F3F8),
                         
                         borderRadius: BorderRadius.circular(98)),
                       
@@ -46,7 +49,15 @@ class StockEvents extends ConsumerWidget {
                           },
                           child: Text(stockEve.eveType[index],
                               style: textStyle(
-                                  const Color(  0XFF000000),
+                                  theme.isDarkMode
+                                      ? stockEve.selectedevent ==
+                                              stockEve.eveType[index]
+                                          ? colors.colorBlack
+                                          : colors.colorWhite
+                                      : stockEve.selectedevent ==
+                                              stockEve.eveType[index]
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
                                   14,
                                  stockEve.selectedevent == stockEve.eveType[index]?  FontWeight.w500:FontWeight.w400))));
                 },

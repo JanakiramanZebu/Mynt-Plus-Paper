@@ -493,7 +493,7 @@ class _GTTOrderScreenState extends State<GTTOrderScreen> {
                                                                       ? colors
                                                                           .darkGrey
                                                                       : colors
-                                                                          .colorWhite,
+                                                                          .colorbluegrey,
                                                               shape:
                                                                   const StadiumBorder()),
                                                       child: Text(
@@ -1026,8 +1026,8 @@ class _GTTOrderScreenState extends State<GTTOrderScreen> {
                                       style: ElevatedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 10),
-                                          backgroundColor: Color(
-                                              isBuy! ? 0xff43A833 : 0xffFF1717),
+                                          backgroundColor: 
+                                              isBuy! ? colors.ltpgreen : colors.darkred,
                                           shape: const StadiumBorder()),
                                       child: Text(
                                           widget.orderArg.isModify

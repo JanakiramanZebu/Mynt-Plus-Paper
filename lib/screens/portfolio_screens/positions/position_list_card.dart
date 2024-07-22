@@ -77,17 +77,19 @@ class PositionListCard extends ConsumerWidget {
                             horizontal: 6, vertical: 3),
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(2),
-                            color: theme.isDarkMode
+                             color: theme.isDarkMode
                                 ? positionList.qty == "0"
                                     ? colors.colorBlack
-                                    : colors.darkGrey
+                                    : Color(0xff666666).withOpacity(.2)
                                 : positionList.qty == "0"
                                     ? colors.colorWhite
                                     : const Color(0xffECEDEE)),
                         child: Text("${positionList.exch}",
                             overflow: TextOverflow.ellipsis,
                             style: textStyle(
-                                const Color(0xff666666), 10, FontWeight.w500)),
+                              theme.isDarkMode
+                              ?colors.colorWhite
+                                :Color(0xff666666), 10, FontWeight.w500)),
                       ),
                       Text("  ${positionList.expDate} ",
                           overflow: TextOverflow.ellipsis,
@@ -100,11 +102,11 @@ class PositionListCard extends ConsumerWidget {
                   if (socketDatas.containsKey(positionList.token)) ...[
                     Text(" (${positionList.perChange ?? 0.00}%)",
                         style: textStyle(
-                            Color(positionList.perChange!.startsWith("-")
-                                ? 0XFFFF1717
+                            positionList.perChange!.startsWith("-")
+                                ? colors.darkred
                                 : positionList.perChange == "0.00"
-                                    ? 0xff666666
-                                    : 0xff43A833),
+                                    ? colors.ltpgrey
+                                    : colors.ltpgreen,
                             12,
                             FontWeight.w500)),
                   ]
@@ -140,18 +142,18 @@ class PositionListCard extends ConsumerWidget {
                             Text(
                                 "₹${positionList.profitNloss ?? positionList.rpnl}",
                                 style: textStyle(
-                                    Color(positionList.profitNloss != null
+                                  positionList.profitNloss != null
                                         ? positionList.profitNloss!
                                                 .startsWith("-")
-                                            ? 0XFFFF1717
+                                            ? colors.darkred
                                             : positionList.profitNloss == "0.00"
-                                                ? 0xff999999
-                                                : 0xff43A833
+                                                ? colors.ltpgrey
+                                                : colors.ltpgreen
                                         : positionList.rpnl!.startsWith("-")
-                                            ? 0XFFFF1717
+                                            ? colors.darkred
                                             : positionList.rpnl == "0.00"
-                                                ? 0xff999999
-                                                : 0xff43A833),
+                                                ? colors.ltpgrey
+                                                : colors.ltpgreen,
                                     15,
                                     FontWeight.w600)),
                           ],
@@ -163,11 +165,11 @@ class PositionListCard extends ConsumerWidget {
                                     FontWeight.w500)),
                             Text("₹${positionList.mTm}",
                                 style: textStyle(
-                                    Color(positionList.mTm!.startsWith("-")
-                                        ? 0XFFFF1717
+                                    positionList.mTm!.startsWith("-")
+                                        ? colors.darkred
                                         : positionList.mTm == "0.00"
-                                            ? 0xff999999
-                                            : 0xff43A833),
+                                            ? colors.ltpgrey
+                                            : colors.ltpgreen,
                                     15,
                                     FontWeight.w600)),
                           ],

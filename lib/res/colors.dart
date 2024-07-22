@@ -9,12 +9,17 @@ class AppColors {
 
   final colorGrey = const Color(0xff666666);
   final colorBlue = const Color(0xff0037B7);
-  final colorLightBlue = const Color(0xff99c3ff);
-  
+  final colorLightBlue = const Color(0xff2E65F6); //0xff99c3ff
+  final colorbluegrey = const Color(0xffB0BEC5); //0xffB0BEC5
+  final darkred = const Color(0xfff44336);
+  final darkiconcolor = const Color(0xffBDBDBD);
+  final ltpgrey = const Color(0xff999999);
+  final ltpgreen = const Color(0xff43A833);
+
   final darkColorDivider = const Color(0xffECEDEE).withOpacity(.1);
   final colorDivider = const Color(0xffDDE2E7);
 
-    final darkGrey = const Color(0xffB5C0CF).withOpacity(.15);
+  final darkGrey = const Color(0xffB5C0CF).withOpacity(.15);
 
   final kColorBlack60 = Colors.black54;
   final kColorBlack80 = Colors.black87;

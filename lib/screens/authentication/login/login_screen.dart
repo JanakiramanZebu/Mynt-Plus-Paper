@@ -151,6 +151,7 @@ class LoginScreen extends ConsumerWidget {
                                         onTap: ()async {
                                           {
                                             pref.setLogout(false);
+                                                pref.setHideLoginOptBtn(true);
                                             // Navigator.pushNamedAndRemoveUntil(
                                             //     context,
                                             //     Routes.loginScreen,
@@ -257,13 +258,13 @@ class LoginScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 12),
                             Row(
-                              mainAxisAlignment: 
+                              mainAxisAlignment: !pref.hideLoginOptBtn!?MainAxisAlignment.end:
                               
                              
                                   
                                   MainAxisAlignment.spaceBetween,
                               children: [
-                                
+                             if   (pref.hideLoginOptBtn!)
                               InkWell(
                                     // style: TextButton.styleFrom(
                                     //     padding: const EdgeInsets.symmetric(
@@ -323,7 +324,7 @@ class LoginScreen extends ConsumerWidget {
                                             : colors.colorBlack
                                         : auth.isDisableBtn
                                             ? colors.darkGrey
-                                            : colors.colorWhite,
+                                            : colors.colorbluegrey,
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 13),
                                     shape: RoundedRectangleBorder(

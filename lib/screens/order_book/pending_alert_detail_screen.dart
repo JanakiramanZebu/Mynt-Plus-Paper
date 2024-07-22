@@ -39,30 +39,10 @@ class _PendingAlertDetailsState extends State<PendingAlertDetails> {
                 FontWeight.w600)),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
         child: Row(
           children: [
-            Expanded(
-                child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      context
-                          .read(marketWatchProvider)
-                          .fetchCancelAlert("${widget.alert.alId}", context);
-                      context
-                          .read(marketWatchProvider)
-                          .fetchPendingAlert(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: const Color(0XFFFF1717),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50))),
-                    child: Text("Cancel Alert",
-                        style: textStyle(
-                            const Color(0xffFFFFFF), 14, FontWeight.w500)))),
-            const SizedBox(width: 16),
-            Expanded(
+              Expanded(
                 child: ElevatedButton(
                     onPressed: () async {
                       Navigator.pop(context);
@@ -80,7 +60,7 @@ class _PendingAlertDetailsState extends State<PendingAlertDetails> {
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
                         backgroundColor: theme.isDarkMode
-                            ? colors.colorWhite
+                            ? colors.colorbluegrey
                             : colors.colorBlack,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50))),
@@ -91,6 +71,28 @@ class _PendingAlertDetailsState extends State<PendingAlertDetails> {
                                 : colors.colorBlack,
                             14,
                             FontWeight.w500)))),
+           const SizedBox(width: 16),
+            Expanded(
+                child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      context
+                          .read(marketWatchProvider)
+                          .fetchCancelAlert("${widget.alert.alId}", context);
+                      context
+                          .read(marketWatchProvider)
+                          .fetchPendingAlert(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: colors.darkred,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50))),
+                    child: Text("Cancel Alert",
+                        style: textStyle(
+                            const Color(0xffFFFFFF), 14, FontWeight.w500)))),
+           
+          
           ],
         ),
       ),
@@ -138,11 +140,11 @@ class _PendingAlertDetailsState extends State<PendingAlertDetails> {
                         CustomExchBadge(exch: "${widget.alert.exch}"),
                         Text(" (${widget.alert.perChange ?? 0.00}%)",
                             style: textStyle(
-                                Color(widget.alert.perChange!.startsWith("-")
-                                    ? 0XFFFF1717
+                                widget.alert.perChange!.startsWith("-")
+                                    ? colors.darkred
                                     : widget.alert.perChange == "0.00"
-                                        ? 0xff666666
-                                        : 0xff43A833),
+                                        ? colors.ltpgrey
+                                        : colors.ltpgreen,
                                 12,
                                 FontWeight.w500))
                       ]),
@@ -214,12 +216,12 @@ class _PendingAlertDetailsState extends State<PendingAlertDetails> {
                                         : Icons.arrow_downward,
                             size: 18,
                             color: widget.alert.aiT == "LTP_A"
-                                ? const Color(0xff43A833)
+                                ? colors.ltpgreen
                                 : widget.alert.aiT == "LTP_B"
-                                    ? const Color(0xffFF1717)
+                                    ? colors.darkred
                                     : widget.alert.aiT == "CH_PER_A"
-                                        ? const Color(0xff43A833)
-                                        : const Color(0xffFF1717)),
+                                        ? colors.ltpgreen
+                                        : colors.darkred),
                       ),
                     ],
                   ),

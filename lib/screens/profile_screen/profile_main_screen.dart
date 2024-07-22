@@ -14,8 +14,7 @@ import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart'; 
-import '../../sharedWidget/functions.dart';
-import '../../sharedWidget/list_divider.dart';
+import '../../sharedWidget/functions.dart'; 
 import 'need_help_screen.dart';
 
 class UserAccountScreen extends ConsumerWidget {
@@ -133,7 +132,7 @@ class UserAccountScreen extends ConsumerWidget {
                                       elevation: 0,
                                       shadowColor: Colors.transparent,
                                       backgroundColor: theme.isDarkMode
-                                          ? colors.colorWhite
+                                          ? colors.colorbluegrey
                                           : colors.colorBlack,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(50),
@@ -166,7 +165,10 @@ class UserAccountScreen extends ConsumerWidget {
                                     },
                                     child: Text(
                                       "Share",
-                                      style: textStyles.textBtn,
+                                      style: 
+                                      theme.isDarkMode
+                                      ?textStyles.darktextBtn
+                                      :textStyles.textBtn,
                                     ))
                                 : SvgPicture.asset(
                                     userProfile.profileMenu[index]['trailing'])
@@ -175,7 +177,9 @@ class UserAccountScreen extends ConsumerWidget {
                       );
                     },
                     separatorBuilder: (BuildContext context, int index) {
-                      return const ListDivider();
+                      return Divider(
+                          
+                            color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider, height: 0);
                     }),
               ),
               Padding(
@@ -235,7 +239,9 @@ class UserAccountScreen extends ConsumerWidget {
                                   },
                                   style: ElevatedButton.styleFrom(
                                       elevation: 0,
-                                      backgroundColor: const Color(0xff000000),
+                                      backgroundColor: theme.isDarkMode
+                                      ?colors.colorbluegrey
+                                      :colors.colorBlack,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(50),
                                       )),
@@ -255,7 +261,7 @@ class UserAccountScreen extends ConsumerWidget {
                     },
                     style: OutlinedButton.styleFrom(
                         backgroundColor: theme.isDarkMode
-                            ? colors.colorWhite
+                            ? colors.colorbluegrey
                             : colors.colorBlack,
                         padding: const EdgeInsets.symmetric(vertical: 10.5),
                         shape: const RoundedRectangleBorder(

@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:another_xlider/another_xlider.dart';
+import 'package:another_xlider/models/handler.dart';
+import 'package:another_xlider/models/tooltip/tooltip.dart';
+import 'package:another_xlider/models/trackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -14,7 +18,6 @@ import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';  
-import '../../sharedWidget/cus_slider_thumb.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/list_divider.dart';
@@ -245,8 +248,20 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                               .scripInfoModel!
                                                               .stat ==
                                                           "Ok") {
-                                                        showDialog(
-                                                            context: ctx,
+                                                          showModalBottomSheet(
+                                                            backgroundColor:
+                                                                Color(
+                                                                    0xff000000),
+                                                            isScrollControlled:
+                                                                true,
+                                                            useSafeArea: true,
+                                                            isDismissible: true,
+                                                            shape: const RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius.vertical(
+                                                                        top: Radius.circular(
+                                                                            16))),
+                                                            context: context,
                                                             builder:
                                                                 (BuildContext
                                                                     context) {
@@ -302,21 +317,21 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                           Text(
                                               " ${double.parse("${depthData.chng ?? 0.00} ").toStringAsFixed(2)} (${depthData.pc ?? 0.00}%)",
                                               style: textStyle(
-                                                  Color((depthData.chng ==
+                                                  (depthData.chng ==
                                                                   "null" ||
                                                               depthData.chng ==
                                                                   null) ||
                                                           depthData.chng ==
                                                               "0.00"
-                                                      ? 0xff999999
+                                                      ? colors.ltpgrey
                                                       : depthData.chng!
                                                                   .startsWith(
                                                                       "-") ||
                                                               depthData.pc!
                                                                   .startsWith(
                                                                       "-")
-                                                          ? 0xffFF1717
-                                                          : 0xff43A833),
+                                                          ? colors.darkred
+                                                          : colors.ltpgreen,
                                                   12,
                                                   FontWeight.w500))
                                         ])),
@@ -463,8 +478,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                               scripInfo.depthBtns[
                                                                       index]
                                                                   ['btnName']
-                                                          ? const Color(
-                                                              0xffF1F3F8)
+                                                          ? colors.colorbluegrey
                                                           : const Color(
                                                                   0xffB5C0CF)
                                                               .withOpacity(.15)
@@ -882,7 +896,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                       Text("Bid",
                                                           style: textStyle(
                                                               const Color(
-                                                                  0XFF148564),
+                                                                  0xff43A833),
                                                               13,
                                                               FontWeight.w600))
                                                     ]),
@@ -933,8 +947,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                     children: [
                                                       Text("Ask",
                                                           style: textStyle(
-                                                              const Color(
-                                                                  0XFFD34645),
+                                                              colors.darkred,
                                                               13,
                                                               FontWeight.w600)),
                                                       Text("Qty",
@@ -1022,13 +1035,13 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                         scripInfo.totSellQtyPer.toStringAsFixed(2) ==
                                                             "0.00")
                                                     ? const Color(0xffECEDEE)
-                                                    : const Color(0XFFD34645)
-                                                        .withOpacity(.2),
+                                                    : const Color(0XFFD34645),
+                                                       
                                             percent: scripInfo.totBuyQtyPerChng,
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 14),
                                             progressColor: const Color(0xff43A833)
-                                                .withOpacity(.2)),
+                                               ),
                                         const SizedBox(height: 5),
                                         Divider(color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider)
                                       ],
@@ -1113,7 +1126,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                       .toString()
                                                                       .startsWith(
                                                                           "-")
-                                                                  ? 0xffFF1717
+                                                                  ? 0xffF44336
                                                                   : 0xff43A833),
                                                               18,
                                                               FontWeight.w500)),
@@ -1258,7 +1271,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 height: 40,
                                                 decoration: BoxDecoration(
                                                     color:
-                                                        const Color(0XFFD34645),
+                                                        colors.darkred,
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             108)),
@@ -1336,7 +1349,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                     },
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: !theme.isDarkMode? colors.colorBlack:colors.colorWhite,
+                        backgroundColor: !theme.isDarkMode? colors.colorBlack:colors.colorbluegrey,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50))),
                     child: Text("Proceed",
@@ -1373,7 +1386,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
     });
   }
 
-  Row lowHighBar(String low, String high, String value, ThemesProvider theme) {
+ Row lowHighBar(String low, String high, String value, ThemesProvider theme) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(
           "${double.parse(low) <= double.parse(value) ? double.parse(low) : double.parse(value)}",
@@ -1382,26 +1395,47 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
               14,
               FontWeight.w500)),
       SizedBox(
-          width: MediaQuery.of(context).size.width / 1.8,
-          child: SliderTheme(
-              data: SliderThemeData(
-                thumbColor: Colors.red,
-                disabledThumbColor: colors.kColorRedButton,
-                trackShape: const RectangularSliderTrackShape(),
-                trackHeight: 4,
-                thumbShape: CustomSliderTumb(),
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 8.0),
-              ),
-              child: Slider(
-                  min: double.parse(low) <= double.parse(value)
-                      ? double.parse(low)
-                      : double.parse(value),
-                  max: double.parse(high) >= double.parse(value)
-                      ? double.parse(high)
-                      : double.parse(value),
-                  value: double.parse(value),
-                  label: "₹$value",
-                  onChanged: null))),
+        width: MediaQuery.of(context).size.width / 1.8,
+        child: FlutterSlider(
+          handlerHeight: 20,
+          handlerWidth: 12,
+          handler: FlutterSliderHandler(
+              child: Material(
+                  type: MaterialType.transparency,
+                  child: Container(
+                      decoration: BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          color: theme.isDarkMode
+                              ? Color(0xffB0BEC5)
+                              : Color(0xff000000)),
+                      child: const Center(
+                          child: Text(
+                        ' ',
+                        style: TextStyle(color: Colors.transparent),
+                      ))))),
+          tooltip: FlutterSliderTooltip(
+            disabled: true,
+          ),
+          trackBar: FlutterSliderTrackBar(
+            inactiveDisabledTrackBarColor: Color(0xff666666).withOpacity(.2),
+            activeDisabledTrackBarColor: theme.isDarkMode
+                ? Color.fromARGB(255, 36, 35, 35).withOpacity(.2)
+                : Color.fromARGB(255, 247, 246, 246).withOpacity(.2),
+            activeTrackBarHeight: 4,
+            inactiveTrackBarHeight: 4,
+          ),
+          min: double.parse(low) <= double.parse(value)
+              ? double.parse(low)
+              : double.parse(value),
+          max: double.parse(high) >= double.parse(value)
+              ? double.parse(high)
+              : double.parse(value),
+          values: [double.parse(value)],
+          onDragging: (handlerIndex, lowerValue, upperValue) {},
+          jump: false,
+          disabled: true,
+        ),
+      ),
       Text(
           "${double.parse(high) >= double.parse(value) ? double.parse(high) : double.parse(value)}",
           style: textStyle(
@@ -1467,7 +1501,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                       ? 1
                       : barPercentage,
               padding: const EdgeInsets.symmetric(horizontal: 0),
-              progressColor: const Color(0XFFD34645).withOpacity(.2))),
+              progressColor: colors.darkred.withOpacity(.2))),
       Padding(
           padding: const EdgeInsets.only(top: 1.5),
           child: Row(
@@ -1495,7 +1529,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                   ? 1
                   : barPercentage,
           padding: const EdgeInsets.symmetric(horizontal: 0),
-          progressColor: const Color(0xff43A833).withOpacity(.2)),
+          progressColor: colors.ltpgreen.withOpacity(.2)),
       Padding(
           padding: const EdgeInsets.only(top: 1.5),
           child: Row(

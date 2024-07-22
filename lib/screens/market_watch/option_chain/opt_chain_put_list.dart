@@ -102,12 +102,12 @@ class OptChainPutList extends ConsumerWidget {
                         const SizedBox(height: 3),
                         Text("(${putData![index].perChange ?? 0.00}%)",
                             style: textStyle(
-                                Color(putData![index].perChange == null ||
+                               putData![index].perChange == null ||
                                         putData![index].perChange == "0.00"
-                                    ? 0xff666666
+                                    ? colors.ltpgrey
                                     : putData![index].perChange!.startsWith("-")
-                                        ? 0xffFF1717
-                                        : 0xff43A833),
+                                        ? colors.darkred
+                                        : colors.ltpgreen,
                                 11,
                                 FontWeight.w500)),
                       ],
@@ -124,12 +124,12 @@ class OptChainPutList extends ConsumerWidget {
                       Text(
                           "(${putData![index].oiPerChng == "NaN" ? "0.00" : putData![index].oiPerChng ?? 0.00}%)",
                           style: textStyle(
-                              Color(putData![index].oiPerChng == null ||
+                              putData![index].oiPerChng == null ||
                                       putData![index].oiPerChng == "0.00"
-                                  ? 0xff666666
+                                  ? colors.ltpgrey
                                   : putData![index].oiPerChng!.startsWith("-")
-                                      ? 0xffFF1717
-                                      : 0xff43A833),
+                                      ? colors.darkred
+                                      :colors.ltpgreen,
                               11,
                               FontWeight.w500)),
                     ],

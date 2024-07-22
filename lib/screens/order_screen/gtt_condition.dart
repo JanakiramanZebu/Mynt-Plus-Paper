@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../../provider/order_input_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart'; 
@@ -223,7 +222,7 @@ class PriceTypeBtn extends ConsumerWidget {
                               : orderInput.actPrcType !=
                                       orderInput.prcTypes[index]
                                   ? colors.darkGrey
-                                  : colors.colorWhite,
+                                  : colors.colorbluegrey,
                           shape: const StadiumBorder()),
                       child: Text(orderInput.prcTypes[index],
                           overflow: TextOverflow.ellipsis,

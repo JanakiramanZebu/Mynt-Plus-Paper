@@ -40,7 +40,9 @@ class _CreatewatchListState extends State<CreatewatchList> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: const Icon(Icons.close_rounded))
+              icon: const Icon(Icons.close_rounded),  color: theme.isDarkMode
+                            ? const Color(0xffBDBDBD)
+                            : colors.colorGrey,)
         ],
       ),
       content: SizedBox(
@@ -65,7 +67,7 @@ class _CreatewatchListState extends State<CreatewatchList> {
                   
                   errorText: errorText,
                   errorStyle:
-                      textStyle(const Color(0xffFF1717), 10, FontWeight.w600),
+                      textStyle(colors.darkred, 10, FontWeight.w600),
                   enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide.none,
                       borderRadius: BorderRadius.circular(50)),
@@ -125,7 +127,7 @@ class _CreatewatchListState extends State<CreatewatchList> {
             },
             style: ElevatedButton.styleFrom(
               elevation: 0,
-              backgroundColor:theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+              backgroundColor:theme.isDarkMode?colors.colorbluegrey:colors.colorBlack,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(50),
               ),

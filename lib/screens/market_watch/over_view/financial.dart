@@ -44,19 +44,15 @@ class FinancialWidget extends ConsumerWidget {
                     alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                        color: Color(
-
-                                !theme.isDarkMode?
-                          
-                          finData.selctedFinType == finData.finacialType[index]
-                                ? 0xff000000
-                                : 0xffffffff:0xff999999)
-                            .withOpacity(.08),
-                        border: Border.all(
-                            color: Color(
-                                finData.selctedFinType == finData.finacialType[index]
-                                    ? 0xff000000
-                                    : 0xffECEDEE)),
+                         color: theme.isDarkMode
+                            ? finData.selctedFinType ==
+                                    finData.finacialType[index]
+                                ? Color(0xffB0BEC5)
+                                : Color(0xffB5C0CF).withOpacity(.15)
+                            : finData.selctedFinType ==
+                                    finData.finacialType[index]
+                                ? const Color(0xff000000)
+                                : const Color(0xffF1F3F8),
                         borderRadius: BorderRadius.circular(98)),
                     child: InkWell(
                         onTap: () async {
@@ -65,9 +61,15 @@ class FinancialWidget extends ConsumerWidget {
                         },
                         child: Text(finData.finacialType[index],
                             style: textStyle(
-                                theme.isDarkMode?
-                                
-                                colors.colorWhite:colors.colorBlack,
+                                 theme.isDarkMode
+                                    ? finData.selctedFinType ==
+                                            finData.finacialType[index]
+                                        ? colors.colorBlack
+                                        : colors.colorWhite
+                                    : finData.selctedFinType ==
+                                            finData.finacialType[index]
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
                                 14,
                                 finData.selctedFinType == finData.finacialType[index]
                                     ? FontWeight.w500
@@ -220,6 +222,7 @@ class FinancialWidget extends ConsumerWidget {
       const SizedBox(height: 10),
       if (finData.selctedFinType == "Income") ...[
         IncomeSheetData(
+          themes:theme,
             incomSheet: provideData.selcteFinType == "Consolidated"
                 ? provideData
                     .fundamentalData!.stockFinancialsConsolidated!.incomeSheet!
@@ -298,8 +301,9 @@ class BalanceSheetData extends StatelessWidget {
 class IncomeSheetData extends StatelessWidget {
   final List<IncomeSheet> incomSheet;
   final String financialYear;
+  final ThemesProvider themes;
   const IncomeSheetData(
-      {super.key, required this.incomSheet, required this.financialYear});
+      {super.key, required this.incomSheet, required this.financialYear, required this.themes});
 
   @override
   Widget build(BuildContext context) {
@@ -315,27 +319,38 @@ class IncomeSheetData extends StatelessWidget {
                       title: "Revenue",
                       value: "${incomSheet[index].revenue}",
                       showIcon: true),
-                  Divider(color: colors.colorDivider),
+                  Divider(color: themes.isDarkMode
+                  ?colors.darkColorDivider
+                  :colors.colorDivider),
                   StockRowTable(
                       title: "Expenditure",
                       value: "${incomSheet[index].expenditure}",
                       showIcon: true),
-                  Divider(color: colors.colorDivider),
+                  Divider(color: 
+                  themes.isDarkMode
+                  ?colors.darkColorDivider
+                  :colors.colorDivider),
                   StockRowTable(
                       title: "Operating Profit",
                       value: "${incomSheet[index].operatingProfit}",
                       showIcon: true),
-                  Divider(color: colors.colorDivider),
+                  Divider(color: themes.isDarkMode
+                  ?colors.darkColorDivider
+                  :colors.colorDivider),
                   StockRowTable(
                       title: "Profit Before Tax",
                       value: "${incomSheet[index].profitBeforeTax}",
                       showIcon: true),
-                  Divider(color: colors.colorDivider),
+                  Divider(color: themes.isDarkMode
+                  ?colors.darkColorDivider
+                  :colors.colorDivider),
                   StockRowTable(
                       title: "Tax",
                       value: "${incomSheet[index].tax}",
                       showIcon: true),
-                  Divider(color: colors.colorDivider),
+                  Divider(color: themes.isDarkMode
+                  ?colors.darkColorDivider
+                  :colors.colorDivider),
                   StockRowTable(
                       title: "Profit After Tax",
                       value: "${incomSheet[index].profitBeforeTax}",

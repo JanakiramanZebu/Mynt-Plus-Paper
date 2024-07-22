@@ -292,14 +292,14 @@ class WatchListScreen extends ConsumerWidget {
                                   Text(
                                     "${marketWatch.scrips[idx]["change"] == "null" ? 0.00 : marketWatch.scrips[idx]['change']} (${marketWatch.scrips[idx]['perChange'] == "null" ? 0.00 : marketWatch.scrips[idx]["perChange"]}%)",
                                     style: textStyle(
-                                        Color(marketWatch.scrips[idx]['change']
+                                      marketWatch.scrips[idx]['change']
                                                     .toString()
                                                     .startsWith("-") ||
                                                 marketWatch.scrips[idx]['perChange']
                                                     .toString()
                                                     .startsWith('-')
-                                            ? 0xffFF1717
-                                            : (marketWatch.scrips[idx]['change'].toString() ==
+                                            ? colors.darkred
+                                               : (marketWatch.scrips[idx]['change'].toString() ==
                                                             "null" ||
                                                         marketWatch.scrips[idx]['perChange']
                                                                 .toString() ==
@@ -311,8 +311,8 @@ class WatchListScreen extends ConsumerWidget {
                                                                     ['perChange']
                                                                 .toString() ==
                                                             "0.00")
-                                                ? 0xff999999
-                                                : 0xff43A833),
+                                                            ?colors.ltpgrey
+                                                            :colors.ltpgreen,
                                         12,
                                         FontWeight.w600),
                                   )

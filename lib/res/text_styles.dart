@@ -22,6 +22,12 @@ class AppTextStyles {
     fontSize: 14,
     color: AppColors().colorBlack,
   ));
+   final darkmorestyle = GoogleFonts.inter(
+      textStyle: TextStyle(
+    fontWeight: FontWeight.w500,
+    fontSize: 13,
+    color: AppColors().colorLightBlue,
+  ));
   final morestyle = GoogleFonts.inter(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
@@ -58,6 +64,13 @@ class AppTextStyles {
     fontWeight: FontWeight.w500,
     fontSize: 14,
     color: AppColors().colorBlue,
+  ));
+
+ final darktextBtn = GoogleFonts.inter(
+      textStyle: TextStyle(
+    fontWeight: FontWeight.w500,
+    fontSize: 13,
+    color: AppColors().colorLightBlue,
   ));
 
   final textBtn = GoogleFonts.inter(

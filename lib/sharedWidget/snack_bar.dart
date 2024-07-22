@@ -13,20 +13,22 @@ SnackBar error(BuildContext context, String error) => SnackBar(
         ),
         title: Text(error,
             style: TextStyle(fontSize: 14, color: colors.colorWhite)),
-        trailing: InkWell(
-          customBorder: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          onTap: () {
-            ScaffoldMessenger.of(context). hideCurrentSnackBar();
-          },
-          child: SvgPicture.asset(
-            assets.removeIcon,
-            color: colors.colorWhite,
-            fit: BoxFit.scaleDown,
-          ),
-        ),
+        // trailing: InkWell(
+        //   customBorder: RoundedRectangleBorder(
+        //     borderRadius: BorderRadius.circular(20),
+        //   ),
+        //   onTap: () {
+        //     ScaffoldMessenger.of(context). hideCurrentSnackBar();
+        //   },
+        //   child: SvgPicture.asset(
+        //     assets.removeIcon,
+        //     color: colors.colorWhite,
+        //     fit: BoxFit.scaleDown,
+        //   ),
+        // ),
       ),
+      showCloseIcon: true,
+      closeIconColor: Color(0xffFFFFFF),
       duration: const Duration(seconds: 5),
       backgroundColor: Colors.black87,
       behavior: SnackBarBehavior.floating,
@@ -41,19 +43,21 @@ SnackBar successMessage(BuildContext context, String success) => SnackBar(
             size: 20, color: Colors.green),
         title: Text(success,
             style: TextStyle(fontSize: 14, color: colors.colorWhite)),
-        trailing: InkWell(
-          customBorder:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          onTap: () {
-            ScaffoldMessenger.of(context). hideCurrentSnackBar();
-          },
-          child: SvgPicture.asset(
-            assets.removeIcon,
-            color: colors.colorWhite,
-            fit: BoxFit.scaleDown,
-          ),
-        ),
+        // trailing: InkWell(
+        //   customBorder:
+        //       RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        //   onTap: () {
+        //     ScaffoldMessenger.of(context). hideCurrentSnackBar();
+        //   },
+        //   child: SvgPicture.asset(
+        //     assets.removeIcon,
+        //     color: colors.colorWhite,
+        //     fit: BoxFit.scaleDown,
+        //   ),
+        // ),
       ),
+      showCloseIcon: true,
+      closeIconColor: Color(0xffFFFFFF),
       duration: const Duration(seconds: 5),
       backgroundColor: Colors.black87,
       behavior: SnackBarBehavior.floating,

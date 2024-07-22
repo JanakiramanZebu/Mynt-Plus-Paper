@@ -77,22 +77,22 @@ class MFHoldingScreen extends ConsumerWidget {
                                         Text(
                                             "₹${getFormatter(value: mfHolding.mfTotalPnl, v4d: false, noDecimal: false)} ",
                                             style: textStyle(
-                                                Color(mfHolding.mfTotalPnl
+                                                mfHolding.mfTotalPnl
                                                         .toString()
                                                         .startsWith("-")
-                                                    ? 0XFFFF1717
-                                                    : 0xff43A833),
+                                                    ? colors.darkred
+                                                    : colors.ltpgreen,
                                                 16,
                                                 FontWeight.w500)),
                                         Text(
                                             "(${mfHolding.mfTotalPnlPerchng.isNaN ? 0.00 : mfHolding.mfTotalPnlPerchng.toStringAsFixed(2)}%)",
                                             style: textStyle(
-                                                Color(mfHolding
+                                                mfHolding
                                                         .mfTotalPnlPerchng
                                                         .toString()
                                                         .startsWith("-")
-                                                    ? 0XFFFF1717
-                                                    : 0xff43A833),
+                                                    ? colors.darkred
+                                                    : colors.ltpgreen,
                                                 14,
                                                 FontWeight.w500)),
                                       ],
@@ -173,7 +173,9 @@ class MFHoldingScreen extends ConsumerWidget {
                                                 right: 12),
                                             child: SvgPicture.asset(
                                                 assets.filterLines,
-                                                color: const Color(0xff333333)),
+                                               color: theme.isDarkMode
+                                      ?Color(0xffBDBDBD)
+                                      :colors.colorGrey),
                                           )),
                                       InkWell(
                                         onTap: () {
@@ -185,7 +187,9 @@ class MFHoldingScreen extends ConsumerWidget {
                                           child: SvgPicture.asset(
                                               assets.searchIcon,
                                               width: 19,
-                                              color: const Color(0xff333333)),
+                                              color: theme.isDarkMode
+                                      ?Color(0xffBDBDBD)
+                                      :colors.colorGrey),
                                         ),
                                       ),
                                     ],
@@ -406,7 +410,7 @@ class MFHoldingScreen extends ConsumerWidget {
                                                       Text(
                                                           "₹${mfHolding.mfHoldingsModel![index].exchTsym![0].pnl}",
                                                           style: textStyle(
-                                                              Color(mfHolding
+                                                            mfHolding
                                                                       .mfHoldingsModel![
                                                                           index]
                                                                       .exchTsym![
@@ -414,14 +418,14 @@ class MFHoldingScreen extends ConsumerWidget {
                                                                       .pnl!
                                                                       .startsWith(
                                                                           "-")
-                                                                  ? 0XFFFF1717
-                                                                  : 0xff43A833),
+                                                                  ? colors.darkred
+                                                                  : colors.ltpgreen,
                                                               14,
                                                               FontWeight.w500)),
                                                       Text(
                                                           " (${mfHolding.mfHoldingsModel![index].exchTsym![0].pnlPerChng == "NaN" ? 0.0 : mfHolding.mfHoldingsModel![index].exchTsym![0].pnlPerChng}%)",
                                                           style: textStyle(
-                                                              Color(mfHolding
+                                                             mfHolding
                                                                       .mfHoldingsModel![
                                                                           index]
                                                                       .exchTsym![
@@ -429,14 +433,14 @@ class MFHoldingScreen extends ConsumerWidget {
                                                                       .pnlPerChng!
                                                                       .startsWith(
                                                                           "-")
-                                                                  ? 0XFFFF1717
+                                                                  ? colors.darkred
                                                                   : mfHolding
                                                                               .mfHoldingsModel![index]
                                                                               .exchTsym![0]
                                                                               .pnlPerChng ==
                                                                           "NaN"
-                                                                      ? 0xff666666
-                                                                      : 0xff43A833),
+                                                                      ? colors.ltpgrey
+                                                                      : colors.ltpgreen,
                                                               12,
                                                               FontWeight.w500)),
                                                     ],
@@ -616,26 +620,26 @@ class MFHoldingScreen extends ConsumerWidget {
                                                 Text(
                                                     "₹${mfHolding.mfHoldingSearchItem![index].exchTsym![0].pnl}",
                                                     style: textStyle(
-                                                        Color(mfHolding
+                                                        mfHolding
                                                                 .mfHoldingSearchItem![
                                                                     index]
                                                                 .exchTsym![0]
                                                                 .pnl!
                                                                 .startsWith("-")
-                                                            ? 0XFFFF1717
-                                                            : 0xff43A833),
+                                                            ? colors.darkred
+                                                            : colors.ltpgreen,
                                                         14,
                                                         FontWeight.w500)),
                                                 Text(
                                                     " (${mfHolding.mfHoldingSearchItem![index].exchTsym![0].pnlPerChng == "NaN" ? 0.0 : mfHolding.mfHoldingSearchItem![index].exchTsym![0].pnlPerChng}%)",
                                                     style: textStyle(
-                                                        Color(mfHolding
+                                                      mfHolding
                                                                 .mfHoldingSearchItem![
                                                                     index]
                                                                 .exchTsym![0]
                                                                 .pnlPerChng!
                                                                 .startsWith("-")
-                                                            ? 0XFFFF1717
+                                                            ? colors.darkred
                                                             : mfHolding
                                                                         .mfHoldingSearchItem![
                                                                             index]
@@ -643,8 +647,8 @@ class MFHoldingScreen extends ConsumerWidget {
                                                                             0]
                                                                         .pnlPerChng ==
                                                                     "NaN"
-                                                                ? 0xff666666
-                                                                : 0xff43A833),
+                                                                ? colors.ltpgrey
+                                                                : colors.ltpgreen,
                                                         12,
                                                         FontWeight.w500)),
                                               ],

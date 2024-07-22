@@ -59,7 +59,7 @@ class PositionScreen extends ConsumerWidget {
                                               ? const Color.fromARGB(
                                                       255, 5, 107, 241)
                                                   .withOpacity(.2)
-                                              : const Color(0xffECEFF3)),
+                                              : Colors.transparent),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -76,22 +76,22 @@ class PositionScreen extends ConsumerWidget {
                                       Text(
                                           "₹${positionBook.isDay ? positionBook.totUnRealMtm : positionBook.totMtM}",
                                           style: textStyle(
-                                              Color(positionBook.isDay
+                                             positionBook.isDay
                                                   ? positionBook.totUnRealMtm
                                                           .startsWith("-")
-                                                      ? 0XFFFF1717
+                                                      ? colors.darkred
                                                       : positionBook
                                                                   .totUnRealMtm ==
                                                               "0.00"
-                                                          ? 0xff999999
-                                                          : 0xff43A833
+                                                          ? colors.ltpgrey
+                                                          : colors.ltpgreen
                                                   : positionBook.totMtM
                                                           .startsWith("-")
-                                                      ? 0XFFFF1717
+                                                      ? colors.darkred
                                                       : positionBook.totMtM ==
                                                               "0.00"
-                                                          ? 0xff999999
-                                                          : 0xff43A833),
+                                                          ? colors.ltpgrey
+                                                          : colors.ltpgreen,
                                               16,
                                               FontWeight.w500)),
                                     ],
@@ -116,7 +116,7 @@ class PositionScreen extends ConsumerWidget {
                                               ? const Color.fromARGB(
                                                       255, 5, 107, 241)
                                                   .withOpacity(.2)
-                                              : const Color(0xffECEFF3)),
+                                              : Colors.transparent),
                                   child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.end,
@@ -134,24 +134,24 @@ class PositionScreen extends ConsumerWidget {
                                           Text(
                                               "₹${positionBook.isDay ? positionBook.totBookedPnL : positionBook.totPnL}",
                                               style: textStyle(
-                                                  Color(positionBook.isDay
+                                                 positionBook.isDay
                                                       ? positionBook
                                                               .totBookedPnL
                                                               .startsWith("-")
-                                                          ? 0XFFFF1717
+                                                          ? colors.darkred
                                                           : positionBook
                                                                       .totBookedPnL ==
                                                                   "0.00"
-                                                              ? 0xff999999
-                                                              : 0xff43A833
+                                                              ? colors.ltpgrey
+                                                              : colors.ltpgreen
                                                       : positionBook.totPnL
                                                               .startsWith("-")
-                                                          ? 0XFFFF1717
+                                                          ? colors.darkred
                                                           : positionBook
                                                                       .totPnL ==
                                                                   "0.00"
-                                                              ? 0xff999999
-                                                              : 0xff43A833),
+                                                              ? colors.ltpgrey
+                                                              : colors.ltpgreen,
                                                   16,
                                                   FontWeight.w500))
                                         ])
@@ -245,7 +245,7 @@ class PositionScreen extends ConsumerWidget {
                                           style: ElevatedButton.styleFrom(
                                               elevation: 0,
                                               backgroundColor: theme.isDarkMode
-                                                  ? colors.colorWhite
+                                                  ? colors.colorbluegrey
                                                   : colors.colorBlack,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -267,7 +267,7 @@ class PositionScreen extends ConsumerWidget {
                               style: OutlinedButton.styleFrom(
                                   side: BorderSide(
                                       color: theme.isDarkMode
-                                          ? colors.colorWhite
+                                          ? colors.colorGrey
                                           : colors.colorBlack),
                                   shape: const RoundedRectangleBorder(
                                       borderRadius: BorderRadius.all(
@@ -299,7 +299,9 @@ class PositionScreen extends ConsumerWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.only(right: 12),
                                   child: SvgPicture.asset(assets.filterLines,
-                                      color: colors.colorGrey),
+                                      color: theme.isDarkMode
+                                      ?Color(0xffBDBDBD)
+                                      :colors.colorGrey),
                                 )),
                             InkWell(
                                 onTap: () {
@@ -309,7 +311,9 @@ class PositionScreen extends ConsumerWidget {
                                   padding: const EdgeInsets.only(
                                       right: 12, left: 10),
                                   child: SvgPicture.asset(assets.searchIcon,
-                                      width: 19, color: colors.colorGrey),
+                                      width: 19, color: theme.isDarkMode
+                                      ?Color(0xffBDBDBD)
+                                      :colors.colorGrey),
                                 )),
                           ],
                         )

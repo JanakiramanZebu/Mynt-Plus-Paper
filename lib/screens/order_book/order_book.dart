@@ -68,7 +68,9 @@ class OrderBook extends ConsumerWidget {
                                             const EdgeInsets.only(right: 12),
                                         child: SvgPicture.asset(
                                             assets.filterLines,
-                                            color: const Color(0xff333333)))),
+                                            color: theme.isDarkMode
+                                            ?colors.darkiconcolor
+                                             :Color(0xff333333)))),
                                 // InkWell(
                                 //     onTap: () {
                                 //       order.showOrderSearch(true);
@@ -272,15 +274,15 @@ class OrderBook extends ConsumerWidget {
                                               Text(
                                                   " (${orderBook[index].perChange ?? 0.00}%)",
                                                   style: textStyle(
-                                                      Color(orderBook[index]
+                                                     orderBook[index]
                                                               .perChange!
                                                               .startsWith("-")
-                                                          ? 0XFFFF1717
+                                                          ? colors.darkred
                                                           : orderBook[index]
                                                                       .perChange ==
                                                                   "0.00"
-                                                              ? 0xff666666
-                                                              : 0xff43A833),
+                                                              ? colors.ltpgrey
+                                                              : colors.ltpgreen,
                                                       12,
                                                       FontWeight.w500)),
                                             ]),
@@ -297,19 +299,17 @@ class OrderBook extends ConsumerWidget {
                                                         horizontal: 8,
                                                         vertical: 2),
                                                     decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                                4),
-                                                        border: Border.all(
-                                                            color: Color(orderBook[index].trantype == "S"
-                                                                ? 0xffFFCDCD
-                                                                : 0xffC1E7BA)),
-                                                        color: Color(orderBook[index].trantype == "S"
-                                                            ? 0xffFCF3F3
-                                                            : 0xffECF8F1)),
+                                                        borderRadius: BorderRadius.circular(
+                                                            4),
+                                                        color: theme.isDarkMode
+                                                            ? orderBook[index].trantype == "S" ? colors.darkred.withOpacity(.2) : colors.ltpgreen
+                                                                .withOpacity(.2)
+                                                            : Color(orderBook[index].trantype == "S"
+                                                                ? 0xffFCF3F3
+                                                                : 0xffECF8F1)),
                                                     child: Text(orderBook[index].trantype == "S" ? "SELL" : "BUY",
                                                         style: textStyle(
-                                                            Color(orderBook[index].trantype == "S" ? 0xffFF1717 : 0xff43A833),
+                                                          orderBook[index].trantype == "S" ? colors.darkred : colors.ltpgreen,
                                                             12,
                                                             FontWeight.w600))),
                                                 Container(
@@ -320,13 +320,16 @@ class OrderBook extends ConsumerWidget {
                                                         const EdgeInsets.symmetric(
                                                             horizontal: 7,
                                                             vertical: 2),
-                                                    decoration: BoxDecoration(
+                                                     decoration: BoxDecoration(
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                                 4),
-                                                        border: Border.all(
-                                                            color: const Color(
-                                                                0xffF1F3F8))),
+                                                        color: theme.isDarkMode
+                                                            ? Color(0xff666666)
+                                                                .withOpacity(.2)
+                                                            : Color(0xff999999)
+                                                                .withOpacity(
+                                                                    .2)),
                                                     child: Text(
                                                         "${orderBook[index].sPrdtAli}",
                                                         style: textStyle(

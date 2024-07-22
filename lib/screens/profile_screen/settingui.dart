@@ -52,97 +52,118 @@ class SettingsScreen extends ConsumerWidget {
                     "${pref.clientId}";
                     Navigator.pushNamed(context, Routes.changePass,
                         arguments: "Yes");
-                  } else if (index == 2) {
+                  } else if (index == 3) {
                     Navigator.pushNamed(context, Routes.logError);
                   }
-                  // else if (index == 2) {
-                  //   showDialog(
-
-                  //       context: context,
-                  //       builder: (BuildContext context) {
-                  //         return AlertDialog(
-                  //         backgroundColor:theme.isDarkMode? const Color.fromARGB(255, 18, 18, 18):colors.colorWhite,
-                  //           shape: const RoundedRectangleBorder(
-                  //               borderRadius:
-                  //                   BorderRadius.all(Radius.circular(16))),
-                  //           scrollable: true,
-                  //           actionsPadding: const EdgeInsets.only(
-                  //               left: 16, right: 16, bottom: 14, top: 3),
-                  //           contentPadding:
-                  //               const EdgeInsets.symmetric(horizontal: 16),
-                  //           insetPadding:
-                  //               const EdgeInsets.symmetric(horizontal: 40),
-                  //           titlePadding: const EdgeInsets.only(left: 16),
-                  //           title: Row(
-                  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //             children: [
-                  //               Text('Choose theme',
-                  //                   style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack,
-                  //                       16, FontWeight.w600)),
-                  //               IconButton(
-                  //                   onPressed: () {
-                  //                     Navigator.pop(context);
-                  //                   },
-                  //                   icon: const Icon(Icons.close_rounded))
-                  //             ],
-                  //           ),
-                  //           content: SizedBox(
-                  //               height: 160,
-                  //               width: MediaQuery.of(context).size.width,
-                  //               child: Column(
-                  //                   mainAxisSize: MainAxisSize.min,
-                  //                   children: [
-                  //                     Divider(
-                  //                         color: colors.colorDivider,
-                  //                         height: 0),
-                  //                     const SizedBox(height: 10),
-                  //                     ListView.builder(
-                  //                       physics: const NeverScrollableScrollPhysics(),
-                  //                       shrinkWrap: true,
-                  //                       itemCount: theme.themeTypes.length,
-                  //                       itemBuilder:
-                  //                           (BuildContext context, int index) {
-                  //                         return ListTile(
-                  //                           onTap: () async {
-                  //                             theme.toggleTheme(
-                  //                                 themeMod:
-                  //                                     theme.themeTypes[index]);
-
-                  //                             Navigator.pop(context);
-                  //                           },
-                  //                           contentPadding:
-                  //                               const EdgeInsets.symmetric(
-                  //                                   horizontal: 0, vertical: 0),
-                  //                           dense: true,
-                  //                           minLeadingWidth: 22,
-                  //                           leading: SvgPicture.asset(
-                  //                               theme.themeTypes[index] ==
-                  //                                       theme.deviceTheme
-                  //                                   ? assets.actProductIcon
-                  //                                   : assets.productIcon),
-                  //                           title: Text(theme.themeTypes[index],
-                  //                               style: textStyles.prdText.copyWith(
-                  //                                   color:theme.isDarkMode?
-                  //                                   Color(theme
-                  //                                                   .themeTypes[
-                  //                                               index] ==
-                  //                                           theme.deviceTheme
-                  //                                       ?0xffffffff
-                  //                                       : 0xff666666):  Color(theme
-                  //                                                   .themeTypes[
-                  //                                               index] ==
-                  //                                           theme.deviceTheme
-                  //                                       ?0xff000000
-                  //                                       : 0xff666666,
-
-                  //                                    ))),
-                  //                         );
-                  //                       },
-                  //                     )
-                  //                   ])),
-                  //         );
-                  //       });
-                  // }
+                  else if (index == 2) {
+                     showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            backgroundColor: theme.isDarkMode
+                                ? const Color.fromARGB(255, 18, 18, 18)
+                                : colors.colorWhite,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(16))),
+                            scrollable: true,
+                            actionsPadding: const EdgeInsets.only(
+                                left: 16, right: 16, bottom: 14, top: 3),
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 16),
+                            insetPadding:
+                                const EdgeInsets.symmetric(horizontal: 40),
+                            titlePadding: const EdgeInsets.only(left: 16),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Choose theme',
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        16,
+                                        FontWeight.w600)),
+                                IconButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  icon: const Icon(
+                                    Icons.close_rounded,
+                                  ),
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffBDBDBD)
+                                      : colors.colorGrey,
+                                )
+                              ],
+                            ),
+                            content: SizedBox(
+                                height: 115,
+                                width: MediaQuery.of(context).size.width,
+                                child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Divider(
+                                          color: theme.isDarkMode
+                                              ? colors.darkColorDivider
+                                              : colors.colorDivider,
+                                          height: 0),
+                                      const SizedBox(height: 10),
+                                      ListView.builder(
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        shrinkWrap: true,
+                                        itemCount: theme.themeTypes.length,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          return ListTile(
+                                            onTap: () async {
+                                              theme.toggleTheme(
+                                                  themeMod:
+                                                      theme.themeTypes[index]);
+                                              Navigator.pop(context);
+                                            },
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 0, vertical: 0),
+                                            dense: true,
+                                            minLeadingWidth: 22,
+                                            leading: SvgPicture.asset(theme
+                                                    .isDarkMode
+                                                ? theme.themeTypes[index] ==
+                                                        theme.deviceTheme
+                                                    ? assets.darkActProductIcon
+                                                    : assets.darkProductIcon
+                                                : theme.themeTypes[index] ==
+                                                        theme.deviceTheme
+                                                    ? assets.actProductIcon
+                                                    : assets.productIcon),
+                                            title: Text(theme.themeTypes[index],
+                                                style: textStyles.prdText
+                                                    .copyWith(
+                                                        color: theme.isDarkMode
+                                                            ? Color(theme.themeTypes[
+                                                                        index] ==
+                                                                    theme
+                                                                        .deviceTheme
+                                                                ? 0xffffffff
+                                                                : 0xff666666)
+                                                            : Color(
+                                                                theme.themeTypes[
+                                                                            index] ==
+                                                                        theme
+                                                                            .deviceTheme
+                                                                    ? 0xff000000
+                                                                    : 0xff666666,
+                                                              ))),
+                                          );
+                                        },
+                                      )
+                                    ])),
+                          );
+                        });
+                  
+                  }
                 },
                 dense: true,
                 minLeadingWidth: 20,
@@ -242,13 +263,17 @@ class SettingsScreen extends ConsumerWidget {
                                 Text(
                                   "Expire on",
                                   style: textStyle(
-                                      colors.colorBlack, 13, FontWeight.w500),
+                                    theme.isDarkMode
+                                    ?colors.colorGrey
+                                      :colors.colorBlack, 13, FontWeight.w500),
                                 ),
                                 Text(
                                   readTimestamp(int.parse(
                                       "${apikeys.apikeyres!.exd}000")),
                                   style: textStyle(
-                                      colors.colorBlack, 13, FontWeight.w500),
+                                     theme.isDarkMode
+                                    ?colors.colorWhite
+                                    :colors.colorBlack, 13, FontWeight.w500),
                                 ),
                               ],
                             )
@@ -288,7 +313,11 @@ class SettingsScreen extends ConsumerWidget {
             shrinkWrap: true,
             itemCount: usersettings.settingmenu.length,
             separatorBuilder: (BuildContext context, int index) {
-              return const Divider(color: Color(0xffDDE2E7), height: 0);
+              return 
+               Divider(color: theme.isDarkMode
+               ?colors.darkColorDivider
+               :colors.colorDivider
+               );
             },
           ),
         ],

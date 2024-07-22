@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart'; 
 
 import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:mynt_plus/provider/thems.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import '../api/core/api_export.dart';
 // import '../api/core/api_link.dart';
@@ -630,6 +631,16 @@ addClient(bool val){
               actions: [
                 ElevatedButton(
                     onPressed: () => deviceAuth(context),
+                    style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor:
+                                ref(themeProvider).isDarkMode
+                                    ? colors.colorbluegrey
+                                    : colors.colorBlack,
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            )),
                     child: Text("Proceed", style: textStyles.btnText)),
               ],
             );
@@ -681,6 +692,16 @@ addClient(bool val){
                 actions: [
                   ElevatedButton(
                       onPressed: () => deviceAuth(context),
+                       style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor:
+                                ref(themeProvider).isDarkMode
+                                    ? colors.colorbluegrey
+                                    : colors.colorBlack,
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            )),
                       child: Text("Proceed", style: textStyles.btnText)),
                 ],
               );
@@ -761,7 +782,7 @@ addClient(bool val){
      pref.clearClientSession();
           pref.setLogout(true);
           ref(indexListProvider).bottomMenu(0);
-
+        pref.setHideLoginOptBtn(false);
           pref.clearClientSession();
           ConstantName.sessCheck = false;
        loginMethCtrl.text =

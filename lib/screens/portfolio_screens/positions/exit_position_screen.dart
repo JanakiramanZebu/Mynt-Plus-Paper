@@ -197,15 +197,15 @@ class ExitPositionScreen extends ConsumerWidget {
                                     Text(
                                         " (${exitPositionList[index].perChange ?? 0.00}%)",
                                         style: textStyle(
-                                            Color(exitPositionList[index]
+                                            exitPositionList[index]
                                                     .perChange!
                                                     .startsWith("-")
-                                                ? 0XFFFF1717
+                                                ? colors.darkred
                                                 : exitPositionList[index]
                                                             .perChange ==
                                                         "0.00"
-                                                    ? 0xff666666
-                                                    : 0xff43A833),
+                                                    ? colors.ltpgrey
+                                                    : colors.ltpgreen,
                                             12,
                                             FontWeight.w500)),
                                   ]
@@ -247,7 +247,7 @@ class ExitPositionScreen extends ConsumerWidget {
                                             Text(
                                                 "₹${exitPositionList[index].profitNloss ?? exitPositionList[index].rpnl}",
                                                 style: textStyle(
-                                                    Color(exitPositionList[
+                                                    exitPositionList[
                                                                     index]
                                                                 .profitNloss !=
                                                             null
@@ -255,24 +255,24 @@ class ExitPositionScreen extends ConsumerWidget {
                                                                     index]
                                                                 .profitNloss!
                                                                 .startsWith("-")
-                                                            ? 0XFFFF1717
+                                                            ? colors.darkred
                                                             : exitPositionList[
                                                                             index]
                                                                         .profitNloss ==
                                                                     "0.00"
-                                                                ? 0xff999999
-                                                                : 0xff43A833
+                                                                ? colors.ltpgrey
+                                                                : colors.ltpgreen
                                                         : exitPositionList[
                                                                     index]
                                                                 .rpnl!
                                                                 .startsWith("-")
-                                                            ? 0XFFFF1717
+                                                            ? colors.darkred
                                                             : exitPositionList[
                                                                             index]
                                                                         .rpnl ==
                                                                     "0.00"
-                                                                ? 0xff999999
-                                                                : 0xff43A833),
+                                                                ? colors.ltpgrey
+                                                                : colors.ltpgreen,
                                                     15,
                                                     FontWeight.w600)),
                                           ],
@@ -287,17 +287,17 @@ class ExitPositionScreen extends ConsumerWidget {
                                             Text(
                                                 "₹${exitPositionList[index].mTm}",
                                                 style: textStyle(
-                                                    Color(exitPositionList[
+                                                    exitPositionList[
                                                                 index]
                                                             .mTm!
                                                             .startsWith("-")
-                                                        ? 0XFFFF1717
+                                                        ? colors.darkred
                                                         : exitPositionList[
                                                                         index]
                                                                     .mTm ==
                                                                 "0.00"
-                                                            ? 0xff999999
-                                                            : 0xff43A833),
+                                                            ? colors.ltpgrey
+                                                            : colors.ltpgreen,
                                                     15,
                                                     FontWeight.w600)),
                                           ],

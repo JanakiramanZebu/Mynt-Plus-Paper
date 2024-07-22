@@ -36,15 +36,10 @@ class MyApp extends ConsumerWidget {
         statusBarBrightness: Brightness.light,
         statusBarColor: Colors.white));
     return MaterialApp(
-        // theme : ThemeData(useMaterial3: false),
-        // themeMode: pref.userAppTheme == "System Default"
-        //     ? ThemeMode.system
-        //     : themeProvide.themeMode,
-
-        themeMode: ThemeMode.light,
+        themeMode: themeProvide.themeMode,
         theme: MyThemes.lightTheme,
         darkTheme: MyThemes.darkTheme,
-        title: 'Flutter Demo',
+        title: 'MYNT +',
         debugShowCheckedModeBanner: false,
         initialRoute: Routes.splash,
         onGenerateRoute: AppRoutes.router);

@@ -1007,8 +1007,8 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                       style: ElevatedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 10),
-                                          backgroundColor: Color(
-                                              isBuy! ? 0xff43A833 : 0xffFF1717),
+                                          backgroundColor: 
+                                              isBuy! ? colors.ltpgreen : colors.darkred,
                                           shape: const StadiumBorder()),
                                       child: Text("Modify",
                                           style: textStyle(

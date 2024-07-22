@@ -5,36 +5,39 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
-import 'core/default_change_notifier.dart'; 
+import 'core/default_change_notifier.dart';
+import 'user_profile_provider.dart'; 
 
 final themeProvider = ChangeNotifierProvider((ref) => ThemesProvider(ref.read));
 
 class ThemesProvider extends DefaultChangeNotifier {
   final pref = locator<Preferences>();
-  ThemeMode themeMode = ThemeMode.system;
-  List<String> themeTypes = ["System Default", "Light", "Dark"];
-  String _deviceTheme = "System Default";
+  ThemeMode themeMode = ThemeMode.light;
+  List<String> themeTypes = ["Light", "Dark"];
+  String _deviceTheme = "Light";
 
   String get deviceTheme => _deviceTheme;
 
   bool get isDarkMode {
-    // if (pref.userAppTheme == "Dark") {
-    //   themeMode = ThemeMode.dark;
-    //   pref.setAppTheme("Dark");
-    //   return themeMode == ThemeMode.dark;
-    // } else if (pref.userAppTheme == "System Default") {
+    if (pref.userAppTheme == "Dark") {
+      themeMode = ThemeMode.dark;
+      pref.setAppTheme("Dark");
+      return themeMode == ThemeMode.dark;
+    } 
+    //else if (pref.userAppTheme == "System Default") {
     //   final brightness = SchedulerBinding.instance.window.platformBrightness;
     //   themeMode =
     //       brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
     //   pref.setTheme(themeMode == Brightness.dark ? true : false);
     //   pref.setAppTheme("System Default");
     //   return brightness == Brightness.dark;
-    // } else {
-    //   pref.setAppTheme("Light");
-    //   return themeMode == ThemeMode.dark;
-    // }
+    // } 
+    else {
+      pref.setAppTheme("Light");
+      return themeMode == ThemeMode.dark;
+    }
 
-    return false;
+   // return false;
   }
 
   void getThemeData() async {
@@ -46,17 +49,18 @@ class ThemesProvider extends DefaultChangeNotifier {
        pref.setTheme(themeMode == ThemeMode.dark);
       log('themeMode   ::: $themeMode');
       pref.setAppTheme("Dark");
-    } else if (pref.userAppTheme == "System Default") {
-      final brightness = SchedulerBinding.instance.window.platformBrightness;
-      themeMode =
-          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
-      log('themeMode System ::: $themeMode');
-      pref.setAppTheme("System Default");
-       pref.setTheme(themeMode == ThemeMode.dark);
-    } else if (pref.userAppTheme == "Light") {
+    } 
+    // else if (pref.userAppTheme == "System Default") {
+    //   final brightness = SchedulerBinding.instance.window.platformBrightness;
+    //   themeMode =
+    //       brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
+    //   log('themeMode System ::: $themeMode');
+    //   pref.setAppTheme("System Default");
+    //    pref.setTheme(themeMode == ThemeMode.dark);
+    // } 
+    else if (pref.userAppTheme == "Light") {
       themeMode = ThemeMode.light;
       pref.setTheme(themeMode == ThemeMode.dark);
-
       pref.setAppTheme("Light");
     }
   }
@@ -83,16 +87,17 @@ class ThemesProvider extends DefaultChangeNotifier {
       _deviceTheme = "Light";
        themeMode = ThemeMode.light;
          pref.setTheme(false);
-    } else {
-      _deviceTheme = "System Default";
-      final brightness = SchedulerBinding.instance.window.platformBrightness;
-    themeMode = brightness == Brightness.dark
-        ? ThemeMode.dark
-       : ThemeMode.light;
+    } 
+    // else {
+    //   _deviceTheme = "System Default";
+    //   final brightness = SchedulerBinding.instance.window.platformBrightness;
+    // themeMode = brightness == Brightness.dark
+    //     ? ThemeMode.dark
+    //    : ThemeMode.light;
 
-             pref.setTheme(brightness == Brightness.dark);
-    }
-    // ref(userProfileProvider).fetchsetting();
+    //          pref.setTheme(brightness == Brightness.dark);
+    // }
+     ref(userProfileProvider).fetchsetting();
     notifyListeners();
   }
 

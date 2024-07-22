@@ -63,7 +63,10 @@ class ExchangeMessage extends ConsumerWidget {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Divider(
-                          color: colors.colorDivider,
+                          
+                          color: theme.isDarkMode
+                          ?colors.darkColorDivider
+                          :colors.colorDivider,
                         ),
                       );
                     },

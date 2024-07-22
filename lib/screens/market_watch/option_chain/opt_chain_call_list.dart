@@ -106,12 +106,12 @@ class OptChainCallList extends ConsumerWidget {
                       Text(
                           "(${callData![index].oiPerChng == "NaN" ? "0.00" : callData![index].oiPerChng ?? 0.00}%)",
                           style: textStyle(
-                              Color(callData![index].oiPerChng == null ||
+                             callData![index].oiPerChng == null ||
                                       callData![index].oiPerChng == "0.00"
-                                  ? 0xff666666
+                                  ? colors.ltpgrey
                                   : callData![index].oiPerChng!.startsWith("-")
-                                      ? 0xffFF1717
-                                      : 0xff43A833),
+                                      ? colors.darkred
+                                      : colors.ltpgreen,
                               11,
                               FontWeight.w500)),
                     ],
@@ -128,14 +128,14 @@ class OptChainCallList extends ConsumerWidget {
                         const SizedBox(height: 3),
                         Text("(${callData![index].perChange ?? 0.00}%)",
                             style: textStyle(
-                                Color(callData![index].perChange == null ||
+                                callData![index].perChange == null ||
                                         callData![index].perChange == "0.00"
-                                    ? 0xff666666
+                                    ? colors.ltpgrey
                                     : callData![index]
                                             .perChange!
                                             .startsWith("-")
-                                        ? 0xffFF1717
-                                        : 0xff43A833),
+                                        ? colors.darkred
+                                        : colors.ltpgreen,
                                 11,
                                 FontWeight.w500)),
                       ],

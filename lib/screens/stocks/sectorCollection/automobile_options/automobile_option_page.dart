@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/res/res.dart';
 
 class AutomobileOptions extends StatefulWidget {
   const AutomobileOptions({super.key});
@@ -161,8 +162,8 @@ class _AutomobileOptionsState extends State<AutomobileOptions> {
                                 style: textStyle(
                                     optiondata[index].optionperchange ==
                                             '(+1.65%)'
-                                        ? const Color(0xff43A833)
-                                        : const Color(0xffFF1717),
+                                        ? colors.ltpgreen
+                                        : colors.darkred,
                                     12,
                                     FontWeight.w500),
                               ),

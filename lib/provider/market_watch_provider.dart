@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/provider/thems.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
@@ -440,7 +441,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           if (item != numofList.last)
             DropdownMenuItem<String>(
               enabled: false,
-              child: Divider(color: colors.colorDivider),
+              child: Divider(color: ref(themeProvider).isDarkMode
+              ?colors.darkColorDivider
+              :colors.colorDivider),
             ),
         ],
       );

@@ -249,7 +249,7 @@ class ChangePass extends ConsumerWidget {
                                     : colors.colorBlack
                                 : changepassword.isDisableChangepassbtn
                                     ? colors.darkGrey
-                                    : colors.colorWhite,
+                                    : colors.colorbluegrey,
                                               padding:
                                                   const EdgeInsets.symmetric(
                                                       vertical: 13),

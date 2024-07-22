@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/res/res.dart'; 
 
 import '../../../provider/index_list_provider.dart';
 
@@ -102,7 +103,10 @@ class DefaultIndexList extends ConsumerWidget {
                             Text(
                               "${indexProvide.defaultIndexList!.indValues![index].change=="null" ?0.00 :indexProvide.defaultIndexList!.indValues![index].change} (${indexProvide.defaultIndexList!.indValues![index].perChange=="null" ?0.00:indexProvide.defaultIndexList!.indValues![index].perChange}%)",
                               style: textStyle(
-                                  Color((indexProvide
+                                  
+                                 
+
+                                  (indexProvide
                                                       .defaultIndexList!
                                                       .indValues![index]
                                                       .change ==
@@ -122,15 +126,15 @@ class DefaultIndexList extends ConsumerWidget {
                                                       .indValues![index]
                                                       .perChange ==
                                                   "0.00")
-                                      ? 0xff999999
+                                      ? colors.ltpgrey
                                       : indexProvide.defaultIndexList!
                                                   .indValues![index].change!
                                                   .startsWith("-") ||
                                               indexProvide.defaultIndexList!
                                                   .indValues![index].perChange!
                                                   .startsWith('-')
-                                          ? 0xffFF1717
-                                          : 0xff43A833),
+                                          ? colors.ltpgreen
+                                          : colors.darkred,
                                   12,
                                   FontWeight.w600),
                             )

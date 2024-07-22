@@ -72,7 +72,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
               child: TabBar(
                 
                  tabAlignment:portfolio.mfHoldingsModel!.isNotEmpty&& portfolio.mfHoldingsModel![0].stat != "Not_Ok" ? TabAlignment.start:TabAlignment.fill,
-                          indicatorSize: TabBarIndicatorSize.label,
+                          indicatorSize: TabBarIndicatorSize.tab,
                           isScrollable:portfolio.mfHoldingsModel!.isNotEmpty&& portfolio.mfHoldingsModel![0].stat != "Not_Ok" ,
                   indicatorColor:theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
                   unselectedLabelColor: const Color(0XFF777777),

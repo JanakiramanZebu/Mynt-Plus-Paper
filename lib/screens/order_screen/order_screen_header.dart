@@ -30,9 +30,9 @@ class OrderScreenHeader extends ConsumerWidget {
         Text(
           " (${headerData.perChange ?? 0.00}%)",
           style: textStyle(
-              Color(headerData.perChange!.startsWith("-")
-                  ? 0xffFF1717
-                  : 0xff43A833),
+              headerData.perChange!.startsWith("-")
+                  ? colors.darkred
+                  : colors.ltpgreen,
               13,
               FontWeight.w600),
         ),

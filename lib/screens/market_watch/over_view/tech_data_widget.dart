@@ -50,11 +50,11 @@ class TexhDataWidget extends ConsumerWidget {
                   children: [
                     Text("${techData.returnsGridview[index]['percent']}%",
                         style: textStyle(
-                            Color(techData.returnsGridview[index]['percent']
+                            techData.returnsGridview[index]['percent']
                                     .toString()
                                     .startsWith("-")
-                                ? 0xffFF1717
-                                : 0xff43A833),
+                                ? colors.darkred
+                                : colors.ltpgreen,
                             18,
                             FontWeight.w500)),
                     const SizedBox(height: 12),

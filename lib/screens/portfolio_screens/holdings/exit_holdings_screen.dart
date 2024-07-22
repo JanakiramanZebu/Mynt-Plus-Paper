@@ -174,17 +174,17 @@ class ExitHoldingsScreen extends ConsumerWidget {
                                 Text(
                                     " (${holdings.sealableHoldings[index].exchTsym![0].perChange}%)",
                                     style: textStyle(
-                                        Color(holdings.sealableHoldings[index]
+                                        holdings.sealableHoldings[index]
                                                 .exchTsym![0].perChange!
                                                 .startsWith("-")
-                                            ? 0XFFFF1717
+                                            ? colors.darkred
                                             : holdings
                                                         .sealableHoldings[index]
                                                         .exchTsym![0]
                                                         .perChange ==
                                                     "0.00"
-                                                ? 0xff666666
-                                                : 0xff43A833),
+                                                ? colors.ltpgrey
+                                                : colors.ltpgreen,
                                         12,
                                         FontWeight.w500)),
                               ],
@@ -244,32 +244,32 @@ class ExitHoldingsScreen extends ConsumerWidget {
                                     Text(
                                         "₹${holdings.sealableHoldings[index].exchTsym![0].profitNloss}",
                                         style: textStyle(
-                                            Color(holdings
+                                           holdings
                                                     .sealableHoldings[index]
                                                     .exchTsym![0]
                                                     .profitNloss!
                                                     .startsWith("-")
-                                                ? 0XFFFF1717
-                                                : 0xff43A833),
+                                                ? colors.darkred
+                                                : colors.ltpgreen,
                                             14,
                                             FontWeight.w500)),
                                     Text(
                                         " (${holdings.sealableHoldings[index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdings.sealableHoldings[index].exchTsym![0].pNlChng}%)",
                                         style: textStyle(
-                                            Color(holdings
+                                           holdings
                                                     .sealableHoldings[index]
                                                     .exchTsym![0]
                                                     .pNlChng!
                                                     .startsWith("-")
-                                                ? 0XFFFF1717
+                                                ? colors.darkred
                                                 : holdings
                                                             .sealableHoldings[
                                                                 index]
                                                             .exchTsym![0]
                                                             .pNlChng ==
                                                         "NaN"
-                                                    ? 0xff666666
-                                                    : 0xff43A833),
+                                                    ? colors.ltpgrey
+                                                    : colors.ltpgreen,
                                             12,
                                             FontWeight.w500)),
                                   ],
@@ -621,20 +621,20 @@ Container(
                                 Text(
                                     " (${holdings.nonSealableHoldings[index].exchTsym![0].perChange}%)",
                                     style: textStyle(
-                                        Color(holdings
+                                       holdings
                                                 .nonSealableHoldings[index]
                                                 .exchTsym![0]
                                                 .perChange!
                                                 .startsWith("-")
-                                            ? 0XFFFF1717
+                                            ? colors.darkred
                                             : holdings
                                                         .nonSealableHoldings[
                                                             index]
                                                         .exchTsym![0]
                                                         .perChange ==
                                                     "0.00"
-                                                ? 0xff666666
-                                                : 0xff43A833),
+                                                ? colors.ltpgrey
+                                                : colors.ltpgreen,
                                         12,
                                         FontWeight.w500)),
                               ],
@@ -681,32 +681,32 @@ Container(
                                     Text(
                                         "₹${holdings.nonSealableHoldings[index].exchTsym![0].profitNloss}",
                                         style: textStyle(
-                                            Color(holdings
+                                            holdings
                                                     .nonSealableHoldings[index]
                                                     .exchTsym![0]
                                                     .profitNloss!
                                                     .startsWith("-")
-                                                ? 0XFFFF1717
-                                                : 0xff43A833),
+                                                ? colors.darkred
+                                                : colors.ltpgreen,
                                             14,
                                             FontWeight.w500)),
                                     Text(
                                         " (${holdings.nonSealableHoldings[index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdings.nonSealableHoldings[index].exchTsym![0].pNlChng}%)",
                                         style: textStyle(
-                                            Color(holdings
+                                            holdings
                                                     .nonSealableHoldings[index]
                                                     .exchTsym![0]
                                                     .pNlChng!
                                                     .startsWith("-")
-                                                ? 0XFFFF1717
+                                                ? colors.darkred
                                                 : holdings
                                                             .nonSealableHoldings[
                                                                 index]
                                                             .exchTsym![0]
                                                             .pNlChng ==
                                                         "NaN"
-                                                    ? 0xff666666
-                                                    : 0xff43A833),
+                                                    ? colors.ltpgrey
+                                                    : colors.ltpgreen,
                                             12,
                                             FontWeight.w500)),
                                   ],

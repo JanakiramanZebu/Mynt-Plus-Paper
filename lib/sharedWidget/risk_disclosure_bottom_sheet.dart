@@ -125,7 +125,7 @@ class RiskDisclousreBottomSheet extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                           elevation: 0,
-                          backgroundColor:  theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                          backgroundColor:  theme.isDarkMode?colors.colorbluegrey:colors.colorBlack,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(50))),
                       child: Text("I Understand",

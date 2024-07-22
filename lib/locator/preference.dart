@@ -26,6 +26,9 @@ class Preferences {
   Future setLogout(bool isLogout) async =>
       await _prefInstance!.setBool(_isLogout, isLogout);
 
+  Future setHideLoginOptBtn(bool isHide) async =>
+      await _prefInstance!.setBool(_hideLoginOptBtn, isHide);
+
   Future setAppTheme(String theme) async {
     await _prefInstance!.setString(_userAppTheme, theme);
   }
@@ -54,6 +57,9 @@ class Preferences {
   bool? get userTheme => _prefInstance?.getBool(_userTheme);
   bool? get isMobileLogin => _prefInstance?.getBool(_ismobileLogin) ?? true;
   bool? get islogOut => _prefInstance?.getBool(_isLogout) ?? false;
+  bool? get hideLoginOptBtn =>
+      _prefInstance?.getBool(_hideLoginOptBtn) ?? false;
+
   String? get userAppTheme =>
       _prefInstance?.getString(_userAppTheme) ?? "System Default";
 
@@ -76,6 +82,8 @@ const String _logOutClient = 'logOutClient';
 const String _isLogout = "isLogout";
 const String _deviceName = 'deviceName';
 const String _ismobileLogin = 'ismobileLogin';
+
+const String _hideLoginOptBtn = 'hideLoginOptBtn';
 
 // Cleint Details
 const String _clientId = 'clientId';
