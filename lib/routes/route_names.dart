@@ -114,4 +114,8 @@ class Routes {
  
   static const String pendingalertdetails = 'pendingalertdetails';
 
+    static const String qrscanner = 'qrscanner';
+
+    
+
 }

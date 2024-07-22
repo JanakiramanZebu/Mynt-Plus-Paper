@@ -306,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: DefaultIndexList())
                         : indexProvide.selectedBtmIndx == 3
                             ? PreferredSize(
-                                preferredSize: const Size(20, 10),
+                                preferredSize: const Size(20, 20),
                                 child: ListTile(
                                     onTap: () {
                                       showModalBottomSheet(
@@ -354,11 +354,33 @@ class _HomeScreenState extends State<HomeScreen> {
                                             const Color(0xff666666),
                                             12,
                                             FontWeight.w500)),
-                                    trailing: Icon(
-                                        Icons.arrow_drop_down_circle_outlined,
-                                        color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack)),
+                                    trailing: Container(
+                                      width: 100,
+                                      child: Row(mainAxisAlignment: MainAxisAlignment.end,
+                                                                    
+                                        children: [
+                                        
+                                       IconButton(
+                                        splashRadius: 26,
+                                        onPressed: (){
+
+                                          Navigator.pushNamed(context, Routes.qrscanner);
+                                        },
+                                       icon: SvgPicture.asset(
+                                                  "assets/profile/qr_code.svg",
+                                                  width: 20,height: 24,
+                                                ),
+                                       ),SizedBox(width:4),
+                                      
+                                              Icon(
+                                                  Icons.arrow_drop_down_circle_outlined,
+                                                  color: theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack),
+                                           
+                                        ],
+                                      ),
+                                    )),
                               )
                             : null),
                 bottomNavigationBar: BottomAppBar(

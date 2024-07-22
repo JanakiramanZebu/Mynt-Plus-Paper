@@ -95,6 +95,8 @@ class SettingsScreen extends ConsumerWidget {
                                       ? const Color(0xffBDBDBD)
                                       : colors.colorGrey,
                                 )
+
+                                
                               ],
                             ),
                             content: SizedBox(
