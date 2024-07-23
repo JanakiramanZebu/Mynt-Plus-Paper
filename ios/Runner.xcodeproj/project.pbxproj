@@ -161,7 +161,6 @@
 				1BF487E46C4A9818488FF936 /* Pods-RunnerTests.release.xcconfig */,
 				6B07253166543F88D4FA9123 /* Pods-RunnerTests.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -492,13 +491,13 @@
 				DEVELOPMENT_TEAM = HZ2URX2WCT;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Mynt Plus Testing";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mynt +";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.mynt.trading_app_zebu;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mynt.tradingappzebu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -682,13 +681,13 @@
 				DEVELOPMENT_TEAM = HZ2URX2WCT;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Mynt Plus Testing";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mynt +";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.mynt.trading_app_zebu;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mynt.tradingappzebu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -712,13 +711,13 @@
 				DEVELOPMENT_TEAM = HZ2URX2WCT;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Mynt Plus Testing";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mynt +";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.mynt.trading_app_zebu;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mynt.tradingappzebu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

@@ -51,6 +51,10 @@ class ThemesProvider extends DefaultChangeNotifier {
        pref.setTheme(themeMode == ThemeMode.dark);
       log('themeMode   ::: $themeMode');
       pref.setAppTheme("Dark");
+       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+          statusBarIconBrightness: Brightness.light, // For Android (dark icons)
+          statusBarBrightness: Brightness.dark,
+          statusBarColor: Colors.black));
     } 
     // else if (pref.userAppTheme == "System Default") {
     //   final brightness = SchedulerBinding.instance.window.platformBrightness;
@@ -61,6 +65,10 @@ class ThemesProvider extends DefaultChangeNotifier {
     //    pref.setTheme(themeMode == ThemeMode.dark);
     // } 
     else if (pref.userAppTheme == "Light") {
+       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+          statusBarIconBrightness: Brightness.dark, // For Android (light icons)
+          statusBarBrightness: Brightness.light,
+          statusBarColor: Colors.white));
       themeMode = ThemeMode.light;
       pref.setTheme(themeMode == ThemeMode.dark);
       pref.setAppTheme("Light");

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/services.dart';
+// import 'package:flutter/services.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
@@ -31,13 +31,13 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final themeProvide = watch(themeProvider);
     themeProvide.getThemeData();
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-        statusBarIconBrightness: themeProvide.isDarkMode
-            ? Brightness.light
-            : Brightness.dark, // For Android (dark icons)
-        statusBarBrightness:
-            themeProvide.isDarkMode ? Brightness.light : Brightness.dark,
-        statusBarColor: themeProvide.isDarkMode ? Colors.black :Colors.white));
+    // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    //     statusBarIconBrightness: themeProvide.isDarkMode
+    //         ? Brightness.light
+    //         : Brightness.dark, // For Android (dark icons)
+    //     statusBarBrightness:
+    //         themeProvide.isDarkMode ? Brightness.light : Brightness.dark,
+    //     statusBarColor: themeProvide.isDarkMode ? Colors.black :Colors.white));
     return MaterialApp(
         themeMode: themeProvide.themeMode,
         theme: MyThemes.lightTheme,

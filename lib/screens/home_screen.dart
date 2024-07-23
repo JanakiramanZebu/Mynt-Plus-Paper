@@ -241,10 +241,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 50
                                             ? 0
                                             : 8),
-                                    child: SvgPicture.asset(assets.filterLines,
-                                        width: 19,  color: theme.isDarkMode
-                            ? const Color(0xffBDBDBD)
-                            : colors.colorGrey,)),
+                                    child: SvgPicture.asset(
+                                      assets.filterLines,
+                                      width: 19,
+                                      color: theme.isDarkMode
+                                          ? const Color(0xffBDBDBD)
+                                          : colors.colorGrey,
+                                    )),
                               )
                             : Container(),
                         marketWatchList.watchListValues.length >= 50
@@ -262,10 +265,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Padding(
                                     padding: const EdgeInsets.only(
                                         right: 16, left: 8),
-                                    child: SvgPicture.asset(assets.searchIcon,
-                                        width: 19,  color: theme.isDarkMode
-                            ? const Color(0xffBDBDBD)
-                            : colors.colorGrey,)),
+                                    child: SvgPicture.asset(
+                                      assets.searchIcon,
+                                      width: 19,
+                                      color: theme.isDarkMode
+                                          ? const Color(0xffBDBDBD)
+                                          : colors.colorGrey,
+                                    )),
                               ),
                       ] else if (indexProvide.selectedBtmIndx == 1 &&
                           portfolio.postionBookModel!.isNotEmpty &&
@@ -356,32 +362,31 @@ class _HomeScreenState extends State<HomeScreen> {
                                             FontWeight.w500)),
                                     trailing: Container(
                                       width: 100,
-                                      child: Row(mainAxisAlignment: MainAxisAlignment.end,
-                                                                    
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: [
-                                        
-                                       IconButton(
-                                        splashRadius: 26,
-                                        onPressed: (){
-
-                                          Navigator.pushNamed(context, Routes.qrscanner);
-
-                                        },
-                                       icon: SvgPicture.asset(
-                                                  "assets/profile/qr_code.svg",
-                                                  width: 20,height: 24,
-                                                  color: theme.isDarkMode
+                                          IconButton(
+                                            splashRadius: 26,
+                                            onPressed: () {
+                                              Navigator.pushNamed(
+                                                  context, Routes.qrscanner);
+                                            },
+                                            icon: SvgPicture.asset(
+                                                "assets/profile/qr_code.svg",
+                                                width: 20,
+                                                height: 24,
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack),
+                                          ),
+                                          SizedBox(width: 4),
+                                          Icon(
+                                              Icons
+                                                  .arrow_drop_down_circle_outlined,
+                                              color: theme.isDarkMode
                                                   ? colors.colorWhite
-                                                  :colors.colorBlack
-                                                ),
-                                       ),SizedBox(width:4),
-                                      
-                                              Icon(
-                                                  Icons.arrow_drop_down_circle_outlined,
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack),
-                                           
+                                                  : colors.colorBlack),
                                         ],
                                       ),
                                     )),
@@ -389,6 +394,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             : null),
                 bottomNavigationBar: BottomAppBar(
                   height: 58,
+                  shadowColor: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider,
                   padding: EdgeInsets.zero,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
