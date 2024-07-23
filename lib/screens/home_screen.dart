@@ -776,7 +776,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
                       backgroundColor: context.read(themeProvider).isDarkMode
-                          ? colors.colorWhite
+                          ? colors.colorbluegrey
                           : colors.colorBlack,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50),

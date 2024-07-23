@@ -31,10 +31,13 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final themeProvide = watch(themeProvider);
     themeProvide.getThemeData();
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        statusBarIconBrightness: Brightness.dark, // For Android (dark icons)
-        statusBarBrightness: Brightness.light,
-        statusBarColor: Colors.white));
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+        statusBarIconBrightness: themeProvide.isDarkMode
+            ? Brightness.light
+            : Brightness.dark, // For Android (dark icons)
+        statusBarBrightness:
+            themeProvide.isDarkMode ? Brightness.light : Brightness.dark,
+        statusBarColor: themeProvide.isDarkMode ? Colors.black :Colors.white));
     return MaterialApp(
         themeMode: themeProvide.themeMode,
         theme: MyThemes.lightTheme,

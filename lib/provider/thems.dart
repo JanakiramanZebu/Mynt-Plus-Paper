@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
@@ -45,6 +46,7 @@ class ThemesProvider extends DefaultChangeNotifier {
     print("THEME :::  ${pref.userAppTheme} $themeMode");
     _deviceTheme = pref.userAppTheme!;
     if (pref.userAppTheme == "Dark") {
+      
       themeMode = ThemeMode.dark;
        pref.setTheme(themeMode == ThemeMode.dark);
       log('themeMode   ::: $themeMode');
@@ -80,10 +82,18 @@ class ThemesProvider extends DefaultChangeNotifier {
             : ThemeMode.light;
 
     if (pref.userAppTheme == "Dark") {
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+          statusBarIconBrightness: Brightness.light, // For Android (dark icons)
+          statusBarBrightness: Brightness.dark,
+          statusBarColor: Colors.black));
       _deviceTheme = "Dark";
             themeMode = ThemeMode.dark;
       pref.setTheme(true);
     } else if (pref.userAppTheme == "Light") {
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+          statusBarIconBrightness: Brightness.dark, // For Android (light icons)
+          statusBarBrightness: Brightness.light,
+          statusBarColor: Colors.white));
       _deviceTheme = "Light";
        themeMode = ThemeMode.light;
          pref.setTheme(false);

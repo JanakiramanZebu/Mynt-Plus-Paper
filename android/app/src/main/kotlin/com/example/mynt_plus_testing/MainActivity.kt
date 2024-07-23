@@ -1,4 +1,4 @@
-package com.mynt.myntplustesting
+package com.mynt.trading_app_zebu
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
