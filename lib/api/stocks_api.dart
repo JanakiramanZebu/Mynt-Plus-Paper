@@ -1,10 +1,13 @@
  
 
+ 
+
 import 'dart:developer';
 
 import '../models/explore_model/stocks_model/corporate_action_model.dart'; 
 import '../models/explore_model/stocks_model/get_ad_indices.dart';
 import '../models/explore_model/stocks_model/sector_thematric_detail_model.dart';
+import '../models/explore_model/stocks_model/stock_monitor_model.dart';
 import '../models/indices/global_indices_model.dart';
 import '../models/news_model.dart';
 import '../models/explore_model/stocks_model/toplist_stocks.dart';
@@ -114,7 +117,7 @@ mixin StocksAPI on ApiCore {
           headers: defaultHeaders, body: jsonEncode({"index": ""}));
 
       final json = jsonDecode(res.body);
-    log("ALL INDICES ${res.body}");
+    // log("ALL INDICES ${res.body}");
  
 
       return GetAdIndicesModel.fromJson(json as Map<String, dynamic>);
@@ -132,6 +135,42 @@ mixin StocksAPI on ApiCore {
     //  print("Top Indices Data ${response.body}");
       final json = jsonDecode(response.body);
       return CorporateActionModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+
+  Future<List<StockMoniterModel>> getStockMonitor() async {
+    try {
+      final uri = Uri.parse(apiLinks.getStockMonitor);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:  jsonEncode({"exch": "NSE", "basket": "NIFTY50", "condition": "VolUpPriceDown"}));
+           log("Stock Monitor=>${res.body} ");
+      final List<StockMoniterModel> data = [];
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        try {
+          if (json['stat'] == 'Not_Ok') {
+            final StockMoniterModel ord =
+               StockMoniterModel.fromJson(json as Map<String, dynamic>);
+            return [ord];
+          } else {
+            for (final item in json) {
+              data.add(StockMoniterModel.fromJson(item as Map<String, dynamic>));
+            }
+          }
+        } catch (e) {
+          if (res.statusCode == 200) {
+            for (final item in json) {
+              data.add(StockMoniterModel.fromJson(item as Map<String, dynamic>));
+            }
+          }
+        }
+      }
+
+      return data;
     } catch (e) {
       rethrow;
     }

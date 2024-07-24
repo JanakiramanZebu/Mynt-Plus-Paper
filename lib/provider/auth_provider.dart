@@ -715,15 +715,17 @@ class AuthProvider extends DefaultChangeNotifier {
         ConstantName.timer =
             Timer.periodic(const Duration(seconds: 1), (timer) {});
         ConstantName.timer!.cancel();
-        await context.read(indexListProvider).fetchDefTopIndex(context);
+        await ref(stocksProvide).defaultSectorThemematicData();
+        await ref(indexListProvider).fetchDefTopIndex(context);
 
         await ref(stocksProvide)
             .fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
         await ref(stocksProvide)
             .fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
         await ref(stocksProvide).fetchCorporateAction();
-        
+
         await ref(stocksProvide).fetchIndicesAdvdec();
+              await ref(stocksProvide).fetchStockMonitor();
         await ref(stocksProvide).getNews();
         await ref(indexListProvider).bottomMenu(0);
         //  ref(indexListProvider).fetchNotifyMsg();

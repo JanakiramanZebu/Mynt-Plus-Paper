@@ -120,6 +120,7 @@ class Routes {
   //
 static const String   sectorThematicDetail  = ' sectorThematicDetail';
  
+  static const String allTrade = 'allTrade';
 
 
 }

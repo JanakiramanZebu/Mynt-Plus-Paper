@@ -143,4 +143,6 @@ class ApiLinks {
   String get getadindicesAdvdec => '$stockUrl/equity/getadindicesAdvdec';
 
   String get getCorporateAction => '$stockUrl/ipo/getCorporateAction';
+  String get getStockMonitor => '$stockUrl/equity/GetContentList';
+  
 }

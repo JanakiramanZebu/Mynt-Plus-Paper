@@ -45,21 +45,24 @@ class SectorThematicDetail extends ConsumerWidget {
                     style: textStyle(colors.colorBlack, 14, FontWeight.w500)),
               ],
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-           SizedBox(
-                      width: MediaQuery.of(context).size.width/1.7,
+              SizedBox(
+                width: MediaQuery.of(context).size.width / 1.7,
                 child: Row(
                   children: [
-                    if(data.poistive!="0")...[
-                    colorBar("${data.poistive}",Color(0xff43A833) ),
-                    SizedBox(width: 10)],
-                           if(data.nutral!="0")...[
-                    colorBar("${data.nutral}", Color(0xff999999)),
-                    SizedBox(width: 10)],
-                           if(data.negative!="0")...[
-                    colorBar("${data.negative}", Color(0xffFF1717)),
-                    SizedBox(width: 10)]
+                    if (data.poistive != "0") ...[
+                      colorBar("${data.poistive}", const Color(0xff43A833)),
+                      const SizedBox(width: 10)
+                    ],
+                    if (data.nutral != "0") ...[
+                      colorBar("${data.nutral}", const Color(0xff999999)),
+                      const SizedBox(width: 10)
+                    ],
+                    if (data.negative != "0") ...[
+                      colorBar("${data.negative}", const Color(0xffFF1717)),
+                      const SizedBox(width: 10)
+                    ]
                   ],
                 ),
               ),
@@ -135,7 +138,8 @@ class SectorThematicDetail extends ConsumerWidget {
 
   Expanded colorBar(String value, Color color) {
     return Expanded(
-        flex: double.parse(value == "null" || value == ""? "0.0" : value).ceil(),
+        flex:
+            double.parse(value == "null" || value == "" ? "0.0" : value).ceil(),
         child: Container(
             decoration: BoxDecoration(
                 color: color, borderRadius: BorderRadius.circular(30)),

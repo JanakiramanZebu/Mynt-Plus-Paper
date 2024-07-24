@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
   
 import 'indices/top_indices.dart';
 import 'news/news_screen.dart';   
+import 'stock_monitor/stock_monitor_screen.dart';
 import 'trade_action/corporate_action.dart';
 import 'trade_action/trade_action_widget.dart'; 
  
@@ -17,6 +18,7 @@ class StockScreen extends StatelessWidget {
           TopIndices(),
           SizedBox(height: 16),
           TradeAction(),
+          StockMonitorScreen(),
           // TradeScreen(),
           // GridViewScreen(),
 

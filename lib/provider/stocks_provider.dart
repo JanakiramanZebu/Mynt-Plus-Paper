@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +11,7 @@ import '../models/explore_model/stocks_model/corporate_action_model.dart';
 import '../models/explore_model/stocks_model/get_ad_indices.dart';
 import '../models/explore_model/stocks_model/sctor_thematic_model.dart';
 import '../models/explore_model/stocks_model/sector_thematric_detail_model.dart';
+import '../models/explore_model/stocks_model/stock_monitor_model.dart';
 import '../models/indices/global_indices_model.dart';
 import '../models/news_model.dart';
 import '../models/explore_model/stocks_model/action_trade_model.dart';
@@ -44,6 +44,9 @@ class StocksProvider extends DefaultChangeNotifier {
   List<TopGainers> get byValue => _byValue;
   List<TopGainers> get byVolume => _byVolume;
   List<TopGainers> get topStockData => _topStockData;
+
+  List<StockMoniterModel> _stockMonitor = [];
+  List<StockMoniterModel> get stockMonitor => _stockMonitor;
   String _tradeData = "Top gainer";
   String get tradeData => _tradeData;
   StocksProvider(this.ref);
@@ -63,134 +66,49 @@ class StocksProvider extends DefaultChangeNotifier {
     "Split"
   ];
 
+
+String _slectSMSym ="Nifty 50";
+String get slectSMSym =>_slectSMSym;
+String _slectSMFilter ="VolUpPriceUp";
+String get slectSMFilter  =>_slectSMFilter ;
+
+chngSMSym(String val){
+  _slectSMSym=val;
+  notifyListeners();
+}
+chngSMFilter(String val){
+ _slectSMFilter=val;
+  notifyListeners();
+}
+
+  final List _stockMonitorSym = [
+    {"symbol": "All", "bskt": "A"},
+    {"symbol": "Nifty 50", "bskt": "NIFTY50"},
+    {"symbol": "Nifty 500", "bskt": "NIFTY500"},
+    {"symbol": "Nifty MIDCAP 50", "bskt": "NIFTYMCAP50"},
+    {"symbol": "Nifty SMALCAP 50", "bskt": "NIFTYSMCAP50"}
+  ];
+
+  List get stockMonitorSym => _stockMonitorSym;
+
+  final List _stockMonitorFilter = [
+    {"filterType": "Volume & Price Up", "cont": "VolUpPriceUp"},
+    {"filterType": "Volume & Price Down", "cont": "VolUpPriceDown"},
+    {"filterType": "Open High", "cont": "OpenHigh"},
+    {"filterType": "Open Low", "cont": "OpenLow"},
+    {"filterType": "High Break", "cont": "HighBreak"},
+    {"filterType": "Low Break", "cont": "LowBreak"}
+  ];
+
+  List get stockMonitorFilter => _stockMonitorFilter;
+
   List<String> get eveType => _eveType;
   String _selectedEvent = "Announcement";
   String get selectedevent => _selectedEvent;
 
-  List<SectorThemeaticModel> _sectorsData = [
-    SectorThemeaticModel(
-        chng: "",
-        secName: "NIFTY FINANCIAL SERVICES",
-        secCount: "",
-        name: "Financial Services",
-        ltp: "",
-        token: "26037",
-        perChng: "",
-        poistive: "",
-        nutral: "",
-        marketCap: "",
-        close: ""),
-    SectorThemeaticModel(
-        chng: "",
-        secName: "NIFTY OIL AND GAS INDEX",
-        secCount: "",
-        name: "Oil & Gas",
-        ltp: "",
-        token: "26071",
-        perChng: "",
-        poistive: "",
-        nutral: "",
-        marketCap: "",
-        close: ""),
-    SectorThemeaticModel(
-        chng: "",
-        secName: "NIFTY BANK",
-        secCount: "",
-        name: "Bank",
-        ltp: "",
-        token: "26009",
-        perChng: "",
-        poistive: "",
-        nutral: "",
-        marketCap: "",
-        close: ""),
-    SectorThemeaticModel(
-        chng: "",
-        secName: "NIFTY IT",
-        secCount: "",
-        name: "IT",
-        ltp: "",
-        token: "26008",
-        perChng: "",
-        poistive: "",
-        nutral: "",
-        marketCap: "",
-        close: ""),
-    SectorThemeaticModel(
-        chng: "",
-        secName: "NIFTY FMCG",
-        secCount: "",
-        name: "FMCG",
-        ltp: "",
-        token: "26021",
-        perChng: "",
-        poistive: "",
-        nutral: "",
-        marketCap: "",
-        close: ""),
-  ];
+  List<SectorThemeaticModel> _sectorsData = [];
 
-  List<SectorThemeaticModel> _thematicData = [
-    SectorThemeaticModel(
-        chng: "",
-        secName: "Nifty India Manufacturing",
-        secCount: "",
-        name: "Manufacturing",
-        ltp: "",
-        token: "26080",
-        perChng: "",
-        poistive: "",
-        nutral: "",
-        marketCap: ""),
-    SectorThemeaticModel(
-        chng: "",
-        secName: "NIFTY INFRASTRUCTURE",
-        secCount: "",
-        name: "InfraStructure",
-        ltp: "",
-        token: "26019",
-        perChng: "",
-        poistive: "",
-        nutral: "",
-        marketCap: "",
-        close: ""),
-    SectorThemeaticModel(
-        chng: "",
-        secName: "NIFTY INDIA CONSUMPTION",
-        secCount: "",
-        name: "Consumption",
-        ltp: "",
-        token: "26036",
-        perChng: "",
-        poistive: "",
-        nutral: "",
-        marketCap: "",
-        close: ""),
-    SectorThemeaticModel(
-        chng: "",
-        secName: "Nifty Mobility",
-        secCount: "",
-        name: "Mobility",
-        ltp: "",
-        token: "26008",
-        perChng: "",
-        poistive: "",
-        nutral: "",
-        marketCap: "",
-        close: ""),
-    SectorThemeaticModel(
-        chng: "",
-        secName: "Nifty India Digital",
-        secCount: "",
-        name: "Digital",
-        ltp: "",
-        token: "26077",
-        perChng: "",
-        poistive: "",
-        nutral: "",
-        marketCap: "",
-        close: "")
-  ];
+  List<SectorThemeaticModel> _thematicData = [];
 
   List<SectorThemeaticModel> _strategicData = [];
 
@@ -276,7 +194,93 @@ class StocksProvider extends DefaultChangeNotifier {
     return itemsHeights;
   }
 
+    List<double> getSMCustomItemsHeight() {
+    List<double> itemsHeights = [];
+    for (var i = 0; i < (_stockMonitorSym.length * 2) - 1; i++) {
+      if (i.isEven) {
+        itemsHeights.add(40);
+      }
+      if (i.isOdd) {
+        itemsHeights.add(4);
+      }
+    }
+    return itemsHeights;
+  }
+
+  List<DropdownMenuItem<String>> addSMDivider () {
+    List<DropdownMenuItem<String>> menuItems = [];
+
+    for (var item in _stockMonitorSym) {
+      menuItems.addAll(
+        [
+          DropdownMenuItem<String>(
+              value: item["symbol"].toString(),
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Text(
+                    item["symbol"].toString(),
+                    style: GoogleFonts.inter(
+                        textStyle: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xff000000),
+                            fontSize: 13)),
+                  ))),
+          //If it's last item, we will not add Divider after it.
+          if (item != _stockMonitorSym.last)
+            const DropdownMenuItem<String>(
+              enabled: false,
+              child: Divider(),
+            ),
+        ],
+      );
+    }
+    return menuItems;
+  }
+
   List<DropdownMenuItem<String>> addDividersAfterExpDates() {
+    List<DropdownMenuItem<String>> menuItems = [];
+
+    for (var item in tradeActType) {
+      menuItems.addAll(
+        [
+          DropdownMenuItem<String>(
+              value: item.toString(),
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Text(
+                    item.toString(),
+                    style: GoogleFonts.inter(
+                        textStyle: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xff000000),
+                            fontSize: 13)),
+                  ))),
+          //If it's last item, we will not add Divider after it.
+          if (item != tradeActType.last)
+            const DropdownMenuItem<String>(
+              enabled: false,
+              child: Divider(),
+            ),
+        ],
+      );
+    }
+    return menuItems;
+  }
+
+  List<double> getSMCustItemsHeight() {
+    List<double> itemsHeights = [];
+    for (var i = 0; i < (tradeActType.length * 2) - 1; i++) {
+      if (i.isEven) {
+        itemsHeights.add(40);
+      }
+      if (i.isOdd) {
+        itemsHeights.add(4);
+      }
+    }
+    return itemsHeights;
+  }
+
+  List<DropdownMenuItem<String>> addSMividers() {
     List<DropdownMenuItem<String>> menuItems = [];
 
     for (var item in tradeActType) {
@@ -392,6 +396,134 @@ class StocksProvider extends DefaultChangeNotifier {
 
   chngfinancilaType(String val) {
     _selctedFinType = val;
+    notifyListeners();
+  }
+
+  defaultSectorThemematicData() {
+    _sectorsData = [
+      SectorThemeaticModel(
+          chng: "",
+          secName: "NIFTY FINANCIAL SERVICES",
+          secCount: "",
+          name: "Financial Services",
+          ltp: "",
+          token: "26037",
+          perChng: "",
+          poistive: "",
+          nutral: "",
+          marketCap: "",
+          close: ""),
+      SectorThemeaticModel(
+          chng: "",
+          secName: "NIFTY OIL AND GAS INDEX",
+          secCount: "",
+          name: "Oil & Gas",
+          ltp: "",
+          token: "26071",
+          perChng: "",
+          poistive: "",
+          nutral: "",
+          marketCap: "",
+          close: ""),
+      SectorThemeaticModel(
+          chng: "",
+          secName: "NIFTY BANK",
+          secCount: "",
+          name: "Bank",
+          ltp: "",
+          token: "26009",
+          perChng: "",
+          poistive: "",
+          nutral: "",
+          marketCap: "",
+          close: ""),
+      SectorThemeaticModel(
+          chng: "",
+          secName: "NIFTY IT",
+          secCount: "",
+          name: "IT",
+          ltp: "",
+          token: "26008",
+          perChng: "",
+          poistive: "",
+          nutral: "",
+          marketCap: "",
+          close: ""),
+      SectorThemeaticModel(
+          chng: "",
+          secName: "NIFTY FMCG",
+          secCount: "",
+          name: "FMCG",
+          ltp: "",
+          token: "26021",
+          perChng: "",
+          poistive: "",
+          nutral: "",
+          marketCap: "",
+          close: ""),
+    ];
+
+    _thematicData = [
+      SectorThemeaticModel(
+          chng: "",
+          secName: "Nifty India Manufacturing",
+          secCount: "",
+          name: "Manufacturing",
+          ltp: "",
+          token: "26080",
+          perChng: "",
+          poistive: "",
+          nutral: "",
+          marketCap: ""),
+      SectorThemeaticModel(
+          chng: "",
+          secName: "NIFTY INFRASTRUCTURE",
+          secCount: "",
+          name: "InfraStructure",
+          ltp: "",
+          token: "26019",
+          perChng: "",
+          poistive: "",
+          nutral: "",
+          marketCap: "",
+          close: ""),
+      SectorThemeaticModel(
+          chng: "",
+          secName: "NIFTY INDIA CONSUMPTION",
+          secCount: "",
+          name: "Consumption",
+          ltp: "",
+          token: "26036",
+          perChng: "",
+          poistive: "",
+          nutral: "",
+          marketCap: "",
+          close: ""),
+      SectorThemeaticModel(
+          chng: "",
+          secName: "Nifty Mobility",
+          secCount: "",
+          name: "Mobility",
+          ltp: "",
+          token: "26008",
+          perChng: "",
+          poistive: "",
+          nutral: "",
+          marketCap: "",
+          close: ""),
+      SectorThemeaticModel(
+          chng: "",
+          secName: "Nifty India Digital",
+          secCount: "",
+          name: "Digital",
+          ltp: "",
+          token: "26077",
+          perChng: "",
+          poistive: "",
+          nutral: "",
+          marketCap: "",
+          close: "")
+    ];
     notifyListeners();
   }
 
@@ -532,7 +664,7 @@ class StocksProvider extends DefaultChangeNotifier {
       for (var element in _getAdIndicesModel!.sectoralIndices!) {
         if (res.containsKey(element)) {
           _sectorsData.add(SectorThemeaticModel(
-              secName: "",
+              secName: element,
               name: "",
               secCount: (int.parse("${res[element]["Positive"]}") +
                       int.parse("${res[element]["Neutral"]}") +
@@ -549,21 +681,18 @@ class StocksProvider extends DefaultChangeNotifier {
               marketCap: "${res[element]["marketCap"]}"));
         }
 
-        if (res[element]["token"]!="") {
-           ltpArgs.add({"exch": "NSE", "token": "${res[element]["token"]}"});
+        if (res[element]["token"] != "") {
+          ltpArgs.add({"exch": "NSE", "token": "${res[element]["token"]}"});
         }
-       
 
         // print("${sector.secCount}");
       }
       _thematicData = [];
 
       for (var element in _getAdIndicesModel!.thematicIndices!) {
-
-        print( " $element  ${res[element]["token"]}");
-        if (res.containsKey("$element")) {
-          _sectorsData.add(SectorThemeaticModel(
-              secName: "",
+        if (res.containsKey(element)) {
+          _thematicData.add(SectorThemeaticModel(
+              secName: element,
               name: "",
               secCount: (int.parse("${res[element]["Positive"]}") +
                       int.parse("${res[element]["Neutral"]}") +
@@ -580,72 +709,72 @@ class StocksProvider extends DefaultChangeNotifier {
               marketCap: "${res[element]["marketCap"]}"));
         }
 
-        if (res[element]["token"]!="") {
-           ltpArgs.add({"exch": "NSE", "token": "${res[element]["token"]}"});
+        if (res[element]["token"] != "") {
+          ltpArgs.add({"exch": "NSE", "token": "${res[element]["token"]}"});
         }
-       
 
         // print("${sector.secCount}");
       }
 
-      // _strategicData = [];
+      _strategicData = [];
 
-      // for (var element in _getAdIndicesModel!.strategyIndices!) {
-      //   if (res.containsKey(element)) {
-      //     _strategicData.add(SectorThemeaticModel(
-      //         secName: "",
-      //         name: "",
-      //         secCount: (int.parse("${res[element]["Positive"]}") +
-      //                 int.parse("${res[element]["Neutral"]}") +
-      //                 int.parse("${res[element]["Negative"]}"))
-      //             .toString(),
-      //         ltp: "",
-      //         chng: "",
-      //         perChng: "",
-      //         negative: "${res[element]["Negative"]}",
-      //         poistive: "${res[element]["Positive"]}",
-      //         close: "",
-      //         token: "${res[element]["token"]}",
-      //         nutral: "${res[element]["Neutral"]}",
-      //         marketCap: "${res[element]["marketCap"]}"));
-      //   }
-      //   ltpArgs.add({"exch": "NSE", "token": "${res[element]["token"]}"});
+      for (var element in _getAdIndicesModel!.strategyIndices!) {
+        if (res.containsKey(element)) {
+          _strategicData.add(SectorThemeaticModel(
+              secName: element,
+              name: "",
+              secCount: (int.parse("${res[element]["Positive"]}") +
+                      int.parse("${res[element]["Neutral"]}") +
+                      int.parse("${res[element]["Negative"]}"))
+                  .toString(),
+              ltp: "",
+              chng: "",
+              perChng: "",
+              negative: "${res[element]["Negative"]}",
+              poistive: "${res[element]["Positive"]}",
+              close: "",
+              token: "${res[element]["token"]}",
+              nutral: "${res[element]["Neutral"]}",
+              marketCap: "${res[element]["marketCap"]}"));
+        }
+        if (res[element]["token"] != "") {
+          ltpArgs.add({"exch": "NSE", "token": "${res[element]["token"]}"});
+        }
+        // print("${sector.secCount}");
+      }
 
-      //   // print("${sector.secCount}");
-      // }
+      _niftyData = [];
 
-      // _niftyData = [];
-
-      // for (var element in _getAdIndicesModel!.niftyIndices!) {
-      //   if (res.containsKey(element)) {
-      //     _niftyData.add(SectorThemeaticModel(
-      //         secName: "",
-      //         name: "",
-      //         secCount: (int.parse("${res[element]["Positive"]}") +
-      //                 int.parse("${res[element]["Neutral"]}") +
-      //                 int.parse("${res[element]["Negative"]}"))
-      //             .toString(),
-      //         ltp: "",
-      //         chng: "",
-      //         perChng: "",
-      //         negative: "${res[element]["Negative"]}",
-      //         poistive: "${res[element]["Positive"]}",
-      //         close: "",
-      //         token: "${res[element]["token"]}",
-      //         nutral: "${res[element]["Neutral"]}",
-      //         marketCap: "${res[element]["marketCap"]}"));
-      //   }
-      //   ltpArgs.add({"exch": "NSE", "token": "${res[element]["token"]}"});
-
-      //   // print("${sector.secCount}");
-      // }
+      for (var element in _getAdIndicesModel!.niftyIndices!) {
+        if (res.containsKey(element)) {
+          _niftyData.add(SectorThemeaticModel(
+              secName: element,
+              name: "",
+              secCount: (int.parse("${res[element]["Positive"]}") +
+                      int.parse("${res[element]["Neutral"]}") +
+                      int.parse("${res[element]["Negative"]}"))
+                  .toString(),
+              ltp: "",
+              chng: "",
+              perChng: "",
+              negative: "${res[element]["Negative"]}",
+              poistive: "${res[element]["Positive"]}",
+              close: "",
+              token: "${res[element]["token"]}",
+              nutral: "${res[element]["Neutral"]}",
+              marketCap: "${res[element]["marketCap"]}"));
+        }
+        if (res[element]["token"] != "") {
+          ltpArgs.add({"exch": "NSE", "token": "${res[element]["token"]}"});
+        }
+        // print("${sector.secCount}");
+      }
 
       final ltpDatas = await api.getLTP(ltpArgs);
 
       Map ltpData = jsonDecode(ltpDatas.body);
 
       for (var element in _sectorsData) {
-        print("${element.token!}");
         if (element.token!.isNotEmpty) {
           if (element.token.toString() ==
               "${ltpData["data"]["${element.token}"]['token']}") {
@@ -723,6 +852,25 @@ class StocksProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       print("$e");
+    }
+  }
+
+  fetchStockMonitor() async {
+    try {
+      _stockMonitor = await api.getStockMonitor();
+      // List ltpArgs=[];
+      if (_stockMonitor.isNotEmpty) {
+        if (_stockMonitor[0].stat == "Not_Ok") {
+          _stockMonitor = [];
+        }
+
+// for (var element in _stockMonitor) {
+//    ltpArgs.add({"exch": "NSE", "token": "${element.token}"});
+// }
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
     }
   }
 }

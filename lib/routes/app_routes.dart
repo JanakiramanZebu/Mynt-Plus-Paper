@@ -42,6 +42,7 @@ import '../screens/splash_screen.dart';
 import '../screens/stocks/explore/stocks/indices/all_index_screen.dart';
 import '../screens/stocks/explore/stocks/news/news_listdata.dart';
 import '../screens/stocks/explore/stocks/stock_screens.dart';
+import '../screens/stocks/explore/stocks/trade_action/all_trade.dart';
 import '../screens/stocks/explore/stocks/trade_action/sector_themeatic_details.dart';
 import 'route_names.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -522,6 +523,23 @@ case Routes.searchScrip:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               const AllIndicesScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );case Routes.allTrade:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const AllTrade(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(-1.0, 0.0);
             const end = Offset.zero;

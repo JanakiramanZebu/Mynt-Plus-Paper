@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../../provider/stocks_provider.dart';
 import '../../../../../provider/thems.dart';
 import '../../../../../res/res.dart';
+import '../../../../../routes/route_names.dart';
 import 'sector_themeatic_list.dart';
 
 class SectorThematicWidget extends StatefulWidget {
@@ -93,13 +94,14 @@ class _SectorThematicWidgetState extends State<SectorThematicWidget>
          
           height: 280,
           child: TabBarView(
-              controller: tabCtrl, children: [ SectorThematicList(data:tradeAcrion.sectorsData  ),  SectorThematicList(data:tradeAcrion.thematicDat  )]),
+              controller: tabCtrl, children: [ SectorThematicList(data:tradeAcrion.sectorsData ,isscollable:false ),  SectorThematicList(data:tradeAcrion.thematicDat ,isscollable:false )]),
         ),
 
        Center(
          child: TextButton(
                   onPressed: () async {
-                   tradeAcrion . fetchALLAdindices();
+                await   tradeAcrion . fetchALLAdindices();
+                     Navigator.pushNamed(context, Routes.allTrade);
                   },
                   child: Text('See all',
                       style: GoogleFonts.inter(

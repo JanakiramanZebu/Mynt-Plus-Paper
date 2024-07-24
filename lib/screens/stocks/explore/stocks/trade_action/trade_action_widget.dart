@@ -35,9 +35,8 @@ class _TradeActionState extends State<TradeAction> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text("Today's trade action",
-                    style: GoogleFonts.inter(
-                        textStyle: textStyle(
-                            const Color(0xff000000), 16, FontWeight.w600))),
+                    style:   textStyle(
+                            const Color(0xff000000), 16, FontWeight.w600)),
                 DropdownButtonHideUnderline(
                   child: DropdownButton2(
                     menuItemStyleData: MenuItemStyleData(
