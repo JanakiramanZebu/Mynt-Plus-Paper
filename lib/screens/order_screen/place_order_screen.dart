@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
-import '../../../res/res.dart'; 
+import 'package:google_fonts/google_fonts.dart';
+import '../../../res/res.dart';
 import '../../models/marketwatch_model/scrip_info.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../models/order_book_model/order_margin_model.dart';
@@ -20,7 +20,7 @@ import '../../provider/order_provider.dart';
 import '../../provider/shocase_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
-import '../../routes/route_names.dart'; 
+import '../../routes/route_names.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
@@ -402,15 +402,19 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                           ),
                                           Text('Intraday',
                                               style: textStyle(
-theme.isDarkMode? Color(orderInput.investType ==
-                                                          InvestType.intraday
-                                                      ? 0xffffffff
-                                                      : 0xff666666):
-
-                                                  Color(orderInput.investType ==
-                                                          InvestType.intraday
-                                                      ? 0xff3E4763
-                                                      : 0xff666666),
+                                                  theme.isDarkMode
+                                                      ? Color(orderInput
+                                                                  .investType ==
+                                                              InvestType
+                                                                  .intraday
+                                                          ? 0xffffffff
+                                                          : 0xff666666)
+                                                      : Color(orderInput
+                                                                  .investType ==
+                                                              InvestType
+                                                                  .intraday
+                                                          ? 0xff3E4763
+                                                          : 0xff666666),
                                                   14,
                                                   FontWeight.w500))
                                         ],
@@ -446,22 +450,27 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                 ? 'Delivery'
                                                 : "Carry Forward",
                                             style: textStyle(
-                                              theme.isDarkMode? Color(orderInput.investType ==
-                                                            InvestType
-                                                                .delivery ||
-                                                        orderInput.investType ==
-                                                            InvestType
-                                                                .carryForward
-                                                    ? 0xffffffff
-                                                    : 0xff666666):
-                                                Color(orderInput.investType ==
-                                                            InvestType
-                                                                .delivery ||
-                                                        orderInput.investType ==
-                                                            InvestType
-                                                                .carryForward
-                                                    ? 0xff3E4763
-                                                    : 0xff666666),
+                                                theme.isDarkMode
+                                                    ? Color(orderInput
+                                                                    .investType ==
+                                                                InvestType
+                                                                    .delivery ||
+                                                            orderInput
+                                                                    .investType ==
+                                                                InvestType
+                                                                    .carryForward
+                                                        ? 0xffffffff
+                                                        : 0xff666666)
+                                                    : Color(orderInput
+                                                                    .investType ==
+                                                                InvestType
+                                                                    .delivery ||
+                                                            orderInput
+                                                                    .investType ==
+                                                                InvestType
+                                                                    .carryForward
+                                                        ? 0xff3E4763
+                                                        : 0xff666666),
                                                 14,
                                                 FontWeight.w500))
                                       ]),
@@ -559,7 +568,8 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                       ? priceType !=
                                                               priceTypes[index]
                                                                   ['type']
-                                                          ? const Color(0xffF1F3F8)
+                                                          ? const Color(
+                                                              0xffF1F3F8)
                                                           : colors.colorBlack
                                                       : priceType !=
                                                               priceTypes[index]
@@ -869,7 +879,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Greater than Price"));
+                                                                    "Trigger Should be Greater than Limit Price"));
                                                       }
                                                     } else {
                                                       if (double.parse(value) >
@@ -890,7 +900,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Lesser than Price"));
+                                                                    "Trigger Should be Lesser than Limit Price"));
                                                       }
                                                     }
                                                   } else {
@@ -917,7 +927,8 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                             BorderRadius
                                                                 .circular(20),
                                                         color: theme.isDarkMode
-                                                            ? const Color(0xff555555)
+                                                            ? const Color(
+                                                                0xff555555)
                                                             : colors
                                                                 .colorWhite),
                                                     child: SvgPicture.asset(
@@ -990,7 +1001,8 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                             BorderRadius
                                                                 .circular(20),
                                                         color: theme.isDarkMode
-                                                            ? const Color(0xff555555)
+                                                            ? const Color(
+                                                                0xff555555)
                                                             : colors
                                                                 .colorWhite),
                                                     child: SvgPicture.asset(
@@ -1043,7 +1055,8 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                           BorderRadius.circular(
                                                               20),
                                                       color: theme.isDarkMode
-                                                          ? const Color(0xff555555)
+                                                          ? const Color(
+                                                              0xff555555)
                                                           : colors.colorWhite),
                                                   child: SvgPicture.asset(
                                                       color: theme.isDarkMode
@@ -1648,7 +1661,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                                 context,
                                                                 priceType ==
                                                                         "SL MKT"
-                                                                    ? "Trigger Should be Greater than Price"
+                                                                    ? "Trigger Should be Greater than Limit Price"
                                                                     : "Trigger Should be Greater than Last Trade Price"));
                                                       } else if (double.parse(
                                                               triggerPriceCtrl
@@ -1660,7 +1673,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Greater than Price"));
+                                                                    "Trigger Should be Greater than Limit Price"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text
@@ -1701,7 +1714,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Lesser than Price"));
+                                                                    "Trigger Should be Lesser than Limit Price"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text
@@ -1797,7 +1810,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                                 context,
                                                                 priceType ==
                                                                         "SL MKT"
-                                                                    ? "Trigger Should be Greater than Price"
+                                                                    ? "Trigger Should be Greater than Limit Price"
                                                                     : "Trigger Should be Greater than Last Trade Price"));
                                                       } else if (double.parse(
                                                               triggerPriceCtrl
@@ -1809,7 +1822,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Greater than Price"));
+                                                                    "Trigger Should be Greater than Limit Price"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text
@@ -1934,7 +1947,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                                 context,
                                                                 priceType ==
                                                                         "SL MKT"
-                                                                    ? "Trigger Should be Greater than Price"
+                                                                    ? "Trigger Should be Greater than Limit Price"
                                                                     : "Trigger Should be Greater than Last Trade Price"));
                                                       } else if (double.parse(
                                                               triggerPriceCtrl
@@ -1946,7 +1959,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Greater than Price"));
+                                                                    "Trigger Should be Greater than Limit Price"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text
@@ -1987,7 +2000,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Lesser than Price"));
+                                                                    "Trigger Should be Lesser than Limit Price"));
                                                       } else {
                                                         if (int.parse(qtyCtrl
                                                                         .text

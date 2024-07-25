@@ -7,6 +7,7 @@ class StockMoniterModel {
   String? lp;
   String? ltt;
   String? pc;
+   String? chng;
   String? priChngPerc;
   String? requestTime;
   String? stat;
@@ -32,7 +33,7 @@ class StockMoniterModel {
       this.tsym,
       this.v,
       this.vp,
-      this.emsg});
+      this.emsg,this.chng});
 
   StockMoniterModel.fromJson(Map<String, dynamic> json) {
     ap = json['ap'];
@@ -51,6 +52,7 @@ class StockMoniterModel {
     v = json['v'];
     vp = json['vp'];
     emsg = json['emsg'];
+    chng=json['chng'];
   }
 
   Map<String, dynamic> toJson() {
@@ -71,6 +73,7 @@ class StockMoniterModel {
     data['v'] = v;
     data['vp'] = vp;
     data['emsg'] = emsg;
+    data['chng']=chng;
     return data;
   }
 }

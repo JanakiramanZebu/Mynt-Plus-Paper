@@ -25,8 +25,8 @@ class StocksProvider extends DefaultChangeNotifier {
 
   final Reader ref;
 
-  List<NewsModel>? _newsModel;
-  List<NewsModel>? get newsModel => _newsModel;
+  NewsModel? _newsModel;
+   NewsModel? get newsModel => _newsModel;
   List<GlobalIndicesModel>? _globalIndicesModel;
   List<GlobalIndicesModel>? get globalIndicesModel => _globalIndicesModel;
   List<ActionTradeModel>? _actionTrademodel;
@@ -69,15 +69,30 @@ class StocksProvider extends DefaultChangeNotifier {
 
 String _slectSMSym ="Nifty 50";
 String get slectSMSym =>_slectSMSym;
-String _slectSMFilter ="VolUpPriceUp";
+String _slectSMFilter ="Volume & Price Up";
 String get slectSMFilter  =>_slectSMFilter ;
+
+String _slectBaskt="NIFTY50";
+String get slectBaskt =>_slectBaskt;
+String _slectFilterCont ="VolUpPriceUp";
+String get slectFilterCont  =>_slectFilterCont ;
 
 chngSMSym(String val){
   _slectSMSym=val;
+
+  for (var element in _stockMonitorSym) {
+    if (_slectSMSym=="${element['symbol']}") {
+      _slectBaskt="${element["bskt"]}";
+
+      fetchStockMonitor("NSE",_slectBaskt,_slectFilterCont);
+    }
+  }
   notifyListeners();
 }
-chngSMFilter(String val){
+chngSMFilter(String val,String val1){
  _slectSMFilter=val;
+ _slectFilterCont=val1;
+   fetchStockMonitor("NSE",_slectBaskt,_slectFilterCont);
   notifyListeners();
 }
 
@@ -855,9 +870,9 @@ chngSMFilter(String val){
     }
   }
 
-  fetchStockMonitor() async {
+  fetchStockMonitor(String exch,String bskt,String cont) async {
     try {
-      _stockMonitor = await api.getStockMonitor();
+      _stockMonitor = await api.getStockMonitor(  exch, bskt,cont);
       // List ltpArgs=[];
       if (_stockMonitor.isNotEmpty) {
         if (_stockMonitor[0].stat == "Not_Ok") {

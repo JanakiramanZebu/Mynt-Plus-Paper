@@ -92,7 +92,7 @@ class _SectorThematicWidgetState extends State<SectorThematicWidget>
                 tabs: tabList)),
         Container(
          
-          height: 280,
+          height: 314,
           child: TabBarView(
               controller: tabCtrl, children: [ SectorThematicList(data:tradeAcrion.sectorsData ,isscollable:false ),  SectorThematicList(data:tradeAcrion.thematicDat ,isscollable:false )]),
         ),

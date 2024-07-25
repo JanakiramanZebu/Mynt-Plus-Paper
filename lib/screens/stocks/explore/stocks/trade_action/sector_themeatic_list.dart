@@ -12,7 +12,8 @@ class SectorThematicList extends StatelessWidget {
   final List<SectorThemeaticModel> data;
   final bool isscollable;
 
-  const SectorThematicList({super.key, required this.data, required this. isscollable});
+  const SectorThematicList(
+      {super.key, required this.data, required this.isscollable});
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +24,14 @@ class SectorThematicList extends StatelessWidget {
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         shrinkWrap: true,
-        physics: isscollable?const AlwaysScrollableScrollPhysics():const NeverScrollableScrollPhysics(),
+        physics: isscollable
+            ? const AlwaysScrollableScrollPhysics()
+            : const NeverScrollableScrollPhysics(),
         itemBuilder: (BuildContext context, int index) {
-
-          data[index].chng=data[index].chng!.isEmpty?"0.00":data[index].chng;
-           data[index].perChng=data[index].perChng!.isEmpty?"0.00":data[index].perChng;
+          data[index].chng =
+              data[index].chng!.isEmpty ? "0.00" : data[index].chng;
+          data[index].perChng =
+              data[index].perChng!.isEmpty ? "0.00" : data[index].perChng;
           return InkWell(
             onTap: () async {
               await context
@@ -47,15 +51,16 @@ class SectorThematicList extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width/1.7,
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width / 1.7,
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: Text("${data[index].name!.isEmpty?data[index].secName:data[index].name}",
-                            overflow: TextOverflow.ellipsis,
+                            child: Text(
+                                "${data[index].name!.isEmpty ? data[index].secName : data[index].name}",
+                                overflow: TextOverflow.ellipsis,
                                 style: textStyle(
                                     colors.colorBlack, 14, FontWeight.w500)),
                           ),
@@ -65,7 +70,8 @@ class SectorThematicList extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Text("${data[index].ltp!.isEmpty?"0.00":data[index].ltp}",
+                    Text(
+                        "${data[index].ltp!.isEmpty ? "0.00" : data[index].ltp}",
                         style:
                             textStyle(colors.colorBlack, 14, FontWeight.w500)),
                   ],
@@ -74,21 +80,49 @@ class SectorThematicList extends StatelessWidget {
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                     SizedBox(
-                      width: MediaQuery.of(context).size.width/1.7,
-                        child: Row(
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width / 1.7,
+                        child: Column(
                           children: [
-
-                            if(data[index].poistive!="0")...[
-                            colorBar(
-                                "${data[index].poistive}",const Color(0xff43A833)),
-                            const SizedBox(width: 10)], if(data[index].nutral!="0")...[
-                            colorBar(
-                                "${data[index].nutral}", const Color(0xff999999)),
-                            const SizedBox(width: 10)], if(data[index].negative!="0")...[
-                            colorBar(
-                                "${data[index].negative}",  const Color(0xffFF1717)),
-                            const SizedBox(width: 10)]
+                            Row(
+                              children: [
+                                if (data[index].poistive != "0") ...[
+                                  colorBar("${data[index].poistive}",
+                                      const Color(0xff43A833)),
+                                  const SizedBox(width: 10)
+                                ],
+                                if (data[index].nutral != "0") ...[
+                                  colorBar("${data[index].nutral}",
+                                      const Color(0xff999999)),
+                                  const SizedBox(width: 10)
+                                ],
+                                if (data[index].negative != "0") ...[
+                                  colorBar("${data[index].negative}",
+                                      const Color(0xffFF1717)),
+                                  const SizedBox(width: 10)
+                                ]
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                if (data[index].poistive != "0") ...[
+                                  colorBarText("${data[index].poistive}",
+                                      Color(0xff43A833)),
+                                  const SizedBox(width: 10)
+                                ],
+                                if (data[index].nutral != "0") ...[
+                                  colorBarText("${data[index].nutral}",
+                                      Color(0xff999999)),
+                                  const SizedBox(width: 10)
+                                ],
+                                if (data[index].negative != "0") ...[
+                                  colorBarText("${data[index].negative}",
+                                      Color(0xffFF1717)),
+                                  const SizedBox(width: 10)
+                                ]
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -125,11 +159,19 @@ class SectorThematicList extends StatelessWidget {
 
   Expanded colorBar(String value, Color color) {
     return Expanded(
-        flex: double.parse(value == "null"|| value == ""  ? "0.0" : value).ceil(),
+        flex:
+            double.parse(value == "null" || value == "" ? "0.0" : value).ceil(),
         child: Container(
             decoration: BoxDecoration(
                 color: color, borderRadius: BorderRadius.circular(30)),
             height: 7));
+  }
+
+  Expanded colorBarText(String value, Color color) {
+    return Expanded(
+      flex: double.parse(value == "null" || value == "" ? "0.0" : value).ceil(),
+      child: Text(value, style: textStyle(color, 12, FontWeight.w600)),
+    );
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {

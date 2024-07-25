@@ -1,10 +1,4 @@
- 
-
- 
-
-import 'dart:developer';
-
-import '../models/explore_model/stocks_model/corporate_action_model.dart'; 
+import '../models/explore_model/stocks_model/corporate_action_model.dart';
 import '../models/explore_model/stocks_model/get_ad_indices.dart';
 import '../models/explore_model/stocks_model/sector_thematric_detail_model.dart';
 import '../models/explore_model/stocks_model/stock_monitor_model.dart';
@@ -15,28 +9,30 @@ import 'core/api_core.dart';
 import 'package:http/http.dart';
 
 mixin StocksAPI on ApiCore {
-  Future<List<NewsModel>> fetchNews(String date) async {
-    final List<NewsModel> data = [];
+  Future< NewsModel> fetchNews(String date) async {
+ 
     try {
-      final uri = Uri.parse(apiLinks.newsurl);
+      final uri = Uri.parse("https://sess.mynt.in/newsfeedin?pagesize=500&pagecount=1&filterdate=monthly");
 
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders, body: json.encode({"date": date}));
+      final res = await apiClient.get(uri,
+          headers: defaultHeaders );
 
-      final newsRes = jsonDecode(res.body);
-      if (newsRes[0] == []) {
-        final NewsModel news = NewsModel.fromJson(json as Map<String, dynamic>);
-        return [news];
-      } else {
-        for (int j = 0; j < newsRes.length; j++) {
-          data.add(NewsModel.fromJson(newsRes[j] as Map<String, dynamic>));
-        }
-      }
-    } catch (e) {
-      rethrow;
+      final json = jsonDecode(res.body);
+        print( json);
+    //   if (newsRes[0] == []) {
+    //     final NewsModel news = NewsModel.fromJson(json as Map<String, dynamic>);
+    //     return [news];
+    //   } else {
+    //     for (int j = 0; j < newsRes.length; j++) {
+    //       data.add(NewsModel.fromJson(newsRes[j] as Map<String, dynamic>));
+    //     }
+    //   }
+     return NewsModel.fromJson(json as Map<String, dynamic>);
+      } catch (e) {
+       rethrow;
     }
 
-    return data;
+   
   }
 
   Future<List<GlobalIndicesModel>> fetchGlobalIndices() async {
@@ -81,15 +77,13 @@ mixin StocksAPI on ApiCore {
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({"index": indexName}));
 
-      
-
       return response;
     } catch (e) {
       rethrow;
     }
   }
 
-  Future< List< SectorThematicDetailModel>> getadindices(String indexName) async {
+  Future<List<SectorThematicDetailModel>> getadindices(String indexName) async {
     try {
       final uri = Uri.parse(apiLinks.getadindices);
       final res = await apiClient.post(uri,
@@ -98,11 +92,12 @@ mixin StocksAPI on ApiCore {
       final json = jsonDecode(res.body);
 
       // log("Trade Action data ${res.body}");
-      final List< SectorThematicDetailModel> data = [];
+      final List<SectorThematicDetailModel> data = [];
 
       for (final item in json) {
-              data.add(SectorThematicDetailModel.fromJson(item as Map<String, dynamic>));
-            }
+        data.add(
+            SectorThematicDetailModel.fromJson(item as Map<String, dynamic>));
+      }
 
       return data;
     } catch (e) {
@@ -110,15 +105,14 @@ mixin StocksAPI on ApiCore {
     }
   }
 
-    Future< GetAdIndicesModel> getAllAdindices( ) async {
+  Future<GetAdIndicesModel> getAllAdindices() async {
     try {
       final uri = Uri.parse(apiLinks.getadindices);
       final res = await apiClient.post(uri,
           headers: defaultHeaders, body: jsonEncode({"index": ""}));
 
       final json = jsonDecode(res.body);
-    // log("ALL INDICES ${res.body}");
- 
+      // log("ALL INDICES ${res.body}");
 
       return GetAdIndicesModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -132,7 +126,7 @@ mixin StocksAPI on ApiCore {
       final response = await apiClient
           .post(uri, headers: {'Content-Type': 'application/json'});
 
-    //  print("Top Indices Data ${response.body}");
+      //  print("Top Indices Data ${response.body}");
       final json = jsonDecode(response.body);
       return CorporateActionModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -140,31 +134,33 @@ mixin StocksAPI on ApiCore {
     }
   }
 
-
-  Future<List<StockMoniterModel>> getStockMonitor() async {
+  Future<List<StockMoniterModel>> getStockMonitor(
+      String exch, String bskt, String cont) async {
     try {
       final uri = Uri.parse(apiLinks.getStockMonitor);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body:  jsonEncode({"exch": "NSE", "basket": "NIFTY50", "condition": "VolUpPriceDown"}));
-           log("Stock Monitor=>${res.body} ");
+          body: jsonEncode({"exch": exch, "basket": bskt, "condition": cont}));
+      //  log("Stock Monitor=>${res.body} ");
       final List<StockMoniterModel> data = [];
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         try {
           if (json['stat'] == 'Not_Ok') {
             final StockMoniterModel ord =
-               StockMoniterModel.fromJson(json as Map<String, dynamic>);
+                StockMoniterModel.fromJson(json as Map<String, dynamic>);
             return [ord];
           } else {
             for (final item in json) {
-              data.add(StockMoniterModel.fromJson(item as Map<String, dynamic>));
+              data.add(
+                  StockMoniterModel.fromJson(item as Map<String, dynamic>));
             }
           }
         } catch (e) {
           if (res.statusCode == 200) {
             for (final item in json) {
-              data.add(StockMoniterModel.fromJson(item as Map<String, dynamic>));
+              data.add(
+                  StockMoniterModel.fromJson(item as Map<String, dynamic>));
             }
           }
         }
