@@ -410,17 +410,40 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           : const Color(
                                                               0xffF1F3F8),
                                                       onChanged: (value) {
+                                                         ScaffoldMessenger.of(
+                                                              context)
+                                                          .removeCurrentSnackBar();
+                                                      if (value.isEmpty) {
                                                         ScaffoldMessenger.of(
                                                                 context)
-                                                            .hideCurrentSnackBar();
-                                                        if (value.isEmpty) {
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Limit Price can not be empty"));
+                                                      } else {
+                                                        if ((double.parse(
+                                                                    value) <
+                                                                double.parse(
+                                                                    "${widget.scripInfo.lc}")) ||
+                                                            (double.parse(
+                                                                    value) >
+                                                                double.parse(
+                                                                    "${widget.scripInfo.uc}"))) {
                                                           ScaffoldMessenger.of(
                                                                   context)
-                                                              .showSnackBar(
-                                                                  warningMessage(
-                                                                      context,
-                                                                      "Price can not be empty"));
+                                                              .showSnackBar(warningMessage(
+                                                                  context,
+                                                                  double.parse(
+                                                                              value) <
+                                                                          double.parse(
+                                                                              "${widget.scripInfo.lc}")
+                                                                      ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
+                                                                      : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}"));
                                                         }
+                                                        setState(() {
+                                                          price = value;
+                                                        });
+                                                      }
                                                       },
                                                       hintText:
                                                           "${widget.orderArg.ltp}",

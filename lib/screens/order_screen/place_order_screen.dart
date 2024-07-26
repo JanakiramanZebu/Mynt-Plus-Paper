@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
-import '../../../res/res.dart'; 
+import 'package:google_fonts/google_fonts.dart';
+import '../../../res/res.dart';
 import '../../models/marketwatch_model/scrip_info.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../models/order_book_model/order_margin_model.dart';
@@ -20,7 +20,7 @@ import '../../provider/order_provider.dart';
 import '../../provider/shocase_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
-import '../../routes/route_names.dart'; 
+import '../../routes/route_names.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
@@ -234,12 +234,12 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                               OrderScreenHeader(headerData: widget.orderArg),
                               Row(children: [
                                 InkWell(
-                                  onTap: () {
-                                    setState(() {
+                                    onTap: () {
+                                      setState(() {
                                         isBuy = true;
                                       });
-                                  },
-                                  child: SvgPicture.asset(assets.buyIcon)),
+                                    },
+                                    child: SvgPicture.asset(assets.buyIcon)),
                                 const SizedBox(width: 6),
                                 CustomSwitch(
                                     onChanged: (bool value) {
@@ -251,12 +251,12 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                     value: isBuy!),
                                 const SizedBox(width: 6),
                                 InkWell(
-                                  onTap: () {
-                                    setState(() {
+                                    onTap: () {
+                                      setState(() {
                                         isBuy = false;
                                       });
-                                  },
-                                  child: SvgPicture.asset(assets.sellIcon))
+                                    },
+                                    child: SvgPicture.asset(assets.sellIcon))
                               ])
                             ])
                       ]),
@@ -414,15 +414,19 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                           ),
                                           Text('Intraday',
                                               style: textStyle(
-theme.isDarkMode? Color(orderInput.investType ==
-                                                          InvestType.intraday
-                                                      ? 0xffffffff
-                                                      : 0xff666666):
-
-                                                  Color(orderInput.investType ==
-                                                          InvestType.intraday
-                                                      ? 0xff3E4763
-                                                      : 0xff666666),
+                                                  theme.isDarkMode
+                                                      ? Color(orderInput
+                                                                  .investType ==
+                                                              InvestType
+                                                                  .intraday
+                                                          ? 0xffffffff
+                                                          : 0xff666666)
+                                                      : Color(orderInput
+                                                                  .investType ==
+                                                              InvestType
+                                                                  .intraday
+                                                          ? 0xff3E4763
+                                                          : 0xff666666),
                                                   14,
                                                   FontWeight.w500))
                                         ],
@@ -458,22 +462,27 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                 ? 'Delivery'
                                                 : "Carry Forward",
                                             style: textStyle(
-                                              theme.isDarkMode? Color(orderInput.investType ==
-                                                            InvestType
-                                                                .delivery ||
-                                                        orderInput.investType ==
-                                                            InvestType
-                                                                .carryForward
-                                                    ? 0xffffffff
-                                                    : 0xff666666):
-                                                Color(orderInput.investType ==
-                                                            InvestType
-                                                                .delivery ||
-                                                        orderInput.investType ==
-                                                            InvestType
-                                                                .carryForward
-                                                    ? 0xff3E4763
-                                                    : 0xff666666),
+                                                theme.isDarkMode
+                                                    ? Color(orderInput
+                                                                    .investType ==
+                                                                InvestType
+                                                                    .delivery ||
+                                                            orderInput
+                                                                    .investType ==
+                                                                InvestType
+                                                                    .carryForward
+                                                        ? 0xffffffff
+                                                        : 0xff666666)
+                                                    : Color(orderInput
+                                                                    .investType ==
+                                                                InvestType
+                                                                    .delivery ||
+                                                            orderInput
+                                                                    .investType ==
+                                                                InvestType
+                                                                    .carryForward
+                                                        ? 0xff3E4763
+                                                        : 0xff666666),
                                                 14,
                                                 FontWeight.w500))
                                       ]),
@@ -571,13 +580,15 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                       ? priceType !=
                                                               priceTypes[index]
                                                                   ['type']
-                                                          ? const Color(0xffF1F3F8)
+                                                          ? const Color(
+                                                              0xffF1F3F8)
                                                           : colors.colorBlack
                                                       : priceType !=
                                                               priceTypes[index]
                                                                   ['type']
                                                           ? colors.darkGrey
-                                                          : colors.colorbluegrey,
+                                                          : colors
+                                                              .colorbluegrey,
                                                   shape: const StadiumBorder()),
                                               child: Text(
                                                   priceTypes[index]['type'],
@@ -779,15 +790,34 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                     onChanged: (value) {
                                                       ScaffoldMessenger.of(
                                                               context)
-                                                          .hideCurrentSnackBar();
+                                                          .removeCurrentSnackBar();
                                                       if (value.isEmpty) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Price can not be empty"));
+                                                                    "Limit Price can not be empty"));
                                                       } else {
+                                                        if ((double.parse(
+                                                                    value) <
+                                                                double.parse(
+                                                                    "${widget.scripInfo.lc}")) ||
+                                                            (double.parse(
+                                                                    value) >
+                                                                double.parse(
+                                                                    "${widget.scripInfo.uc}"))) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(warningMessage(
+                                                                  context,
+                                                                  double.parse(
+                                                                              value) <
+                                                                          double.parse(
+                                                                              "${widget.scripInfo.lc}")
+                                                                      ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
+                                                                      : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}"));
+                                                        }
                                                         setState(() {
                                                           price = value;
                                                         });
@@ -861,48 +891,49 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                     FontWeight.w400),
                                                 onChanged: (value) {
                                                   ScaffoldMessenger.of(context)
-                                                      .hideCurrentSnackBar();
+                                                      .removeCurrentSnackBar();
                                                   if (value.isNotEmpty) {
-                                                    if (isBuy!) {
-                                                      if (double.parse(value) <
-                                                          double.parse(price)) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Greater than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                              value) <
-                                                          double.parse(
-                                                              "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Greater than Price"));
-                                                      }
+                                                    if ((double.parse(value) <
+                                                            double.parse(
+                                                                "${widget.scripInfo.lc}")) ||
+                                                        (double.parse(value) >
+                                                            double.parse(
+                                                                "${widget.scripInfo.uc}"))) {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(warningMessage(
+                                                              context,
+                                                              double.parse(
+                                                                          value) <
+                                                                      double.parse(
+                                                                          "${widget.scripInfo.lc}")
+                                                                  ? "Trigger can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
+                                                                  : "Trigger can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}"));
                                                     } else {
-                                                      if (double.parse(value) >
-                                                          double.parse(
-                                                              "${widget.orderArg.ltp ?? 0.00}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                              value) >
-                                                          double.parse(
-                                                              "${priceCtrl.text.isEmpty ? 0.00 : price}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Price"));
+                                                      if (isBuy!) {
+                                                        if (double.parse(
+                                                                value) >
+                                                            double.parse(
+                                                                "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger Should be Lesser than Limit Price"));
+                                                        }
+                                                      } else {
+                                                        if (double.parse(
+                                                                value) <
+                                                            double.parse(
+                                                                "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger Should be Greater than Limit Price"));
+                                                        }
                                                       }
                                                     }
                                                   } else {
@@ -929,7 +960,8 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                             BorderRadius
                                                                 .circular(20),
                                                         color: theme.isDarkMode
-                                                            ? const Color(0xff555555)
+                                                            ? const Color(
+                                                                0xff555555)
                                                             : colors
                                                                 .colorWhite),
                                                     child: SvgPicture.asset(
@@ -1002,7 +1034,8 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                             BorderRadius
                                                                 .circular(20),
                                                         color: theme.isDarkMode
-                                                            ? const Color(0xff555555)
+                                                            ? const Color(
+                                                                0xff555555)
                                                             : colors
                                                                 .colorWhite),
                                                     child: SvgPicture.asset(
@@ -1055,7 +1088,8 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                           BorderRadius.circular(
                                                               20),
                                                       color: theme.isDarkMode
-                                                          ? const Color(0xff555555)
+                                                          ? const Color(
+                                                              0xff555555)
                                                           : colors.colorWhite),
                                                   child: SvgPicture.asset(
                                                       color: theme.isDarkMode
@@ -1616,7 +1650,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                           context,
                                                           qtyCtrl.text == "0"
                                                               ? "Quantity can not be 0"
-                                                              : "Price can not be 0"));
+                                                              : "Limit Price can not be 0"));
                                                 } else if ((double.parse(price) <
                                                         double.parse(
                                                             "${widget.scripInfo.lc}")) ||
@@ -1629,8 +1663,8 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                           double.parse(price) <
                                                                   double.parse(
                                                                       "${widget.scripInfo.lc}")
-                                                              ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
-                                                              : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}"));
+                                                              ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
+                                                              : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}"));
                                                 } else if (orderType == "Regular" &&
                                                     (priceType == "SL Limit" ||
                                                         priceType ==
@@ -1652,27 +1686,15 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                     if (isBuy!) {
                                                       if (double.parse(
                                                               triggerPriceCtrl
-                                                                  .text) <
-                                                          double.parse(price)) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(warningMessage(
-                                                                context,
-                                                                priceType ==
-                                                                        "SL MKT"
-                                                                    ? "Trigger Should be Greater than Price"
-                                                                    : "Trigger Should be Greater than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                              triggerPriceCtrl
-                                                                  .text) <
+                                                                  .text) >
                                                           double.parse(
-                                                              "${priceCtrl.text.isEmpty ? 0.00 : price}")) {
+                                                              "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Greater than Price"));
+                                                                    "Trigger Should be Lesser than Limit Price"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text
@@ -1694,26 +1716,15 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                     } else {
                                                       if (double.parse(
                                                               triggerPriceCtrl
-                                                                  .text) >
+                                                                  .text) <
                                                           double.parse(
-                                                              "${priceType == "SL MKT" ? price : widget.orderArg.ltp ?? 0.00}")) {
+                                                              "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Lesser than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                              triggerPriceCtrl
-                                                                  .text) >
-                                                          double.parse(
-                                                              "${priceCtrl.text.isEmpty ? 0.00 : price}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Price"));
+                                                                    "Trigger Should be Greater than Limit Price"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text
@@ -1800,28 +1811,15 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                     if (isBuy!) {
                                                       if (double.parse(
                                                               triggerPriceCtrl
-                                                                  .text) <
+                                                                  .text) >
                                                           double.parse(
-                                                              "${priceType == "SL MKT" ? price : widget.orderArg.ltp ?? 0.00}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(warningMessage(
-                                                                context,
-                                                                priceType ==
-                                                                        "SL MKT"
-                                                                    ? "Trigger Should be Greater than Price"
-                                                                    : "Trigger Should be Greater than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                              triggerPriceCtrl
-                                                                  .text) <
-                                                          double.parse(
-                                                              "${priceCtrl.text.isEmpty ? 0.00 : price}")) {
+                                                              "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Greater than Price"));
+                                                                    "Trigger Should be Lesser than Limit Price"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text
@@ -1843,26 +1841,15 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                     } else {
                                                       if (double.parse(
                                                               triggerPriceCtrl
-                                                                  .text) >
+                                                                  .text) <
                                                           double.parse(
-                                                              "${priceType == "SL MKT" ? price : widget.orderArg.ltp ?? 0.00}")) {
+                                                              "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Lesser than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                              triggerPriceCtrl
-                                                                  .text) >
-                                                          double.parse(
-                                                              "${priceCtrl.text.isEmpty ? 0.00 : price}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Price"));
+                                                                    "Trigger Should be Greater than Limit Price"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text
@@ -1937,28 +1924,15 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                     if (isBuy!) {
                                                       if (double.parse(
                                                               triggerPriceCtrl
-                                                                  .text) <
+                                                                  .text) >
                                                           double.parse(
-                                                              "${priceType == "SL MKT" ? price : widget.orderArg.ltp ?? 0.00}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(warningMessage(
-                                                                context,
-                                                                priceType ==
-                                                                        "SL MKT"
-                                                                    ? "Trigger Should be Greater than Price"
-                                                                    : "Trigger Should be Greater than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                              triggerPriceCtrl
-                                                                  .text) <
-                                                          double.parse(
-                                                              "${priceCtrl.text.isEmpty ? 0.00 : price}")) {
+                                                              "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Greater than Price"));
+                                                                    "Trigger Should be Lesser than Limit Price"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text
@@ -1980,28 +1954,17 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                     } else {
                                                       if (double.parse(
                                                               triggerPriceCtrl
-                                                                  .text) >
+                                                                  .text) <
                                                           double.parse(
-                                                              "${priceType == "SL MKT" ? price : widget.orderArg.ltp ?? 0.00}")) {
+                                                              "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Lesser than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                              triggerPriceCtrl
-                                                                  .text) >
-                                                          double.parse(
-                                                              "${priceCtrl.text.isEmpty ? 0.00 : price}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Price"));
+                                                                    "Trigger Should be Greater than Limit Price"));
                                                       } else {
-                                                        if (int.parse(qtyCtrl
+                                                        if ((int.parse(qtyCtrl
                                                                         .text
                                                                         .isEmpty
                                                                     ? "0"
@@ -2010,7 +1973,7 @@ theme.isDarkMode? Color(orderInput.investType ==
                                                                 frezQty &&
                                                             widget.scripInfo
                                                                     .frzqty !=
-                                                                null) {
+                                                                null)) {
                                                           placeOrder(orderInput,
                                                               true, theme);
                                                         } else {

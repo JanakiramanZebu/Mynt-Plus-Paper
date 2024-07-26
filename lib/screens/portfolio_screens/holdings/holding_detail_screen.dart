@@ -64,7 +64,7 @@ class HoldingDetailScreen extends ConsumerWidget {
                   children: [
                     CustomExchBadge(exch: exchTsym.exch!),
                     Text(
-                        "${double.parse("${exchTsym.change ?? 0.00} ").toStringAsFixed(2)} (${exchTsym.perChange ?? 0.00}%)",
+                        "${double.parse("${exchTsym.change.toString()=="null"?"0.00":exchTsym.change} ").toStringAsFixed(2)} (${exchTsym.perChange.toString()=="null"?"0.00":exchTsym.perChange}%)",
                         style: textStyle(
                            (exchTsym.change == "null" ||
                                         exchTsym.change == null) ||

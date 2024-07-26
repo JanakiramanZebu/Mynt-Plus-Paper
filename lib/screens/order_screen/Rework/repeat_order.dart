@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/order_book_model/order_margin_model.dart';
 import '../../../models/order_book_model/place_order_model.dart';
@@ -14,7 +14,7 @@ import '../../../provider/network_state_provider.dart';
 import '../../../provider/order_input_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/res.dart';  
+import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
@@ -63,7 +63,18 @@ class _RepeatOrderState extends State<RepeatOrder> {
       lotSize = int.parse("${widget.orderBookList.ls ?? 0}");
       addStoploss = widget.orderBookList.blprc != null;
 
-      headerData=OrderScreenArgs(exchange: "${widget.orderBookList.exch}", token: "${widget.orderBookList.token}", tSym: "${widget.orderBookList.tsym}", transType: false, perChange: "${widget.orderBookList.perChange}", lotSize: "${widget.orderBookList.ls}", ltp: "${widget.orderBookList.ltp}", isExit: false, orderTpye: '', isModify: false, holdQty: '');
+      headerData = OrderScreenArgs(
+          exchange: "${widget.orderBookList.exch}",
+          token: "${widget.orderBookList.token}",
+          tSym: "${widget.orderBookList.tsym}",
+          transType: false,
+          perChange: "${widget.orderBookList.perChange}",
+          lotSize: "${widget.orderBookList.ls}",
+          ltp: "${widget.orderBookList.ltp}",
+          isExit: false,
+          orderTpye: '',
+          isModify: false,
+          holdQty: '');
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await context.read(ordInputProvider).getOrderData(widget.orderBookList);
@@ -88,14 +99,12 @@ class _RepeatOrderState extends State<RepeatOrder> {
             onTap: () => FocusScope.of(context).unfocus(),
             child: Scaffold(
                 resizeToAvoidBottomInset: true,
-             
                 appBar: AppBar(
                     leadingWidth: 41,
                     centerTitle: false,
                     titleSpacing: 0,
-                    leading:const CustomBackBtn(),
+                    leading: const CustomBackBtn(),
                     elevation: .4,
-                  
                     title: Container(
                       margin: const EdgeInsets.only(right: 10),
                       child: Column(children: [
@@ -103,7 +112,11 @@ class _RepeatOrderState extends State<RepeatOrder> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text("${widget.orderBookList.symbol!} ",
-                                  style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 16,
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      16,
                                       FontWeight.w600),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1),
@@ -116,17 +129,20 @@ class _RepeatOrderState extends State<RepeatOrder> {
                                     maxLines: 1),
                               if (widget.orderBookList.expDate!.isNotEmpty)
                                 Text(" ${widget.orderBookList.expDate} ",
-                                    style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack,
-                                        14, FontWeight.w600)),
-                             CustomExchBadge(exch: widget.orderBookList.exch!)
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        14,
+                                        FontWeight.w600)),
+                              CustomExchBadge(exch: widget.orderBookList.exch!)
                             ]),
                         // const SizedBox(height: 4),
                         Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              
-                               OrderScreenHeader(headerData:  headerData!),
+                              OrderScreenHeader(headerData: headerData!),
                               Row(children: [
                                 SvgPicture.asset(assets.buyIcon),
                                 const SizedBox(width: 6),
@@ -150,10 +166,10 @@ class _RepeatOrderState extends State<RepeatOrder> {
                           if (widget.orderBookList.exch != "NCOM") ...[
                             Container(
                                 height: 46,
-                                decoration:   BoxDecoration(
+                                decoration: BoxDecoration(
                                     border: (Border(
                                         top: BorderSide(
-                                             color: theme.isDarkMode
+                                            color: theme.isDarkMode
                                                 ? colors.darkColorDivider
                                                 : colors.colorDivider)))),
                                 child: ListView.builder(
@@ -197,13 +213,12 @@ class _RepeatOrderState extends State<RepeatOrder> {
                                                   const EdgeInsets.symmetric(
                                                       horizontal: 15),
                                               decoration: BoxDecoration(
-                                                  border: orderInput
-                                                              .orderName ==
+                                                  border: orderInput.orderName ==
                                                           orderInput
                                                               .orderNames[index]
-                                                      ?  Border(
+                                                      ? Border(
                                                           bottom: BorderSide(
-                                                             color: theme.isDarkMode
+                                                              color: theme.isDarkMode
                                                                   ? colors
                                                                       .colorWhite
                                                                   : colors
@@ -213,16 +228,16 @@ class _RepeatOrderState extends State<RepeatOrder> {
                                               child: Text(
                                                   '${orderInput.orderNames[index]}',
                                                   style: textStyle(
-orderInput.orderName == orderInput.orderNames[index]  &&
+                                                      orderInput.orderName ==
+                                                                  orderInput.orderNames[
+                                                                      index] &&
                                                               theme.isDarkMode
                                                           ? colors.colorWhite
-                                                          : orderInput.orderName == orderInput.orderNames[index] 
-                                                              ? colors
-                                                                  .colorBlack
-                                                              : const Color(
-                                                                  0xff666666),
-
-
+                                                          : orderInput.orderName ==
+                                                                  orderInput
+                                                                      .orderNames[index]
+                                                              ? colors.colorBlack
+                                                              : const Color(0xff666666),
                                                       14,
                                                       FontWeight.w600))));
                                     },
@@ -241,28 +256,32 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                               Padding(
                                   padding: const EdgeInsets.only(left: 16),
                                   child: Text("Investment type",
-                                      style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack,
-                                          14, FontWeight.w500))),
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          14,
+                                          FontWeight.w500))),
                               Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     if (widget.orderBookList.exch !=
                                         "NCOM") ...[
                                       Radio<InvestType>(
-                                     fillColor: WidgetStateProperty
-                                                .resolveWith<Color>(
-                                                    (Set<WidgetState> states) {
-                                              if (states.contains(
-                                                  WidgetState.disabled)) {
-                                                return const Color(0xff666666);
-                                              }
-                                              return theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : const Color(0xff666666);
-                                            }),
-                                            activeColor: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : const Color(0xff666666),
+                                        fillColor: WidgetStateProperty
+                                            .resolveWith<Color>(
+                                                (Set<WidgetState> states) {
+                                          if (states
+                                              .contains(WidgetState.disabled)) {
+                                            return const Color(0xff666666);
+                                          }
+                                          return theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : const Color(0xff666666);
+                                        }),
+                                        activeColor: theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : const Color(0xff666666),
                                         value: InvestType.intraday,
                                         groupValue: orderInput.investType,
                                         onChanged: (InvestType? value) {
@@ -272,36 +291,35 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                       ),
                                       Text('Intraday',
                                           style: textStyle(
-                                            theme.isDarkMode? Color(
-                                                
-                                                orderInput.investType ==
-                                                      InvestType.intraday
-                                                  ? 0xffffffff
-                                                  : 0xff666666):
-                                              Color(
-                                                
-                                                orderInput.investType ==
-                                                      InvestType.intraday
-                                                  ? 0xff3E4763
-                                                  : 0xff666666),
+                                              theme.isDarkMode
+                                                  ? Color(orderInput
+                                                              .investType ==
+                                                          InvestType.intraday
+                                                      ? 0xffffffff
+                                                      : 0xff666666)
+                                                  : Color(orderInput
+                                                              .investType ==
+                                                          InvestType.intraday
+                                                      ? 0xff3E4763
+                                                      : 0xff666666),
                                               14,
                                               FontWeight.w500))
                                     ],
                                     Radio<InvestType>(
-                                        fillColor: WidgetStateProperty
-                                              .resolveWith<Color>(
-                                                  (Set<WidgetState> states) {
-                                            if (states.contains(
-                                                WidgetState.disabled)) {
-                                              return const Color(0xff666666);
-                                            }
-                                            return theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : const Color(0xff666666);
-                                          }),
-                                          activeColor: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : const Color(0xff666666),
+                                      fillColor:
+                                          WidgetStateProperty.resolveWith<
+                                              Color>((Set<WidgetState> states) {
+                                        if (states
+                                            .contains(WidgetState.disabled)) {
+                                          return const Color(0xff666666);
+                                        }
+                                        return theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : const Color(0xff666666);
+                                      }),
+                                      activeColor: theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : const Color(0xff666666),
                                       value: scripInfo.scripInfoModel!.seg
                                                   .toString() ==
                                               "EQT"
@@ -320,18 +338,23 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                             ? 'Delivery'
                                             : "Carry Forward",
                                         style: textStyle(
-                                          theme.isDarkMode? Color(orderInput.investType ==
-                                                        InvestType.delivery ||
-                                                    orderInput.investType ==
-                                                        InvestType.carryForward
-                                                ? 0xffffffff
-                                                : 0xff666666):
-                                            Color(orderInput.investType ==
-                                                        InvestType.delivery ||
-                                                    orderInput.investType ==
-                                                        InvestType.carryForward
-                                                ? 0xff3E4763
-                                                : 0xff666666),
+                                            theme.isDarkMode
+                                                ? Color(orderInput.investType ==
+                                                            InvestType
+                                                                .delivery ||
+                                                        orderInput.investType ==
+                                                            InvestType
+                                                                .carryForward
+                                                    ? 0xffffffff
+                                                    : 0xff666666)
+                                                : Color(orderInput.investType ==
+                                                            InvestType
+                                                                .delivery ||
+                                                        orderInput.investType ==
+                                                            InvestType
+                                                                .carryForward
+                                                    ? 0xff3E4763
+                                                    : 0xff666666),
                                             14,
                                             FontWeight.w500))
                                   ]),
@@ -339,7 +362,7 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                             ],
                             Padding(
                                 padding: const EdgeInsets.only(left: 16),
-                                child: headerTitleText("Price type",theme)),
+                                child: headerTitleText("Price type", theme)),
                             const SizedBox(height: 10),
                             Padding(
                                 padding: const EdgeInsets.only(left: 16),
@@ -422,31 +445,42 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                               },
                                               style: ElevatedButton.styleFrom(
                                                   elevation: 0,
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                          horizontal: 12,
-                                                          vertical: 0),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 0),
                                                   backgroundColor: !theme
                                                           .isDarkMode
-                                                      ?    orderInput.priceName != orderInput.priceNames[index]
-                                                          ? const Color(0xffF1F3F8)
+                                                      ? orderInput.priceName !=
+                                                              orderInput
+                                                                      .priceNames[
+                                                                  index]
+                                                          ? const Color(
+                                                              0xffF1F3F8)
                                                           : colors.colorBlack
-                                                      :   orderInput.priceName != orderInput.priceNames[index]
+                                                      : orderInput.priceName !=
+                                                              orderInput
+                                                                      .priceNames[
+                                                                  index]
                                                           ? colors.darkGrey
                                                           : colors.colorWhite,
-                                                  
- 
                                                   shape: const StadiumBorder()),
                                               child: Text(
                                                   orderInput.priceNames[index],
                                                   style: textStyle(
-                                                    !theme.isDarkMode
-                                                          ?  orderInput.priceName != orderInput.priceNames[index]
+                                                      !theme.isDarkMode
+                                                          ? orderInput.priceName !=
+                                                                  orderInput
+                                                                          .priceNames[
+                                                                      index]
                                                               ? const Color(
                                                                   0xff666666)
                                                               : colors
                                                                   .colorWhite
-                                                          :  orderInput.priceName != orderInput.priceNames[index]
+                                                          : orderInput.priceName !=
+                                                                  orderInput
+                                                                          .priceNames[
+                                                                      index]
                                                               ? const Color(
                                                                   0xff666666)
                                                               : colors
@@ -462,7 +496,8 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                 ? orderInput.priceNames.length
                                                 : 3))),
                             const SizedBox(height: 3),
-                         Divider( color: theme.isDarkMode
+                            Divider(
+                                color: theme.isDarkMode
                                     ? colors.darkColorDivider
                                     : colors.colorDivider),
                             Padding(
@@ -484,7 +519,8 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.end,
                                                 children: [
-                                                  headerTitleText("Quantity",theme),
+                                                  headerTitleText(
+                                                      "Quantity", theme),
                                                   Text(
                                                     "Lot: ${widget.orderBookList.ls}   ",
                                                     style: textStyle(
@@ -496,9 +532,10 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                             const SizedBox(height: 8),
                                             SizedBox(
                                                 height: 44,
-                                                child: CustomTextFormField(  fillColor: theme.isDarkMode
-                                                  ? colors.darkGrey
-                                                  : const Color(0xffF1F3F8),
+                                                child: CustomTextFormField(
+                                                  fillColor: theme.isDarkMode
+                                                      ? colors.darkGrey
+                                                      : const Color(0xffF1F3F8),
                                                   hintText:
                                                       orderInput.qtyCrl.text,
                                                   hintStyle: textStyle(
@@ -509,9 +546,10 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                     FilteringTextInputFormatter
                                                         .digitsOnly
                                                   ],
-                                                 
                                                   style: textStyle(
-                                                    theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                      theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
                                                       16,
                                                       FontWeight.w600),
                                                   prefixIcon: InkWell(
@@ -540,7 +578,9 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                       });
                                                     },
                                                     child: SvgPicture.asset(
-                                                           theme.isDarkMode?assets.darkCMinus:     assets.minusIcon,
+                                                        theme.isDarkMode
+                                                            ? assets.darkCMinus
+                                                            : assets.minusIcon,
                                                         fit: BoxFit.scaleDown),
                                                   ),
                                                   suffixIcon: InkWell(
@@ -563,7 +603,9 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                       });
                                                     },
                                                     child: SvgPicture.asset(
-                                                   theme.isDarkMode?assets.darkAdd:      assets.addIcon,
+                                                        theme.isDarkMode
+                                                            ? assets.darkAdd
+                                                            : assets.addIcon,
                                                         fit: BoxFit.scaleDown),
                                                   ),
                                                   textCtrl: orderInput.qtyCrl,
@@ -607,7 +649,7 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.end,
                                               children: [
-                                                headerTitleText("Price",theme),
+                                                headerTitleText("Price", theme),
                                                 Text(
                                                   "Tick: ${widget.orderBookList.ti} ",
                                                   style: textStyle(
@@ -620,13 +662,43 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                             const SizedBox(height: 8),
                                             SizedBox(
                                                 height: 44,
-                                                child: CustomTextFormField(  fillColor: theme.isDarkMode
-                                                  ? colors.darkGrey
-                                                  : const Color(0xffF1F3F8),
+                                                child: CustomTextFormField(
+                                                    fillColor: theme.isDarkMode
+                                                        ? colors.darkGrey
+                                                        : const Color(
+                                                            0xffF1F3F8),
                                                     onChanged: (value) {
                                                       ScaffoldMessenger.of(
                                                               context)
-                                                          .hideCurrentSnackBar();
+                                                          .removeCurrentSnackBar();
+                                                      if (value.isEmpty) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Limit Price can not be empty"));
+                                                      } else {
+                                                        if ((double.parse(
+                                                                    value) <
+                                                                double.parse(
+                                                                    "${scripInfo.scripInfoModel!.lc}")) ||
+                                                            (double.parse(
+                                                                    value) >
+                                                                double.parse(
+                                                                    "${scripInfo.scripInfoModel!.uc}"))) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(warningMessage(
+                                                                  context,
+                                                                  double.parse(
+                                                                              value) <
+                                                                          double.parse(
+                                                                              "${scripInfo.scripInfoModel!.lc}")
+                                                                      ? "Limit Price can not be lesser than Lower Circuit Limit ${scripInfo.scripInfoModel!.lc}"
+                                                                      : "Limit Price can not be greater than Upper Circuit Limit ${scripInfo.scripInfoModel!.uc}"));
+                                                        }
+                                                      }
                                                     },
                                                     hintText:
                                                         orderInput.prcCtrl.text,
@@ -634,36 +706,37 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                         const Color(0xff666666),
                                                         15,
                                                         FontWeight.w400),
-                                                    
                                                     style: textStyle(
-                                                    theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                        theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
                                                         16,
                                                         FontWeight.w600),
-                                                    isReadable:orderInput.priceName == "Market" ||
-                                  orderInput.priceName == "SL MKT"?true:  false,
+                                                    isReadable: orderInput.priceName ==
+                                                                "Market" ||
+                                                            orderInput.priceName ==
+                                                                "SL MKT"
+                                                        ? true
+                                                        : false,
                                                     prefixIcon: Container(
-                                                        margin: const EdgeInsets.all(
-                                                            12),
+                                                        margin:
+                                                            const EdgeInsets.all(
+                                                                12),
                                                         decoration: BoxDecoration(
                                                             borderRadius:
                                                                 BorderRadius.circular(
                                                                     20),
-                                                            color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,
-                                                            orderInput.priceName ==
-                                                                        "Limit" ||
-                                                                    orderInput.priceName ==
-                                                                        "SL Limit"
-                                                                ? assets.ruppeIcon
-                                                                : assets.lock,
-                                                            fit: BoxFit.scaleDown)),
+                                                            color: theme.isDarkMode
+                                                                ? const Color(0xff555555)
+                                                                : colors.colorWhite),
+                                                        child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.priceName == "Limit" || orderInput.priceName == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
                                                     textCtrl: orderInput.prcCtrl,
                                                     textAlign: TextAlign.start)),
                                           ]))
                                     ])),
                             const SizedBox(height: 3),
-                    Divider( color: theme.isDarkMode
+                            Divider(
+                                color: theme.isDarkMode
                                     ? colors.darkColorDivider
                                     : colors.colorDivider),
                             if (orderInput.priceName == "SL Limit" ||
@@ -678,13 +751,14 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                           CrossAxisAlignment.start,
                                       children: [
                                         const SizedBox(height: 2),
-                                        headerTitleText("Trigger",theme),
+                                        headerTitleText("Trigger", theme),
                                         const SizedBox(height: 7),
                                         SizedBox(
                                             height: 44,
-                                            child: CustomTextFormField(  fillColor: theme.isDarkMode
-                                                  ? colors.darkGrey
-                                                  : const Color(0xffF1F3F8),
+                                            child: CustomTextFormField(
+                                                fillColor: theme.isDarkMode
+                                                    ? colors.darkGrey
+                                                    : const Color(0xffF1F3F8),
                                                 hintText: "0.00",
                                                 hintStyle: textStyle(
                                                     const Color(0xff666666),
@@ -692,52 +766,97 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                     FontWeight.w400),
                                                 onChanged: (value) {
                                                   ScaffoldMessenger.of(context)
-                                                      .hideCurrentSnackBar();
+                                                      .removeCurrentSnackBar();
+
                                                   if (value.isNotEmpty) {
-                                                    if (isBuy!) {
-                                                      if (double.parse(value) <
-                                                          double.parse(
-                                                              orderInput
-                                                                  .priceVal)) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Greater than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                              value) <
-                                                          double.parse(
-                                                              "${orderInput.prcCtrl.text.isEmpty ? 0.00 : orderInput.prcCtrl.text == "Market" ? orderInput.priceVal : orderInput.prcCtrl.text}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Greater than Price"));
-                                                      }
+                                                    if ((double.parse(value) <
+                                                            double.parse(
+                                                                "${scripInfo.scripInfoModel!.lc}")) ||
+                                                        (double.parse(value) >
+                                                            double.parse(
+                                                                "${scripInfo.scripInfoModel!.uc}"))) {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(warningMessage(
+                                                              context,
+                                                              double.parse(
+                                                                          value) <
+                                                                      double.parse(
+                                                                          "${scripInfo.scripInfoModel!.lc}")
+                                                                  ? "Trigger can not be lesser than Lower Circuit Limit ${scripInfo.scripInfoModel!.lc}"
+                                                                  : "Trigger can not be greater than Upper Circuit Limit ${scripInfo.scripInfoModel!.uc}"));
                                                     } else {
-                                                      if (double.parse(value) >
-                                                          double.parse(
-                                                              "${widget.orderBookList.ltp ?? 0.00}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                              value) >
-                                                          double.parse(
-                                                              "${orderInput.prcCtrl.text.isEmpty ? 0.00 : orderInput.priceVal}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Price"));
+                                                      if (isBuy!) {
+                                                        if (double.parse(
+                                                                value) >
+                                                            double.parse(
+                                                                "${orderInput.priceCtrl.text.isEmpty ? 0.00 : orderInput.prcCtrl.text == "Market" ? orderInput.priceVal : orderInput.priceCtrl.text}")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger Should be Lesser than Limit Price"));
+                                                        }
+                                                      } else {
+                                                        if (double.parse(
+                                                                value) <
+                                                            double.parse(
+                                                                "${orderInput.priceCtrl.text.isEmpty ? 0.00 : orderInput.prcCtrl.text == "Market" ? orderInput.priceVal : orderInput.priceCtrl.text}")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger Should be Greater than Limit Price"));
+                                                        }
                                                       }
                                                     }
+
+                                                    // if (isBuy!) {
+                                                    //   if (double.parse(value) <
+                                                    //       double.parse(
+                                                    //           orderInput
+                                                    //               .priceVal)) {
+                                                    //     ScaffoldMessenger.of(
+                                                    //             context)
+                                                    //         .showSnackBar(
+                                                    //             warningMessage(
+                                                    //                 context,
+                                                    //                 "Trigger Should be Greater than Last Trade Price"));
+                                                    //   } else if (double.parse(
+                                                    //           value) <
+                                                    //       double.parse(
+                                                    //           "${orderInput.prcCtrl.text.isEmpty ? 0.00 : orderInput.prcCtrl.text == "Market" ? orderInput.priceVal : orderInput.prcCtrl.text}")) {
+                                                    //     ScaffoldMessenger.of(
+                                                    //             context)
+                                                    //         .showSnackBar(
+                                                    //             warningMessage(
+                                                    //                 context,
+                                                    //                 "Trigger Should be Greater than Price"));
+                                                    //   }
+                                                    // } else {
+                                                    //   if (double.parse(value) >
+                                                    //       double.parse(
+                                                    //           "${widget.orderBookList.ltp ?? 0.00}")) {
+                                                    //     ScaffoldMessenger.of(
+                                                    //             context)
+                                                    //         .showSnackBar(
+                                                    //             warningMessage(
+                                                    //                 context,
+                                                    //                 "Trigger Should be Lesser than Last Trade Price"));
+                                                    //   } else if (double.parse(
+                                                    //           value) >
+                                                    //       double.parse(
+                                                    //           "${orderInput.prcCtrl.text.isEmpty ? 0.00 : orderInput.priceVal}")) {
+                                                    //     ScaffoldMessenger.of(
+                                                    //             context)
+                                                    //         .showSnackBar(
+                                                    //             warningMessage(
+                                                    //                 context,
+                                                    //                 "Trigger Should be Lesser than Price"));
+                                                    //   }
+                                                    // }
                                                   } else {
                                                     ScaffoldMessenger.of(
                                                             context)
@@ -747,9 +866,10 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                                 "Trigger can not be empty"));
                                                   }
                                                 },
-                                                 
                                                 style: textStyle(
-                                                    theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                    theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
                                                     16,
                                                     FontWeight.w600),
                                                 prefixIcon: Container(
@@ -760,9 +880,15 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(20),
-                                                        color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,
+                                                        color: theme.isDarkMode
+                                                            ? const Color(
+                                                                0xff555555)
+                                                            : colors
+                                                                .colorWhite),
+                                                    child: SvgPicture.asset(
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorGrey,
                                                         assets.ruppeIcon,
                                                         fit: BoxFit.scaleDown)),
                                                 textCtrl:
@@ -774,8 +900,9 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                 orderInput.priceName == "SL MKT")
                               Divider(
                                   color: theme.isDarkMode
-                                    ? colors.darkColorDivider
-                                    : colors.colorDivider, height: 2),
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider,
+                                  height: 2),
                             if (addStoploss) ...[
                               Padding(
                                   padding: const EdgeInsets.symmetric(
@@ -789,13 +916,14 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                           orderInput.priceName == "SL Limit"
                                               ? const SizedBox(height: 10)
                                               : Container(),
-                                          headerTitleText("Target",theme),
+                                          headerTitleText("Target", theme),
                                           const SizedBox(height: 7),
                                           SizedBox(
                                               height: 44,
-                                              child: CustomTextFormField(  fillColor: theme.isDarkMode
-                                                  ? colors.darkGrey
-                                                  : const Color(0xffF1F3F8),
+                                              child: CustomTextFormField(
+                                                  fillColor: theme.isDarkMode
+                                                      ? colors.darkGrey
+                                                      : const Color(0xffF1F3F8),
                                                   hintText: "0.00",
                                                   onChanged: (value) {
                                                     ScaffoldMessenger.of(
@@ -814,9 +942,10 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                       const Color(0xff666666),
                                                       15,
                                                       FontWeight.w400),
-                                                
                                                   style: textStyle(
-                                                      theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                      theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
                                                       16,
                                                       FontWeight.w600),
                                                   prefixIcon: Container(
@@ -827,9 +956,15 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(20),
-                                                     color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,
+                                                        color: theme.isDarkMode
+                                                            ? const Color(
+                                                                0xff555555)
+                                                            : colors
+                                                                .colorWhite),
+                                                    child: SvgPicture.asset(
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorGrey,
                                                         assets.ruppeIcon,
                                                         fit: BoxFit.scaleDown),
                                                   ),
@@ -838,13 +973,14 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                   textAlign: TextAlign.start)),
                                           const SizedBox(height: 10)
                                         ],
-                                        headerTitleText("Stoploss",theme),
+                                        headerTitleText("Stoploss", theme),
                                         const SizedBox(height: 7),
                                         SizedBox(
                                             height: 44,
-                                            child: CustomTextFormField(  fillColor: theme.isDarkMode
-                                                  ? colors.darkGrey
-                                                  : const Color(0xffF1F3F8),
+                                            child: CustomTextFormField(
+                                                fillColor: theme.isDarkMode
+                                                    ? colors.darkGrey
+                                                    : const Color(0xffF1F3F8),
                                                 onChanged: (value) {
                                                   ScaffoldMessenger.of(context)
                                                       .hideCurrentSnackBar();
@@ -862,9 +998,10 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                     const Color(0xff666666),
                                                     15,
                                                     FontWeight.w400),
-                                                
                                                 style: textStyle(
-                                       theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                    theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
                                                     16,
                                                     FontWeight.w600),
                                                 prefixIcon: Container(
@@ -874,9 +1011,14 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               20),
-                                                   color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,
+                                                      color: theme.isDarkMode
+                                                          ? const Color(
+                                                              0xff555555)
+                                                          : colors.colorWhite),
+                                                  child: SvgPicture.asset(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorGrey,
                                                       assets.ruppeIcon,
                                                       fit: BoxFit.scaleDown),
                                                 ),
@@ -887,7 +1029,7 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                             ],
                             if (orderInput.orderName != "Regular") ...[
                               const SizedBox(height: 12),
-                           const ListDivider()
+                              const ListDivider()
                             ],
                             Padding(
                                 padding:
@@ -907,11 +1049,14 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                               addValidity = !addValidity;
                                             });
                                           },
-                                          icon: SvgPicture.asset(   theme.isDarkMode?addValidity 
-                                                ? assets.darkCheckedboxIcon
-                                                : assets.darkCheckboxIcon:addValidity
-                                              ? assets.checkedbox
-                                              : assets.checkbox)),
+                                          icon: SvgPicture.asset(theme
+                                                  .isDarkMode
+                                              ? addValidity
+                                                  ? assets.darkCheckedboxIcon
+                                                  : assets.darkCheckboxIcon
+                                              : addValidity
+                                                  ? assets.checkedbox
+                                                  : assets.checkbox)),
                                     ])),
                             if (addValidity) ...[
                               Padding(
@@ -926,7 +1071,8 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                              headerTitleText("Validity",theme),
+                                              headerTitleText(
+                                                  "Validity", theme),
                                               const SizedBox(height: 7),
                                               SizedBox(
                                                 height: 38,
@@ -948,66 +1094,53 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                                       .validityNames[
                                                                   index]);
                                                         },
-                                                        style: ElevatedButton.styleFrom(
-                                                            elevation: 0,
-                                                            padding:
-                                                                const EdgeInsets
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                                elevation: 0,
+                                                                padding: const EdgeInsets
                                                                     .symmetric(
                                                                     horizontal:
                                                                         12,
                                                                     vertical:
                                                                         0),
-                                                            backgroundColor: !theme
+                                                                backgroundColor: !theme
                                                                         .isDarkMode
-                                                                    ? orderInput
-                                                                        .validityName !=
-                                                                    orderInput
-                                                                            .validityNames[
-                                                                        index]
+                                                                    ? orderInput.validityName !=
+                                                                            orderInput.validityNames[
+                                                                                index]
                                                                         ? const Color(
                                                                             0xffF1F3F8)
                                                                         : colors
                                                                             .colorBlack
-                                                                    : orderInput
-                                                                        .validityName !=
-                                                                    orderInput
-                                                                            .validityNames[
-                                                                        index]
+                                                                    : orderInput.validityName !=
+                                                                            orderInput.validityNames[
+                                                                                index]
                                                                         ? colors
                                                                             .darkGrey
                                                                         : colors
                                                                             .colorWhite,
-                                                            
-                                                            
-                                                       
-                                                            shape:
-                                                                const StadiumBorder()),
+                                                                shape:
+                                                                    const StadiumBorder()),
                                                         child: Text(
                                                           orderInput
                                                                   .validityNames[
                                                               index],
                                                           style: textStyle(
-
                                                               !theme.isDarkMode
-                                                                  ? orderInput
-                                                                          .validityName !=
-                                                                      orderInput
-                                                                              .validityNames[
-                                                                          index]
+                                                                  ? orderInput.validityName !=
+                                                                          orderInput.validityNames[
+                                                                              index]
                                                                       ? const Color(
                                                                           0xff666666)
                                                                       : colors
                                                                           .colorWhite
-                                                                  : orderInput
-                                                                          .validityName !=
-                                                                      orderInput
-                                                                              .validityNames[
-                                                                          index]
+                                                                  : orderInput.validityName !=
+                                                                          orderInput.validityNames[
+                                                                              index]
                                                                       ? const Color(
                                                                           0xff666666)
                                                                       : colors
                                                                           .colorBlack,
-                                                             
                                                               14,
                                                               orderInput.validityName ==
                                                                       orderInput
@@ -1044,13 +1177,17 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                              headerTitleText("Disclosed Qty",theme),
+                                              headerTitleText(
+                                                  "Disclosed Qty", theme),
                                               const SizedBox(height: 7),
                                               SizedBox(
                                                   height: 44,
-                                                  child: CustomTextFormField(  fillColor: theme.isDarkMode
-                                                  ? colors.darkGrey
-                                                  : const Color(0xffF1F3F8),
+                                                  child: CustomTextFormField(
+                                                      fillColor:
+                                                          theme.isDarkMode
+                                                              ? colors.darkGrey
+                                                              : const Color(
+                                                                  0xffF1F3F8),
                                                       // type:"int",
                                                       hintText: "0",
                                                       hintStyle: textStyle(
@@ -1062,9 +1199,12 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                         FilteringTextInputFormatter
                                                             .digitsOnly
                                                       ],
-                                                   
                                                       style: textStyle(
-                                                     theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                          theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
                                                           16,
                                                           FontWeight.w600),
                                                       prefixIcon: InkWell(
@@ -1098,7 +1238,11 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                           });
                                                         },
                                                         child: SvgPicture.asset(
-                                                                theme.isDarkMode?assets.darkCMinus:    assets.minusIcon,
+                                                            theme.isDarkMode
+                                                                ? assets
+                                                                    .darkCMinus
+                                                                : assets
+                                                                    .minusIcon,
                                                             fit: BoxFit
                                                                 .scaleDown),
                                                       ),
@@ -1124,7 +1268,10 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                           });
                                                         },
                                                         child: SvgPicture.asset(
-                                                       theme.isDarkMode?assets.darkAdd:      assets.addIcon,
+                                                            theme.isDarkMode
+                                                                ? assets.darkAdd
+                                                                : assets
+                                                                    .addIcon,
                                                             fit: BoxFit
                                                                 .scaleDown),
                                                       ),
@@ -1136,9 +1283,11 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                       ])),
                               const SizedBox(height: 10)
                             ],
-                           Divider( color: theme.isDarkMode
+                            Divider(
+                                color: theme.isDarkMode
                                     ? colors.darkColorDivider
-                                    : colors.colorDivider, height: 0),
+                                    : colors.colorDivider,
+                                height: 0),
                             Padding(
                                 padding:
                                     const EdgeInsets.only(left: 16, right: 4),
@@ -1157,13 +1306,14 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                               isAmo = !isAmo;
                                             });
                                           },
-                                          icon: SvgPicture.asset(
-                                               theme.isDarkMode?isAmo
-                                                ? assets.darkCheckedboxIcon
-                                                : assets.darkCheckboxIcon:
-                                            isAmo
-                                              ? assets.checkedbox
-                                              : assets.checkbox)),
+                                          icon: SvgPicture.asset(theme
+                                                  .isDarkMode
+                                              ? isAmo
+                                                  ? assets.darkCheckedboxIcon
+                                                  : assets.darkCheckboxIcon
+                                              : isAmo
+                                                  ? assets.checkedbox
+                                                  : assets.checkbox)),
                                     ])),
                             SizedBox(
                                 height: orderInput.priceName == "Market"
@@ -1179,7 +1329,9 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                         ConnectivityResult.none
                     ? const NoInternetWidget()
                     : Container(
-                        color: theme.isDarkMode?colors.colorBlack:colors.colorWhite,
+                        color: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
@@ -1189,7 +1341,8 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                 Padding(
                                   padding: const EdgeInsets.only(
                                       left: 16.0, bottom: 6),
-                                  child: headerTitleText("Market Production",theme),
+                                  child: headerTitleText(
+                                      "Market Production", theme),
                                 ),
                                 Container(
                                     padding: const EdgeInsets.only(
@@ -1197,13 +1350,14 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                     height: 40,
                                     child: Row(children: [
                                       Expanded(
-                                          child: CustomTextFormField(  fillColor: theme.isDarkMode
+                                          child: CustomTextFormField(
+                                              fillColor: theme.isDarkMode
                                                   ? colors.darkGrey
                                                   : const Color(0xffF1F3F8),
                                               inputFormate: [
-                                            FilteringTextInputFormatter
-                                                .digitsOnly
-                                          ],
+                                                FilteringTextInputFormatter
+                                                    .digitsOnly
+                                              ],
                                               onChanged: (value) {
                                                 setState(() {
                                                   ScaffoldMessenger.of(context)
@@ -1233,9 +1387,10 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                   }
                                                 });
                                               },
-                                              
                                               style: textStyle(
-                                                  theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
                                                   14,
                                                   FontWeight.w600),
                                               textCtrl: orderInput.mktProtCtrl,
@@ -1245,18 +1400,18 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                               Container(
                                   height: 36,
                                   decoration: BoxDecoration(
-                                          color: theme.isDarkMode
-                                              ? colors.darkGrey
-                                              : const Color(0xfffafbff),
-                                          border: Border(
-                                              top: BorderSide(
-                                                  color: theme.isDarkMode
-                                                      ? colors.darkColorDivider
-                                                      : colors.colorDivider),
-                                              bottom: BorderSide(
-                                                  color: theme.isDarkMode
-                                                      ? colors.darkColorDivider
-                                                      : colors.colorDivider))),
+                                      color: theme.isDarkMode
+                                          ? colors.darkGrey
+                                          : const Color(0xfffafbff),
+                                      border: Border(
+                                          top: BorderSide(
+                                              color: theme.isDarkMode
+                                                  ? colors.darkColorDivider
+                                                  : colors.colorDivider),
+                                          bottom: BorderSide(
+                                              color: theme.isDarkMode
+                                                  ? colors.darkColorDivider
+                                                  : colors.colorDivider))),
                                   padding: const EdgeInsets.only(
                                       left: 16.0, right: 3, top: 0),
                                   child: Row(
@@ -1265,30 +1420,29 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                       children: [
                                         Row(children: [
                                           CustomWidgetButton(
-                                              onPress: internet
-                                                          .connectionStatus ==
-                                                      ConnectivityResult.none
-                                                  ? () {}
-                                                  : () async {
-                                                      await marginUpdate(
-                                                          orderInput);
-                                                      showModalBottomSheet(
-                                                         
-                                                          useSafeArea: true,
-                                                          isScrollControlled:
-                                                              true,
-                                                          shape: const RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius.vertical(
-                                                                      top: Radius
-                                                                          .circular(
+                                              onPress:
+                                                  internet.connectionStatus ==
+                                                          ConnectivityResult
+                                                              .none
+                                                      ? () {}
+                                                      : () async {
+                                                          await marginUpdate(
+                                                              orderInput);
+                                                          showModalBottomSheet(
+                                                              useSafeArea: true,
+                                                              isScrollControlled:
+                                                                  true,
+                                                              shape: const RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius.vertical(
+                                                                          top: Radius.circular(
                                                                               16))),
-                                                          
-                                                          context: context,
-                                                          builder: (context) {
-                                                            return const MarginDetailsBottomsheet();
-                                                          });
-                                                    },
+                                                              context: context,
+                                                              builder:
+                                                                  (context) {
+                                                                return const MarginDetailsBottomsheet();
+                                                              });
+                                                        },
                                               widget: Row(children: [
                                                 Text("Margin: ",
                                                     style: textStyle(
@@ -1298,38 +1452,43 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                 Text(
                                                     "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}",
                                                     style: textStyle(
-                                                     ! theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
+                                                        !theme.isDarkMode
+                                                            ? colors.colorBlue
+                                                            : colors
+                                                                .colorLightBlue,
                                                         12,
                                                         FontWeight.w600)),
-                                            Icon(
-                                                    Icons.arrow_drop_down,
-                                                    color:  ! theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,)
+                                                Icon(
+                                                  Icons.arrow_drop_down,
+                                                  color: !theme.isDarkMode
+                                                      ? colors.colorBlue
+                                                      : colors.colorLightBlue,
+                                                )
                                               ])),
                                           const SizedBox(width: 20),
                                           CustomWidgetButton(
-                                            onPress: internet
-                                                        .connectionStatus ==
-                                                    ConnectivityResult.none
-                                                ? () {}
-                                                : () async {
-                                                    await marginUpdate(
-                                                        orderInput);
-                                                    showModalBottomSheet( 
-                                                        useSafeArea: true,
-                                                        isScrollControlled:
-                                                            true,
-                                                        shape: const RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius.vertical(
-                                                                    top: Radius
-                                                                        .circular(
-                                                                            16))),
-                                                       
-                                                        context: context,
-                                                        builder: (context) {
-                                                          return const ChargesDetailsBottomsheet();
-                                                        });
-                                                  },
+                                            onPress:
+                                                internet.connectionStatus ==
+                                                        ConnectivityResult.none
+                                                    ? () {}
+                                                    : () async {
+                                                        await marginUpdate(
+                                                            orderInput);
+                                                        showModalBottomSheet(
+                                                            useSafeArea: true,
+                                                            isScrollControlled:
+                                                                true,
+                                                            shape: const RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .vertical(
+                                                                            top:
+                                                                                Radius.circular(16))),
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return const ChargesDetailsBottomsheet();
+                                                            });
+                                                      },
                                             widget: Row(children: [
                                               Text("Charges: ",
                                                   style: textStyle(
@@ -1339,11 +1498,18 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                               Text(
                                                   "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
                                                   style: textStyle(
-                                                     ! theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
+                                                      !theme.isDarkMode
+                                                          ? colors.colorBlue
+                                                          : colors
+                                                              .colorLightBlue,
                                                       12,
                                                       FontWeight.w600)),
-                    Icon(Icons.arrow_drop_down,
-                                                  color:  ! theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,)
+                                              Icon(
+                                                Icons.arrow_drop_down,
+                                                color: !theme.isDarkMode
+                                                    ? colors.colorBlue
+                                                    : colors.colorLightBlue,
+                                              )
                                             ]),
                                           ),
                                         ]),
@@ -1368,454 +1534,634 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                             ConnectivityResult.none
                                         ? null
                                         : () async {
-                                                setState(() {
-                                                  if (frezQty == 0) {
-                                                    quantity = int.parse(
-                                                       orderInput. qtyCrl.text.isEmpty
-                                                            ? "0"
-                                                            :  orderInput. qtyCrl.text);
+                                            setState(() {
+                                              if (frezQty == 0) {
+                                                quantity = int.parse(orderInput
+                                                        .qtyCrl.text.isEmpty
+                                                    ? "0"
+                                                    : orderInput.qtyCrl.text);
+                                                frezQty;
+                                              } else {
+                                                quantity = int.parse(orderInput
+                                                            .qtyCrl.text.isEmpty
+                                                        ? "0"
+                                                        : orderInput
+                                                            .qtyCrl.text) ~/
                                                     frezQty;
-                                                  } else {
-                                                    quantity = int.parse( orderInput. qtyCrl
-                                                                .text.isEmpty
-                                                            ? "0"
-                                                            :  orderInput. qtyCrl.text) ~/
-                                                        frezQty;
-                                                  }
-                                                  reminder = int.parse(
-                                                           orderInput. qtyCrl.text.isEmpty
-                                                              ? "0"
-                                                              :  orderInput. qtyCrl.text) -
-                                                      (frezQty * quantity);
-                                                  maxQty = frezQty * 28;
-                                                  print(
-                                                      "objectobject{$quantity | $reminder}  ");
-                                                });
-                                                if ( orderInput. qtyCrl.text.isEmpty ||
-                                                   orderInput. prcCtrl.text.isEmpty) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                           orderInput. qtyCrl.text.isEmpty
-                                                              ? "Quantity can not be empty"
-                                                              : "Price can not be empty"));
-                                                }  else if ((int.parse( orderInput.qtyCrl.text.isEmpty ? "0" :  orderInput.qtyCrl.text) > maxQty) &&
-                                                    widget.orderBookList.exch !=
-                                                        "BSE") {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Specified Quantity is more than the instrument maximum quantity of $maxQty"));
-                                                } else if ( orderInput. qtyCrl.text ==
-                                                        "0" ||
-                                                      orderInput. prcCtrl.text == "0") {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                           orderInput. qtyCrl.text == "0"
-                                                              ? "Quantity can not be 0"
-                                                              : "Price can not be 0"));
-                                                } else if ((double.parse(
-                                                           orderInput.  priceVal) <
-                                                        double.parse(
-                                                            "${ scripInfo.scripInfoModel!.lc}")) ||
-                                                    (double.parse(orderInput.  priceVal) >
-                                                        double.parse(
-                                                            "${scripInfo.scripInfoModel!.uc}"))) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          double.parse(orderInput.  priceVal) <
-                                                                  double.parse(
-                                                                      "${scripInfo.scripInfoModel!.lc}")
-                                                              ? "Price can not be lesser than Lower Circuit Limit ${scripInfo.scripInfoModel!.lc}"
-                                                              : "Price can not be greater than Upper Circuit Limit ${scripInfo.scripInfoModel!.uc}"));
-                                                } else if (orderInput. orderName ==
-                                                        "Regular" &&
-                                                    (orderInput.  priceName== "SL Limit" ||
-                                                        orderInput.  priceName ==
-                                                            "SL MKT")) {
-                                                  if ( orderInput.  triggerPriceCtrl
-                                                          .text.isEmpty ||
-                                                      orderInput.   triggerPriceCtrl.text ==
-                                                          "0") {
+                                              }
+                                              reminder = int.parse(orderInput
+                                                          .qtyCrl.text.isEmpty
+                                                      ? "0"
+                                                      : orderInput
+                                                          .qtyCrl.text) -
+                                                  (frezQty * quantity);
+                                              maxQty = frezQty * 28;
+                                              print(
+                                                  "objectobject{$quantity | $reminder}  ");
+                                            });
+                                            if (orderInput.qtyCrl.text.isEmpty ||
+                                                orderInput
+                                                    .prcCtrl.text.isEmpty) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(warningMessage(
+                                                      context,
+                                                      orderInput.qtyCrl.text
+                                                              .isEmpty
+                                                          ? "Quantity can not be empty"
+                                                          : "Price can not be empty"));
+                                            } else if ((int.parse(orderInput.qtyCrl.text.isEmpty ? "0" : orderInput.qtyCrl.text) > maxQty) &&
+                                                widget.orderBookList.exch !=
+                                                    "BSE") {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(warningMessage(
+                                                      context,
+                                                      "Specified Quantity is more than the instrument maximum quantity of $maxQty"));
+                                            } else if (orderInput.qtyCrl.text == "0" ||
+                                                orderInput.prcCtrl.text ==
+                                                    "0") {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(warningMessage(
+                                                      context,
+                                                      orderInput.qtyCrl.text ==
+                                                              "0"
+                                                          ? "Quantity can not be 0"
+                                                          : "Price can not be 0"));
+                                            } else if ((double.parse(orderInput.priceVal) < double.parse("${scripInfo.scripInfoModel!.lc}")) ||
+                                                (double.parse(orderInput.priceVal) >
+                                                    double.parse(
+                                                        "${scripInfo.scripInfoModel!.uc}"))) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(warningMessage(
+                                                      context,
+                                                      double.parse(orderInput
+                                                                  .priceVal) <
+                                                              double.parse(
+                                                                  "${scripInfo.scripInfoModel!.lc}")
+                                                          ? "Price can not be lesser than Lower Circuit Limit ${scripInfo.scripInfoModel!.lc}"
+                                                          : "Price can not be greater than Upper Circuit Limit ${scripInfo.scripInfoModel!.uc}"));
+                                            } else if (orderInput.orderName == "Regular" &&
+                                                (orderInput.priceName == "SL Limit" ||
+                                                    orderInput.priceName ==
+                                                        "SL MKT")) {
+                                              if (orderInput.triggerPriceCtrl
+                                                      .text.isEmpty ||
+                                                  orderInput.triggerPriceCtrl
+                                                          .text ==
+                                                      "0") {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(warningMessage(
+                                                        context,
+                                                        orderInput
+                                                                .triggerPriceCtrl
+                                                                .text
+                                                                .isEmpty
+                                                            ? "Trigger can not be empty"
+                                                            : "Trigger can not be 0"));
+                                              } else {
+                                                if (isBuy!) {
+                                                  if (double.parse(orderInput
+                                                          .triggerPriceCtrl
+                                                          .text) >
+                                                      double.parse(
+                                                          "${orderInput.prcCtrl.text.isEmpty ? 0.00 : orderInput.priceVal}")) {
                                                     ScaffoldMessenger.of(
                                                             context)
-                                                        .showSnackBar(warningMessage(
-                                                            context,
-                                                          orderInput.     triggerPriceCtrl
-                                                                    .text
-                                                                    .isEmpty
-                                                                ? "Trigger can not be empty"
-                                                                : "Trigger can not be 0"));
-                                                  } else {
-                                                    if (isBuy!) {
-                                                      if (double.parse(
-                                                            orderInput.     triggerPriceCtrl
-                                                                  .text) <
-                                                          double.parse(orderInput.  priceVal)) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(warningMessage(
+                                                        .showSnackBar(
+                                                            warningMessage(
                                                                 context,
-                                                                orderInput.  priceName ==
-                                                                        "SL MKT"
-                                                                    ? "Trigger Should be Greater than Price"
-                                                                    : "Trigger Should be Greater than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                             orderInput.     triggerPriceCtrl
-                                                                  .text) <
-                                                          double.parse(
-                                                              "${  orderInput. prcCtrl.text.isEmpty ? 0.00 : orderInput.  priceVal}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Greater than Price"));
-                                                      } else {
-                                                        if (int.parse( orderInput. qtyCrl
-                                                                    .text
-                                                                    .isEmpty
-                                                                ? "0"
-                                                                :  orderInput. qtyCrl
-                                                                    .text) >
-                                                            frezQty) {
-                                                          placeOrder(
-                                                              orderInput, true,theme);
-                                                        } else {
-                                                          placeOrder(orderInput,
-                                                              false,theme);
-                                                        }
-                                                      }
-                                                    } else {
-                                                      if (double.parse(
-                                                              orderInput.   triggerPriceCtrl
-                                                                  .text) >
-                                                          double.parse(
-                                                              "${orderInput.  priceName == "SL MKT" ?orderInput.  priceVal : widget.orderBookList.ltp ?? 0.00}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                          orderInput.      triggerPriceCtrl
-                                                                  .text) >
-                                                          double.parse(
-                                                              "${  orderInput. prcCtrl.text.isEmpty ? 0.00 : orderInput.  priceVal}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Price"));
-                                                      } else {
-                                                        if (int.parse( orderInput. qtyCrl
-                                                                    .text
-                                                                    .isEmpty
-                                                                ? "0"
-                                                                :  orderInput. qtyCrl
-                                                                    .text) >
-                                                            frezQty) {
-                                                          placeOrder(
-                                                              orderInput, true,theme);
-                                                        } else {
-                                                          placeOrder(orderInput,
-                                                              false,theme);
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                } else if (orderInput. orderName ==
-                                                        "Cover" &&
-                                                    (orderInput.  priceName == "Limit" ||
-                                                        orderInput.  priceName ==
-                                                            "Market")) {
-                                                  if ( orderInput.  stopLossCtrl
-                                                          .text.isEmpty ||
-                                                      orderInput.   stopLossCtrl.text ==
-                                                          "0") {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(warningMessage(
-                                                            context,
-                                                          orderInput.     stopLossCtrl.text
-                                                                    .isEmpty
-                                                                ? "Stoploss can not be empty"
-                                                                : "Stoploss can not be 0"));
+                                                                "Trigger Should be Lesser than Limit Price"));
                                                   } else {
-                                                    if (int.parse( orderInput. qtyCrl
-                                                                .text.isEmpty
+                                                    if (int.parse(orderInput
+                                                                .qtyCrl
+                                                                .text
+                                                                .isEmpty
                                                             ? "0"
-                                                            :  orderInput. qtyCrl.text) >
+                                                            : orderInput
+                                                                .qtyCrl.text) >
                                                         frezQty) {
-                                                      placeOrder(
-                                                          orderInput, true,theme);
+                                                      placeOrder(orderInput,
+                                                          true, theme);
                                                     } else {
-                                                      placeOrder(
-                                                          orderInput, false,theme);
-                                                    }
-                                                  }
-                                                } else if (orderInput. orderName ==
-                                                        "Cover" &&
-                                                    (orderInput.  priceName == "SL Limit")) {
-                                                  if ( orderInput.  stopLossCtrl
-                                                          .text.isEmpty ||
-                                                     orderInput.    stopLossCtrl.text ==
-                                                          "0") {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(warningMessage(
-                                                            context,
-                                                       orderInput.        stopLossCtrl.text
-                                                                    .isEmpty
-                                                                ? "Stoploss can not be empty"
-                                                                : "Stoploss can not be 0"));
-                                                  } else if (( orderInput.  triggerPriceCtrl
-                                                              .text.isEmpty ||
-                                                         orderInput.    triggerPriceCtrl
-                                                                  .text ==
-                                                              "0") &&
-                                                      orderInput.  priceName == "SL Limit") {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(warningMessage(
-                                                            context,
-                                                       orderInput.        triggerPriceCtrl
-                                                                    .text
-                                                                    .isEmpty
-                                                                ? "Trigger can not be empty"
-                                                                : "Trigger can not be 0"));
-                                                  } else {
-                                                    if (isBuy!) {
-                                                      if (double.parse(
-                                                            orderInput.     triggerPriceCtrl
-                                                                  .text) <
-                                                          double.parse(
-                                                              "${orderInput.  priceName == "SL MKT" ?orderInput.  priceVal: widget.orderBookList.ltp ?? 0.00}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(warningMessage(
-                                                                context,
-                                                                orderInput.  priceName ==
-                                                                        "SL MKT"
-                                                                    ? "Trigger Should be Greater than Price"
-                                                                    : "Trigger Should be Greater than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                            orderInput.     triggerPriceCtrl
-                                                                  .text) <
-                                                          double.parse(
-                                                              "${  orderInput. prcCtrl.text.isEmpty ? 0.00 : orderInput.  priceVal}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Greater than Price"));
-                                                      } else {
-                                                        if (int.parse( orderInput. qtyCrl
-                                                                    .text
-                                                                    .isEmpty
-                                                                ? "0"
-                                                                :  orderInput. qtyCrl
-                                                                    .text) >
-                                                            frezQty) {
-                                                          placeOrder(
-                                                              orderInput, true,theme);
-                                                        } else {
-                                                          placeOrder(orderInput,
-                                                              false,theme);
-                                                        }
-                                                      }
-                                                    } else {
-                                                      if (double.parse(
-                                                           orderInput.     triggerPriceCtrl
-                                                                  .text) >
-                                                          double.parse(
-                                                              "${orderInput.  priceName == "SL MKT" ?orderInput.  priceVal : widget.orderBookList.ltp ?? 0.00}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                             orderInput.    triggerPriceCtrl
-                                                                  .text) >
-                                                          double.parse(
-                                                              "${  orderInput. prcCtrl.text.isEmpty ? 0.00 :orderInput.  priceVal}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Price"));
-                                                      } else {
-                                                        if (int.parse( orderInput. qtyCrl
-                                                                    .text
-                                                                    .isEmpty
-                                                                ? "0"
-                                                                :  orderInput. qtyCrl
-                                                                    .text) >
-                                                            frezQty) {
-                                                          placeOrder(
-                                                              orderInput, true,theme);
-                                                        } else {
-                                                          placeOrder(orderInput,
-                                                              false,theme);
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                } else if (orderInput. orderName ==
-                                                        "Bracket" &&
-                                                    (orderInput.  priceName == "Limit" ||
-                                                        orderInput.  priceName ==
-                                                            "Market")) {
-                                                  if (orderInput. stopLossCtrl
-                                                          .text.isEmpty ||
-                                                     orderInput.  targetCtrl.text.isEmpty) {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
-                                                            warningMessage(
-                                                                context,
-                                                                "${ orderInput.  stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
-                                                  } else {
-                                                    if (int.parse( orderInput. qtyCrl
-                                                                .text.isEmpty
-                                                            ? "0"
-                                                            :  orderInput. qtyCrl.text) >
-                                                        frezQty) {
-                                                      placeOrder(
-                                                          orderInput, true,theme);
-                                                    } else {
-                                                      placeOrder(
-                                                          orderInput, false,theme);
-                                                    }
-                                                  }
-                                                } else if (orderInput. orderName ==
-                                                        "Bracket" &&
-                                                    (orderInput.  priceName == "SL Limit")) {
-                                                  if (orderInput. stopLossCtrl
-                                                          .text.isEmpty ||
-                                                   orderInput.    targetCtrl.text.isEmpty) {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
-                                                            warningMessage(
-                                                                context,
-                                                                "${ orderInput.  stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
-                                                  } else if ( orderInput.  triggerPriceCtrl
-                                                          .text.isEmpty &&
-                                                      orderInput.  priceName == "SL Limit") {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
-                                                            warningMessage(
-                                                                context,
-                                                                "Trigger can not be empty"));
-                                                  } else {
-                                                    if (isBuy!) {
-                                                      if (double.parse(
-                                                               orderInput.  triggerPriceCtrl
-                                                                  .text) <
-                                                          double.parse(
-                                                              "${orderInput.  priceName == "SL MKT" ? orderInput.  priceVal : widget.orderBookList.ltp ?? 0.00}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(warningMessage(
-                                                                context,
-                                                                orderInput.  priceName ==
-                                                                        "SL MKT"
-                                                                    ? "Trigger Should be Greater than Price"
-                                                                    : "Trigger Should be Greater than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                           orderInput.      triggerPriceCtrl
-                                                                  .text) <
-                                                          double.parse(
-                                                              "${  orderInput. prcCtrl.text.isEmpty ? 0.00 : orderInput.  priceVal}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Greater than Price"));
-                                                      } else {
-                                                        if (int.parse( orderInput. qtyCrl
-                                                                    .text
-                                                                    .isEmpty
-                                                                ? "0"
-                                                                :  orderInput. qtyCrl
-                                                                    .text) >
-                                                            frezQty) {
-                                                          placeOrder(
-                                                              orderInput, true,theme);
-                                                        } else {
-                                                          placeOrder(orderInput,
-                                                              false,theme);
-                                                        }
-                                                      }
-                                                    } else {
-                                                      if (double.parse(
-                                                              orderInput.   triggerPriceCtrl
-                                                                  .text) >
-                                                          double.parse(
-                                                              "${orderInput.  priceName == "SL MKT" ?orderInput.  priceVal : widget.orderBookList.ltp ?? 0.00}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Last Trade Price"));
-                                                      } else if (double.parse(
-                                                            orderInput.     triggerPriceCtrl
-                                                                  .text) >
-                                                          double.parse(
-                                                              "${  orderInput. prcCtrl.text.isEmpty ? 0.00 :  orderInput.  priceVal}")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger Should be Lesser than Price"));
-                                                      } else {
-                                                        if (int.parse( orderInput. qtyCrl
-                                                                    .text
-                                                                    .isEmpty
-                                                                ? "0"
-                                                                :  orderInput. qtyCrl
-                                                                    .text) >
-                                                            frezQty) {
-                                                          placeOrder(
-                                                              orderInput, true,theme);
-                                                        } else {
-                                                          placeOrder(orderInput,
-                                                              false,theme);
-                                                        }
-                                                      }
+                                                      placeOrder(orderInput,
+                                                          false, theme);
                                                     }
                                                   }
                                                 } else {
-                                                  if (int.parse(
-                                                           orderInput. qtyCrl.text.isEmpty
-                                                              ? "0"
-                                                              :  orderInput. qtyCrl.text) >
-                                                      frezQty) {
-                                                    placeOrder(
-                                                        orderInput, true,theme);
+                                                  if (double.parse(orderInput
+                                                          .triggerPriceCtrl
+                                                          .text) <
+                                                      double.parse(
+                                                          "${orderInput.prcCtrl.text.isEmpty ? 0.00 : orderInput.priceVal}")) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Trigger Should be Greater than Limit Price"));
                                                   } else {
-                                                    placeOrder(
-                                                        orderInput, false,theme);
+                                                    if (int.parse(orderInput
+                                                                .qtyCrl
+                                                                .text
+                                                                .isEmpty
+                                                            ? "0"
+                                                            : orderInput
+                                                                .qtyCrl.text) >
+                                                        frezQty) {
+                                                      placeOrder(orderInput,
+                                                          true, theme);
+                                                    } else {
+                                                      placeOrder(orderInput,
+                                                          false, theme);
+                                                    }
                                                   }
-                                                }},
+                                                }
+
+                                                // if (isBuy!) {
+
+                                                //   if (double.parse(
+                                                //         orderInput.     triggerPriceCtrl
+                                                //               .text) <
+                                                //       double.parse(orderInput.  priceVal)) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(warningMessage(
+                                                //             context,
+                                                //             orderInput.  priceName ==
+                                                //                     "SL MKT"
+                                                //                 ? "Trigger Should be Greater than Price"
+                                                //                 : "Trigger Should be Greater than Last Trade Price"));
+                                                //   } else if (double.parse(
+                                                //          orderInput.     triggerPriceCtrl
+                                                //               .text) <
+                                                //       double.parse(
+                                                //           "${  orderInput. prcCtrl.text.isEmpty ? 0.00 : orderInput.  priceVal}")) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(
+                                                //             warningMessage(
+                                                //                 context,
+                                                //                 "Trigger Should be Greater than Price"));
+                                                //   } else {
+                                                //     if (int.parse( orderInput. qtyCrl
+                                                //                 .text
+                                                //                 .isEmpty
+                                                //             ? "0"
+                                                //             :  orderInput. qtyCrl
+                                                //                 .text) >
+                                                //         frezQty) {
+                                                //       placeOrder(
+                                                //           orderInput, true,theme);
+                                                //     } else {
+                                                //       placeOrder(orderInput,
+                                                //           false,theme);
+                                                //     }
+                                                //   }
+                                                // } else {
+                                                //   if (double.parse(
+                                                //           orderInput.   triggerPriceCtrl
+                                                //               .text) >
+                                                //       double.parse(
+                                                //           "${orderInput.  priceName == "SL MKT" ?orderInput.  priceVal : widget.orderBookList.ltp ?? 0.00}")) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(
+                                                //             warningMessage(
+                                                //                 context,
+                                                //                 "Trigger Should be Lesser than Last Trade Price"));
+                                                //   } else if (double.parse(
+                                                //       orderInput.      triggerPriceCtrl
+                                                //               .text) >
+                                                //       double.parse(
+                                                //           "${  orderInput. prcCtrl.text.isEmpty ? 0.00 : orderInput.  priceVal}")) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(
+                                                //             warningMessage(
+                                                //                 context,
+                                                //                 "Trigger Should be Lesser than Price"));
+                                                //   } else {
+                                                //     if (int.parse( orderInput. qtyCrl
+                                                //                 .text
+                                                //                 .isEmpty
+                                                //             ? "0"
+                                                //             :  orderInput. qtyCrl
+                                                //                 .text) >
+                                                //         frezQty) {
+                                                //       placeOrder(
+                                                //           orderInput, true,theme);
+                                                //     } else {
+                                                //       placeOrder(orderInput,
+                                                //           false,theme);
+                                                //     }
+                                                //   }
+                                                // }
+                                              }
+                                            } else if (orderInput.orderName == "Cover" &&
+                                                (orderInput.priceName == "Limit" ||
+                                                    orderInput.priceName ==
+                                                        "Market")) {
+                                              if (orderInput.stopLossCtrl.text
+                                                      .isEmpty ||
+                                                  orderInput
+                                                          .stopLossCtrl.text ==
+                                                      "0") {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(warningMessage(
+                                                        context,
+                                                        orderInput.stopLossCtrl
+                                                                .text.isEmpty
+                                                            ? "Stoploss can not be empty"
+                                                            : "Stoploss can not be 0"));
+                                              } else {
+                                                if (int.parse(orderInput
+                                                            .qtyCrl.text.isEmpty
+                                                        ? "0"
+                                                        : orderInput
+                                                            .qtyCrl.text) >
+                                                    frezQty) {
+                                                  placeOrder(
+                                                      orderInput, true, theme);
+                                                } else {
+                                                  placeOrder(
+                                                      orderInput, false, theme);
+                                                }
+                                              }
+                                            } else if (orderInput.orderName == "Cover" &&
+                                                (orderInput.priceName ==
+                                                    "SL Limit")) {
+                                              if (orderInput.stopLossCtrl.text
+                                                      .isEmpty ||
+                                                  orderInput
+                                                          .stopLossCtrl.text ==
+                                                      "0") {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(warningMessage(
+                                                        context,
+                                                        orderInput.stopLossCtrl
+                                                                .text.isEmpty
+                                                            ? "Stoploss can not be empty"
+                                                            : "Stoploss can not be 0"));
+                                              } else if ((orderInput
+                                                          .triggerPriceCtrl
+                                                          .text
+                                                          .isEmpty ||
+                                                      orderInput
+                                                              .triggerPriceCtrl
+                                                              .text ==
+                                                          "0") &&
+                                                  orderInput.priceName ==
+                                                      "SL Limit") {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(warningMessage(
+                                                        context,
+                                                        orderInput
+                                                                .triggerPriceCtrl
+                                                                .text
+                                                                .isEmpty
+                                                            ? "Trigger can not be empty"
+                                                            : "Trigger can not be 0"));
+                                              } else {
+                                                if (isBuy!) {
+                                                  if (double.parse(orderInput
+                                                          .triggerPriceCtrl
+                                                          .text) >
+                                                      double.parse(
+                                                          "${orderInput.priceName == "SL MKT" ? orderInput.priceVal : widget.orderBookList.ltp ?? 0.00}")) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Trigger Should be Lesser than Limit Price"));
+                                                  } else {
+                                                    if (int.parse(orderInput
+                                                                .qtyCrl
+                                                                .text
+                                                                .isEmpty
+                                                            ? "0"
+                                                            : orderInput
+                                                                .qtyCrl.text) >
+                                                        frezQty) {
+                                                      placeOrder(orderInput,
+                                                          true, theme);
+                                                    } else {
+                                                      placeOrder(orderInput,
+                                                          false, theme);
+                                                    }
+                                                  }
+                                                } else {
+                                                  if (double.parse(orderInput
+                                                          .triggerPriceCtrl
+                                                          .text) <
+                                                      double.parse(
+                                                          "${orderInput.priceName == "SL MKT" ? orderInput.priceVal : widget.orderBookList.ltp ?? 0.00}")) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Trigger Should be Greater than Limit Price"));
+                                                  } else {
+                                                    if (int.parse(orderInput
+                                                                .qtyCrl
+                                                                .text
+                                                                .isEmpty
+                                                            ? "0"
+                                                            : orderInput
+                                                                .qtyCrl.text) >
+                                                        frezQty) {
+                                                      placeOrder(orderInput,
+                                                          true, theme);
+                                                    } else {
+                                                      placeOrder(orderInput,
+                                                          false, theme);
+                                                    }
+                                                  }
+                                                }
+                                                // if (isBuy!) {
+                                                //   if (double.parse(
+                                                //         orderInput.     triggerPriceCtrl
+                                                //               .text) <
+                                                //       double.parse(
+                                                //           "${orderInput.  priceName == "SL MKT" ?orderInput.  priceVal: widget.orderBookList.ltp ?? 0.00}")) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(warningMessage(
+                                                //             context,
+                                                //             orderInput.  priceName ==
+                                                //                     "SL MKT"
+                                                //                 ? "Trigger Should be Greater than Price"
+                                                //                 : "Trigger Should be Greater than Last Trade Price"));
+                                                //   } else if (double.parse(
+                                                //         orderInput.     triggerPriceCtrl
+                                                //               .text) <
+                                                //       double.parse(
+                                                //           "${  orderInput. prcCtrl.text.isEmpty ? 0.00 : orderInput.  priceVal}")) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(
+                                                //             warningMessage(
+                                                //                 context,
+                                                //                 "Trigger Should be Greater than Price"));
+                                                //   } else {
+                                                //     if (int.parse( orderInput. qtyCrl
+                                                //                 .text
+                                                //                 .isEmpty
+                                                //             ? "0"
+                                                //             :  orderInput. qtyCrl
+                                                //                 .text) >
+                                                //         frezQty) {
+                                                //       placeOrder(
+                                                //           orderInput, true,theme);
+                                                //     } else {
+                                                //       placeOrder(orderInput,
+                                                //           false,theme);
+                                                //     }
+                                                //   }
+                                                // } else {
+                                                //   if (double.parse(
+                                                //        orderInput.     triggerPriceCtrl
+                                                //               .text) >
+                                                //       double.parse(
+                                                //           "${orderInput.  priceName == "SL MKT" ?orderInput.  priceVal : widget.orderBookList.ltp ?? 0.00}")) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(
+                                                //             warningMessage(
+                                                //                 context,
+                                                //                 "Trigger Should be Lesser than Last Trade Price"));
+                                                //   } else if (double.parse(
+                                                //          orderInput.    triggerPriceCtrl
+                                                //               .text) >
+                                                //       double.parse(
+                                                //           "${  orderInput. prcCtrl.text.isEmpty ? 0.00 :orderInput.  priceVal}")) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(
+                                                //             warningMessage(
+                                                //                 context,
+                                                //                 "Trigger Should be Lesser than Price"));
+                                                //   } else {
+                                                //     if (int.parse( orderInput. qtyCrl
+                                                //                 .text
+                                                //                 .isEmpty
+                                                //             ? "0"
+                                                //             :  orderInput. qtyCrl
+                                                //                 .text) >
+                                                //         frezQty) {
+                                                //       placeOrder(
+                                                //           orderInput, true,theme);
+                                                //     } else {
+                                                //       placeOrder(orderInput,
+                                                //           false,theme);
+                                                //     }
+                                                //   }
+                                                // }
+                                              }
+                                            } else if (orderInput.orderName == "Bracket" &&
+                                                (orderInput.priceName == "Limit" ||
+                                                    orderInput.priceName == "Market")) {
+                                              if (orderInput.stopLossCtrl.text
+                                                      .isEmpty ||
+                                                  orderInput.targetCtrl.text
+                                                      .isEmpty) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(warningMessage(
+                                                        context,
+                                                        "${orderInput.stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
+                                              } else {
+                                                if (int.parse(orderInput
+                                                            .qtyCrl.text.isEmpty
+                                                        ? "0"
+                                                        : orderInput
+                                                            .qtyCrl.text) >
+                                                    frezQty) {
+                                                  placeOrder(
+                                                      orderInput, true, theme);
+                                                } else {
+                                                  placeOrder(
+                                                      orderInput, false, theme);
+                                                }
+                                              }
+                                            } else if (orderInput.orderName == "Bracket" && (orderInput.priceName == "SL Limit")) {
+                                              if (orderInput.stopLossCtrl.text
+                                                      .isEmpty ||
+                                                  orderInput.targetCtrl.text
+                                                      .isEmpty) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(warningMessage(
+                                                        context,
+                                                        "${orderInput.stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
+                                              } else if (orderInput
+                                                      .triggerPriceCtrl
+                                                      .text
+                                                      .isEmpty &&
+                                                  orderInput.priceName ==
+                                                      "SL Limit") {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(warningMessage(
+                                                        context,
+                                                        "Trigger can not be empty"));
+                                              } else {
+                                                if (isBuy!) {
+                                                  if (double.parse(orderInput
+                                                          .triggerPriceCtrl
+                                                          .text) >
+                                                      double.parse(
+                                                          "${orderInput.priceName == "SL MKT" ? orderInput.priceVal : widget.orderBookList.ltp ?? 0.00}")) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Trigger Should be Lesser than Limit Price"));
+                                                  } else {
+                                                    if (int.parse(orderInput
+                                                                .qtyCrl
+                                                                .text
+                                                                .isEmpty
+                                                            ? "0"
+                                                            : orderInput
+                                                                .qtyCrl.text) >
+                                                        frezQty) {
+                                                      placeOrder(orderInput,
+                                                          true, theme);
+                                                    } else {
+                                                      placeOrder(orderInput,
+                                                          false, theme);
+                                                    }
+                                                  }
+                                                } else {
+                                                  if (double.parse(orderInput
+                                                          .triggerPriceCtrl
+                                                          .text) <
+                                                      double.parse(
+                                                          "${orderInput.priceName == "SL MKT" ? orderInput.priceVal : widget.orderBookList.ltp ?? 0.00}")) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Trigger Should be Greater than Limit Price"));
+                                                  } else {
+                                                    if (int.parse(orderInput
+                                                                .qtyCrl
+                                                                .text
+                                                                .isEmpty
+                                                            ? "0"
+                                                            : orderInput
+                                                                .qtyCrl.text) >
+                                                        frezQty) {
+                                                      placeOrder(orderInput,
+                                                          true, theme);
+                                                    } else {
+                                                      placeOrder(orderInput,
+                                                          false, theme);
+                                                    }
+                                                  }
+                                                }
+
+                                                // if (isBuy!) {
+                                                //   if (double.parse(
+                                                //            orderInput.  triggerPriceCtrl
+                                                //               .text) <
+                                                //       double.parse(
+                                                //           "${orderInput.  priceName == "SL MKT" ? orderInput.  priceVal : widget.orderBookList.ltp ?? 0.00}")) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(warningMessage(
+                                                //             context,
+                                                //             orderInput.  priceName ==
+                                                //                     "SL MKT"
+                                                //                 ? "Trigger Should be Greater than Price"
+                                                //                 : "Trigger Should be Greater than Last Trade Price"));
+                                                //   } else if (double.parse(
+                                                //        orderInput.      triggerPriceCtrl
+                                                //               .text) <
+                                                //       double.parse(
+                                                //           "${  orderInput. prcCtrl.text.isEmpty ? 0.00 : orderInput.  priceVal}")) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(
+                                                //             warningMessage(
+                                                //                 context,
+                                                //                 "Trigger Should be Greater than Price"));
+                                                //   } else {
+                                                //     if (int.parse( orderInput. qtyCrl
+                                                //                 .text
+                                                //                 .isEmpty
+                                                //             ? "0"
+                                                //             :  orderInput. qtyCrl
+                                                //                 .text) >
+                                                //         frezQty) {
+                                                //       placeOrder(
+                                                //           orderInput, true,theme);
+                                                //     } else {
+                                                //       placeOrder(orderInput,
+                                                //           false,theme);
+                                                //     }
+                                                //   }
+                                                // } else {
+                                                //   if (double.parse(
+                                                //           orderInput.   triggerPriceCtrl
+                                                //               .text) >
+                                                //       double.parse(
+                                                //           "${orderInput.  priceName == "SL MKT" ?orderInput.  priceVal : widget.orderBookList.ltp ?? 0.00}")) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(
+                                                //             warningMessage(
+                                                //                 context,
+                                                //                 "Trigger Should be Lesser than Last Trade Price"));
+                                                //   } else if (double.parse(
+                                                //         orderInput.     triggerPriceCtrl
+                                                //               .text) >
+                                                //       double.parse(
+                                                //           "${  orderInput. prcCtrl.text.isEmpty ? 0.00 :  orderInput.  priceVal}")) {
+                                                //     ScaffoldMessenger.of(
+                                                //             context)
+                                                //         .showSnackBar(
+                                                //             warningMessage(
+                                                //                 context,
+                                                //                 "Trigger Should be Lesser than Price"));
+                                                //   } else {
+                                                //     if (int.parse( orderInput. qtyCrl
+                                                //                 .text
+                                                //                 .isEmpty
+                                                //             ? "0"
+                                                //             :  orderInput. qtyCrl
+                                                //                 .text) >
+                                                //         frezQty) {
+                                                //       placeOrder(
+                                                //           orderInput, true,theme);
+                                                //     } else {
+                                                //       placeOrder(orderInput,
+                                                //           false,theme);
+                                                //     }
+                                                //   }
+                                                // }
+                                              }
+                                            } else {
+                                              if (int.parse(orderInput
+                                                          .qtyCrl.text.isEmpty
+                                                      ? "0"
+                                                      : orderInput
+                                                          .qtyCrl.text) >
+                                                  frezQty) {
+                                                placeOrder(
+                                                    orderInput, true, theme);
+                                              } else {
+                                                placeOrder(
+                                                    orderInput, false, theme);
+                                              }
+                                            }
+                                          },
                                     style: ElevatedButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 10),
-                                        backgroundColor: 
-                                            isBuy! ? colors.ltpgreen : colors.darkred,
+                                        backgroundColor: isBuy!
+                                            ? colors.ltpgreen
+                                            : colors.darkred,
                                         shape: const StadiumBorder()),
                                     child: Text(isBuy! ? 'Buy Now' : "Sell Now",
                                         style: textStyle(
@@ -1832,7 +2178,10 @@ orderInput.orderName == orderInput.orderNames[index]  &&
 
   Text headerTitleText(String text, ThemesProvider theme) {
     return Text(text,
-        style: textStyle( theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500));
+        style: textStyle(
+            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            14,
+            FontWeight.w500));
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
@@ -1841,7 +2190,8 @@ orderInput.orderName == orderInput.orderNames[index]  &&
             TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 
-  placeOrder(OrderInputProvider orderInput, bool isSliceOrd, ThemesProvider theme ) async {
+  placeOrder(OrderInputProvider orderInput, bool isSliceOrd,
+      ThemesProvider theme) async {
     if (!isSliceOrd) {
       PlaceOrderInput placeOrderInput = PlaceOrderInput(
         amo: isAmo ? "Yes" : "",
@@ -1860,7 +2210,7 @@ orderInput.orderName == orderInput.orderNames[index]  &&
             ? "0"
             : orderInput.priceVal,
         prctype: orderInput.prcType,
-        prd: orderInput .orderType,
+        prd: orderInput.orderType,
         qty: orderInput.qtyCrl.text,
         ret: validityType,
         trailprc: '',
@@ -1883,46 +2233,47 @@ orderInput.orderName == orderInput.orderNames[index]  &&
           .fetchPlaceOrder(context, placeOrderInput, false);
     } else {
       showModalBottomSheet(
-          
           isScrollControlled: true,
           useSafeArea: true,
           isDismissible: true,
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-          
           context: context,
           builder: (context) => Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              boxShadow: const [
-                BoxShadow(
-                    color: Color(0xff999999),
-                    blurRadius: 4.0,
-                    offset: Offset(2.0, 0.0))
-              ]),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CustomDragHandler(),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color:
+                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  boxShadow: const [
+                    BoxShadow(
+                        color: Color(0xff999999),
+                        blurRadius: 4.0,
+                        offset: Offset(2.0, 0.0))
+                  ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CustomDragHandler(),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child:
-                          Text("Slice Order", style: textStyles.appBarTitleTxt.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack)),
+                      child: Text("Slice Order",
+                          style: textStyles.appBarTitleTxt.copyWith(
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack)),
                     ),
-                    Divider( color: theme.isDarkMode
-                                    ? colors.darkColorDivider
-                                    : colors.colorDivider),
+                    Divider(
+                        color: theme.isDarkMode
+                            ? colors.darkColorDivider
+                            : colors.colorDivider),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                        
-
-                           Column(
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
@@ -1944,10 +2295,12 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                   CustomExchBadge(exch:"${widget.orderBookList.exch}"),
+                                  CustomExchBadge(
+                                      exch: "${widget.orderBookList.exch}"),
                                   Text("${widget.orderBookList.expDate}",
                                       style: textStyles.scripExchTxtStyle
-                                          .copyWith(color: theme.isDarkMode
+                                          .copyWith(
+                                              color: theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack)),
                                 ],
@@ -1962,17 +2315,20 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                           ? colors.colorWhite
                                           : colors.colorBlack)),
                               Text(" X ${quantity >= 28 ? 28 : quantity}",
-                                  style: textStyles.scripExchTxtStyle
-                                      .copyWith(color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack)),
+                                  style: textStyles.scripExchTxtStyle.copyWith(
+                                      color: theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack)),
                             ],
                           ),
                         ],
                       ),
                     ),
                     if (reminder != 0) ...[
-                      Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                      Divider(
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Row(
@@ -1996,16 +2352,18 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                     ? colors.colorWhite
                                                     : colors.colorBlack)),
                                   ],
-                                ),       const SizedBox(height: 4),
+                                ),
+                                const SizedBox(height: 4),
                                 Row(
                                   children: [
-                                   CustomExchBadge(exch:"${widget.orderBookList.exch}"),
+                                    CustomExchBadge(
+                                        exch: "${widget.orderBookList.exch}"),
                                     Text("${widget.orderBookList.expDate}",
                                         style: textStyles.scripExchTxtStyle
                                             .copyWith(
-                                                color:theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack)),
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack)),
                                   ],
                                 ),
                               ],
@@ -2020,9 +2378,10 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                                 : colors.colorBlack)),
                                 Text(" X 1",
                                     style: textStyles.scripExchTxtStyle
-                                        .copyWith(color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack)),
+                                        .copyWith(
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack)),
                               ],
                             ),
                           ],
@@ -2099,7 +2458,7 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                                     ? "0"
                                     : orderInput.priceVal,
                                 prctype: orderInput.prcType,
-                                prd:orderInput.orderType,
+                                prd: orderInput.orderType,
                                 qty: "$reminder",
                                 ret: validityType,
                                 trailprc: '',
@@ -2132,7 +2491,7 @@ orderInput.orderName == orderInput.orderNames[index]  &&
                           style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               backgroundColor:
-                               isBuy! ? colors.ltpgreen : colors.darkred,
+                                  isBuy! ? colors.ltpgreen : colors.darkred,
                               shape: const StadiumBorder()),
                           child: Text(isBuy! ? 'Buy Now' : "Sell Now",
                               style: textStyle(const Color(0xffffffff), 14,

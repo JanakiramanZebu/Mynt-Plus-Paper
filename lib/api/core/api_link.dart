@@ -79,7 +79,7 @@ class ApiLinks {
   String get placeOCOOrder => '$goMyntURL/PlaceOCOOrder';
   String get modifyGTTOrder => '$goMyntURL/ModifyGTTOrder';
   String get modifyOCOOrder => '$goMyntURL/ModifyOCOOrder';
-
+  String get mdifyOrder => '$goMyntURL/ModifyOrder';
 // Fund
 
   String get getHsToken => '$goMyntURL/GetHsToken';
@@ -93,7 +93,7 @@ class ApiLinks {
 
   String get mainBaseURL => 'https://copy.mynt.in';
 
-  String get mdifyOrder => '$mainBaseURL/ModifyOrder';
+
 
   // String get mobileLogin => '$mainBaseURL/mobile_login';
   String get mobileLogin => '$mainBaseURL/MobileLogin';

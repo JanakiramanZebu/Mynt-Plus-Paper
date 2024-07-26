@@ -268,25 +268,28 @@ mixin OrderAPI on ApiCore {
   Future<ModifyOrderModel> getModifyOrder(ModifyOrderInput input) async {
     try {
       final uri = Uri.parse(apiLinks.mdifyOrder);
+      Map payload = {
+        "uid": prefs.clientId,
+        "actid": prefs.clientId,
+        "exch": input.exch,
+        "tsym": input.tsym.contains("&")
+            ? input.tsym.replaceAll("&", "%26")
+            : input.tsym,
+        "qty":input.qty.replaceAll("-", ""),
+        "prc": input.prc,
+         "orderNum": input.orderNum,
+        
+        "prctyp": input.prctyp,
+        "ret": input.ret,     "dscqty": input.dscqty,
+         
+        "ordersource": ApiLinks.source
+      };
+      
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body: jsonEncode({
-            "userId": prefs.clientId,
-            "exch": input.exch,
-            "tsym": input.tsym,
-            "orderNum": input.orderNum,
-            "qty": input.qty,
-            "prc": input.prc,
-            "dscqty": input.dscqty,
-            // "mktProt": input.mktProt,
-            // "trgprc": input.trgprc,
-            "prctyp": input.prctyp,
-            "ret": input.ret,
-            "ordersource": ApiLinks.source,
-            "session": prefs.clientSession
-          }));
+          body:  '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
 
-      // log("Modify order=> ${res.body}");
+        log("Modify order=> ${res.body}");
       final json = jsonDecode(res.body);
 
       return ModifyOrderModel.fromJson(json as Map<String, dynamic>);

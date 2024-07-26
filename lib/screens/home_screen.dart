@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // });
 
     // context.read(networkStateProvider).netWorkDispose();
-    // context.read(networkStateProvider).networkStream();
+      context.read(networkStateProvider).networkStream();
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (context.read(networkStateProvider).connectionStatus !=
               ConnectivityResult.none &&

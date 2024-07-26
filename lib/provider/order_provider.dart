@@ -500,7 +500,15 @@ class OrderProvider extends DefaultChangeNotifier {
             .showSnackBar(successMessage(context, 'Order Modified'));
         Navigator.pop(context);
       } else {
-        ref(authProvider).ifSessionExpired(context);
+
+        if (    _modifyOrderModel !.emsg ==
+                "Session Expired :  Invalid Session Key") {
+               ref(authProvider).ifSessionExpired(context);
+        } else {
+            ScaffoldMessenger.of(context)
+            .showSnackBar(successMessage(context, '${_modifyOrderModel !.emsg}'));
+        }
+   
       }
       notifyListeners();
       return _modifyOrderModel;

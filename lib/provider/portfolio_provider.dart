@@ -806,7 +806,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     String pnl = "0.00";
     for (var element in _allPostionList) {
       double lastPrice =
-          double.parse(element.lp == null ? "0.00" : "${element.lp}");
+          double.parse(element.lp == null || element.lp=="null" ? "0.00" : "${element.lp}");
       if (isDay) {
         element.avgPrc = element.netqty == "0" ? "0.00" : element.dayavgprc;
 

@@ -133,10 +133,10 @@ class DefaultIndexList extends ConsumerWidget {
                                               indexProvide.defaultIndexList!
                                                   .indValues![index].perChange!
                                                   .startsWith('-')
-                                          ? colors.ltpgreen
-                                          : colors.darkred,
+                                          ? colors.darkred
+                                          : colors.ltpgreen,
                                   12,
-                                  FontWeight.w600),
+                                    FontWeight.w600),
                             )
                           ])
                     ])
