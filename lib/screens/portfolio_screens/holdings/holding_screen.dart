@@ -84,8 +84,7 @@ class HoldingScreen extends ConsumerWidget {
                                         Text(
                                             "₹${getFormatter(value: holdingProvide.totalPnlHolding, v4d: false, noDecimal: false)} ",
                                             style: textStyle(
-                                              holdingProvide
-                                                        .totalPnlHolding
+                                                holdingProvide.totalPnlHolding
                                                         .toString()
                                                         .startsWith("-")
                                                     ? colors.darkred
@@ -95,8 +94,7 @@ class HoldingScreen extends ConsumerWidget {
                                         Text(
                                             "(${holdingProvide.totPnlPercHolding == "NaN" ? 0.00 : holdingProvide.totPnlPercHolding}%)",
                                             style: textStyle(
-                                              holdingProvide
-                                                        .totPnlPercHolding
+                                                holdingProvide.totPnlPercHolding
                                                         .startsWith("-")
                                                     ? colors.darkred
                                                     : colors.ltpgreen,
@@ -145,8 +143,7 @@ class HoldingScreen extends ConsumerWidget {
                                           Text(
                                               "₹${getFormatter(value: holdingProvide.oneDayChng, v4d: false, noDecimal: false)}",
                                               style: textStyle(
-                                                holdingProvide
-                                                          .oneDayChng
+                                                  holdingProvide.oneDayChng
                                                           .toStringAsFixed(2)
                                                           .startsWith("-")
                                                       ? colors.darkred
@@ -156,8 +153,7 @@ class HoldingScreen extends ConsumerWidget {
                                           Text(
                                               " (${holdingProvide.oneDayChngPer.toStringAsFixed(2)}%)",
                                               style: textStyle(
-                                                  holdingProvide
-                                                          .oneDayChngPer
+                                                  holdingProvide.oneDayChngPer
                                                           .toStringAsFixed(2)
                                                           .startsWith("-")
                                                       ? colors.darkred
@@ -253,8 +249,8 @@ class HoldingScreen extends ConsumerWidget {
                                                   child: SvgPicture.asset(
                                                       assets.filterLines,
                                                       color: theme.isDarkMode
-                                      ?Color(0xffBDBDBD)
-                                      :colors.colorGrey),
+                                                          ? Color(0xffBDBDBD)
+                                                          : colors.colorGrey),
                                                 )),
                                             InkWell(
                                               onTap: () {
@@ -268,8 +264,8 @@ class HoldingScreen extends ConsumerWidget {
                                                     assets.searchIcon,
                                                     width: 19,
                                                     color: theme.isDarkMode
-                                      ?Color(0xffBDBDBD)
-                                      :colors.colorGrey),
+                                                        ? Color(0xffBDBDBD)
+                                                        : colors.colorGrey),
                                               ),
                                             ),
                                           ],
@@ -406,26 +402,61 @@ class HoldingScreen extends ConsumerWidget {
                                                         .close =
                                                     "${socketDatas["${holdingProvide.holdingsModel![index].exchTsym![0].token}"]['c'] ?? 0.00}";
 
-                                                holdingProvide
-                                                    .holdingsModel![index]
-                                                    .exchTsym![0]
-                                                    .profitNloss = ((double.parse(
-                                                                holdingProvide
-                                                                        .holdingsModel![
-                                                                            index]
-                                                                        .exchTsym![
-                                                                            0]
-                                                                        .lp ??
-                                                                    "0.00") -
-                                                            double.parse(holdingProvide
-                                                                    .holdingsModel![
-                                                                        index]
-                                                                    .avgPrc ??
-                                                                "0.00")) *
-                                                        int.parse(
-                                                            "${holdingProvide.holdingsModel![index].currentQty ?? 0}"))
-                                                    .toStringAsFixed(2)
-                                                    .toString();
+                                                if (holdingProvide
+                                                        .holdingsModel![index]
+                                                        .currentQty ==
+                                                    0) {
+                                                  double sellAmt = double.parse(
+                                                      holdingProvide
+                                                              .holdingsModel![
+                                                                  index]
+                                                              .sellAmt ??
+                                                          "0.00");
+
+                                                  int usedQty = int.parse(
+                                                      holdingProvide
+                                                              .holdingsModel![
+                                                                  index]
+                                                              .usedqty ??
+                                                          "0");
+                                                  double price =
+                                                      (sellAmt / usedQty);
+
+                                                  double pnl = price -
+                                                      double.parse(holdingProvide
+                                                              .holdingsModel![
+                                                                  index]
+                                                              .upldprc ??
+                                                          "0.0");
+
+                                                  holdingProvide
+                                                          .holdingsModel![index]
+                                                          .exchTsym![0]
+                                                          .profitNloss =
+                                                      (pnl * usedQty)
+                                                          .toStringAsFixed(2);
+                                                } else {
+                                                  holdingProvide
+                                                      .holdingsModel![index]
+                                                      .exchTsym![0]
+                                                      .profitNloss = ((double.parse(
+                                                                  holdingProvide
+                                                                          .holdingsModel![
+                                                                              index]
+                                                                          .exchTsym![
+                                                                              0]
+                                                                          .lp ??
+                                                                      "0.00") -
+                                                              double.parse(holdingProvide
+                                                                      .holdingsModel![
+                                                                          index]
+                                                                      .avgPrc ??
+                                                                  "0.00")) *
+                                                          int.parse(
+                                                              "${holdingProvide.holdingsModel![index].currentQty ?? 0}"))
+                                                      .toStringAsFixed(2)
+                                                      .toString();
+                                                }
 
                                                 holdingProvide
                                                     .holdingsModel![index]
@@ -491,59 +522,63 @@ class HoldingScreen extends ConsumerWidget {
                                                             Routes.holdingExit);
                                                       },
                                                       onTap: () async {
-                                                        await context
-                                                            .read(
+                                                        await watch(
                                                                 marketWatchProvider)
                                                             .fetchLinkeScrip(
                                                                 "${holdingProvide.holdingsModel![index].exchTsym![0].token}",
-                                                                "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",context);
-
-                                                        await watch(
-                                                                marketWatchProvider)
-                                                            .fetchScripQuote(
-                                                                "${holdingProvide.holdingsModel![index].exchTsym![0].token}",
                                                                 "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
                                                                 context);
-
-                                                        if ((holdingProvide
-                                                                    .holdingsModel![
-                                                                        index]
-                                                                    .exchTsym![
-                                                                        0]
-                                                                    .exch ==
-                                                                "NSE" ||
-                                                            holdingProvide
-                                                                    .holdingsModel![
-                                                                        index]
-                                                                    .exchTsym![
-                                                                        0]
-                                                                    .exch ==
-                                                                "BSE")) {
-                                                          context
-                                                              .read(
+                                                        if (watch(marketWatchProvider)
+                                                                .linkedScrips!
+                                                                .stat ==
+                                                            "Ok") {
+                                                          await watch(
                                                                   marketWatchProvider)
-                                                              .depthBtns
-                                                              .add({
-                                                            "btnName":
-                                                                "Fundamental",
-                                                            "imgPath":
-                                                                assets.dInfo,
-                                                            "case":
-                                                                "Click here to view fundamental data."
-                                                          });
+                                                              .fetchScripQuote(
+                                                                  "${holdingProvide.holdingsModel![index].exchTsym![0].token}",
+                                                                  "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
+                                                                  context);
 
-                                                          await context
-                                                              .read(
-                                                                  marketWatchProvider)
-                                                              .fetchTechData(
-                                                                  context:
-                                                                      context,
-                                                                  exch:
-                                                                      "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
-                                                                  tradeSym:
-                                                                      "${holdingProvide.holdingsModel![index].exchTsym![0].tsym}",
-                                                                  lastPrc:
-                                                                      "${holdingProvide.holdingsModel![index].exchTsym![0].lp}");
+                                                          if ((holdingProvide
+                                                                      .holdingsModel![
+                                                                          index]
+                                                                      .exchTsym![
+                                                                          0]
+                                                                      .exch ==
+                                                                  "NSE" ||
+                                                              holdingProvide
+                                                                      .holdingsModel![
+                                                                          index]
+                                                                      .exchTsym![
+                                                                          0]
+                                                                      .exch ==
+                                                                  "BSE")) {
+                                                            context
+                                                                .read(
+                                                                    marketWatchProvider)
+                                                                .depthBtns
+                                                                .add({
+                                                              "btnName":
+                                                                  "Fundamental",
+                                                              "imgPath":
+                                                                  assets.dInfo,
+                                                              "case":
+                                                                  "Click here to view fundamental data."
+                                                            });
+
+                                                            await context
+                                                                .read(
+                                                                    marketWatchProvider)
+                                                                .fetchTechData(
+                                                                    context:
+                                                                        context,
+                                                                    exch:
+                                                                        "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
+                                                                    tradeSym:
+                                                                        "${holdingProvide.holdingsModel![index].exchTsym![0].tsym}",
+                                                                    lastPrc:
+                                                                        "${holdingProvide.holdingsModel![index].exchTsym![0].lp}");
+                                                          }
                                                         }
                                                         Navigator.pushNamed(
                                                             context,
@@ -574,8 +609,7 @@ class HoldingScreen extends ConsumerWidget {
                                                         //         exchTsym: holdingProvide
                                                         //             .holdingsModel![index].exchTsym![0]));
                                                       },
-                                                      child: 
-                                                      Container(
+                                                      child: Container(
                                                         padding:
                                                             const EdgeInsets
                                                                 .all(16),
@@ -633,7 +667,7 @@ class HoldingScreen extends ConsumerWidget {
                                                                 Text(
                                                                     " (${holdingProvide.holdingsModel![index].exchTsym![0].perChange}%)",
                                                                     style: textStyle(
-                                                                      holdingProvide.holdingsModel![index].exchTsym![0].perChange!.startsWith("-")
+                                                                        holdingProvide.holdingsModel![index].exchTsym![0].perChange!.startsWith("-")
                                                                             ? colors.darkred
                                                                             : holdingProvide.holdingsModel![index].exchTsym![0].perChange == "0.00"
                                                                                 ? colors.ltpgrey
@@ -709,7 +743,7 @@ class HoldingScreen extends ConsumerWidget {
                                                                     Text(
                                                                         "₹${holdingProvide.holdingsModel![index].exchTsym![0].profitNloss}",
                                                                         style: textStyle(
-                                                                          holdingProvide.holdingsModel![index].exchTsym![0].profitNloss!.startsWith("-")
+                                                                            holdingProvide.holdingsModel![index].exchTsym![0].profitNloss!.startsWith("-")
                                                                                 ? colors.darkred
                                                                                 : colors.ltpgreen,
                                                                             14,
@@ -777,12 +811,12 @@ class HoldingScreen extends ConsumerWidget {
                                                         ),
                                                       ));
 
-                                                  //  HoldingsListCard (
-                                                     
-                                                  //        data: holdingProvide
-                                                  //             .holdingsModel![index] ),
+                                              //  HoldingsListCard (
 
-                                                  //     );
+                                              //        data: holdingProvide
+                                              //             .holdingsModel![index] ),
+
+                                              //     );
                                             },
                                             itemCount: holdingProvide
                                                 .holdingsModel!.length,
@@ -832,7 +866,8 @@ class HoldingScreen extends ConsumerWidget {
                                               .read(marketWatchProvider)
                                               .fetchLinkeScrip(
                                                   "${holdingProvide.holdingSearchItem![index].exchTsym![0].token}",
-                                                  "${holdingProvide.holdingSearchItem![index].exchTsym![0].exch}",context);
+                                                  "${holdingProvide.holdingSearchItem![index].exchTsym![0].exch}",
+                                                  context);
 
                                           await watch(marketWatchProvider)
                                               .fetchScripQuote(
@@ -953,7 +988,7 @@ class HoldingScreen extends ConsumerWidget {
                                                       Text(
                                                           " (${holdingProvide.holdingSearchItem![index].exchTsym![0].perChange}%)",
                                                           style: textStyle(
-                                                             holdingProvide
+                                                              holdingProvide
                                                                       .holdingSearchItem![
                                                                           index]
                                                                       .exchTsym![
@@ -961,14 +996,19 @@ class HoldingScreen extends ConsumerWidget {
                                                                       .perChange!
                                                                       .startsWith(
                                                                           "-")
-                                                                  ? colors.darkred
+                                                                  ? colors
+                                                                      .darkred
                                                                   : holdingProvide
-                                                                              .holdingSearchItem![index]
-                                                                              .exchTsym![0]
+                                                                              .holdingSearchItem![
+                                                                                  index]
+                                                                              .exchTsym![
+                                                                                  0]
                                                                               .perChange ==
                                                                           "0.00"
-                                                                      ? colors.ltpgrey
-                                                                      : colors.ltpgreen,
+                                                                      ? colors
+                                                                          .ltpgrey
+                                                                      : colors
+                                                                          .ltpgreen,
                                                               12,
                                                               FontWeight.w500)),
                                                     ],
@@ -1046,7 +1086,7 @@ class HoldingScreen extends ConsumerWidget {
                                                           Text(
                                                               "₹${holdingProvide.holdingSearchItem![index].exchTsym![0].profitNloss}",
                                                               style: textStyle(
-                                                               holdingProvide
+                                                                  holdingProvide
                                                                           .holdingSearchItem![
                                                                               index]
                                                                           .exchTsym![
@@ -1054,15 +1094,17 @@ class HoldingScreen extends ConsumerWidget {
                                                                           .profitNloss!
                                                                           .startsWith(
                                                                               "-")
-                                                                      ? colors.darkred
-                                                                      : colors.ltpgreen,
+                                                                      ? colors
+                                                                          .darkred
+                                                                      : colors
+                                                                          .ltpgreen,
                                                                   14,
                                                                   FontWeight
                                                                       .w500)),
                                                           Text(
                                                               " (${holdingProvide.holdingSearchItem![index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdingProvide.holdingSearchItem![index].exchTsym![0].pNlChng}%)",
                                                               style: textStyle(
-                                                                holdingProvide
+                                                                  holdingProvide
                                                                           .holdingSearchItem![
                                                                               index]
                                                                           .exchTsym![
@@ -1070,11 +1112,14 @@ class HoldingScreen extends ConsumerWidget {
                                                                           .pNlChng!
                                                                           .startsWith(
                                                                               "-")
-                                                                      ? colors.darkred
+                                                                      ? colors
+                                                                          .darkred
                                                                       : holdingProvide.holdingSearchItem![index].exchTsym![0].pNlChng ==
                                                                               "NaN"
-                                                                          ? colors.ltpgrey
-                                                                          : colors.ltpgreen,
+                                                                          ? colors
+                                                                              .ltpgrey
+                                                                          : colors
+                                                                              .ltpgreen,
                                                                   12,
                                                                   FontWeight
                                                                       .w500)),

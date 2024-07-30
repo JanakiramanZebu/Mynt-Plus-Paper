@@ -285,6 +285,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
       if (_holdingsModel!.isNotEmpty) {
         if (_holdingsModel![0].stat != "Not_Ok") {
           ConstantName.sessCheck = true;
+          if (initail == "Refresh") {
+           await requestWSHoldings(isSubscribe: true, context: context);
+          }
           _holdingsModel!.sort(
               (a, b) => a.exchTsym![0].tsym!.compareTo(b.exchTsym![0].tsym!));
 
@@ -331,9 +334,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
               _nonSealableHoldings.add(element);
             }
           }
-          if (initail == "Refresh") {
-            requestWSHoldings(isSubscribe: true, context: context);
-          }
+          
 
           _totInvesHold = invest.toStringAsFixed(2);
 
