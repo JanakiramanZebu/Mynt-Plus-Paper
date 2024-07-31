@@ -204,8 +204,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                        pref.setLogout(false);
                        loggedUser.addClient(true);
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, Routes.loginScreen,
-                            arguments: "login");
+                        Navigator.pushNamed(context, Routes.loginScreen);
                       },
                       style: OutlinedButton.styleFrom(
                           side: BorderSide(

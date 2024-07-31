@@ -188,7 +188,7 @@ class OrderProvider extends DefaultChangeNotifier {
         } else {
           Navigator.pop(context);
         }
-        ref(indexListProvider).bottomMenu(2);
+        ref(indexListProvider).bottomMenu(3);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
         // ScaffoldMessenger.of(context).clearSnackBars();
@@ -684,7 +684,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref(indexListProvider).bottomMenu(2);
+        ref(indexListProvider).bottomMenu(3);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -715,7 +715,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref(indexListProvider).bottomMenu(2);
+        ref(indexListProvider).bottomMenu(3);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -770,7 +770,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref(indexListProvider).bottomMenu(2);
+        ref(indexListProvider).bottomMenu(3);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -801,7 +801,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref(indexListProvider).bottomMenu(2);
+        ref(indexListProvider).bottomMenu(3);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {

@@ -32,7 +32,17 @@ class LoginScreen extends ConsumerWidget {
         // backgroundColor:    theme.isDarkMode? colors.colorBlack:colors.colorWhite,
         body: Stack(
           children: [
-            SingleChildScrollView(
+         auth.initLoad
+                      ? Center(
+                          child: SvgPicture.asset(assets.appLogoIcon,
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.logoColor,
+                              height: 80,
+                              width: 150,
+                              fit: BoxFit.contain),
+                        )
+                      :     SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

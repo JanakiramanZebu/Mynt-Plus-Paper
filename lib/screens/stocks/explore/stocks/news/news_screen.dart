@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus_testing/sharedWidget/list_divider.dart';
+import 'package:google_fonts/google_fonts.dart'; 
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../../../res/res.dart';
 
 import '../../../../../provider/stocks_provider.dart';
 import '../../../../../routes/route_names.dart';
-import '../../../../../sharedWidget/custom_text_btn.dart';
+import '../../../../../sharedWidget/list_divider.dart'; 
 
 class NewsScreen extends ConsumerWidget {
   const NewsScreen({super.key});

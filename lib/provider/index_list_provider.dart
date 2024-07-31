@@ -56,7 +56,7 @@ class IndexListProvider extends DefaultChangeNotifier {
   AllIndexModel? _allIndexModel;
   AllIndexModel? get allIndexModel => _allIndexModel;
 
-  int _selectedBtmIndx = 0;
+  int _selectedBtmIndx = 1;
   int get selectedBtmIndx => _selectedBtmIndx;
   List<String> indexExch = ["NSE", "MCX", "BSE"];
   List<IndexValue> _indValuesList = [];

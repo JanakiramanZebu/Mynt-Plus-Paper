@@ -88,7 +88,7 @@ mixin MarketWatchApi on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","exch":"$exch","token":"$token"}&jKey=${prefs.clientSession}''');
 
-      log("Scrip Info => ${res.body}");
+      // log("Scrip Info => ${res.body}");
       final json = jsonDecode(res.body);
 
       return ScripInfoModel.fromJson(json as Map<String, dynamic>);

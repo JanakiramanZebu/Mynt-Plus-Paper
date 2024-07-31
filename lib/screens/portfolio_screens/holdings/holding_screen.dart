@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -30,11 +30,13 @@ class HoldingScreen extends ConsumerWidget {
         ? const Center(child: CircularProgressIndicator())
         : GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
-            child: RefreshIndicator(
-                onRefresh: () async {
-                  await holdingProvide.fetchHoldings(context, "Refresh");
-                },
-                child: Column(
+            child:
+            //  RefreshIndicator(
+            //     onRefresh: () async {
+            //       await holdingProvide.fetchHoldings(context, "Refresh");
+            //     },
+                // child: 
+                Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
@@ -371,8 +373,7 @@ class HoldingScreen extends ConsumerWidget {
                                   ? holdingProvide.holdingsModel![0].stat !=
                                           "Not_Ok"
                                       ? SingleChildScrollView(
-                                          physics:
-                                              const BouncingScrollPhysics(),
+                                         
                                           child: ListView.separated(
                                             shrinkWrap: true,
                                             physics:
@@ -505,10 +506,8 @@ class HoldingScreen extends ConsumerWidget {
                                                             "${holdingProvide.holdingsModel![index].exchTsym![0].lp ?? 0.0}"))
                                                     .toStringAsFixed(2);
 
-                                                // WidgetsBinding.instance
-                                                //     .addPostFrameCallback((_) {
-                                                holdingProvide.pnlHoldCal();
-                                                // });
+                                                 holdingProvide.pnlHoldCal();
+                                                 
                                               }
                                               return
 
@@ -1186,7 +1185,9 @@ class HoldingScreen extends ConsumerWidget {
                                         color: const Color(0xffF1F3F8),
                                         height: 7);
                                   }))
-                    ])));
+                    ])
+                    // )
+                    );
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {

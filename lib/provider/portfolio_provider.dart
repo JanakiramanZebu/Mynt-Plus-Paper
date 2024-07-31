@@ -1,9 +1,9 @@
-import 'dart:developer';
+ 
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart'; 
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
@@ -15,7 +15,7 @@ import '../models/portfolio_model/mf_holdings_model.dart';
 import '../models/portfolio_model/mf_quotes.dart';
 import '../models/portfolio_model/position_book_model.dart';
 import '../models/portfolio_model/position_convertion_model.dart';
- 
+
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
@@ -267,7 +267,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchHoldings(context, String initail) async {
     double invest = 0.0;
-    try { 
+    try {
       toggleLoadingOn(true);
 
       _holdingsModel = [];
@@ -285,9 +285,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       if (_holdingsModel!.isNotEmpty) {
         if (_holdingsModel![0].stat != "Not_Ok") {
           ConstantName.sessCheck = true;
-          if (initail == "Refresh") {
-           await requestWSHoldings(isSubscribe: true, context: context);
-          }
+         
           _holdingsModel!.sort(
               (a, b) => a.exchTsym![0].tsym!.compareTo(b.exchTsym![0].tsym!));
 
@@ -334,11 +332,12 @@ class PortfolioProvider extends DefaultChangeNotifier {
               _nonSealableHoldings.add(element);
             }
           }
-          
 
           _totInvesHold = invest.toStringAsFixed(2);
-
-          log("tot invest $_totInvesHold ");
+ if (initail == "Refresh") {
+            await requestWSHoldings(isSubscribe: true, context: context);
+               
+          }
         } else {
           if (_holdingsModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
@@ -360,7 +359,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   }
 
   Future fetchMFHoldings(context) async {
-    try { 
+    try {
       toggleLoadingOn(true);
 
       // _mfHoldingsModel = [];
@@ -541,11 +540,28 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
         _oneDayChngPer = ((_oneDayChng / _totalCurrentVal) * 100);
       }
+
+  //     DateTime now = DateTime.now();
+
+  // // Define a given time (for example, July 30, 2024, 3:00 PM)
+  // DateTime givenTime = DateTime(now.year, now.month, now.day, 15, 30);
+
+  // // Compare the current time with the given time
+  // if (!now.isBefore(givenTime)) {
+ 
+  //     print("The current time is after the given time.");
+  // } else if (now.isAfter(givenTime)) {
+  //   print("The current time is after the given time.");
+  // } else if (now.isAtSameMomentAs(givenTime)) {
+  //   print("The current time is at the same moment as the given time.");
+  // }
+ 
+   print("object");
     }
   }
 
   Future fetchPositionBook(BuildContext context, bool isDay) async {
-    try { 
+    try {
       toggleLoadingOn(true);
       _postionBookModel = [];
       _allPostionList = [];
@@ -761,8 +777,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchExitPosition(BuildContext context,
       PlaceOrderInput placeOrderInput, bool isPosition) async {
-    try { 
-
+    try {
       _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
       if (_placeOrderModel!.stat == "Ok") {
@@ -806,8 +821,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
     String pnl = "0.00";
     for (var element in _allPostionList) {
-      double lastPrice =
-          double.parse(element.lp == null || element.lp=="null" ? "0.00" : "${element.lp}");
+      double lastPrice = double.parse(element.lp == null || element.lp == "null"
+          ? "0.00"
+          : "${element.lp}");
       if (isDay) {
         element.avgPrc = element.netqty == "0" ? "0.00" : element.dayavgprc;
 
@@ -879,7 +895,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
           }
         } else {
           double value =
-              (lastPrice - double.parse(element.netavgprc ?? "0.00")) * qty;
+              (((lastPrice - double.parse(element.netavgprc ?? "0.00")) * qty) +
+                  double.parse("${element.rpnl ?? 0.00}"));
 
           element.mTm = qty != 0 ? value.toStringAsFixed(2) : "${element.rpnl}";
 
@@ -903,10 +920,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
             // print(" 34 ${element.profitNloss}");
           } else {
-            element.profitNloss = ((lastPrice -
-                        double.parse(
-                            "${element.upldprc == "0.00" ? element.avgPrc : element.upldprc}")) *
-                    qty)
+            element.profitNloss = (((lastPrice -
+                            double.parse(
+                                "${element.upldprc == "0.00" ? element.avgPrc : element.upldprc}")) *
+                        qty) +
+                    double.parse("${element.rpnl ?? 0.00}"))
                 .toStringAsFixed(2);
 
             // print(  "34   ${element.profitNloss}");
@@ -1134,7 +1152,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
     }
 
-    ref(indexListProvider).bottomMenu(1);
+    ref(indexListProvider).bottomMenu(2);
     Navigator.pop(context);
   }
 

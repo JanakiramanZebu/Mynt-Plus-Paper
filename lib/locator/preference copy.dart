@@ -23,7 +23,7 @@ class Preferences {
   Future setMobileLogin(bool isMobile) async =>
       await _prefInstance!.setBool(_ismobileLogin, isMobile);
 
-  Future setLogout(bool isLogout) async =>
+  Future setLogIn(bool isLogout) async =>
       await _prefInstance!.setBool(_isLogout, isLogout);
 
   Future setHideLoginOptBtn(bool isHide) async =>
@@ -56,7 +56,7 @@ class Preferences {
 
   bool? get userTheme => _prefInstance?.getBool(_userTheme);
   bool? get isMobileLogin => _prefInstance?.getBool(_ismobileLogin) ?? true;
-  bool? get islogOut => _prefInstance?.getBool(_isLogout) ?? false;
+  bool? get islogIn => _prefInstance?.getBool(_isLogout) ?? false;
   bool? get hideLoginOptBtn =>
       _prefInstance?.getBool(_hideLoginOptBtn) ?? false;
 

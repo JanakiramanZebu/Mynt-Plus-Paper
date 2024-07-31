@@ -241,7 +241,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Settings",
-        "subTitle": "API key, Change Password, Log",
+        "subTitle": "API key, Change Password, Theme, Log",
         "leading": "assets/profileimage/privacy_settings.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).logcase,
@@ -263,47 +263,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "key": "",
         "case": "Click here to view the Log message."
       },
-      // {
-      //   "title": "API Key",
-      //   "subTitle": "API Key",
-      //   "leading": "assets/icon/key-01.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).apikeycase,
-      //   "case": "Click here to view the Change Password page."
-      // },
-      // {
-      //   "title": "Change Password",
-      //   "subTitle": "Change Password",
-      //   "leading": "assets/icon/key-01.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).changepasswordcase,
-      //   "case": "Click here to view the Change Password page."
-      // },
-      // {
-      //   "title": "App Tutorial",
-      //   "subTitle": "Comming soon",
-      //   "leading": "assets/icon/moon.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).apptour,
-      //   "case": "Click here to start the App tour."
-      // },
-      // {
-      //   "title": "Theme",
-      //   "subTitle": "Theme mode",
-      //   "leading": "assets/icon/moon.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).theamcase,
-      //   "case": "Click here to view the Theme page."
-      // },
-     
-      // {
-      //   "title": "Stocks",
-      //   "subTitle": "Stocks Screen",
-      //   "leading": "assets/profile/privacy_settings.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).stokscase,
-      //   "case": "Click here to view the Stocks page."
-      // }
+      
     ];
     return profileMenu;
   }

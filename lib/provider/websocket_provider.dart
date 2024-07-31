@@ -61,7 +61,9 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   reconnectWS() {
-    channel.sink.add(jsonEncode({"t": "h"}));
+      if (ref(networkStateProvider).connectionStatus !=
+                ConnectivityResult.none && _wsConnected ) {
+    channel.sink.add(jsonEncode({"t": "h"}));}
   }
 
   establishConnection(
@@ -466,6 +468,9 @@ class WebSocketProvider extends ChangeNotifier {
             });
             if (ref(networkStateProvider).connectionStatus !=
                 ConnectivityResult.none) {
+                   Future.delayed(Duration(milliseconds: 100)).then((value) {
+       
+     
               establishConnection(
                   channelInput: ConstantName.lastSubscribe,
                   task: "t",
@@ -473,7 +478,7 @@ class WebSocketProvider extends ChangeNotifier {
               establishConnection(
                   channelInput: ConstantName.lastSubscribeDepth,
                   task: "d",
-                  context: context);
+                  context: context); },);
             }
           }
           // notifyListeners();
@@ -541,6 +546,10 @@ class WebSocketProvider extends ChangeNotifier {
     //   }
     // });
     // _
-    channel.sink.add(jsonEncode(data));
+
+    
+channel.sink.add(jsonEncode(data));
+ 
+    
   }
 }

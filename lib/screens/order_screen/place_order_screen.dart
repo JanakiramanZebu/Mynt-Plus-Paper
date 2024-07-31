@@ -1090,8 +1090,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                       color: theme.isDarkMode
                                                           ? const Color(
                                                               0xff555555)
-                                                          ? const Color(
-                                                              0xff555555)
+                                                          
                                                           : colors.colorWhite),
                                                   child: SvgPicture.asset(
                                                       color: theme.isDarkMode
@@ -1627,8 +1626,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               : qtyCtrl.text) -
                                                       (frezQty * quantity);
                                                   maxQty = frezQty * 28;
-                                                  print(
-                                                      "objectobject{$quantity | $reminder}");
+                                                  // print(
+                                                  //     "objectobject{$quantity | $reminder}");
                                                 });
                                                 if (qtyCtrl.text.isEmpty ||
                                                     priceCtrl.text.isEmpty) {

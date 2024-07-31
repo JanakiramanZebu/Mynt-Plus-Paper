@@ -6,10 +6,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:local_auth/local_auth.dart'; 
+import 'package:local_auth/local_auth.dart';
 
 import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import '../api/core/api_export.dart';
 // import '../api/core/api_link.dart';
@@ -36,8 +37,7 @@ import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
-import 'portfolio_provider.dart';
-import 'stocks_provider.dart';
+import 'portfolio_provider.dart'; 
 import 'user_profile_provider.dart';
 
 final authProvider = ChangeNotifierProvider((ref) => AuthProvider(ref.read));
@@ -100,23 +100,22 @@ class AuthProvider extends DefaultChangeNotifier {
 
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
- 
   ValidateSession? _validateSession;
   ValidateSession? get validSession => _validateSession;
 
-  bool _addUser=false;
-  bool get addUser=>_addUser;
+  bool _addUser = false;
+  bool get addUser => _addUser;
 
-addClient(bool val){
-  _addUser=true;
-  notifyListeners();
-}
+  addClient(bool val) {
+    _addUser = true;
+    notifyListeners();
+  }
 
   loginMethod() {
     _isMobileLogin = !_isMobileLogin;
 
     pref.setMobileLogin(!pref.isMobileLogin!);
-    
+
     _isDisableBtn = true;
     clearError();
     clearTextField();
@@ -129,7 +128,7 @@ addClient(bool val){
   }
 
   activeBtnLogin() {
-    if (validateLogin( )) {
+    if (validateLogin()) {
       _isDisableBtn = false;
     } else {
       _isDisableBtn = true;
@@ -216,17 +215,15 @@ addClient(bool val){
     };
   }
 
-  bool validateLogin( ) {
-    
+  bool validateLogin() {
     clearError();
     if (loginMethCtrl.text.trim().isEmpty) {
       loginMethError = !pref.isMobileLogin!
-              ? "Please enter client Id"
-              : "Please enter mobile";
+          ? "Please enter client Id"
+          : "Please enter mobile";
     } else if (!RegExp(r'^[6-9][0-9]{9}$').hasMatch(loginMethCtrl.text)) {
-      loginMethError =!pref.isMobileLogin!
-              ? null
-              : "Please enter a valid mobile";
+      loginMethError =
+          !pref.isMobileLogin! ? null : "Please enter a valid mobile";
     }
     if (passCtrl.text.trim().isEmpty) {
       passError = "Please enter the Password";
@@ -245,12 +242,13 @@ addClient(bool val){
     return optError == null;
   }
 
-  submitLogin(BuildContext context ) {
+  submitLogin(BuildContext context) {
     // if (routeTo == "deviceLogin") {
     //   _isMobileLogin = true;
     // }
-    if (validateLogin( )) {
-      fetchMobileLogin(context, passCtrl.text, loginMethCtrl.text.toUpperCase() );
+    if (validateLogin()) {
+      fetchMobileLogin(
+          context, passCtrl.text, loginMethCtrl.text.toUpperCase());
     }
   }
 
@@ -261,11 +259,14 @@ addClient(bool val){
   }
 
   submitResendOtp(BuildContext context) {
-    resendOtp(context, passCtrl.text, loginMethCtrl.text.toUpperCase() );
+    resendOtp(context, passCtrl.text, loginMethCtrl.text.toUpperCase());
   }
 
-  fetchMobileLogin(BuildContext context, String password, String mobileRclint,
-     ) async {
+  fetchMobileLogin(
+    BuildContext context,
+    String password,
+    String mobileRclint,
+  ) async {
     try {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
@@ -273,7 +274,7 @@ addClient(bool val){
           uniqueId: pref.deviceName!,
           mobileRclient: mobileRclint,
           password: password,
-          context: context );
+          context: context);
 
       // final localstorage = await SharedPreferences.getInstance();
 
@@ -371,7 +372,7 @@ addClient(bool val){
     }
   }
 
-  resendOtp(BuildContext context, String password, String mobileRclint ) async {
+  resendOtp(BuildContext context, String password, String mobileRclint) async {
     try {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
@@ -379,7 +380,7 @@ addClient(bool val){
           uniqueId: pref.deviceName!,
           mobileRclient: mobileRclint,
           password: password,
-          context: context );
+          context: context);
       otpCtrl.clear();
       _isDisableOtpBtn = true;
       if (_mobileLogin!.stat == "Ok" &&
@@ -410,7 +411,7 @@ addClient(bool val){
           uniqueId: pref.deviceName!,
           mobileRclient: mobile_client,
           otp: otp,
-          context: context );
+          context: context);
 
       // final localstorage = await SharedPreferences.getInstance();
       if (_mobileOtp!.stat == "Ok") {
@@ -497,7 +498,7 @@ addClient(bool val){
 
   fetchLogout(BuildContext context) async {
     try {
-      _logoutModel = await api.getLogout(); 
+      _logoutModel = await api.getLogout();
       if (_logoutModel!.stat == "Ok") {
         ConstantName.timer!.cancel();
 
@@ -506,17 +507,17 @@ addClient(bool val){
         // localstorage.setString("logout", _logoutMsg);
    pref .clearClientSession();
           pref.setLogout(true);
-        ref(indexListProvider).bottomMenu(0);
-        loginMethCtrl.text = pref.isMobileLogin!?pref.clientMob!:pref.clientId!;
+        ref(indexListProvider).bottomMenu(1);
+        loginMethCtrl.text =
+            pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
         notifyListeners();
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'Logged out'));
 
         Navigator.of(context).pop();
-
+  ref(websocketProvider).  closeSocket();
         Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, (route) => false,
-            arguments: "deviceLogin");
+            context, Routes.loginScreen, (route) => false);
       }
     } catch (e) {
       ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
@@ -541,7 +542,7 @@ addClient(bool val){
             loginMethCtrl.text = phone.toString();
           }
           notifyListeners();
-          validateLogin( );
+          validateLogin();
 
           activeBtnLogin();
         } catch (e) {
@@ -633,15 +634,14 @@ addClient(bool val){
                 ElevatedButton(
                     onPressed: () => deviceAuth(context),
                     style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor:
-                                ref(themeProvider).isDarkMode
-                                    ? colors.colorbluegrey
-                                    : colors.colorBlack,
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            )),
+                        elevation: 0,
+                        backgroundColor: ref(themeProvider).isDarkMode
+                            ? colors.colorbluegrey
+                            : colors.colorBlack,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        )),
                     child: Text("Proceed", style: textStyles.btnText)),
               ],
             );
@@ -693,16 +693,15 @@ addClient(bool val){
                 actions: [
                   ElevatedButton(
                       onPressed: () => deviceAuth(context),
-                       style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor:
-                                ref(themeProvider).isDarkMode
-                                    ? colors.colorbluegrey
-                                    : colors.colorBlack,
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            )),
+                      style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor: ref(themeProvider).isDarkMode
+                              ? colors.colorbluegrey
+                              : colors.colorBlack,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          )),
                       child: Text("Proceed", style: textStyles.btnText)),
                 ],
               );
@@ -729,44 +728,47 @@ addClient(bool val){
   initialLoadMethods(BuildContext context) async {
     try {
       initLaod(true);
-      await ref(indexListProvider).checkSession(context);
-      await ref(marketWatchProvider).changeWlName("", "No");
-      _logoutMsg = "";
+      ConstantName.timer =
+          Timer.periodic(const Duration(seconds: 1), (timer) {});
+      ConstantName.timer!.cancel();
+      await ref(indexListProvider).bottomMenu(1);
 
-      if (ref(indexListProvider).checkSess!.stat == "Ok") {
-        ConstantName.timer =
-            Timer.periodic(const Duration(seconds: 1), (timer) {});
-        ConstantName.timer!.cancel();
- await ref(stocksProvide).defaultSectorThemematicData();
-        await ref(indexListProvider).fetchDefTopIndex(context);
-        await ref(stocksProvide)
-            .fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
-        await ref(stocksProvide)
-            .fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
-        await ref(stocksProvide).fetchCorporateAction();
+      // await ref(stocksProvide).defaultSectorThemematicData();
+      // await ref(indexListProvider).fetchDefTopIndex(context);
+      // await ref(stocksProvide)
+      //     .fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
+      // await ref(stocksProvide)
+      //     .fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+      // await ref(stocksProvide).fetchCorporateAction();
 
-        await ref(stocksProvide).fetchIndicesAdvdec();
-        await ref(stocksProvide).fetchStockMonitor("NSE",
-            ref(stocksProvide).slectBaskt, ref(stocksProvide).slectFilterCont);
-        await ref(stocksProvide).getNews();
-        await ref(indexListProvider).bottomMenu(0);
-        //  ref(indexListProvider).fetchNotifyMsg();
-        await ref(portfolioProvider).fetchHoldings(context, "");
+      // await ref(stocksProvide).fetchIndicesAdvdec();
+      // await ref(stocksProvide).fetchStockMonitor("NSE",
+      //     ref(stocksProvide).slectBaskt, ref(stocksProvide).slectFilterCont);
+      // await ref(stocksProvide).getNews();
 
-        await ref(marketWatchProvider).fetchMWList(context);
+      // if (pref.islogIn!) {
+        await ref(indexListProvider).checkSession(context);
+        await ref(marketWatchProvider).changeWlName("", "No");
+        _logoutMsg = "";
 
-        await ref(indexListProvider).getDeafultIndexList(context);
-        await ref(portfolioProvider).fetchPositionBook(context, false);
-        await ref(orderProvider).fetchOrderBook(context, false);
-        await ref(orderProvider).fetchTradeBook(context);
+        if (ref(indexListProvider).checkSess!.stat == "Ok") {
+          //  ref(indexListProvider).fetchNotifyMsg();
+          await ref(portfolioProvider).fetchHoldings(context, "");
 
-        await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
+          await ref(marketWatchProvider).fetchMWList(context);
 
-        ref(userProfileProvider).fetchUserDetail(
-            context, "${pref.clientId}", "${pref.clientSession}", "");
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.homeScreen, (route) => false);
+          await ref(indexListProvider).getDeafultIndexList(context);
+          await ref(portfolioProvider).fetchPositionBook(context, false);
+          await ref(orderProvider).fetchOrderBook(context, false);
+          await ref(orderProvider).fetchTradeBook(context);
 
+          await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
+
+          ref(userProfileProvider).fetchUserDetail(
+              context, "${pref.clientId}", "${pref.clientSession}", "");
+              Navigator.pushNamedAndRemoveUntil(
+          context, Routes.homeScreen, (route) => false);
+      // if (pref.islogIn!) {
         showModalBottomSheet(
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
@@ -784,7 +786,11 @@ addClient(bool val){
                   },
                   child: const RiskDisclousreBottomSheet());
             });
-      }
+        }
+      // }
+      // ConstantName.timer!.cancel();
+      
+      // }
     } finally {
       initLaod(false);
     }
@@ -793,7 +799,7 @@ addClient(bool val){
   ifSessionExpired(BuildContext context){
      pref.clearClientSession();
           pref.setLogout(true);
-          ref(indexListProvider).bottomMenu(0);
+          ref(indexListProvider).bottomMenu(1);
         pref.setHideLoginOptBtn(false);
           pref.clearClientSession();
           ConstantName.sessCheck = false;
@@ -801,6 +807,9 @@ addClient(bool val){
               pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
           ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "Session Expired,Kindly login Again!"));
           ConstantName.timer!.cancel();
+
+ ref(websocketProvider).  closeSocket();
+     
           Navigator.pushNamedAndRemoveUntil(
               context,
               Routes.loginScreen,

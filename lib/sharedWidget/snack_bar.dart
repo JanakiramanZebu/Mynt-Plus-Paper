@@ -80,7 +80,7 @@ SnackBar warningMessage(BuildContext context, String warning) => SnackBar(
             borderRadius: BorderRadius.circular(20),
           ),
           onTap: () {
-            ScaffoldMessenger.of(context). hideCurrentSnackBar();
+            ScaffoldMessenger.of(context). removeCurrentSnackBar();
           },
           child: SvgPicture.asset(
             assets.removeIcon,

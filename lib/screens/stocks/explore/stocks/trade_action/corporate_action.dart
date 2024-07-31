@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus_testing/res/res.dart';
-
+import 'package:google_fonts/google_fonts.dart'; 
 import '../../../../../provider/stocks_provider.dart';
 import '../../../../../provider/thems.dart';
+import '../../../../../res/res.dart';
 
 class CorporateAction extends ConsumerWidget {
   const CorporateAction({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus_testing/models/explore_model/stocks_model/sctor_thematic_model.dart';
+import 'package:google_fonts/google_fonts.dart'; 
 
+import '../../../../../models/explore_model/stocks_model/sctor_thematic_model.dart';
 import '../../../../../provider/stocks_provider.dart';
 import '../../../../../provider/thems.dart';
 import '../../../../../res/res.dart';

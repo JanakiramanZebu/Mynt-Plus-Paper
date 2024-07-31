@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus_testing/provider/stocks_provider.dart';
 import 'package:upgrader/upgrader.dart';
 import '../locator/constant.dart';
 import '../models/upgrader_model.dart';
@@ -29,7 +28,7 @@ import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
 import 'profile_screen/logged_user_bottom_sheet.dart';
 import 'profile_screen/profile_main_screen.dart';
-import 'stocks/explore/explore_screens.dart';
+// import 'stocks/explore/explore_screens.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -48,11 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // });
 
     // context.read(networkStateProvider).netWorkDispose();
-      context.read(networkStateProvider).networkStream();
+    context.read(networkStateProvider).networkStream();
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (context.read(networkStateProvider).connectionStatus !=
-              ConnectivityResult.none &&
-          context.read(websocketProvider).wsConnected == true) {
+      if (mounted) {
         context.read(websocketProvider).reconnectWS();
       }
     });
@@ -116,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final internet = watch(networkStateProvider);
         final portfolio = watch(portfolioProvider);
         final userProfile = watch(userProfileProvider);
-        final stockProvide = watch(stocksProvide);
+        // final stockProvide = watch(stocksProvide);
         final theme = context.read(themeProvider);
         // if (context.read(indexListProvider).selectedBtmIndx == 0) {
         //   context
@@ -205,9 +202,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? "Orderbook"
                                       : indexProvide.selectedBtmIndx == 1
                                           ? "Portfolio"
-                                          : indexProvide.selectedBtmIndx == 0
-                                              ? stockProvide.exploreName
-                                              : "Profile",
+                                          :
+                                          // indexProvide.selectedBtmIndx == 0
+                                          //     ? stockProvide.exploreName
+                                          //     :
+                                          "Profile",
                                   style: textStyles.appBarTitleTxt.copyWith(
                                       color: theme.isDarkMode
                                           ? colors.colorWhite
@@ -406,6 +405,74 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
+                      // Expanded(
+                      //   child: InkWell(
+                      //     onTap: internet.connectionStatus ==
+                      //             ConnectivityResult.none
+                      //         ? null
+                      //         : () async {
+                      //             await context
+                      //                 .read(indexListProvider)
+                      //                 .checkSession(context);
+                      //             await portfolio.requestWSHoldings(
+                      //                 context: context, isSubscribe: false);
+
+                      //             // await context
+                      //             //     .read(orderProvider)
+                      //             //     .requestWSOrderBook(
+                      //             //         context: context,
+                      //             //         isSubscribe: false);
+                      //             await portfolio.requestWSPosition(
+                      //                 context: context, isSubscribe: false);
+
+                      //             await context
+                      //                 .read(marketWatchProvider)
+                      //                 .requestMWScrip(
+                      //                     context: context, isSubscribe: true);
+
+                      //             indexProvide.bottomMenu(0);
+                      //           },
+                      //     child: Container(
+                      //       margin: const EdgeInsets.symmetric(horizontal: 7),
+                      //       decoration: BoxDecoration(
+                      //           border: indexProvide.selectedBtmIndx == 0
+                      //               ? Border(
+                      //                   top: BorderSide(
+                      //                       color: theme.isDarkMode
+                      //                           ? colors.colorLightBlue
+                      //                           : colors.colorBlue,
+                      //                       width: 2))
+                      //               : null),
+                      //       child: Column(
+                      //         mainAxisAlignment: MainAxisAlignment.center,
+                      //         crossAxisAlignment: CrossAxisAlignment.center,
+                      //         children: [
+                      //           SvgPicture.asset(assets.bookmarkedIcon,
+                      //               color: theme.isDarkMode &&
+                      //                       indexProvide.selectedBtmIndx == 0
+                      //                   ? colors.colorLightBlue
+                      //                   : indexProvide.selectedBtmIndx == 0
+                      //                       ? colors.colorBlue
+                      //                       : colors.colorGrey),
+                      //           const SizedBox(height: 4),
+                      //           Text("Explore",
+                      //               style: textStyle(
+                      //                   theme.isDarkMode &&
+                      //                           indexProvide.selectedBtmIndx ==
+                      //                               0
+                      //                       ? colors.colorLightBlue
+                      //                       : indexProvide.selectedBtmIndx == 0
+                      //                           ? colors.colorBlue
+                      //                           : colors.colorGrey,
+                      //                   12,
+                      //                   indexProvide.selectedBtmIndx == 0
+                      //                       ? FontWeight.w600
+                      //                       : FontWeight.w500)),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                       Expanded(
                         child: InkWell(
                           onTap: internet.connectionStatus ==
@@ -415,91 +482,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                   await context
                                       .read(indexListProvider)
                                       .checkSession(context);
-                                  await portfolio.requestWSHoldings(
-                                      context: context, isSubscribe: false);
+                                  if (indexProvide.checkSess!.stat == "Ok") {
+                                    await portfolio.requestWSHoldings(
+                                        context: context, isSubscribe: false);
 
-                                  // await context
-                                  //     .read(orderProvider)
-                                  //     .requestWSOrderBook(
-                                  //         context: context,
-                                  //         isSubscribe: false);
-                                  await portfolio.requestWSPosition(
-                                      context: context, isSubscribe: false);
+                                    await context
+                                        .read(orderProvider)
+                                        .requestWSOrderBook(
+                                            context: context,
+                                            isSubscribe: false);
+                                    await portfolio.requestWSPosition(
+                                        context: context, isSubscribe: false);
 
-                                  await context
-                                      .read(marketWatchProvider)
-                                      .requestMWScrip(
-                                          context: context, isSubscribe: true);
+                                    await context
+                                        .read(marketWatchProvider)
+                                        .requestMWScrip(
+                                            context: context,
+                                            isSubscribe: true);
 
-                                  indexProvide.bottomMenu(0);
-                                },
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 7),
-                            decoration: BoxDecoration(
-                                border: indexProvide.selectedBtmIndx == 0
-                                    ? Border(
-                                        top: BorderSide(
-                                            color: theme.isDarkMode
-                                                ? colors.colorLightBlue
-                                                : colors.colorBlue,
-                                            width: 2))
-                                    : null),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                SvgPicture.asset(assets.bookmarkedIcon,
-                                    color: theme.isDarkMode &&
-                                            indexProvide.selectedBtmIndx == 0
-                                        ? colors.colorLightBlue
-                                        : indexProvide.selectedBtmIndx == 0
-                                            ? colors.colorBlue
-                                            : colors.colorGrey),
-                                const SizedBox(height: 4),
-                                Text("Explore",
-                                    style: textStyle(
-                                        theme.isDarkMode &&
-                                                indexProvide.selectedBtmIndx ==
-                                                    0
-                                            ? colors.colorLightBlue
-                                            : indexProvide.selectedBtmIndx == 0
-                                                ? colors.colorBlue
-                                                : colors.colorGrey,
-                                        12,
-                                        indexProvide.selectedBtmIndx == 0
-                                            ? FontWeight.w600
-                                            : FontWeight.w500)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: InkWell(
-                          onTap: internet.connectionStatus ==
-                                  ConnectivityResult.none
-                              ? null
-                              : () async {
-                                  await context
-                                      .read(indexListProvider)
-                                      .checkSession(context);
-                                  await portfolio.requestWSHoldings(
-                                      context: context, isSubscribe: false);
-
-                                  // await context
-                                  //     .read(orderProvider)
-                                  //     .requestWSOrderBook(
-                                  //         context: context,
-                                  //         isSubscribe: false);
-                                  await portfolio.requestWSPosition(
-                                      context: context, isSubscribe: false);
-
-                                  await context
-                                      .read(marketWatchProvider)
-                                      .requestMWScrip(
-                                          context: context, isSubscribe: true);
-
-                                  indexProvide.bottomMenu(1);
+                                    indexProvide.bottomMenu(1);
+                                  }
                                 },
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 7),
@@ -551,26 +553,31 @@ class _HomeScreenState extends State<HomeScreen> {
                                     await context
                                         .read(indexListProvider)
                                         .checkSession(context);
-                                    await portfolio.fetchMFHoldings(context);
-                                    // await context
-                                    //     .read(indexListProvider)
-                                    //     .checkSession(context);
-                                    await marketWatchList.requestMWScrip(
-                                        context: context, isSubscribe: false);
+                                    if (indexProvide.checkSess!.stat == "Ok") {
+                                      await portfolio.fetchMFHoldings(context);
+                                      // await context
+                                      //     .read(indexListProvider)
+                                      //     .checkSession(context);
+                                      await marketWatchList.requestMWScrip(
+                                          context: context, isSubscribe: false);
 
-                                    // await context
-                                    //     .read(orderProvider)
-                                    //     .requestWSOrderBook(
-                                    //         context: context, isSubscribe: false);
-                                    if (portfolio.selectedTab == 1) {
-                                      await portfolio.requestWSHoldings(
-                                          context: context, isSubscribe: true);
+                                      await context
+                                          .read(orderProvider)
+                                          .requestWSOrderBook(
+                                              context: context,
+                                              isSubscribe: false);
+                                      if (portfolio.selectedTab == 1) {
+                                        await portfolio.requestWSHoldings(
+                                            context: context,
+                                            isSubscribe: true);
+                                      }
+                                      if (portfolio.selectedTab == 0) {
+                                        await portfolio.requestWSPosition(
+                                            context: context,
+                                            isSubscribe: true);
+                                      }
+                                      indexProvide.bottomMenu(2);
                                     }
-                                    if (portfolio.selectedTab == 0) {
-                                      await portfolio.requestWSPosition(
-                                          context: context, isSubscribe: true);
-                                    }
-                                    indexProvide.bottomMenu(2);
                                   },
                         child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 7),
@@ -621,23 +628,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                   await context
                                       .read(indexListProvider)
                                       .checkSession(context);
-                                  await context
-                                      .read(marketWatchProvider)
-                                      .fetchPendingAlert(context);
-                                  await marketWatchList.requestMWScrip(
-                                      context: context, isSubscribe: false);
-                                  await portfolio.requestWSHoldings(
-                                      context: context, isSubscribe: false);
+                                  if (indexProvide.checkSess!.stat == "Ok") {
+                                    await marketWatchList
+                                        .fetchPendingAlert(context);
+                                    await marketWatchList.requestMWScrip(
+                                        context: context, isSubscribe: false);
+                                    await portfolio.requestWSHoldings(
+                                        context: context, isSubscribe: false);
 
-                                  await portfolio.requestWSPosition(
-                                      context: context, isSubscribe: false);
+                                    await portfolio.requestWSPosition(
+                                        context: context, isSubscribe: false);
 
-                                  context
-                                      .read(orderProvider)
-                                      .requestWSOrderBook(
-                                          context: context, isSubscribe: true);
+                                    context
+                                        .read(orderProvider)
+                                        .requestWSOrderBook(
+                                            context: context,
+                                            isSubscribe: true);
 
-                                  indexProvide.bottomMenu(3);
+                                    indexProvide.bottomMenu(3);
+                                  }
                                 },
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 7),
@@ -686,28 +695,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ConnectivityResult.none
                               ? null
                               : () async {
-                                  await context
-                                      .read(indexListProvider)
-                                      .checkSession(context);
-                                  await context
-                                      .read(fundProvider)
-                                      .fetchFunds(context);
+                                  await indexProvide.checkSession(context);
 
-                                  await context
-                                      .read(userProfileProvider)
-                                      .fetchprofilemenu();
-                                  indexProvide.bottomMenu(4);
-                                  marketWatchList.requestMWScrip(
-                                      context: context, isSubscribe: false);
-                                  portfolio.requestWSHoldings(
-                                      context: context, isSubscribe: false);
+                                  if (indexProvide.checkSess!.stat == "Ok") {
+                                    await context
+                                        .read(fundProvider)
+                                        .fetchFunds(context);
 
-                                  context
-                                      .read(orderProvider)
-                                      .requestWSOrderBook(
-                                          context: context, isSubscribe: false);
-                                  portfolio.requestWSPosition(
-                                      context: context, isSubscribe: false);
+                                    await userProfile.fetchprofilemenu();
+                                    indexProvide.bottomMenu(4);
+                                    marketWatchList.requestMWScrip(
+                                        context: context, isSubscribe: false);
+                                    portfolio.requestWSHoldings(
+                                        context: context, isSubscribe: false);
+
+                                    context
+                                        .read(orderProvider)
+                                        .requestWSOrderBook(
+                                            context: context,
+                                            isSubscribe: false);
+                                    portfolio.requestWSPosition(
+                                        context: context, isSubscribe: false);
+                                  }
                                 },
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 7),
@@ -769,8 +778,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   _onItemTapped(index) {
     switch (index) {
-      case 0:
-        return ExploreScreens();
+      // case 0:
+      //   return ExploreScreens();
       case 1:
         return WatchListScreen();
       case 2:

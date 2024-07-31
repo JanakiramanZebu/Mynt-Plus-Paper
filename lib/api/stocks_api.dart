@@ -18,15 +18,7 @@ mixin StocksAPI on ApiCore {
           headers: defaultHeaders );
 
       final json = jsonDecode(res.body);
-        print( json);
-    //   if (newsRes[0] == []) {
-    //     final NewsModel news = NewsModel.fromJson(json as Map<String, dynamic>);
-    //     return [news];
-    //   } else {
-    //     for (int j = 0; j < newsRes.length; j++) {
-    //       data.add(NewsModel.fromJson(newsRes[j] as Map<String, dynamic>));
-    //     }
-    //   }
+        
      return NewsModel.fromJson(json as Map<String, dynamic>);
       } catch (e) {
        rethrow;

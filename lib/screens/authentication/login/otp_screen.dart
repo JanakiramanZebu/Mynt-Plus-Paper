@@ -82,10 +82,10 @@ class _OtpScreenState extends State<OtpScreen> {
                 children: [
                   auth.initLoad
                       ? Center(
-                          child: SvgPicture.asset("assets/icon/zebulogo.svg",
+                          child:SvgPicture.asset(assets.appLogoIcon,
                               color: theme.isDarkMode
                                   ? colors.colorWhite
-                                  : colors.colorBlack,
+                                  : colors.logoColor,
                               height: 80,
                               width: 150,
                               fit: BoxFit.contain),
