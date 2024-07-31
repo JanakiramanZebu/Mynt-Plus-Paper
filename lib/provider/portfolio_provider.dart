@@ -1,5 +1,3 @@
- 
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -285,7 +283,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       if (_holdingsModel!.isNotEmpty) {
         if (_holdingsModel![0].stat != "Not_Ok") {
           ConstantName.sessCheck = true;
-         
+
           _holdingsModel!.sort(
               (a, b) => a.exchTsym![0].tsym!.compareTo(b.exchTsym![0].tsym!));
 
@@ -334,9 +332,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
           }
 
           _totInvesHold = invest.toStringAsFixed(2);
- if (initail == "Refresh") {
+          if (initail == "Refresh") {
             await requestWSHoldings(isSubscribe: true, context: context);
-               
           }
         } else {
           if (_holdingsModel![0].emsg ==
@@ -541,22 +538,22 @@ class PortfolioProvider extends DefaultChangeNotifier {
         _oneDayChngPer = ((_oneDayChng / _totalCurrentVal) * 100);
       }
 
-  //     DateTime now = DateTime.now();
+      //     DateTime now = DateTime.now();
 
-  // // Define a given time (for example, July 30, 2024, 3:00 PM)
-  // DateTime givenTime = DateTime(now.year, now.month, now.day, 15, 30);
+      // // Define a given time (for example, July 30, 2024, 3:00 PM)
+      // DateTime givenTime = DateTime(now.year, now.month, now.day, 15, 30);
 
-  // // Compare the current time with the given time
-  // if (!now.isBefore(givenTime)) {
- 
-  //     print("The current time is after the given time.");
-  // } else if (now.isAfter(givenTime)) {
-  //   print("The current time is after the given time.");
-  // } else if (now.isAtSameMomentAs(givenTime)) {
-  //   print("The current time is at the same moment as the given time.");
-  // }
- 
-   print("object");
+      // // Compare the current time with the given time
+      // if (!now.isBefore(givenTime)) {
+
+      //     print("The current time is after the given time.");
+      // } else if (now.isAfter(givenTime)) {
+      //   print("The current time is after the given time.");
+      // } else if (now.isAtSameMomentAs(givenTime)) {
+      //   print("The current time is at the same moment as the given time.");
+      // }
+
+      print("object");
     }
   }
 
