@@ -316,8 +316,12 @@ class AuthProvider extends DefaultChangeNotifier {
         _isDisableBtn = true;
         clearError();
         clearTextField();
+         pref.setLogout(true);
+        ref(indexListProvider).bottomMenu(1);
+        loginMethCtrl.text =
+            pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
         Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+            context, Routes.loginScreen,   (route) => false);
       } else if (_mobileLogin!.apitoken != null && _mobileLogin!.stat == "Ok") {
         clearError();
         clearTextField();
