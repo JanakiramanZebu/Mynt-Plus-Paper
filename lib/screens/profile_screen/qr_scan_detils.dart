@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -6,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import '../../models/profile_model/qr_response.dart';
 import '../../provider/thems.dart';
+import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 
@@ -161,7 +164,12 @@ class QrDetails extends ConsumerWidget {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(50),
                             )),
-                        onPressed: () {},
+                        onPressed: () async{
+                           await context
+                              .read(userProfileProvider)
+                              .fetchQR(context, details.uniqueId.toString(),camera);
+                          ;
+                        },
                         child: Text(
                           "Confirm",
                           style:

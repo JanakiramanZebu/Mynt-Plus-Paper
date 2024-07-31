@@ -146,5 +146,8 @@ class ApiLinks {
 
   String get getCorporateAction => '$stockUrl/ipo/getCorporateAction';
   String get getStockMonitor => '$stockUrl/equity/GetContentList';
+
+  /// Qr Scanner
+  String get getQrScanner => '$mainBaseURL/QRMobileReq';
   
 }

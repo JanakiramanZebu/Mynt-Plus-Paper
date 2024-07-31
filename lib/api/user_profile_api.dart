@@ -1,4 +1,5 @@
 import '../models/profile_model/client_detail_model.dart';
+import '../models/profile_model/qr_login_res.dart';
 import '../models/profile_model/user_detail_model.dart';
 import 'core/api_core.dart';
 
@@ -33,6 +34,25 @@ mixin UserProfileAPI on ApiCore {
       final json = jsonDecode(res.body);
 
       return ClientDetailModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+  Future<QrLoginResponces> getqr(String uniqueid) async {
+    try {
+      final uri = Uri.parse(apiLinks.getQrScanner);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({
+            "unique_id": uniqueid,
+            "clientid": "${prefs.clientId}",
+            "apitoken": "${prefs.clientSession}",
+            "source": "MOB"
+          }));
+
+      final json = jsonDecode(res.body);
+      print(json);
+      return QrLoginResponces.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
