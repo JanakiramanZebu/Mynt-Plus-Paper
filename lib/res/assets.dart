@@ -143,4 +143,9 @@ class Assets {
   final String sendMsg = "assets/icon/socialMedia/send_message.svg";
   final String twitterX = "assets/icon/socialMedia/twitter-x.svg";
   final String youtube = "assets/icon/socialMedia/youtube.svg";
+
+
+  // Explore
+   final String sectors = "assets/explore/sector.svg";
+      final String thematic = "assets/explore/thematic.svg";
 }

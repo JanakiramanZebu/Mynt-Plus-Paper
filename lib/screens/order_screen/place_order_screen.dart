@@ -1090,6 +1090,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                       color: theme.isDarkMode
                                                           ? const Color(
                                                               0xff555555)
+                                                          ? const Color(
+                                                              0xff555555)
                                                           : colors.colorWhite),
                                                   child: SvgPicture.asset(
                                                       color: theme.isDarkMode
@@ -1686,7 +1688,19 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                     if (isBuy!) {
                                                       if (double.parse(
                                                               triggerPriceCtrl
-                                                                  .text) >
+                                                                  .text) <
+                                                          double.parse(price)) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(warningMessage(
+                                                                context,
+                                                                priceType ==
+                                                                        "SL MKT"
+                                                                    ? "Trigger Should be Greater than Price"
+                                                                    : "Trigger Should be Greater than Last Trade Price"));
+                                                      } else if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) <
                                                           double.parse(
                                                               "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
                                                         ScaffoldMessenger.of(
@@ -1932,7 +1946,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger Should be Lesser than Limit Price"));
+                                                                    "Trigger Should be Greater than Price"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text

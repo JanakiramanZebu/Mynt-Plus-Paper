@@ -1,26 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; 
-import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart'; 
+import '../../../../../models/indices/index_list_model.dart';
+import '../../../../../res/res.dart';
 
- 
-import '../../../models/indices/index_list_model.dart';
-import '../../../provider/thems.dart';
-import '../../../res/res.dart';
-
-class IndexListCard extends ConsumerWidget {
+class IndexListCard extends StatelessWidget {
   final IndexValue indicesData;
   const IndexListCard({super.key, required this.indicesData});
 
   @override
-  Widget build(BuildContext context,ScopedReader watch) {      final theme = context.read(themeProvider);
+  Widget build(BuildContext context) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       dense: true,
       title:
-          Text("${indicesData.idxname!.toUpperCase()} ", style: textStyles.scripNameTxtStyle.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack)),
+          Text("${indicesData.idxname!.toUpperCase()} ", style: textStyles.scripNameTxtStyle),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,    
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const SizedBox(height: 3),
           Container(

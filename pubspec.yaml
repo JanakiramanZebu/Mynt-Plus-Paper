@@ -61,6 +61,7 @@ dependencies:
   share_plus: ^9.0.0
   another_xlider: ^3.0.2
   mobile_scanner: ^5.1.1
+  page_view_dot_indicator: ^2.3.0
  
   # firebase_messaging: ^14.7.10
   # rxdart: ^0.27.7
@@ -105,6 +106,7 @@ flutter:
     - assets/profileimage/
     - assets/profile/profileimage.png
     - assets/keyboardicons/
+    - assets/explore/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -115,7 +117,7 @@ flutter:
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
+  # list giving the asset  and other descriptors for the font. For
   # example:
   # fonts:
   #   - family: Schyler

@@ -110,6 +110,9 @@ class Routes {
 
   static const String notificationpage = 'notificationpage';
 // static const String  needHelp = 'NeedHelp';
+
+
+
  
  
   static const String pendingalertdetails = 'pendingalertdetails';
@@ -117,5 +120,11 @@ class Routes {
     static const String qrscanner = 'qrscanner';
 
     
+  // Explore
+  //
+static const String   sectorThematicDetail  = ' sectorThematicDetail';
+ 
+  static const String allTrade = 'allTrade';
+
 
 }
