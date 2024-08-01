@@ -116,15 +116,12 @@ class QrDetails extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                rowtable("IP Address", details.ip ?? "",theme),
-                rowtable("Browser", details.browser ?? "",theme),
-                rowtable("OS", details.os ?? "",theme),
-                rowtable("City", details.city ?? "",theme),
-                rowtable("State", details.region ?? "",theme),
-                rowtable("Country", details.country ?? "",theme),
-                rowtable("Device", details.device ?? "",theme),
+                rowtable("IP Address", details.ip ?? "", theme),
+                rowtable("OS", details.os ?? "", theme),
+                rowtable("City", details.city ?? "", theme),
+                rowtable("State", details.region??"",theme),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16,),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
