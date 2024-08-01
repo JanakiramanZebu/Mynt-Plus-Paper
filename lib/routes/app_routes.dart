@@ -13,8 +13,7 @@ import '../screens/order_book/order_book_detail.dart';
 import '../screens/order_book/pending_alert_detail_screen.dart';
 import '../screens/order_book/trade_book_detail.dart';
 import '../screens/order_screen/Rework/modify_gtt.dart';
-import '../screens/order_screen/Rework/repeat_order.dart';
-import '../screens/order_screen/gtt_order_screen.dart';
+import '../screens/order_screen/Rework/repeat_order.dart'; 
 import '../screens/order_screen/modify_place_order_screen.dart';
 import '../screens/order_screen/place_order_screen.dart';
 import '../screens/portfolio_screens/holdings/edies_webview.dart';
@@ -165,25 +164,25 @@ case Routes.searchScrip:
             );
           },
         );
-      case Routes.gttOrderScreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              GTTOrderScreen(
-                  orderArg: args['orderArg'], scripInfo: args['scripInfo']),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
+      // case Routes.gttOrderScreen:
+      //   return PageRouteBuilder(
+      //     pageBuilder: (context, animation, secondaryAnimation) =>
+      //         GTTOrderScreen(
+      //             orderArg: args['orderArg'], scripInfo: args['scripInfo']),
+      //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      //       const begin = Offset(0.0, 1.0);
+      //       const end = Offset.zero;
+      //       const curve = Curves.ease;
 
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      //       final tween =
+      //           Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
-        );
+      //       return SlideTransition(
+      //         position: animation.drive(tween),
+      //         child: child,
+      //       );
+      //     },
+      //   );
 
       case Routes.modifyGtt:
         return PageRouteBuilder(

@@ -361,6 +361,7 @@ class OrderProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
           if (initLoad != "initLoad") {
             _selectedTab = 3;
+             requestWSOrderBook(isSubscribe: true, context: context);
           }
 
           for (var element in _gttOrderBookModel!) {
