@@ -112,6 +112,14 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
           channelInput: "${widget.wlValue.exch}|${widget.wlValue.token}",
           task: "ud",
           context: context);
+if (context
+          .read(marketWatchProvider).actDeptBtn ==
+                                                    "Chart") {
+      ConstantName.webViewController.evaluateJavascript(
+                                source:
+                                    'window.localStorage.removeItem("tick_tick")');
+}
+        
 
       return true;
     }, child: Consumer(builder: (context, ScopedReader watch, _) {
