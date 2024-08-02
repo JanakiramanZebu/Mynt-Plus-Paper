@@ -275,21 +275,20 @@ mixin OrderAPI on ApiCore {
         "tsym": input.tsym.contains("&")
             ? input.tsym.replaceAll("&", "%26")
             : input.tsym,
-        "qty":input.qty.replaceAll("-", ""),
+        "qty": input.qty.replaceAll("-", ""),
         "prc": input.prc,
-         "orderNum": input.orderNum,
-        
+        "norenordno": input.orderNum,
         "prctyp": input.prctyp,
-        "ret": input.ret,     "dscqty": input.dscqty,
-         
+        "ret": input.ret,
+        "dscqty": input.dscqty,
         "ordersource": ApiLinks.source
       };
-      
+   
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body:  '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
+          body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
 
-        log("Modify order=> ${res.body}");
+      log("Modify order=> ${res.body}");
       final json = jsonDecode(res.body);
 
       return ModifyOrderModel.fromJson(json as Map<String, dynamic>);
