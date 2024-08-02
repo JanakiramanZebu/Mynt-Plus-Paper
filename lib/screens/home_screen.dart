@@ -71,9 +71,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // var upgrader = Upgrader(
-    //   messages: MyUpgraderMessages(),
-    // );
+    var upgrader = Upgrader(
+      messages: MyUpgraderMessages(),
+    );
     if (context.read(websocketProvider).wsConnected == false ||
         context.read(websocketProvider).wsConnected == true) {
       if (ConstantName.pageName != "edit") {
@@ -123,9 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: UpgradeAlert(
-            upgrader: Upgrader(
-              messages: MyUpgraderMessages(),
-            ),
+            upgrader: upgrader,
             showIgnore: false,
             showLater: false,
             child: Scaffold(
