@@ -149,5 +149,18 @@ class ApiLinks {
 
   /// Qr Scanner
   String get getQrScanner => '$mainBaseURL/QRMobileReq';
+
+   ///ipo///
+  String get ipomainBaseURL => 'https://v3.mynt.in/ipo';
+  String get smeipos => "$ipomainBaseURL/getcurrentSMEIPOdetails";
+  String get mainstreamipo => "$ipomainBaseURL/getcurrentIPOdetails";
+  String get ipoperformance => "$ipomainBaseURL/ipo_performer?year=2024";
+  String get placeipoorder => "$ipomainBaseURL/addIPOtoPortfolio";
+  String get ipoorderbook => "$ipomainBaseURL/orderbookIPODetails";
+  //hdfc mainurl//
+  String get hdfcmainurl => 'https://fundapi.mynt.in/hdfc/upi';
+  String get hdfcupicheck => '$hdfcmainurl/checkClientVPA';
+  //fund urlss///
+  String get viewupiid => 'https://fundapi.mynt.in/withdraw/view_upi_id';
   
 }

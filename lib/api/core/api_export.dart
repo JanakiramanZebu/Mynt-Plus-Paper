@@ -4,6 +4,7 @@ import '../bond_api.dart';
 import '../change_password_api.dart';
 import '../fund_api.dart';
 import '../index_api.dart';
+import '../ipo_api.dart';
 import '../market_watch_api.dart';
 import '../notification_api.dart';
 import '../order_api.dart';
@@ -26,4 +27,6 @@ class ApiExporter
         OrderAPI,
         StocksAPI,
         UserProfileAPI,
-        GenerateApiKey {}
+        GenerateApiKey,
+        IPOApi
+        {}

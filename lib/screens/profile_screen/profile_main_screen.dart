@@ -8,6 +8,7 @@ import '../../locator/preference.dart';
 import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/fund_provider.dart';
+import '../../provider/iop_provider.dart';
 import '../../provider/notification_provider.dart';
 
 import '../../provider/thems.dart';
@@ -22,6 +23,7 @@ class UserAccountScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
+     int currentYear = DateTime.now().year;
     final userProfile = watch(userProfileProvider);
     final theme = watch(themeProvider);
     // final portfolio = watch(portfolioProvider);
@@ -87,7 +89,7 @@ class UserAccountScreen extends ConsumerWidget {
                                 .fetchbrokermsg(context);
                             Navigator.pushNamed(
                                 context, Routes.notificationpage);
-                          } else {
+                          } else if(index == 8) {
                              showModalBottomSheet(
                                   useSafeArea: true,
                                   isScrollControlled: true,
@@ -99,6 +101,18 @@ class UserAccountScreen extends ConsumerWidget {
                                     return const NeedHelpScreen( );
                                   });
                             // Navigator.pushNamed(context, Routes.needHelp);
+                          }else if(index == 9){
+                            await context.read(ipoProvide).getSmeIpo();
+                            await context.read(ipoProvide).getmainstreamipo();
+                            await context .read(ipoProvide).getipoperfomance(currentYear);
+                            Navigator.pushNamed(context, Routes.ipo);
+                          }else{
+                            await context
+                                .read(ipoProvide)
+                                .getipoorderbookmodel();
+                            await context.read(ipoProvide).ipotab();
+                            Navigator.pushNamed(context, Routes.ipoorderbook);
+                            
                           }
                         },
                         dense: true,

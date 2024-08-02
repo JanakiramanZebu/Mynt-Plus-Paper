@@ -4,6 +4,13 @@ import '../screens/authentication/login/otp_screen.dart';
 import '../screens/authentication/password/change_pass.dart';
 import '../screens/authentication/password/forgot_pass_unblock_user.dart';
 import '../screens/home_screen.dart';
+import '../screens/ipo/ipo_main_screen.dart';
+import '../screens/ipo/ipo_orderbook_screen/ipo_modify_order/modify_order_screen.dart';
+import '../screens/ipo/ipo_orderbook_screen/ipo_order_book_main_screen.dart';
+import '../screens/ipo/ipo_orderbook_screen/ipo_orderbook_details/close_order_details.dart';
+import '../screens/ipo/ipo_orderbook_screen/ipo_orderbook_details/open_order_details.dart';
+import '../screens/ipo/mainstream_ipo/mainstream_order_screen/order_screen.dart';
+import '../screens/ipo/sme_ipo/sme_order_screen/sme_order.dart';
 import '../screens/market_watch/edit_scrip.dart';
 import '../screens/market_watch/futures/future_screen.dart';
 import '../screens/market_watch/search_screen.dart';
@@ -708,7 +715,130 @@ case Routes.searchScrip:
           },
         );
 
-      
+     case Routes.ipo:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const IPOScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final tween = Tween<Offset>(
+                begin: const Offset(0, 1), end: const Offset(.0, .0));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        ); 
+    
+    case Routes.applyIPO:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+          
+            ApplyIpoScreen(mainstream: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+    case Routes.smeapplyIPO:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+          
+            SMEApplyIpoScreen(smeipo: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+      case Routes.ipoorderbook:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const IpoOrderbookMainScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final tween = Tween<Offset>(
+                begin: const Offset(0, 1), end: const Offset(.0, .0));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+       case Routes.modifyipoorder:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ModifyIpoOrderScreen(modifyipoorder:args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+    case Routes.ipoopendetailsscreen:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              IpoOpenOrderDetails(ipodetails: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0, 1);
+            const end = Offset(0, 0);
+            const curve = Curves.bounceIn;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+    case Routes.ipoclosedetailsscreen:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              IpoCloseOrderDetails(ipoclose: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0, 1);
+            const end = Offset(0, 0);
+            const curve = Curves.bounceIn;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+     
 
     case Routes.sectorThematicDetail:
         return PageRouteBuilder(

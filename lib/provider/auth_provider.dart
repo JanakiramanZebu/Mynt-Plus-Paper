@@ -330,6 +330,7 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setClientMob("${_mobileLogin!.mobile}");
         pref.setClientSession("${_mobileLogin!.apitoken}");
         pref.setClientName("${_mobileLogin!.name}");
+        pref.setApiToken("${_mobileLogin!.token}");
         // localstorage.setString("mobileNum", "${_mobileLogin!.mobile}");
         // localstorage.setString("userId", "${_mobileLogin!.clientid}");
         // localstorage.setString("session", "${_mobileLogin!.apitoken}");
@@ -427,6 +428,7 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setClientMob("${_mobileOtp!.mobile}");
         pref.setClientSession("${_mobileOtp!.apitoken}");
         pref.setClientName("${_mobileOtp!.name}");
+        pref.setApiToken("${_mobileOtp!.token}");
 
         // localstorage.setString("mobileNum", "${_mobileOtp!.mobile}");
         // localstorage.setString("userId", "${_mobileOtp!.clientid}");

@@ -126,5 +126,12 @@ static const String   sectorThematicDetail  = ' sectorThematicDetail';
  
   static const String allTrade = 'allTrade';
 
+/////ipo
+static const String ipo = 'Ipo';
+static const String smeapplyIPO = 'smeapplyIPO';
+static const String ipoopendetailsscreen = 'ipoopendetailsscreen';
+static const String ipoclosedetailsscreen = 'ipoclosedetailsscreen';
+static const String ipoorderbook = 'Ipoorderbook';
+static const String modifyipoorder = 'Modifyipoorder';
 
 }

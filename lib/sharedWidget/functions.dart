@@ -166,3 +166,54 @@ TextStyle textStyle(Color color, double fontSize, fWeight) {
       textStyle:
           TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
 }
+
+ipostartdate(String startdate, String enddate) {
+  DateFormat dateFormat = DateFormat("yyyy-MM-dd");
+
+  String conEndDate = convertDateend(enddate);
+  String startcovDate = convertDatestart(startdate);
+  final startDate = dateFormat.parse(startcovDate);
+  final endDate = dateFormat.parse(conEndDate);
+  final now = DateTime.now();
+  final currentDate = DateTime(now.year, now.month, now.day);
+  String status = "";
+  if (currentDate.isBefore(startDate)) {
+    status = "Upcoming";
+  } else if (endDate.isBefore(currentDate)) {
+    status = "Closed";
+  } else {
+    status = "Open";
+  }
+  return status.toString();
+}
+
+String convertDatestart(String dateString) {
+  DateFormat inputFormat = DateFormat("dd-MM-yyyy");
+  DateFormat outputFormat = DateFormat("yyyy-MM-dd");
+  DateTime dateTime = inputFormat.parseUTC(dateString);
+  String formattedDate = outputFormat.format(dateTime);
+  return formattedDate;
+}
+
+String convertDateend(String dateString) {
+  DateFormat inputFormat = DateFormat("EEE, dd MMM yyyy HH:mm:ss");
+  DateFormat outputFormat = DateFormat("yyyy-MM-dd");
+  DateTime dateTime = inputFormat.parseUTC(dateString);
+  String formattedDate = outputFormat.format(dateTime);
+  return formattedDate;
+}
+
+String ipodateres(String dt1) {
+  DateTime dateTime = DateTime.parse(dt1);
+  String formattedDate = DateFormat('yyyy-MM-dd hh:mm a').format(dateTime);
+  return formattedDate;
+}
+
+double mininv(double price, int qty) {
+  double value1 = price;
+  int value2 = qty;
+
+  double result = value1 * value2;
+
+  return result;
+}

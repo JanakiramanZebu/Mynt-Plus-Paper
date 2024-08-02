@@ -8,6 +8,7 @@ import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart'; 
 import '../locator/preference.dart';
+import '../models/fund_model/show_upi_model.dart';
 import '../models/profile_model/fund_detial_model.dart';
 import '../models/profile_model/hs_token_model.dart';
 import '../routes/route_names.dart';  
@@ -21,6 +22,12 @@ class FundProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();  final Preferences pref = locator<Preferences>();
   FundDetailModel? _fundDetailModel;
   FundDetailModel? get fundDetailModel => _fundDetailModel;
+  
+  final TextEditingController viewupiid = TextEditingController();
+   
+  ViewUpiIdModel? _viewUpiIdModel;
+  ViewUpiIdModel? get viewUpiIdModel => _viewUpiIdModel;
+
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
   GetHsTokenModel? _getHsTokenModel;
@@ -200,6 +207,27 @@ class FundProvider extends DefaultChangeNotifier {
   showMrgBreak() {
     _showMrgnnBreakup = !_showMrgnnBreakup;
     notifyListeners();
+  }
+
+   Future fetchviewupiid() async {
+    try {
+      toggleLoadingOn(true);
+      _viewUpiIdModel = await api.getviewupiid();
+      if (_viewUpiIdModel!.data!.isEmpty) {
+        viewupiid.clear();
+      } else {
+        viewupiid.text = "${_viewUpiIdModel!.data![0].upiId}";
+      }
+      log("view upi id ${_viewUpiIdModel!.data![0].upiId}.");
+    } catch (e) {
+      log("Failed to fetch bank Data:: ${e.toString()}");
+      ref(indexListProvider)
+          .logError
+          .add({"type": "View upi id", "Error": "$e"});
+      notifyListeners();
+    } finally {
+      toggleLoadingOn(false);
+    }
   }
  
 }

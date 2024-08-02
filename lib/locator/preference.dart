@@ -43,6 +43,8 @@ class Preferences {
       await _prefInstance!.setString(_clientId, id);
   Future setClientSession(String session) async =>
       await _prefInstance!.setString(_clientSession, session);
+        Future setApiToken(String session) async =>
+      await _prefInstance!.setString(_apiToken, session);
   Future setClientName(String name) async =>
       await _prefInstance!.setString(_clientName, name);
   Future setClientMob(String mob) async =>
@@ -69,8 +71,10 @@ class Preferences {
 // GET Cleint Details
   String? get clientId => _prefInstance?.getString(_clientId) ?? "";
   String? get clientSession => _prefInstance?.getString(_clientSession) ?? "";
+  String? get token => _prefInstance?.getString(_apiToken) ?? "";
   String? get clientMob => _prefInstance?.getString(_clientMob) ?? "";
   String? get clientName => _prefInstance?.getString(_clientName) ?? "";
+  
   List<String>? get loggedClient =>
       _prefInstance?.getStringList(_clientList) ?? [];
 }
@@ -88,6 +92,9 @@ const String _hideLoginOptBtn = 'hideLoginOptBtn';
 // Cleint Details
 const String _clientId = 'clientId';
 const String _clientSession = 'clientSession';
+const String _apiToken = 'apiToken';
+
 const String _clientMob = 'clientMob';
 const String _clientName = 'clientName';
 const String _clientList = 'clientList';
+
