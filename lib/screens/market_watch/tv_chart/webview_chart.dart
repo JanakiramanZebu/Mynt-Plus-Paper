@@ -41,6 +41,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   void initState() {
     super.initState();
     // context.read(networkStateProvider).networkStream();
+ 
+    
     contextMenu = ContextMenu(
         menuItems: [
           ContextMenuItem(
@@ -73,6 +75,10 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
   @override
   Widget build(BuildContext context) {
+
+        
+     
+ 
     return Consumer(builder: (context, ScopedReader watch, _) {
       final tvChart = watch(marketWatchProvider);
       final internet = watch(networkStateProvider);
@@ -308,7 +314,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                             };
                             ConstantName.webViewController.evaluateJavascript(
                                 source:
-                                    'window.localStorage.setItem("tick_tick",\'${jsonEncode(json)}\');');
+                                    'window.localStorage.setItem("tick_tick",\'${jsonEncode(json)}\')');
                           });
                         });
                       },

@@ -47,7 +47,7 @@ class WatchListScreen extends ConsumerWidget {
             }
           }
         }
-    
+
         await marketWatch.changeWLScrip(marketWatch.wlName, context);
       },
       itemBuilder: (BuildContext context, int index) {
@@ -104,6 +104,19 @@ class WatchListScreen extends ConsumerWidget {
                               "${socketDatas["${marketWatch.scrips[idx]['token']}"]['pc'] ?? 0.00}";
                           marketWatch.scrips[idx]['close'] =
                               "${socketDatas["${marketWatch.scrips[idx]['token']}"]['c'] ?? 0.00}";
+
+                          if (marketWatch.scrips[idx]['change'].toString() ==
+                              "null") {
+                            marketWatch.scrips[idx]['change'] = "0.00";
+                          }
+                          if (marketWatch.scrips[idx]['perChange'].toString() ==
+                              "null") {
+                            marketWatch.scrips[idx]['perChange'] = "0.00";
+                          }
+                          if (marketWatch.scrips[idx]['close'].toString() ==
+                              "null") {
+                            marketWatch.scrips[idx]['close'] = "0.00";
+                          }
                         }
                         return ListTile(
                             onLongPress: () {
@@ -123,34 +136,34 @@ class WatchListScreen extends ConsumerWidget {
                                             wlName: marketWatch.wlName)));
                               }
                             },
-                            onTap : () async {
+                            onTap: () async {
                               marketWatch.chngDephBtn("Overview");
                               await marketWatch.fetchScripQuote(
                                   "${marketWatch.scrips[idx]['token']}",
                                   "${marketWatch.scrips[idx]['exch']}",
                                   context);
-    
+
                               await watch(websocketProvider).establishConnection(
                                   channelInput:
                                       "${marketWatch.scrips[idx]['exch']}|${marketWatch.scrips[idx]['token']}",
                                   task: "d",
                                   context: context);
-    
+
                               if (marketWatch.getQuotes!.stat == "Ok") {
                                 await context
                                     .read(marketWatchProvider)
                                     .fetchLinkeScrip(
                                         "${marketWatch.scrips[idx]['token']}",
-                                        "${marketWatch.scrips[idx]['exch']}",context);
-    
-                                 context
+                                        "${marketWatch.scrips[idx]['exch']}",
+                                        context);
+
+                                context
                                     .read(marketWatchProvider)
                                     .fetchFundamentalData(
                                         tradeSym:
                                             "${marketWatch.scrips[idx]['exch']}:${marketWatch.scrips[idx]['tsym']}");
                                 if ((marketWatch.scrips[idx]['exch'] == "NSE" ||
-                                        marketWatch.scrips[idx]['exch'] ==
-                                            "BSE")  ) {
+                                    marketWatch.scrips[idx]['exch'] == "BSE")) {
                                   context
                                       .read(marketWatchProvider)
                                       .depthBtns
@@ -169,7 +182,7 @@ class WatchListScreen extends ConsumerWidget {
                                       lastPrc:
                                           "${context.read(marketWatchProvider).getQuotes!.lp ?? context.read(marketWatchProvider).getQuotes!.c ?? 0.00}");
                                 }
-    
+
                                 context
                                     .read(marketWatchProvider)
                                     .depthBtns
@@ -179,7 +192,7 @@ class WatchListScreen extends ConsumerWidget {
                                   "case":
                                       "Click here to view the trading view chart."
                                 });
-    
+
                                 DepthInputArgs depthArgs = DepthInputArgs(
                                     exch: '${marketWatch.scrips[idx]['exch']}',
                                     token:
@@ -194,7 +207,7 @@ class WatchListScreen extends ConsumerWidget {
                                         '${marketWatch.scrips[idx]['expDate']}',
                                     option:
                                         '${marketWatch.scrips[idx]['option']}');
-    
+
                                 showModalBottomSheet(
                                     isScrollControlled: true,
                                     useSafeArea: true,
@@ -292,27 +305,30 @@ class WatchListScreen extends ConsumerWidget {
                                   Text(
                                     "${marketWatch.scrips[idx]["change"] == "null" ? 0.00 : marketWatch.scrips[idx]['change']} (${marketWatch.scrips[idx]['perChange'] == "null" ? 0.00 : marketWatch.scrips[idx]["perChange"]}%)",
                                     style: textStyle(
-                                      marketWatch.scrips[idx]['change']
+                                        marketWatch.scrips[idx]['change']
                                                     .toString()
                                                     .startsWith("-") ||
-                                                marketWatch.scrips[idx]['perChange']
+                                                marketWatch.scrips[idx]
+                                                        ['perChange']
                                                     .toString()
                                                     .startsWith('-')
                                             ? colors.darkred
-                                               : (marketWatch.scrips[idx]['change'].toString() ==
+                                            : (marketWatch.scrips[idx]['change']
+                                                                .toString() ==
                                                             "null" ||
                                                         marketWatch.scrips[idx]['perChange']
                                                                 .toString() ==
                                                             "null") ||
-                                                    (marketWatch.scrips[idx]['change']
+                                                    (marketWatch.scrips[idx]
+                                                                    ['change']
                                                                 .toString() ==
                                                             "0.00" ||
                                                         marketWatch.scrips[idx]
                                                                     ['perChange']
                                                                 .toString() ==
                                                             "0.00")
-                                                            ?colors.ltpgrey
-                                                            :colors.ltpgreen,
+                                                ? colors.ltpgrey
+                                                : colors.ltpgreen,
                                         12,
                                         FontWeight.w600),
                                   )
@@ -323,9 +339,6 @@ class WatchListScreen extends ConsumerWidget {
                       }),
         );
       },
-    
-    
-     
     );
   }
 
