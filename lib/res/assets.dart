@@ -144,8 +144,12 @@ class Assets {
   final String twitterX = "assets/icon/socialMedia/twitter-x.svg";
   final String youtube = "assets/icon/socialMedia/youtube.svg";
 
-
   // Explore
-   final String sectors = "assets/explore/sector.svg";
-      final String thematic = "assets/explore/thematic.svg";
+  final String sectors = "assets/explore/sector.svg";
+  final String thematic = "assets/explore/thematic.svg";
+
+  // Bonds
+  final String govtBond = "assets/icon/bonds/gov_bonds.svg";
+  final String sgbBond = "assets/icon/bonds/sgb_bond.svg";
+  final String taxBond = "assets/icon/bonds/tax_bond.svg";
 }

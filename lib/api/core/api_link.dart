@@ -2,7 +2,7 @@ class ApiLinks {
   static String source = "MOB";
   // static String userID = "ZVK0106";
   // static String session = "";
-    static String wsURL = 'wss://go.mynt.in/NorenWS/';
+  static String wsURL = 'wss://go.mynt.in/NorenWS/';
   static String otp = "";
   static String userName = "";
   static bool showAppTutorial = true;
@@ -93,11 +93,9 @@ class ApiLinks {
 
   String get mainBaseURL => 'https://copy.mynt.in';
 
-
-
   // String get mobileLogin => '$mainBaseURL/mobile_login';
   String get mobileLogin => '$mainBaseURL/MobileLogin';
-  
+
   String get mobileOtp => '$mainBaseURL/otp_verify';
 
   String get loginOtp => '$mainBaseURL/otp_send_Tv';
@@ -128,9 +126,6 @@ class ApiLinks {
   // String get mainBaseURL1 => 'http://192.168.5.83:5000';
   String get getClientTrades => '$mainBaseURL1/getClientTrades';
 
-  String get gsecdetails => 'https://besim.zebull.in/getcurrentNCB_Gsecdetails';
-  String get goldbonddetails => 'https://besim.zebull.in/getcurrentSGBdetails';
-
   // Stock data URL
 
   String stockUrl = "https://v3.mynt.in";
@@ -150,7 +145,7 @@ class ApiLinks {
   /// Qr Scanner
   String get getQrScanner => '$mainBaseURL/QRMobileReq';
 
-   ///ipo///
+  ///ipo///
   String get ipomainBaseURL => 'https://v3.mynt.in/ipo';
   String get smeipos => "$ipomainBaseURL/getcurrentSMEIPOdetails";
   String get mainstreamipo => "$ipomainBaseURL/getcurrentIPOdetails";
@@ -162,5 +157,14 @@ class ApiLinks {
   String get hdfcupicheck => '$hdfcmainurl/checkClientVPA';
   //fund urlss///
   String get viewupiid => 'https://fundapi.mynt.in/withdraw/view_upi_id';
-  
+
+// Bonds
+  String get bondBaseURL => 'https://besim.zebull.in';
+  String get getSGB => "$bondBaseURL/getcurrentSGBdetails";
+  String get getGSec => "$bondBaseURL/getcurrentNCB_Gsecdetails";
+  String get getTBill => "$bondBaseURL/getcurrentNCB_TBilldetails";
+  String get getSDL => "$bondBaseURL/getcurrentNCB_SDLdetails";
+
+  String get ledgerBaseURL => 'https://rekycbe.mynt.in';
+  String get getLedgerBal => "$ledgerBaseURL/all_ledger_balance";
 }

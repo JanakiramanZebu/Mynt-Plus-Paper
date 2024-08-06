@@ -3,6 +3,7 @@ import '../screens/authentication/login/login_screen.dart';
 import '../screens/authentication/login/otp_screen.dart';
 import '../screens/authentication/password/change_pass.dart';
 import '../screens/authentication/password/forgot_pass_unblock_user.dart';
+import '../screens/bonds/bond_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/ipo/ipo_main_screen.dart';
 import '../screens/ipo/ipo_orderbook_screen/ipo_modify_order/modify_order_screen.dart';
@@ -897,6 +898,27 @@ case Routes.searchScrip:
             );
           },
         );
+
+    case Routes.bonds:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const BondScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+        
       default:
         return _errorRoute();
     }

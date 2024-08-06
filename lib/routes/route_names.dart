@@ -134,4 +134,8 @@ static const String ipoclosedetailsscreen = 'ipoclosedetailsscreen';
 static const String ipoorderbook = 'Ipoorderbook';
 static const String modifyipoorder = 'Modifyipoorder';
 
+
+// Bonds
+static const String bonds = 'bonds';
+
 }

@@ -1,43 +1,21 @@
-class Gsecdata {
-  List<NCBGsec>? nCBGsec;
-
-  Gsecdata({this.nCBGsec});
-
-  Gsecdata.fromJson(Map<String, dynamic> json) {
-    if (json['NCBGsec'] != null) {
-      nCBGsec = <NCBGsec>[];
-      json['NCBGsec'].forEach((v) {
-        nCBGsec!.add(NCBGsec.fromJson(v));
-      });
-    }
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['NCBGsec'] = nCBGsec!.map((v) => v.toJson()).toList();
-    if (nCBGsec != null) {}
-    return data;
-  }
-}
-
-class NCBGsec {
+class BondLists {
   String? allotmentDate;
   String? biddingEndDate;
   String? biddingStartDate;
-  num? cutoffPrice;
+  String? cutoffPrice;
   String? dailyEndTime;
   String? dailyStartTime;
-  num? faceValue;
-  num? index;
+  String? faceValue;
+  String? index;
   String? isin;
-  num? issueSize;
-  num? issueValueSize;
+  String? issueSize;
+  String? issueValueSize;
   String? lastDayBiddingEndTime;
-  num? lotSize;
-  num? maxPrice;
-  num? maxQuantity;
-  num? minBidQuantity;
-  num? minPrice;
+  String? lotSize;
+  String? maxPrice;
+  String? maxQuantity;
+  String? minBidQuantity;
+  String? minPrice;
   String? name;
   String? series;
   String? symbol;
@@ -45,9 +23,9 @@ class NCBGsec {
   String? t1ModEndTime;
   String? t1ModStartDate;
   String? t1ModStartTime;
-  num? tickSize;
+  String? tickSize;
 
-  NCBGsec(
+  BondLists(
       {this.allotmentDate,
       this.biddingEndDate,
       this.biddingStartDate,
@@ -74,32 +52,32 @@ class NCBGsec {
       this.t1ModStartTime,
       this.tickSize});
 
-  NCBGsec.fromJson(Map<String, dynamic> json) {
-    allotmentDate = json['allotmentDate'];
-    biddingEndDate = json['biddingEndDate'];
-    biddingStartDate = json['biddingStartDate'];
-    cutoffPrice = json['cutoffPrice'];
-    dailyEndTime = json['dailyEndTime'];
-    dailyStartTime = json['dailyStartTime'];
-    faceValue = json['faceValue'];
-    index = json['index'];
-    isin = json['isin'];
-    issueSize = json['issueSize'];
-    issueValueSize = json['issueValueSize'];
-    lastDayBiddingEndTime = json['lastDayBiddingEndTime'];
-    lotSize = json['lotSize'];
-    maxPrice = json['maxPrice'];
-    maxQuantity = json['maxQuantity'];
-    minBidQuantity = json['minBidQuantity'];
-    minPrice = json['minPrice'];
-    name = json['name'];
-    series = json['series'];
-    symbol = json['symbol'];
-    t1ModEndDate = json['t1ModEndDate'];
-    t1ModEndTime = json['t1ModEndTime'];
-    t1ModStartDate = json['t1ModStartDate'];
-    t1ModStartTime = json['t1ModStartTime'];
-    tickSize = json['tickSize'];
+  BondLists.fromJson(Map<String, dynamic> json) {
+    allotmentDate = json['allotmentDate'].toString();
+    biddingEndDate = json['biddingEndDate'].toString();
+    biddingStartDate = json['biddingStartDate'].toString();
+    cutoffPrice = json['cutoffPrice'].toString();
+    dailyEndTime = json['dailyEndTime'].toString();
+    dailyStartTime = json['dailyStartTime'].toString();
+    faceValue = json['faceValue'].toString();
+    index = json['index'].toString();
+    isin = json['isin'].toString();
+    issueSize = json['issueSize'].toString();
+    issueValueSize = json['issueValueSize'].toString();
+    lastDayBiddingEndTime = json['lastDayBiddingEndTime'].toString();
+    lotSize = json['lotSize'].toString();
+    maxPrice = json['maxPrice'].toString();
+    maxQuantity = json['maxQuantity'].toString();
+    minBidQuantity = json['minBidQuantity'].toString();
+    minPrice = json['minPrice'].toString();
+    name = json['name'].toString();
+    series = json['series'].toString();
+    symbol = json['symbol'].toString();
+    t1ModEndDate = json['t1ModEndDate'].toString();
+    t1ModEndTime = json['t1ModEndTime'].toString();
+    t1ModStartDate = json['t1ModStartDate'].toString();
+    t1ModStartTime = json['t1ModStartTime'].toString();
+    tickSize = json['tickSize'].toString();
   }
 
   Map<String, dynamic> toJson() {

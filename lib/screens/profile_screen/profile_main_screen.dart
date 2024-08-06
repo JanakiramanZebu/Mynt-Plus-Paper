@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:share_plus/share_plus.dart'; 
+import 'package:share_plus/share_plus.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
+import '../../provider/bond_provider.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/iop_provider.dart';
 import '../../provider/notification_provider.dart';
@@ -14,8 +15,8 @@ import '../../provider/notification_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
-import '../../routes/route_names.dart'; 
-import '../../sharedWidget/functions.dart'; 
+import '../../routes/route_names.dart';
+import '../../sharedWidget/functions.dart';
 import 'need_help_screen.dart';
 
 class UserAccountScreen extends ConsumerWidget {
@@ -23,13 +24,13 @@ class UserAccountScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-     int currentYear = DateTime.now().year;
+    int currentYear = DateTime.now().year;
     final userProfile = watch(userProfileProvider);
     final theme = watch(themeProvider);
     // final portfolio = watch(portfolioProvider);
     // final indexProvide = watch(indexListProvider);
     final funds = watch(fundProvider);
-     final Preferences pref = locator<Preferences>();
+    final Preferences pref = locator<Preferences>();
     final String reflink = "https://oa.mynt.in/?ref=${pref.clientId}";
     return userProfile.loading
         ? const Center(child: CircularProgressIndicator())
@@ -47,8 +48,7 @@ class UserAccountScreen extends ConsumerWidget {
                           await funds.fetchFunds(context);
                           if (index == 0) {
                             Navigator.pushNamed(context, Routes.fund);
-                          }
-                        else  if (index == 1) {
+                          } else if (index == 1) {
                             Navigator.pushNamed(context, Routes.myAcc);
                           } else if (index == 2) {
                             Navigator.pushNamed(context, Routes.reports);
@@ -89,30 +89,35 @@ class UserAccountScreen extends ConsumerWidget {
                                 .fetchbrokermsg(context);
                             Navigator.pushNamed(
                                 context, Routes.notificationpage);
-                          } else if(index == 8) {
-                             showModalBottomSheet(
-                                  useSafeArea: true,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16))),
-                                  context: context,
-                                  builder: (context) {
-                                    return const NeedHelpScreen( );
-                                  });
+                          } else if (index == 8) {
+                            showModalBottomSheet(
+                                useSafeArea: true,
+                                isScrollControlled: true,
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(16))),
+                                context: context,
+                                builder: (context) {
+                                  return const NeedHelpScreen();
+                                });
                             // Navigator.pushNamed(context, Routes.needHelp);
-                          }else if(index == 9){
+                          } else if (index == 9) {
                             await context.read(ipoProvide).getSmeIpo();
                             await context.read(ipoProvide).getmainstreamipo();
-                            await context .read(ipoProvide).getipoperfomance(currentYear);
+                            await context
+                                .read(ipoProvide)
+                                .getipoperfomance(currentYear);
                             Navigator.pushNamed(context, Routes.ipo);
-                          }else{
+                          } else if (index == 10) {
                             await context
                                 .read(ipoProvide)
                                 .getipoorderbookmodel();
                             await context.read(ipoProvide).ipotab();
                             Navigator.pushNamed(context, Routes.ipoorderbook);
-                            
+                          } else {
+
+                             await context.read(bondProvider ). fetchGovtBonds() ;
+                            Navigator.pushNamed(context, Routes.bonds);
                           }
                         },
                         dense: true,
@@ -179,10 +184,9 @@ class UserAccountScreen extends ConsumerWidget {
                                     },
                                     child: Text(
                                       "Share",
-                                      style: 
-                                      theme.isDarkMode
-                                      ?textStyles.darktextBtn
-                                      :textStyles.textBtn,
+                                      style: theme.isDarkMode
+                                          ? textStyles.darktextBtn
+                                          : textStyles.textBtn,
                                     ))
                                 : SvgPicture.asset(
                                     userProfile.profileMenu[index]['trailing'])
@@ -192,8 +196,10 @@ class UserAccountScreen extends ConsumerWidget {
                     },
                     separatorBuilder: (BuildContext context, int index) {
                       return Divider(
-                          
-                            color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider, height: 0);
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider,
+                          height: 0);
                     }),
               ),
               Padding(
@@ -254,8 +260,8 @@ class UserAccountScreen extends ConsumerWidget {
                                   style: ElevatedButton.styleFrom(
                                       elevation: 0,
                                       backgroundColor: theme.isDarkMode
-                                      ?colors.colorbluegrey
-                                      :colors.colorBlack,
+                                          ? colors.colorbluegrey
+                                          : colors.colorBlack,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(50),
                                       )),
