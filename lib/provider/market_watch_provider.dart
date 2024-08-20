@@ -475,6 +475,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _optionStrPrc = val;
   }
 
+// depthWLAddBtn(){
+//     _isAdded = List<bool>.filled(_searchScripModel!.values!.length, false);
+// }
+
   void activeTsym(String symbol, String exch) {
     _tradeSym = symbol;
     // pref.setActiveSymbol(symbol);

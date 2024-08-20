@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/user_profile_provider.dart';
@@ -15,18 +15,21 @@ class ReportsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-    final userProfile = watch(userProfileProvider); final theme =context.read(themeProvider);
-    return Scaffold( 
+    final userProfile = watch(userProfileProvider);
+    final theme = context.read(themeProvider);
+    return Scaffold(
       appBar: AppBar(
-          leadingWidth: 41,
-          titleSpacing: 6,
-          leading:  const CustomBackBtn(),
-          
-          elevation: 0.2,
-         
-          title: Text('Reports',
-              style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w600)),
-           ),
+        leadingWidth: 41,
+        titleSpacing: 6,
+        centerTitle: false,
+        leading: const CustomBackBtn(),
+        elevation: 0.2,
+        title: Text('Reports',
+            style: textStyle(
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                14,
+                FontWeight.w600)),
+      ),
       body: ListView.separated(
         itemCount: userProfile.reporttMenu.length,
         itemBuilder: (context, int index) {
@@ -59,7 +62,7 @@ class ReportsScreen extends ConsumerWidget {
           );
         },
         separatorBuilder: (BuildContext context, int index) {
-          return  const ListDivider();
+          return const ListDivider();
         },
       ),
     );
@@ -67,10 +70,7 @@ class ReportsScreen extends ConsumerWidget {
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
     return GoogleFonts.inter(
-        textStyle: TextStyle(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
-    ));
+        textStyle:
+            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

@@ -42,8 +42,8 @@ class UserAccountScreen extends ConsumerWidget {
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
                         onTap: () async {
-                          await funds.fetchFunds(context);
-                          if (index == 0) {
+                         
+                          if (index == 0) { await funds.fetchFunds(context);
                             Navigator.pushNamed(context, Routes.fund);
                           }
                         else  if (index == 1) {
@@ -64,8 +64,13 @@ class UserAccountScreen extends ConsumerWidget {
                             Navigator.pushNamed(
                                 context, Routes.reportWebViewApp,
                                 arguments: "pledge");
+                          } else if (index == 5) {
+                           await Share.share(
+                              "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
+                            );
                           } else if (index == 6) {
-                            await context
+
+                                await context
                                 .read(userProfileProvider)
                                 .fetchsetting();
                             await context
@@ -73,10 +78,7 @@ class UserAccountScreen extends ConsumerWidget {
                                 .fetchapikey(context);
                             Navigator.pushNamed(
                                 context, Routes.profilesettingscreen);
-                          } else if (index == 5) {
-                            await Share.share(
-                              "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
-                            );
+                          
                           } else if (index == 7) {
                             await context
                                 .read(notificationprovider)
@@ -156,7 +158,7 @@ class UserAccountScreen extends ConsumerWidget {
                                 ),
                               ),
                             ],
-                            index == 5
+                            index == 6
                                 ? TextButton(
                                     onPressed: () async {
                                       await Share.share(
@@ -289,7 +291,7 @@ class UserAccountScreen extends ConsumerWidget {
               Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text("Version 3.0.2 Build 1.0.32(02) Released on 31 Jul",
+                child: Text("Version 3.0.2 Build 1.0.32(03) Released on 20 Aug",
                     style: textStyle(
                         const Color(0xff666666), 11, FontWeight.w500)),
               )

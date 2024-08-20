@@ -21,6 +21,7 @@ class MyAccount extends ConsumerWidget {
       appBar: AppBar(
           leadingWidth: 41,
           titleSpacing: 6,
+          centerTitle: false,
           leading: const CustomBackBtn(), 
           elevation: 0.2,
           

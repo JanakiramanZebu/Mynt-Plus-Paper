@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:share_plus/share_plus.dart'; 
 import '../../../provider/change_password_provider.dart';
 import '../../../provider/user_profile_provider.dart';
@@ -304,7 +305,7 @@ class SettingsScreen extends ConsumerWidget {
                               ),
                             ),
                     ],
-                    index == 1 || index == 2
+                    index !=0
                         ? SvgPicture.asset(
                             usersettings.settingmenu[index]['trailing'])
                         : Container()
@@ -315,11 +316,7 @@ class SettingsScreen extends ConsumerWidget {
             shrinkWrap: true,
             itemCount: usersettings.settingmenu.length,
             separatorBuilder: (BuildContext context, int index) {
-              return 
-               Divider(color: theme.isDarkMode
-               ?colors.darkColorDivider
-               :colors.colorDivider
-               );
+              return  const ListDivider();
             },
           ),
         ],

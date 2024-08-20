@@ -198,15 +198,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  indexProvide.selectedBtmIndx == 2
+                                  indexProvide.selectedBtmIndx == 3
                                       ? "Orderbook"
-                                      : indexProvide.selectedBtmIndx == 1
+                                      : indexProvide.selectedBtmIndx == 2
                                           ? "Portfolio"
                                           :
                                           // indexProvide.selectedBtmIndx == 0
                                           //     ? stockProvide.exploreName
                                           //     :
-                                          "Profile",
+                                          "",
                                   style: textStyles.appBarTitleTxt.copyWith(
                                       color: theme.isDarkMode
                                           ? colors.colorWhite

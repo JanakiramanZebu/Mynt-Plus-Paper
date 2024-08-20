@@ -291,6 +291,9 @@ if (context
                                                             height: 15,
                                                             color: const Color(
                                                                 0xff666666))))
+
+
+                                                                
                                               ]),
                                           Text(
                                               "₹${depthData.lp ?? depthData.c ?? 0.00}",

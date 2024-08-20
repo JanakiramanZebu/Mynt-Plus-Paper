@@ -230,12 +230,20 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Pledge & Unpledge",
-        "subTitle": "Pledge & Unpledge  ",
+        "subTitle": "Pledge & Unpledge",
         "leading": "assets/profileimage/pledge.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).pledgeunpcase,
         "case": "Click here to view the Pledge & Unpledge page."
       },
+      // {
+      //   "title": "OptionZ",
+      //   "subTitle": "OptionZ",
+      //   "leading": "assets/profileimage/pledge.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref(showcaseProvide).pledgeunpcase,
+      //   "case": "Click here to view the Pledge & Unpledge page."
+      // },
       {
         "title": "Refer",
         "subTitle": "Refer your family and friends",
