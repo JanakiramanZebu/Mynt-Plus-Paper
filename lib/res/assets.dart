@@ -152,4 +152,13 @@ class Assets {
   final String govtBond = "assets/icon/bonds/gov_bonds.svg";
   final String sgbBond = "assets/icon/bonds/sgb_bond.svg";
   final String taxBond = "assets/icon/bonds/tax_bond.svg";
+
+  // MF
+  final String loan = "assets/icon/loan.svg";
+  final String transaction = "assets/icon/transactions.svg";
+  final String goldCoin = "assets/icon/gold_coin.svg";
+  final String globe = "assets/icon/globe.svg";
+  final String percentage = "assets/icon/percentage.svg";
+    final String lowRisk = "assets/icon/low_risk.svg";
+  final String highRisk = "assets/icon/high_risk.svg";
 }

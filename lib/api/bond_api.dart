@@ -7,7 +7,7 @@ import '../models/bonds_data/govt_bonds.dart';
 import '../models/bonds_data/ledger_bal_model.dart';
 import '../models/bonds_data/sovereign_gold_bonds.dart';
 import '../models/bonds_data/state_bond.dart';
-import '../models/bonds_data/treasury_bonds.dart';
+import '../models/bonds_data/treasury_bonds.dart'; 
 
 mixin BondApi on ApiCore {
   Future<GovtBond> getGovtBond() async {
@@ -82,4 +82,5 @@ mixin BondApi on ApiCore {
       rethrow;
     }
   }
+ 
 }

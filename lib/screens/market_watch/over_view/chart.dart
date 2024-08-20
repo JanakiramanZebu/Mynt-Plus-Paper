@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:syncfusion_flutter_charts/charts.dart'; 
+import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
@@ -26,18 +26,24 @@ class MyHomePageState extends State<ShareHoldChart> {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final funData = watch(marketWatchProvider).fundamentalData!.shareholdings;
- final theme = context.read(themeProvider);
+      final theme = context.read(themeProvider);
       final selctedShareHold = watch(marketWatchProvider).selctedShareHold;
       return SizedBox(
           height: 320,
           width: MediaQuery.of(context).size.width,
-          child: SfCartesianChart(
+          child: SfCartesianChart(  margin: const EdgeInsets.symmetric(horizontal: 0),
               primaryXAxis: CategoryAxis(
-                labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 10, FontWeight.w500),
+                labelStyle: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    10,
+                    FontWeight.w500),
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
-                  labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 12, FontWeight.w500),
+                  labelStyle: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      12,
+                      FontWeight.w500),
                   majorGridLines: const MajorGridLines(width: 0),
                   minimum: 0,
                   maximum: 100),
@@ -48,12 +54,12 @@ class MyHomePageState extends State<ShareHoldChart> {
                     enableTooltip: true,
                     dataSource: funData!,
                     xValueMapper: (Shareholdings data, _) => data.convDate,
-                    yValueMapper: (Shareholdings data, _) =>
-                        selctedShareHold == "Promoter Holding"
-                            ? double.parse(data.promoters!)
-                            : selctedShareHold == "Foriegin Institution"
-                                ? double.parse(data.fiiFpi!)
-                                :selctedShareHold == "Other Domestic Institution"
+                    yValueMapper: (Shareholdings data, _) => selctedShareHold ==
+                            "Promoter Holding"
+                        ? double.parse(data.promoters!)
+                        : selctedShareHold == "Foriegin Institution"
+                            ? double.parse(data.fiiFpi!)
+                            : selctedShareHold == "Other Domestic Institution"
                                 ? double.parse(data.dii!)
                                 : selctedShareHold == "Retail and Others"
                                     ? double.parse(data.retailAndOthers!)
@@ -64,17 +70,21 @@ class MyHomePageState extends State<ShareHoldChart> {
                         ? const Color(0xff2e8564)
                         : selctedShareHold == "Foriegin Institution"
                             ? const Color(0xff7cd36f)
-                            :selctedShareHold == "Other Domestic Institution"
-                            ? const Color(0xfff7cd6c)
-                            : selctedShareHold == "Retail and Others"
-                                ? const Color(0XFFfbebc4)
-                                : selctedShareHold == "Mutual Funds"
-                                    ? const Color(0XFFdedede)
-                                    : const Color(0xfff7cd6c),
+                            : selctedShareHold == "Other Domestic Institution"
+                                ? const Color(0xfff7cd6c)
+                                : selctedShareHold == "Retail and Others"
+                                    ? const Color(0XFFfbebc4)
+                                    : selctedShareHold == "Mutual Funds"
+                                        ? const Color(0XFFdedede)
+                                        : const Color(0xfff7cd6c),
                     dataLabelSettings: DataLabelSettings(
                         isVisible: true,
-                        textStyle:
-                            textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 13, FontWeight.w500)))
+                        textStyle: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            13,
+                            FontWeight.w500)))
               ]));
     });
   }
@@ -114,24 +124,32 @@ class FBalSheetCahrtState extends State<FBalSheetCahrt> {
                   .fundamentalData!
                   .stockFinancialsConsolidated!
                   .balanceSheet;
- final theme = context.read(themeProvider);
+      final theme = context.read(themeProvider);
       return SizedBox(
           height: 320,
           width: MediaQuery.of(context).size.width,
-          child: SfCartesianChart(
+          child: SfCartesianChart(   margin: const EdgeInsets.symmetric(horizontal: 0),
               legend: Legend(
-                 textStyle: textStyle(
+                  textStyle: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       12,
                       FontWeight.w400),
-                isVisible: true, position: LegendPosition.bottom,image: const AssetImage('assets/img/bought.png'),
+                  isVisible: true,
+                  position: LegendPosition.bottom,
+                  image: const AssetImage('assets/img/bought.png'),
                   overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
-                labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 10, FontWeight.w500),
+                labelStyle: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    10,
+                    FontWeight.w500),
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
-                  labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 12, FontWeight.w500),
+                  labelStyle: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      12,
+                      FontWeight.w500),
                   majorGridLines: const MajorGridLines(width: 0)),
               tooltipBehavior: _tooltip,
               series: <CartesianSeries<BalanceSheet, String>>[
@@ -196,25 +214,32 @@ class FIncomeChartState extends State<FIncomeChart> {
                   .fundamentalData!
                   .stockFinancialsConsolidated!
                   .incomeSheet;
- final theme = context.read(themeProvider);
+      final theme = context.read(themeProvider);
       return SizedBox(
           height: 320,
           width: MediaQuery.of(context).size.width,
-          child: SfCartesianChart(
+          child: SfCartesianChart(   margin: const EdgeInsets.symmetric(horizontal: 0),
               legend: Legend(
-                 textStyle: textStyle(
+                  textStyle: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       12,
                       FontWeight.w400),
                   isVisible: true,
-                  position: LegendPosition.bottom,     image: const AssetImage('assets/img/bought.png'),
+                  position: LegendPosition.bottom,
+                  image: const AssetImage('assets/img/bought.png'),
                   overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
-                labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 10, FontWeight.w500),
+                labelStyle: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    10,
+                    FontWeight.w500),
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
-                  labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 12, FontWeight.w500),
+                  labelStyle: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      12,
+                      FontWeight.w500),
                   majorGridLines: const MajorGridLines(width: 0)),
               tooltipBehavior: _tooltip,
               series: <CartesianSeries<IncomeSheet, String>>[
@@ -279,7 +304,8 @@ class FCashFlowChartState extends State<FCashFlowChart> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) { final theme = context.read(themeProvider);
+    return Consumer(builder: (context, ScopedReader watch, _) {
+      final theme = context.read(themeProvider);
       final cashflowSheet =
           watch(marketWatchProvider).selcteFinType == "Standalone"
               ? watch(marketWatchProvider)
@@ -294,20 +320,28 @@ class FCashFlowChartState extends State<FCashFlowChart> {
       return SizedBox(
           height: 320,
           width: MediaQuery.of(context).size.width,
-          child: SfCartesianChart(
+          child: SfCartesianChart(    margin: const EdgeInsets.symmetric(horizontal: 0),
               legend: Legend(
-                 textStyle: textStyle(
+                  textStyle: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       12,
                       FontWeight.w400),
-                isVisible: true, position: LegendPosition.bottom,image: const AssetImage('assets/img/bought.png'),
+                  isVisible: true,
+                  position: LegendPosition.bottom,
+                  image: const AssetImage('assets/img/bought.png'),
                   overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
-                labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 10, FontWeight.w500),
+                labelStyle: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    10,
+                    FontWeight.w500),
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
-                  labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 12, FontWeight.w500),
+                  labelStyle: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      12,
+                      FontWeight.w500),
                   majorGridLines: const MajorGridLines(width: 0)),
               tooltipBehavior: _tooltip,
               series: <CartesianSeries<CashflowSheet, String>>[
@@ -373,13 +407,12 @@ class PriceComChartState extends State<PriceComChart> {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final priceCompare = watch(marketWatchProvider);
- final theme = context.read(themeProvider);
+      final theme = context.read(themeProvider);
       return SizedBox(
           height: 320,
           width: MediaQuery.of(context).size.width,
-          child: SfCartesianChart(
+          child: SfCartesianChart(   margin: const EdgeInsets.symmetric(horizontal: 0),
               legend: Legend(
-              
                   textStyle: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       12,
@@ -389,11 +422,17 @@ class PriceComChartState extends State<PriceComChart> {
                   position: LegendPosition.bottom,
                   overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
-                labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack ,10, FontWeight.w500),
+                labelStyle: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    10,
+                    FontWeight.w500),
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
-                  labelStyle: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack , 12, FontWeight.w500),
+                  labelStyle: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      12,
+                      FontWeight.w500),
                   majorGridLines: const MajorGridLines(width: 0)),
               tooltipBehavior: _tooltip,
               series: <CartesianSeries<PrcComparisionChartData, String>>[

@@ -10,6 +10,7 @@ import '../../provider/auth_provider.dart';
 import '../../provider/bond_provider.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/iop_provider.dart';
+import '../../provider/mf_provider.dart';
 import '../../provider/notification_provider.dart';
 
 import '../../provider/thems.dart';
@@ -114,10 +115,15 @@ class UserAccountScreen extends ConsumerWidget {
                                 .getipoorderbookmodel();
                             await context.read(ipoProvide).ipotab();
                             Navigator.pushNamed(context, Routes.ipoorderbook);
-                          } else {
-
-                             await context.read(bondProvider ). fetchGovtBonds() ;
+                          } else if (index == 11) {
+                            await context.read(bondProvider).fetchGovtBonds();
                             Navigator.pushNamed(context, Routes.bonds);
+                          } else {
+                            await context
+                                .read(mfProvider)
+                                .fetchMFWatchlist(null, "", context, false);
+                            await context.read(mfProvider).fetchMasterMF();
+                            Navigator.pushNamed(context, Routes.mf);
                           }
                         },
                         dense: true,

@@ -16,12 +16,15 @@ import '../screens/market_watch/edit_scrip.dart';
 import '../screens/market_watch/futures/future_screen.dart';
 import '../screens/market_watch/search_screen.dart';
 import '../screens/market_watch/tv_chart/webview_chart.dart';
+import '../screens/mutual_fund/mf_stock_detail_screen.dart';
+import '../screens/mutual_fund/mf_watchlist.dart';
+import '../screens/mutual_fund/mutual_fund_screen.dart';
 import '../screens/order_book/gtt_order_detail.dart';
 import '../screens/order_book/order_book_detail.dart';
 import '../screens/order_book/pending_alert_detail_screen.dart';
 import '../screens/order_book/trade_book_detail.dart';
 import '../screens/order_screen/Rework/modify_gtt.dart';
-import '../screens/order_screen/Rework/repeat_order.dart'; 
+import '../screens/order_screen/Rework/repeat_order.dart';
 import '../screens/order_screen/modify_place_order_screen.dart';
 import '../screens/order_screen/place_order_screen.dart';
 import '../screens/portfolio_screens/holdings/edies_webview.dart';
@@ -39,14 +42,14 @@ import '../screens/profile_screen/my_ac_screens/bank_detail.dart';
 import '../screens/profile_screen/my_ac_screens/my_acc.dart';
 import '../screens/profile_screen/my_ac_screens/profile_details.dart';
 import '../screens/profile_screen/my_ac_screens/set_auto_pay.dart';
-import '../screens/profile_screen/my_ac_screens/setautopayscreen.dart'; 
+import '../screens/profile_screen/my_ac_screens/setautopayscreen.dart';
 import '../screens/profile_screen/notification_screens/notification_screen.dart';
 import '../screens/profile_screen/qr_scan_widget.dart';
 import '../screens/profile_screen/setting_screen/notification_setting.dart';
 import '../screens/profile_screen/setting_screen/settingmaincscreen.dart';
 import '../screens/profile_screen/setting_screen/window_settings.dart';
 import '../screens/profile_screen/settingui.dart';
-import '../screens/splash_screen.dart'; 
+import '../screens/splash_screen.dart';
 import '../screens/stocks/explore/stocks/indices/all_index_screen.dart';
 import '../screens/stocks/explore/stocks/news/news_listdata.dart';
 import '../screens/stocks/explore/stocks/stock_screens.dart';
@@ -64,7 +67,7 @@ class AppRoutes {
       case Routes.homeScreen:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       case Routes.loginScreen:
-        return MaterialPageRoute(builder: (_) => const LoginScreen( ));
+        return MaterialPageRoute(builder: (_) => const LoginScreen());
       case Routes.loginOtpVerify:
         return MaterialPageRoute(builder: (_) => const OtpScreen());
       case Routes.forgotPass:
@@ -73,11 +76,11 @@ class AppRoutes {
         return MaterialPageRoute(
             builder: (_) => ChangePass(isChangePass: args));
 
-             case Routes.logError:
+      case Routes.logError:
         return MaterialPageRoute(builder: (_) => const LogMessage());
       case Routes.stock:
         return MaterialPageRoute(builder: (_) => const StockScreen());
-case Routes.searchScrip:
+      case Routes.searchScrip:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               SearchScreen(wlName: args),
@@ -293,7 +296,7 @@ case Routes.searchScrip:
       case Routes.holdingExit:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              const ExitHoldingsScreen( ),
+              const ExitHoldingsScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;
@@ -544,7 +547,8 @@ case Routes.searchScrip:
               child: child,
             );
           },
-        );case Routes.allTrade:
+        );
+      case Routes.allTrade:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               const AllTrade(),
@@ -716,9 +720,10 @@ case Routes.searchScrip:
           },
         );
 
-     case Routes.ipo:
+      case Routes.ipo:
         return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const IPOScreen(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const IPOScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             final tween = Tween<Offset>(
                 begin: const Offset(0, 1), end: const Offset(.0, .0));
@@ -727,13 +732,12 @@ case Routes.searchScrip:
               child: child,
             );
           },
-        ); 
-    
-    case Routes.applyIPO:
+        );
+
+      case Routes.applyIPO:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-          
-            ApplyIpoScreen(mainstream: args),
+              ApplyIpoScreen(mainstream: args),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(-1.0, 0.0);
             const end = Offset.zero;
@@ -749,11 +753,10 @@ case Routes.searchScrip:
           },
         );
 
-    case Routes.smeapplyIPO:
+      case Routes.smeapplyIPO:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-          
-            SMEApplyIpoScreen(smeipo: args),
+              SMEApplyIpoScreen(smeipo: args),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(-1.0, 0.0);
             const end = Offset.zero;
@@ -783,10 +786,10 @@ case Routes.searchScrip:
           },
         );
 
-       case Routes.modifyipoorder:
+      case Routes.modifyipoorder:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              ModifyIpoOrderScreen(modifyipoorder:args),
+              ModifyIpoOrderScreen(modifyipoorder: args),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(-1.0, 0.0);
             const end = Offset.zero;
@@ -802,7 +805,7 @@ case Routes.searchScrip:
           },
         );
 
-    case Routes.ipoopendetailsscreen:
+      case Routes.ipoopendetailsscreen:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               IpoOpenOrderDetails(ipodetails: args),
@@ -821,7 +824,7 @@ case Routes.searchScrip:
           },
         );
 
-    case Routes.ipoclosedetailsscreen:
+      case Routes.ipoclosedetailsscreen:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               IpoCloseOrderDetails(ipoclose: args),
@@ -839,12 +842,11 @@ case Routes.searchScrip:
             );
           },
         );
-     
 
-    case Routes.sectorThematicDetail:
+      case Routes.sectorThematicDetail:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-                SectorThematicDetail(data: args),
+              SectorThematicDetail(data: args),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;
@@ -858,9 +860,8 @@ case Routes.searchScrip:
               child: child,
             );
           },
-        ); 
- 
-       
+        );
+
       case Routes.pendingalertdetails:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
@@ -880,7 +881,7 @@ case Routes.searchScrip:
           },
         );
 
-         case Routes.qrscanner:
+      case Routes.qrscanner:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               const BarcodeScannerWithScanWindow(),
@@ -899,7 +900,7 @@ case Routes.searchScrip:
           },
         );
 
-    case Routes.bonds:
+      case Routes.bonds:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               const BondScreen(),
@@ -917,8 +918,63 @@ case Routes.searchScrip:
             );
           },
         );
+      case Routes.mf:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const MutualFundScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
 
-        
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+      case Routes.mfWatchlist:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const MFWatchlistScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+case Routes.mfStockDetail:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+                MFStockDetailScreen(mfStockData:args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+    
+
       default:
         return _errorRoute();
     }

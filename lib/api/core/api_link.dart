@@ -128,30 +128,44 @@ class ApiLinks {
 
   // Stock data URL
 
-  String stockUrl = "https://v3.mynt.in";
+  String dashBoardURL = "https://v3.mynt.in";
 
   // String tradeAction = "https://v3.mynt.in/equity/getadindicesAdvdec";
 
-  String get fundamentalDetail => '$stockUrl/equity/stockFundamentalDetails';
-  String get topListStock => '$stockUrl/equity/TopList';
-  String get getGlobalIndex => '$stockUrl/equity/getGlobalIndex';
-
-  String get getadindices => '$stockUrl/equity/getadindices';
-  String get getadindicesAdvdec => '$stockUrl/equity/getadindicesAdvdec';
-
-  String get getCorporateAction => '$stockUrl/ipo/getCorporateAction';
-  String get getStockMonitor => '$stockUrl/equity/GetContentList';
+  String get fundamentalDetail =>
+      '$dashBoardURL/equity/stockFundamentalDetails';
+  String get topListStock => '$dashBoardURL/equity/TopList';
+  String get getGlobalIndex => '$dashBoardURL/equity/getGlobalIndex';
+  String get getadindices => '$dashBoardURL/equity/getadindices';
+  String get getadindicesAdvdec => '$dashBoardURL/equity/getadindicesAdvdec';
+  String get getCorporateAction => '$dashBoardURL/ipo/getCorporateAction';
+  String get getStockMonitor => '$dashBoardURL/equity/GetContentList';
 
   /// Qr Scanner
   String get getQrScanner => '$mainBaseURL/QRMobileReq';
 
   ///ipo///
-  String get ipomainBaseURL => 'https://v3.mynt.in/ipo';
-  String get smeipos => "$ipomainBaseURL/getcurrentSMEIPOdetails";
-  String get mainstreamipo => "$ipomainBaseURL/getcurrentIPOdetails";
-  String get ipoperformance => "$ipomainBaseURL/ipo_performer?year=2024";
-  String get placeipoorder => "$ipomainBaseURL/addIPOtoPortfolio";
-  String get ipoorderbook => "$ipomainBaseURL/orderbookIPODetails";
+  String get smeipos => "$dashBoardURL/ipo/getcurrentSMEIPOdetails";
+  String get mainstreamipo => "$dashBoardURL/ipo/getcurrentIPOdetails";
+  String get ipoperformance => "$dashBoardURL/ipo/ipo_performer?year=2024";
+  String get placeipoorder => "$dashBoardURL/ipo/addIPOtoPortfolio";
+  String get ipoorderbook => "$dashBoardURL/ipo/orderbookIPODetails";
+
+// Mutual Fund
+  String get bestMf => "$dashBoardURL/mf/z_data";
+  String get masterMF => "$dashBoardURL/mf/master_file_datas";
+  String get mfWatchlist => "$dashBoardURL/mf/watchlist";
+  String get factSheetData => "$dashBoardURL/mf/getFactSheetData";
+  String get navGraph => "$dashBoardURL/mf/getNavGraph";
+  String get factSheetGraph => "$dashBoardURL/mf/getFactSheetGraph";
+  String get schemePeers => "$dashBoardURL/mf/getSchemePeers";
+  String get postRollingReturn => "$dashBoardURL/mf/postRollingReturn";
+  String get bankDetail => "$dashBoardURL/mf/client_bank_details";
+  String get mfSip => "$dashBoardURL/mf/sip_values";
+  String get mandateDetail => "$dashBoardURL/mf/mandate_details";
+
+  // String get mfSip=> "$dashBoardURL/mf/sip_values";
+
   //hdfc mainurl//
   String get hdfcmainurl => 'https://fundapi.mynt.in/hdfc/upi';
   String get hdfcupicheck => '$hdfcmainurl/checkClientVPA';

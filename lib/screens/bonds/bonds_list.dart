@@ -46,7 +46,7 @@ class BondsList extends ConsumerWidget {
                     side: BorderSide(
                       width: 1,
                       color: bondsData.topBonds[index] == bondsData.topBond
-                          ? const Color(0xff000000)
+                          ? colors.colorBlack
                           : const Color(0xff666666),
                     ),
                     shape: const RoundedRectangleBorder(
@@ -61,7 +61,7 @@ class BondsList extends ConsumerWidget {
                       bondsData.topBonds[index],
                       style: textStyle(
                           bondsData.topBonds[index] == bondsData.topBond
-                              ? const Color(0xff000000)
+                              ? colors.colorBlack
                               : const Color(0xff666666),
                           14,
                           FontWeight.w600),

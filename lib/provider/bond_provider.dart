@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,8 +9,8 @@ import '../models/bonds_data/govt_bonds.dart';
 import '../models/bonds_data/ledger_bal_model.dart';
 import '../models/bonds_data/sovereign_gold_bonds.dart';
 import '../models/bonds_data/state_bond.dart';
-import '../models/bonds_data/treasury_bonds.dart';
-import '../res/res.dart';
+import '../models/bonds_data/treasury_bonds.dart';  
+import '../res/res.dart'; 
 import 'core/default_change_notifier.dart';
 
 final bondProvider = ChangeNotifierProvider((ref) => BondProvider(ref.read));
@@ -32,7 +31,7 @@ class BondProvider extends DefaultChangeNotifier {
     "Govt. Bonds",
     "Treasury Bonds",
     "State Bonds",
-    "Sovereign Gold Bonds",
+    "Sovereign Gold Bonds"
   ];
 
   String _topBond = "Govt. Bonds";
@@ -44,31 +43,34 @@ class BondProvider extends DefaultChangeNotifier {
   SovereignGoldBonds? _sovereignGoldBonds;
 
   LedgerBalModel? _ledgerBalModel;
-  LedgerBalModel? get ledgerBalModel=> _ledgerBalModel;
+  LedgerBalModel? get ledgerBalModel => _ledgerBalModel;
 
   List<BondLists>? _bondLists = [];
 
   List<BondLists>? get bondLists => _bondLists;
 
-  TextEditingController _unitValueCtrl = TextEditingController();
+  final TextEditingController _unitValueCtrl = TextEditingController();
   TextEditingController get unitValueCtrl => _unitValueCtrl;
 
   int _minUnit = 0;
   int _maxUnit = 0;
-
+  double _requiredAmt = 0.00;
   int get minUnit => _minUnit;
   int get maxUnit => _maxUnit;
+  double get requiredAmt => _requiredAmt;
+ 
 
   changeUnits(BondLists bondData) {
     _minUnit = (int.parse(bondData.lotSize ?? "0") /
-            double.parse(bondData.faceValue ?? "0"))
+            double.parse(bondData.faceValue ?? "0.0"))
         .ceil();
     _maxUnit = (int.parse(bondData.maxQuantity ?? "0") /
-            double.parse(bondData.faceValue ?? "0"))
+            double.parse(bondData.faceValue ?? "0.0"))
         .ceil();
 
     _unitValueCtrl.text = "$_minUnit";
-    print(" qty $_maxUnit $_minUnit");
+
+    _requiredAmt = (_minUnit * double.parse(bondData.cutoffPrice ?? "0.0"));
     notifyListeners();
   }
 
@@ -103,6 +105,39 @@ class BondProvider extends DefaultChangeNotifier {
     }
   }
 
+  addUnit(String price) {
+    if (_unitValueCtrl.text.isEmpty) {
+      _unitValueCtrl.text = "$_minUnit";
+    } else if (int.parse(_unitValueCtrl.text) >= _maxUnit) {
+      _unitValueCtrl.text = _maxUnit.toString();
+    } else {
+      _unitValueCtrl.text =
+          (int.parse(_unitValueCtrl.text) + _minUnit).toString();
+    }
+
+    requireBal(_unitValueCtrl.text, price);
+
+    notifyListeners();
+  }
+
+  minusUnit(String price) {
+    if (_unitValueCtrl.text.isEmpty) {
+      _unitValueCtrl.text = "$_minUnit";
+    } else if (int.parse(_unitValueCtrl.text) <= _minUnit) {
+      _unitValueCtrl.text = _minUnit.toString();
+    } else {
+      _unitValueCtrl.text =
+          (int.parse(_unitValueCtrl.text) - _minUnit).toString();
+    }
+    requireBal(_unitValueCtrl.text, price);
+    notifyListeners();
+  }
+
+  requireBal(String units, String price) {
+    _requiredAmt = (int.parse(units) * double.parse(price));
+    notifyListeners();
+  }
+ 
   Future fetchTreassuryBonds() async {
     try {
       _treasuryBond = await api.getTreasuryBond();
@@ -132,15 +167,15 @@ class BondProvider extends DefaultChangeNotifier {
       debugPrint("$e");
     }
   }
-Future fetchLedgerBal() async {
+
+  Future fetchLedgerBal() async {
     try {
-    _ledgerBalModel = await api.getLedgerBal();
+      _ledgerBalModel = await api.getLedgerBal();
 
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
     }
   }
-
-  
+ 
 }
