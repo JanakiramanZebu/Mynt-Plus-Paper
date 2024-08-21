@@ -3,14 +3,16 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart'; 
+import 'package:fluttertoast/fluttertoast.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
-import '../locator/locator.dart'; 
+import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/profile_model/fund_detial_model.dart';
 import '../models/profile_model/hs_token_model.dart';
-import '../routes/route_names.dart';  
+import '../models/profile_model/option_z_model.dart';
+import '../routes/route_names.dart';
+import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -18,7 +20,8 @@ import 'index_list_provider.dart';
 final fundProvider = ChangeNotifierProvider((ref) => FundProvider(ref.read));
 
 class FundProvider extends DefaultChangeNotifier {
-  final api = locator<ApiExporter>();  final Preferences pref = locator<Preferences>();
+  final api = locator<ApiExporter>();
+  final Preferences pref = locator<Preferences>();
   FundDetailModel? _fundDetailModel;
   FundDetailModel? get fundDetailModel => _fundDetailModel;
   final FToast _fToast = FToast();
@@ -34,6 +37,10 @@ class FundProvider extends DefaultChangeNotifier {
   List get listOfCredits => _listOfCredits;
   List _listOfUsedMrgn = [];
   List get listOfUsedMrgn => _listOfUsedMrgn;
+
+  OptionZmodel? _optionZmodel;
+  OptionZmodel? get optionZmodel => _optionZmodel;
+
   FundProvider(this.ref);
 
   GetHsTokenModel? get fundHstoken => _getHsTokenModel;
@@ -47,8 +54,31 @@ class FundProvider extends DefaultChangeNotifier {
     var base64Pass = base64Url.encode(enCodePass);
 
     Navigator.pushNamed(context, Routes.edis, arguments: base64Pass);
+    'sLoginId=${fundHstoken!.uid}&token=${fundHstoken!.hstk}';
 
     // launch("https://go.mynt.in/NorenEdis/NonPoaHoldings/?$base64Pass");
+  }
+
+  optionZ(BuildContext context) async {
+    var enCodePass = utf8.encode(
+        'sLoginId=${pref.clientId}&sAccountId=${pref.clientId}&token=${fundHstoken!.hstk}&sBrokerId=ZEBU');
+    var base64Pass = base64Url.encode(enCodePass);
+    await fetchOptionZ(base64Pass, context);
+  }
+
+  Future fetchOptionZ(String key, BuildContext context) async {
+    try {
+      _optionZmodel = await api.getaOptionZ(key);
+      if (_optionZmodel!.stat == "Ok") {
+        Navigator.pushNamed(context, Routes.optionZWebView,
+            arguments: optionZmodel!.url);
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, "${_optionZmodel!.emsg}"));
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future fetchHstoken(BuildContext context) async {
@@ -56,10 +86,11 @@ class FundProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
 
       final GetHsTokenModel data = await api.getHsToken();
-      _getHsTokenModel = data; 
+      _getHsTokenModel = data;
       ConstantName.sessCheck = true;
       if (_getHsTokenModel!.emsg == "Session Expired :  Invalid Session Key" &&
-          _getHsTokenModel!.stat == "Not_Ok") {         ref(authProvider). ifSessionExpired(  context);
+          _getHsTokenModel!.stat == "Not_Ok") {
+        ref(authProvider).ifSessionExpired(context);
       }
     } catch (e) {
       log("Failed to fetch Profile Data:: ${e.toString()}");
@@ -78,8 +109,8 @@ class FundProvider extends DefaultChangeNotifier {
       _listOfUsedMrgn = [];
       _fundDetailModel = await api.getFunds();
 
-      if (_fundDetailModel!.emsg == "Session Expired :  Invalid Session Key") {   
-               ref(authProvider). ifSessionExpired(  context);
+      if (_fundDetailModel!.emsg == "Session Expired :  Invalid Session Key") {
+        ref(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
         double cash = double.parse(_fundDetailModel!.cash ?? "0.00");
@@ -185,7 +216,6 @@ class FundProvider extends DefaultChangeNotifier {
 
         fundDetailModel!.avlMrgPercentage =
             (avlMrgnPer.isNaN ? 0.00 : avlMrgnPer).toStringAsFixed(2);
-         
       }
       notifyListeners();
 
@@ -201,5 +231,4 @@ class FundProvider extends DefaultChangeNotifier {
     _showMrgnnBreakup = !_showMrgnnBreakup;
     notifyListeners();
   }
- 
 }

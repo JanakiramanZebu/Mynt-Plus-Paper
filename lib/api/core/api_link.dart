@@ -56,6 +56,8 @@ class ApiLinks {
 
   String get userDetail => '$goMyntURL/UserDetails';
   String get clientDetail => '$goMyntURL/ClientDetails';
+  String get freezeAccount => '$goMyntURL/FreezeAccount';
+  String get blockAcct => '$goMyntURL/BlockAcct';
 
 // Trade data
 
@@ -96,10 +98,10 @@ class ApiLinks {
 
   String get logout => '$goMyntURL/Logout';
 
-// Local Server --------- 
+// Local Server ---------
 
   // String get mainBaseURL => 'https://copy.mynt.in/uat';
-String get mainBaseURL => 'https://copy.mynt.in';
+  String get mainBaseURL => 'https://copy.mynt.in';
   // String get mobileLogin => '$mainBaseURL/mobile_login';
   String get mobileLogin => '$mainBaseURL/MobileLogin';
 

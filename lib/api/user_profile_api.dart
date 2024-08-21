@@ -1,7 +1,8 @@
-import '../models/profile_model/client_detail_model.dart';
+import '../models/profile_model/client_detail_model.dart'; 
 import '../models/profile_model/qr_login_res.dart';
 import '../models/profile_model/user_detail_model.dart';
 import 'core/api_core.dart';
+import 'package:http/http.dart';
 
 mixin UserProfileAPI on ApiCore {
   Future<UserDetailModel> getUserDetail(String ueserId, String session) async {
@@ -38,6 +39,7 @@ mixin UserProfileAPI on ApiCore {
       rethrow;
     }
   }
+
   Future<QrLoginResponces> getqr(String uniqueid) async {
     try {
       final uri = Uri.parse(apiLinks.getQrScanner);
@@ -57,4 +59,34 @@ mixin UserProfileAPI on ApiCore {
       rethrow;
     }
   }
+
+  Future<Response> getaFreezeAc() async {
+    try {
+      final uri = Uri.parse(apiLinks.freezeAccount);
+      final response = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}" ,"type":"1"}&jKey=${prefs.clientSession}''');
+
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Response> getaBlockAc() async {
+    try {
+      final uri = Uri.parse(apiLinks.blockAcct);
+      final response = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
+
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  
 }

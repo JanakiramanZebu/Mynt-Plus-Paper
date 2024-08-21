@@ -37,7 +37,7 @@ import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
-import 'portfolio_provider.dart'; 
+import 'portfolio_provider.dart';
 import 'user_profile_provider.dart';
 
 final authProvider = ChangeNotifierProvider((ref) => AuthProvider(ref.read));
@@ -316,12 +316,12 @@ class AuthProvider extends DefaultChangeNotifier {
         _isDisableBtn = true;
         clearError();
         clearTextField();
-         pref.setLogout(true);
+        pref.setLogout(true);
         ref(indexListProvider).bottomMenu(1);
         loginMethCtrl.text =
             pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
         Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen,   (route) => false);
+            context, Routes.loginScreen, (route) => false);
       } else if (_mobileLogin!.apitoken != null && _mobileLogin!.stat == "Ok") {
         clearError();
         clearTextField();
@@ -509,8 +509,8 @@ class AuthProvider extends DefaultChangeNotifier {
         // _logoutMsg = "Logout";
         // _isMobileLogin = true;
         // localstorage.setString("logout", _logoutMsg);
-   pref .clearClientSession();
-          pref.setLogout(true);
+        pref.clearClientSession();
+        pref.setLogout(true);
         ref(indexListProvider).bottomMenu(1);
         loginMethCtrl.text =
             pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
@@ -519,7 +519,7 @@ class AuthProvider extends DefaultChangeNotifier {
             .showSnackBar(warningMessage(context, 'Logged out'));
 
         Navigator.of(context).pop();
-  ref(websocketProvider).  closeSocket();
+        // ref(websocketProvider).closeSocket();
         Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, (route) => false);
       }
@@ -751,28 +751,28 @@ class AuthProvider extends DefaultChangeNotifier {
       // await ref(stocksProvide).getNews();
 
       // if (pref.islogIn!) {
-        await ref(indexListProvider).checkSession(context);
-        await ref(marketWatchProvider).changeWlName("", "No");
-        _logoutMsg = "";
+      await ref(indexListProvider).checkSession(context);
+      await ref(marketWatchProvider).changeWlName("", "No");
+      _logoutMsg = "";
 
-        if (ref(indexListProvider).checkSess!.stat == "Ok") {
-          //  ref(indexListProvider).fetchNotifyMsg();
-          await ref(portfolioProvider).fetchHoldings(context, "");
+      if (ref(indexListProvider).checkSess!.stat == "Ok") {
+        //  ref(indexListProvider).fetchNotifyMsg();
+        await ref(portfolioProvider).fetchHoldings(context, "");
 
-          await ref(marketWatchProvider).fetchMWList(context);
+        await ref(marketWatchProvider).fetchMWList(context);
 
-          await ref(indexListProvider).getDeafultIndexList(context);
-          await ref(portfolioProvider).fetchPositionBook(context, false);
-          await ref(orderProvider).fetchOrderBook(context, false);
-          await ref(orderProvider).fetchTradeBook(context);
+        await ref(indexListProvider).getDeafultIndexList(context);
+        await ref(portfolioProvider).fetchPositionBook(context, false);
+        await ref(orderProvider).fetchOrderBook(context, false);
+        await ref(orderProvider).fetchTradeBook(context);
 
-          await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
+        await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
 
-          ref(userProfileProvider).fetchUserDetail(
-              context, "${pref.clientId}", "${pref.clientSession}", "");
-              Navigator.pushNamedAndRemoveUntil(
-          context, Routes.homeScreen, (route) => false);
-      // if (pref.islogIn!) {
+        ref(userProfileProvider).fetchUserDetail(
+            context, "${pref.clientId}", "${pref.clientSession}", "");
+        Navigator.pushNamedAndRemoveUntil(
+            context, Routes.homeScreen, (route) => false);
+        // if (pref.islogIn!) {
         showModalBottomSheet(
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
@@ -790,34 +790,31 @@ class AuthProvider extends DefaultChangeNotifier {
                   },
                   child: const RiskDisclousreBottomSheet());
             });
-        }
+      }
       // }
       // ConstantName.timer!.cancel();
-      
+
       // }
     } finally {
       initLaod(false);
     }
   }
 
-  ifSessionExpired(BuildContext context){
-     pref.clearClientSession();
-          pref.setLogout(true);
-          ref(indexListProvider).bottomMenu(1);
-        pref.setHideLoginOptBtn(false);
-          pref.clearClientSession();
-          ConstantName.sessCheck = false;
-       loginMethCtrl.text =
-              pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "Session Expired,Kindly login Again!"));
-          ConstantName.timer!.cancel();
+  ifSessionExpired(BuildContext context) {
+    pref.clearClientSession();
+    pref.setLogout(true);
+    ref(indexListProvider).bottomMenu(1);
+    pref.setHideLoginOptBtn(false);
+    pref.clearClientSession();
+    ConstantName.sessCheck = false;
+    loginMethCtrl.text = pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
+    ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, "Session Expired,Kindly login Again!"));
+    ConstantName.timer!.cancel();
 
- ref(websocketProvider).  closeSocket();
-     
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-             
-              (route) => false);
+    ref(websocketProvider).closeSocket();
+
+    Navigator.pushNamedAndRemoveUntil(
+        context, Routes.loginScreen, (route) => false);
   }
 }
