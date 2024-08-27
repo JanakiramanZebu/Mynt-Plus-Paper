@@ -1,8 +1,8 @@
 class ApiLinks {
 // UAT----
 
-  // String get goMyntURL => "https://uat.mynt.in/NorenWClient";
-  // static String wsURL = 'wss://uat.mynt.in/NorenWSMob/';
+  String get goMyntURL => "https://uat.mynt.in/NorenWClient";
+  static String wsURL = 'wss://uat.mynt.in/NorenWSMob/';
 
   static String source = "MOB";
   // static String userID = "ZVK0106";
@@ -14,8 +14,8 @@ class ApiLinks {
 
 // GO MYNT-----
 
-  String get goMyntURL => "https://go.mynt.in/NorenWClient";
-  static String wsURL = 'wss://go.mynt.in/NorenWS/';
+  // String get goMyntURL => "https://go.mynt.in/NorenWClient";
+  // static String wsURL = 'wss://go.mynt.in/NorenWS/';
   String get newsurl => "https://be.mynt.in/news";
 
   ///generate api key
@@ -100,9 +100,8 @@ class ApiLinks {
 
 // Local Server ---------
 
-  // String get mainBaseURL => 'https://copy.mynt.in/uat';
-  String get mainBaseURL => 'https://copy.mynt.in';
-  // String get mobileLogin => '$mainBaseURL/mobile_login';
+  String get mainBaseURL => 'https://copy.mynt.in/uat';
+  // String get mainBaseURL => 'https://copy.mynt.in'; 
   String get mobileLogin => '$mainBaseURL/MobileLogin';
 
   String get mobileOtp => '$mainBaseURL/otp_verify';
