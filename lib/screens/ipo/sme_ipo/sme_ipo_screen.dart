@@ -10,7 +10,6 @@ import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
 
-
 class SMEIPO extends ConsumerWidget {
   const SMEIPO({super.key});
 
@@ -186,8 +185,7 @@ class SMEIPO extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(50),
                                 )),
                             onPressed: () async {
-                              await context.read(fundProvider).fetchviewupiid();
-                              // await context.read(ipoProvide).smeipocategory();
+                              await context.read(fundProvider).fetchUpiDetail();
                               Navigator.pushNamed(
                                 context,
                                 Routes.smeapplyIPO,
@@ -210,10 +208,7 @@ class SMEIPO extends ConsumerWidget {
                 },
                 itemCount: ipos.smeIpoModel!.sMEIPO!.length,
                 separatorBuilder: (BuildContext context, int index) {
-                  return Container(
-                    color: const Color(0xffF1F3F8),
-                    height: 7,
-                  );
+                  return Container(color: const Color(0xffF1F3F8), height: 7);
                 },
               )
             : Container()

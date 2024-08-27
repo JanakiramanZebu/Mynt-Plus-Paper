@@ -272,7 +272,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   StockData? _fundamentalData;
   StockData? get fundamentalData => _fundamentalData;
 
-  String _firstGetData = "0";
+  final String _firstGetData = "0";
   String get fistGetData => _firstGetData;
 
   final FToast _fToast = FToast();
@@ -474,6 +474,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   updateOptStrPrc(String val) {
     _optionStrPrc = val;
   }
+
+// depthWLAddBtn(){
+//     _isAdded = List<bool>.filled(_searchScripModel!.values!.length, false);
+// }
 
   void activeTsym(String symbol, String exch) {
     _tradeSym = symbol;

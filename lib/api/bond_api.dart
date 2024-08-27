@@ -1,6 +1,4 @@
-// import 'dart:developer';
-
-import 'dart:developer';
+ 
 
 import '../api/core/api_core.dart';
 import '../models/bonds_data/govt_bonds.dart';
@@ -75,7 +73,7 @@ mixin BondApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      log("Govt Bond ==>$json");
+      // log("Govt Bond ==>$json");
 
       return LedgerBalModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {

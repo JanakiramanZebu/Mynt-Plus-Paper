@@ -1,4 +1,3 @@
- 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -11,13 +10,9 @@ import '../../../../res/res.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 
-
 class SMEApplyIpoScreen extends StatefulWidget {
   final SMEIPO smeipo;
-  const SMEApplyIpoScreen({
-    super.key,
-    required this.smeipo,
-  });
+  const SMEApplyIpoScreen({super.key, required this.smeipo});
 
   @override
   State<SMEApplyIpoScreen> createState() => _SMEApplyIpoScreenState();
@@ -88,7 +83,6 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
             backgroundColor: colors.colorWhite,
             shadowColor: const Color(0xffECEFF3),
             title: Text("SME IPO Order", style: textStyles.appBarTitleTxt),
-            
           ),
           body: ListView(
             // crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,7 +231,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
               //          else {
               //           addIpo[addIpo.length - 1].qualityerrortext = "";
               //         }
-                      
+
               //       });
               //     },
               //   )),
@@ -352,8 +346,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                       .isEmpty
                                                   ? "* Value is required"
                                                   : "Value cannot be 0";
-                                        } else if (ipo
-                                                    .ipoCategoryvalue ==
+                                        } else if (ipo.ipoCategoryvalue ==
                                                 "Individual"
                                             ? addIpo[index].requriedprice >
                                                 200000
@@ -426,9 +419,11 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                         : "Value cannot be 0";
                                               } else if (ipo.ipoCategoryvalue ==
                                                       "Individual"
-                                                  ? addIpo[index].requriedprice >
+                                                  ? addIpo[index]
+                                                          .requriedprice >
                                                       200000
-                                                  : addIpo[index].requriedprice >
+                                                  : addIpo[index]
+                                                          .requriedprice >
                                                       500000) {
                                                 ipo.ipoCategoryvalue ==
                                                         "Individual"
@@ -477,10 +472,8 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                             : "Value cannot be 0";
                                   } else if (ipo.ipoCategoryvalue ==
                                           "Individual"
-                                      ? addIpo[index].requriedprice >
-                                          200000
-                                      : addIpo[index].requriedprice >
-                                          500000) {
+                                      ? addIpo[index].requriedprice > 200000
+                                      : addIpo[index].requriedprice > 500000) {
                                     ipo.ipoCategoryvalue == "Individual"
                                         ? addIpo[index].qualityerrortext =
                                             "Maximum investment upto 2,00,000 only "
@@ -511,8 +504,8 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                             child: TextFormField(
                               style: textStyle(
                                   addIpo[index].isChecked == true
-                                      ? Color(0xff666666)
-                                      : Color(0xff000000),
+                                      ? const Color(0xff666666)
+                                      : const Color(0xff000000),
                                   14,
                                   FontWeight.w600),
                               keyboardType: TextInputType.number,
@@ -817,20 +810,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
           total: addIpo[i].requriedprice.toDouble()));
     }
 
-    await context.read(ipoProvide).fetchupiidvalidation(
-        context,
-        upiid.viewupiid.text,
-        "343245",
-        menudata,
-        iposbids,
-        iposupiid);
+    await context.read(ipoProvide).fetchVerifyUpi(
+        context, upiid.viewupiid.text, "343245", menudata, iposbids, iposupiid);
   }
-}
-
-TextStyle textStyle(Color color, double fontSize, fWeight) {
-  return TextStyle(
-    fontWeight: fWeight,
-    color: color,
-    fontSize: fontSize,
-  );
 }

@@ -4,14 +4,14 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/core/api_export.dart';
-import '../locator/locator.dart';
-import '../models/fund_model/upivalidation_model.dart';
+import '../locator/locator.dart'; 
 import '../models/ipo_model/ipo_mainstream_model.dart';
 import '../models/ipo_model/ipo_order_book_model.dart';
 import '../models/ipo_model/ipo_order_res_model.dart';
 import '../models/ipo_model/ipo_performance_model.dart';
 import '../models/ipo_model/ipo_place_order_model.dart';
 import '../models/ipo_model/ipo_sme_model.dart';
+import '../models/mf_model/mf_bank_detail_model.dart';
 import '../res/res.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'core/default_change_notifier.dart';
@@ -53,8 +53,7 @@ class IPOProvider extends DefaultChangeNotifier {
 
   final TextEditingController viewupiid = TextEditingController();
 
-  UpiIdValidationModel? _upiIdValidationModel;
-  UpiIdValidationModel? get upiIdValidationModel => _upiIdValidationModel;
+ 
 
   SmeIpoModel? _smeIpoModel;
   SmeIpoModel? get smeIpoModel => _smeIpoModel;
@@ -86,6 +85,9 @@ class IPOProvider extends DefaultChangeNotifier {
   changeTabIndex(int index) {
     _selectedTab = index;
   }
+
+VerifyUPIModel? _verifyUPIModel;
+VerifyUPIModel? get verifyUPIModel=>_verifyUPIModel;
 
   // smeipocategory() {
   //   for (var main = 0; main < smeIpoModel!.sMEIPO!.length; main++) {
@@ -227,7 +229,7 @@ for (var element in  mainStreamIpoModel!.mainIPO!) {
       }
     }).toList();
 
-    log(" sdf ${ipoCategory}");
+    log(" sdf $ipoCategory");
     ipoCategoryvalue = ipoCategory[0]["subCatCode"];
     _maxUPIAmt = double.parse(ipoCategory[0]["upiLimit"]);
     notifyListeners();
@@ -300,7 +302,7 @@ for (var element in ipoCategory) {
   if (val==element['subCatCode']) {
     _maxUPIAmt=double.parse(element['upiLimit']);
 
-    print("${ _maxUPIAmt}");
+    print("$_maxUPIAmt");
   }
 }
 
@@ -383,13 +385,13 @@ for (var element in ipoCategory) {
     }
   }
 
-  Future fetchupiidvalidation(BuildContext context, String upiId, String accno,
+  Future fetchVerifyUpi(BuildContext context, String upiId, String accno,
       MenuData menudata, List<IposBid> iposbids, String iposupiid) async {
     try {
       toggleLoadingOn(true);
-      _upiIdValidationModel = await api.getupiidvalidation(upiId, accno);
-      if (_upiIdValidationModel!.data!.verifiedVPAStatus1 == "Available" ||
-          _upiIdValidationModel!.data!.verifiedVPAStatus2 == "Available") {
+    _verifyUPIModel = await api.getVerifyUpi(upiId, accno);
+      if (_verifyUPIModel!.data!.verifiedVPAStatus1 == "Available" ||
+          _verifyUPIModel!.data!.verifiedVPAStatus2 == "Available") {
         getipoplaceorder(context, menudata, iposbids, iposupiid);
         getipoorderbookmodel();
         ipotab();

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/svg.dart'; 
+import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
-import 'mf_order_screen.dart';
+// import 'mf_order_screen.dart';
 
 class MfCategoryList extends ConsumerWidget {
   const MfCategoryList({super.key});
@@ -17,6 +18,7 @@ class MfCategoryList extends ConsumerWidget {
     final theme = watch(themeProvider);
 
     final mfData = watch(mfProvider);
+        final fund = watch(fundProvider);
     return Column(
       children: [
         Container(
@@ -234,19 +236,23 @@ class MfCategoryList extends ConsumerWidget {
                 ),
                 InkWell(
                   onTap: () async {
-                    await mfData.fetchUpiDetail();
-                    await mfData.fetchBankDetail();
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return MFOrderScreen(
-                              mfData: mfData.mutualFundList![index]);
-                        });
+                    await fund.fetchUpiDetail();
+                    await fund.fetchBankDetail();
                     if (mfData.mutualFundList![index].sIPFLAG == "Y") {
                       await mfData.fetchMFSipData(
                           "${mfData.mutualFundList![index].iSIN}",
                           "${mfData.mutualFundList![index].schemeCode}");
                     }
+                    // showDialog(
+                    //     context: context,
+                    //     builder: (BuildContext context) {
+                    //       return MFOrderScreen(
+                    //           mfData: mfData.mutualFundList![index]);
+                    //     });
+
+
+                    Navigator.pushNamed(context, Routes.mforderScreen,arguments: mfData.mutualFundList![index] );
+                    
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 6),

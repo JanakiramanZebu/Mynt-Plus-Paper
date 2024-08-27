@@ -112,221 +112,221 @@ class DepthAckWSResponse {
   });
 
   factory DepthAckWSResponse.fromJson(Map<String, dynamic> json) {
-    final String? task =
+    final String task =
         json["t"].toString() == "null"
             ? "0"
             : json["t"].toString();
-    final String? exchange =
+    final String exchange =
         json["e"].toString() == "null"
             ? "0"
             : json["e"].toString();
-    final String? token =
+    final String token =
         json["tk"].toString() == "null"
             ? "0"
             : json["tk"].toString();
-    final String? ltp =
+    final String ltp =
         json["lp"].toString() == "null"
             ? "0"
             : json["lp"].toString();
-    final String? percentageChange =
+    final String percentageChange =
         json["pc"].toString() == "null"
             ? "0"
             : json["pc"].toString();
-    final String? open =
+    final String open =
         json["o"].toString() == "null"
             ? "0"
             : json["o"].toString();
-    final String? high =
+    final String high =
         json["h"].toString() == "null"
             ? "0"
             : json["h"].toString();
-    final String? low =
+    final String low =
         json["l"].toString() == "null"
             ? "0"
             : json["l"].toString();
-    final String? close =
+    final String close =
         json["c"].toString() == "null"
             ? "0"
             : json["c"].toString();
-    final String? averageTradePrice =
+    final String averageTradePrice =
         json["ap"].toString() == "null"
             ? "0"
             : json["ap"].toString();
-    final String? volume =
+    final String volume =
         json["v"].toString() == "null"
             ? "0"
             : json["v"].toString();
-    final String? tsVal =
+    final String tsVal =
         json["ts"].toString() == "null"
             ? "0"
             : json["ts"].toString();
-    final String? tiVal =
+    final String tiVal =
         json["lp"].toString() == "null"
             ? "0"
             : json["lp"].toString();
-    final String? bo1Val =
+    final String bo1Val =
         json["bo1"].toString() == "null"
             ? "0"
             : json["bo1"].toString();
-    final String? bo2Val =
+    final String bo2Val =
         json["bo2"].toString() == "null"
             ? "0"
             : json["bo2"].toString();
-    final String? bo3Val =
+    final String bo3Val =
         json["bo3"].toString() == "null"
             ? "0"
             : json["bo3"].toString();
-    final String? bo4Val =
+    final String bo4Val =
         json["bo4"].toString() == "null"
             ? "0"
             : json["bo4"].toString();
-    final String? bo5Val =
+    final String bo5Val =
         json["bo5"].toString() == "null"
             ? "0"
             : json["bo5"].toString();
-    final String? so1Val =
+    final String so1Val =
         json["so1"].toString() == "null"
             ? "0"
             : json["so1"].toString();
-    final String? so2Val =
+    final String so2Val =
         json["so2"].toString() == "null"
             ? "0"
             : json["so2"].toString();
-    final String? so3Val =
+    final String so3Val =
         json["so3"].toString() == "null"
             ? "0"
             : json["so3"].toString();
-    final String? so4Val =
+    final String so4Val =
         json["so4"].toString() == "null"
             ? "0"
             : json["so4"].toString();
-    final String? so5Val =
+    final String so5Val =
         json["so5"].toString() == "null"
             ? "0"
             : json["so5"].toString();
-    final String? bp1Val =
+    final String bp1Val =
         json["bp1"].toString() == "null"
             ? "0"
             : json["bp1"].toString();
-    final String? bp2Val =
+    final String bp2Val =
         json["bp2"].toString() == "null"
             ? "0"
             : json["bp2"].toString();
-    final String? bp3Val =
+    final String bp3Val =
         json["bp3"].toString() == "null"
             ? "0"
             : json["bp3"].toString();
-    final String? bp4Val =
+    final String bp4Val =
         json["bp4"].toString() == "null"
             ? "0"
             : json["bp4"].toString();
-    final String? bp5Val =
+    final String bp5Val =
         json["bp5"].toString() == "null"
             ? "0"
             : json["bp5"].toString();
 
-    final String? bq1Val =
+    final String bq1Val =
         json["bq1"].toString() == "null"
             ? "0"
             : json["bq1"].toString();
-    final String? bq2Val =
+    final String bq2Val =
         json["bq2"].toString() == "null"
             ? "0"
             : json["bq2"].toString();
-    final String? bq3Val =
+    final String bq3Val =
         json["bq3"].toString() == "null"
             ? "0"
             : json["bq3"].toString();
-    final String? bq4Val =
+    final String bq4Val =
         json["bq4"].toString() == "null"
             ? "0"
             : json["bq4"].toString();
-    final String? bq5Val =
+    final String bq5Val =
         json["bq5"].toString() == "null"
             ? "0"
             : json["bq5"].toString();
-    final String? lsVal =
+    final String lsVal =
         json["ls"].toString() == "null"
             ? "0"
             : json["ls"].toString();
-    final String? ltqVal =
+    final String ltqVal =
         json["ltq"].toString() == "null"
             ? "0"
             : json["ltq"].toString();
-    final String? lttVal =
+    final String lttVal =
         json["ltq"].toString() == "null"
             ? "0"
             : json["ltt"].toString();
-    final String? sp1Val =
+    final String sp1Val =
         json["sp1"].toString() == "null"
             ? "0"
             : json["sp1"].toString();
-    final String? sp2Val =
+    final String sp2Val =
         json["sp2"].toString() == "null"
             ? "0"
             : json["sp2"].toString();
-    final String? sp3Val =
+    final String sp3Val =
         json["sp3"].toString() == "null"
             ? "0"
             : json["sp3"].toString();
-    final String? sp4Val =
+    final String sp4Val =
         json["sp4"].toString() == "null"
             ? "0"
             : json["sp4"].toString();
-    final String? sp5Val =
+    final String sp5Val =
         json["sp5"].toString() == "null"
             ? "0"
             : json["sp5"].toString();
-    final String? oiVal =
+    final String oiVal =
         json["oi"].toString() == "null"
             ? "0"
             : json["oi"].toString();
-    final String? ppVal =
+    final String ppVal =
         json["pp"].toString() == "null"
             ? "0"
             : json["pp"].toString();
 
-    final String? sq1Val =
+    final String sq1Val =
         json["sq1"].toString() == "null"
             ? "0"
             : json["sq1"].toString();
-    final String? sq2Val =
+    final String sq2Val =
         json["sq2"].toString() == "null"
             ? "0"
             : json["sq2"].toString();
-    final String? sq3Val =
+    final String sq3Val =
         json["sq3"].toString() == "null"
             ? "0"
             : json["sq3"].toString();
-    final String? sq4Val =
+    final String sq4Val =
         json["sq4"].toString() == "null"
             ? "0"
             : json["sq4"].toString();
-    final String? sq5Val =
+    final String sq5Val =
         json["sq5"].toString() == "null"
             ? "0"
             : json["sq5"].toString();
-    final String? h52Val =
+    final String h52Val =
         json["52h"].toString() == "null"
             ? "0"
             : json["52h"].toString();
-    final String? l52Val =
+    final String l52Val =
         json["52l"].toString() == "null"
             ? "0"
             : json["52l"].toString();
-    final String? tbqVal =
+    final String tbqVal =
         json["tbq"].toString() == "null"
             ? "0"
             : json["tbq"].toString();
-    final String? tsqVal =
+    final String tsqVal =
         json["tsq"].toString() == "null"
             ? "0"
             : json["tsq"].toString();
-    final String? lcVal =
+    final String lcVal =
         json["lc"].toString() == "null"
             ? "0"
             : json["lc"].toString();
-    final String? ucVal =
+    final String ucVal =
         json["uc"].toString() == "null"
             ? "0"
             : json["uc"].toString();

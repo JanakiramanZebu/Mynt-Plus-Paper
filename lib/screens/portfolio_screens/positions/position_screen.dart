@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
-import '../../../provider/portfolio_provider.dart'; 
+import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
-import '../../../routes/route_names.dart'; 
+import '../../../routes/route_names.dart';
+import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import 'filter_scrip_bottom_sheet.dart';
 import 'position_list_card.dart';
@@ -76,7 +77,7 @@ class PositionScreen extends ConsumerWidget {
                                       Text(
                                           "₹${positionBook.isDay ? positionBook.totUnRealMtm : positionBook.totMtM}",
                                           style: textStyle(
-                                             positionBook.isDay
+                                              positionBook.isDay
                                                   ? positionBook.totUnRealMtm
                                                           .startsWith("-")
                                                       ? colors.darkred
@@ -134,7 +135,7 @@ class PositionScreen extends ConsumerWidget {
                                           Text(
                                               "₹${positionBook.isDay ? positionBook.totBookedPnL : positionBook.totPnL}",
                                               style: textStyle(
-                                                 positionBook.isDay
+                                                  positionBook.isDay
                                                       ? positionBook
                                                               .totBookedPnL
                                                               .startsWith("-")
@@ -238,8 +239,8 @@ class PositionScreen extends ConsumerWidget {
                                                                 .colorBlue))),
                                         ElevatedButton(
                                           onPressed: () async {
-                                            await positionBook
-                                                .exitAllPosition(context,false);
+                                            await positionBook.exitAllPosition(
+                                                context, false);
                                             Navigator.of(context).pop(true);
                                           },
                                           style: ElevatedButton.styleFrom(
@@ -300,8 +301,8 @@ class PositionScreen extends ConsumerWidget {
                                   padding: const EdgeInsets.only(right: 12),
                                   child: SvgPicture.asset(assets.filterLines,
                                       color: theme.isDarkMode
-                                      ?Color(0xffBDBDBD)
-                                      :colors.colorGrey),
+                                          ? const Color(0xffBDBDBD)
+                                          : colors.colorGrey),
                                 )),
                             InkWell(
                                 onTap: () {
@@ -311,9 +312,10 @@ class PositionScreen extends ConsumerWidget {
                                   padding: const EdgeInsets.only(
                                       right: 12, left: 10),
                                   child: SvgPicture.asset(assets.searchIcon,
-                                      width: 19, color: theme.isDarkMode
-                                      ?Color(0xffBDBDBD)
-                                      :colors.colorGrey),
+                                      width: 19,
+                                      color: theme.isDarkMode
+                                          ? const Color(0xffBDBDBD)
+                                          : colors.colorGrey),
                                 )),
                           ],
                         )
@@ -426,7 +428,7 @@ class PositionScreen extends ConsumerWidget {
                                           listofPosition[index].qty != "0") {
                                         Navigator.pushNamed(
                                             context, Routes.positionExit,
-                                            arguments:  listofPosition);
+                                            arguments: listofPosition);
                                       }
                                     },
                                     onTap: () async {
@@ -434,7 +436,8 @@ class PositionScreen extends ConsumerWidget {
                                           .read(marketWatchProvider)
                                           .fetchLinkeScrip(
                                               "${listofPosition[index].token}",
-                                              "${listofPosition[index].exch}",context);
+                                              "${listofPosition[index].exch}",
+                                              context);
 
                                       await watch(marketWatchProvider)
                                           .fetchScripQuote(
@@ -452,7 +455,6 @@ class PositionScreen extends ConsumerWidget {
                                             .add({
                                           "btnName": "Fundamental",
                                           "imgPath": assets.dInfo,
-                                         
                                           "case":
                                               "Click here to view fundamental data."
                                         });
@@ -515,7 +517,8 @@ class PositionScreen extends ConsumerWidget {
                               onTap: () async {
                                 await context.read(marketWatchProvider).fetchLinkeScrip(
                                     "${positionBook.positionSearchItem[index].token}",
-                                    "${positionBook.positionSearchItem[index].exch}",context);
+                                    "${positionBook.positionSearchItem[index].exch}",
+                                    context);
 
                                 await watch(marketWatchProvider).fetchScripQuote(
                                     "${positionBook.positionSearchItem[index].token}",
@@ -534,7 +537,6 @@ class PositionScreen extends ConsumerWidget {
                                       .add({
                                     "btnName": "Fundamental",
                                     "imgPath": assets.dInfo,
-                                     
                                     "case":
                                         "Click here to view fundamental data."
                                   });
@@ -577,11 +579,5 @@ class PositionScreen extends ConsumerWidget {
                     )
             ]),
           );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

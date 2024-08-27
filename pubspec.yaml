@@ -39,7 +39,7 @@ dependencies:
   flutter_svg: ^2.0.9
   google_fonts: ^6.2.1
   get_it: ^7.6.7
-  web_socket_channel: ^3.0.0
+  web_socket_channel: ^3.0.1
   shared_preferences: ^2.2.3
   flutter_phoenix: ^1.1.1
   remove_emoji_input_formatter: ^0.0.1+1

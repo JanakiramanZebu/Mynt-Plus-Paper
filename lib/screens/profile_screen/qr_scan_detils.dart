@@ -165,7 +165,6 @@ class QrDetails extends ConsumerWidget {
                            await context
                               .read(userProfileProvider)
                               .fetchQR(context, details.uniqueId.toString(),camera);
-                          ;
                         },
                         child: Text(
                           "Confirm",

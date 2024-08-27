@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
-import 'package:google_fonts/google_fonts.dart';  
+import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/res.dart'; 
+import '../../../res/res.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/functions.dart';
@@ -87,8 +87,7 @@ class MFHoldingScreen extends ConsumerWidget {
                                         Text(
                                             "(${mfHolding.mfTotalPnlPerchng.isNaN ? 0.00 : mfHolding.mfTotalPnlPerchng.toStringAsFixed(2)}%)",
                                             style: textStyle(
-                                                mfHolding
-                                                        .mfTotalPnlPerchng
+                                                mfHolding.mfTotalPnlPerchng
                                                         .toString()
                                                         .startsWith("-")
                                                     ? colors.darkred
@@ -101,31 +100,6 @@ class MFHoldingScreen extends ConsumerWidget {
                                 )
                               ],
                             ),
-                            // const SizedBox(height: 16),
-                            // Row(
-                            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            //   children: [
-                            //     Column(
-                            //       crossAxisAlignment: CrossAxisAlignment.start,
-                            //       children: [
-                            //         Text("Current Value",
-                            //             style: textStyle(
-                            //                 const Color(0xff5E6B7D),
-                            //                 12,
-                            //                 FontWeight.w500)),
-                            //         const SizedBox(height: 6),
-                            //         Text(
-                            //             "₹${getFormatter(value: mfHolding.mfTotCurrentVal, v4d: false, noDecimal: false)}",
-                            //             style: textStyle(
-                            //                 theme.isDarkMode
-                            //                     ? colors.colorWhite
-                            //                     : colors.colorBlack,
-                            //                 14,
-                            //                 FontWeight.w500)),
-                            //       ],
-                            //     ),
-                            //   ],
-                            // ),
                           ],
                         ),
                       ),
@@ -173,9 +147,9 @@ class MFHoldingScreen extends ConsumerWidget {
                                                 right: 12),
                                             child: SvgPicture.asset(
                                                 assets.filterLines,
-                                               color: theme.isDarkMode
-                                      ?Color(0xffBDBDBD)
-                                      :colors.colorGrey),
+                                                color: theme.isDarkMode
+                                                    ? const Color(0xffBDBDBD)
+                                                    : colors.colorGrey),
                                           )),
                                       InkWell(
                                         onTap: () {
@@ -188,8 +162,8 @@ class MFHoldingScreen extends ConsumerWidget {
                                               assets.searchIcon,
                                               width: 19,
                                               color: theme.isDarkMode
-                                      ?Color(0xffBDBDBD)
-                                      :colors.colorGrey),
+                                                  ? const Color(0xffBDBDBD)
+                                                  : colors.colorGrey),
                                         ),
                                       ),
                                     ],
@@ -310,13 +284,13 @@ class MFHoldingScreen extends ConsumerWidget {
                                                           colors.colorWhite,
                                                           12,
                                                           FontWeight.w500),
-                                                      margin:
-                                                          const EdgeInsets.symmetric(
-                                                              horizontal: 16),
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                              horizontal: 14,
-                                                              vertical: 5),
+                                                      margin: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 16),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 14,
+                                                          vertical: 5),
                                                       message:
                                                           "${mfHolding.mfHoldingsModel![index].exchTsym![0].cname}",
                                                       triggerMode:
@@ -410,7 +384,7 @@ class MFHoldingScreen extends ConsumerWidget {
                                                       Text(
                                                           "₹${mfHolding.mfHoldingsModel![index].exchTsym![0].pnl}",
                                                           style: textStyle(
-                                                            mfHolding
+                                                              mfHolding
                                                                       .mfHoldingsModel![
                                                                           index]
                                                                       .exchTsym![
@@ -418,14 +392,16 @@ class MFHoldingScreen extends ConsumerWidget {
                                                                       .pnl!
                                                                       .startsWith(
                                                                           "-")
-                                                                  ? colors.darkred
-                                                                  : colors.ltpgreen,
+                                                                  ? colors
+                                                                      .darkred
+                                                                  : colors
+                                                                      .ltpgreen,
                                                               14,
                                                               FontWeight.w500)),
                                                       Text(
                                                           " (${mfHolding.mfHoldingsModel![index].exchTsym![0].pnlPerChng == "NaN" ? 0.0 : mfHolding.mfHoldingsModel![index].exchTsym![0].pnlPerChng}%)",
                                                           style: textStyle(
-                                                             mfHolding
+                                                              mfHolding
                                                                       .mfHoldingsModel![
                                                                           index]
                                                                       .exchTsym![
@@ -433,14 +409,14 @@ class MFHoldingScreen extends ConsumerWidget {
                                                                       .pnlPerChng!
                                                                       .startsWith(
                                                                           "-")
-                                                                  ? colors.darkred
-                                                                  : mfHolding
-                                                                              .mfHoldingsModel![index]
-                                                                              .exchTsym![0]
-                                                                              .pnlPerChng ==
+                                                                  ? colors
+                                                                      .darkred
+                                                                  : mfHolding.mfHoldingsModel![index].exchTsym![0].pnlPerChng ==
                                                                           "NaN"
-                                                                      ? colors.ltpgrey
-                                                                      : colors.ltpgreen,
+                                                                      ? colors
+                                                                          .ltpgrey
+                                                                      : colors
+                                                                          .ltpgreen,
                                                               12,
                                                               FontWeight.w500)),
                                                     ],
@@ -518,187 +494,206 @@ class MFHoldingScreen extends ConsumerWidget {
                                 shrinkWrap: true,
                                 itemBuilder: (BuildContext context, int index) {
                                   return Container(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Expanded(
-                                              child: Tooltip(
-                                                textStyle: textStyle(
-                                                    colors.colorWhite,
-                                                    12,
-                                                    FontWeight.w500),
-                                                margin: const EdgeInsets.symmetric(
-                                                    horizontal: 16),
-                                                padding: const EdgeInsets.symmetric(
-                                                    horizontal: 14,
-                                                    vertical: 5),
-                                                message:
-                                                    "${mfHolding.mfHoldingSearchItem![index].exchTsym![0].cname}",
-                                                triggerMode:
-                                                    TooltipTriggerMode.tap,
-                                                child: Text(
-                                                    "${mfHolding.mfHoldingSearchItem![index].exchTsym![0].cname} ",
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: textStyles
-                                                        .scripNameTxtStyle
-                                                        .copyWith(
-                                                            color: theme.isDarkMode
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Tooltip(
+                                                    textStyle: textStyle(
+                                                        colors.colorWhite,
+                                                        12,
+                                                        FontWeight.w500),
+                                                    margin: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 16),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 14,
+                                                        vertical: 5),
+                                                    message:
+                                                        "${mfHolding.mfHoldingSearchItem![index].exchTsym![0].cname}",
+                                                    triggerMode:
+                                                        TooltipTriggerMode.tap,
+                                                    child: Text(
+                                                        "${mfHolding.mfHoldingSearchItem![index].exchTsym![0].cname} ",
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: textStyles
+                                                            .scripNameTxtStyle
+                                                            .copyWith(
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorBlack)),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 120)
+                                              ],
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                CustomExchBadge(
+                                                    exch:
+                                                        "${mfHolding.mfHoldingSearchItem![index].exchTsym![0].exch}"),
+                                                Row(
+                                                  children: [
+                                                    Text("NAV: ",
+                                                        style: textStyle(
+                                                            const Color(
+                                                                0xff5E6B7D),
+                                                            13,
+                                                            FontWeight.w600)),
+                                                    Text(
+                                                        "₹${mfHolding.mfHoldingSearchItem![index].exchTsym![0].nav}",
+                                                        style: textStyle(
+                                                            theme.isDarkMode
                                                                 ? colors
                                                                     .colorWhite
                                                                 : colors
-                                                                    .colorBlack)),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 120)
-                                          ],
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            CustomExchBadge(
-                                                exch:
-                                                    "${mfHolding.mfHoldingSearchItem![index].exchTsym![0].exch}"),
-                                            Row(
-                                              children: [
-                                                Text("NAV: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    "₹${mfHolding.mfHoldingSearchItem![index].exchTsym![0].nav}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                                    .colorBlack,
+                                                            14,
+                                                            FontWeight.w500)),
+                                                  ],
+                                                ),
                                               ],
                                             ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Divider(
-                                            color: theme.isDarkMode
-                                                ? colors.darkColorDivider
-                                                : colors.colorDivider),
-                                        const SizedBox(height: 3),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
+                                            const SizedBox(height: 4),
+                                            Divider(
+                                                color: theme.isDarkMode
+                                                    ? colors.darkColorDivider
+                                                    : colors.colorDivider),
+                                            const SizedBox(height: 3),
                                             Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
-                                                Text("Qty: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        14,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    "${mfHolding.mfHoldingSearchItem![index].holdqty ?? 0} @ ₹${mfHolding.mfHoldingSearchItem![index].uploadPrc}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                  children: [
+                                                    Text("Qty: ",
+                                                        style: textStyle(
+                                                            const Color(
+                                                                0xff5E6B7D),
+                                                            14,
+                                                            FontWeight.w500)),
+                                                    Text(
+                                                        "${mfHolding.mfHoldingSearchItem![index].holdqty ?? 0} @ ₹${mfHolding.mfHoldingSearchItem![index].uploadPrc}",
+                                                        style: textStyle(
+                                                            theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            14,
+                                                            FontWeight.w500)),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                  children: [
+                                                    Text(
+                                                        "₹${mfHolding.mfHoldingSearchItem![index].exchTsym![0].pnl}",
+                                                        style: textStyle(
+                                                            mfHolding
+                                                                    .mfHoldingSearchItem![
+                                                                        index]
+                                                                    .exchTsym![
+                                                                        0]
+                                                                    .pnl!
+                                                                    .startsWith(
+                                                                        "-")
+                                                                ? colors.darkred
+                                                                : colors
+                                                                    .ltpgreen,
+                                                            14,
+                                                            FontWeight.w500)),
+                                                    Text(
+                                                        " (${mfHolding.mfHoldingSearchItem![index].exchTsym![0].pnlPerChng == "NaN" ? 0.0 : mfHolding.mfHoldingSearchItem![index].exchTsym![0].pnlPerChng}%)",
+                                                        style: textStyle(
+                                                            mfHolding
+                                                                    .mfHoldingSearchItem![
+                                                                        index]
+                                                                    .exchTsym![
+                                                                        0]
+                                                                    .pnlPerChng!
+                                                                    .startsWith(
+                                                                        "-")
+                                                                ? colors.darkred
+                                                                : mfHolding
+                                                                            .mfHoldingSearchItem![
+                                                                                index]
+                                                                            .exchTsym![
+                                                                                0]
+                                                                            .pnlPerChng ==
+                                                                        "NaN"
+                                                                    ? colors
+                                                                        .ltpgrey
+                                                                    : colors
+                                                                        .ltpgreen,
+                                                            12,
+                                                            FontWeight.w500)),
+                                                  ],
+                                                ),
                                               ],
                                             ),
+                                            const SizedBox(height: 10),
                                             Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              children: [
-                                                Text(
-                                                    "₹${mfHolding.mfHoldingSearchItem![index].exchTsym![0].pnl}",
-                                                    style: textStyle(
-                                                        mfHolding
-                                                                .mfHoldingSearchItem![
-                                                                    index]
-                                                                .exchTsym![0]
-                                                                .pnl!
-                                                                .startsWith("-")
-                                                            ? colors.darkred
-                                                            : colors.ltpgreen,
-                                                        14,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    " (${mfHolding.mfHoldingSearchItem![index].exchTsym![0].pnlPerChng == "NaN" ? 0.0 : mfHolding.mfHoldingSearchItem![index].exchTsym![0].pnlPerChng}%)",
-                                                    style: textStyle(
-                                                      mfHolding
-                                                                .mfHoldingSearchItem![
-                                                                    index]
-                                                                .exchTsym![0]
-                                                                .pnlPerChng!
-                                                                .startsWith("-")
-                                                            ? colors.darkred
-                                                            : mfHolding
-                                                                        .mfHoldingSearchItem![
-                                                                            index]
-                                                                        .exchTsym![
-                                                                            0]
-                                                                        .pnlPerChng ==
-                                                                    "NaN"
-                                                                ? colors.ltpgrey
-                                                                : colors.ltpgreen,
-                                                        12,
-                                                        FontWeight.w500)),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Text("Inv: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        14,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    "₹${getFormatter(value: double.parse("${mfHolding.mfHoldingSearchItem![index].invested ?? 0.00}"), v4d: false, noDecimal: false)}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
-                                              ],
-                                            ),
-                                            Row(
-                                              children: [
-                                                Text("Cur: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        14,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    "₹${getFormatter(value: double.parse("${mfHolding.mfHoldingSearchItem![index].currentVal ?? 0.00}"), v4d: false, noDecimal: false)}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
-                                              ],
-                                            ),
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  );
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Text("Inv: ",
+                                                          style: textStyle(
+                                                              const Color(
+                                                                  0xff5E6B7D),
+                                                              14,
+                                                              FontWeight.w500)),
+                                                      Text(
+                                                          "₹${getFormatter(value: double.parse("${mfHolding.mfHoldingSearchItem![index].invested ?? 0.00}"), v4d: false, noDecimal: false)}",
+                                                          style: textStyle(
+                                                              theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack,
+                                                              14,
+                                                              FontWeight.w500)),
+                                                    ],
+                                                  ),
+                                                  Row(children: [
+                                                    Text("Cur: ",
+                                                        style: textStyle(
+                                                            const Color(
+                                                                0xff5E6B7D),
+                                                            14,
+                                                            FontWeight.w500)),
+                                                    Text(
+                                                        "₹${getFormatter(value: double.parse("${mfHolding.mfHoldingSearchItem![index].currentVal ?? 0.00}"), v4d: false, noDecimal: false)}",
+                                                        style: textStyle(
+                                                            theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            14,
+                                                            FontWeight.w500))
+                                                  ])
+                                                ])
+                                          ]));
                                 },
                                 itemCount:
                                     mfHolding.mfHoldingSearchItem!.length,
@@ -714,11 +709,5 @@ class MFHoldingScreen extends ConsumerWidget {
                               ),
                             )
                     ])));
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

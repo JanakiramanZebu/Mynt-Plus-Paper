@@ -1,14 +1,21 @@
 class ApiLinks {
+// UAT----
+
+  // String get goMyntURL => "https://uat.mynt.in/NorenWClient";
+  // static String wsURL = 'wss://uat.mynt.in/NorenWSMob/';
+
   static String source = "MOB";
   // static String userID = "ZVK0106";
   // static String session = "";
-  static String wsURL = 'wss://go.mynt.in/NorenWS/';
+  // static String wsURL = 'wss://go.mynt.in/NorenWS/';
   static String otp = "";
   static String userName = "";
   static bool showAppTutorial = true;
-// GO MYNT
+
+// GO MYNT-----
 
   String get goMyntURL => "https://go.mynt.in/NorenWClient";
+  static String wsURL = 'wss://go.mynt.in/NorenWS/';
   String get newsurl => "https://be.mynt.in/news";
 
   ///generate api key
@@ -49,6 +56,8 @@ class ApiLinks {
 
   String get userDetail => '$goMyntURL/UserDetails';
   String get clientDetail => '$goMyntURL/ClientDetails';
+  String get freezeAccount => '$goMyntURL/FreezeAccount';
+  String get blockAcct => '$goMyntURL/BlockAcct';
 
 // Trade data
 
@@ -89,11 +98,14 @@ class ApiLinks {
 
   String get logout => '$goMyntURL/Logout';
 
-// Local
+// Local Server ---------
+
+  // UAT-----
+
+  // String get mainBaseURL => 'https://copy.mynt.in/uat';
 
   String get mainBaseURL => 'https://copy.mynt.in';
 
-  // String get mobileLogin => '$mainBaseURL/mobile_login';
   String get mobileLogin => '$mainBaseURL/MobileLogin';
 
   String get mobileOtp => '$mainBaseURL/otp_verify';
@@ -168,7 +180,7 @@ class ApiLinks {
 
   //hdfc mainurl//
   String get hdfcmainurl => 'https://fundapi.mynt.in/hdfc/upi';
-  String get hdfcupicheck => '$hdfcmainurl/checkClientVPA';
+  String get verifyUPI => '$hdfcmainurl/checkClientVPA';
   //fund urlss///
   String get viewupiid => 'https://fundapi.mynt.in/withdraw/view_upi_id';
 

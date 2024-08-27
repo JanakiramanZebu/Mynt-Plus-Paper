@@ -37,7 +37,7 @@ class MFPerformance extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
           Container(
-              margin: EdgeInsets.only(top: 14, bottom: 12),
+              margin: const EdgeInsets.only(top: 14, bottom: 12),
               height: 320,
               width: MediaQuery.of(context).size.width,
               child: SfCartesianChart(
@@ -64,7 +64,7 @@ class MFPerformance extends ConsumerWidget {
                       isVisibleInLegend: true,
                       isVisible: true,
                       enableTooltip: true,
-                      borderColor: Color(0xff1e53e5),
+                      borderColor: const Color(0xff1e53e5),
                       borderWidth: 3,
                       legendIconType: LegendIconType.circle,
                       dataSource: mfData.data!,
@@ -78,7 +78,7 @@ class MFPerformance extends ConsumerWidget {
                       isVisibleInLegend: true,
                       isVisible: true,
                       enableTooltip: true,
-                      borderColor: Color(0xffD86F10),
+                      borderColor: const Color(0xffD86F10),
                       borderWidth: 3,
                       legendIconType: LegendIconType.image,
                       dataSource: mfData.data!,

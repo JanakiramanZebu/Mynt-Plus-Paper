@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
-
+import '../../sharedWidget/functions.dart';
 
 class ScripDetailDialogue extends ConsumerWidget {
   const ScripDetailDialogue({super.key});
@@ -32,7 +31,7 @@ class ScripDetailDialogue extends ConsumerWidget {
         children: [
           const CustomDragHandler(),
           Padding(
-            padding: const EdgeInsets.only(left: 16, top: 8, right: 4),
+            padding: const EdgeInsets.only(left: 16, right: 4),
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -86,7 +85,7 @@ class ScripDetailDialogue extends ConsumerWidget {
                   : colors.colorDivider,
               height: 2),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             width: MediaQuery.of(context).size.width,
             height: 600,
             child: ListView(
@@ -95,11 +94,11 @@ class ScripDetailDialogue extends ConsumerWidget {
                 rowOfInfoData("Company Name", scripInfo.cname ?? "-",
                     "Symbol Name", scripInfo.symname ?? "-", theme),
                 const SizedBox(height: 3),
-                rowOfInfoData("Segment", scripInfo.seg ?? "-", "Expiry Date",
-                    scripInfo.expDate ?? "-", theme),
+                rowOfInfoData("Expiry Date", scripInfo.expDate ?? "-",
+                    "Expiry Time", scripInfo.exptime ?? "-", theme),
                 const SizedBox(height: 3),
                 rowOfInfoData("Instrument Name", scripInfo.instname ?? "-",
-                    "Strike Price", scripInfo.strprc ?? "-", theme),
+                    "Segment", scripInfo.seg ?? "-", theme),
                 const SizedBox(height: 3),
                 rowOfInfoData("Option Type", scripInfo.optt ?? "-", "ISIN",
                     scripInfo.isin ?? "-", theme),
@@ -151,6 +150,8 @@ class ScripDetailDialogue extends ConsumerWidget {
                 rowOfInfoData("Var Margin", scripInfo.varmrg ?? "-",
                     "Elm Margin", scripInfo.elmmrg ?? "-", theme),
                 const SizedBox(height: 3),
+                rowOfInfoData("Last Trading Date", scripInfo.lastTrdD ?? "-",
+                    "Strike Price", scripInfo.strprc ?? "-", theme),
                 const SizedBox(height: 3),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -230,9 +231,5 @@ class ScripDetailDialogue extends ConsumerWidget {
         ]);
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+  
 }

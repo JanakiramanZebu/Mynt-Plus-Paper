@@ -15,7 +15,7 @@ class MfCategory extends ConsumerWidget {
     final mfData = watch(mfProvider);
     return Container(
       height: 68,
-      margin: EdgeInsets.symmetric(vertical: 12),
+      margin: const EdgeInsets.symmetric(vertical: 12),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: mfData.mfCategorys.length,
@@ -30,7 +30,7 @@ class MfCategory extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(4),
                   border: Border.all(color: const Color(0xffEEF0F2), width: 1.5),
                   color: mfData.mfCategorys[index].name == mfData.mfCategory ? const Color(0xffF1F3F8) : null),
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -59,7 +59,7 @@ class MfCategory extends ConsumerWidget {
           );
         },
         separatorBuilder: (BuildContext context, int index) {
-          return SizedBox(width: 12);
+          return const SizedBox(width: 12);
         },
       ),
     );

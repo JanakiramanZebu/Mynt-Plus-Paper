@@ -97,6 +97,7 @@ class Routes {
   static const String fundTransaction = "fundTransaction";
   static const String reportWebViewApp = "reportWebViewApp";
   static const String profileWebViewApp = "profileWebViewApp";
+  static const String optionZWebView = 'optionZWebView';
 
   static const String logError = 'logerror';
 
@@ -131,8 +132,7 @@ class Routes {
 // Bonds
   static const String bonds = 'bonds';
   static const String mf = 'mutualFund';
- static const String mfWatchlist = 'mfWatchlist';
-
-  static const String mfStockDetail ='mfStockDetail';
-  
+  static const String mfWatchlist = 'mfWatchlist';
+  static const String mforderScreen = 'mforderScreen';
+  static const String mfStockDetail = 'mfStockDetail';
 }

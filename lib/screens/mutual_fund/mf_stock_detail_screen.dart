@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -64,6 +65,31 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
       final mfData = watch(mfProvider);
       return Scaffold(
           backgroundColor: Colors.white,
+          bottomSheet: Container(
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    width: MediaQuery.of(context).size.width,
+                    child: ElevatedButton(
+                        onPressed: () async {},
+                        style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            backgroundColor: colors.ltpgreen,
+                            shape: const StadiumBorder()),
+                        child: Text("Invest",
+                            style: textStyle(
+                                const Color(0xffffffff), 14, FontWeight.w600))),
+                  ),
+                  if (defaultTargetPlatform == TargetPlatform.iOS)
+                    const SizedBox(height: 18)
+                ],
+              )),
           body: VerticalScrollableTabView(
               autoScrollController: autoScrollController,
               tabController: tabController,
@@ -141,7 +167,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                         ],
                       ),
                     ),
-                    backgroundColor: Colors.white,
+                    
                     bottom: PreferredSize(
                         preferredSize: const Size.fromHeight(90),
                         child: Column(children: [

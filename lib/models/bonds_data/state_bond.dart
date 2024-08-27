@@ -12,7 +12,7 @@ class StateBonds {
     if (json['NCBSDL'] != null) {
       nCBSDL = <BondLists>[];
       json['NCBSDL'].forEach((v) {
-        nCBSDL!.add(new BondLists.fromJson(v));
+        nCBSDL!.add(BondLists.fromJson(v));
       });
     }
   }

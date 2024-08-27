@@ -112,7 +112,7 @@ class _MainStreamIpoState extends State<MainStreamIpo>
           ipos.isActiveMainStream
               ? Column(children: [
                   mainstreamipo.mainStreamIpoModel!.msg == "no IPO found"
-                      ? NoDataFound()
+                      ? const NoDataFound()
                       : ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
@@ -132,7 +132,7 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                                color: Color(0xffF1F3F8),
+                                                color: const Color(0xffF1F3F8),
                                                 // border: Border.all(
                                                 //     color: const Color(0xffC1E7BA)),
                                                 borderRadius:
@@ -140,7 +140,7 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                             child: Text(
                                                 "${mainstreamipo.mainStreamIpoModel!.mainIPO![index].symbol}",
                                                 style: textStyle(
-                                                    Color(0xff666666),
+                                                    const Color(0xff666666),
                                                     11,
                                                     FontWeight.w500))),
                                         const SizedBox(width: 10),
@@ -257,7 +257,7 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                       onPressed: () async {
                                         await context
                                             .read(fundProvider)
-                                            .fetchviewupiid();
+                                            .fetchUpiDetail();
                                         await context
                                             .read(ipoProvide)
                                             .mainipocategory();
@@ -297,11 +297,5 @@ class _MainStreamIpoState extends State<MainStreamIpo>
     });
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
-    );
-  }
+   
 }

@@ -1,14 +1,12 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-
-import 'package:google_fonts/google_fonts.dart';
-
+import 'package:flutter_svg/svg.dart'; 
 import '../../../provider/market_watch_provider.dart';
 import '../../../res/res.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/thems.dart';
+import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_internet_widget.dart'; 
 
 class EditScrip extends StatefulWidget {
@@ -121,8 +119,8 @@ class _EditScripState extends State<EditScrip> {
                     : Theme(
                       data: ThemeData(
                         canvasColor: theme.isDarkMode
-                        ? Color(0xffFFFFFF).withOpacity(.3)
-                        :Color(0xff000000).withOpacity(.3)
+                        ? const Color(0xffFFFFFF).withOpacity(.3)
+                        :const Color(0xff000000).withOpacity(.3)
                       ),
                       child: ReorderableListView.builder(
                           physics: const BouncingScrollPhysics(),
@@ -228,9 +226,5 @@ class _EditScripState extends State<EditScrip> {
     });
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+   
 }

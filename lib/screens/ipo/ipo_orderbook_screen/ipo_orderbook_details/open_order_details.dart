@@ -199,7 +199,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                   Expanded(
                     child: OutlinedButton(
                         onPressed: () async {
-                          await context.read(fundProvider).fetchviewupiid();
+                          await context.read(fundProvider).   fetchUpiDetail();
                           Navigator.pushNamed(
                             context,
                             Routes.modifyipoorder,
@@ -336,7 +336,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "${ipodetails.bidDetail![index].price!}",
+                                  ipodetails.bidDetail![index].price!,
                                   style: textStyle(
                                       colors.colorBlack, 14, FontWeight.w600),
                                 ),

@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
@@ -10,6 +11,7 @@ import '../locator/preference.dart';
 import '../models/profile_model/client_detail_model.dart';
 import '../models/profile_model/user_detail_model.dart';
 import '../res/res.dart';
+import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
@@ -19,8 +21,8 @@ import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
 import 'shocase_provider.dart';
-// import 'thems.dart';
 import '../models/profile_model/qr_login_res.dart';
+
 final userProfileProvider =
     ChangeNotifierProvider((ref) => UserProfileProvider(ref.read));
 
@@ -40,8 +42,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
   List _settingMenu = [];
   List get settingmenu => _settingMenu;
-
-  
 
   final List _socialMedaiIcons = [
     {"icon": assets.facebook, "link": "https://www.facebook.com/zebuetrade/"},
@@ -230,12 +230,28 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Pledge & Unpledge",
-        "subTitle": "Pledge & Unpledge  ",
+        "subTitle": "Pledge & Unpledge",
         "leading": "assets/profileimage/pledge.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).pledgeunpcase,
         "case": "Click here to view the Pledge & Unpledge page."
       },
+      {
+        "title": "OptionZ",
+        "subTitle": "OptionZ",
+        "leading": "assets/profileimage/pledge.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": ref(showcaseProvide).pledgeunpcase,
+        "case": "Click here to view the Pledge & Unpledge page."
+      },
+      //  {
+      //   "title": "KRA",
+      //   "subTitle": "KRA",
+      //   "leading": "assets/profileimage/pledge.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref(showcaseProvide).pledgeunpcase,
+      //   "case": "Click here to view the Pledge & Unpledge page."
+      // },
       {
         "title": "Refer",
         "subTitle": "Refer your family and friends",
@@ -246,7 +262,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Settings",
-        "subTitle": "API key, Change Password, Theme, Log",
+        "subTitle": "Change Password, API key, Theme",
         "leading": "assets/profileimage/privacy_settings.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).logcase,
@@ -267,59 +283,106 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "trailing": "assets/profile/greater_arrow.svg",
         "key": "",
         "case": "Click here to view the Log message."
-      },
-      {
-        "title": "Ipo",
-        "subTitle": "Mainstream,SmeIPO",
-        "leading": "assets/profileimage/reports.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": "",
-        "case": "Click here to view the Log message."
-      },
-       {
-        "title": "Ipo Orderbook",
-        "subTitle": "Open order, closed order, Modfiy, Cancel",
-        "leading": "assets/profileimage/reports.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": "",
-        "case": "Click here to view the Log message."
-      },{
-        "title": "Bonds",
-        "subTitle": "Mainstream,SmeIPO",
-        "leading": "assets/profileimage/reports.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": "",
-        "case": "Click here to view the Log message."
-      },{
-        "title": "Mutual Fund",
-        "subTitle": "Funds",
-        "leading": "assets/profileimage/reports.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": "",
-        "case": "Click here to view the Log message."
       }
-      
+      // ,
+      // {
+      //   "title": "Ipo",
+      //   "subTitle": "Mainstream,SmeIPO",
+      //   "leading": "assets/profileimage/reports.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the Log message."
+      // },
+      // {
+      //   "title": "Ipo Orderbook",
+      //   "subTitle": "Open order, closed order, Modfiy, Cancel",
+      //   "leading": "assets/profileimage/reports.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the Log message."
+      // },
+      // {
+      //   "title": "Bonds",
+      //   "subTitle": "Bonds",
+      //   "leading": "assets/profileimage/reports.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the Log message."
+      // },
+      // {
+      //   "title": "Mutual Fund",
+      //   "subTitle": "Funds",
+      //   "leading": "assets/profileimage/reports.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the Log message."
+      // }
     ];
     return profileMenu;
   }
-  Future fetchQR(BuildContext context,String unquiid, MobileScannerController camera) async {
-    try {
-    _qrLoginesponces = await api.getqr(unquiid);
-    if (_qrLoginesponces!.msg == "logged in") {
-       ScaffoldMessenger.of(context).showSnackBar(
-                                successMessage(
-                                    context, "${_qrLoginesponces!.msg}"));
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                          camera.stop();
-    }else{
-      ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(
-                                    context, "${_qrLoginesponces!.emsg}"));
-                                    Navigator.pop(context);
-                                    camera.start();
 
-    }
+  Future fetchQR(BuildContext context, String unquiid,
+      MobileScannerController camera) async {
+    try {
+      _qrLoginesponces = await api.getqr(unquiid);
+      if (_qrLoginesponces!.msg == "logged in") {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(successMessage(context, "${_qrLoginesponces!.msg}"));
+        Navigator.pop(context);
+        Navigator.pop(context);
+        camera.stop();
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, "${_qrLoginesponces!.emsg}"));
+        Navigator.pop(context);
+        camera.start();
+      }
+    } catch (e) {
+      notifyListeners();
+    } finally {}
+  }
+
+  Future fetchFreezeAc(BuildContext context) async {
+    try {
+      final res = await api.getaFreezeAc();
+      Map data = jsonDecode(res.body);
+
+      if (data["stat"] == "Ok") {
+        await fetchBlockAc(context);
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, data["emsg"].toString()));
+      }
+    } catch (e) {
+      notifyListeners();
+    } finally {}
+  }
+
+  Future fetchBlockAc(BuildContext context) async {
+    try {
+      final res = await api.getaBlockAc();
+      Map data = jsonDecode(res.body);
+
+      if (data["stat"] == "Ok") {
+        ConstantName.timer!.cancel();
+
+        pref.clearClientSession();
+        pref.setLogout(true);
+        ref(indexListProvider).bottomMenu(1);
+        ref(authProvider).loginMethCtrl.text =
+            pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
+        notifyListeners();
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, 'The Account has been deactivated'));
+
+        Navigator.of(context).pop();
+        // ref(websocketProvider).closeSocket();
+        Navigator.pushNamedAndRemoveUntil(
+            context, Routes.loginScreen, (route) => false);
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, data["emsg"].toString()));
+      }
     } catch (e) {
       notifyListeners();
     } finally {}

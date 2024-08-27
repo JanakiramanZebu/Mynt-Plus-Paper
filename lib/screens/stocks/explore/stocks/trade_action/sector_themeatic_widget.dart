@@ -90,7 +90,7 @@ class _SectorThematicWidgetState extends State<SectorThematicWidget>
                     textStyle(const Color(0XFF0037B7), 14, FontWeight.w600),
                 controller: tabCtrl,
                 tabs: tabList)),
-        Container(
+        SizedBox(
          
           height: 314,
           child: TabBarView(

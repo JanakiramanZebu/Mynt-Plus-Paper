@@ -1,6 +1,6 @@
-import 'dart:developer';
+ 
 
-import '../models/fund_model/upivalidation_model.dart';
+ 
 import '../models/ipo_model/ipo_mainstream_model.dart';
 import '../models/ipo_model/ipo_order_book_model.dart';
 import '../models/ipo_model/ipo_order_res_model.dart';
@@ -10,22 +10,7 @@ import '../models/ipo_model/ipo_sme_model.dart';
 import 'core/api_core.dart';
 
 mixin IPOApi on ApiCore {
-  Future<UpiIdValidationModel> getHdfcPayment(
-      String upiId, String clientId, String accno) async {
-    try {
-      final uri = Uri.parse(apiLinks.hdfcupicheck);
-      final res = await apiClient.post(uri,
-          headers: funddefaultHeaders,
-          body: jsonEncode(
-              {"VPA": upiId, "clientID": clientId, "bank_acc": accno}));
-      final json = jsonDecode(res.body);
-      log("HDFC STATUS => ${res.body}");
-      final hdfcbankpayment = UpiIdValidationModel.fromJson(json);
-      return hdfcbankpayment;
-    } catch (e) {
-      rethrow;
-    }
-  }
+ 
 
   Future<List<IpoOrderBookModel>> fetchipoorderbook() async {
     try {
@@ -101,13 +86,13 @@ mixin IPOApi on ApiCore {
       data.remove('UPI');
       data.remove('company_name');
     }
-    log("IPO PLACEORDER $data");
+    // log("IPO PLACEORDER $data");
     try {
       final uri = Uri.parse(apiLinks.placeipoorder);
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders, body: (jsonEncode(data)));
       final json = jsonDecode(res.body);
-      log("ORDER PLACE IPO=>${res.body} ");
+      // log("ORDER PLACE IPO=>${res.body} ");
       return IpoOrderResponcesModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -122,7 +107,7 @@ mixin IPOApi on ApiCore {
         headers: defaultHeaders,
       );
       final json = jsonDecode(res.body);
-      log("Ipo Perfomance res=>${res.body} ");
+      // log("Ipo Perfomance res=>${res.body} ");
       return IpoPerformanceModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       print("GETIPOPERFORMANCE $e");
@@ -138,7 +123,7 @@ mixin IPOApi on ApiCore {
         headers: defaultHeaders,
       );
       final json = jsonDecode(res.body);
-      log("mainstream ipo res=>${res.body} ");
+      // log("mainstream ipo res=>${res.body} ");
       return MainStreamIpoModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;

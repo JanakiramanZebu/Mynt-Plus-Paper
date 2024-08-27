@@ -160,7 +160,7 @@ class MFOverview extends ConsumerWidget {
                                 ? 0xffFF1717
                                 : 0xff43A833),
                             borderRadius: const BorderRadius.vertical(
-                                bottom: const Radius.circular(10))),
+                                bottom: Radius.circular(10))),
                         child: Text(
                             "${mfProvide.mfReturnsGridview[index]['return']}%",
                             style: textStyle(
@@ -172,14 +172,14 @@ class MFOverview extends ConsumerWidget {
               );
             }),
           ),
-          SizedBox(height: 14),
+          const SizedBox(height: 14),
           Text("Historical NAV",
               style: textStyle(
                   theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   16,
                   FontWeight.w600)),
           Container(
-              margin: EdgeInsets.only(top: 14, bottom: 12),
+              margin: const EdgeInsets.only(top: 14, bottom: 12),
               height: 320,
               width: MediaQuery.of(context).size.width,
               child: SfCartesianChart(

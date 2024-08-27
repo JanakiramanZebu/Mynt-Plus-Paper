@@ -430,8 +430,8 @@ class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
                             child: TextFormField(
                               style: textStyle(
                                   addIpo[index].isChecked == true
-                                      ? Color(0xff666666)
-                                      : Color(0xff000000),
+                                      ? const Color(0xff666666)
+                                      : const Color(0xff000000),
                                   14,
                                   FontWeight.w600),
                               keyboardType: TextInputType.number,
@@ -443,7 +443,7 @@ class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
                                   fillColor: const Color(0xffF1F3F8),
                                   filled: true,
                                   labelStyle: textStyle(
-                                      Color(0xff000000), 14, FontWeight.w600),
+                                      const Color(0xff000000), 14, FontWeight.w600),
                                   enabledBorder: OutlineInputBorder(
                                       borderSide: BorderSide.none,
                                       borderRadius: BorderRadius.circular(30)),
@@ -715,7 +715,7 @@ class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
           total: addIpo[i].requriedprice.toDouble()));
     }
 
-    await context.read(ipoProvide).fetchupiidvalidation(
+    await context.read(ipoProvide).fetchVerifyUpi(
         context,
         upiid.viewupiid.text,
         "343245",

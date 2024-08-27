@@ -108,17 +108,17 @@ class SectorThematicList extends StatelessWidget {
                               children: [
                                 if (data[index].poistive != "0") ...[
                                   colorBarText("${data[index].poistive}",
-                                      Color(0xff43A833)),
+                                      const Color(0xff43A833)),
                                   const SizedBox(width: 10)
                                 ],
                                 if (data[index].nutral != "0") ...[
                                   colorBarText("${data[index].nutral}",
-                                      Color(0xff999999)),
+                                      const Color(0xff999999)),
                                   const SizedBox(width: 10)
                                 ],
                                 if (data[index].negative != "0") ...[
                                   colorBarText("${data[index].negative}",
-                                      Color(0xffFF1717)),
+                                      const Color(0xffFF1717)),
                                   const SizedBox(width: 10)
                                 ]
                               ],

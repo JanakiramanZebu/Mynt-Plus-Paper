@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../provider/bond_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+import '../../sharedWidget/functions.dart';
 import 'bonds_order.dart';
 
 class BondsList extends ConsumerWidget {
@@ -74,9 +74,9 @@ class BondsList extends ConsumerWidget {
               },
             )),
         bondsData.bondLists!.isEmpty
-            ? const Center(child: const NoDataFound())
+            ? const Center(child: NoDataFound())
             : ListView.separated(
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 itemCount: bondsData.bondLists!.length,
                 itemBuilder: (BuildContext context, int index) {
@@ -203,9 +203,5 @@ class BondsList extends ConsumerWidget {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+   
 }

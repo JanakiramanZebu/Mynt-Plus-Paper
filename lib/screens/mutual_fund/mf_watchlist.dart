@@ -46,7 +46,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                         : colors.colorBlack))),
         body: ListView.builder(
           shrinkWrap: true,
-          padding: EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: mfData.mutualFundList!.length,
           itemBuilder: (BuildContext context, int index) {
             return Column(

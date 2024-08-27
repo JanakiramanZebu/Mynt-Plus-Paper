@@ -56,8 +56,8 @@ class MFSchemeInfo extends ConsumerWidget {
                   14,
                   FontWeight.w500)),
           Container(
-            margin: EdgeInsets.symmetric(vertical: 10),
-            padding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(color: const Color(0xffEEF0F2), width: 1.5)),
@@ -69,7 +69,7 @@ class MFSchemeInfo extends ConsumerWidget {
                     maxRadius: 26,
                     backgroundImage: NetworkImage(
                         "https://v3.mynt.in/mf/static/images/manager/${mfData.fundManager!.toLowerCase().trim()}.png")),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +82,7 @@ class MFSchemeInfo extends ConsumerWidget {
                                   : colors.colorBlack,
                               14,
                               FontWeight.w500)),
-                      SizedBox(height: 3),
+                      const SizedBox(height: 3),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -93,7 +93,7 @@ class MFSchemeInfo extends ConsumerWidget {
                                       : colors.colorBlack,
                                   12,
                                   FontWeight.w500)),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
                               "₹${double.parse(mfData.managerActiveFundsAumSum ?? "0.00").toStringAsFixed(2)}",
                               style: textStyle(
@@ -104,7 +104,7 @@ class MFSchemeInfo extends ConsumerWidget {
                                   FontWeight.w500)),
                         ],
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,

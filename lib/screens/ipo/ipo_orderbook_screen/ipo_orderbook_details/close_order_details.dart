@@ -305,7 +305,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "${ipoclose.bidDetail![index].price!}",
+                                  ipoclose.bidDetail![index].price!,
                                   style: textStyle(
                                       colors.colorBlack, 14, FontWeight.w600),
                                 ),

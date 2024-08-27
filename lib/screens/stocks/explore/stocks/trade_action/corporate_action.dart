@@ -18,14 +18,14 @@ class CorporateAction extends ConsumerWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text("Corporate Action (${tradeAcrion!.length})",
               style: textStyle(colors.colorBlack, 16, FontWeight.w600)),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           ListView.separated(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: tradeAcrion.length,
               itemBuilder: (BuildContext context, int index) {
                 return Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(6),
                         color: theme.isDarkMode
@@ -40,7 +40,7 @@ class CorporateAction extends ConsumerWidget {
                                 Text("${tradeAcrion[index].symbol}",
                                     style: textStyle(colors.colorBlack, 14,
                                         FontWeight.w500)),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Row(children: [
                                   Text(
                                       tradeAcrion[index].biddingStartDate.toString().substring(0, 5),
@@ -60,7 +60,7 @@ class CorporateAction extends ConsumerWidget {
                                 Text("${tradeAcrion[index].issueType}",
                                     style: textStyle(
                                         colors.colorGrey, 14, FontWeight.w500)),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text("₹${tradeAcrion[index].maxPrice}",
                                     style: textStyle(
                                         colors.colorGrey, 14, FontWeight.w500))
@@ -68,7 +68,7 @@ class CorporateAction extends ConsumerWidget {
                         ]));
               },
               separatorBuilder: (BuildContext context, int index) {
-                return SizedBox(height: 8);
+                return const SizedBox(height: 8);
               })
         ]));
   }

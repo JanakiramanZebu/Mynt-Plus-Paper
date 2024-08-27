@@ -206,10 +206,10 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                       height: 40,
                       width: 124,
                       decoration: BoxDecoration(
-                          color: const Color(0xffF1F3F8),
+                          color: Color(0xffF1F3F8),
                           // border: Border.all(color: Colors.grey),
                           borderRadius:
-                              const BorderRadius.all(Radius.circular(32)))),
+                              BorderRadius.all(Radius.circular(32)))),
                   isExpanded: true,
                   style: textStyle(colors.colorBlack, 13, FontWeight.w500),
                   hint: Text(ipo.ipoCategoryvalue,
@@ -511,8 +511,8 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                             child: TextFormField(
                               style: textStyle(
                                   addIpo[index].isChecked == true
-                                      ? Color(0xff666666)
-                                      : Color(0xff000000),
+                                      ? const Color(0xff666666)
+                                      : const Color(0xff000000),
                                   14,
                                   FontWeight.w600),
                               keyboardType: TextInputType.number,
@@ -819,7 +819,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
           total: addIpo[i].requriedprice.toDouble()));
     }
 
-    await context.read(ipoProvide).fetchupiidvalidation(
+    await context.read(ipoProvide).fetchVerifyUpi(
         context,
         upiid.viewupiid.text,
         "343245",
@@ -828,11 +828,4 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
         iposupiid);
   }
 }
-
-TextStyle textStyle(Color color, double fontSize, fWeight) {
-  return TextStyle(
-    fontWeight: fWeight,
-    color: color,
-    fontSize: fontSize,
-  );
-}
+ 

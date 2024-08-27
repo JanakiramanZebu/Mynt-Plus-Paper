@@ -51,11 +51,12 @@ class ScripInfoModel {
   String? emsg;
   String? lc;
   String? undExch;
-  String? undTk;  String? symbol;
-String?expDate;
-String? option;
-String?lp;
-String? perChng;
+  String? undTk;
+  String? symbol;
+  String? expDate;
+  String? option;
+  String? lp;
+  String? perChng;
 
   ScripInfoModel(
       {this.requestTime,
@@ -110,9 +111,12 @@ String? perChng;
       this.uc,
       this.emsg,
       this.undExch,
-      this.undTk,  this.expDate,
-      this.option,this.symbol,this.lp,
-this. perChng});
+      this.undTk,
+      this.expDate,
+      this.option,
+      this.symbol,
+      this.lp,
+      this.perChng});
 
   ScripInfoModel.fromJson(Map<String, dynamic> json) {
     requestTime = json['request_time'];
@@ -166,9 +170,11 @@ this. perChng});
     lc = json['lc'];
     uc = json['uc'];
     undExch = json['und_exch'];
-    undTk = json['und_tk'];      expDate=json['expDate'];
-        symbol=json['symbol'];option= json['option'];
-    
+    undTk = json['und_tk'];
+    expDate = json['expDate'];
+    symbol = json['symbol'];
+    option = json['option'];
+
     emsg = json['emsg'].toString();
   }
 
@@ -227,9 +233,9 @@ this. perChng});
     data['uc'] = uc;
     data['und_exch'] = undExch;
     data['und_tk'] = undTk;
-      data['option']=option;
-    data['expDate']=expDate;
-    data['symbol']=symbol; 
+    data['option'] = option;
+    data['expDate'] = expDate;
+    data['symbol'] = symbol;
     return data;
   }
 }

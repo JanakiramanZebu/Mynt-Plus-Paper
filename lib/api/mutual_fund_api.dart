@@ -154,39 +154,7 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
-  Future<BankDetailsModel> getBankDetail( ) async {
-    try {
-      final uri = Uri.parse(apiLinks.bankDetail);
-
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body: jsonEncode({"client_id": "${prefs.clientId}"}));
-
-      final json = jsonDecode((res.body));
-
-      // print("NavGraph => $json");
-
-      return BankDetailsModel.fromJson(json as Map<String, dynamic>);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<UPIDetailsModel> getUPI() async {
-    try {
-      final uri = Uri.parse("https://fundapi.mynt.in/withdraw/view_upi_id");
-
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body: jsonEncode({"client_id": "${prefs.clientId}"}));
-
-      final json = jsonDecode((res.body));
-
-      return UPIDetailsModel.fromJson(json as Map<String, dynamic>);
-    } catch (e) {
-      rethrow;
-    }
-  }
+  
 
   Future<MfSIPModel> getMFSip(String isin, String schemeCode) async {
     try {

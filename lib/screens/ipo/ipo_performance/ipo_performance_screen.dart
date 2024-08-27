@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_text_btn.dart';
+import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
 
@@ -132,9 +133,9 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                               height: 40,
                               width: 124,
                               decoration: BoxDecoration(
-                                  color: const Color(0xffF1F3F8),
+                                  color: Color(0xffF1F3F8),
                                   // border: Border.all(color: Colors.grey),
-                                  borderRadius: const BorderRadius.all(
+                                  borderRadius: BorderRadius.all(
                                       Radius.circular(32)))),
                           isExpanded: true,
                           style:
@@ -323,11 +324,5 @@ class _IPOPerformanceState extends State<IPOPerformance> {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
-    );
-  }
+ 
 }

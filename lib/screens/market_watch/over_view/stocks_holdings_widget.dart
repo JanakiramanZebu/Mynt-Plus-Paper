@@ -40,8 +40,8 @@ class StocksHoldingsWidget extends ConsumerWidget {
                       color: theme.isDarkMode
                             ? shareHoldings.selectedMfHolddate ==
                                     shareHoldings.mfHoldingDate[index]
-                                ? Color(0xffB0BEC5)
-                                : Color(0xffB5C0CF).withOpacity(.15)
+                                ? const Color(0xffB0BEC5)
+                                : const Color(0xffB5C0CF).withOpacity(.15)
                             : shareHoldings.selectedMfHolddate ==
                                     shareHoldings.mfHoldingDate[index]
                                 ? const Color(0xff000000)

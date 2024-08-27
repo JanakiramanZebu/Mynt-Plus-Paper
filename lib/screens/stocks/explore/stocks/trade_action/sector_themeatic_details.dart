@@ -72,17 +72,17 @@ class SectorThematicDetail extends ConsumerWidget {
                               children: [
                                 if (data.poistive != "0") ...[
                                   colorBarText("${data.poistive}",
-                                      Color(0xff43A833)),
+                                      const Color(0xff43A833)),
                                   const SizedBox(width: 10)
                                 ],
                                 if (data.nutral != "0") ...[
                                   colorBarText("${data.nutral}",
-                                      Color(0xff999999)),
+                                      const Color(0xff999999)),
                                   const SizedBox(width: 10)
                                 ],
                                 if (data.negative != "0") ...[
                                   colorBarText("${data.negative}",
-                                      Color(0xffFF1717)),
+                                      const Color(0xffFF1717)),
                                   const SizedBox(width: 10)
                                 ]
                               ],

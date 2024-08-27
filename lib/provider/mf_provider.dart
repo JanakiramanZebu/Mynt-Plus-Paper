@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/mf_model/best_mf_model.dart';
 import '../models/mf_model/mandate_detail_model.dart';
-import '../models/mf_model/mf_bank_detail_model.dart';
 import '../models/mf_model/mf_factsheet_data_model.dart';
 import '../models/mf_model/mf_factsheet_graph.dart';
 import '../models/mf_model/mf_nav_graph_model.dart';
@@ -15,6 +13,7 @@ import '../models/mf_model/mf_sip_model.dart';
 import '../models/mf_model/mf_watch_list.dart';
 import '../models/mf_model/mutual_fundmodel.dart';
 import '../res/res.dart';
+import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'core/default_change_notifier.dart';
 
@@ -41,12 +40,8 @@ class MFProvider extends DefaultChangeNotifier {
   MutualFundModel? _mutualFundModel;
   MutualFundModel? get mutualFundModel => _mutualFundModel;
 
-  UPIDetailsModel? _upiDetailsModel;
-  UPIDetailsModel? get upiDetailsModel => _upiDetailsModel;
   MfSIPModel? _mfSIPModel;
   MfSIPModel? get mfSIPModel => _mfSIPModel;
-  BankDetailsModel? _bankDetailsModel;
-  BankDetailsModel? get bankDetailsModel => _bankDetailsModel;
   MandateDetailModel? _mandateDetailModel;
   MandateDetailModel? get mandateDetailModel => _mandateDetailModel;
 
@@ -92,9 +87,49 @@ class MFProvider extends DefaultChangeNotifier {
 
   List get comYears => _compYears;
 
+  //  MF SIP
+
+  TextEditingController instalmentAmt = TextEditingController();
+
+  TextEditingController invDuration = TextEditingController();
+  String _freqName = "";
+  String _dates = "1";
+  String get freqName => _freqName;
+  String get dates => _dates;
+  List<String> _dateList = [];
+  List<String> get dateList => _dateList;
+  String _insAmt = "0.00";
+  String get insAmt => _insAmt;
+
+  List mfOrderTpyes = ["Lumpsum", "Monthly SIP"];
+  String _mfOrderTpye = "Lumpsum";
+  String get mfOrderTpye => _mfOrderTpye;
+  chngOrderType(String val) {
+    _mfOrderTpye = val;
+    notifyListeners();
+  }
+
   chngComYear(String year, String yearName, String isin) async {
     _comYear = yearName;
     await fetchSchemePeer(isin, year);
+    notifyListeners();
+  }
+
+  chngFrequency(String val) {
+    _freqName = val;
+    if (_mfSIPModel!.data!.isNotEmpty) {
+      for (var element in _mfSIPModel!.data!) {
+        if (element.sIPFREQUENCY == _freqName) {
+          if (_freqName == "DAILY") {
+            _dateList = [];
+          } else {
+            _dateList = element.sIPDATES!.replaceAll("\"", "").split(',');
+          }
+          invDuration.text = "${element.sIPMINIMUMINSTALLMENTNUMBERS}";
+          _insAmt = "${element.sIPMINIMUMINSTALLMENTNUMBERS ?? 0.00}";
+        }
+      }
+    }
     notifyListeners();
   }
 
@@ -141,8 +176,10 @@ class MFProvider extends DefaultChangeNotifier {
       _otherMf = [];
       _mutualFundList = [];
       _mfCategorys = [];
-
-      _mutualFundModel = await api.getMasterMF();
+      if (_mutualFundModel == null) {
+        _mutualFundModel = await api.getMasterMF();
+      }
+      _bestMFModel ?? await fetchBestMF();
       await fetchBestMF();
       _mfCategory = "Top Mutual Funds";
       if (_mutualFundModel!.stat == "Ok") {
@@ -358,7 +395,7 @@ class MFProvider extends DefaultChangeNotifier {
       _mfWatchlist = [];
       _mfWatchlistModel = await api.getMFWatchlist(scipt, isAdd);
       if (_mfWatchlistModel!.stat == "Ok") {
-        _mfWatchlist = _mfWatchlistModel!.scripts;
+        _mfWatchlist = _mfWatchlistModel!.scripts ?? [];
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         if (isAdd == "add") {
           ScaffoldMessenger.of(context).showSnackBar(successMessage(
@@ -385,33 +422,35 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchUpiDetail() async {
-    try {
-      _upiDetailsModel = await api.getUPI();
-
-      if (_upiDetailsModel!.stat == "Ok") {}
-      notifyListeners();
-    } catch (e) {
-      debugPrint("$e");
-    }
-  }
-
-  Future fetchBankDetail( ) async {
-    try {
-      _bankDetailsModel = await api.getBankDetail();
-
-      if (_bankDetailsModel!.stat == "Ok") {}
-      notifyListeners();
-    } catch (e) {
-      debugPrint("$e");
-    }
-  }
-
   Future fetchMFSipData(String isin, String schemeCode) async {
     try {
+      _dateList = [];
       _mfSIPModel = await api.getMFSip(isin, schemeCode);
 
-      if (_mfSIPModel!.stat == "Ok") {}
+      if (_mfSIPModel!.stat == "Ok") {
+        if (_mfSIPModel!.data!.isNotEmpty) {
+          _freqName = "${_mfSIPModel!.data![0].sIPFREQUENCY}";
+
+          instalmentAmt.text =
+              "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTAMOUNT}";
+          invDuration.text =
+              "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTNUMBERS}";
+
+          if (_freqName == "MONTHLY" || _freqName == "QUARTERLY") {
+            _dateList =
+                _mfSIPModel!.data![0].sIPDATES!.replaceAll("\"", "").split(',');
+
+            _dates = _dateList[0];
+          } else {
+            // _dateList.add("0");
+            _dates = _dateList[0];
+          }
+
+          _insAmt =
+              "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTAMOUNT ?? 0.00}";
+        }
+      }
+
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
@@ -428,4 +467,134 @@ class MFProvider extends DefaultChangeNotifier {
       debugPrint("$e");
     }
   }
+
+  List<DropdownMenuItem<String>> addFrqDividers() {
+    List<DropdownMenuItem<String>> menuItems = [];
+
+    for (var item in _mfSIPModel!.data!) {
+      menuItems.addAll(
+        [
+          DropdownMenuItem<String>(
+              value: item.sIPFREQUENCY.toString(),
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Text(
+                      "${item.sIPFREQUENCY![0]}${item.sIPFREQUENCY!.substring(1).toLowerCase()}",
+                      style: textStyle(
+                          const Color(0xff000000), 13, FontWeight.w500)))),
+          //If it's last item, we will not add Divider after it.
+          if (item != _mfSIPModel!.data!.last)
+            const DropdownMenuItem<String>(
+              enabled: false,
+              child: Divider(),
+            ),
+        ],
+      );
+    }
+    return menuItems;
+  }
+
+  List<double> frqCustHeight() {
+    List<double> itemsHeights = [];
+    for (var i = 0; i < (_mfSIPModel!.data!.length * 2) - 1; i++) {
+      if (i.isEven) {
+        itemsHeights.add(40);
+      }
+      if (i.isOdd) {
+        itemsHeights.add(4);
+      }
+    }
+    return itemsHeights;
+  }
+
+  List<DropdownMenuItem<String>> addDateDividers() {
+    List<DropdownMenuItem<String>> menuItems = [];
+
+    for (var item in _dateList) {
+      menuItems.addAll(
+        [
+          DropdownMenuItem<String>(
+              value: item.toString(),
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Text(
+                    item.toString(),
+                    style:
+                        textStyle(const Color(0xff000000), 13, FontWeight.w500),
+                  ))),
+          //If it's last item, we will not add Divider after it.
+          if (item != _dateList.last)
+            const DropdownMenuItem<String>(
+              enabled: false,
+              child: Divider(),
+            ),
+        ],
+      );
+    }
+    return menuItems;
+  }
+
+  List<double> dateCustHeight() {
+    List<double> itemsHeights = [];
+    for (var i = 0; i < (_dateList.length * 2) - 1; i++) {
+      if (i.isEven) {
+        itemsHeights.add(40);
+      }
+      if (i.isOdd) {
+        itemsHeights.add(4);
+      }
+    }
+    return itemsHeights;
+  }
+
+  DateTime _curDate = DateTime.now();
+  DateTime get curDate => _curDate;
+
+  DateTime? _endsDate;
+  DateTime? get endsDate => _endsDate;
+  String _startDate = "";
+  String get startDate => _startDate;
+  String _endDate = "";
+  String get endDate => _endDate;
+  getCurrentDate() {
+    _startDate = "${_curDate.day}/${_curDate.month}/${_curDate.year}";
+    _endsDate = DateTime(_curDate.year + 30, _curDate.month, _curDate.day - 1);
+    notifyListeners();
+  }
+
+  datePickerStart(BuildContext context) { 
+
+    Future<void> startDate(BuildContext context) async {
+      final DateTime? picked = await showDatePicker(
+          context: context,
+          initialDate:_curDate,
+          firstDate:_curDate,
+          lastDate: DateTime(_curDate.year + 200));
+      if (picked != null ) {
+        _curDate = picked;
+          getCurrentDate();
+        print(_startDate);
+      }
+      notifyListeners();
+    }
+  }
+
+  // datePickerend(BuildContext context) {
+  //   DateTime _endDate =
+  //       DateTime(_startDate.year + 30, _startDate.month, _startDate.day - 1);
+
+  //   Future<void> endDate(BuildContext context) async {
+  //     final DateTime? picked = await showDatePicker(
+  //         context: context,
+  //         initialDate: _endDate,
+  //         firstDate: DateTime(
+  //             _startDate.year, _startDate.month + 2, _startDate.day - 1),
+  //         lastDate: DateTime(_startDate.year + 200));
+  //     if (picked != null && picked != _endDate) {
+  //       setState(() {
+  //         _endDate = picked;
+  //       });
+  //     }
+  //   }
+  // }
 }

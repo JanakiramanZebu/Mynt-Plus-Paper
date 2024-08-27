@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import '../../models/order_book_model/gtt_order_book.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/shocase_provider.dart';
@@ -241,9 +240,9 @@ class GttOrderBook extends ConsumerWidget {
                                                             BorderRadius.circular(
                                                                 4),
                                                         color: theme.isDarkMode
-                                                            ? Color(0xff666666)
+                                                            ? const Color(0xff666666)
                                                                 .withOpacity(.2)
-                                                            : Color(0xff999999)
+                                                            : const Color(0xff999999)
                                                                 .withOpacity(
                                                                     .2)),
                                             child: Text(
@@ -329,9 +328,5 @@ class GttOrderBook extends ConsumerWidget {
         : const NoDataFound();
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+   
 }

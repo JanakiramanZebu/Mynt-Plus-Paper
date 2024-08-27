@@ -468,7 +468,7 @@ class WebSocketProvider extends ChangeNotifier {
             });
             if (ref(networkStateProvider).connectionStatus !=
                 ConnectivityResult.none) {
-                   Future.delayed(Duration(milliseconds: 100)).then((value) {
+                   Future.delayed(const Duration(milliseconds: 100)).then((value) {
        
      
               establishConnection(
