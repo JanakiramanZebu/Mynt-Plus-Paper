@@ -45,6 +45,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
+
+     context.read(marketWatchProvider).requestMWScrip(isSubscribe: true, context: context);
     context.read(networkStateProvider).networkStream();
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {

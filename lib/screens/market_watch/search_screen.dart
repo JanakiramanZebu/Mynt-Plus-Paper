@@ -26,10 +26,7 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
  
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      context.read(marketWatchProvider).setpageName("edit");
-    });
-    // context.read(networkStateProvider).networkStream();
+     
     tabCtrl =
         TabController(length:   context.read(marketWatchProvider).searchTabList.length, vsync: this, initialIndex: 0);
 
@@ -48,7 +45,7 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                 .read(marketWatchProvider)
                 .requestMWScrip(context: context, isSubscribe: true);
           await searchScrip.searchClear();
-          searchScrip.setpageName("");
+ 
       
           return true;
         },

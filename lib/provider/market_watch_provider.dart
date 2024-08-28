@@ -560,7 +560,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _marketWatchlist!.values!.add("My");
         } else {
           _marketWatchlist!.values!.sort((a, b) => a.compareTo(b));
-          notifyListeners();
+         
           _marketWatchScripData = {};
           for (var element in _marketWatchlist!.values!) {
             await fetchMWScrip(element, context);
@@ -572,8 +572,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
 
         _marketWatchlist!.values!.addAll(_preDefWL);
-        await changeWLScrip(_wlName, context);
+
         await fetchPreDefMWScrip(context);
+                await changeWLScrip(_wlName, context);
       } else {
         if (_marketWatchlist!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
@@ -1574,9 +1575,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 //  REWORK TO CHANGE FLOW =========
 
   changeWLScrip(String wName, BuildContext context) async {
-    _scrips = wName == "My Stocks"
+
+    try {
+      _scrips = wName == "My Stocks"
         ? []
-        : await jsonDecode(_marketWatchScripData[wName]);
+        : await jsonDecode(_marketWatchScripData[wName])??[];
 
     if (wName == "My Stocks") {
       await ref(portfolioProvider)
@@ -1584,6 +1587,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     } else {
       await requestMWScrip(context: context, isSubscribe: true);
     }
+    } catch (e) {
+      print("object  - $e");
+    }
+    
 
     notifyListeners();
   }
@@ -1651,20 +1658,16 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       {required bool isSubscribe, required BuildContext context}) async {
     String input = "";
     _delScripQty = 0;
-
+    ref(indexListProvider)
+        .requestdefaultIndex(isSubscribe: true, context: context);
     if (_scrips.isNotEmpty) {
       for (var element in _scrips) {
         element['isSelected'] = false;
         input += "${element['exch']}|${element['token']}#";
       }
-    } else {
-      input = ref(indexListProvider).indexSubToken;
     }
 
     if (input.isNotEmpty) {
-      input += ref(indexListProvider).indexSubToken;
-      _mwSubToken = input;
-
       await ref(websocketProvider).establishConnection(
           channelInput: input, task: isSubscribe ? "t" : "u", context: context);
     }
@@ -1870,13 +1873,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _setAlertModel =
           await api.getSetAlert(exch, tysm, value, alertTypeVal, remark);
       ref(orderProvider).changeTabIndex(5);
-    
+
       if (_setAlertModel!.stat! == "OI created") {
         fetchPendingAlert(context);
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, "${_setAlertModel?.stat}"));
-              Navigator.pop(context);
-                                      Navigator.pop(context);
+        Navigator.pop(context);
+        Navigator.pop(context);
       } else if (_setAlertModel!.stat! == "Not_Ok") {
         ref(authProvider).ifSessionExpired(context);
       }
@@ -1896,7 +1899,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_alertPendingModel!.isNotEmpty) {
         if (_alertPendingModel![0].stat != "Not_Ok") {
-     ref(indexListProvider).bottomMenu(3);
+          ref(indexListProvider).bottomMenu(3);
           ConstantName.sessCheck = true;
           for (var element in _alertPendingModel!) {
             ltpArgs

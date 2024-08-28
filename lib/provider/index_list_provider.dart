@@ -20,7 +20,7 @@ import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
-import 'market_watch_provider.dart';
+// import 'market_watch_provider.dart';
 import 'websocket_provider.dart';
 
 final indexListProvider =
@@ -421,15 +421,16 @@ class IndexListProvider extends DefaultChangeNotifier {
   requestdefaultIndex(
       {required bool isSubscribe, required BuildContext context}) {
     String input = "";
-    if (_defaultIndexList!.indValues!.isNotEmpty) {
-      for (var element in _defaultIndexList!.indValues!) {
-        input += "${element.exch}|${element.token}#";
+
+    if (_defaultIndexList != null) {
+      if (_defaultIndexList!.indValues!.isNotEmpty) {
+        for (var element in _defaultIndexList!.indValues!) {
+          input += "${element.exch}|${element.token}#";
+        }
       }
     }
 
     if (input.isNotEmpty) {
-      input += ref(marketWatchProvider).mwSubToken;
-
       ref(websocketProvider).establishConnection(
           channelInput: input, task: isSubscribe ? "t" : "u", context: context);
     }
