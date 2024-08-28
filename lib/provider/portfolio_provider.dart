@@ -334,9 +334,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
           }
 
           _totInvesHold = invest.toStringAsFixed(2);
-          if (initail == "Refresh") {
-            await requestWSHoldings(isSubscribe: true, context: context);
-          }
+          // if (initail == "Refresh") {
+          //   await requestWSHoldings(isSubscribe: true, context: context);
+          // }
         } else {
           if (_holdingsModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
@@ -545,10 +545,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
           now.isAfter(threeThirtyPM) || now.isBefore(nineFifteenAM);
 
       if (isInTimeRange) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          notifyListeners();
+       
+          // notifyListeners();
             log("sdns ${now.hour}");
-        });
+     
       }
 
       // print("sdns ${now.hour}- ${now.minute}");

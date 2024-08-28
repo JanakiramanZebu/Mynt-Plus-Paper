@@ -2565,19 +2565,19 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                             ? "Quantity can not be empty"
                                                             : "Price can not be empty"));
                                               }
-                                               else if ((int.parse(
-                                                          qtyCtrl.text.isEmpty
-                                                              ? "0"
-                                                              : qtyCtrl.text) >
-                                                      maxQty) &&
-                                                  widget.scripInfo.exch !=
-                                                      "BSE" &&  widget.scripInfo.exch !=
-                                                      "BFO") {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(warningMessage(
-                                                        context,
-                                                        "Specified Quantity is more than the instrument maximum quantity of $maxQty"));
-                                              }
+                                              //  else if ((int.parse(
+                                              //             qtyCtrl.text.isEmpty
+                                              //                 ? "0"
+                                              //                 : qtyCtrl.text) >
+                                              //         maxQty) &&
+                                              //     widget.scripInfo.exch !=
+                                              //         "BSE" &&  widget.scripInfo.exch !=
+                                              //         "BFO") {
+                                              //   ScaffoldMessenger.of(context)
+                                              //       .showSnackBar(warningMessage(
+                                              //           context,
+                                              //           "Specified Quantity is more than the instrument maximum quantity of $maxQty"));
+                                              // }
                                                else if (qtyCtrl.text == "0" ||
                                                   priceCtrl.text == "0") {
                                                 ScaffoldMessenger.of(context)

@@ -387,7 +387,7 @@ class IndexListProvider extends DefaultChangeNotifier {
     await getIndeexListFromLocal(context);
     ScaffoldMessenger.of(context)
         .showSnackBar(successMessage(context, "Index scrip modified"));
-    await requestdefaultIndex(context: context, isSubscribe: true);
+   
   }
 
   Future getIndeexListFromLocal(BuildContext context) async {
@@ -405,14 +405,7 @@ class IndexListProvider extends DefaultChangeNotifier {
       }
       _defaultIndexList!.indValues = list;
     }
-    String input = "";
-    if (_defaultIndexList!.indValues!.isNotEmpty) {
-      for (var element in _defaultIndexList!.indValues!) {
-        input += "${element.exch}|${element.token}#";
-      }
-    }
-
-    _indexSubToken = input;
+      await requestdefaultIndex(context: context, isSubscribe: true);
     notifyListeners();
 
     //

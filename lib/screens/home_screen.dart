@@ -46,7 +46,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void initState() {
     WidgetsBinding.instance.addObserver(this);
 
-     context.read(marketWatchProvider).requestMWScrip(isSubscribe: true, context: context);
+    context
+        .read(marketWatchProvider)
+        .requestMWScrip(isSubscribe: true, context: context);
     context.read(networkStateProvider).networkStream();
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
@@ -705,18 +707,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ConnectivityResult.none
                                   ? null
                                   : () async {
-                                      indexProvide.bottomMenu(4);
-                                      await indexProvide.checkSession(context);
-
-                                      if (indexProvide.checkSess!.stat ==
-                                          "Ok") {
                                         await context
                                             .read(fundProvider)
-                                            .fetchFunds(context);
+                                            .fetchFunds(context);  indexProvide.bottomMenu(4);
+                                      if (context
+                                            .read(fundProvider).fundDetailModel!.stat ==
+                                          "Ok") {
+                                     
                                         if (userProfile.profileMenu.isEmpty) {
                                           await userProfile.fetchprofilemenu();
                                         }
-
+                                      
                                         marketWatchList.requestMWScrip(
                                             context: context,
                                             isSubscribe: false);

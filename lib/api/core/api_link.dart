@@ -1,21 +1,18 @@
 class ApiLinks {
 // UAT----
 
-  String get goMyntURL => "https://uat.mynt.in/NorenWClient";
-  static String wsURL = 'wss://uat.mynt.in/NorenWSMob/';
+  // String get goMyntURL => "https://uat.mynt.in/NorenWClient";
+  // static String wsURL = 'wss://uat.mynt.in/NorenWSMob/';
 
-  static String source = "MOB";
-  // static String userID = "ZVK0106";
-  // static String session = "";
-  // static String wsURL = 'wss://go.mynt.in/NorenWS/';
+  static String source = "MOB"; 
   static String otp = "";
   static String userName = "";
   static bool showAppTutorial = true;
 
 // GO MYNT-----
 
-  // String get goMyntURL => "https://go.mynt.in/NorenWClient";
-  // static String wsURL = 'wss://go.mynt.in/NorenWS/';
+  String get goMyntURL => "https://go.mynt.in/NorenWClient";
+  static String wsURL = 'wss://go.mynt.in/NorenWS/';
   String get newsurl => "https://be.mynt.in/news";
 
   ///generate api key
