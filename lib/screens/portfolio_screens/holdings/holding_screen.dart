@@ -186,9 +186,8 @@ class HoldingScreen extends ConsumerWidget {
                                     child: OutlinedButton(
                                         style: OutlinedButton.styleFrom(
                                             side: BorderSide(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorGrey
-                                                  : colors.colorWhite,
+                                              color:  colors.colorGrey
+                                                  
                                             ),
                                             shape: const RoundedRectangleBorder(
                                                 borderRadius: BorderRadius.all(

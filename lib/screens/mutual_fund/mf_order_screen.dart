@@ -177,6 +177,36 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                       14,
                       FontWeight.w500)),
               const SizedBox(height: 4),
+              if (mfOrder.mandateData!.isNotEmpty) ...[
+                DropdownButtonHideUnderline(
+                    child: DropdownButton2(
+                        menuItemStyleData: MenuItemStyleData(
+                            customHeights: mfOrder.mandateHeight()),
+                        buttonStyleData: ButtonStyleData(
+                            padding: const EdgeInsets.only(top: 4, left: 16),
+                            height: 50,
+                            width: MediaQuery.of(context).size.width,
+                            decoration: const BoxDecoration(
+                                color: Color(0xffF1F3F8),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(32)))),
+                        dropdownStyleData: DropdownStyleData(
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(4)),
+                            offset: const Offset(0, 1)),
+                        isExpanded: true,
+                        style: textStyle(
+                            const Color(0XFF000000), 13, FontWeight.w500),
+                        hint: Text(mfOrder.mandateId,
+                            style: textStyle(
+                                const Color(0XFF000000), 13, FontWeight.w500)),
+                        items: mfOrder.mandateDividers(),
+                        // customItemsHeights: actionTrade.getCustomItemsHeight(),
+                        value: mfOrder.mandateId,
+                        onChanged: (value) async {
+                          mfOrder.chngMandate("$value");
+                        })),
+                 const SizedBox(height: 8),   ],
               ElevatedButton(
                   onPressed: () async {
                     showDialog(
@@ -693,7 +723,8 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         onPressed: () async {},
                         style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 10),
-                            backgroundColor: colors.ltpgreen,
+                            backgroundColor: fund.invAmtError == null && fund.upiError == null
+                                ?  colors.ltpgreen:colors.ltpgreen.withOpacity(.7),
                             shape: const StadiumBorder()),
                         child: Text("Invest",
                             style: textStyle(

@@ -20,17 +20,17 @@ class CreateMandateDialogue extends StatefulWidget {
 }
 
 class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
-
   @override
   void initState() {
-      // context.read(mfProvider).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read(mfProvider).getCurrentDate();
+    });
+
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
-
- 
-
     return Consumer(builder: (context, ScopedReader watch, _) {
       final theme = watch(themeProvider);
       final fund = watch(fundProvider);
@@ -113,7 +113,7 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                       Expanded(
                         child: InkWell(
                           onTap: () {
-                           mfOrder.datePickerStart(context);
+                            mfOrder.datePickerStart(context);
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,8 +136,7 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                                       ? colors.darkGrey
                                       : const Color(0xffF1F3F8),
                                 ),
-                                child: Text(
-                                    mfOrder.startDate,
+                                child: Text(mfOrder.startDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -153,7 +152,7 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                       Expanded(
                         child: InkWell(
                           onTap: () {
-                            // endDate(context);
+                             mfOrder.  datePickerEnd(context);
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,8 +175,7 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                                       ? colors.darkGrey
                                       : const Color(0xffF1F3F8),
                                 ),
-                                child: Text(
-                                    mfOrder.endDate,
+                                child: Text(mfOrder.endDate,
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite

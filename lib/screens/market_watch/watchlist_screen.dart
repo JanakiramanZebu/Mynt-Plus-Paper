@@ -129,11 +129,8 @@ class WatchListScreen extends ConsumerWidget {
                                     .read(marketWatchProvider)
                                     .requestMWScrip(
                                         context: context, isSubscribe: false);
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => EditScrip(
-                                            wlName: marketWatch.wlName)));
+                                Navigator.pushNamed(
+                                    context,Routes.editScrip, arguments:  marketWatch.wlName );
                               }
                             },
                             onTap: () async {

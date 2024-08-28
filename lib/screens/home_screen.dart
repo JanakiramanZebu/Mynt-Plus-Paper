@@ -26,7 +26,7 @@ import 'market_watch/index/index_screen.dart';
 import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/watchlist_screen.dart';
 import 'market_watch/watchlists_bottom_sheet.dart';
-import 'menu.dart';
+// import 'menu.dart';
 import 'mutual_fund/mutual_fund_screen.dart';
 import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
@@ -41,9 +41,10 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     context.read(networkStateProvider).networkStream();
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
@@ -56,8 +57,47 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     ConstantName.timer!.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (context.read(websocketProvider).wsConnected == false ||
+            context.read(websocketProvider).wsConnected == true) {
+          if (context.read(networkStateProvider).connectionStatus !=
+              ConnectivityResult.none) {
+            if (context.read(indexListProvider).selectedBtmIndx == 1) {
+              context
+                  .read(marketWatchProvider)
+                  .requestMWScrip(context: context, isSubscribe: true);
+            }
+            if (context.read(indexListProvider).selectedBtmIndx == 2) {
+              context
+                  .read(portfolioProvider)
+                  .requestWSHoldings(context: context, isSubscribe: true);
+              context
+                  .read(portfolioProvider)
+                  .requestWSPosition(context: context, isSubscribe: true);
+            }
+          }
+        }
+        print("app in resumed");
+        break;
+      case AppLifecycleState.inactive:
+        print("app in inactive");
+        break;
+      case AppLifecycleState.paused:
+        print("app in paused");
+        break;
+      case AppLifecycleState.detached:
+        print("app in detached");
+        break;
+      case AppLifecycleState.hidden:
+    }
   }
 
   @override
@@ -65,27 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
     var upgrader = Upgrader(
       messages: MyUpgraderMessages(),
     );
-    if (context.read(websocketProvider).wsConnected == false ||
-        context.read(websocketProvider).wsConnected == true) {
-      if (ConstantName.pageName != "edit") {
-        if (context.read(networkStateProvider).connectionStatus !=
-            ConnectivityResult.none) {
-          if (context.read(indexListProvider).selectedBtmIndx == 1) {
-            context
-                .read(marketWatchProvider)
-                .requestMWScrip(context: context, isSubscribe: true);
-          }
-          if (context.read(indexListProvider).selectedBtmIndx == 2) {
-            context
-                .read(portfolioProvider)
-                .requestWSHoldings(context: context, isSubscribe: true);
-            context
-                .read(portfolioProvider)
-                .requestWSPosition(context: context, isSubscribe: true);
-          }
-        }
-      }
-    }
+
     return WillPopScope(
       onWillPop: showExitPopup,
       child: Consumer(builder: (context, ScopedReader watch, _) {
@@ -174,13 +194,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? "Orderbook"
                                       : indexProvide.selectedBtmIndx == 2
                                           ? "Portfolio"
-                                          : indexProvide.selectedBtmIndx == 5?
-                                          // indexProvide.selectedBtmIndx == 0
-                                          //     ? stockProvide.exploreName
-                                          //     :
-                                          "IPO":indexProvide.selectedBtmIndx == 6?
-                                          
-                                          "Bonds":"Mutual Fund",
+                                          : indexProvide.selectedBtmIndx == 5
+                                              ?
+                                              // indexProvide.selectedBtmIndx == 0
+                                              //     ? stockProvide.exploreName
+                                              //     :
+                                              "IPO"
+                                              : indexProvide.selectedBtmIndx ==
+                                                      6
+                                                  ? "Bonds"
+                                                  : "Mutual Fund",
                                   style: textStyles.appBarTitleTxt.copyWith(
                                       color: theme.isDarkMode
                                           ? colors.colorWhite
@@ -449,6 +472,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ConnectivityResult.none
                                   ? null
                                   : () async {
+                                      indexProvide.bottomMenu(1);
                                       await context
                                           .read(indexListProvider)
                                           .checkSession(context);
@@ -472,8 +496,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                             .requestMWScrip(
                                                 context: context,
                                                 isSubscribe: true);
-
-                                        indexProvide.bottomMenu(1);
                                       }
                                     },
                               child: Container(
@@ -526,39 +548,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ])))),
                       Expanded(
                           child: InkWell(
-                        onTap:
-                            internet.connectionStatus == ConnectivityResult.none
-                                ? null
-                                : () async {
-                                    await context
-                                        .read(indexListProvider)
-                                        .checkSession(context);
-                                    if (indexProvide.checkSess!.stat == "Ok") {
+                        onTap: internet.connectionStatus ==
+                                ConnectivityResult.none
+                            ? null
+                            : () async {
+                                indexProvide.bottomMenu(2);
+                                await context
+                                    .read(indexListProvider)
+                                    .checkSession(context);
+                                if (indexProvide.checkSess!.stat == "Ok") {
+                                  portfolio.mfHoldingsModel ??
                                       await portfolio.fetchMFHoldings(context);
-                                      // await context
-                                      //     .read(indexListProvider)
-                                      //     .checkSession(context);
-                                      await marketWatchList.requestMWScrip(
-                                          context: context, isSubscribe: false);
 
-                                      await context
-                                          .read(orderProvider)
-                                          .requestWSOrderBook(
-                                              context: context,
-                                              isSubscribe: false);
-                                      if (portfolio.selectedTab == 1) {
-                                        await portfolio.requestWSHoldings(
-                                            context: context,
-                                            isSubscribe: true);
-                                      }
-                                      if (portfolio.selectedTab == 0) {
-                                        await portfolio.requestWSPosition(
-                                            context: context,
-                                            isSubscribe: true);
-                                      }
-                                      indexProvide.bottomMenu(2);
-                                    }
-                                  },
+                                  await marketWatchList.requestMWScrip(
+                                      context: context, isSubscribe: false);
+
+                                  await context
+                                      .read(orderProvider)
+                                      .requestWSOrderBook(
+                                          context: context, isSubscribe: false);
+                                  if (portfolio.selectedTab == 1) {
+                                    await portfolio.requestWSHoldings(
+                                        context: context, isSubscribe: true);
+                                  }
+                                  if (portfolio.selectedTab == 0) {
+                                    await portfolio.requestWSPosition(
+                                        context: context, isSubscribe: true);
+                                  }
+                                }
+                              },
                         child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 7),
                             decoration: BoxDecoration(
@@ -605,6 +623,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ConnectivityResult.none
                                   ? null
                                   : () async {
+                                      indexProvide.bottomMenu(3);
                                       await context
                                           .read(indexListProvider)
                                           .checkSession(context);
@@ -628,8 +647,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                             .requestWSOrderBook(
                                                 context: context,
                                                 isSubscribe: true);
-
-                                        indexProvide.bottomMenu(3);
                                       }
                                     },
                               child: Container(
@@ -686,6 +703,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ConnectivityResult.none
                                   ? null
                                   : () async {
+                                      indexProvide.bottomMenu(4);
                                       await indexProvide.checkSession(context);
 
                                       if (indexProvide.checkSess!.stat ==
@@ -693,9 +711,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                         await context
                                             .read(fundProvider)
                                             .fetchFunds(context);
+                                        if (userProfile.profileMenu.isEmpty) {
+                                          await userProfile.fetchprofilemenu();
+                                        }
 
-                                        await userProfile.fetchprofilemenu();
-                                        indexProvide.bottomMenu(4);
                                         marketWatchList.requestMWScrip(
                                             context: context,
                                             isSubscribe: false);
@@ -763,73 +782,73 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     ? FontWeight.w600
                                                     : FontWeight.w500))
                                       ])))),
-                      Expanded(
-                          child: InkWell(
-                              onTap: internet.connectionStatus ==
-                                      ConnectivityResult.none
-                                  ? null
-                                  : () async {
-                                      showModalBottomSheet(
-                                          useSafeArea: true,
-                                          isScrollControlled: true,
-                                          shape: const RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.vertical(
-                                                      top:
-                                                          Radius.circular(16))),
-                                          context: context,
-                                          builder: (context) {
-                                            return const MoreMenuBottomSheet();
-                                          });
-                                    },
-                              child: Container(
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 7),
-                                  decoration: BoxDecoration(
-                                      border: indexProvide.selectedBtmIndx > 4
-                                          ? Border(
-                                              top: BorderSide(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorLightBlue
-                                                      : colors.colorBlue,
-                                                  width: 2))
-                                          : null),
-                                  child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        SvgPicture.asset(
-                                            "assets/profile/userlogo.svg",
-                                            height: 18,
-                                            color: theme.isDarkMode &&
-                                                    indexProvide
-                                                            .selectedBtmIndx >
-                                                        4
-                                                ? colors.colorLightBlue
-                                                : indexProvide.selectedBtmIndx >
-                                                        4
-                                                    ? colors.colorBlue
-                                                    : colors.colorGrey),
-                                        const SizedBox(height: 5),
-                                        Text("Menu",
-                                            style: textStyle(
-                                                theme.isDarkMode &&
-                                                        indexProvide
-                                                                .selectedBtmIndx >
-                                                            4
-                                                    ? colors.colorLightBlue
-                                                    : indexProvide
-                                                                .selectedBtmIndx >
-                                                            4
-                                                        ? colors.colorBlue
-                                                        : colors.colorGrey,
-                                                12,
-                                                indexProvide.selectedBtmIndx > 4
-                                                    ? FontWeight.w600
-                                                    : FontWeight.w500))
-                                      ]))))
+                      // Expanded(
+                      //     child: InkWell(
+                      //         onTap: internet.connectionStatus ==
+                      //                 ConnectivityResult.none
+                      //             ? null
+                      //             : () async {
+                      //                 showModalBottomSheet(
+                      //                     useSafeArea: true,
+                      //                     isScrollControlled: true,
+                      //                     shape: const RoundedRectangleBorder(
+                      //                         borderRadius:
+                      //                             BorderRadius.vertical(
+                      //                                 top:
+                      //                                     Radius.circular(16))),
+                      //                     context: context,
+                      //                     builder: (context) {
+                      //                       return const MoreMenuBottomSheet();
+                      //                     });
+                      //               },
+                      //         child: Container(
+                      //             margin:
+                      //                 const EdgeInsets.symmetric(horizontal: 7),
+                      //             decoration: BoxDecoration(
+                      //                 border: indexProvide.selectedBtmIndx > 4
+                      //                     ? Border(
+                      //                         top: BorderSide(
+                      //                             color: theme.isDarkMode
+                      //                                 ? colors.colorLightBlue
+                      //                                 : colors.colorBlue,
+                      //                             width: 2))
+                      //                     : null),
+                      //             child: Column(
+                      //                 mainAxisAlignment:
+                      //                     MainAxisAlignment.center,
+                      //                 crossAxisAlignment:
+                      //                     CrossAxisAlignment.center,
+                      //                 children: [
+                      //                   SvgPicture.asset(
+                      //                       "assets/profile/userlogo.svg",
+                      //                       height: 18,
+                      //                       color: theme.isDarkMode &&
+                      //                               indexProvide
+                      //                                       .selectedBtmIndx >
+                      //                                   4
+                      //                           ? colors.colorLightBlue
+                      //                           : indexProvide.selectedBtmIndx >
+                      //                                   4
+                      //                               ? colors.colorBlue
+                      //                               : colors.colorGrey),
+                      //                   const SizedBox(height: 5),
+                      //                   Text("Menu",
+                      //                       style: textStyle(
+                      //                           theme.isDarkMode &&
+                      //                                   indexProvide
+                      //                                           .selectedBtmIndx >
+                      //                                       4
+                      //                               ? colors.colorLightBlue
+                      //                               : indexProvide
+                      //                                           .selectedBtmIndx >
+                      //                                       4
+                      //                                   ? colors.colorBlue
+                      //                                   : colors.colorGrey,
+                      //                           12,
+                      //                           indexProvide.selectedBtmIndx > 4
+                      //                               ? FontWeight.w600
+                      //                               : FontWeight.w500))
+                      //                 ]))))
                     ])),
                 body: Stack(
                   children: [

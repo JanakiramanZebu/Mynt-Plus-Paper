@@ -1,4 +1,3 @@
- 
 import '../models/mf_model/mf_bank_detail_model.dart';
 import '../models/profile_model/fund_detial_model.dart';
 import '../models/profile_model/hs_token_model.dart';
@@ -8,6 +7,7 @@ import 'core/api_core.dart';
 mixin FundApi on ApiCore {
   Future<GetHsTokenModel> getHsToken() async {
     try {
+      
       final uri = Uri.parse(apiLinks.getHsToken);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
@@ -39,23 +39,26 @@ mixin FundApi on ApiCore {
       rethrow;
     }
   }
-  Future<VerifyUPIModel> getVerifyUpi(
-      String upiId,  String accno) async {
+
+  Future<VerifyUPIModel> getVerifyUpi(String upiId, String accno) async {
     try {
       final uri = Uri.parse(apiLinks.verifyUPI);
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
-          body: jsonEncode(
-              {"VPA": upiId, "clientID": "${prefs.clientId}", "bank_acc": accno}));
+          body: jsonEncode({
+            "VPA": upiId,
+            "clientID": "${prefs.clientId}",
+            "bank_acc": accno
+          }));
       final json = jsonDecode(res.body);
       // log("HDFC STATUS => ${res.body}");
-      final upivalidation =VerifyUPIModel.fromJson(json);
+      final upivalidation = VerifyUPIModel.fromJson(json);
       return upivalidation;
     } catch (e) {
       rethrow;
     }
   }
- 
+
   Future<OptionZmodel> getaOptionZ(String key) async {
     try {
       final uri = Uri.parse(
@@ -68,8 +71,7 @@ mixin FundApi on ApiCore {
     }
   }
 
-
-  Future<BankDetailsModel> getBankDetail( ) async {
+  Future<BankDetailsModel> getBankDetail() async {
     try {
       final uri = Uri.parse(apiLinks.bankDetail);
 
@@ -79,7 +81,7 @@ mixin FundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-       print("Bank Details => $json");
+      //  print("Bank Details => $json");
 
       return BankDetailsModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -97,12 +99,11 @@ mixin FundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-         print("UPI Details => $json");
+      //  print("UPI Details => $json");
 
       return UPIDetailsModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
   }
-  
 }

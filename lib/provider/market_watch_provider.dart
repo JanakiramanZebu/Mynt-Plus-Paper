@@ -34,6 +34,7 @@ import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
+import 'order_provider.dart';
 import 'portfolio_provider.dart';
 import 'websocket_provider.dart';
 
@@ -441,9 +442,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           if (item != numofList.last)
             DropdownMenuItem<String>(
               enabled: false,
-              child: Divider(color: ref(themeProvider).isDarkMode
-              ?colors.darkColorDivider
-              :colors.colorDivider),
+              child: Divider(
+                  color: ref(themeProvider).isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider),
             ),
         ],
       );
@@ -1867,12 +1869,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       _setAlertModel =
           await api.getSetAlert(exch, tysm, value, alertTypeVal, remark);
-      context.read(marketWatchProvider).alertPendingModel!.length;
-      fetchPendingAlert(context);
+      ref(orderProvider).changeTabIndex(5);
+    
       if (_setAlertModel!.stat! == "OI created") {
         fetchPendingAlert(context);
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, "${_setAlertModel?.stat}"));
+              Navigator.pop(context);
+                                      Navigator.pop(context);
       } else if (_setAlertModel!.stat! == "Not_Ok") {
         ref(authProvider).ifSessionExpired(context);
       }
@@ -1892,6 +1896,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_alertPendingModel!.isNotEmpty) {
         if (_alertPendingModel![0].stat != "Not_Ok") {
+     ref(indexListProvider).bottomMenu(3);
           ConstantName.sessCheck = true;
           for (var element in _alertPendingModel!) {
             ltpArgs

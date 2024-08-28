@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/core/api_export.dart';
@@ -5,6 +7,7 @@ import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/mf_model/best_mf_model.dart';
 import '../models/mf_model/mandate_detail_model.dart';
+import '../models/mf_model/mf_bank_detail_model.dart';
 import '../models/mf_model/mf_factsheet_data_model.dart';
 import '../models/mf_model/mf_factsheet_graph.dart';
 import '../models/mf_model/mf_nav_graph_model.dart';
@@ -34,6 +37,9 @@ class MFProvider extends DefaultChangeNotifier {
   MFNavGraph? _navGraph;
   MFNavGraph? get navGraph => _navGraph;
 
+  VerifyUPIModel? _verifyUPIModel;
+  VerifyUPIModel? get verifyUPIModel => _verifyUPIModel;
+
   BestMFModel? _bestMFModel;
   BestMFModel? get bestMFModel => _bestMFModel;
 
@@ -44,6 +50,9 @@ class MFProvider extends DefaultChangeNotifier {
   MfSIPModel? get mfSIPModel => _mfSIPModel;
   MandateDetailModel? _mandateDetailModel;
   MandateDetailModel? get mandateDetailModel => _mandateDetailModel;
+
+  List<MandateDetails>? _mandateData = [];
+  List<MandateDetails>? get mandateData => _mandateData;
 
   List<MutualFundList>? _mutualFundList = [];
   List<MutualFundList>? get mutualFundList => _mutualFundList;
@@ -104,6 +113,14 @@ class MFProvider extends DefaultChangeNotifier {
   List mfOrderTpyes = ["Lumpsum", "Monthly SIP"];
   String _mfOrderTpye = "Lumpsum";
   String get mfOrderTpye => _mfOrderTpye;
+
+  String _mandateId = "";
+  String get mandateId => _mandateId;
+  chngMandate(String val) {
+    _mandateId = val;
+    notifyListeners();
+  }
+
   chngOrderType(String val) {
     _mfOrderTpye = val;
     notifyListeners();
@@ -176,9 +193,7 @@ class MFProvider extends DefaultChangeNotifier {
       _otherMf = [];
       _mutualFundList = [];
       _mfCategorys = [];
-      if (_mutualFundModel == null) {
-        _mutualFundModel = await api.getMasterMF();
-      }
+      _mutualFundModel ??= await api.getMasterMF();
       _bestMFModel ?? await fetchBestMF();
       await fetchBestMF();
       _mfCategory = "Top Mutual Funds";
@@ -442,7 +457,6 @@ class MFProvider extends DefaultChangeNotifier {
 
             _dates = _dateList[0];
           } else {
-            // _dateList.add("0");
             _dates = _dateList[0];
           }
 
@@ -457,14 +471,43 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchMFMandate(String fromDate, String toDate) async {
+  Future fetchMFMandateDetail() async {
     try {
-      _mandateDetailModel = await api.getMandateDetail(fromDate, toDate);
+      _mandateData = [];
+      _mandateDetailModel = await api.getMandateDetail();
 
-      if (_mandateDetailModel!.stat == "Ok") {}
+      if (_mandateDetailModel!.stat == "Ok") {
+        _mandateData = _mandateDetailModel!.data!.mandateDetails ?? [];
+
+        _mandateId = _mandateData![0].mandateId!;
+      }
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }
+  }
+
+  Future fetchVerifyUpi(
+    BuildContext context,
+    String upiId,
+  ) async {
+    try {
+      toggleLoadingOn(true);
+      _verifyUPIModel = await api.getVerifyUpi(upiId, "123456");
+      if (_verifyUPIModel!.data!.verifiedVPAStatus1 == "Available" ||
+          _verifyUPIModel!.data!.verifiedVPAStatus2 == "Available") {
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'Invalid UPI ID'));
+      }
+
+      //log("HDFC BANK $_upiIdValidationModel");
+    } catch (e) {
+      log("Failed to fetch bank Data:: ${e.toString()}");
+
+      notifyListeners();
+    } finally {
+      toggleLoadingOn(false);
     }
   }
 
@@ -472,24 +515,18 @@ class MFProvider extends DefaultChangeNotifier {
     List<DropdownMenuItem<String>> menuItems = [];
 
     for (var item in _mfSIPModel!.data!) {
-      menuItems.addAll(
-        [
-          DropdownMenuItem<String>(
-              value: item.sIPFREQUENCY.toString(),
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Text(
-                      "${item.sIPFREQUENCY![0]}${item.sIPFREQUENCY!.substring(1).toLowerCase()}",
-                      style: textStyle(
-                          const Color(0xff000000), 13, FontWeight.w500)))),
-          //If it's last item, we will not add Divider after it.
-          if (item != _mfSIPModel!.data!.last)
-            const DropdownMenuItem<String>(
-              enabled: false,
-              child: Divider(),
-            ),
-        ],
-      );
+      menuItems.addAll([
+        DropdownMenuItem<String>(
+            value: item.sIPFREQUENCY.toString(),
+            child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: Text(
+                    "${item.sIPFREQUENCY![0]}${item.sIPFREQUENCY!.substring(1).toLowerCase()}",
+                    style: textStyle(
+                        const Color(0xff000000), 13, FontWeight.w500)))),
+        if (item != _mfSIPModel!.data!.last)
+          const DropdownMenuItem<String>(enabled: false, child: Divider())
+      ]);
     }
     return menuItems;
   }
@@ -511,25 +548,17 @@ class MFProvider extends DefaultChangeNotifier {
     List<DropdownMenuItem<String>> menuItems = [];
 
     for (var item in _dateList) {
-      menuItems.addAll(
-        [
-          DropdownMenuItem<String>(
-              value: item.toString(),
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Text(
-                    item.toString(),
-                    style:
-                        textStyle(const Color(0xff000000), 13, FontWeight.w500),
-                  ))),
-          //If it's last item, we will not add Divider after it.
-          if (item != _dateList.last)
-            const DropdownMenuItem<String>(
-              enabled: false,
-              child: Divider(),
-            ),
-        ],
-      );
+      menuItems.addAll([
+        DropdownMenuItem<String>(
+            value: item.toString(),
+            child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: Text(item.toString(),
+                    style: textStyle(
+                        const Color(0xff000000), 13, FontWeight.w500)))),
+        if (item != _dateList.last)
+          const DropdownMenuItem<String>(enabled: false, child: Divider())
+      ]);
     }
     return menuItems;
   }
@@ -552,49 +581,104 @@ class MFProvider extends DefaultChangeNotifier {
 
   DateTime? _endsDate;
   DateTime? get endsDate => _endsDate;
+  DateTime? _pickedStartDate;
+  DateTime? get pickedStartDate => _pickedStartDate;
+
   String _startDate = "";
   String get startDate => _startDate;
   String _endDate = "";
   String get endDate => _endDate;
   getCurrentDate() {
+    _curDate = DateTime.now();
+    _pickedStartDate = null;
+
     _startDate = "${_curDate.day}/${_curDate.month}/${_curDate.year}";
     _endsDate = DateTime(_curDate.year + 30, _curDate.month, _curDate.day - 1);
+    _endDate = "${_endsDate!.day}/${_endsDate!.month}/${_endsDate!.year}";
     notifyListeners();
   }
 
-  datePickerStart(BuildContext context) { 
-
-    Future<void> startDate(BuildContext context) async {
-      final DateTime? picked = await showDatePicker(
-          context: context,
-          initialDate:_curDate,
-          firstDate:_curDate,
-          lastDate: DateTime(_curDate.year + 200));
-      if (picked != null ) {
-        _curDate = picked;
-          getCurrentDate();
-        print(_startDate);
-      }
-      notifyListeners();
+  datePickerStart(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        currentDate: _pickedStartDate ?? _curDate,
+        context: context,
+        initialDate: _pickedStartDate ?? _curDate,
+        firstDate: _curDate,
+        lastDate: DateTime(_curDate.year + 200));
+    if (picked != null) {
+      _pickedStartDate = picked;
+      _startDate =
+          "${_pickedStartDate!.day}/${_pickedStartDate!.month}/${_pickedStartDate!.year}";
+      _endsDate = DateTime(_pickedStartDate!.year + 30, _pickedStartDate!.month,
+          _pickedStartDate!.day - 1);
+      _endDate = "${_endsDate!.day}/${_endsDate!.month}/${_endsDate!.year}";
     }
+    notifyListeners();
   }
 
-  // datePickerend(BuildContext context) {
-  //   DateTime _endDate =
-  //       DateTime(_startDate.year + 30, _startDate.month, _startDate.day - 1);
+  datePickerEnd(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        currentDate: _endsDate,
+        initialDate: _endsDate,
+        firstDate:
+            DateTime(_curDate.year, _curDate.month + 2, _curDate.day - 1),
+        lastDate: DateTime(_curDate.year + 200));
+    if (picked != null) {
+      _endsDate = picked;
+      _endDate = "${_endsDate!.day}/${_endsDate!.month}/${_endsDate!.year}";
+    }
+    notifyListeners();
+  }
 
-  //   Future<void> endDate(BuildContext context) async {
-  //     final DateTime? picked = await showDatePicker(
-  //         context: context,
-  //         initialDate: _endDate,
-  //         firstDate: DateTime(
-  //             _startDate.year, _startDate.month + 2, _startDate.day - 1),
-  //         lastDate: DateTime(_startDate.year + 200));
-  //     if (picked != null && picked != _endDate) {
-  //       setState(() {
-  //         _endDate = picked;
-  //       });
-  //     }
-  //   }
-  // }
+  List<DropdownMenuItem<String>> mandateDividers() {
+    List<DropdownMenuItem<String>> menuItems = [];
+
+    for (var item in _mandateData!) {
+      menuItems.addAll([
+        DropdownMenuItem<String>(
+            value: item.mandateId.toString(),
+            child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("${item.mandateId}",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: textStyle(
+                                    colors.colorBlack, 14, FontWeight.w500)),
+                            const SizedBox(height: 2),
+                            Text("Reg date: ${item.regnDate}",
+                                style: textStyle(
+                                    colors.colorGrey, 12, FontWeight.w500))
+                          ]),
+                      Text("${double.parse(item.amount!).ceil()}",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              textStyle(colors.colorBlack, 14, FontWeight.w500))
+                    ]))),
+        if (item != _mandateData!.last)
+          const DropdownMenuItem<String>(enabled: false, child: Divider())
+      ]);
+    }
+    return menuItems;
+  }
+
+  List<double> mandateHeight() {
+    List<double> itemsHeights = [];
+    for (var i = 0; i < (_mandateData!.length * 2) - 1; i++) {
+      if (i.isEven) {
+        itemsHeights.add(50);
+      }
+      if (i.isOdd) {
+        itemsHeights.add(4);
+      }
+    }
+    return itemsHeights;
+  }
 }

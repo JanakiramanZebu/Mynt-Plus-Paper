@@ -1,7 +1,6 @@
 import '../api/core/api_core.dart';
 import '../models/mf_model/best_mf_model.dart';
 import '../models/mf_model/mandate_detail_model.dart';
-import '../models/mf_model/mf_bank_detail_model.dart';
 import '../models/mf_model/mf_factsheet_data_model.dart';
 import '../models/mf_model/mf_factsheet_graph.dart';
 import '../models/mf_model/mf_nav_graph_model.dart';
@@ -9,7 +8,7 @@ import '../models/mf_model/mf_scheme_peers_model.dart';
 import '../models/mf_model/mf_sip_model.dart';
 import '../models/mf_model/mf_watch_list.dart';
 import '../models/mf_model/mutual_fundmodel.dart';
-
+import 'package:intl/intl.dart';
 mixin MutualFundApi on ApiCore {
   Future<MutualFundModel> getMasterMF() async {
     try {
@@ -132,8 +131,13 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
-  Future<MandateDetailModel> getMandateDetail(
-      String fromDate, String toDate) async {
+  Future<MandateDetailModel> getMandateDetail() async {
+    DateTime curDate = DateTime.now();
+
+    DateFormat formatter = DateFormat('dd/MM/yyyy');
+
+  // Format the current date
+  String formattedDate = formatter.format(DateTime(curDate.year+30,curDate.month,curDate.day));
     try {
       final uri = Uri.parse(apiLinks.mandateDetail);
 
@@ -142,8 +146,8 @@ mixin MutualFundApi on ApiCore {
           body: jsonEncode({
             "client_code": "${prefs.clientId}",
             "mandate_id": "",
-            "from_date": fromDate,
-            "to_date": toDate
+            "from_date": "01/01/1900",
+            "to_date": formattedDate
           }));
 
       final json = jsonDecode((res.body));
@@ -153,8 +157,6 @@ mixin MutualFundApi on ApiCore {
       rethrow;
     }
   }
-
-  
 
   Future<MfSIPModel> getMFSip(String isin, String schemeCode) async {
     try {

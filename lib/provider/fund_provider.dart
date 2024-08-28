@@ -425,7 +425,7 @@ class FundProvider extends DefaultChangeNotifier {
     List<double> itemsHeights = [];
     for (var i = 0; i < (_bankData!.length * 2) - 1; i++) {
       if (i.isEven) {
-        itemsHeights.add(50);
+        itemsHeights.add(40);
       }
       if (i.isOdd) {
         itemsHeights.add(4);

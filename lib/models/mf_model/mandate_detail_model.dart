@@ -1,14 +1,14 @@
 class MandateDetailModel {
   MandateData? data;
   String? stat;
-  String? emsg;
+  String? error;
 
-  MandateDetailModel({this.data, this.stat, this.emsg});
+  MandateDetailModel({this.data, this.stat, this.error});
 
   MandateDetailModel.fromJson(Map<String, dynamic> json) {
     data = json['data'] != null ? MandateData.fromJson(json['data']) : null;
     stat = json['stat'];
-    emsg = json['emsg'];
+    error = json['error'];
   }
 
   Map<String, dynamic> toJson() {
@@ -17,7 +17,7 @@ class MandateDetailModel {
       data['data'] = this.data!.toJson();
     }
     data['stat'] = stat;
-    data['emsg'] = emsg;
+    data['error'] = error;
     return data;
   }
 }
