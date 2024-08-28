@@ -8,10 +8,14 @@ import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
+// import '../models/fund_model/show_upi_model.dart';
+import '../models/mf_model/mf_bank_detail_model.dart';
 import '../models/profile_model/fund_detial_model.dart';
 import '../models/profile_model/hs_token_model.dart';
 import '../models/profile_model/option_z_model.dart';
+import '../res/res.dart';
 import '../routes/route_names.dart';
+import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
@@ -24,6 +28,12 @@ class FundProvider extends DefaultChangeNotifier {
   final Preferences pref = locator<Preferences>();
   FundDetailModel? _fundDetailModel;
   FundDetailModel? get fundDetailModel => _fundDetailModel;
+
+  final TextEditingController viewupiid = TextEditingController();
+
+  // ViewUpiIdModel? _viewUpiIdModel;
+  // ViewUpiIdModel? get viewUpiIdModel => _viewUpiIdModel;
+
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
   GetHsTokenModel? _getHsTokenModel;
@@ -47,6 +57,49 @@ class FundProvider extends DefaultChangeNotifier {
 
   bool _showMrgnnBreakup = false;
   bool get showMrgnBreakup => _showMrgnnBreakup;
+
+// MF Order
+
+  TextEditingController invAmt = TextEditingController();
+  TextEditingController upiId = TextEditingController();
+  String? invAmtError, upiError;
+
+  List _paymentMethod = [];
+
+  List get paymentMethod => _paymentMethod;
+
+  String _paymentName = "";
+
+  String get paymentName => _paymentName;
+
+  String _accNum = "";
+
+  String get accNum => _accNum;
+
+  List<BankData>? _bankData = [];
+  List<BankData>? get bankData => _bankData;
+
+  BankDetailsModel? _bankDetailsModel;
+  UPIDetailsModel? _upiDetailsModel;
+  UPIDetailsModel? get upiDetailsModel => _upiDetailsModel;
+  BankDetailsModel? get bankDetailsModel => _bankDetailsModel;
+
+  clearTxtError() {
+    invAmtError = null;
+    upiError = null;
+    notifyListeners();
+  }
+
+  chngPayName(String val) {
+    _paymentName = val;
+    notifyListeners();
+  }
+
+ 
+  chngBankAcc(String val) {
+    _accNum = val;
+    notifyListeners();
+  }
 
   eDis(BuildContext context) {
     var enCodePass = utf8.encode(
@@ -230,5 +283,169 @@ class FundProvider extends DefaultChangeNotifier {
   showMrgBreak() {
     _showMrgnnBreakup = !_showMrgnnBreakup;
     notifyListeners();
+  }
+
+  //  Future fetchviewupiid() async {
+  //   try {
+  //     toggleLoadingOn(true);
+  //     _viewUpiIdModel = await api.getviewupiid();
+  //     if (_viewUpiIdModel!.data!.isEmpty) {
+  //       viewupiid.clear();
+  //     } else {
+  //       viewupiid.text = "${_viewUpiIdModel!.data![0].upiId}";
+  //     }
+  //     log("view upi id ${_viewUpiIdModel!.data![0].upiId}.");
+  //   } catch (e) {
+  //     log("Failed to fetch bank Data:: ${e.toString()}");
+  //     ref(indexListProvider)
+  //         .logError
+  //         .add({"type": "View upi id", "Error": "$e"});
+  //     notifyListeners();
+  //   } finally {
+  //     toggleLoadingOn(false);
+  //   }
+  // }
+
+  Future fetchUpiDetail() async {
+    try {
+      _paymentMethod = [];
+      _upiDetailsModel = await api.getUPI();
+
+      if (_upiDetailsModel!.stat == "Ok") {
+        _paymentMethod.add("UPI");
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future fetchBankDetail() async {
+    try {
+      _bankDetailsModel = await api.getBankDetail();
+      _bankData = [];
+      if (_bankDetailsModel!.stat == "Ok") {
+        _paymentMethod.add("Net banking");
+        _bankData = _bankDetailsModel!.data ?? [];
+        if (_bankData!.isNotEmpty) {
+          _accNum = "${_bankData![0].bankAcNo}";
+        }
+      }
+
+      if (_upiDetailsModel!.stat == "Ok" || _bankDetailsModel!.stat == "Ok") {
+        _paymentName = _paymentMethod[0];
+
+        if (_paymentName == "UPI") {
+          upiId.text = "${_upiDetailsModel!.data![0].upiId}";
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  List<DropdownMenuItem<String>> addDividers() {
+    List<DropdownMenuItem<String>> menuItems = [];
+
+    for (var item in _paymentMethod) {
+      menuItems.addAll(
+        [
+          DropdownMenuItem<String>(
+              value: item.toString(),
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Text(
+                    item.toString(),
+                    style: textStyle(Color(0xff000000), 13, FontWeight.w500),
+                  ))),
+          //If it's last item, we will not add Divider after it.
+          if (item != _paymentMethod.last)
+            const DropdownMenuItem<String>(
+              enabled: false,
+              child: Divider(),
+            ),
+        ],
+      );
+    }
+    return menuItems;
+  }
+
+  List<double> getCustItemsHeight() {
+    List<double> itemsHeights = [];
+    for (var i = 0; i < (_paymentMethod.length * 2) - 1; i++) {
+      if (i.isEven) {
+        itemsHeights.add(40);
+      }
+      if (i.isOdd) {
+        itemsHeights.add(4);
+      }
+    }
+    return itemsHeights;
+  }
+
+  List<DropdownMenuItem<String>> addBankDividers() {
+    List<DropdownMenuItem<String>> menuItems = [];
+
+    for (var item in _bankData!) {
+      menuItems.addAll(
+        [
+          DropdownMenuItem<String>(
+              value: item.bankAcNo.toString(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("${item.bankName}",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                        style:
+                            textStyle(colors.colorBlack, 14, FontWeight.w500)),
+                    SizedBox(height: 2),
+                    Text("*******${item.bankAcNo!.substring(8)}",
+                        style:
+                            textStyle(colors.colorGrey, 12, FontWeight.w500)),
+                  ],
+                ),
+              )),
+          //If it's last item, we will not add Divider after it.
+          if (item != _bankData!.last)
+            const DropdownMenuItem<String>(
+              enabled: false,
+              child: Divider(),
+            ),
+        ],
+      );
+    }
+    return menuItems;
+  }
+
+  List<double> getBankCustItemsHeight() {
+    List<double> itemsHeights = [];
+    for (var i = 0; i < (_bankData!.length * 2) - 1; i++) {
+      if (i.isEven) {
+        itemsHeights.add(40);
+      }
+      if (i.isOdd) {
+        itemsHeights.add(4);
+      }
+    }
+    return itemsHeights;
+  }
+
+  bool isValidUpiId() {
+    final RegExp upiRegex =
+        RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
+    clearTxtError();
+    if (invAmt.text.isEmpty) {
+      invAmtError = "Please enter Investment amount";
+    } else if (upiId.text.isEmpty) {
+      upiError = "Please enter UPI ID";
+    } else if (!upiRegex.hasMatch(upiId.text)) {
+      upiError = "Please enter valid UPI ID";
+    }
+
+    return invAmtError == null && upiError == null;
   }
 }

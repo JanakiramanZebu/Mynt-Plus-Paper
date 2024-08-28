@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart'; 
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../provider/market_watch_provider.dart';
 
@@ -11,9 +10,9 @@ import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/custom_text_btn.dart';
+import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/snack_bar.dart';
-import 'edit_scrip.dart';
 import 'my_stocks/stocks_screen.dart';
 import 'scrip_depth_info.dart';
 
@@ -80,9 +79,8 @@ class WatchListScreen extends ConsumerWidget {
                             CustomTextBtn(
                                 label: 'Add symbol',
                                 onPress: () {
-                                  // marketWatch
-                                  //     .requestWSMarketWatchScrip(
-                                  //         context: context, isSubscribe: false);
+                                  marketWatch.requestMWScrip(
+                                          context: context, isSubscribe: false);
                                   Navigator.pushNamed(
                                       context, Routes.searchScrip,
                                       arguments: marketWatch.wlName);
@@ -129,11 +127,8 @@ class WatchListScreen extends ConsumerWidget {
                                     .read(marketWatchProvider)
                                     .requestMWScrip(
                                         context: context, isSubscribe: false);
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => EditScrip(
-                                            wlName: marketWatch.wlName)));
+                                Navigator.pushNamed(context, Routes.editScrip,
+                                    arguments: marketWatch.wlName);
                               }
                             },
                             onTap: () async {
@@ -303,7 +298,7 @@ class WatchListScreen extends ConsumerWidget {
                                           FontWeight.w600)),
                                   const SizedBox(height: 4),
                                   Text(
-                                    "${marketWatch.scrips[idx]["change"] == "null" ? 0.00 : marketWatch.scrips[idx]['change']} (${marketWatch.scrips[idx]['perChange'] == "null" ? 0.00 : marketWatch.scrips[idx]["perChange"]}%)",
+                                    "${marketWatch.scrips[idx]["change"].toString() == "null" ? 0.00 : marketWatch.scrips[idx]['change']} (${marketWatch.scrips[idx]['perChange'].toString() == "null" ? 0.00 : marketWatch.scrips[idx]["perChange"]}%)",
                                     style: textStyle(
                                         marketWatch.scrips[idx]['change']
                                                     .toString()
@@ -342,9 +337,5 @@ class WatchListScreen extends ConsumerWidget {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+   
 }

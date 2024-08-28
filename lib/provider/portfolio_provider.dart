@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -357,8 +359,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchMFHoldings(context) async {
     try {
-      toggleLoadingOn(true);
-
       // _mfHoldingsModel = [];
       _mfHoldingsModel = await api.getMFHolding();
       _mfTotInveest = 0.00;
@@ -421,9 +421,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           .add({"type": "API MF Holdings", "Error": "$e"});
       notifyListeners();
       print(e);
-    } finally {
-      toggleLoadingOn(false);
-    }
+    } finally {}
   }
 
   // holdingCalc(String token, String ltp) {
@@ -538,22 +536,22 @@ class PortfolioProvider extends DefaultChangeNotifier {
         _oneDayChngPer = ((_oneDayChng / _totalCurrentVal) * 100);
       }
 
-      //     DateTime now = DateTime.now();
+      DateTime now = DateTime.now();
+      DateTime threeThirtyPM = DateTime(now.year, now.month, now.day, 15, 30);
+      DateTime nineFifteenAM = DateTime(now.year, now.month, now.day, 9, 15);
 
-      // // Define a given time (for example, July 30, 2024, 3:00 PM)
-      // DateTime givenTime = DateTime(now.year, now.month, now.day, 15, 30);
+      // Check if the current time is after 3:30 PM or before 9:15 AM
+      bool isInTimeRange =
+          now.isAfter(threeThirtyPM) || now.isBefore(nineFifteenAM);
 
-      // // Compare the current time with the given time
-      // if (!now.isBefore(givenTime)) {
+      if (isInTimeRange) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+            log("sdns ${now.hour}");
+        });
+      }
 
-      //     print("The current time is after the given time.");
-      // } else if (now.isAfter(givenTime)) {
-      //   print("The current time is after the given time.");
-      // } else if (now.isAtSameMomentAs(givenTime)) {
-      //   print("The current time is at the same moment as the given time.");
-      // }
-
-      print("object");
+      // print("sdns ${now.hour}- ${now.minute}");
     }
   }
 

@@ -109,7 +109,7 @@ class StockMonitorScreen extends ConsumerWidget {
                   return const SizedBox(width: 8);
                 },
               )),
-         stockMonitor.stockMonitor.isEmpty?Center(child: NoDataFound()):  ListView.separated(
+         stockMonitor.stockMonitor.isEmpty?const Center(child: NoDataFound()):  ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: stockMonitor.stockMonitor.length,

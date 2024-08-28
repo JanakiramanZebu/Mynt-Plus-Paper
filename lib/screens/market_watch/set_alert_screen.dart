@@ -1,14 +1,13 @@
- 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
-import '../../provider/index_list_provider.dart';
-import '../../provider/market_watch_provider.dart'; 
+import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 
 class SetAlert extends StatefulWidget {
@@ -40,7 +39,7 @@ class _SetAlertState extends State<SetAlert> {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final scripInfo = watch(marketWatchProvider);
-      // final orderbook = watch(orderProvider);
+
       final theme = context.read(themeProvider);
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -250,8 +249,7 @@ class _SetAlertState extends State<SetAlert> {
             ),
             if (errorText.isNotEmpty) ...[
               Text(errorText,
-                  style:
-                      textStyle(colors.darkred, 10, FontWeight.w500)),
+                  style: textStyle(colors.darkred, 10, FontWeight.w500)),
             ],
             const SizedBox(
               height: 16,
@@ -385,13 +383,6 @@ class _SetAlertState extends State<SetAlert> {
                                               BorderRadius.circular(50),
                                         )),
                                     onPressed: () async {
-                                      context
-                                          .read(indexListProvider)
-                                          .bottomMenu(2);
-                                      // orderbook.tabSize();
-                                      // context
-                                      //     .read(orderProvider)
-                                      //     .changeTabIndex(5);
                                       await context
                                           .read(marketWatchProvider)
                                           .fetchSetAlert(
@@ -415,8 +406,7 @@ class _SetAlertState extends State<SetAlert> {
                                               "${widget.depthdata.lp}",
                                               remark.text);
 
-                                      Navigator.pop(context);
-                                      Navigator.pop(context);
+                                    
                                     },
                                     child: Text("Ok",
                                         style: textStyles.btnText.copyWith(
@@ -447,9 +437,5 @@ class _SetAlertState extends State<SetAlert> {
     });
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+  
 }

@@ -20,7 +20,7 @@ class SecureFund extends ConsumerWidget {
         ChartData(
             'Margin Used',
             double.parse("${funds.fundDetailModel?.margincurper ?? 0.00}"),
-         theme.isDarkMode?Color(0xffEEEEEE):colors.colorBlack ),
+         theme.isDarkMode?const Color(0xffEEEEEE):colors.colorBlack ),
       ChartData(
           'Avialable Margin',
           double.parse("${funds.fundDetailModel?.avlMrgPercentage ?? 0.00}"),

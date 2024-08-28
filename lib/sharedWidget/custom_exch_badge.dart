@@ -20,6 +20,7 @@ class CustomExchBadge extends StatelessWidget {
               : const Color(0xffF1F3F8)),
       child: Text(exch,
           overflow: TextOverflow.ellipsis,
+          maxLines: 1,
           style: textStyle(
               theme.isDarkMode
                   ? const Color(0xffFFFFFF)

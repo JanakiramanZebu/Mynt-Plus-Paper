@@ -6,22 +6,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:shared_preferences/shared_preferences.dart';
- 
 
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
-import '../locator/locator.dart'; 
+import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
 import '../models/indices/all_index_model.dart';
 import '../models/indices/index_list_model.dart';
 import '../models/indices/index_order_model.dart';
 import '../res/res.dart';
-import '../routes/route_names.dart'; 
+import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
-import 'core/default_change_notifier.dart'; 
-import 'market_watch_provider.dart';
+import 'core/default_change_notifier.dart';
+// import 'market_watch_provider.dart';
 import 'websocket_provider.dart';
 
 final indexListProvider =
@@ -80,6 +79,16 @@ class IndexListProvider extends DefaultChangeNotifier {
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
 
+  // More menus
+
+  final List _moreMunus = [
+    {'title': "IPO", "subTitle": "Main stream, SME IPO", "logo": ""},
+    {'title': "Bonds", "subTitle": "Bonds", "logo": ""},
+    {'title': "Mutual fund", "subTitle": "Funds", "logo": ""}
+  ];
+
+  List get moreMenu => _moreMunus;
+
   void checkActiveTsym(bool value) {
     _isActiveTsym = value;
     notifyListeners();
@@ -116,9 +125,11 @@ class IndexListProvider extends DefaultChangeNotifier {
         //If it's last item, we will not add Divider after it.
         if (item != indexExch.last)
           DropdownMenuItem<String>(
-              enabled: false, child: Divider(color: ref(themeProvider).isDarkMode
-              ?colors.colorbluegrey
-              :colors.colorDivider))
+              enabled: false,
+              child: Divider(
+                  color: ref(themeProvider).isDarkMode
+                      ? colors.colorbluegrey
+                      : colors.colorDivider))
       ]);
     }
     return menuItems;
@@ -144,7 +155,7 @@ class IndexListProvider extends DefaultChangeNotifier {
       } else {
         if (_indexList!.emsg == "Session Expired :  Invalid Session Key" &&
             _indexList!.stat == "Not_Ok") {
-                    pref .clearClientSession();
+          pref.clearClientSession();
           ConstantName.sessCheck = false;
           ref(authProvider).loginMethCtrl.text =
               localstorage.getString("userId") ?? "";
@@ -342,8 +353,6 @@ class IndexListProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  
-
   changeIndex(IndexValue addNewIndex, BuildContext context, int index) async {
     final localstorage = await SharedPreferences.getInstance();
 
@@ -412,15 +421,16 @@ class IndexListProvider extends DefaultChangeNotifier {
   requestdefaultIndex(
       {required bool isSubscribe, required BuildContext context}) {
     String input = "";
-    if (_defaultIndexList!.indValues!.isNotEmpty) {
-      for (var element in _defaultIndexList!.indValues!) {
-        input += "${element.exch}|${element.token}#";
+
+    if (_defaultIndexList != null) {
+      if (_defaultIndexList!.indValues!.isNotEmpty) {
+        for (var element in _defaultIndexList!.indValues!) {
+          input += "${element.exch}|${element.token}#";
+        }
       }
     }
 
     if (input.isNotEmpty) {
-      input += ref(marketWatchProvider).mwSubToken;
-
       ref(websocketProvider).establishConnection(
           channelInput: input, task: isSubscribe ? "t" : "u", context: context);
     }
@@ -429,20 +439,16 @@ class IndexListProvider extends DefaultChangeNotifier {
   checkSession(BuildContext context) async {
     try {
       _checkSess = await api.getAddDeleteSciptoMW(
-          isAdd: false, scripToken: "", wlname: ""); 
+          isAdd: false, scripToken: "", wlname: "");
       if (_checkSess!.emsg == "Session Expired :  Invalid Session Key" &&
           _checkSess!.stat == "Not_Ok") {
-        ref(authProvider). ifSessionExpired(  context);
+        ref(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
     } finally {}
-
-
-    
   }
 
-
-  fetchNotifyMsg()async{
-      await api.getNotifyMsg( );
+  fetchNotifyMsg() async {
+    await api.getNotifyMsg();
   }
 }

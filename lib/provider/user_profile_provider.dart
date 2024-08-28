@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -22,9 +21,7 @@ import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
 import 'shocase_provider.dart';
-// import 'thems.dart';
 import '../models/profile_model/qr_login_res.dart';
-import 'websocket_provider.dart';
 
 final userProfileProvider =
     ChangeNotifierProvider((ref) => UserProfileProvider(ref.read));
@@ -286,7 +283,40 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "trailing": "assets/profile/greater_arrow.svg",
         "key": "",
         "case": "Click here to view the Log message."
-      },
+      }
+      // ,
+      // {
+      //   "title": "Ipo",
+      //   "subTitle": "Mainstream,SmeIPO",
+      //   "leading": "assets/profileimage/reports.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the Log message."
+      // },
+      // {
+      //   "title": "Ipo Orderbook",
+      //   "subTitle": "Open order, closed order, Modfiy, Cancel",
+      //   "leading": "assets/profileimage/reports.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the Log message."
+      // },
+      // {
+      //   "title": "Bonds",
+      //   "subTitle": "Bonds",
+      //   "leading": "assets/profileimage/reports.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the Log message."
+      // },
+      // {
+      //   "title": "Mutual Fund",
+      //   "subTitle": "Funds",
+      //   "leading": "assets/profileimage/reports.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the Log message."
+      // }
     ];
     return profileMenu;
   }

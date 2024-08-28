@@ -20,6 +20,14 @@ mixin ApiCore {
     };
   }
 
+   Map<String, String> get funddefaultHeaders {
+    return {
+      'Authorization': "${prefs.token}",
+      'clientid': "${prefs.clientId}",
+      'Content-Type': 'application/json'
+    };
+  }
+
   void dispose() {
     apiClient.close();
   }

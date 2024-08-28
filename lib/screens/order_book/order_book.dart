@@ -70,7 +70,7 @@ class OrderBook extends ConsumerWidget {
                                             assets.filterLines,
                                             color: theme.isDarkMode
                                             ?colors.darkiconcolor
-                                             :Color(0xff333333)))),
+                                             :const Color(0xff333333)))),
                                 // InkWell(
                                 //     onTap: () {
                                 //       order.showOrderSearch(true);
@@ -325,9 +325,9 @@ class OrderBook extends ConsumerWidget {
                                                             BorderRadius.circular(
                                                                 4),
                                                         color: theme.isDarkMode
-                                                            ? Color(0xff666666)
+                                                            ? const Color(0xff666666)
                                                                 .withOpacity(.2)
-                                                            : Color(0xff999999)
+                                                            : const Color(0xff999999)
                                                                 .withOpacity(
                                                                     .2)),
                                                     child: Text(
@@ -415,9 +415,5 @@ class OrderBook extends ConsumerWidget {
         : const NoDataFound();
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }

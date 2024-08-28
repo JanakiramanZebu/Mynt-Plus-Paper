@@ -1,21 +1,22 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
- 
+import 'package:mynt_plus/api/core/api_link.dart';
+
 import '../models/auth_model/forgot_pass_model.dart';
 import '../models/auth_model/logout_model.dart';
 import '../models/auth_model/mobile_login_model.dart';
 import '../models/auth_model/mobile_otp_model.dart';
 import '../models/auth_model/validate_seesion_model.dart';
 import '../sharedWidget/snack_bar.dart';
-import 'core/api_core.dart'; 
+import 'core/api_core.dart';
 
 mixin AuthApi on ApiCore {
   Future<MobileLoginModel> getMobileLogin(
       {required String uniqueId,
       required String mobileRclient,
       required String password,
-      required BuildContext context }) async {
+      required BuildContext context}) async {
     try {
       final uri = Uri.parse(apiLinks.mobileLogin);
 
@@ -55,7 +56,7 @@ mixin AuthApi on ApiCore {
       {required String uniqueId,
       required String mobileRclient,
       required String otp,
-      required BuildContext context }) async {
+      required BuildContext context}) async {
     try {
       final uri = Uri.parse(apiLinks.mobileOtp);
 
@@ -64,18 +65,18 @@ mixin AuthApi on ApiCore {
               "mobile_unique": uniqueId,
               "clientid": mobileRclient,
               "otp": otp,
-              "source": "MOB"
+              "source": ApiLinks.source
             }
           : {
               "mobile_unique": uniqueId,
               "mobile": mobileRclient,
               "otp": otp,
-               "source": "MOB"
+              "source": ApiLinks.source
             };
       final res = await apiClient.post(uri,
           headers: defaultHeaders, body: jsonEncode(data));
 
-     log("Mobile OTP  => ${res.body}");
+      log("Mobile OTP  => ${res.body}");
       final json = jsonDecode(res.body);
       if (res.statusCode == 200) {
         return MobileOtpModel.fromJson(json as Map<String, dynamic>);

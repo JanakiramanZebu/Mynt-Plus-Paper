@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../models/portfolio_model/position_convertion_model.dart';
 import '../../../provider/portfolio_provider.dart';
@@ -9,6 +8,7 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
+import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/snack_bar.dart'; 
 
@@ -63,7 +63,7 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
                 Navigator.pop(context);
               },
               icon:  Icon(Icons.close_rounded , color: theme.isDarkMode
-                                      ?Color(0xffBDBDBD)
+                                      ?const Color(0xffBDBDBD)
                                       :colors.colorGrey))
         ],
       ),
@@ -236,12 +236,7 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
-
+  
   Text headerTitleText(String text, ThemesProvider theme) {
     return Text(text,
         style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500));

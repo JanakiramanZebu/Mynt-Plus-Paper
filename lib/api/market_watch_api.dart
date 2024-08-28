@@ -1,4 +1,4 @@
-import 'dart:developer';
+ 
 
 import 'package:flutter/material.dart'; 
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
@@ -255,7 +255,7 @@ mixin MarketWatchApi on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"$tysm","ai_t":"$alertTypeVal","validity":"GTT","d":"$value","remarks":"$remark"}&jKey=${prefs.clientSession}''');
 
-      log("SetAlert => ${res.body}");
+      // log("SetAlert => ${res.body}");
       final json = jsonDecode(res.body);
 
       return SetAlertModel.fromJson(json as Map<String, dynamic>);

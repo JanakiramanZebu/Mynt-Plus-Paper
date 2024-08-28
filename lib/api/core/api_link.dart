@@ -7,7 +7,7 @@ class ApiLinks {
   static String source = "MOB";
   // static String userID = "ZVK0106";
   // static String session = "";
-
+  // static String wsURL = 'wss://go.mynt.in/NorenWS/';
   static String otp = "";
   static String userName = "";
   static bool showAppTutorial = true;
@@ -100,8 +100,12 @@ class ApiLinks {
 
 // Local Server ---------
 
-  String get mainBaseURL => 'https://copy.mynt.in/uat';
-  // String get mainBaseURL => 'https://copy.mynt.in'; 
+  // UAT-----
+
+  // String get mainBaseURL => 'https://copy.mynt.in/uat';
+
+  String get mainBaseURL => 'https://copy.mynt.in';
+
   String get mobileLogin => '$mainBaseURL/MobileLogin';
 
   String get mobileOtp => '$mainBaseURL/otp_verify';
@@ -134,25 +138,59 @@ class ApiLinks {
   // String get mainBaseURL1 => 'http://192.168.5.83:5000';
   String get getClientTrades => '$mainBaseURL1/getClientTrades';
 
-  String get gsecdetails => 'https://besim.zebull.in/getcurrentNCB_Gsecdetails';
-  String get goldbonddetails => 'https://besim.zebull.in/getcurrentSGBdetails';
-
   // Stock data URL
 
-  String stockUrl = "https://v3.mynt.in";
+  String dashBoardURL = "https://v3.mynt.in";
 
   // String tradeAction = "https://v3.mynt.in/equity/getadindicesAdvdec";
 
-  String get fundamentalDetail => '$stockUrl/equity/stockFundamentalDetails';
-  String get topListStock => '$stockUrl/equity/TopList';
-  String get getGlobalIndex => '$stockUrl/equity/getGlobalIndex';
-
-  String get getadindices => '$stockUrl/equity/getadindices';
-  String get getadindicesAdvdec => '$stockUrl/equity/getadindicesAdvdec';
-
-  String get getCorporateAction => '$stockUrl/ipo/getCorporateAction';
-  String get getStockMonitor => '$stockUrl/equity/GetContentList';
+  String get fundamentalDetail =>
+      '$dashBoardURL/equity/stockFundamentalDetails';
+  String get topListStock => '$dashBoardURL/equity/TopList';
+  String get getGlobalIndex => '$dashBoardURL/equity/getGlobalIndex';
+  String get getadindices => '$dashBoardURL/equity/getadindices';
+  String get getadindicesAdvdec => '$dashBoardURL/equity/getadindicesAdvdec';
+  String get getCorporateAction => '$dashBoardURL/ipo/getCorporateAction';
+  String get getStockMonitor => '$dashBoardURL/equity/GetContentList';
 
   /// Qr Scanner
   String get getQrScanner => '$mainBaseURL/QRMobileReq';
+
+  ///ipo///
+  String get smeipos => "$dashBoardURL/ipo/getcurrentSMEIPOdetails";
+  String get mainstreamipo => "$dashBoardURL/ipo/getcurrentIPOdetails";
+  String get ipoperformance => "$dashBoardURL/ipo/ipo_performer?year=2024";
+  String get placeipoorder => "$dashBoardURL/ipo/addIPOtoPortfolio";
+  String get ipoorderbook => "$dashBoardURL/ipo/orderbookIPODetails";
+
+// Mutual Fund
+  String get bestMf => "$dashBoardURL/mf/z_data";
+  String get masterMF => "$dashBoardURL/mf/master_file_datas";
+  String get mfWatchlist => "$dashBoardURL/mf/watchlist";
+  String get factSheetData => "$dashBoardURL/mf/getFactSheetData";
+  String get navGraph => "$dashBoardURL/mf/getNavGraph";
+  String get factSheetGraph => "$dashBoardURL/mf/getFactSheetGraph";
+  String get schemePeers => "$dashBoardURL/mf/getSchemePeers";
+  String get postRollingReturn => "$dashBoardURL/mf/postRollingReturn";
+  String get bankDetail => "$dashBoardURL/mf/client_bank_details";
+  String get mfSip => "$dashBoardURL/mf/sip_values";
+  String get mandateDetail => "$dashBoardURL/mf/mandate_details";
+
+  // String get mfSip=> "$dashBoardURL/mf/sip_values";
+
+  //hdfc mainurl//
+  String get hdfcmainurl => 'https://fundapi.mynt.in/hdfc/upi';
+  String get verifyUPI => '$hdfcmainurl/checkClientVPA';
+  //fund urlss///
+  String get viewupiid => 'https://fundapi.mynt.in/withdraw/view_upi_id';
+
+// Bonds
+  String get bondBaseURL => 'https://besim.zebull.in';
+  String get getSGB => "$bondBaseURL/getcurrentSGBdetails";
+  String get getGSec => "$bondBaseURL/getcurrentNCB_Gsecdetails";
+  String get getTBill => "$bondBaseURL/getcurrentNCB_TBilldetails";
+  String get getSDL => "$bondBaseURL/getcurrentNCB_SDLdetails";
+
+  String get ledgerBaseURL => 'https://rekycbe.mynt.in';
+  String get getLedgerBal => "$ledgerBaseURL/all_ledger_balance";
 }

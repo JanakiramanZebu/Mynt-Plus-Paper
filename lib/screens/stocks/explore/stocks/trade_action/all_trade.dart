@@ -144,7 +144,7 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
                 SectorThematicList(data: tradeAcrion.niftyData,isscollable:true)
               ]),
             ),
-            SizedBox(height: 20)
+            const SizedBox(height: 20)
           ],
         ),
       ),

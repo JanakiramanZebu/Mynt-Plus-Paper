@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:flutter_svg/svg.dart'; 
 import '../../models/order_book_model/trade_book_model.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
@@ -74,9 +73,9 @@ CustomExchBadge(exch: "${orderBookList.exch}"),
                                                             BorderRadius.circular(
                                                                 4),
                                                         color: theme.isDarkMode
-                                                            ? Color(0xff666666)
+                                                            ? const Color(0xff666666)
                                                                 .withOpacity(.2)
-                                                            : Color(0xff999999)
+                                                            : const Color(0xff999999)
                                                                 .withOpacity(
                                                                     .2)),
                     child: Text("${orderBookList.sPrdtAli}",
@@ -92,9 +91,9 @@ CustomExchBadge(exch: "${orderBookList.exch}"),
                                                             BorderRadius.circular(
                                                                 4),
                                                         color: theme.isDarkMode
-                                                            ? Color(0xff666666)
+                                                            ? const Color(0xff666666)
                                                                 .withOpacity(.2)
-                                                            : Color(0xff999999)
+                                                            : const Color(0xff999999)
                                                                 .withOpacity(
                                                                     .2)),
                       child: Text("${orderBookList.prctyp}",
@@ -146,9 +145,5 @@ CustomExchBadge(exch: "${orderBookList.exch}"),
             ]));
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+   
 }

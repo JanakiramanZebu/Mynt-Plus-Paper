@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
+import '../../../sharedWidget/functions.dart';
 
 class PositionListCard extends ConsumerWidget {
   final PositionBookModel positionList;
@@ -80,7 +80,7 @@ class PositionListCard extends ConsumerWidget {
                              color: theme.isDarkMode
                                 ? positionList.qty == "0"
                                     ? colors.colorBlack
-                                    : Color(0xff666666).withOpacity(.2)
+                                    : const Color(0xff666666).withOpacity(.2)
                                 : positionList.qty == "0"
                                     ? colors.colorWhite
                                     : const Color(0xffECEDEE)),
@@ -89,7 +89,7 @@ class PositionListCard extends ConsumerWidget {
                             style: textStyle(
                               theme.isDarkMode
                               ?colors.colorWhite
-                                :Color(0xff666666), 10, FontWeight.w500)),
+                                :const Color(0xff666666), 10, FontWeight.w500)),
                       ),
                       Text("  ${positionList.expDate} ",
                           overflow: TextOverflow.ellipsis,
@@ -252,9 +252,5 @@ class PositionListCard extends ConsumerWidget {
             ]));
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+   
 }

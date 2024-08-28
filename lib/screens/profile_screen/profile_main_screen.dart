@@ -7,7 +7,10 @@ import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
+import '../../provider/bond_provider.dart';
 import '../../provider/fund_provider.dart';
+import '../../provider/iop_provider.dart';
+import '../../provider/mf_provider.dart';
 import '../../provider/notification_provider.dart';
 
 import '../../provider/thems.dart';
@@ -24,6 +27,7 @@ class UserAccountScreen extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final userProfile = watch(userProfileProvider);
     final theme = watch(themeProvider);
+    int currentYear = DateTime.now().year;
     // final portfolio = watch(portfolioProvider);
     // final indexProvide = watch(indexListProvider);
     final funds = watch(fundProvider);
@@ -81,7 +85,7 @@ class UserAccountScreen extends ConsumerWidget {
                               .read(notificationprovider)
                               .fetchbrokermsg(context);
                           Navigator.pushNamed(context, Routes.notificationpage);
-                        } else {
+                        } else if (index == 9) {
                           showModalBottomSheet(
                               useSafeArea: true,
                               isScrollControlled: true,
@@ -92,6 +96,26 @@ class UserAccountScreen extends ConsumerWidget {
                               builder: (context) {
                                 return const NeedHelpScreen();
                               });
+                        } else if (index == 10) {
+                          await context.read(ipoProvide).getSmeIpo();
+                          await context.read(ipoProvide).getmainstreamipo();
+                          await context
+                              .read(ipoProvide)
+                              .getipoperfomance(currentYear);
+                          Navigator.pushNamed(context, Routes.ipo);
+                        } else if (index == 11) {
+                          await context.read(ipoProvide).getipoorderbookmodel();
+                          await context.read(ipoProvide).ipotab();
+                          Navigator.pushNamed(context, Routes.ipoorderbook);
+                        } else if (index == 12) {
+                          await context.read(bondProvider).fetchGovtBonds();
+                          Navigator.pushNamed(context, Routes.bonds);
+                        } else {
+                          await context
+                              .read(mfProvider)
+                              .fetchMFWatchlist(null, "", context, false);
+                          await context.read(mfProvider).fetchMasterMF();
+                          Navigator.pushNamed(context, Routes.mf);
                         }
                       },
                       dense: true,
@@ -206,7 +230,7 @@ class UserAccountScreen extends ConsumerWidget {
                                                         16,
                                                         FontWeight.w600),
                                                   ),
-                                                  SizedBox(height: 10),
+                                                  const SizedBox(height: 10),
                                                   Text(
                                                     "* Note: Open order(s) will be cancelled, but position(s) will not be closed",
                                                     style: textStyle(
@@ -230,8 +254,8 @@ class UserAccountScreen extends ConsumerWidget {
                                                           : colors.colorBlue))),
                                           ElevatedButton(
                                               onPressed: () async {
-                                             userProfile.fetchFreezeAc(context);
-                                                  
+                                                userProfile
+                                                    .fetchFreezeAc(context);
                                               },
                                               style: ElevatedButton.styleFrom(
                                                   elevation: 0,

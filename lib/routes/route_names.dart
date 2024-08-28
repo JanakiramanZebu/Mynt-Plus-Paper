@@ -17,8 +17,7 @@ class Routes {
   static const String orderDetail = 'orderDetail';
 
   static const String tradeDetail = 'tradeDetail';
-   static const String   gttOrderDetail  = 'gttOrderDetail';
-
+  static const String gttOrderDetail = 'gttOrderDetail';
 
   static const String allIndex = 'allIndex';
   static const String topIndiciesIndex = 'topIndiciesIndex';
@@ -75,20 +74,20 @@ class Routes {
   static const String myAcc = 'MyAccount';
   static const String bankDetail = 'BankDetail';
   static const String reports = 'Reports';
- 
+
   static const String futures = 'Futures';
 
   static const String positionDetail = 'PositionDetail';
   static const String positionExit = 'PositionExit';
   static const String holdingDetail = 'HoldingDetail';
-    static const String holdingExit = 'HoldingExit';
-   static const String edis = 'Edis';
+  static const String holdingExit = 'HoldingExit';
+  static const String edis = 'Edis';
   static const String setAlert = 'setAlert';
 
   static const String placeOrderScreen = 'PlaceOrderScreen';
   // static const String gttOrderScreen = 'GTTOrderScreen';
   static const String modifyOrder = 'ModifyOrder';
-    static const String modifyGtt  = 'modifyGtt';
+  static const String modifyGtt = 'modifyGtt';
   static const String settingscreen = 'settingscreen';
   static const String notificationscreen = 'notificationscreen';
   static const String windowsetting = 'windowsetting';
@@ -98,7 +97,7 @@ class Routes {
   static const String fundTransaction = "fundTransaction";
   static const String reportWebViewApp = "reportWebViewApp";
   static const String profileWebViewApp = "profileWebViewApp";
-   static const String optionZWebView = 'optionZWebView';
+  static const String optionZWebView = 'optionZWebView';
 
   static const String logError = 'logerror';
 
@@ -107,25 +106,33 @@ class Routes {
 
   static const String profilesettingscreen = 'profilesettingscreen';
 
-  static const String  repeatOrd = ' repeatOrd';
+  static const String repeatOrd = ' repeatOrd';
 
   static const String notificationpage = 'notificationpage';
 // static const String  needHelp = 'NeedHelp';
 
-
-
- 
- 
   static const String pendingalertdetails = 'pendingalertdetails';
 
-    static const String qrscanner = 'qrscanner';
+  static const String qrscanner = 'qrscanner';
 
-    
   // Explore
   //
-static const String   sectorThematicDetail  = ' sectorThematicDetail';
- 
+  static const String sectorThematicDetail = ' sectorThematicDetail';
+
   static const String allTrade = 'allTrade';
 
+/////ipo
+  static const String ipo = 'Ipo';
+  static const String smeapplyIPO = 'smeapplyIPO';
+  static const String ipoopendetailsscreen = 'ipoopendetailsscreen';
+  static const String ipoclosedetailsscreen = 'ipoclosedetailsscreen';
+  static const String ipoorderbook = 'Ipoorderbook';
+  static const String modifyipoorder = 'Modifyipoorder';
 
+// Bonds
+  static const String bonds = 'bonds';
+  static const String mf = 'mutualFund';
+  static const String mfWatchlist = 'mfWatchlist';
+  static const String mforderScreen = 'mforderScreen';
+  static const String mfStockDetail = 'mfStockDetail';
 }

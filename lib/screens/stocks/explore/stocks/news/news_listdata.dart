@@ -33,7 +33,7 @@ class NewsListData extends ConsumerWidget {
         itemCount: news!.length,
         itemBuilder: (context, index) {
           return ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 16),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             onTap: () async {
               final Uri url = Uri.parse("${news[index].link}");
               if (!await launchUrl(url)) {
@@ -56,18 +56,18 @@ class NewsListData extends ConsumerWidget {
                 ? Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(color: colors.darkGrey),
+                    width: 80,
+                    height: 50,
                     child: Text("MYNT +",
                         style: textStyle(const Color(0xff000000), 14,
                             FontWeight.w600)),
-                    width: 80,
-                    height: 50,
                   )
                 : Image.network("${news[index].image}",
                     width: 80, height: 50, fit: BoxFit.fill),
           );
         },
         separatorBuilder: (context, int index) {
-          return ListDivider();
+          return const ListDivider();
         },
       ),
     );

@@ -52,18 +52,18 @@ class NewsScreen extends ConsumerWidget {
                     ? Container(
                         alignment: Alignment.center,
                         decoration: BoxDecoration(color: colors.darkGrey),
+                        width: 80,
+                        height: 50,
                         child: Text("MYNT +",
                             style: textStyle(
                                 const Color(0xff000000), 14, FontWeight.w600)),
-                        width: 80,
-                        height: 50,
                       )
                     : Image.network("${news[index].image}",
                         width: 80, height: 50, fit: BoxFit.fill),
               );
             },
             separatorBuilder: (context, int index) {
-              return ListDivider();
+              return const ListDivider();
             },
           ),
           Center(

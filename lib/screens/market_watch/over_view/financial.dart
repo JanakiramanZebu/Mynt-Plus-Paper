@@ -1,10 +1,10 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../models/marketwatch_model/scrip_overview/stock_data.dart';
-import '../../../provider/market_watch_provider.dart'; 
+import '../../../provider/market_watch_provider.dart';
 import '../../../provider/stocks_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
@@ -44,11 +44,11 @@ class FinancialWidget extends ConsumerWidget {
                     alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                         color: theme.isDarkMode
+                        color: theme.isDarkMode
                             ? finData.selctedFinType ==
                                     finData.finacialType[index]
-                                ? Color(0xffB0BEC5)
-                                : Color(0xffB5C0CF).withOpacity(.15)
+                                ? const Color(0xffB0BEC5)
+                                : const Color(0xffB5C0CF).withOpacity(.15)
                             : finData.selctedFinType ==
                                     finData.finacialType[index]
                                 ? const Color(0xff000000)
@@ -61,7 +61,7 @@ class FinancialWidget extends ConsumerWidget {
                         },
                         child: Text(finData.finacialType[index],
                             style: textStyle(
-                                 theme.isDarkMode
+                                theme.isDarkMode
                                     ? finData.selctedFinType ==
                                             finData.finacialType[index]
                                         ? colors.colorBlack
@@ -71,7 +71,8 @@ class FinancialWidget extends ConsumerWidget {
                                         ? colors.colorWhite
                                         : colors.colorBlack,
                                 14,
-                                finData.selctedFinType == finData.finacialType[index]
+                                finData.selctedFinType ==
+                                        finData.finacialType[index]
                                     ? FontWeight.w500
                                     : FontWeight.w400))));
               },
@@ -114,12 +115,11 @@ class FinancialWidget extends ConsumerWidget {
           DropdownButtonHideUnderline(
               child: DropdownButton2(
             dropdownStyleData: DropdownStyleData(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: !theme.isDarkMode
-                      ? colors.colorWhite
-                      : const Color.fromARGB(255, 18, 18, 18))
-            ),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: !theme.isDarkMode
+                        ? colors.colorWhite
+                        : const Color.fromARGB(255, 18, 18, 18))),
             menuItemStyleData: MenuItemStyleData(
                 customHeights:
                     provideData.getCustomItemsHeight(provideData.finType)),
@@ -127,9 +127,9 @@ class FinancialWidget extends ConsumerWidget {
                 height: 40,
                 width: 138,
                 decoration: BoxDecoration(
-                     color: theme.isDarkMode
-                                        ? const Color(0xffB5C0CF).withOpacity(.15)
-                                        : const Color(0xffF1F3F8),
+                    color: theme.isDarkMode
+                        ? const Color(0xffB5C0CF).withOpacity(.15)
+                        : const Color(0xffF1F3F8),
                     // border: Border.all(color: Colors.grey),
                     borderRadius: const BorderRadius.all(Radius.circular(32)))),
             // buttonDecoration: const BoxDecoration(
@@ -171,13 +171,13 @@ class FinancialWidget extends ConsumerWidget {
             Text("Financial Years",
                 style: textStyle(const Color(0xff666666), 14, FontWeight.w500)),
             DropdownButtonHideUnderline(
-                child: DropdownButton2( dropdownStyleData: DropdownStyleData(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: !theme.isDarkMode
-                      ? colors.colorWhite
-                      : const Color.fromARGB(255, 18, 18, 18))
-            ),
+                child: DropdownButton2(
+              dropdownStyleData: DropdownStyleData(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: !theme.isDarkMode
+                          ? colors.colorWhite
+                          : const Color.fromARGB(255, 18, 18, 18))),
               menuItemStyleData: MenuItemStyleData(
                   customHeights: provideData
                       .getCustomItemsHeight(provideData.finnceYears)),
@@ -185,27 +185,28 @@ class FinancialWidget extends ConsumerWidget {
                   height: 40,
                   width: 100,
                   decoration: BoxDecoration(
-                       color: theme.isDarkMode
-                                        ? const Color(0xffB5C0CF).withOpacity(.15)
-                                        : const Color(0xffF1F3F8),
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
                       // border: Border.all(color: Colors.grey),
-                      borderRadius: const BorderRadius.all(Radius.circular(32)))),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(32)))),
               // buttonDecoration: const BoxDecoration(
               //     color: Color(0xffF1F3F8),
               //     // border: Border.all(color: Colors.grey),
               //     borderRadius: BorderRadius.all(Radius.circular(32))),
               // buttonSplashColor: Colors.transparent,
               isExpanded: true,
-                 style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                13,
-                FontWeight.w500),
-            hint: Text(provideData.selcteFinYear,
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorBlack : colors.colorBlack,
-                    13,
-                    FontWeight.w500)),
-             
+              style: textStyle(
+                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  13,
+                  FontWeight.w500),
+              hint: Text(provideData.selcteFinYear,
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorBlack : colors.colorBlack,
+                      13,
+                      FontWeight.w500)),
+
               items: provideData.addDividersAfterStock(provideData.finnceYears),
               // customItemsHeights: provideData
               //     .getStochCustomItemsHeight(provideData.finnceYears),
@@ -222,7 +223,7 @@ class FinancialWidget extends ConsumerWidget {
       const SizedBox(height: 10),
       if (finData.selctedFinType == "Income") ...[
         IncomeSheetData(
-          themes:theme,
+            themes: theme,
             incomSheet: provideData.selcteFinType == "Consolidated"
                 ? provideData
                     .fundamentalData!.stockFinancialsConsolidated!.incomeSheet!
@@ -303,7 +304,10 @@ class IncomeSheetData extends StatelessWidget {
   final String financialYear;
   final ThemesProvider themes;
   const IncomeSheetData(
-      {super.key, required this.incomSheet, required this.financialYear, required this.themes});
+      {super.key,
+      required this.incomSheet,
+      required this.financialYear,
+      required this.themes});
 
   @override
   Widget build(BuildContext context) {
@@ -319,38 +323,42 @@ class IncomeSheetData extends StatelessWidget {
                       title: "Revenue",
                       value: "${incomSheet[index].revenue}",
                       showIcon: true),
-                  Divider(color: themes.isDarkMode
-                  ?colors.darkColorDivider
-                  :colors.colorDivider),
+                  Divider(
+                      color: themes.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider),
                   StockRowTable(
                       title: "Expenditure",
                       value: "${incomSheet[index].expenditure}",
                       showIcon: true),
-                  Divider(color: 
-                  themes.isDarkMode
-                  ?colors.darkColorDivider
-                  :colors.colorDivider),
+                  Divider(
+                      color: themes.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider),
                   StockRowTable(
                       title: "Operating Profit",
                       value: "${incomSheet[index].operatingProfit}",
                       showIcon: true),
-                  Divider(color: themes.isDarkMode
-                  ?colors.darkColorDivider
-                  :colors.colorDivider),
+                  Divider(
+                      color: themes.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider),
                   StockRowTable(
                       title: "Profit Before Tax",
                       value: "${incomSheet[index].profitBeforeTax}",
                       showIcon: true),
-                  Divider(color: themes.isDarkMode
-                  ?colors.darkColorDivider
-                  :colors.colorDivider),
+                  Divider(
+                      color: themes.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider),
                   StockRowTable(
                       title: "Tax",
                       value: "${incomSheet[index].tax}",
                       showIcon: true),
-                  Divider(color: themes.isDarkMode
-                  ?colors.darkColorDivider
-                  :colors.colorDivider),
+                  Divider(
+                      color: themes.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider),
                   StockRowTable(
                       title: "Profit After Tax",
                       value: "${incomSheet[index].profitBeforeTax}",

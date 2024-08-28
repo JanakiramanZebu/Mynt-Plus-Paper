@@ -6,8 +6,7 @@ import 'package:another_xlider/models/tooltip/tooltip.dart';
 import 'package:another_xlider/models/trackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:flutter_svg/svg.dart'; 
 import 'package:percent_indicator/percent_indicator.dart'; 
 import '../../../provider/websocket_provider.dart'; 
 import '../../locator/constant.dart';
@@ -20,6 +19,7 @@ import '../../res/res.dart';
 import '../../routes/route_names.dart';  
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
+import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/no_data_found.dart';
 import 'futures/future_screen.dart';
@@ -258,7 +258,7 @@ if (context
                                                           "Ok") {
                                                           showModalBottomSheet(
                                                             backgroundColor:
-                                                                Color(
+                                                                const Color(
                                                                     0xff000000),
                                                             isScrollControlled:
                                                                 true,
@@ -1166,7 +1166,7 @@ if (context
                               const SizedBox(height: 10),
                           
                                const FundamentalDataWidget(),
-                            ]else...[NoDataFound()]
+                            ]else...[const NoDataFound()]
                           ] else if (scripInfo.actDeptBtn == "Chart") ...[
                             ChartScreenWebView(chartArgs: chartArgs!)
                           ] else if (scripInfo.actDeptBtn == "Option") ...[
@@ -1417,8 +1417,8 @@ if (context
                       decoration: BoxDecoration(
                           shape: BoxShape.rectangle,
                           color: theme.isDarkMode
-                              ? Color(0xffB0BEC5)
-                              : Color(0xff000000)),
+                              ? const Color(0xffB0BEC5)
+                              : const Color(0xff000000)),
                       child: const Center(
                           child: Text(
                         ' ',
@@ -1428,10 +1428,10 @@ if (context
             disabled: true,
           ),
           trackBar: FlutterSliderTrackBar(
-            inactiveDisabledTrackBarColor: Color(0xff666666).withOpacity(.2),
+            inactiveDisabledTrackBarColor: const Color(0xff666666).withOpacity(.2),
             activeDisabledTrackBarColor: theme.isDarkMode
-                ? Color.fromARGB(255, 36, 35, 35).withOpacity(.2)
-                : Color.fromARGB(255, 247, 246, 246).withOpacity(.2),
+                ? const Color.fromARGB(255, 36, 35, 35).withOpacity(.2)
+                : const Color.fromARGB(255, 247, 246, 246).withOpacity(.2),
             activeTrackBarHeight: 4,
             inactiveTrackBarHeight: 4,
           ),
@@ -1560,9 +1560,5 @@ if (context
             FontWeight.w500));
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+   
 }
