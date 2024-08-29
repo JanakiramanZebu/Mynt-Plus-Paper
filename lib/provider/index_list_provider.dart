@@ -63,7 +63,7 @@ class IndexListProvider extends DefaultChangeNotifier {
   String _selectedExch = "NSE";
   String get slectedExch => _selectedExch;
 
-  String _indexSubToken = "";
+  final String _indexSubToken = "";
   String get indexSubToken => _indexSubToken;
 
   AddDeleteScripModel? _checkSess;

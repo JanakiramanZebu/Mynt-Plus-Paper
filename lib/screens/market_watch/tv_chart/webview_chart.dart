@@ -7,16 +7,16 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';  
-import '../../../locator/constant.dart'; 
+import 'package:flutter_svg/svg.dart'; 
+import 'package:google_fonts/google_fonts.dart';
+import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
 import '../../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/network_state_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../provider/websocket_provider.dart'; 
+import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
@@ -37,12 +37,12 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   double progress = 0;
   late ContextMenu contextMenu;
   final Preferences prefs = locator<Preferences>();
+
   @override
   void initState() {
     super.initState();
     // context.read(networkStateProvider).networkStream();
- 
-    
+
     contextMenu = ContextMenu(
         menuItems: [
           ContextMenuItem(
@@ -50,8 +50,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
               iosId: "1",
               title: "Special",
               action: () async {
-                await ConstantName.webViewController.clearFocus();
-                await ConstantName.webViewController.evaluateJavascript(
+                await ConstantName.webViewController!.clearFocus();
+                await ConstantName.webViewController!.evaluateJavascript(
                     source: "window.tvWidget.activeChart().setChartType(1)");
               })
         ],
@@ -68,17 +68,17 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   }
 
   @override
-  void dispose() {
+  void dispose() { 
+ 
+    // ConstantName.webViewController!.clearCache() ;
+    // ConstantName.webViewController!.evaluateJavascript(
+    //     source: 'window.localStorage.removeItem("tick_tick")');
     ConstantName.charttimer!.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-
-        
-     
- 
     return Consumer(builder: (context, ScopedReader watch, _) {
       final tvChart = watch(marketWatchProvider);
       final internet = watch(networkStateProvider);
@@ -183,7 +183,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                                           .withOpacity(.1)),
                                   CustomWidgetButton(
                                       onPress: () async {
-                                        await ConstantName.webViewController
+                                        await ConstantName.webViewController!
                                             .evaluateJavascript(
                                                 source:
                                                     "window.tvWidget.chart().executeActionById('insertIndicator')");
@@ -212,7 +212,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                                           .withOpacity(.1)),
                                   CustomWidgetButton(
                                       onPress: () async {
-                                        await ConstantName.webViewController
+                                        await ConstantName.webViewController!
                                             .evaluateJavascript(
                                                 source:
                                                     "window.tvWidget.chart().executeActionById('compareOrAdd')");
@@ -312,7 +312,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                                   "0.00",
                               "v": socketDatas[widget.chartArgs.token]['v']
                             };
-                            ConstantName.webViewController.evaluateJavascript(
+                            ConstantName.webViewController!.evaluateJavascript(
                                 source:
                                     'window.localStorage.setItem("tick_tick",\'${jsonEncode(json)}\')');
                           });

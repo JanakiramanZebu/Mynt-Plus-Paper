@@ -6,17 +6,17 @@ import 'package:another_xlider/models/tooltip/tooltip.dart';
 import 'package:another_xlider/models/trackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
-import 'package:percent_indicator/percent_indicator.dart'; 
-import '../../../provider/websocket_provider.dart'; 
+import 'package:flutter_svg/svg.dart';
+import 'package:percent_indicator/percent_indicator.dart';
+import '../../../provider/websocket_provider.dart';
 import '../../locator/constant.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../models/order_book_model/order_book_model.dart';
-import '../../provider/market_watch_provider.dart'; 
+import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
-import '../../routes/route_names.dart';  
+import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
@@ -27,7 +27,7 @@ import 'option_chain/cur_strike_price.dart';
 import 'option_chain/opt_chain_call_list.dart';
 import 'option_chain/opt_chain_put_list.dart';
 import 'option_chain/strike_price_list_card.dart';
- 
+
 import 'over_view/funtamental_data_widget.dart';
 import 'scrip_detail_dialogue.dart';
 import 'set_alert_screen.dart';
@@ -60,20 +60,18 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
           tsym: widget.wlValue.tsym,
           token: widget.wlValue.token);
 
-    //   if ((widget.wlValue.exch == "NSE" || widget.wlValue.exch == "BSE") &&
-    //       (widget.wlValue.instname != "UNDIND")) {
-       
-    // // context.read(marketWatchProvider).fetchFundamentalData(
-    // //         tradeSym:
-    // //             "${context.read(marketWatchProvider).getQuotes!.exch}:${context.read(marketWatchProvider).getQuotes!.tsym}");
-      
-      
-    //   }
+      //   if ((widget.wlValue.exch == "NSE" || widget.wlValue.exch == "BSE") &&
+      //       (widget.wlValue.instname != "UNDIND")) {
+
+      // // context.read(marketWatchProvider).fetchFundamentalData(
+      // //         tradeSym:
+      // //             "${context.read(marketWatchProvider).getQuotes!.exch}:${context.read(marketWatchProvider).getQuotes!.tsym}");
+
+      //   }
     });
 
     super.initState();
   }
-
 
 // getFundamental()async{
 //  await  context.read(marketWatchProvider).fetchFundamentalData(
@@ -95,13 +93,12 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 //                                         "Click here to view fundamental data."
 //                                   });
 //         }}
- 
- 
 
 // }
   @override
   Widget build(BuildContext context) {
     return WillPopScope(onWillPop: () async {
+      await context.read(marketWatchProvider).chngDephBtn("Overview");
       ConstantName.charttimer =
           Timer.periodic(const Duration(milliseconds: 0), (timer) {});
       ConstantName.charttimer!.cancel();
@@ -112,14 +109,11 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
           channelInput: "${widget.wlValue.exch}|${widget.wlValue.token}",
           task: "ud",
           context: context);
-if (context
-          .read(marketWatchProvider).actDeptBtn ==
-                                                    "Chart") {
-      ConstantName.webViewController.evaluateJavascript(
-                                source:
-                                    'window.localStorage.removeItem("tick_tick")');
-}
-        
+
+      if (context.read(marketWatchProvider).actDeptBtn == "Chart") {
+        ConstantName.webViewController!.evaluateJavascript(
+            source: 'window.localStorage.removeItem("tick_tick")');
+      }
 
       return true;
     }, child: Consumer(builder: (context, ScopedReader watch, _) {
@@ -195,7 +189,8 @@ if (context
             return Container(
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  color:
+                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   boxShadow: const [
                     BoxShadow(
                         color: Color(0xff999999),
@@ -256,7 +251,7 @@ if (context
                                                               .scripInfoModel!
                                                               .stat ==
                                                           "Ok") {
-                                                          showModalBottomSheet(
+                                                        showModalBottomSheet(
                                                             backgroundColor:
                                                                 const Color(
                                                                     0xff000000),
@@ -265,9 +260,9 @@ if (context
                                                             useSafeArea: true,
                                                             isDismissible: true,
                                                             shape: const RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius.vertical(
-                                                                        top: Radius.circular(
+                                                                borderRadius: BorderRadius.vertical(
+                                                                    top: Radius
+                                                                        .circular(
                                                                             16))),
                                                             context: context,
                                                             builder:
@@ -291,9 +286,6 @@ if (context
                                                             height: 15,
                                                             color: const Color(
                                                                 0xff666666))))
-
-
-                                                                
                                               ]),
                                           Text(
                                               "₹${depthData.lp ?? depthData.c ?? 0.00}",
@@ -319,17 +311,16 @@ if (context
                                                 exch: widget.wlValue.exch),
                                             Text("  ${widget.wlValue.expDate}",
                                                 style: textStyle(
-                                             !theme.isDarkMode
-                                                      ? colors.colorBlack
-                                                      : colors.colorWhite,
+                                                    !theme.isDarkMode
+                                                        ? colors.colorBlack
+                                                        : colors.colorWhite,
                                                     12,
                                                     FontWeight.w600)),
                                           ]),
                                           Text(
                                               " ${double.parse("${depthData.chng ?? 0.00} ").toStringAsFixed(2)} (${depthData.pc ?? 0.00}%)",
                                               style: textStyle(
-                                                  (depthData.chng ==
-                                                                  "null" ||
+                                                  (depthData.chng == "null" ||
                                                               depthData.chng ==
                                                                   null) ||
                                                           depthData.chng ==
@@ -354,9 +345,15 @@ if (context
                                     decoration: BoxDecoration(
                                         border: Border(
                                             bottom: BorderSide(
-                                                color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider,width: 0),
+                                                color: theme.isDarkMode
+                                                    ? colors.darkColorDivider
+                                                    : colors.colorDivider,
+                                                width: 0),
                                             top: BorderSide(
-                                                color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider,width: 0))),
+                                                color: theme.isDarkMode
+                                                    ? colors.darkColorDivider
+                                                    : colors.colorDivider,
+                                                width: 0))),
                                     child: ListView.separated(
                                         scrollDirection: Axis.horizontal,
                                         itemCount: scripInfo.depthBtns.length,
@@ -772,12 +769,22 @@ if (context
                                                                                       },
                                                                                       contentPadding: const EdgeInsets.symmetric(horizontal: 0),
                                                                                       dense: true,
-                                                                                      title: Text(scripInfo.numStrikes[index] == "50" ? "All" : scripInfo.numStrikes[index], style: textStyle( scripInfo.numStrike == scripInfo.numStrikes[index] && theme.isDarkMode?colors.colorLightBlue:scripInfo.numStrike == scripInfo.numStrikes[index] ?colors.colorBlue:colors.colorGrey, 14,  scripInfo.numStrike == scripInfo.numStrikes[index]?FontWeight.w600:FontWeight.w500)
-                                                                                       ),
-                                                                                      trailing: SvgPicture.asset(
-                                                                                        
-                                                                                      theme.isDarkMode?  scripInfo.numStrike == scripInfo.numStrikes[index] ? assets.darkActProductIcon : assets.darkProductIcon:  
-                                                                                        scripInfo.numStrike == scripInfo.numStrikes[index] ? assets.actProductIcon : assets.productIcon));
+                                                                                      title: Text(scripInfo.numStrikes[index] == "50" ? "All" : scripInfo.numStrikes[index],
+                                                                                          style: textStyle(
+                                                                                              scripInfo.numStrike == scripInfo.numStrikes[index] && theme.isDarkMode
+                                                                                                  ? colors.colorLightBlue
+                                                                                                  : scripInfo.numStrike == scripInfo.numStrikes[index]
+                                                                                                      ? colors.colorBlue
+                                                                                                      : colors.colorGrey,
+                                                                                              14,
+                                                                                              scripInfo.numStrike == scripInfo.numStrikes[index] ? FontWeight.w600 : FontWeight.w500)),
+                                                                                      trailing: SvgPicture.asset(theme.isDarkMode
+                                                                                          ? scripInfo.numStrike == scripInfo.numStrikes[index]
+                                                                                              ? assets.darkActProductIcon
+                                                                                              : assets.darkProductIcon
+                                                                                          : scripInfo.numStrike == scripInfo.numStrikes[index]
+                                                                                              ? assets.actProductIcon
+                                                                                              : assets.productIcon));
                                                                                 },
                                                                                 separatorBuilder: (context, index) {
                                                                                   return const ListDivider();
@@ -790,17 +797,30 @@ if (context
                                                       Text(
                                                           "${scripInfo.numStrike == "50" ? "All" : scripInfo.numStrike} ",
                                                           style: textStyle(
-                                                             theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
+                                                              theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorLightBlue
+                                                                  : colors
+                                                                      .colorBlue,
                                                               13,
                                                               FontWeight.w500)),
                                                       Text("Strike",
-                                                          style: textStyle(theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
+                                                          style: textStyle(
+                                                              theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorLightBlue
+                                                                  : colors
+                                                                      .colorBlue,
                                                               13,
                                                               FontWeight.w500)),
- Icon(
+                                                      Icon(
                                                           Icons.arrow_drop_down,
-                                                          color:
-                                                              theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .colorLightBlue
+                                                              : colors
+                                                                  .colorBlue,
                                                           size: 20)
                                                     ]))),
                                             Text("  Put LTP    ",
@@ -856,7 +876,10 @@ if (context
                                           "${depthData.lp ?? depthData.c ?? 0.00}",
                                           theme),
                                       const SizedBox(height: 2),
-                                      Divider(color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider),
+                                      Divider(
+                                          color: theme.isDarkMode
+                                              ? colors.darkColorDivider
+                                              : colors.colorDivider),
                                       if (depthData.wk52L != null &&
                                           depthData.wk52H != null) ...[
                                         const SizedBox(height: 6),
@@ -871,7 +894,10 @@ if (context
                                             "${depthData.wk52H ?? 0.00}",
                                             "${depthData.lp ?? depthData.c ?? 0.00}",
                                             theme),
-                                        Divider(color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider),
+                                        Divider(
+                                            color: theme.isDarkMode
+                                                ? colors.darkColorDivider
+                                                : colors.colorDivider),
                                         const SizedBox(height: 6)
                                       ],
                                       if (widget.wlValue.instname != "UNDIND" &&
@@ -1043,18 +1069,21 @@ if (context
                                             backgroundColor:
                                                 (scripInfo.totBuyQtyPer.toStringAsFixed(2) ==
                                                             "0.00" &&
-                                                        scripInfo.totSellQtyPer.toStringAsFixed(2) ==
+                                                        scripInfo.totSellQtyPer
+                                                                .toStringAsFixed(
+                                                                    2) ==
                                                             "0.00")
                                                     ? const Color(0xffECEDEE)
                                                     : const Color(0XFFD34645),
-                                                       
                                             percent: scripInfo.totBuyQtyPerChng,
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 14),
-                                            progressColor: const Color(0xff43A833)
-                                               ),
+                                            progressColor: const Color(0xff43A833)),
                                         const SizedBox(height: 5),
-                                        Divider(color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider)
+                                        Divider(
+                                            color: theme.isDarkMode
+                                                ? colors.darkColorDivider
+                                                : colors.colorDivider)
                                       ],
                                       const SizedBox(height: 4),
                                       if ((widget.wlValue.instname !=
@@ -1091,7 +1120,8 @@ if (context
                                               theme),
                                           const SizedBox(height: 4),
                                         ],
-                                        if (    scripInfo.returnsGridview.isNotEmpty) ...[
+                                        if (scripInfo
+                                            .returnsGridview.isNotEmpty) ...[
                                           Text("Returns",
                                               style: textStyle(
                                                   theme.isDarkMode
@@ -1119,12 +1149,12 @@ if (context
                                                             vertical: 7,
                                                             horizontal: 8),
                                                     decoration: BoxDecoration(
-                                                        color: const Color(0xffB5C0CF)
+                                                        color: const Color(
+                                                                0xffB5C0CF)
                                                             .withOpacity(.15),
                                                         borderRadius:
                                                             BorderRadius
-                                                                .circular(8)
-                                                        ),
+                                                                .circular(8)),
                                                     child: Column(children: [
                                                       Text(
                                                           "${scripInfo.returnsGridview[index]['percent']}%",
@@ -1164,9 +1194,10 @@ if (context
                                     .toString() !=
                                 "no data found") ...[
                               const SizedBox(height: 10),
-                          
-                               const FundamentalDataWidget(),
-                            ]else...[const NoDataFound()]
+                              const FundamentalDataWidget(),
+                            ] else ...[
+                              const NoDataFound()
+                            ]
                           ] else if (scripInfo.actDeptBtn == "Chart") ...[
                             ChartScreenWebView(chartArgs: chartArgs!)
                           ] else if (scripInfo.actDeptBtn == "Option") ...[
@@ -1232,10 +1263,12 @@ if (context
                       scripInfo.actDeptBtn == "Set Alert"
                           ? Container()
                           : Container(
-                              decoration:   BoxDecoration(
+                              decoration: BoxDecoration(
                                   border: Border(
                                       top: BorderSide(
-                                          color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider))),
+                                          color: theme.isDarkMode
+                                              ? colors.darkColorDivider
+                                              : colors.colorDivider))),
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 10),
                               child: Row(
@@ -1249,8 +1282,8 @@ if (context
                                           await placeOrderInput(
                                               scripInfo, ctx, depthData, true);
                                         } else {
-                                          exchAlert( 
-                                              ctx, depthData, scripInfo, true,theme);
+                                          exchAlert(ctx, depthData, scripInfo,
+                                              true, theme);
                                         }
                                       },
                                       child: Container(
@@ -1275,14 +1308,13 @@ if (context
                                                     ctx, depthData, false);
                                               } else {
                                                 exchAlert(ctx, depthData,
-                                                    scripInfo, false,theme);
+                                                    scripInfo, false, theme);
                                               }
                                             },
                                             child: Container(
                                                 height: 40,
                                                 decoration: BoxDecoration(
-                                                    color:
-                                                        colors.darkred,
+                                                    color: colors.darkred,
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             108)),
@@ -1307,7 +1339,10 @@ if (context
     return showDialog(
         context: ctx,
         builder: (BuildContext context) {
-          return AlertDialog(   backgroundColor:theme.isDarkMode? const Color.fromARGB(255, 18, 18, 18):colors.colorWhite,
+          return AlertDialog(
+            backgroundColor: theme.isDarkMode
+                ? const Color.fromARGB(255, 18, 18, 18)
+                : colors.colorWhite,
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(16))),
             scrollable: true,
@@ -1320,7 +1355,12 @@ if (context
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Alert!',
-                    style: textStyle( !theme.isDarkMode? colors.colorBlack:colors.colorWhite, 16, FontWeight.w600)),
+                    style: textStyle(
+                        !theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        16,
+                        FontWeight.w600)),
                 IconButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -1337,15 +1377,22 @@ if (context
                     Text("${depthData.tsym} ",
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
-                        style: textStyles.appBarTitleTxt.copyWith(color: !theme.isDarkMode? colors.colorBlack:colors.colorWhite)),
-                     CustomExchBadge(exch: "${depthData.exch}")
+                        style: textStyles.appBarTitleTxt.copyWith(
+                            color: !theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.colorWhite)),
+                    CustomExchBadge(exch: "${depthData.exch}")
                   ]),
                   const SizedBox(height: 16),
                   Row(children: [
                     Expanded(
                         child: Text("${depthData.ordMsg}",
                             style: textStyle(
-                                !theme.isDarkMode? colors.colorBlack:colors.colorWhite, 14, FontWeight.w500)))
+                                !theme.isDarkMode
+                                    ? colors.colorBlack
+                                    : colors.colorWhite,
+                                14,
+                                FontWeight.w500)))
                   ]),
                   const SizedBox(height: 10),
                 ])),
@@ -1360,12 +1407,18 @@ if (context
                     },
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: !theme.isDarkMode? colors.colorBlack:colors.colorbluegrey,
+                        backgroundColor: !theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorbluegrey,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50))),
                     child: Text("Proceed",
                         style: textStyle(
-                         theme.isDarkMode? colors.colorBlack:colors.colorWhite, 14, FontWeight.w500))),
+                            theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.colorWhite,
+                            14,
+                            FontWeight.w500))),
               ),
             ],
           );
@@ -1397,7 +1450,7 @@ if (context
     });
   }
 
- Row lowHighBar(String low, String high, String value, ThemesProvider theme) {
+  Row lowHighBar(String low, String high, String value, ThemesProvider theme) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(
           "${double.parse(low) <= double.parse(value) ? double.parse(low) : double.parse(value)}",
@@ -1428,7 +1481,8 @@ if (context
             disabled: true,
           ),
           trackBar: FlutterSliderTrackBar(
-            inactiveDisabledTrackBarColor: const Color(0xff666666).withOpacity(.2),
+            inactiveDisabledTrackBarColor:
+                const Color(0xff666666).withOpacity(.2),
             activeDisabledTrackBarColor: theme.isDarkMode
                 ? const Color.fromARGB(255, 36, 35, 35).withOpacity(.2)
                 : const Color.fromARGB(255, 247, 246, 246).withOpacity(.2),
@@ -1471,7 +1525,10 @@ if (context
                 14,
                 FontWeight.w500)),
         const SizedBox(height: 2),
-        Divider(color:theme.isDarkMode?colors.darkColorDivider: colors.colorDivider)
+        Divider(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider)
       ])),
       const SizedBox(width: 24),
       Expanded(
@@ -1488,7 +1545,10 @@ if (context
               FontWeight.w500),
         ),
         const SizedBox(height: 2),
-        Divider(color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider)
+        Divider(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider)
       ]))
     ]);
   }
@@ -1559,6 +1619,4 @@ if (context
             13,
             FontWeight.w500));
   }
-
-   
 }

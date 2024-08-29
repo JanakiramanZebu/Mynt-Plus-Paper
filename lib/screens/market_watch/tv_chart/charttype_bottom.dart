@@ -75,7 +75,7 @@ class ChartTypeBottomSheet extends ConsumerWidget {
                         (index) {
                       return InkWell(
                         onTap: () async {
-                          await ConstantName.webViewController.evaluateJavascript(
+                          await ConstantName.webViewController!.evaluateJavascript(
                               source:
                                   "window.tvWidget.activeChart().setChartType($index)");
                           Navigator.pop(context);

@@ -6,7 +6,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart'; 
 
 class ConstantName {
-    static late  InAppWebViewController webViewController  ;
+    static   InAppWebViewController? webViewController  ;
   static String tsym = "";
   static String interval = "5";
 

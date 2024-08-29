@@ -107,7 +107,7 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                           onChanged: (value) {
                             fund.isValidUpiId();
                           })),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
@@ -126,9 +126,9 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                                       14,
                                       FontWeight.w500)),
                               Container(
-                                margin: EdgeInsets.symmetric(vertical: 6),
+                                margin: const EdgeInsets.symmetric(vertical: 6),
                                 alignment: Alignment.centerLeft,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     vertical: 10, horizontal: 10),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(30),
@@ -148,7 +148,7 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                           ),
                         ),
                       ),
-                      SizedBox(width: 22),
+                      const SizedBox(width: 22),
                       Expanded(
                         child: InkWell(
                           onTap: () {
@@ -165,9 +165,9 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                                       14,
                                       FontWeight.w500)),
                               Container(
-                                margin: EdgeInsets.symmetric(vertical: 6),
+                                margin: const EdgeInsets.symmetric(vertical: 6),
                                 alignment: Alignment.centerLeft,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     vertical: 10, horizontal: 10),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(30),

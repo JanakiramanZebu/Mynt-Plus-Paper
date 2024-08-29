@@ -357,7 +357,7 @@ class FundProvider extends DefaultChangeNotifier {
                   padding: const EdgeInsets.symmetric(horizontal: 10.0),
                   child: Text(
                     item.toString(),
-                    style: textStyle(Color(0xff000000), 13, FontWeight.w500),
+                    style: textStyle(const Color(0xff000000), 13, FontWeight.w500),
                   ))),
           //If it's last item, we will not add Divider after it.
           if (item != _paymentMethod.last)
@@ -402,7 +402,7 @@ class FundProvider extends DefaultChangeNotifier {
                     overflow: TextOverflow.ellipsis,
                         style:
                             textStyle(colors.colorBlack, 14, FontWeight.w500)),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text("*******${item.bankAcNo!.substring(8)}",
                         style:
                             textStyle(colors.colorGrey, 12, FontWeight.w500)),

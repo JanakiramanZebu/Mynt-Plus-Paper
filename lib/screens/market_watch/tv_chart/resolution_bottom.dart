@@ -135,7 +135,7 @@ class _ResolutionBottomState extends State<ResolutionBottom> {
               onTap: () async {
                 tvChart.activeResolution(minute[index]);
                 tvChart.activeDuration(minuteDuration[index]);
-                await ConstantName.webViewController.evaluateJavascript(
+                await ConstantName.webViewController!.evaluateJavascript(
                     source:
                         "window.tvWidget.activeChart().setResolution('${minuteDuration[index]}')");
                 Navigator.pop(context);
@@ -190,7 +190,7 @@ class _ResolutionBottomState extends State<ResolutionBottom> {
               onTap: () async {
                 tvChart.activeResolution(hour[index]);
                 tvChart.activeDuration(hourDuration[index]);
-                await ConstantName.webViewController.evaluateJavascript(
+                await ConstantName.webViewController!.evaluateJavascript(
                     source:
                         "window.tvWidget.activeChart().setResolution('${hourDuration[index]}')");
                 Navigator.pop(context);
@@ -245,7 +245,7 @@ class _ResolutionBottomState extends State<ResolutionBottom> {
               onTap: () async {
                 tvChart.activeResolution(day[index]);
                 tvChart.activeDuration(day[index]);
-                await ConstantName.webViewController.evaluateJavascript(
+                await ConstantName.webViewController!.evaluateJavascript(
                     source:
                         "window.tvWidget.activeChart().setResolution('${day[index]}')");
                 Navigator.pop(context);

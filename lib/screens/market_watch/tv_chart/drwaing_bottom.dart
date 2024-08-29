@@ -97,7 +97,7 @@ class DrawingBottomSheet extends ConsumerWidget {
                                   (index) {
                                 return InkWell(
                                   onTap: () async {
-                                    await ConstantName.webViewController
+                                    await ConstantName.webViewController!
                                         .evaluateJavascript(
                                             source:
                                                 "window.tvWidget.selectLineTool('${TrendingLineId.trendingLineIdList[index].drawingName}')");
@@ -168,7 +168,7 @@ class DrawingBottomSheet extends ConsumerWidget {
                                   FibonacciModel.fibonacciList.length, (index) {
                                 return InkWell(
                                   onTap: () async {
-                                    await ConstantName.webViewController
+                                    await ConstantName.webViewController!
                                         .evaluateJavascript(
                                             source:
                                                 "window.tvWidget.selectLineTool('${FibonacciId.fibonacciIdList[index].drawingName}')");
@@ -238,7 +238,7 @@ class DrawingBottomSheet extends ConsumerWidget {
                                   GeometricModel.geometricList.length, (index) {
                                 return InkWell(
                                   onTap: () async {
-                                    await ConstantName.webViewController
+                                    await ConstantName.webViewController!
                                         .evaluateJavascript(
                                             source:
                                                 "window.tvWidget.selectLineTool('${GeometricId.geometricIdList[index].drawingName}')");
@@ -309,7 +309,7 @@ class DrawingBottomSheet extends ConsumerWidget {
                                   (index) {
                                 return InkWell(
                                   onTap: () async {
-                                    await ConstantName.webViewController
+                                    await ConstantName.webViewController!
                                         .evaluateJavascript(
                                             source:
                                                 "window.tvWidget.selectLineTool('${AnnotationId.annotationIdList[index].drawingName}')");
@@ -379,7 +379,7 @@ class DrawingBottomSheet extends ConsumerWidget {
                                   PatternModel.patternList.length, (index) {
                                 return InkWell(
                                   onTap: () async {
-                                    await ConstantName.webViewController
+                                    await ConstantName.webViewController!
                                         .evaluateJavascript(
                                             source:
                                                 "window.tvWidget.selectLineTool('${PatternId.patternIdList[index].drawingName}')");
@@ -450,7 +450,7 @@ class DrawingBottomSheet extends ConsumerWidget {
                                   (index) {
                                 return InkWell(
                                   onTap: () async {
-                                    await ConstantName.webViewController
+                                    await ConstantName.webViewController!
                                         .evaluateJavascript(
                                             source:
                                                 "window.tvWidget.selectLineTool('${PredictionId.predictionIdList[index].drawingName}')");
@@ -522,7 +522,7 @@ class DrawingBottomSheet extends ConsumerWidget {
                                   VisualModel.visualList.length, (index) {
                                 return InkWell(
                                   onTap: () async {
-                                    await ConstantName.webViewController
+                                    await ConstantName.webViewController!
                                         .evaluateJavascript(
                                             source:
                                                 "window.tvWidget.selectLineTool('${VisualId.visualIdList[index].drawingName}')");
@@ -585,7 +585,7 @@ class DrawingBottomSheet extends ConsumerWidget {
         itemBuilder: (BuildContext context, int index) {
           return InkWell(
             onTap: () async {
-              await ConstantName.webViewController.evaluateJavascript(
+              await ConstantName.webViewController!.evaluateJavascript(
                   source:
                       "window.tvWidget.selectLineTool('${DrawingId.drawingIdList[index].drawingId}')");
 

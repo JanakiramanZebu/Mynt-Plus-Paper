@@ -183,7 +183,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   List<AlertPendingModel>? _alertPendingModel = [];
   List<AlertPendingModel>? get alertPendingModel => _alertPendingModel;
 
-  String _mwSubToken = "";
+  final String _mwSubToken = "";
   String get mwSubToken => _mwSubToken;
 
 // Option chain

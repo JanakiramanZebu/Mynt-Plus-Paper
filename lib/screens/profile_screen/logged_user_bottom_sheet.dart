@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
@@ -15,6 +14,7 @@ import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
+import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 
 class LoggedUserBottomSheet extends ConsumerWidget {
@@ -76,7 +76,6 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                     itemBuilder: (BuildContext context, int index) {
                       return ListTile(
                         onTap: () async {
-                          
                           pref.setClientId(
                               loggedUser.loggedMobile[index].clientId);
 
@@ -100,7 +99,6 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                           // ApiLinks.session =
                           //     localstorage.getString("session") ?? "";
 
-                          
                           marketWatch.changeWlName("", "No");
 
                           await marketWatch.fetchMWList(context);
@@ -125,7 +123,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                             await context
                                 .read(orderProvider)
                                 .fetchGTTOrderBook(context, "initLoad");
-                            await marketWatch.fetchPendingAlert(context);
+
                             await user.fetchUserDetail(
                                 context,
                                 loggedUser.loggedMobile[index].clientId,
@@ -201,8 +199,8 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
                   child: OutlinedButton(
                       onPressed: () {
-                       pref.setLogout(false);
-                       loggedUser.addClient(true);
+                        pref.setLogout(false);
+                        loggedUser.addClient(true);
                         Navigator.pop(context);
                         Navigator.pushNamed(context, Routes.loginScreen);
                       },
@@ -238,11 +236,5 @@ class LoggedUserBottomSheet extends ConsumerWidget {
             ),
           );
         });
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }
