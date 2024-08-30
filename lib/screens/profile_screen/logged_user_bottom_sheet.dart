@@ -51,7 +51,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                             theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            14,
+                            16,
                             FontWeight.w500))),
                 Divider(
                     height: 1,
@@ -79,6 +79,8 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                               loggedUser.loggedMobile[index].sesstion);
                           pref.setClientName(
                               loggedUser.loggedMobile[index].userName);
+
+                              pref.setMobileLogin(true);
                           await context.read(authProvider).fetchMobileLogin(
                               context,
                               "",
@@ -88,7 +90,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                         dense: true,
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 14),
-                        title: Text(loggedUser.loggedMobile[index].mobile,
+                        title: Text(loggedUser.loggedMobile[index]. userName,
                             style: textStyle(
                                 theme.isDarkMode
                                     ? colors.colorWhite

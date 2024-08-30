@@ -461,7 +461,7 @@ class WebSocketProvider extends ChangeNotifier {
           // log("Connection closed ${channel.closeRe
           //ason} ${channel.closeCode}");
           if (channel.closeCode != null) {
-            closeSocket();
+            // closeSocket();
             _wsConnected = false;
             ref(indexListProvider).logError.add({
               "type": "Websocket ${channel.closeCode} ",

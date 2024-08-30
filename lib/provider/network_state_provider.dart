@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
@@ -103,7 +102,8 @@ class NetworkStateProvider extends ChangeNotifier {
     if (_connectionStatus == ConnectivityResult.none) {
       ref(websocketProvider).closeSocket();
       ref(websocketProvider).websockConn(false);
-    } else {ref(websocketProvider).websockConn(false);
+    } else {
+      ref(websocketProvider).websockConn(false);
       if (ConstantName.sessCheck) {
         ref(websocketProvider).establishConnection(
             channelInput: ConstantName.lastSubscribe,
@@ -138,7 +138,7 @@ class NetworkStateProvider extends ChangeNotifier {
         // ref(orderProvider).fetchGTTOrderBook(_globbcontext!, "");
       }
     }
-    log(" connectionStatus - $_connectionStatus");
+    // log(" connectionStatus - $_connectionStatus");
     notifyListeners();
   }
 }
