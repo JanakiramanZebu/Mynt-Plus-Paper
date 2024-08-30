@@ -34,6 +34,7 @@ import '../sharedWidget/risk_disclosure_bottom_sheet.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'change_password_provider.dart';
 import 'core/default_change_notifier.dart';
+import 'fund_provider.dart';
 import 'index_list_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
@@ -248,7 +249,7 @@ class AuthProvider extends DefaultChangeNotifier {
     // }
     if (validateLogin()) {
       fetchMobileLogin(
-          context, passCtrl.text, loginMethCtrl.text.toUpperCase());
+          context, passCtrl.text, loginMethCtrl.text.toUpperCase(), "");
     }
   }
 
@@ -262,11 +263,8 @@ class AuthProvider extends DefaultChangeNotifier {
     resendOtp(context, passCtrl.text, loginMethCtrl.text.toUpperCase());
   }
 
-  fetchMobileLogin(
-    BuildContext context,
-    String password,
-    String mobileRclint,
-  ) async {
+  fetchMobileLogin(BuildContext context, String password, String mobileRclint,
+      String s) async {
     try {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
@@ -275,8 +273,11 @@ class AuthProvider extends DefaultChangeNotifier {
           mobileRclient: mobileRclint,
           password: password,
           context: context);
-
       // final localstorage = await SharedPreferences.getInstance();
+
+      if (_mobileLogin!.stat == "Ok" && s.isNotEmpty) {
+        Navigator.pop(context);
+      }
 
       if (_mobileLogin!.stat == "Ok" &&
           (_mobileLogin!.msg == "otp sended" ||
@@ -311,9 +312,13 @@ class AuthProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
             "Multiple accounts linked to your mobile no. Login with Client ID"));
       } else if (_mobileLogin!.emsg == "mobile_unique not valid") {
+        if (s.isNotEmpty) {
+          Navigator.pop(context);
+        }
         ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
             "This user id logged in another device, Please login again"));
         _isDisableBtn = true;
+        pref.setHideLoginOptBtn(false);
         clearError();
         clearTextField();
         pref.setLogout(true);
@@ -357,7 +362,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
         _loggedMobile = await getLocalData();
 
-        await deviceAuth(context);
+        await deviceAuth(context, s);
       } else if (password.isEmpty &&
           _mobileLogin!.emsg == "Invalid Input : Wrong Password") {
         _isDisableBtn = true;
@@ -365,6 +370,9 @@ class AuthProvider extends DefaultChangeNotifier {
         clearTextField();
         Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, arguments: "login", (route) => false);
+      } else if (_mobileLogin!.emsg == "") {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
       } else {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
@@ -456,7 +464,7 @@ class AuthProvider extends DefaultChangeNotifier {
         _loggedMobile = await getLocalData();
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, 'OTP Verified'));
-        await deviceAuth(context);
+        await deviceAuth(context, "");
 
         notifyListeners();
       } else {
@@ -521,7 +529,8 @@ class AuthProvider extends DefaultChangeNotifier {
             .showSnackBar(warningMessage(context, 'Logged out'));
 
         Navigator.of(context).pop();
-        // ref(websocketProvider).closeSocket();
+        ref(websocketProvider).closeSocket();
+        ref(websocketProvider).websockConn(false);
         Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, (route) => false);
       }
@@ -586,7 +595,7 @@ class AuthProvider extends DefaultChangeNotifier {
   //   notifyListeners();
   // }
 
-  Future<void> deviceAuth(BuildContext context) async {
+  Future<void> deviceAuth(BuildContext context, String s) async {
     final localAuth = LocalAuthentication();
 
     try {
@@ -608,7 +617,7 @@ class AuthProvider extends DefaultChangeNotifier {
       if (authenticated) {
         print('bioAuth - User authenticated successfully');
 
-        initialLoadMethods(context);
+        initialLoadMethods(context, s);
       } else {
         showDialog(
           barrierDismissible: false,
@@ -638,7 +647,7 @@ class AuthProvider extends DefaultChangeNotifier {
               ),
               actions: [
                 ElevatedButton(
-                    onPressed: () => deviceAuth(context),
+                    onPressed: () => deviceAuth(context, s),
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
                         backgroundColor: ref(themeProvider).isDarkMode
@@ -698,7 +707,7 @@ class AuthProvider extends DefaultChangeNotifier {
                 ),
                 actions: [
                   ElevatedButton(
-                      onPressed: () => deviceAuth(context),
+                      onPressed: () => deviceAuth(context, s),
                       style: ElevatedButton.styleFrom(
                           elevation: 0,
                           backgroundColor: ref(themeProvider).isDarkMode
@@ -714,7 +723,7 @@ class AuthProvider extends DefaultChangeNotifier {
             },
           );
         } else {
-          initialLoadMethods(context);
+          initialLoadMethods(context, s);
         }
       } else if (e.code == auth_error.notEnrolled) {
         // print("bioAuth - - ${e.code}");
@@ -731,14 +740,14 @@ class AuthProvider extends DefaultChangeNotifier {
 
   AuthProvider(this.ref);
 
-  initialLoadMethods(BuildContext context) async {
+  initialLoadMethods(BuildContext context, String s) async {
     try {
       initLaod(true);
       ConstantName.timer =
           Timer.periodic(const Duration(seconds: 1), (timer) {});
       ConstantName.timer!.cancel();
-      await ref(indexListProvider).bottomMenu(1);
-
+      await ref(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4);
+      ref(websocketProvider).websockConn(false);
       // await ref(stocksProvide).defaultSectorThemematicData();
       // await ref(indexListProvider).fetchDefTopIndex(context);
       // await ref(stocksProvide)
@@ -759,6 +768,9 @@ class AuthProvider extends DefaultChangeNotifier {
 
       if (ref(indexListProvider).checkSess!.stat == "Ok") {
         //  ref(indexListProvider).fetchNotifyMsg();
+
+        await ref(userProfileProvider).fetchUserDetail(
+            context, "${pref.clientId}", "${pref.clientSession}", "");
         await ref(portfolioProvider).fetchHoldings(context, "");
 
         await ref(marketWatchProvider).fetchMWList(context);
@@ -770,28 +782,32 @@ class AuthProvider extends DefaultChangeNotifier {
 
         await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
 
-        ref(userProfileProvider).fetchUserDetail(
-            context, "${pref.clientId}", "${pref.clientSession}", "");
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.homeScreen, (route) => false);
-        // if (pref.islogIn!) {
-        showModalBottomSheet(
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-            backgroundColor: const Color(0xffffffff),
-            isDismissible: false,
-            enableDrag: false,
-            showDragHandle: false,
-            useSafeArea: false,
-            isScrollControlled: true,
-            context: context,
-            builder: (BuildContext context) {
-              return WillPopScope(
-                  onWillPop: () async {
-                    return false;
-                  },
-                  child: const RiskDisclousreBottomSheet());
-            });
+        if (s.isEmpty) {
+          Navigator.pushNamedAndRemoveUntil(
+              context, Routes.homeScreen, (route) => false);
+          // if (pref.islogIn!) {
+          showModalBottomSheet(
+              shape: const RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(16))),
+              backgroundColor: const Color(0xffffffff),
+              isDismissible: false,
+              enableDrag: false,
+              showDragHandle: false,
+              useSafeArea: false,
+              isScrollControlled: true,
+              context: context,
+              builder: (BuildContext context) {
+                return WillPopScope(
+                    onWillPop: () async {
+                      return false;
+                    },
+                    child: const RiskDisclousreBottomSheet());
+              });
+        }
+        {
+          await ref(fundProvider).fetchFunds(context);
+        }
       }
       // }
       // ConstantName.timer!.cancel();
@@ -815,7 +831,7 @@ class AuthProvider extends DefaultChangeNotifier {
     ConstantName.timer!.cancel();
 
     ref(websocketProvider).closeSocket();
-
+    ref(websocketProvider).websockConn(false);
     Navigator.pushNamedAndRemoveUntil(
         context, Routes.loginScreen, (route) => false);
   }

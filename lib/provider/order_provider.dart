@@ -7,6 +7,7 @@ import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
+// import '../models/order_book_model/basket_model.dart';
 import '../models/order_book_model/cancel_order_model.dart';
 import '../models/order_book_model/get_brokerage.dart';
 import '../models/order_book_model/gtt_order_book.dart';
@@ -85,6 +86,8 @@ class OrderProvider extends DefaultChangeNotifier {
   bool get showSearchHold => _showSearchOrder;
   changeTabIndex(int index) {
     _selectedTab = index;
+
+ 
   }
 
   tabSize() {
@@ -96,11 +99,17 @@ class OrderProvider extends DefaultChangeNotifier {
 
       Tab(
           text:
-              "GTT Order(${_gttOrderBookModel == null ? 0 : _gttOrderBookModel!.length})"),
+              "GTT Order (${_gttOrderBookModel == null ? 0 : _gttOrderBookModel!.length})"),
+
+      // Tab(
+      //     text:
+      //         "Basket Order (${_gttOrderBookModel == null ? 0 : _gttOrderBookModel!.length})"),
 
       Tab(text: "Trade Book (${_tradeBook == null ? 0 : _tradeBook!.length})"),
 
-      Tab(text: "Alert(${ref(marketWatchProvider).alertPendingModel!.length})"),
+      Tab(
+          text:
+              "Alert (${ref(marketWatchProvider).alertPendingModel!.length})"),
 
       // Tab(text: "SIP Order")
     ];
@@ -361,7 +370,7 @@ class OrderProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
           if (initLoad != "initLoad") {
             _selectedTab = 3;
-             requestWSOrderBook(isSubscribe: true, context: context);
+            requestWSOrderBook(isSubscribe: true, context: context);
           }
 
           for (var element in _gttOrderBookModel!) {
@@ -501,15 +510,13 @@ class OrderProvider extends DefaultChangeNotifier {
             .showSnackBar(successMessage(context, 'Order Modified'));
         Navigator.pop(context);
       } else {
-
-        if (    _modifyOrderModel !.emsg ==
-                "Session Expired :  Invalid Session Key") {
-               ref(authProvider).ifSessionExpired(context);
+        if (_modifyOrderModel!.emsg ==
+            "Session Expired :  Invalid Session Key") {
+          ref(authProvider).ifSessionExpired(context);
         } else {
-            ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, '${_modifyOrderModel !.emsg}'));
+          ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, '${_modifyOrderModel!.emsg}'));
         }
-   
       }
       notifyListeners();
       return _modifyOrderModel;
@@ -820,4 +827,24 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
     }
   }
+
+  createBasketOrder(String val)async{
+
+
+   
+
+    notifyListeners();
+  }
+
+  //  Future<List<BasketModel>> getLocalData() async {
+  //   List<String>? jsonList = pref.loggedClient;
+
+  //   if (jsonList != null) {
+  //     return jsonList
+  //         .map((jsonString) => BasketModel.fromJson(jsonString))
+  //         .toList();
+  //   } else {
+  //     return [];
+  //   }
+  // }
 }

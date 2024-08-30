@@ -6,7 +6,7 @@ import 'package:flutter_svg/svg.dart';
 
 // import '../locator/locator.dart';
 // import '../locator/preference.dart';
-import '../provider/auth_provider.dart';
+// import '../provider/auth_provider.dart';
 import '../provider/network_state_provider.dart';
 import '../res/res.dart';
 // import '../routes/route_names.dart';
@@ -84,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
 //  ---- DASHBOARD FLOW
 
-context.read(authProvider).initialLoadMethods(context);
+// context.read(authProvider).initialLoadMethods(context);
 
     } catch (e) {
       log("faild to build --- $e");

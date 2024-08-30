@@ -80,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen> {
         pref.setMobileLogin(true);
         await context
             .read(authProvider)
-            .fetchMobileLogin(context, "", pref.clientId!);
+            .fetchMobileLogin(context, "", pref.clientId!,"");
         // }
       }
 

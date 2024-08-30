@@ -102,8 +102,8 @@ class NetworkStateProvider extends ChangeNotifier {
 
     if (_connectionStatus == ConnectivityResult.none) {
       ref(websocketProvider).closeSocket();
-      // ref(websocketProvider).websockConn(false);
-    } else {
+      ref(websocketProvider).websockConn(false);
+    } else {ref(websocketProvider).websockConn(false);
       if (ConstantName.sessCheck) {
         ref(websocketProvider).establishConnection(
             channelInput: ConstantName.lastSubscribe,
@@ -122,13 +122,20 @@ class NetworkStateProvider extends ChangeNotifier {
         await ref(marketWatchProvider)
             .requestMWScrip(context: _globbcontext!, isSubscribe: true);
       } else if (ref(indexListProvider).selectedBtmIndx == 1) {
-        await ref(portfolioProvider).fetchHoldings(_globbcontext, "");
-        await ref(portfolioProvider).fetchPositionBook(_globbcontext!, false);
+        await ref(portfolioProvider)
+            .requestWSHoldings(isSubscribe: true, context: _globbcontext!);
+        await ref(portfolioProvider)
+            .requestWSPosition(isSubscribe: true, context: _globbcontext!);
+        // await ref(portfolioProvider).fetchHoldings(_globbcontext, "");
+        // await ref(portfolioProvider).fetchPositionBook(_globbcontext!, false);
       } else if (ref(indexListProvider).selectedBtmIndx == 2) {
-        ref(orderProvider).fetchOrderBook(_globbcontext!, true);
-        ref(orderProvider).fetchTradeBook(_globbcontext!);
+        await ref(orderProvider)
+            .requestWSOrderBook(isSubscribe: true, context: _globbcontext!);
 
-        ref(orderProvider).fetchGTTOrderBook(_globbcontext!, "");
+        // ref(orderProvider).fetchOrderBook(_globbcontext!, true);
+        // ref(orderProvider).fetchTradeBook(_globbcontext!);
+
+        // ref(orderProvider).fetchGTTOrderBook(_globbcontext!, "");
       }
     }
     log(" connectionStatus - $_connectionStatus");

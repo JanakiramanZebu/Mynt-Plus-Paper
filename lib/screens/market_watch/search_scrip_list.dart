@@ -5,11 +5,14 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../provider/market_watch_provider.dart';
 import '../../../res/res.dart';
+import '../../models/marketwatch_model/get_quotes.dart';
 import '../../models/marketwatch_model/search_scrip_model.dart';
 import '../../provider/thems.dart';
+import '../../provider/websocket_provider.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/no_data_found.dart';
+import 'scrip_depth_info.dart';
 
 class SearchScripList extends ConsumerWidget {
   final List<ScripValue> searchValue;
@@ -26,23 +29,75 @@ class SearchScripList extends ConsumerWidget {
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
               return ListTile(
-                // onTap: wlName.isNotEmpty
-                //     ? null
-                //     : () async {
-                //         ChartArgs chartArgs = ChartArgs(
-                //             token: "${searchValue[index].token}",
-                //             exch: "${searchValue[index].exch}",
-                //             tsym: "${searchValue[index].tsym}");
-                //         searchScrip.activeTsym(
-                //             chartArgs.tsym, chartArgs.exch);
-                //         await ConstantName.webViewController
-                //             .evaluateJavascript(
-                //                 source:
-                //                     "window.tvWidget.activeChart().setSymbol('${chartArgs.exch}:${chartArgs.tsym}')");
+                onTap: () async { await watch(websocketProvider).establishConnection(
+                      channelInput:
+                          "${searchValue[index].exch}}|${searchValue[index].token}",
+                      task: "d",
+                      context: context);
+                  searchScrip.chngDephBtn("Overview");
+                  await searchScrip.fetchScripQuote(
+                      "${searchValue[index].token}",
+                      "${searchValue[index].exch}",
+                      context);
 
-                //         Navigator.pop(context);
-                //         await searchScrip.searchClear();
-                //       },
+                 
+
+                  if (searchScrip.getQuotes!.stat == "Ok") {
+                    await context.read(marketWatchProvider).fetchLinkeScrip(
+                        "${searchValue[index].token}",
+                        "${searchValue[index].exch}",
+                        context);
+
+                    context.read(marketWatchProvider).fetchFundamentalData(
+                        tradeSym:
+                            "${searchValue[index].exch}:${searchValue[index].tsym}");
+                    if ((searchValue[index].exch == "NSE" ||
+                        searchValue[index].exch == "BSE")) {
+                      context.read(marketWatchProvider).depthBtns.add({
+                        "btnName": "Fundamental",
+                        "imgPath": assets.dInfo,
+                        "case": "Click here to view fundamental data."
+                      });
+                      await context.read(marketWatchProvider).fetchTechData(
+                          context: context,
+                          exch:
+                              "${context.read(marketWatchProvider).getQuotes!.exch}",
+                          tradeSym:
+                              "${context.read(marketWatchProvider).getQuotes!.tsym}",
+                          lastPrc:
+                              "${context.read(marketWatchProvider).getQuotes!.lp ?? context.read(marketWatchProvider).getQuotes!.c ?? 0.00}");
+                    }
+
+                    context.read(marketWatchProvider).depthBtns.add({
+                      "btnName": "Set Alert",
+                      "imgPath": "assets/icon/calendar.svg",
+                      "case": "Click here to view the trading view chart."
+                    });
+
+                    DepthInputArgs depthArgs = DepthInputArgs(
+                        exch: '${searchValue[index].exch}',
+                        token: '${searchValue[index].token}',
+                        tsym: '${searchValue[index].tsym}',
+                        instname: searchValue[index].instname ?? "",
+                        symbol: '${searchValue[index].symbol}',
+                        expDate: '${searchValue[index].expDate}',
+                        option: '${searchValue[index].option}');
+
+                    showModalBottomSheet(
+                        isScrollControlled: true,
+                        useSafeArea: true,
+                        isDismissible: true,
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(16))),
+                        context: context,
+                        builder: (context) => Container(
+                            padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).viewInsets.bottom,
+                            ),
+                            child: ScripDepthInfo(wlValue: depthArgs)));
+                  }
+                },
                 dense: true,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
@@ -68,52 +123,50 @@ class SearchScripList extends ConsumerWidget {
                                 : colors.colorBlack))
                   ],
                 ),
-                trailing: wlName.isEmpty
-                    ? Container(width: 1)
-                    : IconButton(   splashRadius: 20,
-                        onPressed: () async {
-                          if (searchScrip.isAdded![index]) {
-                            await searchScrip.isActiveAddBtn(false, index);
-                    
-                            await searchScrip.addDelMarketScrip(
-                                wlName,
-                                "${searchValue[index].exch}|${searchValue[index].token}",
-                                context,
-                                false,
-                                false,
-                                false);
-                          } else {
-                            await searchScrip.isActiveAddBtn(true, index);
-                            await searchScrip.addDelMarketScrip(
-                                wlName,
-                                "${searchValue[index].exch}|${searchValue[index].token}",
-                                context,
-                                true,
-                                false,
-                                false);
-                          }
-                          // await context
-                          //     .read(marketWatchProvider)
-                          //     .fetchAddDeleteScrip(
-                          //         wlname: wlName,
-                          //         context: context,
-                          //         scripToken:
-                          //             "${searchValue[index].exch}|${searchValue[index].token}",
-                          //         isAdd: true,
-                          //         isWList: false,
-                          //         isSort: true);
-                        },
-                        icon: SvgPicture.asset(
-                          color: theme.isDarkMode &&
-                                  searchScrip.isAdded![index]
-                              ? colors.colorLightBlue
-                              : searchScrip.isAdded![index]
-                                  ? colors.colorBlue
-                                  : colors.colorGrey,
-                          searchScrip.isAdded![index]
-                              ? assets.bookmarkIcon
-                              : assets.bookmarkedIcon,
-                        )),
+                trailing: IconButton(
+                    splashRadius: 20,
+                    onPressed: () async {
+                      if (searchScrip.isAdded![index]) {
+                        await searchScrip.isActiveAddBtn(false, index);
+
+                        await searchScrip.addDelMarketScrip(
+                            wlName,
+                            "${searchValue[index].exch}|${searchValue[index].token}",
+                            context,
+                            false,
+                            false,
+                            false);
+                      } else {
+                        await searchScrip.isActiveAddBtn(true, index);
+                        await searchScrip.addDelMarketScrip(
+                            wlName,
+                            "${searchValue[index].exch}|${searchValue[index].token}",
+                            context,
+                            true,
+                            false,
+                            false);
+                      }
+                      // await context
+                      //     .read(marketWatchProvider)
+                      //     .fetchAddDeleteScrip(
+                      //         wlname: wlName,
+                      //         context: context,
+                      //         scripToken:
+                      //             "${searchValue[index].exch}|${searchValue[index].token}",
+                      //         isAdd: true,
+                      //         isWList: false,
+                      //         isSort: true);
+                    },
+                    icon: SvgPicture.asset(
+                      color: theme.isDarkMode && searchScrip.isAdded![index]
+                          ? colors.colorLightBlue
+                          : searchScrip.isAdded![index]
+                              ? colors.colorBlue
+                              : colors.colorGrey,
+                      searchScrip.isAdded![index]
+                          ? assets.bookmarkIcon
+                          : assets.bookmarkedIcon,
+                    )),
               );
             },
             itemCount: searchValue.length,

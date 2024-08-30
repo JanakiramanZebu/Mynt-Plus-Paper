@@ -114,6 +114,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
         "case": "Click here to view GTT order details."
       });
     }
+
     priceType = "Limit";
     priceTypes = [
       {
@@ -1414,12 +1415,12 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                             double.parse(
                                                                 "${widget.scripInfo.uc ?? 0.00}")) {
                                                           price =
-                                                              "${widget.scripInfo.uc??0.00}";
+                                                              "${widget.scripInfo.uc ?? 0.00}";
                                                         } else if (result <=
                                                             double.parse(
                                                                 "${widget.scripInfo.lc ?? 0.00}")) {
                                                           price =
-                                                              "${widget.scripInfo.lc??0.00}";
+                                                              "${widget.scripInfo.lc ?? 0.00}";
                                                         } else {
                                                           price = result
                                                               .toStringAsFixed(
@@ -1691,7 +1692,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                     warningMessage(
                                                                         context,
                                                                         "Limit Price can not be empty"));
-                                                          } 
+                                                          }
                                                           // else {
                                                           //   if ((double.parse(
                                                           //               value) <
@@ -1792,7 +1793,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         if ((double.parse(
                                                                     value) <
                                                                 double.parse(
-                                                                    "${widget.scripInfo.lc??0.00}")) ||
+                                                                    "${widget.scripInfo.lc ?? 0.00}")) ||
                                                             (double.parse(
                                                                     value) >
                                                                 double.parse(
@@ -1804,7 +1805,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                   double.parse(
                                                                               value) <
                                                                           double.parse(
-                                                                              "${widget.scripInfo.lc??0.00}")
+                                                                              "${widget.scripInfo.lc ?? 0.00}")
                                                                       ? "Trigger can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
                                                                       : "Trigger can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}"));
                                                         } else {
@@ -2578,7 +2579,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                               //           context,
                                               //           "Specified Quantity is more than the instrument maximum quantity of $maxQty"));
                                               // }
-                                               else if (qtyCtrl.text == "0" ||
+                                              else if (qtyCtrl.text == "0" ||
                                                   priceCtrl.text == "0") {
                                                 ScaffoldMessenger.of(context)
                                                     .showSnackBar(warningMessage(
@@ -2588,18 +2589,18 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                             : "Limit Price can not be 0"));
                                               } else if ((double.parse(price) <
                                                       double.parse(
-                                                          "${widget.scripInfo.lc??0.00}")) ||
+                                                          "${widget.scripInfo.lc ?? 0.00}")) ||
                                                   (double.parse(price) >
                                                       double.parse(
-                                                          "${widget.scripInfo.uc??0.00}"))) {
+                                                          "${widget.scripInfo.uc ?? 0.00}"))) {
                                                 ScaffoldMessenger.of(context)
                                                     .showSnackBar(warningMessage(
                                                         context,
                                                         double.parse(price) <
                                                                 double.parse(
-                                                                    "${widget.scripInfo.lc??0.00}")
-                                                            ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc??0.00}"
-                                                            : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc??0.00}"));
+                                                                    "${widget.scripInfo.lc ?? 0.00}")
+                                                            ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc ?? 0.00}"
+                                                            : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc ?? 0.00}"));
                                               } else if (orderType ==
                                                       "Regular" &&
                                                   (priceType == "SL Limit" ||
@@ -3054,7 +3055,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
         //         (priceType == "Market" || priceType == "SL MKT"))
         //     ? "0"
         //     : price,
-        prc:priceCtrl.text,
+        prc: priceCtrl.text,
         prctype: orderInput.prcType,
         prd: orderInput.orderType,
         qty: qtyCtrl.text,

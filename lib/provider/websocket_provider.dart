@@ -63,7 +63,8 @@ class WebSocketProvider extends ChangeNotifier {
   reconnectWS() {
       if (ref(networkStateProvider).connectionStatus !=
                 ConnectivityResult.none && _wsConnected ) {
-    channel.sink.add(jsonEncode({"t": "h"}));}
+    // channel.sink.add(jsonEncode({"t": "h"}));
+    }
   }
 
   establishConnection(

@@ -43,7 +43,7 @@ class Preferences {
       await _prefInstance!.setString(_clientId, id);
   Future setClientSession(String session) async =>
       await _prefInstance!.setString(_clientSession, session);
-        Future setApiToken(String session) async =>
+  Future setApiToken(String session) async =>
       await _prefInstance!.setString(_apiToken, session);
   Future setClientName(String name) async =>
       await _prefInstance!.setString(_clientName, name);
@@ -74,9 +74,17 @@ class Preferences {
   String? get token => _prefInstance?.getString(_apiToken) ?? "";
   String? get clientMob => _prefInstance?.getString(_clientMob) ?? "";
   String? get clientName => _prefInstance?.getString(_clientName) ?? "";
-  
+
   List<String>? get loggedClient =>
       _prefInstance?.getStringList(_clientList) ?? [];
+
+  // Orders
+
+  Future setBasketNameList(List<String> clients) async =>
+      await _prefInstance!.setStringList(_basketName, clients);
+
+  List<String>? get basketNameList =>
+      _prefInstance?.getStringList(_basketName) ?? [];
 }
 
 const String _userTheme = 'userTheme';
@@ -98,3 +106,4 @@ const String _clientMob = 'clientMob';
 const String _clientName = 'clientName';
 const String _clientList = 'clientList';
 
+const String _basketName = 'basketName';

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -40,8 +40,9 @@ class _OrderBookScreenState extends State<OrderBookScreen>
         context.read(orderProvider).orderSearch(
             context.read(orderProvider).orderSearchCtrl.text, context);
 
-             context.read(orderProvider).requestWSOrderBook(isSubscribe: true, context: context);
-
+        context
+            .read(orderProvider)
+            .requestWSOrderBook(isSubscribe: true, context: context);
       });
     });
     super.initState();
@@ -51,10 +52,10 @@ class _OrderBookScreenState extends State<OrderBookScreen>
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final orderBook = watch(orderProvider);
-        final theme = context.read(themeProvider);
- 
+      final theme = context.read(themeProvider);
+
       // final sipBook = watch(siprovider);
-      
+
       return orderBook.loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -62,23 +63,31 @@ class _OrderBookScreenState extends State<OrderBookScreen>
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                   Container(
-                    padding: EdgeInsets.zero,
-                      decoration:   BoxDecoration(
+                      padding: EdgeInsets.zero,
+                      decoration: BoxDecoration(
                           border: Border(
-                              bottom: BorderSide(color:theme.isDarkMode?colors.darkColorDivider:colors.colorDivider,width: 0))),
+                              bottom: BorderSide(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider,
+                                  width: 0))),
                       height: 46,
-                      child: TabBar( 
-                        tabAlignment:TabAlignment.start,
+                      child: TabBar(
+                          tabAlignment: TabAlignment.start,
                           indicatorSize: TabBarIndicatorSize.tab,
                           isScrollable: true,
-                          indicatorColor:  theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
+                          indicatorColor: theme.isDarkMode
+                              ? colors.colorLightBlue
+                              : colors.colorBlue,
                           unselectedLabelColor: const Color(0XFF777777),
                           unselectedLabelStyle: GoogleFonts.inter(
                               textStyle: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   letterSpacing: -0.28)),
-                          labelColor:  theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
+                          labelColor: theme.isDarkMode
+                              ? colors.colorLightBlue
+                              : colors.colorBlue,
                           labelStyle: GoogleFonts.inter(
                               textStyle: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
@@ -90,14 +99,16 @@ class _OrderBookScreenState extends State<OrderBookScreen>
                     OrderBook(orderBook: orderBook.allOrder!),
                     OrderBook(orderBook: orderBook.openOrder!),
                     OrderBook(orderBook: orderBook.executedOrder!),
-
-                    GttOrderBook (gttOrderBook: orderBook.gttOrderBookModel ?? []),
+                    GttOrderBook(
+                        gttOrderBook: orderBook.gttOrderBookModel ?? []),
+                    // Container(
+                    //   child: Center(child: Text("Basket order")),
+                    // ),
                     TradeBook(tradeBook: orderBook.tradeBook ?? []),
                     const PendingAlert(),
-                //  SipOrderBook(
-                //       sipbook: sipBook.siporderBookModel?.sipDetails,
-                //     )
-
+                    //  SipOrderBook(
+                    //       sipbook: sipBook.siporderBookModel?.sipDetails,
+                    //     )
                   ]))
                 ]);
     });

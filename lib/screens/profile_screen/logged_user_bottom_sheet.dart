@@ -6,11 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
-import '../../provider/market_watch_provider.dart';
-import '../../provider/order_provider.dart';
-import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
-import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
@@ -24,8 +20,6 @@ class LoggedUserBottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final loggedUser = watch(authProvider);
-    final user = watch(userProfileProvider);
-    final marketWatch = watch(marketWatchProvider);
     final theme = watch(themeProvider);
     final Preferences pref = locator<Preferences>();
     return DraggableScrollableSheet(
@@ -85,84 +79,11 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                               loggedUser.loggedMobile[index].sesstion);
                           pref.setClientName(
                               loggedUser.loggedMobile[index].userName);
-                          // localstorage.setString(
-                          //     "mobileNum", loggedUser.loggedMobile[index].mobile);
-                          // localstorage.setString(
-                          //     "userId", loggedUser.loggedMobile[index].clientId);
-                          // localstorage.setString(
-                          //     "session", loggedUser.loggedMobile[index].sesstion);
-                          // localstorage.setString("userName",
-                          //     loggedUser.loggedMobile[index].userName);
-
-                          // ApiLinks.userID =
-                          //     localstorage.getString("userId") ?? "";
-                          // ApiLinks.session =
-                          //     localstorage.getString("session") ?? "";
-
-                          marketWatch.changeWlName("", "No");
-
-                          await marketWatch.fetchMWList(context);
-
-                          if (marketWatch.marketWatchlist!.stat == "Ok") {
-                            await context
-                                .read(portfolioProvider)
-                                .fetchHoldings(context, "");
-                            context.read(portfolioProvider).changeTabIndex(0);
-                            //  await   context
-                            //               .read(portfolioProvider).   fetchMFHoldings(context);
-                            await context
-                                .read(portfolioProvider)
-                                .fetchPositionBook(context, false);
-                            await context
-                                .read(orderProvider)
-                                .fetchOrderBook(context, false);
-                            await context
-                                .read(orderProvider)
-                                .fetchTradeBook(context);
-
-                            await context
-                                .read(orderProvider)
-                                .fetchGTTOrderBook(context, "initLoad");
-
-                            await user.fetchUserDetail(
-                                context,
-                                loggedUser.loggedMobile[index].clientId,
-                                loggedUser.loggedMobile[index].sesstion,
-                                "switchAcc");
-                          }
-
-                          // Navigator.pop(context);
-
-                          // loggedUser.loginMethCtrl.text =
-                          //     loggedUser.loggedMobile[index].mobile;
-                          // if (user.userDetailModel!.emsg ==
-                          //     "Session Expired :  Invalid Session Key") {
-                          //   loggedUser.loginMethCtrl.text =
-                          //       localstorage.getString("userId") ?? "";
-
-                          //   Navigator.of(context).pop();
-                          //   ScaffoldMessenger.of(context).showSnackBar(
-                          //       errorSnackBar('${user.userDetailModel!.emsg}'));
-                          //   Navigator.pushNamedAndRemoveUntil(
-                          //       context,
-                          //       Routes.loginScreen,
-                          //       arguments: "deviceLogin",
-                          //       (route) => false);
-                          // } else if (initRoute == "initialRoute") {
-                          //   await loggedUser.fetchLocalData();
-                          //   await loggedUser.deviceAuth(context);
-                          //   // context
-                          //   //     .read(indexListProvider)
-                          //   //     .getDeafultIndexList(context);
-                          //   // await context
-                          //   //     .read(marketWatchProvider)
-                          //   //     .fetchMWList(context);
-                          //   Navigator.of(context).pop();
-                          //   Navigator.pushNamedAndRemoveUntil(
-                          //       context, Routes.homeScreen, (route) => false);
-                          // } else {
-
-                          // }
+                          await context.read(authProvider).fetchMobileLogin(
+                              context,
+                              "",
+                              loggedUser.loggedMobile[index].clientId,
+                              "switchAc");
                         },
                         dense: true,
                         contentPadding:

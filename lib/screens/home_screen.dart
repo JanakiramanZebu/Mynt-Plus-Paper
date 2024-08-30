@@ -3,7 +3,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:upgrader/upgrader.dart';
 import '../locator/constant.dart';
 import '../models/upgrader_model.dart';
@@ -19,6 +18,7 @@ import '../provider/websocket_provider.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/custom_switch_btn.dart';
+import '../sharedWidget/functions.dart';
 import '../sharedWidget/no_internet_widget.dart';
 import 'bonds/bond_screen.dart';
 import 'ipo/ipo_main_screen.dart';
@@ -26,8 +26,7 @@ import 'market_watch/index/index_screen.dart';
 import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/watchlist_screen.dart';
 import 'market_watch/watchlists_bottom_sheet.dart';
-// import 'menu.dart';
-import 'mutual_fund/mutual_fund_screen.dart';
+import 'mutual_fund/mutual_fund_screen.dart'; 
 import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
 import 'profile_screen/logged_user_bottom_sheet.dart';
@@ -136,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ? InkWell(
                             onTap: () {
                               FocusScope.of(context).unfocus();
+
                               showModalBottomSheet(
                                   useSafeArea: true,
                                   isScrollControlled: true,
@@ -284,6 +284,43 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 Padding(
                                   padding: const EdgeInsets.only(right: 15.0),
                                   child: Row(children: [
+                                    // Container(
+                                    //     margin: EdgeInsets.only(right: 8),
+                                    //     height: 27,
+                                    //     child: OutlinedButton(
+                                    //         onPressed: () {
+                                    //           showModalBottomSheet(
+                                    //               useSafeArea: true,
+                                    //               isScrollControlled: true,
+                                    //               shape: const RoundedRectangleBorder(
+                                    //                   borderRadius:
+                                    //                       BorderRadius.vertical(
+                                    //                           top: Radius
+                                    //                               .circular(
+                                    //                                   16))),
+                                    //               context: context,
+                                    //               builder: (context) {
+                                    //                 return const PositionGroup();
+                                    //               });
+                                    //         },
+                                    //         style: OutlinedButton.styleFrom(
+                                    //             side: BorderSide(
+                                    //                 color: theme.isDarkMode
+                                    //                     ? colors.colorGrey
+                                    //                     : colors.colorBlack),
+                                    //             shape:
+                                    //                 const RoundedRectangleBorder(
+                                    //                     borderRadius:
+                                    //                         BorderRadius.all(
+                                    //                             Radius.circular(
+                                    //                                 32)))),
+                                    //         child: Text("Group By",
+                                    //             style: textStyle(
+                                    //                 theme.isDarkMode
+                                    //                     ? colors.colorWhite
+                                    //                     : colors.colorBlack,
+                                    //                 12,
+                                    //                 FontWeight.w600)))),
                                     Text("DAY",
                                         style: textStyle(
                                             theme.isDarkMode
@@ -309,7 +346,44 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             FontWeight.w500)),
                                   ]),
                                 )
-                            ]
+                            ] 
+                            // else if (indexProvide.selectedBtmIndx == 3 &&
+                            //     watch(orderProvider).selectedTab == 4) ...[
+                            //   Row(
+                            //     children: [
+                            //       Container(
+                            //           margin: const EdgeInsets.only(right: 8),
+                            //           height: 30,
+                            //           child: OutlinedButton(
+                            //               onPressed: () {
+                            //                 showDialog(
+                            //                     context: context,
+                            //                     builder:
+                            //                         (BuildContext context) {
+                            //                       return const CreateBasket();
+                            //                     });
+                            //               },
+                            //               style: OutlinedButton.styleFrom(
+                            //                   side: BorderSide(
+                            //                       color: theme.isDarkMode
+                            //                           ? colors.colorGrey
+                            //                           : colors.colorBlack),
+                            //                   shape:
+                            //                       const RoundedRectangleBorder(
+                            //                           borderRadius:
+                            //                               BorderRadius.all(
+                            //                                   Radius.circular(
+                            //                                       32)))),
+                            //               child: Text("Create Basket",
+                            //                   style: textStyle(
+                            //                       theme.isDarkMode
+                            //                           ? colors.colorWhite
+                            //                           : colors.colorBlack,
+                            //                       12,
+                            //                       FontWeight.w600)))),
+                            //     ],
+                            //   ),
+                            // ]
                           ],
                     bottom: indexProvide.selectedBtmIndx == 1
                         ? const PreferredSize(
@@ -552,35 +626,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ])))),
                       Expanded(
                           child: InkWell(
-                        onTap: internet.connectionStatus ==
-                                ConnectivityResult.none
-                            ? null
-                            : () async {
-                                indexProvide.bottomMenu(2);
-                                await context
-                                    .read(indexListProvider)
-                                    .checkSession(context);
-                                if (indexProvide.checkSess!.stat == "Ok") {
-                                  portfolio.mfHoldingsModel ??
+                        onTap:
+                            internet.connectionStatus == ConnectivityResult.none
+                                ? null
+                                : () async {      
+                                    await context
+                                        .read(indexListProvider)
+                                        .checkSession(context);
+
+                                    if (indexProvide.checkSess!.stat == "Ok") {
                                       await portfolio.fetchMFHoldings(context);
-
-                                  await marketWatchList.requestMWScrip(
-                                      context: context, isSubscribe: false);
-
-                                  await context
-                                      .read(orderProvider)
-                                      .requestWSOrderBook(
+                                indexProvide.bottomMenu(2);
+                                      await marketWatchList.requestMWScrip(
                                           context: context, isSubscribe: false);
-                                  if (portfolio.selectedTab == 1) {
-                                    await portfolio.requestWSHoldings(
-                                        context: context, isSubscribe: true);
-                                  }
-                                  if (portfolio.selectedTab == 0) {
-                                    await portfolio.requestWSPosition(
-                                        context: context, isSubscribe: true);
-                                  }
-                                }
-                              },
+
+                                      await context
+                                          .read(orderProvider)
+                                          .requestWSOrderBook(
+                                              context: context,
+                                              isSubscribe: false);
+                                      if (portfolio.selectedTab == 1) {
+                                        await portfolio.requestWSHoldings(
+                                            context: context,
+                                            isSubscribe: true);
+                                      }
+                                      if (portfolio.selectedTab == 0) {
+                                        await portfolio.requestWSPosition(
+                                            context: context,
+                                            isSubscribe: true);
+                                      }
+                                    }
+                                  },
                         child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 7),
                             decoration: BoxDecoration(
@@ -707,17 +783,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ConnectivityResult.none
                                   ? null
                                   : () async {
-                                        await context
-                                            .read(fundProvider)
-                                            .fetchFunds(context);  indexProvide.bottomMenu(4);
+                                      await context
+                                          .read(fundProvider)
+                                          .fetchFunds(context);
+                                      indexProvide.bottomMenu(4);
                                       if (context
-                                            .read(fundProvider).fundDetailModel!.stat ==
+                                              .read(fundProvider)
+                                              .fundDetailModel!
+                                              .stat ==
                                           "Ok") {
-                                     
                                         if (userProfile.profileMenu.isEmpty) {
                                           await userProfile.fetchprofilemenu();
                                         }
-                                      
+
                                         marketWatchList.requestMWScrip(
                                             context: context,
                                             isSubscribe: false);
@@ -949,11 +1027,5 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           },
         ) ??
         false;
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

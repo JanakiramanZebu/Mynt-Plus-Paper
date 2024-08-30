@@ -56,6 +56,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   List<PositionBookModel> _allPostionList = [];
   List<PositionBookModel> get allPostionList => _allPostionList;
+
+  List<PositionBookModel> _postionGropList = [];
+  List<PositionBookModel> get postionGropList => _postionGropList;
+
   List<PositionBookModel> _positionSearchItem = [];
   List<PositionBookModel> get positionSearchItem => _positionSearchItem;
   PositionConvertionModel? _positionConvertionModel;
@@ -132,6 +136,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
+
+  Map<String, dynamic> _positionGroup = {};
+  Map get positionGroup => _positionGroup;
+  List<String> _groupPosition = [];
+  List<String> get groupPosition => _groupPosition;
+  String _positionGrpName = "All";
+
+  String get positionGrpName => _positionGrpName;
+
   changeTabIndex(int index) {
     _selectedTab = index;
   }
@@ -545,10 +558,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
           now.isAfter(threeThirtyPM) || now.isBefore(nineFifteenAM);
 
       if (isInTimeRange) {
-       
-          // notifyListeners();
-            log("sdns ${now.hour}");
-     
+        // notifyListeners();
+        log("sdns ${now.hour}");
       }
 
       // print("sdns ${now.hour}- ${now.minute}");
@@ -630,13 +641,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
   }
 
   splitPositionBook(bool isDay) async {
+    _positionGrpName = "All";
     if (_postionBookModel!.isNotEmpty) {
       _closedPosion = [];
       double totBuyAmts = 0.00;
       double totSellAmts = 0.00;
       _allPostionList = [];
-
+      _postionGropList = [];
+      _positionGroup = {};
       _openPosition = [];
+
+      _groupPosition = ["All"];
       for (var element in _postionBookModel!) {
         element.isExitSelection = false;
 
@@ -657,8 +672,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
         element.symbol = "${spilitSymbol["symbol"]}";
         element.expDate = "${spilitSymbol["expDate"]}";
         element.option = "${spilitSymbol["option"]}";
+
+        // if (_positionGroup.containsKey(element.symbol)) {
+        //   _positionGroup["${element.symbol}"] =
+        //       _positionGroup["${element.symbol}"]! + 1;
+        // } else {
+        //   _positionGroup["${element.symbol}"] = 1;
+        // }
       }
 
+      // _groupPosition.addAll(_positionGroup.keys.toList());
+      // print(
+      //     "Position Group $_positionGroup ${_positionGroup.length}  $_groupPosition");
       _totBuyAmt = totBuyAmts.toStringAsFixed(2);
       _totSellAmt = totSellAmts.toStringAsFixed(2);
 
@@ -682,13 +707,29 @@ class PortfolioProvider extends DefaultChangeNotifier {
           _allPostionList.add(element);
         }
       }
-
+      _postionGropList = _allPostionList;
       // await allPositionPnl(isDay);
       await positionCal(isDay);
       tabSize();
 
       notifyListeners();
     }
+  }
+
+  groupByPosition(String val) async {
+    _positionGrpName = val;
+
+    if (val == "All") {
+      splitPositionBook(_isDay);
+    } else {
+      _allPostionList = _postionGropList
+          .where((element) =>
+              element.symbol!.toUpperCase().contains(val.toUpperCase()))
+          .toList();
+      await positionCal(isDay);
+    }
+
+    notifyListeners();
   }
 
   selectExitPosition(int index) {
@@ -943,10 +984,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
   requestWSPosition(
       {required bool isSubscribe, required BuildContext context}) {
     String input = "";
-    if (_postionBookModel!.isNotEmpty &&
-        _postionBookModel![0].stat != "Not_Ok") {
-      for (var element in _postionBookModel!) {
-        input += "${element.exch}|${element.token}#";
+
+    if (_postionBookModel != null) {
+      if (_postionBookModel!.isNotEmpty &&
+          _postionBookModel![0].stat != "Not_Ok") {
+        for (var element in _postionBookModel!) {
+          input += "${element.exch}|${element.token}#";
+        }
       }
     }
     if (input.isNotEmpty) {
@@ -960,16 +1004,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
   requestWSHoldings(
       {required bool isSubscribe, required BuildContext context}) {
     String input = "";
-
-    if (_holdingsModel!.isNotEmpty) {
-      if (_holdingsModel![0].stat != "Not_Ok") {
-        for (var i = 0; i < _holdingsModel!.length; i++) {
-          // for (var j = 0; j < _holdingsModel![i].exchTsym!.length; j++) {
-          // if (_holdingsModel![i].exchTsym![j].exch == 'NSE' ) {
-          input +=
-              "${_holdingsModel![i].exchTsym![0].exch}|${_holdingsModel![i].exchTsym![0].token}#";
-          // }
-          // }
+    if (_holdingsModel != null) {
+      if (_holdingsModel!.isNotEmpty) {
+        if (_holdingsModel![0].stat != "Not_Ok") {
+          for (var i = 0; i < _holdingsModel!.length; i++) {
+            // for (var j = 0; j < _holdingsModel![i].exchTsym!.length; j++) {
+            // if (_holdingsModel![i].exchTsym![j].exch == 'NSE' ) {
+            input +=
+                "${_holdingsModel![i].exchTsym![0].exch}|${_holdingsModel![i].exchTsym![0].token}#";
+            // }
+            // }
+          }
         }
       }
     }
