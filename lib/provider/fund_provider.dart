@@ -95,7 +95,6 @@ class FundProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
- 
   chngBankAcc(String val) {
     _accNum = val;
     notifyListeners();
@@ -191,8 +190,7 @@ class FundProvider extends DefaultChangeNotifier {
           _listOfCredits.add({"value": "$payout", "name": "Payout"});
         }
         if (brkcollamt != 0.00) {
-          _listOfCredits
-              .add({"value": "$brkcollamt", "name": "Broker Collateral"});
+          _listOfCredits.add({"value": "$brkcollamt", "name": "Collateral"});
         }
         if (unclearedcash != 0.00) {
           _listOfCredits
@@ -357,7 +355,8 @@ class FundProvider extends DefaultChangeNotifier {
                   padding: const EdgeInsets.symmetric(horizontal: 10.0),
                   child: Text(
                     item.toString(),
-                    style: textStyle(const Color(0xff000000), 13, FontWeight.w500),
+                    style:
+                        textStyle(const Color(0xff000000), 13, FontWeight.w500),
                   ))),
           //If it's last item, we will not add Divider after it.
           if (item != _paymentMethod.last)
@@ -398,8 +397,8 @@ class FundProvider extends DefaultChangeNotifier {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("${item.bankName}",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style:
                             textStyle(colors.colorBlack, 14, FontWeight.w500)),
                     const SizedBox(height: 2),

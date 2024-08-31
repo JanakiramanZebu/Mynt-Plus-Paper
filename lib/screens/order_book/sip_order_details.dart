@@ -143,7 +143,7 @@ class _SipOrderDetailsState extends State<SipOrderDetails> {
                         );
                       });
                 },
-                child: Text("Cancle",
+                child: Text("Cancel",
                     style: textStyle(
                         const Color(0XFFFFFFFF), 14, FontWeight.w600)),
               ))

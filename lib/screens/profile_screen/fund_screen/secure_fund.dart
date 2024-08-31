@@ -132,7 +132,7 @@ class SecureFund extends ConsumerWidget {
                                             13,
                                             FontWeight.w500)),
                                     if (funds.listOfCredits[index]["name"] ==
-                                        "Broker Collateral")
+                                        "Collateral")
                                       Padding(
                                           padding:
                                               const EdgeInsets.only(left: 3.0),
