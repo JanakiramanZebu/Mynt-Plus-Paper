@@ -3,6 +3,7 @@ import '../models/order_book_model/cancel_order_model.dart';
 import '../models/order_book_model/get_brokerage.dart';
 import '../models/order_book_model/gtt_order_book.dart';
 import '../models/order_book_model/modify_order_model.dart';
+import '../models/order_book_model/modify_sip_model.dart';
 import '../models/order_book_model/order_book_model.dart';
 import '../models/order_book_model/order_history_model.dart';
 import '../models/order_book_model/order_margin_model.dart';
@@ -303,28 +304,32 @@ mixin OrderAPI on ApiCore {
       final uri = Uri.parse(apiLinks.placeSipOrder);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body: jsonEncode({
-            "uid": prefs.clientId,
-            "st": sipInputField.st,
-            "ed": sipInputField.ed,
-            "frequency": sipInputField.frequency,
-            "sip_name": sipInputField.tsym,
-            "scripts": [
-              {
-                "exch": sipInputField.exch,
-                "tsym": sipInputField.tsym,
-                "prd": sipInputField.prd,
-                "token": sipInputField.token,
-                "qty": sipInputField.qty
-              }
-            ],
-            "session": prefs.clientSession
-          }));
+          body:
+              '''jData={"uid":"${prefs.clientId}","reg_date":"${sipInputField.regdate}","start_date":"${sipInputField.startdate}","actid":"${prefs.clientId}","frequency":"${sipInputField.frequency}","end_period":"${sipInputField.endperiod}","sip_name":"${sipInputField.sipname}","Scrips":[{"exch":"${sipInputField.exch}","tsym":"${sipInputField.tysm}","prd":"${sipInputField.prd}","token":"${sipInputField.token}","qty":"${sipInputField.qty}"}]}&jKey=${prefs.clientSession}''');
 
       // log("PlaceOrdersip => ${res.body}");
       final json = jsonDecode(res.body);
 
       return SipPlaceOrderModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      log("PlaceOrdersip Error::$e");
+      rethrow;
+    }
+  }
+
+  Future<ModifySIPModel> getmodifysiporder(
+      ModifySipInput modifysipinput) async {
+    try {
+      final uri = Uri.parse(apiLinks.modifySipOrder);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"reg_date":"${modifysipinput.regdate}","start_date":"${modifysipinput.startdate}","frequency":"${modifysipinput.frequency}","end_period":"${modifysipinput.endperiod}","sip_name":"${modifysipinput.sipname}","internal":{"PrevExecDate":"${modifysipinput.prevExecutedate}","DueDate":"${modifysipinput.duedate}","ExecDate":"${modifysipinput.exedate}","period":"${modifysipinput.period}","active":"${modifysipinput.active}","SipId":"${modifysipinput.sipId}"},"Scrips":[{"exch":"${modifysipinput.exch}","tsym":"${modifysipinput.tysm}","prd":"${modifysipinput.prd}","token":"${modifysipinput.token}","qty":"${modifysipinput.qty}"}]}&jKey=${prefs.clientSession}''');
+
+      log("ModifysipOrder => ${res.body}");
+      final json = jsonDecode(res.body);
+
+      return ModifySIPModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       log("PlaceOrdersip Error::$e");
       rethrow;
@@ -366,6 +371,7 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+  
   Future<PlaceGttOrderModel> getPlaceGTTOrder(PlaceGTTOrderInput input) async {
     try {
       final uri = Uri.parse(apiLinks.placeGTTOrder);

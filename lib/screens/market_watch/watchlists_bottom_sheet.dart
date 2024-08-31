@@ -5,10 +5,11 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
-import '../../res/res.dart'; 
+import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
 import 'create_watchlist.dart';
+import 'watchlist_rename.dart';
 
 class WatchlistsBottomSheet extends StatefulWidget {
   final String currentWLName;
@@ -112,7 +113,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                               horizontal: 12, vertical: 0),
                           backgroundColor: theme.isDarkMode
                               ? widget.currentWLName == preDefWl[index]
-                                  ?  colors.colorbluegrey
+                                  ? colors.colorbluegrey
                                   : const Color(0xffB5C0CF).withOpacity(.15)
                               : widget.currentWLName == preDefWl[index]
                                   ? const Color(0xff000000)
@@ -189,32 +190,52 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                 ? watchlist[index]
                                 : "${watchlist[index][0].toUpperCase()}${watchlist[index].substring(1)}",
                             style: textStyles.prdText.copyWith(
-                                color:  
-                                    widget.currentWLName != watchlist[index]
-                                        ? colors.colorGrey
-                                        : theme.isDarkMode
-                                            ? colors.colorWhite
-                                            :colors.colorBlack)),
+                                color: widget.currentWLName != watchlist[index]
+                                    ? colors.colorGrey
+                                    : theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack)),
                         trailing: watchlist.length > 1
-                            ? SizedBox(
-                                height: 35,
-                                width: 35,
-                                child: InkWell(
-                                    child: const Icon(
-                                      Icons.delete_outlined,
-                                      color: Color(0xff666666),
-                                    ),
-                                    onTap: () async {
-                                      await watch(marketWatchProvider)
-                                          .changeWLScrip(
-                                              watchlist[index], context);
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  InkWell(
+                                      onTap: () async {
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return WatchListRename(
+                                                  wlname: watchlist[index]);
+                                            });
+                                      },
+                                      child: Icon(
+                                        Icons.edit_outlined,
+                                        color: Color(0xff666666),
+                                      )),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  SizedBox(
+                                      height: 35,
+                                      width: 35,
+                                      child: InkWell(
+                                          child: const Icon(
+                                            Icons.delete_outlined,
+                                            color: Color(0xff666666),
+                                          ),
+                                          onTap: () async {
+                                            await watch(marketWatchProvider)
+                                                .changeWLScrip(
+                                                    watchlist[index], context);
 
-                                      await watch(marketWatchProvider)
-                                          .deleteWatchList(
-                                              watchlist[index], context);
+                                            await watch(marketWatchProvider)
+                                                .deleteWatchList(
+                                                    watchlist[index], context);
 
-                                      Navigator.pop(context);
-                                    }))
+                                            Navigator.pop(context);
+                                          })),
+                                ],
+                              )
                             : Container(width: .2));
                   },
                   separatorBuilder: (BuildContext context, int index) {

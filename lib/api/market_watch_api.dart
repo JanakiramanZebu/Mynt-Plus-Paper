@@ -14,7 +14,7 @@ import '../models/marketwatch_model/scrip_info.dart';
 import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_model.dart';
-import 'core/api_core.dart';
+import 'core/api_core.dart'; 
 
 mixin MarketWatchApi on ApiCore {
   Future<MarketWatchlist> getMWList() async {
@@ -330,6 +330,23 @@ mixin MarketWatchApi on ApiCore {
       final json = jsonDecode(res.body);
 
       return ModifyAlertModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<WatchlistRenameModel> getWatchListRename(
+      String oldName, String newName) async {
+    try {
+      final uri = Uri.parse(apiLinks.watchListrename);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}","wlname":"$oldName","newwlname":"$newName"}&jKey=${prefs.clientSession}''');
+
+      final json = jsonDecode(res.body);
+      log("Market Rename => ${res.body}");
+      return WatchlistRenameModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

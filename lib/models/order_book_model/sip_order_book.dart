@@ -1,11 +1,11 @@
 class SipOrderBookModel {
+  String? stat;
   List<SipDetails>? sipDetails;
 
-
-  SipOrderBookModel({this.sipDetails});
-
+  SipOrderBookModel({this.stat, this.sipDetails});
 
   SipOrderBookModel.fromJson(Map<String, dynamic> json) {
+    stat = json['stat'];
     if (json['SipDetails'] != null) {
       sipDetails = <SipDetails>[];
       json['SipDetails'].forEach((v) {
@@ -14,16 +14,15 @@ class SipOrderBookModel {
     }
   }
 
-
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    data['stat'] = stat;
     if (sipDetails != null) {
       data['SipDetails'] = sipDetails!.map((v) => v.toJson()).toList();
     }
     return data;
   }
 }
-
 
 class SipDetails {
   String? regDate;
@@ -37,7 +36,6 @@ class SipDetails {
   List<Scrips>? scrips;
   Internal? internal;
 
-
   SipDetails(
       {this.regDate,
       this.startDate,
@@ -49,7 +47,6 @@ class SipDetails {
       this.brkname,
       this.scrips,
       this.internal});
-
 
   SipDetails.fromJson(Map<String, dynamic> json) {
     regDate = json['reg_date'];
@@ -66,11 +63,9 @@ class SipDetails {
         scrips!.add(Scrips.fromJson(v));
       });
     }
-    internal = json['internal'] != null
-        ? Internal.fromJson(json['internal'])
-        : null;
+    internal =
+        json['internal'] != null ? Internal.fromJson(json['internal']) : null;
   }
-
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -92,38 +87,63 @@ class SipDetails {
   }
 }
 
-
 class Scrips {
   String? exch;
   String? token;
   String? tsym;
+  String? sprdtali;
+  String? prd;
   String? qty;
   String? sipType;
+  String? ltp;
+  String? change;
+  String? close;
+  String? perChange;
 
-
-  Scrips({this.exch, this.token, this.tsym, this.qty, this.sipType});
-
+  Scrips({
+    this.exch,
+    this.token,
+    this.tsym,
+    this.sprdtali,
+    this.prd,
+    this.qty,
+    this.sipType,
+    this.ltp,
+    this.change,
+    this.close,
+    this.perChange,
+  });
 
   Scrips.fromJson(Map<String, dynamic> json) {
     exch = json['exch'];
     token = json['token'];
     tsym = json['tsym'];
+    sprdtali = json['s_prdt_ali'];
+    prd = json['prod'];
     qty = json['qty'];
     sipType = json['sip_type'];
+    ltp = json['ltp'];
+    change = json['change'];
+    close = json['close'];
+    perChange = json['perChange'];
   }
-
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['exch'] = exch;
     data['token'] = token;
     data['tsym'] = tsym;
+    data['s_prdt_ali'] = sprdtali;
+    data['prod'] = prd;
     data['qty'] = qty;
     data['sip_type'] = sipType;
+    data['ltp'] = ltp;
+    data['change'] = change;
+    data['close'] = close;
+    data['perChange'] = perChange;
     return data;
   }
 }
-
 
 class Internal {
   String? prevExecDate;
@@ -134,7 +154,6 @@ class Internal {
   String? sipId;
   String? paused;
 
-
   Internal(
       {this.prevExecDate,
       this.dueDate,
@@ -143,7 +162,6 @@ class Internal {
       this.active,
       this.sipId,
       this.paused});
-
 
   Internal.fromJson(Map<String, dynamic> json) {
     prevExecDate = json['PrevExecDate'];
@@ -154,7 +172,6 @@ class Internal {
     sipId = json['SipId'];
     paused = json['paused'];
   }
-
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};

@@ -10,6 +10,7 @@ import 'gtt_order_book.dart';
 import 'order_book.dart';
 // import 'sip_order_book_screen.dart';
 import 'pending_alert_card.dart';
+import 'sip_order_book_screen.dart';
 import 'trade_book.dart';
 
 class OrderBookScreen extends StatefulWidget {
@@ -52,9 +53,8 @@ class _OrderBookScreenState extends State<OrderBookScreen>
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final orderBook = watch(orderProvider);
-      final theme = context.read(themeProvider);
-
-      // final sipBook = watch(siprovider);
+      final theme = watch(themeProvider);
+      final sipBook = watch(orderProvider);
 
       return orderBook.loading
           ? const Center(child: CircularProgressIndicator())
@@ -106,9 +106,9 @@ class _OrderBookScreenState extends State<OrderBookScreen>
                     // ),
                     TradeBook(tradeBook: orderBook.tradeBook ?? []),
                     const PendingAlert(),
-                    //  SipOrderBook(
-                    //       sipbook: sipBook.siporderBookModel?.sipDetails,
-                    //     )
+                    SipOrderBook(
+                      sipbook: sipBook.siporderBookModel?.sipDetails,
+                    )
                   ]))
                 ]);
     });

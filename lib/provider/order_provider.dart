@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,11 +14,15 @@ import '../models/order_book_model/cancel_order_model.dart';
 import '../models/order_book_model/get_brokerage.dart';
 import '../models/order_book_model/gtt_order_book.dart';
 import '../models/order_book_model/modify_order_model.dart';
+import '../models/order_book_model/modify_sip_model.dart';
 import '../models/order_book_model/order_book_model.dart';
 import '../models/order_book_model/order_history_model.dart';
 import '../models/order_book_model/order_margin_model.dart';
 import '../models/order_book_model/place_gtt_order.dart';
 import '../models/order_book_model/place_order_model.dart';
+import '../models/order_book_model/sip_order_book.dart';
+import '../models/order_book_model/sip_order_cancel.dart';
+import '../models/order_book_model/sip_place_order.dart';
 import '../models/order_book_model/trade_book_model.dart';
 
 import '../sharedWidget/functions.dart';
@@ -72,6 +78,18 @@ class OrderProvider extends DefaultChangeNotifier {
   List<OrderHistoryModel> _orderHistoryModel = [];
   List<OrderHistoryModel>? get orderHistoryModel => _orderHistoryModel;
 
+  SipPlaceOrderModel? _sipPlaceOrder;
+  SipPlaceOrderModel? get sipPlaceOrder => _sipPlaceOrder;
+
+  SipOrderBookModel? _siporderBookModel;
+  SipOrderBookModel? get siporderBookModel => _siporderBookModel;
+
+  CancleSipOrder? _cancleSipOrder;
+  CancleSipOrder? get cancleSipOrder => _cancleSipOrder;
+
+  ModifySIPModel? _modifySipModel;
+  ModifySIPModel? get modifySipModel => _modifySipModel;
+
   final TextEditingController orderSearchCtrl = TextEditingController();
 
   OrderProvider(this.ref);
@@ -86,8 +104,6 @@ class OrderProvider extends DefaultChangeNotifier {
   bool get showSearchHold => _showSearchOrder;
   changeTabIndex(int index) {
     _selectedTab = index;
-
- 
   }
 
   tabSize() {
@@ -111,7 +127,9 @@ class OrderProvider extends DefaultChangeNotifier {
           text:
               "Alert (${ref(marketWatchProvider).alertPendingModel!.length})"),
 
-      // Tab(text: "SIP Order")
+      Tab(
+          text:
+              "SIP Order(${_siporderBookModel?.sipDetails?.length == null ? 0 : _siporderBookModel!.sipDetails!.length})"),
     ];
 
     notifyListeners();
@@ -847,11 +865,7 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
-  createBasketOrder(String val)async{
-
-
-   
-
+  createBasketOrder(String val) async {
     notifyListeners();
   }
 
@@ -866,4 +880,149 @@ class OrderProvider extends DefaultChangeNotifier {
   //     return [];
   //   }
   // }
+
+  fetchSipPlaceOrder(BuildContext context, SipInputField sipOrderInput) async {
+    try {
+      toggleLoadingOn(true);
+      _sipPlaceOrder = await api.getPlaceSipOrder(sipOrderInput);
+      if (_sipPlaceOrder!.reqStatus == "OK") {
+        changeTabIndex(6);
+        ref(indexListProvider).bottomMenu(3);
+        fetchSipOrderHistory();
+        tabSize();
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "Order is Placed Sucessfully"));
+        notifyListeners();
+      } else if (_sipPlaceOrder!.emsg ==
+          "Session Expired :  Invalid Session Key") {
+        ref(authProvider).ifSessionExpired(context);
+      }
+
+      notifyListeners();
+    } catch (e) {
+      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      notifyListeners();
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+
+  fetchModifySipOrder(
+      BuildContext context, ModifySipInput modifysipinput) async {
+    try {
+      toggleLoadingOn(true);
+      _modifySipModel = await api.getmodifysiporder(modifysipinput);
+      if (_modifySipModel!.reqStatus == "OK") {
+        Navigator.pop(context);
+        Navigator.pop(context);
+        fetchSipOrderHistory();
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "Order is Modified Sucessfully"));
+      }
+      if (_modifySipModel!.reqStatus == "NOT_OK") {
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "${_modifySipModel!.rejreason}"));
+      } else if (_modifySipModel!.emsg ==
+          "Session Expired :  Invalid Session Key") {
+        ref(authProvider).ifSessionExpired(context);
+      }
+      notifyListeners();
+      return _modifySipModel;
+    } catch (e) {
+      ref(indexListProvider)
+          .logError
+          .add({"type": "MODIFYSIP API", "Error": "$e"});
+      notifyListeners();
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+
+  Future fetchSipOrderHistory() async {
+    try {
+      _siporderBookModel = await api.getSipOrderBook();
+      tabSize();
+      List ltpArgs = [];
+      if (_siporderBookModel!.sipDetails!.isNotEmpty) {
+        ConstantName.sessCheck = true;
+        for (var main = 0;
+            main < _siporderBookModel!.sipDetails!.length;
+            main++) {
+          for (var i = 0;
+              i < _siporderBookModel!.sipDetails![main].scrips!.length;
+              i++) {
+            ltpArgs.add({
+              "exch":
+                  "${_siporderBookModel!.sipDetails![main].scrips![i].exch}",
+              "token":
+                  "${_siporderBookModel!.sipDetails![main].scrips![i].token}"
+            });
+          }
+        }
+        final response = await api.getLTP(ltpArgs);
+        Map res = jsonDecode(response.body);
+
+        for (var main = 0;
+            main < _siporderBookModel!.sipDetails!.length;
+            main++) {
+          for (var i = 0;
+              i < _siporderBookModel!.sipDetails![main].scrips!.length;
+              i++) {
+            if (_siporderBookModel!.sipDetails![main].scrips![i].token
+                    .toString() ==
+                "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]['token']}") {
+              _siporderBookModel!.sipDetails![main].scrips![i].ltp =
+                  "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["lp"]}";
+              _siporderBookModel!.sipDetails![main].scrips![i].close =
+                  "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["close"]}";
+
+              _siporderBookModel!.sipDetails![main].scrips![i].perChange =
+                  "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["change"]}";
+              _siporderBookModel!
+                  .sipDetails![main].scrips![i].change = (double.parse(
+                          "${_siporderBookModel!.sipDetails![main].scrips![i].ltp == "0" ? _siporderBookModel!.sipDetails![main].scrips![i].close : _siporderBookModel!.sipDetails![main].scrips![i].ltp}") -
+                      double.parse(
+                          "${_siporderBookModel!.sipDetails![main].scrips![i].close}"))
+                  .toStringAsFixed(2);
+            } else {
+              siporderBookModel!.sipDetails!.isEmpty;
+              ConstantName.sessCheck = false;
+            }
+          }
+        }
+      }
+      notifyListeners();
+      return _siporderBookModel;
+    } catch (e) {
+      ref(indexListProvider)
+          .logError
+          .add({"type": "SIP ORDER HISTORY API", "Error": "$e"});
+      notifyListeners();
+    } finally {}
+  }
+
+  Future fetchSipOrderCancel(String sipOrderno, context) async {
+    try {
+      _cancleSipOrder = await api.getSipCancelOrder(sipOrderno);
+      await fetchSipOrderHistory();
+      if (_cancleSipOrder!.reqStatus == "OK") {
+        tabSize();
+        Navigator.pop(context);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(successMessage(context, "Order Sucessfully Cancled"));
+      } else if (cancleSipOrder!.emsg ==
+          "Session Expired :  Invalid Session Key") {
+        ref(authProvider).ifSessionExpired(context);
+      }
+      notifyListeners();
+      return _cancleSipOrder;
+    } catch (e) {
+      ref(indexListProvider)
+          .logError
+          .add({"type": "SIP CANCEL API", "Error": "$e"});
+      notifyListeners();
+    } finally {}
+  }
 }

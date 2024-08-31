@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:math';
 
@@ -28,6 +30,7 @@ import '../models/marketwatch_model/scrip_info.dart';
 import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_model.dart';
+import '../models/marketwatch_model/watchlist_rename_model.dart';
 import '../res/res.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
@@ -161,6 +164,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   List<AlertPendingModel>? _alertPendingModel = [];
   List<AlertPendingModel>? get alertPendingModel => _alertPendingModel;
+
+  WatchlistRenameModel? _watchlistRenameModel;
+  WatchlistRenameModel? get watchlistRenameModel => _watchlistRenameModel;
 
   final String _mwSubToken = "";
   String get mwSubToken => _mwSubToken;
@@ -2021,4 +2027,33 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       debugPrint(e.toString());
     }
   }
+///// new code by dd
+  Future fetchWatchListRename(
+      String oldName, String newName, BuildContext context) async {
+    try {
+      toggleLoadingOn(true);
+      _watchlistRenameModel = await api.getWatchListRename(oldName, newName);
+      if (_watchlistRenameModel!.stat == "Ok") {
+        fetchMWList(context);
+        _wlName = newName;
+        Navigator.pop(context);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(successMessage(context,
+            "The name of the watchlist has been successfully changed."));
+        notifyListeners();
+      } else if (_watchlistRenameModel!.stat == "Not_Ok") {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "${_watchlistRenameModel!.emsg}"));
+      } else if (_watchlistRenameModel!.emsg ==
+          "Session Expired :  Invalid Session Key") {
+        ref(authProvider).ifSessionExpired(context);
+      }
+    } catch (e) {
+      print(e);
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+  ////
 }

@@ -217,3 +217,11 @@ double mininv(double price, int qty) {
 
   return result;
 }
+
+sipdateformat(String date) {
+  DateTime parsedDate = DateFormat('dd-MM-yyyy').parse(date);
+
+  // Format the date to the desired format
+  String formattedDate = DateFormat('ddMMyyyy').format(parsedDate);
+  return formattedDate.toString();
+}

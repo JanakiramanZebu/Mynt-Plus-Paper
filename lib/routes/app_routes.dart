@@ -23,6 +23,7 @@ import '../screens/mutual_fund/mutual_fund_screen.dart';
 import '../screens/order_book/gtt_order_detail.dart';
 import '../screens/order_book/order_book_detail.dart';
 import '../screens/order_book/pending_alert_detail_screen.dart';
+import '../screens/order_book/sip_order_details.dart';
 import '../screens/order_book/trade_book_detail.dart';
 import '../screens/order_screen/Rework/modify_gtt.dart';
 import '../screens/order_screen/Rework/repeat_order.dart';
@@ -945,6 +946,24 @@ class AppRoutes {
               return SlideTransition(
                   position: animation.drive(tween), child: child);
             });
+      case Routes.sipDetails:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              SipOrderDetails(sipdetails: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
 
       default:
         return _errorRoute();

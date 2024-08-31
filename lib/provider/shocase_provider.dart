@@ -2,7 +2,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
 import '../api/core/api_link.dart';
 import '../locator/constant.dart';
 import '../res/res.dart';
@@ -84,6 +84,7 @@ class ShowCaseProvider extends DefaultChangeNotifier {
   GlobalKey ordericoncase = GlobalKey();
   GlobalKey profileiconcase = GlobalKey();
   GlobalKey scripdatainfocase = GlobalKey();
+  GlobalKey sip = GlobalKey();
   GlobalKey createnewwl = GlobalKey();
   GlobalKey changewlcase = GlobalKey();
   GlobalKey changewldeletecase = GlobalKey();

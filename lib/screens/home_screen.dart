@@ -26,7 +26,7 @@ import 'market_watch/index/index_screen.dart';
 import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/watchlist_screen.dart';
 import 'market_watch/watchlists_bottom_sheet.dart';
-import 'mutual_fund/mutual_fund_screen.dart'; 
+import 'mutual_fund/mutual_fund_screen.dart';
 import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
 import 'profile_screen/logged_user_bottom_sheet.dart';
@@ -346,7 +346,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             FontWeight.w500)),
                                   ]),
                                 )
-                            ] 
+                            ]
                             // else if (indexProvide.selectedBtmIndx == 3 &&
                             //     watch(orderProvider).selectedTab == 4) ...[
                             //   Row(
@@ -629,14 +629,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         onTap:
                             internet.connectionStatus == ConnectivityResult.none
                                 ? null
-                                : () async {      
+                                : () async {
                                     await context
                                         .read(indexListProvider)
                                         .checkSession(context);
 
                                     if (indexProvide.checkSess!.stat == "Ok") {
                                       await portfolio.fetchMFHoldings(context);
-                                indexProvide.bottomMenu(2);
+                                      indexProvide.bottomMenu(2);
                                       await marketWatchList.requestMWScrip(
                                           context: context, isSubscribe: false);
 
@@ -709,6 +709,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           .checkSession(context);
                                       if (indexProvide.checkSess!.stat ==
                                           "Ok") {
+                                        await context
+                                            .read(orderProvider)
+                                            .fetchSipOrderHistory();
                                         await marketWatchList
                                             .fetchPendingAlert(context);
                                         await marketWatchList.requestMWScrip(

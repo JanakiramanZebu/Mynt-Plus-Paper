@@ -2,17 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../models/ipo_model/ipo_order_book_model.dart';
-import '../../../models/ipo_model/ipo_place_order_model.dart';
-import '../../../provider/iop_provider.dart';
+import 'package:mynt_plus/models/order_book_model/sip_order_book.dart';
 import '../../../res/res.dart';
+import '../../provider/order_provider.dart';
+import '../../provider/thems.dart';
 
-class IpoCancelAlert extends ConsumerWidget {
-  final IpoOrderBookModel ipocancel;
-  const IpoCancelAlert({super.key, required this.ipocancel});
+class SipCancelAlert extends ConsumerWidget {
+  final SipDetails sipdetails;
+  const SipCancelAlert({
+    super.key,
+    required this.sipdetails,
+  });
   @override
   Widget build(BuildContext context, ScopedReader watch) {
+    final theme = watch(themeProvider);
     return AlertDialog(
+      backgroundColor: theme.isDarkMode
+          ? const Color.fromARGB(255, 18, 18, 18)
+          : colors.colorWhite,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(10))),
       scrollable: true,
@@ -26,9 +33,12 @@ class IpoCancelAlert extends ConsumerWidget {
       content: Column(
         children: [
           Text(
-              "Are you sure you want to cancel the (${ipocancel.symbol} order)",
+              "Are you sure you want to cancel the (${sipdetails.scrips![0].tsym.toString().toUpperCase()})",
               textAlign: TextAlign.center,
-              style: textStyle(const Color(0xff000000), 16, FontWeight.w600))
+              style: textStyle(
+                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  16,
+                  FontWeight.w600))
         ],
       ),
       actions: [
@@ -54,37 +64,29 @@ class IpoCancelAlert extends ConsumerWidget {
               child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: colors.colorBlack,
+                      backgroundColor: theme.isDarkMode
+                          ? colors.colorbluegrey
+                          : colors.colorBlack,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50),
                       )),
                   onPressed: () async {
-                    MenuData menudata = MenuData(
-                      flow: "can",
-                      type: ipocancel.type.toString(),
-                      symbol: ipocancel.symbol.toString(),
-                      category: "",
-                      name: ipocancel.companyName.toString(),
-                      applicationNumber:
-                          ipocancel.applicationNumber.toString(),
-                      respBid: [BidReference(bidReferenceNumber: '67890')],
-                    );
-
-                    List<IposBid> iposbids = [];
-
-                    await context
-                        .read(ipoProvide)
-                        .getipoplaceorder(context, menudata, iposbids, "");
+                    
+                    context.read(orderProvider).fetchSipOrderCancel(
+                        "${sipdetails.internal!.sipId}", context);
                   },
                   child: Text("Yes",
-                      style:
-                          textStyle(colors.colorWhite, 12, FontWeight.w600))),
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
+                          12,
+                          FontWeight.w600))),
             )
           ],
         ),
       ],
     );
-  
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {

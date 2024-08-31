@@ -14,6 +14,8 @@ class Routes {
   static const String marketScripInfo = 'MarketScripInfo';
   static const String chartWebView = 'ChartWebView';
 
+  static const String sipDetails = 'sipDetails';
+
   static const String orderDetail = 'orderDetail';
 
   static const String tradeDetail = 'tradeDetail';

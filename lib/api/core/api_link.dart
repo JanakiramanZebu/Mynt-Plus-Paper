@@ -4,7 +4,7 @@ class ApiLinks {
   // String get goMyntURL => "https://uat.mynt.in/NorenWClient";
   // static String wsURL = 'wss://uat.mynt.in/NorenWSMob/';
 
-  static String source = "MOB"; 
+  static String source = "MOB";
   static String otp = "";
   static String userName = "";
   static bool showAppTutorial = true;
@@ -44,6 +44,7 @@ class ApiLinks {
   String get addMWScrips => '$goMyntURL/AddMultiScripsToMW';
   String get searchScrip => '$goMyntURL/SearchScrip';
   String get technicalData => '$goMyntURL/GetTechnicals';
+  String get watchListrename => '$goMyntURL/RenameMW';
 
 // Market Index
 
@@ -66,6 +67,7 @@ class ApiLinks {
   String get getOrder => '$goMyntURL/OrderBook';
   String get positionConvert => '$goMyntURL/ProductConversion';
   String get orderHistory => '$goMyntURL/SingleOrdHist';
+  String get modifySipOrder => '$goMyntURL/ModifySipOrder';
   String get sipOrderBook => '$goMyntURL/SipOrderBook';
   String get multiLegOrderBook => '$goMyntURL/MultiLegOrderBook';
   String get tradeBook => '$goMyntURL/TradeBook';
@@ -116,7 +118,7 @@ class ApiLinks {
 
   String get myntchangePassword => '$mainBaseURL/ChangePass';
 
-  String get placeSipOrder => '$mainBaseURL/PlaceSipOrder';
+  String get placeSipOrder => '$goMyntURL/PlaceSipOrder';
 
   String get preDefdMWatchScrip => '$mainBaseURL/PreDefinedMW';
   String get getAllIndx => '$mainBaseURL/GetIndexList';
