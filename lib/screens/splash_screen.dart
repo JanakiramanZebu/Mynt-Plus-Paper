@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +11,7 @@ import '../provider/auth_provider.dart';
 import '../provider/network_state_provider.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
+import '../sharedWidget/no_internet_widget.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -40,12 +42,14 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
         body: Stack(children: [
       Center(
-        child: SvgPicture.asset("assets/icon/zebulogo.svg",
-            color: const Color(0xff003F9E),
-            height: 80,
-            width: 150,
-            fit: BoxFit.contain),
-      ),
+          child: SvgPicture.asset("assets/icon/zebulogo.svg",
+              color: const Color(0xff003F9E),
+              height: 80,
+              width: 150,
+              fit: BoxFit.contain)),
+      if (context.read(networkStateProvider).connectionStatus ==
+          ConnectivityResult.none)
+        const NoInternetWidget()
     ]));
   }
 
@@ -80,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
         pref.setMobileLogin(true);
         await context
             .read(authProvider)
-            .fetchMobileLogin(context, "", pref.clientId!,"");
+            .fetchMobileLogin(context, "", pref.clientId!, "");
         // }
       }
 

@@ -304,6 +304,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
           for (var element in _holdingsModel!) {
             element.isExitHoldings = false;
+            
             Map spilitSymbol =
                 spilitTsym(value: "${element.exchTsym![0].tsym}");
 
@@ -666,13 +667,21 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
         totBuyAmts += double.parse(element.totbuyamt ?? "0.00");
         totSellAmts += double.parse(element.totsellamt ?? "0.00");
+ if (element.exch == "BFO" && element.dname != null) {
+                List<String> splitVal = element.dname!.split(" ");
 
+                element.symbol = splitVal[0];
+                element.expDate = "${splitVal[1]} ${splitVal[2]}";
+                element.option = splitVal.length > 4
+                    ? "${splitVal[3]} ${splitVal[4]}"
+                    : splitVal[3];
+              } else {
         Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
         element.symbol = "${spilitSymbol["symbol"]}";
         element.expDate = "${spilitSymbol["expDate"]}";
         element.option = "${spilitSymbol["option"]}";
-
+              }
         // if (_positionGroup.containsKey(element.symbol)) {
         //   _positionGroup["${element.symbol}"] =
         //       _positionGroup["${element.symbol}"]! + 1;

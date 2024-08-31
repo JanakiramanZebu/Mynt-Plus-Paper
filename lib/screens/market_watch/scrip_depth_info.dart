@@ -871,7 +871,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                               FontWeight.w500)),
                                       const SizedBox(height: 4),
                                       lowHighBar(
-                                          "${depthData.l ?? 0.00}",
+                                          "  ${ depthData.l  ==  (depthData.lp ?? depthData.c ?? 0.00)?depthData.c??0.00: depthData.l ?? 0.00}",
                                           "${depthData.h ?? 0.00}",
                                           "${depthData.lp ?? depthData.c ?? 0.00}",
                                           theme),

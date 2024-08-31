@@ -150,27 +150,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   List<ScripValue>? _fNoSearchScrip = [];
   List<ScripValue>? get fNoSearchScrip => _fNoSearchScrip;
 
-  fetchSearchTabSize() {
-    _searchTabList = [
-      Tab(
-          text:
-              "All${_allSearchScrip!.isNotEmpty ? " (${_allSearchScrip!.length})" : ""}"),
-      Tab(
-          text:
-              "Equity${_equitySearchScrip!.isNotEmpty ? " (${_equitySearchScrip!.length})" : ""}"),
-      Tab(
-          text:
-              "F&O${_fNoSearchScrip!.isNotEmpty ? " (${_fNoSearchScrip!.length})" : ""}"),
-      Tab(
-          text:
-              "Currency${_currencySearchScrip!.isNotEmpty ? " (${_currencySearchScrip!.length})" : ""}"),
-      Tab(
-          text:
-              "Commodity${_commoditySearchScrip!.isNotEmpty ? " (${_commoditySearchScrip!.length})" : ""}")
-    ];
-    notifyListeners();
-  }
-
   CancelAlertModel? _cancelalert;
   CancelAlertModel? get cancelalert => _cancelalert;
 
@@ -534,7 +513,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _equitySearchScrip = [];
     _currencySearchScrip = [];
 
-    fetchSearchTabSize();
     notifyListeners();
   }
 
@@ -560,7 +538,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _marketWatchlist!.values!.add("My");
         } else {
           _marketWatchlist!.values!.sort((a, b) => a.compareTo(b));
-         
+
           _marketWatchScripData = {};
           for (var element in _marketWatchlist!.values!) {
             await fetchMWScrip(element, context);
@@ -574,7 +552,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _marketWatchlist!.values!.addAll(_preDefWL);
 
         await fetchPreDefMWScrip(context);
-                await changeWLScrip(_wlName, context);
+        await changeWLScrip(_wlName, context);
       } else {
         if (_marketWatchlist!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
@@ -606,12 +584,21 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         if (_watchListValues.isNotEmpty) {
           for (var element in _watchListValues) {
-            Map spilitSymbol = spilitTsym(value: "${element.tsym}");
+            if (element.exch == "BFO" && element.dname != null) {
+              List<String> splitVal = element.dname!.split(" ");
 
-            element.symbol = "${spilitSymbol["symbol"]}";
-            element.expDate = "${spilitSymbol["expDate"]}";
-            element.option = "${spilitSymbol["option"]}";
+              element.symbol = splitVal[0];
+              element.expDate = "${splitVal[1]} ${splitVal[2]}";
+              element.option = splitVal.length > 4
+                  ? "${splitVal[3]} ${splitVal[4]}"
+                  : splitVal[3];
+            } else {
+              Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
+              element.symbol = "${spilitSymbol["symbol"]}";
+              element.expDate = "${spilitSymbol["expDate"]}";
+              element.option = "${spilitSymbol["option"]}";
+            }
             if (ref(portfolioProvider).holdingsModel!.isNotEmpty) {
               for (var holding in ref(portfolioProvider).holdingsModel!) {
                 if (holding.exchTsym![0].exch == "NSE" ||
@@ -665,12 +652,21 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               return a.tsym!.compareTo(b.tsym!);
             });
             for (var element in _preDefinedMWlist!.nIFTY50NSE!) {
-              Map spilitSymbol = spilitTsym(value: "${element.tsym}");
+              if (element.exch == "BFO" && element.dname != null) {
+                List<String> splitVal = element.dname!.split(" ");
 
-              element.symbol = "${spilitSymbol["symbol"]}";
-              element.expDate = "${spilitSymbol["expDate"]}";
-              element.option = "${spilitSymbol["option"]}";
+                element.symbol = splitVal[0];
+                element.expDate = "${splitVal[1]} ${splitVal[2]}";
+                element.option = splitVal.length > 4
+                    ? "${splitVal[3]} ${splitVal[4]}"
+                    : splitVal[3];
+              } else {
+                Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
+                element.symbol = "${spilitSymbol["symbol"]}";
+                element.expDate = "${spilitSymbol["expDate"]}";
+                element.option = "${spilitSymbol["option"]}";
+              }
               if (ref(portfolioProvider).holdingsModel!.isNotEmpty) {
                 for (var holding in ref(portfolioProvider).holdingsModel!) {
                   if (holding.exchTsym![0].exch == "NSE" ||
@@ -688,12 +684,21 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               return a.tsym!.compareTo(b.tsym!);
             });
             for (var element in _preDefinedMWlist!.nIFTYBANKNSE!) {
-              Map spilitSymbol = spilitTsym(value: "${element.tsym}");
+              if (element.exch == "BFO" && element.dname != null) {
+                List<String> splitVal = element.dname!.split(" ");
 
-              element.symbol = "${spilitSymbol["symbol"]}";
-              element.expDate = "${spilitSymbol["expDate"]}";
-              element.option = "${spilitSymbol["option"]}";
+                element.symbol = splitVal[0];
+                element.expDate = "${splitVal[1]} ${splitVal[2]}";
+                element.option = splitVal.length > 4
+                    ? "${splitVal[3]} ${splitVal[4]}"
+                    : splitVal[3];
+              } else {
+                Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
+                element.symbol = "${spilitSymbol["symbol"]}";
+                element.expDate = "${spilitSymbol["expDate"]}";
+                element.option = "${spilitSymbol["option"]}";
+              }
               if (ref(portfolioProvider).holdingsModel!.isNotEmpty) {
                 for (var holding in ref(portfolioProvider).holdingsModel!) {
                   if (holding.exchTsym![0].exch == "NSE" ||
@@ -711,12 +716,21 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               return a.tsym!.compareTo(b.tsym!);
             });
             for (var element in _preDefinedMWlist!.sENSEXBSE!) {
-              Map spilitSymbol = spilitTsym(value: "${element.tsym}");
+              if (element.exch == "BFO" && element.dname != null) {
+                List<String> splitVal = element.dname!.split(" ");
 
-              element.symbol = "${spilitSymbol["symbol"]}";
-              element.expDate = "${spilitSymbol["expDate"]}";
-              element.option = "${spilitSymbol["option"]}";
+                element.symbol = splitVal[0];
+                element.expDate = "${splitVal[1]} ${splitVal[2]}";
+                element.option = splitVal.length > 4
+                    ? "${splitVal[3]} ${splitVal[4]}"
+                    : splitVal[3];
+              } else {
+                Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
+                element.symbol = "${spilitSymbol["symbol"]}";
+                element.expDate = "${spilitSymbol["expDate"]}";
+                element.option = "${spilitSymbol["option"]}";
+              }
               if (ref(portfolioProvider).holdingsModel!.isNotEmpty) {
                 for (var holding in ref(portfolioProvider).holdingsModel!) {
                   if (holding.exchTsym![0].exch == "NSE" ||
@@ -765,11 +779,21 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_scripInfoModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
-        Map spilitSymbol = spilitTsym(value: "${_scripInfoModel!.tsym}");
+        if (_scripInfoModel!.exch == "BFO" && _scripInfoModel!.dname != null) {
+          List<String> splitVal = _scripInfoModel!.dname!.split(" ");
 
-        _scripInfoModel!.symbol = "${spilitSymbol["symbol"]}";
-        _scripInfoModel!.expDate = "${spilitSymbol["expDate"]}";
-        _scripInfoModel!.option = "${spilitSymbol["option"]}";
+          _scripInfoModel!.symbol = splitVal[0];
+          _scripInfoModel!.expDate = "${splitVal[1]} ${splitVal[2]}";
+          _scripInfoModel!.option = splitVal.length > 4
+              ? "${splitVal[3]} ${splitVal[4]}"
+              : splitVal[3];
+        } else {
+          Map spilitSymbol = spilitTsym(value: "${_scripInfoModel!.tsym}");
+
+          _scripInfoModel!.symbol = "${spilitSymbol["symbol"]}";
+          _scripInfoModel!.expDate = "${spilitSymbol["expDate"]}";
+          _scripInfoModel!.option = "${spilitSymbol["option"]}";
+        }
       }
 
       if (_scripInfoModel!.emsg == "Session Expired :  Invalid Session Key" &&
@@ -793,11 +817,21 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_getQuotes!.stat == "Ok") {
         ConstantName.sessCheck = true;
-        Map spilitSymbol = spilitTsym(value: "${_getQuotes!.tsym}");
-        _getQuotes!.symbol = "${spilitSymbol["symbol"]}";
-        _getQuotes!.expDate = "${spilitSymbol["expDate"]}";
-        _getQuotes!.option = "${spilitSymbol["option"]}";
 
+        if (_getQuotes!.exch == "BFO" && _getQuotes!.cname != null) {
+          List<String> splitVal = _getQuotes!.cname!.split(" ");
+
+          _getQuotes!.symbol = splitVal[0];
+          _getQuotes!.expDate = "${splitVal[1]} ${splitVal[2]}";
+          _getQuotes!.option = splitVal.length > 4
+              ? "${splitVal[3]} ${splitVal[4]}"
+              : splitVal[3];
+        } else {
+          Map spilitSymbol = spilitTsym(value: "${_getQuotes!.tsym}");
+          _getQuotes!.symbol = "${spilitSymbol["symbol"]}";
+          _getQuotes!.expDate = "${spilitSymbol["expDate"]}";
+          _getQuotes!.option = "${spilitSymbol["option"]}";
+        }
         _optionStrPrc = "${_getQuotes!.lp}";
 
         scripQtyCal();
@@ -899,14 +933,28 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _isAdded = List<bool>.filled(_searchScripModel!.values!.length, false);
         if (_searchScripModel!.values!.isNotEmpty) {
           for (var i = 0; i < _searchScripModel!.values!.length; i++) {
-            Map spilitSymbol =
-                spilitTsym(value: "${_searchScripModel!.values![i].tsym}");
+            if (_searchScripModel!.values![i].exch == "BFO" &&
+                _searchScripModel!.values![i].dname != null) {
+              List<String> splitVal =
+                  _searchScripModel!.values![i].dname!.split(" ");
 
-            _searchScripModel!.values![i].symbol = "${spilitSymbol["symbol"]}";
-            _searchScripModel!.values![i].expDate =
-                "${spilitSymbol["expDate"]}";
-            _searchScripModel!.values![i].option = "${spilitSymbol["option"]}";
+              _searchScripModel!.values![i].symbol = splitVal[0];
+              _searchScripModel!.values![i].expDate =
+                  "${splitVal[1]} ${splitVal[2]}";
+              _searchScripModel!.values![i].option = splitVal.length > 4
+                  ? "${splitVal[3]} ${splitVal[4]}"
+                  : splitVal[3];
+            } else {
+              Map spilitSymbol =
+                  spilitTsym(value: "${_searchScripModel!.values![i].tsym}");
 
+              _searchScripModel!.values![i].symbol =
+                  "${spilitSymbol["symbol"]}";
+              _searchScripModel!.values![i].expDate =
+                  "${spilitSymbol["expDate"]}";
+              _searchScripModel!.values![i].option =
+                  "${spilitSymbol["option"]}";
+            }
             for (var j = 0; j < _scrips.length; j++) {
               if (_searchScripModel!.values![i].tsym == _scrips[j]['tsym']) {
                 _isAdded![i] = true;
@@ -972,7 +1020,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           ref(authProvider).ifSessionExpired(context);
         }
       }
-      fetchSearchTabSize();
+
       notifyListeners();
       return _searchScripModel;
     } catch (e) {
@@ -1575,22 +1623,20 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 //  REWORK TO CHANGE FLOW =========
 
   changeWLScrip(String wName, BuildContext context) async {
-
     try {
       _scrips = wName == "My Stocks"
-        ? []
-        : await jsonDecode(_marketWatchScripData[wName])??[];
+          ? []
+          : await jsonDecode(_marketWatchScripData[wName]) ?? [];
 
-    if (wName == "My Stocks") {
-      await ref(portfolioProvider)
-          .requestWSHoldings(context: context, isSubscribe: true);
-    } else {
-      await requestMWScrip(context: context, isSubscribe: true);
-    }
+      if (wName == "My Stocks") {
+        await ref(portfolioProvider)
+            .requestWSHoldings(context: context, isSubscribe: true);
+      } else {
+        await requestMWScrip(context: context, isSubscribe: true);
+      }
     } catch (e) {
       print("object  - $e");
     }
-    
 
     notifyListeners();
   }

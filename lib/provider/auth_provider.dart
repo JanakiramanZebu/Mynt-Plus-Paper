@@ -13,7 +13,6 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import '../api/core/api_export.dart';
-// import '../api/core/api_link.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 
@@ -336,19 +335,7 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setClientSession("${_mobileLogin!.apitoken}");
         pref.setClientName("${_mobileLogin!.name}");
         pref.setApiToken("${_mobileLogin!.token}");
-        // localstorage.setString("mobileNum", "${_mobileLogin!.mobile}");
-        // localstorage.setString("userId", "${_mobileLogin!.clientid}");
-        // localstorage.setString("session", "${_mobileLogin!.apitoken}");
-        // localstorage.setString("userName", "${_mobileLogin!.name}");
 
-        // localstorage.remove("logout");
-        // _mobileNum = localstorage.getString("mobileNum") ?? "";
-        // ApiLinks.session = localstorage.getString("session") ?? "";
-        // ApiLinks.userID = localstorage.getString("userId") ?? "";
-        // ApiLinks.userName = localstorage.getString("userName") ?? "";
-
-        // ApiLinks.source="${_mobileLogin!.source}";
-        // ApiLinks.wsURL="${_mobileLogin!.wss}";
         List<LoggedMobile> currentUser = [
           LoggedMobile(
               clientId: pref.clientId!,
@@ -438,18 +425,6 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setClientName("${_mobileOtp!.name}");
         pref.setApiToken("${_mobileOtp!.token}");
 
-        // localstorage.setString("mobileNum", "${_mobileOtp!.mobile}");
-        // localstorage.setString("userId", "${_mobileOtp!.clientid}");
-        // localstorage.setString("session", "${_mobileOtp!.apitoken}");
-        // localstorage.setString("userName", "${_mobileOtp!.name}");
-        //  ApiLinks.source="${_mobileLogin!.source}";
-
-        //  ApiLinks.wsURL="${_mobileLogin!.wss}";
-        // localstorage.remove("logout");
-        // _mobileNum = localstorage.getString("mobileNum") ?? "";
-        // ApiLinks.session = localstorage.getString("session") ?? "";
-        // ApiLinks.userID = localstorage.getString("userId") ?? "";
-        // ApiLinks.userName = localstorage.getString("userName") ?? "";
         List<LoggedMobile> currentUser = [
           LoggedMobile(
               clientId: pref.clientId!,
@@ -567,48 +542,10 @@ class AuthProvider extends DefaultChangeNotifier {
     }
   }
 
-  // fetchLocalData() async {
-  //   final localstorage = await SharedPreferences.getInstance();
-
-  //   // ApiLinks.userID = localstorage.getString("userId") ?? "";
-  //   // ApiLinks.session = localstorage.getString("session") ?? "";
-  //   ApiLinks.userName = localstorage.getString("userName") ?? "";
-  //   _logoutMsg = localstorage.getString("logout") ?? "";
-  //   ApiLinks.showAppTutorial = localstorage.getBool("showTutorial") ?? true;
-
-  //   ref(marketWatchProvider)
-  //       .getSortByWL(localstorage.getString("sortByWL") ?? "");
-
-  //   log("Device Info => ${localstorage.getString("deviceInfo") ?? ""}");
-  //   if (deviveInfo.isEmpty) {
-  //     await getDeviceDetails();
-  //   } else {
-  //     deviveInfo = localstorage.getString("deviceInfo") ?? deviveInfo;
-  //   }
-
-  //   if (_logoutMsg == "Logout") {
-  //     _isMobileLogin = true;
-  //   }
-
-  //   _loggedMobile = await getLocalData();
-
-  //   notifyListeners();
-  // }
-
   Future<void> deviceAuth(BuildContext context, String s) async {
     final localAuth = LocalAuthentication();
 
     try {
-      // bool canCheckBiometrics = await localAuth.canCheckBiometrics;
-      // bool isDeviceSupporte = await localAuth.isDeviceSupported();
-      // // log("bioAuth available $canCheckBiometrics");
-
-      // List<BiometricType> availableBiometrics =
-      //     await localAuth.getAvailableBiometrics();
-
-      // log("bioAuth BiometricType $availableBiometrics");
-      // log("bioAuth BiometricType $isDeviceSupporte");
-      // if (canCheckBiometrics) {
       bool authenticated = await localAuth.authenticate(
           localizedReason: 'Authenticate to access the app',
           options: const AuthenticationOptions(
@@ -768,7 +705,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
       if (ref(indexListProvider).checkSess!.stat == "Ok") {
         //  ref(indexListProvider).fetchNotifyMsg();
-
+        ref(portfolioProvider).changeTabIndex(0);
         await ref(userProfileProvider).fetchUserDetail(
             context, "${pref.clientId}", "${pref.clientSession}", "");
         await ref(portfolioProvider).fetchHoldings(context, "");
@@ -822,6 +759,7 @@ class AuthProvider extends DefaultChangeNotifier {
     pref.clearClientSession();
     pref.setLogout(true);
     ref(indexListProvider).bottomMenu(1);
+
     pref.setHideLoginOptBtn(false);
     pref.clearClientSession();
     ConstantName.sessCheck = false;

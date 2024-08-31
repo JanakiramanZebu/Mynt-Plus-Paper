@@ -29,135 +29,135 @@ class LoggedUserBottomSheet extends ConsumerWidget {
         maxChildSize: loggedUser.loggedMobile.length < 3 ? 0.5 : 0.9,
         builder: (_, controller) {
           return Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                boxShadow: const [
-                  BoxShadow(
-                      color: Color(0xff999999),
-                      blurRadius: 4.0,
-                      offset: Offset(2.0, 0.0))
-                ]),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CustomDragHandler(),
-                Padding(
-                    padding: const EdgeInsets.only(left: 14.0, bottom: 10),
-                    child: Text("Add / Switch to account",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            16,
-                            FontWeight.w500))),
-                Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider),
-                Expanded(
-                  child: ListView.separated(
-                    controller: controller,
-                    shrinkWrap: true,
-                    itemCount: loggedUser.loggedMobile.length,
-                    separatorBuilder: (BuildContext context, int index) {
-                      return const ListDivider();
-                    },
-                    itemBuilder: (BuildContext context, int index) {
-                      return ListTile(
-                        onTap: () async {
-                          pref.setClientId(
-                              loggedUser.loggedMobile[index].clientId);
-
-                          pref.setClientMob(
-                              loggedUser.loggedMobile[index].mobile);
-                          pref.setClientSession(
-                              loggedUser.loggedMobile[index].sesstion);
-                          pref.setClientName(
-                              loggedUser.loggedMobile[index].userName);
-
-                              pref.setMobileLogin(true);
-                          await context.read(authProvider).fetchMobileLogin(
-                              context,
-                              "",
-                              loggedUser.loggedMobile[index].clientId,
-                              "switchAc");
-                        },
-                        dense: true,
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 14),
-                        title: Text(loggedUser.loggedMobile[index]. userName,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color:
+                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  boxShadow: const [
+                    BoxShadow(
+                        color: Color(0xff999999),
+                        blurRadius: 4.0,
+                        offset: Offset(2.0, 0.0))
+                  ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CustomDragHandler(),
+                    Padding(
+                        padding: const EdgeInsets.only(left: 14.0, bottom: 10),
+                        child: Text("Add / Switch account",
                             style: textStyle(
                                 theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
-                        subtitle: Text(
-                            "User ID ${loggedUser.loggedMobile[index].clientId}",
-                            style: textStyle(
-                                const Color(0xff666666), 12, FontWeight.w500)),
-                        trailing: loggedUser.loggedMobile[index].clientId ==
-                                pref.clientId
-                            ? Text("Active",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorLightBlue
-                                        : colors.colorBlue,
-                                    13,
-                                    FontWeight.w600))
-                            : Container(
-                                width: .3,
-                              ),
-                      );
-                    },
-                  ),
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                  child: OutlinedButton(
-                      onPressed: () {
-                        pref.setLogout(false);
-                        loggedUser.addClient(true);
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, Routes.loginScreen);
-                      },
-                      style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                              width: 1.4,
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack),
-                          padding: const EdgeInsets.symmetric(vertical: 10.5),
-                          shape: const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(30)))),
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SvgPicture.asset(assets.addCircleIcon,
-                                color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack),
-                            const SizedBox(width: 8),
-                            Text("Add another account",
-                                style: textStyle(
-                                    theme.isDarkMode
+                                16,
+                                FontWeight.w500))),
+                    Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: theme.isDarkMode
+                            ? colors.darkColorDivider
+                            : colors.colorDivider),
+                    Expanded(
+                        child: ListView.separated(
+                            controller: controller,
+                            shrinkWrap: true,
+                            itemCount: loggedUser.loggedMobile.length,
+                            separatorBuilder:
+                                (BuildContext context, int index) {
+                              return const ListDivider();
+                            },
+                            itemBuilder: (BuildContext context, int index) {
+                              return ListTile(
+                                  onTap: () async {
+                                    pref.setClientId(loggedUser
+                                        .loggedMobile[index].clientId);
+
+                                    pref.setClientMob(
+                                        loggedUser.loggedMobile[index].mobile);
+                                    pref.setClientSession(loggedUser
+                                        .loggedMobile[index].sesstion);
+                                    pref.setClientName(loggedUser
+                                        .loggedMobile[index].userName);
+
+                                    pref.setMobileLogin(true);
+                                    await context
+                                        .read(authProvider)
+                                        .fetchMobileLogin(
+                                            context,
+                                            "",
+                                            loggedUser
+                                                .loggedMobile[index].clientId,
+                                            "switchAc");
+                                  },
+                                  dense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 14),
+                                  title: Text(
+                                      loggedUser.loggedMobile[index].userName,
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          14,
+                                          FontWeight.w500)),
+                                  subtitle: Text(
+                                      "User ID ${loggedUser.loggedMobile[index].clientId}",
+                                      style: textStyle(const Color(0xff666666),
+                                          12, FontWeight.w500)),
+                                  trailing:
+                                      loggedUser.loggedMobile[index].clientId ==
+                                              pref.clientId
+                                          ? Text("Active",
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorLightBlue
+                                                      : colors.colorBlue,
+                                                  13,
+                                                  FontWeight.w600))
+                                          : Container(width: .3));
+                            })),
+                    Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 5),
+                        child: OutlinedButton(
+                            onPressed: () {
+                              pref.setLogout(false);
+                              loggedUser.addClient(true);
+                              Navigator.pop(context);
+                              Navigator.pushNamed(context, Routes.loginScreen);
+                            },
+                            style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                    width: 1.4,
+                                    color: theme.isDarkMode
                                         ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    14,
-                                    FontWeight.w500))
-                          ])),
-                ),
-                const SizedBox(height: 12)
-              ],
-            ),
-          );
+                                        : colors.colorBlack),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10.5),
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(30)))),
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SvgPicture.asset(assets.addCircleIcon,
+                                      color: theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack),
+                                  const SizedBox(width: 8),
+                                  Text("Add another account",
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          14,
+                                          FontWeight.w500))
+                                ]))),
+                    const SizedBox(height: 12)
+                  ]));
         });
   }
 }

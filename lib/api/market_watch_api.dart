@@ -1,6 +1,4 @@
- 
-
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
 import '../models/marketwatch_model/alert_model/alert_pending_model.dart';
 import '../models/marketwatch_model/alert_model/cancel_alert_model.dart';
@@ -16,7 +14,7 @@ import '../models/marketwatch_model/scrip_info.dart';
 import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_model.dart';
-import 'core/api_core.dart'; 
+import 'core/api_core.dart';
 
 mixin MarketWatchApi on ApiCore {
   Future<MarketWatchlist> getMWList() async {
@@ -105,7 +103,7 @@ mixin MarketWatchApi on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","exch":"$exch","token":"$token"}&jKey=${prefs.clientSession}''');
 
-      // log("Scrip Get Info => ${res.body}");
+      //  log("Scrip Get Info => ${res.body}");
       final json = jsonDecode(res.body);
 
       return GetQuotes.fromJson(json as Map<String, dynamic>);
@@ -126,8 +124,7 @@ mixin MarketWatchApi on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","wlname":"$wlname","scrips":"$scripToken"}&jKey=${prefs.clientSession}''');
 
-
-        // log("Add Delete SciptoMW => ${res.body}");
+      // log("Add Delete SciptoMW => ${res.body}");
       final json = jsonDecode(res.body);
 
       return AddDeleteScripModel.fromJson(json as Map<String, dynamic>);
@@ -237,7 +234,7 @@ mixin MarketWatchApi on ApiCore {
 
       final json = jsonDecode(res.body);
 
-        //  log(" Fundamental Data   => ${res.body}");
+      //  log(" Fundamental Data   => ${res.body}");
 
       return StockData.fromJson(json as Map<String, dynamic>);
     } catch (e) {

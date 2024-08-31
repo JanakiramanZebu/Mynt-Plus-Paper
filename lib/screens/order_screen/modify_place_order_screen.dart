@@ -1466,7 +1466,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
 
   modifyOrder() async {
     ModifyOrderInput input = ModifyOrderInput(
-        dscqty: widget.modifyOrderArgs.dscqty!,
+        dscqty: widget.modifyOrderArgs.dscqty??"0",
         token: widget.modifyOrderArgs.token!,
         exch: widget.modifyOrderArgs.exch!,
         mktProt: widget.modifyOrderArgs.mktProtection ?? "",

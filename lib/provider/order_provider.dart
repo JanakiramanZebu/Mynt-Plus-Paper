@@ -278,12 +278,22 @@ class OrderProvider extends DefaultChangeNotifier {
           _allOrder = [];
           _selectedTab = 0;
           for (var element in _orderBookModel!) {
+
+             if (element.exch == "BFO" && element.dname != null) {
+                List<String> splitVal = element.dname!.split(" ");
+
+                element.symbol = splitVal[0];
+                element.expDate = "${splitVal[1]} ${splitVal[2]}";
+                element.option = splitVal.length > 4
+                    ? "${splitVal[3]} ${splitVal[4]}"
+                    : splitVal[3];
+              } else {
             Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
             element.symbol = "${spilitSymbol["symbol"]}";
             element.expDate = "${spilitSymbol["expDate"]}";
             element.option = "${spilitSymbol["option"]}";
-
+              }
             if (element.stat == "Ok") {
               if (element.status == "REJECTED" ||
                   element.status == "CANCELED" ||
@@ -333,11 +343,20 @@ class OrderProvider extends DefaultChangeNotifier {
         if (_tradeBook![0].stat == "Ok") {
           ConstantName.sessCheck = true;
           for (var element in _tradeBook!) {
+             if (element.exch == "BFO" && element.dname != null) {
+                List<String> splitVal = element.dname!.split(" ");
+
+                element.symbol = splitVal[0];
+                element.expDate = "${splitVal[1]} ${splitVal[2]}";
+                element.option = splitVal.length > 4
+                    ? "${splitVal[3]} ${splitVal[4]}"
+                    : splitVal[3];
+              } else {
             Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
             element.symbol = "${spilitSymbol["symbol"]}";
             element.expDate = "${spilitSymbol["expDate"]}";
-            element.option = "${spilitSymbol["option"]}";
+            element.option = "${spilitSymbol["option"]}";}
           }
         }
         if (_tradeBook![0].emsg == "Session Expired :  Invalid Session Key" &&

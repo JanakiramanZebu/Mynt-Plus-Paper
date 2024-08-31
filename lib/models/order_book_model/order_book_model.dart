@@ -52,7 +52,7 @@ class OrderBookModel {
   String? rejby;
   String? srcUid;
   String? snoFillid;
-
+String? dname;
   String? ordersource;
   String? brnchid;
   String? c;
@@ -78,7 +78,7 @@ class OrderBookModel {
       this.mktProtection,
       this.norentm,
       this.ordenttm,
-      this.pp,
+      this.pp,this.dname,
       this.prc,
       this.prcftr,
       this.prctyp,
@@ -181,6 +181,7 @@ class OrderBookModel {
     snonum = json['snonum'];
     snoordt = json['snoordt'];
     instname = json['instname'];
+    dname=json['dname'];
   }
 
   Map<String, dynamic> toJson() {
@@ -241,6 +242,7 @@ class OrderBookModel {
     data['ordersource'] = ordersource;
     data['brnchid'] = brnchid;
     data['C'] = c;
+    data['dname']=dname;
     data['snonum'] = snonum;
     data['snoordt'] = snoordt;
 

@@ -1,65 +1,63 @@
 class ChartTypeModel {
   final String chartType;
   final String chartIcon;
+  final String chartValue;
   const ChartTypeModel({
     required this.chartType,
     required this.chartIcon,
+    required this.chartValue,
   });
 
-  List<Object?> get props => [chartType, chartIcon];
+  List<Object?> get props => [chartType, chartIcon, chartValue];
 
   static List<ChartTypeModel> categories = [
     const ChartTypeModel(
-      chartType: 'Bars',
-      chartIcon: 'assets/tvchart/bars.svg',
-    ),
+        chartType: 'Bars',
+        chartIcon: 'assets/tvchart/bars.svg',
+        chartValue: '0'),
     const ChartTypeModel(
-      chartType: 'Candle',
-      chartIcon: 'assets/tvchart/candle.svg',
-    ),
+        chartType: 'Candles',
+        chartIcon: 'assets/tvchart/candle.svg',
+        chartValue: '1'),
     const ChartTypeModel(
-      chartType: 'Line',
-      chartIcon: 'assets/tvchart/line.svg',
-    ),
+        chartType: 'Hollow candles',
+        chartIcon: 'assets/tvchart/hollow_candle.svg',
+        chartValue: '9'),
     const ChartTypeModel(
-      chartType: 'Area',
-      chartIcon: 'assets/tvchart/area.svg',
-    ),
+        chartType: 'Line',
+        chartIcon: 'assets/tvchart/line_chart.svg',
+        chartValue: '2'),
     const ChartTypeModel(
-      chartType: 'Renko',
-      chartIcon: 'assets/tvchart/renko.svg',
-    ),
+        chartType: 'Area',
+        chartIcon: 'assets/tvchart/area.svg',
+        chartValue: '3'),
     const ChartTypeModel(
-      chartType: 'Kagi',
-      chartIcon: 'assets/tvchart/kagi.svg',
-    ),
+        chartType: 'Line with markers',
+        chartIcon: 'assets/tvchart/line_marker_chart.svg',
+        chartValue: '14'),
     const ChartTypeModel(
-      chartType: 'PnF',
-      chartIcon: 'assets/tvchart/point_figure.svg',
-    ),
+        chartType: 'Step line',
+        chartIcon: 'assets/tvchart/kagi.svg',
+        chartValue: '15'),
     const ChartTypeModel(
-      chartType: 'Line Break',
-      chartIcon: 'assets/tvchart/line_break.svg',
-    ),
+        chartType: 'HLC area',
+        chartIcon: 'assets/tvchart/hlc_area_chart.svg',
+        chartValue: '16'),
     const ChartTypeModel(
-      chartType: 'Heikin-Ashi',
-      chartIcon: 'assets/tvchart/heikin_ashi.svg',
-    ),
+        chartType: 'Baseline',
+        chartIcon: 'assets/tvchart/base_line_chart.svg',
+        chartValue: '10'),
     const ChartTypeModel(
-      chartType: 'Hollow Candle',
-      chartIcon: 'assets/tvchart/hollow_candle.svg',
-    ),
+        chartType: 'Columns',
+        chartIcon: 'assets/tvchart/column_chart.svg',
+        chartValue: '13'),
     const ChartTypeModel(
-      chartType: 'Base Line',
-      chartIcon: 'assets/tvchart/baseline.svg',
-    ),
+        chartType: 'High-Low',
+        chartIcon: 'assets/tvchart/high_low.svg',
+        chartValue: '12'),
     const ChartTypeModel(
-      chartType: 'Hi-Lo',
-      chartIcon: 'assets/tvchart/high_low.svg',
-    ),
-    const ChartTypeModel(
-      chartType: 'Column',
-      chartIcon: 'assets/tvchart/column.svg',
-    ),
+        chartType: 'Heikin Ashi',
+        chartIcon: 'assets/tvchart/heikin_ashi_chart.svg',
+        chartValue: '8')
   ];
 }

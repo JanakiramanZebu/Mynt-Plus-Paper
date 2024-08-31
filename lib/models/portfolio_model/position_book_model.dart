@@ -55,6 +55,7 @@ class PositionBookModel {
   String? avgPrc;
   String? qty;
   String? unRealMtm;
+  String? dname;
   String? bookedPnL;
   bool? isExitSelection;
   PositionBookModel(
@@ -75,6 +76,7 @@ class PositionBookModel {
       this.daysellqty,
       this.exch,
       this.frzqty,
+      this.dname,
       this.lp,
       this.emsg,
       this.ls,
@@ -127,6 +129,7 @@ class PositionBookModel {
     dayavgprc = json['dayavgprc'];
     daybuyamt = json['daybuyamt'];
     daybuyavgprc = json['daybuyavgprc'];
+    dname=json['dname'];
     daybuyqty = json['daybuyqty'];
     daysellamt = json['daysellamt'];
     daysellavgprc = json['daysellavgprc'];
@@ -200,6 +203,7 @@ class PositionBookModel {
     data['emsg'] = emsg;
     data['mult'] = mult;
     data['netavgprc'] = netavgprc;
+    data['dname']=dname;
     data['netqty'] = netqty;
     data['netupldprc'] = netupldprc;
     data['openbuyamt'] = openbuyamt;

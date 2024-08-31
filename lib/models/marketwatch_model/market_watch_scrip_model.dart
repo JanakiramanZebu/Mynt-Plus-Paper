@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:mynt_plus/api/core/api_core.dart';
+
 MarketWatchScrip marketWatchScrip(String str) =>
     MarketWatchScrip.fromJson(json.decode(str));
 
@@ -61,10 +63,11 @@ class WatchListValues {
   String? instname;
   bool? isExpandable;
   String? holdingQty;
-String? weekly;
+  String? weekly;
   String? symbol;
   String? expDate;
   String? option;
+  String? dname;
 
   WatchListValues(
       {this.high,
@@ -86,8 +89,10 @@ String? weekly;
       this.isExpandable,
       this.holdingQty,
       this.expDate,
+      this.dname,
       this.option,
-      this.symbol,this.weekly});
+      this.symbol,
+      this.weekly});
 
   factory WatchListValues.fromJson(Map<String, dynamic> json) {
     bool isexpand = json['isexpand'] ?? false;
@@ -113,8 +118,8 @@ String? weekly;
         expDate: json['expDate'],
         symbol: json['symbol'].toString().toUpperCase(),
         option: json['option'],
-         weekly :json['weekly'],
-        );
+        weekly: json['weekly'],
+        dname: json["dname"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -141,10 +146,12 @@ String? weekly;
     data['option'] = option;
     data['expDate'] = expDate;
     data['symbol'] = symbol;
-     data['weekly'] = weekly;
+    data['weekly'] = weekly;
+    data['dname'] = dname;
     return data;
   }
-} 
+}
+
 class ChartArgs {
   String tsym;
   String exch;

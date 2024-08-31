@@ -39,8 +39,10 @@ class ScripValue {
   String? weekly;
   bool? isAdded;
   String? symbol;
-String?expDate;
-String? option;
+  String? expDate;
+  String? option;
+  String? dname;
+
   ScripValue(
       {this.cname,
       this.exch,
@@ -51,9 +53,12 @@ String? option;
       this.token,
       this.tsym,
       this.optt,
+      this.dname,
       this.weekly,
-      this.isAdded,   this.expDate,
-      this.option,this.symbol});
+      this.isAdded,
+      this.expDate,
+      this.option,
+      this.symbol});
 
   ScripValue.fromJson(Map<String, dynamic> json) {
     cname = json['cname'];
@@ -65,10 +70,12 @@ String? option;
     token = json['token'];
     tsym = json['tsym'];
     optt = json['optt'];
+    dname = json['dname'];
     weekly = json['weekly'];
     isAdded = isAdded == null ? false : json['isAdded'];
-        expDate=json['expDate'];
-        symbol=json['symbol'];option= json['option'];
+    expDate = json['expDate'];
+    symbol = json['symbol'];
+    option = json['option'];
   }
 
   Map<String, dynamic> toJson() {
@@ -83,10 +90,11 @@ String? option;
     data['tsym'] = tsym;
     data['optt'] = optt;
     data['weekly'] = weekly;
+    data['dname'] = dname;
     data['isAdded'] = isAdded;
-       data['option']=option;
-    data['expDate']=expDate;
-    data['symbol']=symbol; 
+    data['option'] = option;
+    data['expDate'] = expDate;
+    data['symbol'] = symbol;
     return data;
   }
 }

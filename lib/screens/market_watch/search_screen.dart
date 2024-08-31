@@ -1,8 +1,10 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/thems.dart';
@@ -82,7 +84,15 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                                       : colors.colorBlack,
                                   15,
                                   FontWeight.w500),
-                              inputFormatters: [UpperCaseTextFormatter()],
+                                  textCapitalization: TextCapitalization.characters,
+                              inputFormatters: [
+                                        UpperCaseTextFormatter(),
+                                        RemoveEmojiInputFormatter(),
+                                        FilteringTextInputFormatter.deny(
+                                            RegExp('[π£•₹€℅™∆√¶/.,]')),
+                                        FilteringTextInputFormatter.deny(
+                                            RegExp(r'\s')),
+                                      ],
                               keyboardType: TextInputType.text,
                               decoration: InputDecoration(
                                   fillColor: theme.isDarkMode

@@ -28,6 +28,7 @@ class TradeBookModel {
   String? exchTm;
   String? exchordid;String? symbol;
 String?expDate;
+String? dname;
 String? option;
 
   TradeBookModel(
@@ -54,6 +55,7 @@ String? option;
       this.ti,
       this.prc,
       this.prcftr,
+      this.dname,
       this.flprc,
       this.norentm,
       this.avgprc,
@@ -85,6 +87,7 @@ String? option;
     ti = json['ti'];
     prc = json['prc'];
     prcftr = json['prcftr'];
+    dname=json['dname'];
     flprc = json['flprc'];
     norentm = json['norentm'];
     avgprc = json['avgprc'];
@@ -125,6 +128,7 @@ String? option;
     data['exchordid'] = exchordid;
        data['option']=option;
     data['expDate']=expDate;
+    data['dname']=dname;
     data['symbol']=symbol; 
     return data;
   }
