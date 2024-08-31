@@ -530,8 +530,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   pnlHoldCal() {
     if (_holdingsModel!.isNotEmpty) {
       if (_holdingsModel![0].stat != "Not_Ok") {
-        _totalCurrentVal = _holdingsModel!.fold(0,
-            (sum, next) => sum + double.parse("${next.currentValue ?? 0.00}"));
+      
         _totalPnlHolding = _holdingsModel!.fold(
             0,
             (sum, next) =>
@@ -548,6 +547,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 .toStringAsFixed(2);
 
         _oneDayChngPer = ((_oneDayChng / _totalCurrentVal) * 100);
+
+
+       
+         
+     double val=    _holdingsModel!.fold(0,
+            (sum, next) => sum + double.parse("${next.invested ?? 0.00}"));
+    
+      _totInvesHold= val.toStringAsFixed(2);
+
+        _totalCurrentVal = _holdingsModel!.fold(0,
+            (sum, next) => sum + double.parse("${next.currentValue ?? 0.00}"));
       }
 
       DateTime now = DateTime.now();
@@ -559,8 +569,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
           now.isAfter(threeThirtyPM) || now.isBefore(nineFifteenAM);
 
       if (isInTimeRange) {
-        // notifyListeners();
-        log("sdns ${now.hour}");
+      
+          // notifyListeners();
+            log("sdns ${now.hour}");
+     
+      }else{
+
+        print(" sdns object");
       }
 
       // print("sdns ${now.hour}- ${now.minute}");

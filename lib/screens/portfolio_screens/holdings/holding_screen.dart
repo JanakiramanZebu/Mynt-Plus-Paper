@@ -371,96 +371,51 @@ class HoldingScreen extends ConsumerWidget {
                    await holdingProvide.requestWSHoldings(isSubscribe: true, context: context);
                   //    await    holdingProvide.pnlHoldCal();
                 },
-                                    child: ListView.separated(
-                               
-                                    
-                                      itemBuilder: (BuildContext context,
-                                          int index) {
-                                        if (socketDatas.containsKey(
-                                            holdingProvide
-                                                .holdingsModel![index]
-                                                .exchTsym![0]
-                                                .token)) {
-                                          holdingProvide
-                                                  .holdingsModel![index]
-                                                  .exchTsym![0]
-                                                  .lp =
+                                    child: SingleChildScrollView(
+                                      child: ListView.separated(
+                                                  physics: const NeverScrollableScrollPhysics(),
+                                                  shrinkWrap: true,              
+                                      
+                                        itemBuilder: (BuildContext context,
+                                            int index) {
+                                          if (socketDatas.containsKey(holdingProvide
+                                            .holdingsModel![index]
+                                            .exchTsym![0]
+                                            .token)) {
+                                          holdingProvide.holdingsModel![index]
+                                                  .exchTsym![0].lp =
                                               "${socketDatas["${holdingProvide.holdingsModel![index].exchTsym![0].token}"]['lp'] ?? 0.00}";
-                                                
-                                          holdingProvide
-                                                  .holdingsModel![index]
-                                                  .exchTsym![0]
-                                                  .perChange =
+                                      
+                                          holdingProvide.holdingsModel![index]
+                                                  .exchTsym![0].perChange =
                                               "${socketDatas["${holdingProvide.holdingsModel![index].exchTsym![0].token}"]['pc'] ?? 0.00}";
-                                                
-                                          holdingProvide
-                                                  .holdingsModel![index]
-                                                  .exchTsym![0]
-                                                  .close =
+                                      
+                                          holdingProvide.holdingsModel![index]
+                                                  .exchTsym![0].close =
                                               "${socketDatas["${holdingProvide.holdingsModel![index].exchTsym![0].token}"]['c'] ?? 0.00}";
-                                                
-                                          if (holdingProvide
-                                                  .holdingsModel![index]
-                                                  .currentQty ==
-                                              0) {
-                                            double sellAmt = double.parse(
-                                                holdingProvide
-                                                        .holdingsModel![
-                                                            index]
-                                                        .sellAmt ??
-                                                    "0.00");
-                                                
-                                            int usedQty = int.parse(
-                                                holdingProvide
-                                                        .holdingsModel![
-                                                            index]
-                                                        .usedqty ??
-                                                    "0");
-                                            double price =
-                                                (sellAmt / usedQty);
-                                                
-                                            double pnl = price -
-                                                double.parse(holdingProvide
-                                                        .holdingsModel![
-                                                            index]
-                                                        .upldprc ??
-                                                    "0.0");
-                                                
-                                            holdingProvide
-                                                    .holdingsModel![index]
-                                                    .exchTsym![0]
-                                                    .profitNloss =
-                                                (pnl * usedQty)
-                                                    .toStringAsFixed(2);
-                                          } else {
-                                            holdingProvide
-                                                .holdingsModel![index]
-                                                .exchTsym![0]
-                                                .profitNloss = ((double.parse(
-                                                            holdingProvide
-                                                                    .holdingsModel![
-                                                                        index]
-                                                                    .exchTsym![
-                                                                        0]
-                                                                    .lp ??
-                                                                "0.00") -
-                                                        double.parse(holdingProvide
-                                                                .holdingsModel![
-                                                                    index]
-                                                                .avgPrc ??
-                                                            "0.00")) *
-                                                    int.parse(
-                                                        "${holdingProvide.holdingsModel![index].currentQty ?? 0}"))
-                                                .toStringAsFixed(2)
-                                                .toString();
-                                          }
-                                                
+                                      
+                                          holdingProvide.holdingsModel![index]
+                                              .currentValue = (int.parse(
+                                                      "${holdingProvide.holdingsModel![index].currentQty ?? 0}") *
+                                                  double.parse(
+                                                      "${holdingProvide.holdingsModel![index].exchTsym![0].lp ?? 0.0}"))
+                                              .toStringAsFixed(2);
+                                      
+                                          double avgCost = double.parse(
+                                              "${holdingProvide.holdingsModel![index].upldprc == "0.00" ? holdingProvide.holdingsModel![index].exchTsym![0].close ?? 0.0 : holdingProvide.holdingsModel![index].upldprc ?? 0.00}");
+                                      
+                                          holdingProvide.holdingsModel![index]
+                                              .invested = (holdingProvide
+                                                      .holdingsModel![index]
+                                                      .currentQty! *
+                                                  avgCost)
+                                              .toStringAsFixed(2);
+                                      
                                           holdingProvide
                                               .holdingsModel![index]
                                               .exchTsym![0]
                                               .pNlChng = holdingProvide
-                                                      .holdingsModel![
-                                                          index]
+                                                      .holdingsModel![index]
                                                       .invested ==
                                                   "0.00"
                                               ? "0.00"
@@ -471,7 +426,7 @@ class HoldingScreen extends ConsumerWidget {
                                                       100)
                                                   .toStringAsFixed(2)
                                                   .toString();
-                                                
+                                      
                                           holdingProvide
                                               .holdingsModel![index]
                                               .exchTsym![0]
@@ -479,351 +434,383 @@ class HoldingScreen extends ConsumerWidget {
                                                           holdingProvide
                                                                   .holdingsModel![
                                                                       index]
-                                                                  .exchTsym![
-                                                                      0]
+                                                                  .exchTsym![0]
                                                                   .lp ??
                                                               "0.00") -
                                                       (double.parse(holdingProvide
                                                               .holdingsModel![
                                                                   index]
-                                                              .exchTsym![
-                                                                  0]
+                                                              .exchTsym![0]
                                                               .close ??
                                                           "0.00"))) *
                                                   int.parse(
                                                       "${holdingProvide.holdingsModel![index].currentQty ?? 0}"))
                                               .toStringAsFixed(2);
-                                                
-                                          holdingProvide
-                                              .holdingsModel![index]
-                                              .currentValue = (int.parse(
-                                                      "${holdingProvide.holdingsModel![index].currentQty ?? 0}") *
-                                                  double.parse(
-                                                      "${holdingProvide.holdingsModel![index].exchTsym![0].lp ?? 0.0}"))
-                                              .toStringAsFixed(2);
-                                                
-                                          holdingProvide.pnlHoldCal();
-                                        }
-                                        return
-                                                
-                                            //  HoldingsListCard(data: holdingProvide
-                                            //           .holdingsModel![index],);
-                                                
-                                            InkWell(
-                                                onLongPress: () {
-                                                  Navigator.pushNamed(
-                                                      context,
-                                                      Routes.holdingExit);
-                                                },
-                                                onTap: () async {
-                                                  await watch(
-                                                          marketWatchProvider)
-                                                      .fetchLinkeScrip(
-                                                          "${holdingProvide.holdingsModel![index].exchTsym![0].token}",
-                                                          "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
-                                                          context);
-                                                  if (watch(marketWatchProvider)
-                                                          .linkedScrips!
-                                                          .stat ==
-                                                      "Ok") {
-                                                    await watch(
-                                                            marketWatchProvider)
-                                                        .fetchScripQuote(
-                                                            "${holdingProvide.holdingsModel![index].exchTsym![0].token}",
-                                                            "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
-                                                            context);
-                                                
-                                                    if ((holdingProvide
-                                                                .holdingsModel![
-                                                                    index]
-                                                                .exchTsym![
-                                                                    0]
-                                                                .exch ==
-                                                            "NSE" ||
+                                      
+                                          if (holdingProvide.holdingsModel![index]
+                                                  .currentQty ==
+                                              0) {
+                                            double sellAmt = double.parse(
+                                                holdingProvide
+                                                        .holdingsModel![index]
+                                                        .sellAmt ??
+                                                    "0.00");
+                                      
+                                            int usedQty = int.parse(holdingProvide
+                                                    .holdingsModel![index]
+                                                    .usedqty ??
+                                                "0");
+                                            double price = (sellAmt / usedQty);
+                                      
+                                            double pnl = price -
+                                                double.parse(holdingProvide
+                                                        .holdingsModel![index]
+                                                        .upldprc ??
+                                                    "0.0");
+                                      
+                                            holdingProvide.holdingsModel![index]
+                                                    .exchTsym![0].profitNloss =
+                                                (pnl * usedQty)
+                                                    .toStringAsFixed(2);
+                                          } else {
+                                            holdingProvide
+                                                .holdingsModel![index]
+                                                .exchTsym![0]
+                                                .profitNloss = (double.parse(
                                                         holdingProvide
                                                                 .holdingsModel![
                                                                     index]
-                                                                .exchTsym![
-                                                                    0]
-                                                                .exch ==
-                                                            "BSE")) {
-                                                      context
-                                                          .read(
+                                                                .currentValue ??
+                                                            "0.00") -
+                                                    double.parse(holdingProvide
+                                                            .holdingsModel![index]
+                                                            .invested ??
+                                                        "0.00"))
+                                                .toStringAsFixed(2);
+                                          }
+                                          holdingProvide.pnlHoldCal();
+                                        }
+                                          return
+                                                  
+                                              //  HoldingsListCard(data: holdingProvide
+                                              //           .holdingsModel![index],);
+                                                  
+                                              InkWell(
+                                                  onLongPress: () {
+                                                    Navigator.pushNamed(
+                                                        context,
+                                                        Routes.holdingExit);
+                                                  },
+                                                  onTap: () async {
+                                                    await watch(
+                                                            marketWatchProvider)
+                                                        .fetchLinkeScrip(
+                                                            "${holdingProvide.holdingsModel![index].exchTsym![0].token}",
+                                                            "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
+                                                            context);
+                                                    if (watch(marketWatchProvider)
+                                                            .linkedScrips!
+                                                            .stat ==
+                                                        "Ok") {
+                                                      await watch(
                                                               marketWatchProvider)
-                                                          .depthBtns
-                                                          .add({
-                                                        "btnName":
-                                                            "Fundamental",
-                                                        "imgPath":
-                                                            assets.dInfo,
-                                                        "case":
-                                                            "Click here to view fundamental data."
-                                                      });
-                                                
-                                                      await context
-                                                          .read(
-                                                              marketWatchProvider)
-                                                          .fetchTechData(
-                                                              context:
-                                                                  context,
-                                                              exch:
-                                                                  "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
-                                                              tradeSym:
-                                                                  "${holdingProvide.holdingsModel![index].exchTsym![0].tsym}",
-                                                              lastPrc:
-                                                                  "${holdingProvide.holdingsModel![index].exchTsym![0].lp}");
+                                                          .fetchScripQuote(
+                                                              "${holdingProvide.holdingsModel![index].exchTsym![0].token}",
+                                                              "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
+                                                              context);
+                                                  
+                                                      if ((holdingProvide
+                                                                  .holdingsModel![
+                                                                      index]
+                                                                  .exchTsym![
+                                                                      0]
+                                                                  .exch ==
+                                                              "NSE" ||
+                                                          holdingProvide
+                                                                  .holdingsModel![
+                                                                      index]
+                                                                  .exchTsym![
+                                                                      0]
+                                                                  .exch ==
+                                                              "BSE")) {
+                                                        context
+                                                            .read(
+                                                                marketWatchProvider)
+                                                            .depthBtns
+                                                            .add({
+                                                          "btnName":
+                                                              "Fundamental",
+                                                          "imgPath":
+                                                              assets.dInfo,
+                                                          "case":
+                                                              "Click here to view fundamental data."
+                                                        });
+                                                  
+                                                        await context
+                                                            .read(
+                                                                marketWatchProvider)
+                                                            .fetchTechData(
+                                                                context:
+                                                                    context,
+                                                                exch:
+                                                                    "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
+                                                                tradeSym:
+                                                                    "${holdingProvide.holdingsModel![index].exchTsym![0].tsym}",
+                                                                lastPrc:
+                                                                    "${holdingProvide.holdingsModel![index].exchTsym![0].lp}");
+                                                      }
                                                     }
-                                                  }
-                                                  Navigator.pushNamed(
-                                                      context,
-                                                      Routes
-                                                          .holdingDetail,
-                                                      arguments: {
-                                                        "holdingData":
-                                                            holdingProvide
-                                                                    .holdingsModel![
-                                                                index],
-                                                        "exchTsym":
-                                                            holdingProvide
-                                                                .holdingsModel![
-                                                                    index]
-                                                                .exchTsym![0]
-                                                      });
-                                                  // showModalBottomSheet(
-                                                  //     showDragHandle: true,
-                                                  //     isScrollControlled: true,
-                                                  //     shape: const RoundedRectangleBorder(
-                                                  //         borderRadius: BorderRadius.vertical(
-                                                  //             top: Radius.circular(16))),
-                                                  //     backgroundColor: const Color(0xffffffff),
-                                                  //     context: context,
-                                                  //     builder: (context) => HoldingBottomSheet(
-                                                  //         holdingData:
-                                                  //             holdingProvide.holdingsModel![index],
-                                                  //         exchTsym: holdingProvide
-                                                  //             .holdingsModel![index].exchTsym![0]));
-                                                },
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets
-                                                          .all(16),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                              "${holdingProvide.holdingsModel![index].exchTsym![0].tsym} ",
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              style: textStyles
-                                                                  .scripNameTxtStyle
-                                                                  .copyWith(
-                                                                      color: theme.isDarkMode
-                                                                          ? colors.colorWhite
-                                                                          : colors.colorBlack)),
-                                                          Row(
-                                                            children: [
-                                                              Text(
-                                                                  " LTP: ",
-                                                                  style: textStyle(
-                                                                      const Color(0xff5E6B7D),
-                                                                      13,
-                                                                      FontWeight.w600)),
-                                                              Text(
-                                                                  "₹${holdingProvide.holdingsModel![index].exchTsym![0].lp}",
-                                                                  style: textStyle(
-                                                                      theme.isDarkMode
-                                                                          ? colors.colorWhite
-                                                                          : colors.colorBlack,
-                                                                      14,
-                                                                      FontWeight.w500)),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(
-                                                          height: 4),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          CustomExchBadge(
-                                                              exch:
-                                                                  "${holdingProvide.holdingsModel![index].exchTsym![0].exch}"),
-                                                          Text(
-                                                              " (${holdingProvide.holdingsModel![index].exchTsym![0].perChange}%)",
-                                                              style: textStyle(
-                                                                  holdingProvide.holdingsModel![index].exchTsym![0].perChange!.startsWith("-")
-                                                                      ? colors.darkred
-                                                                      : holdingProvide.holdingsModel![index].exchTsym![0].perChange == "0.00"
-                                                                          ? colors.ltpgrey
-                                                                          : colors.ltpgreen,
-                                                                  12,
-                                                                  FontWeight.w500)),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(
-                                                          height: 4),
-                                                      Divider(
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .darkColorDivider
-                                                              : colors
-                                                                  .colorDivider),
-                                                      const SizedBox(
-                                                          height: 3),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Row(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .end,
-                                                            children: [
-                                                              Text(
-                                                                  "Qty: ",
-                                                                  style: textStyle(
-                                                                      const Color(0xff5E6B7D),
-                                                                      14,
-                                                                      FontWeight.w500)),
-                                                              Text(
-                                                                  "${holdingProvide.holdingsModel![index].currentQty ?? 0} @ ₹${holdingProvide.holdingsModel![index].upldprc ?? holdingProvide.holdingsModel![index].exchTsym![0].close ?? 0.00}",
-                                                                  style: textStyle(
-                                                                      theme.isDarkMode
-                                                                          ? colors.colorWhite
-                                                                          : colors.colorBlack,
-                                                                      14,
-                                                                      FontWeight.w500)),
-                                                              if (holdingProvide
-                                                                      .holdingsModel![index]
-                                                                      .npoadqty
-                                                                      .toString() !=
-                                                                  "null") ...[
+                                                    Navigator.pushNamed(
+                                                        context,
+                                                        Routes
+                                                            .holdingDetail,
+                                                        arguments: {
+                                                          "holdingData":
+                                                              holdingProvide
+                                                                      .holdingsModel![
+                                                                  index],
+                                                          "exchTsym":
+                                                              holdingProvide
+                                                                  .holdingsModel![
+                                                                      index]
+                                                                  .exchTsym![0]
+                                                        });
+                                                    // showModalBottomSheet(
+                                                    //     showDragHandle: true,
+                                                    //     isScrollControlled: true,
+                                                    //     shape: const RoundedRectangleBorder(
+                                                    //         borderRadius: BorderRadius.vertical(
+                                                    //             top: Radius.circular(16))),
+                                                    //     backgroundColor: const Color(0xffffffff),
+                                                    //     context: context,
+                                                    //     builder: (context) => HoldingBottomSheet(
+                                                    //         holdingData:
+                                                    //             holdingProvide.holdingsModel![index],
+                                                    //         exchTsym: holdingProvide
+                                                    //             .holdingsModel![index].exchTsym![0]));
+                                                  },
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets
+                                                            .all(16),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Text(
+                                                                "${holdingProvide.holdingsModel![index].exchTsym![0].tsym} ",
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                style: textStyles
+                                                                    .scripNameTxtStyle
+                                                                    .copyWith(
+                                                                        color: theme.isDarkMode
+                                                                            ? colors.colorWhite
+                                                                            : colors.colorBlack)),
+                                                            Row(
+                                                              children: [
                                                                 Text(
-                                                                    " NPQ",
+                                                                    " LTP: ",
                                                                     style: textStyle(
-                                                                        const Color(0xff666666),
+                                                                        const Color(0xff5E6B7D),
+                                                                        13,
+                                                                        FontWeight.w600)),
+                                                                Text(
+                                                                    "₹${holdingProvide.holdingsModel![index].exchTsym![0].lp}",
+                                                                    style: textStyle(
+                                                                        theme.isDarkMode
+                                                                            ? colors.colorWhite
+                                                                            : colors.colorBlack,
+                                                                        14,
+                                                                        FontWeight.w500)),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            CustomExchBadge(
+                                                                exch:
+                                                                    "${holdingProvide.holdingsModel![index].exchTsym![0].exch}"),
+                                                            Text(
+                                                                " (${holdingProvide.holdingsModel![index].exchTsym![0].perChange}%)",
+                                                                style: textStyle(
+                                                                    holdingProvide.holdingsModel![index].exchTsym![0].perChange!.startsWith("-")
+                                                                        ? colors.darkred
+                                                                        : holdingProvide.holdingsModel![index].exchTsym![0].perChange == "0.00"
+                                                                            ? colors.ltpgrey
+                                                                            : colors.ltpgreen,
+                                                                    12,
+                                                                    FontWeight.w500)),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        Divider(
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .darkColorDivider
+                                                                : colors
+                                                                    .colorDivider),
+                                                        const SizedBox(
+                                                            height: 3),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Row(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .end,
+                                                              children: [
+                                                                Text(
+                                                                    "Qty: ",
+                                                                    style: textStyle(
+                                                                        const Color(0xff5E6B7D),
+                                                                        14,
+                                                                        FontWeight.w500)),
+                                                                Text(
+                                                                    "${holdingProvide.holdingsModel![index].currentQty ?? 0} @ ₹${holdingProvide.holdingsModel![index].upldprc ?? holdingProvide.holdingsModel![index].exchTsym![0].close ?? 0.00}",
+                                                                    style: textStyle(
+                                                                        theme.isDarkMode
+                                                                            ? colors.colorWhite
+                                                                            : colors.colorBlack,
+                                                                        14,
+                                                                        FontWeight.w500)),
+                                                                if (holdingProvide
+                                                                        .holdingsModel![index]
+                                                                        .npoadqty
+                                                                        .toString() !=
+                                                                    "null") ...[
+                                                                  Text(
+                                                                      " NPQ",
+                                                                      style: textStyle(
+                                                                          const Color(0xff666666),
+                                                                          12,
+                                                                          FontWeight.w500)),
+                                                                ],
+                                                                if (holdingProvide
+                                                                        .holdingsModel![
+                                                                            index]
+                                                                        .btstqty !=
+                                                                    "0")
+                                                                  Text(
+                                                                      " T1: ${holdingProvide.holdingsModel![index].btstqty}",
+                                                                      style: textStyle(
+                                                                          const Color(0xff666666),
+                                                                          12,
+                                                                          FontWeight.w500))
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .end,
+                                                              children: [
+                                                                Text(
+                                                                    "₹${holdingProvide.holdingsModel![index].exchTsym![0].profitNloss}",
+                                                                    style: textStyle(
+                                                                        holdingProvide.holdingsModel![index].exchTsym![0].profitNloss!.startsWith("-")
+                                                                            ? colors.darkred
+                                                                            : colors.ltpgreen,
+                                                                        14,
+                                                                        FontWeight.w500)),
+                                                                Text(
+                                                                    " (${holdingProvide.holdingsModel![index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdingProvide.holdingsModel![index].exchTsym![0].pNlChng}%)",
+                                                                    style: textStyle(
+                                                                        holdingProvide.holdingsModel![index].exchTsym![0].pNlChng!.startsWith("-")
+                                                                            ? colors.darkred
+                                                                            : holdingProvide.holdingsModel![index].exchTsym![0].pNlChng == "NaN"
+                                                                                ? colors.darkred
+                                                                                : colors.ltpgreen,
                                                                         12,
                                                                         FontWeight.w500)),
                                                               ],
-                                                              if (holdingProvide
-                                                                      .holdingsModel![
-                                                                          index]
-                                                                      .btstqty !=
-                                                                  "0")
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Row(
+                                                              children: [
                                                                 Text(
-                                                                    " T1: ${holdingProvide.holdingsModel![index].btstqty}",
+                                                                    "Inv: ",
                                                                     style: textStyle(
-                                                                        const Color(0xff666666),
-                                                                        12,
-                                                                        FontWeight.w500))
-                                                            ],
-                                                          ),
-                                                          Row(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .end,
-                                                            children: [
-                                                              Text(
-                                                                  "₹${holdingProvide.holdingsModel![index].exchTsym![0].profitNloss}",
-                                                                  style: textStyle(
-                                                                      holdingProvide.holdingsModel![index].exchTsym![0].profitNloss!.startsWith("-")
-                                                                          ? colors.darkred
-                                                                          : colors.ltpgreen,
-                                                                      14,
-                                                                      FontWeight.w500)),
-                                                              Text(
-                                                                  " (${holdingProvide.holdingsModel![index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdingProvide.holdingsModel![index].exchTsym![0].pNlChng}%)",
-                                                                  style: textStyle(
-                                                                      holdingProvide.holdingsModel![index].exchTsym![0].pNlChng!.startsWith("-")
-                                                                          ? colors.darkred
-                                                                          : holdingProvide.holdingsModel![index].exchTsym![0].pNlChng == "NaN"
-                                                                              ? colors.darkred
-                                                                              : colors.ltpgreen,
-                                                                      12,
-                                                                      FontWeight.w500)),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(
-                                                          height: 10),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Row(
-                                                            children: [
-                                                              Text(
-                                                                  "Inv: ",
-                                                                  style: textStyle(
-                                                                      const Color(0xff5E6B7D),
-                                                                      14,
-                                                                      FontWeight.w500)),
-                                                              Text(
-                                                                  "₹${getFormatter(value: double.parse("${holdingProvide.holdingsModel![index].invested == "0.00" ? holdingProvide.holdingsModel![index].exchTsym![0].close ?? 0.00 : holdingProvide.holdingsModel![index].invested ?? 0.00}"), v4d: false, noDecimal: false)}",
-                                                                  style: textStyle(
-                                                                      theme.isDarkMode
-                                                                          ? colors.colorWhite
-                                                                          : colors.colorBlack,
-                                                                      14,
-                                                                      FontWeight.w500)),
-                                                            ],
-                                                          ),
-                                                          Row(
-                                                            children: [
-                                                              Text(
-                                                                  "Cur: ",
-                                                                  style: textStyle(
-                                                                      const Color(0xff5E6B7D),
-                                                                      14,
-                                                                      FontWeight.w500)),
-                                                              Text(
-                                                                  "₹${getFormatter(value: double.parse("${holdingProvide.holdingsModel![index].currentValue ?? 0.00}"), v4d: false, noDecimal: false)}",
-                                                                  style: textStyle(
-                                                                      theme.isDarkMode
-                                                                          ? colors.colorWhite
-                                                                          : colors.colorBlack,
-                                                                      14,
-                                                                      FontWeight.w500)),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      )
-                                                    ],
-                                                  ),
-                                                ));
-                                                
-                                        //  HoldingsListCard (
-                                                
-                                        //        data: holdingProvide
-                                        //             .holdingsModel![index] ),
-                                                
-                                        //     );
-                                      },
-                                      itemCount: holdingProvide
-                                          .holdingsModel!.length,
-                                      separatorBuilder:
-                                          (BuildContext context,
-                                              int index) {
-                                        return Container(
-                                            color: theme.isDarkMode
-                                                ? const Color(0xffB5C0CF)
-                                                    .withOpacity(.15)
-                                                : const Color(0xffF1F3F8),
-                                            height: 6);
-                                      },
+                                                                        const Color(0xff5E6B7D),
+                                                                        14,
+                                                                        FontWeight.w500)),
+                                                                Text(
+                                                                    "₹${getFormatter(value: double.parse("${holdingProvide.holdingsModel![index].invested == "0.00" ? holdingProvide.holdingsModel![index].exchTsym![0].close ?? 0.00 : holdingProvide.holdingsModel![index].invested ?? 0.00}"), v4d: false, noDecimal: false)}",
+                                                                    style: textStyle(
+                                                                        theme.isDarkMode
+                                                                            ? colors.colorWhite
+                                                                            : colors.colorBlack,
+                                                                        14,
+                                                                        FontWeight.w500)),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                Text(
+                                                                    "Cur: ",
+                                                                    style: textStyle(
+                                                                        const Color(0xff5E6B7D),
+                                                                        14,
+                                                                        FontWeight.w500)),
+                                                                Text(
+                                                                    "₹${getFormatter(value: double.parse("${holdingProvide.holdingsModel![index].currentValue ?? 0.00}"), v4d: false, noDecimal: false)}",
+                                                                    style: textStyle(
+                                                                        theme.isDarkMode
+                                                                            ? colors.colorWhite
+                                                                            : colors.colorBlack,
+                                                                        14,
+                                                                        FontWeight.w500)),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ));
+                                                  
+                                          //  HoldingsListCard (
+                                                  
+                                          //        data: holdingProvide
+                                          //             .holdingsModel![index] ),
+                                                  
+                                          //     );
+                                        },
+                                        itemCount: holdingProvide
+                                            .holdingsModel!.length,
+                                        separatorBuilder:
+                                            (BuildContext context,
+                                                int index) {
+                                          return Container(
+                                              color: theme.isDarkMode
+                                                  ? const Color(0xffB5C0CF)
+                                                      .withOpacity(.15)
+                                                  : const Color(0xffF1F3F8),
+                                              height: 6);
+                                        },
+                                      ),
                                     ),
                                   )
                                   : const Center(child: NoDataFound())
