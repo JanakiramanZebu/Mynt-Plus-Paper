@@ -89,9 +89,7 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                                         UpperCaseTextFormatter(),
                                         RemoveEmojiInputFormatter(),
                                         FilteringTextInputFormatter.deny(
-                                            RegExp('[π£•₹€℅™∆√¶/.,]')),
-                                        FilteringTextInputFormatter.deny(
-                                            RegExp(r'\s')),
+                                            RegExp('[π£•₹€℅™∆√¶/.,]')) 
                                       ],
                               keyboardType: TextInputType.text,
                               decoration: InputDecoration(

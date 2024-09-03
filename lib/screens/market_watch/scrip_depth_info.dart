@@ -35,8 +35,9 @@ import 'tv_chart/webview_chart.dart';
 
 class ScripDepthInfo extends StatefulWidget {
   final DepthInputArgs wlValue;
+  final String isBasket;
 
-  const ScripDepthInfo({super.key, required this.wlValue});
+  const ScripDepthInfo({super.key, required this.wlValue, required this. isBasket});
 
   @override
   State<ScripDepthInfo> createState() => _ScripDepthInfoState();
@@ -1446,7 +1447,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
         isModify: false);
     Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
-      "scripInfo": ctx.read(marketWatchProvider).scripInfoModel!
+      "scripInfo": ctx.read(marketWatchProvider).scripInfoModel!,
+      "isBskt":widget.isBasket
     });
   }
 

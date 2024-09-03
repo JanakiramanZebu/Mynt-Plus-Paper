@@ -143,7 +143,7 @@ log("dfgdf ${context.read(websocketProvider).socketDatas["${watchListData['token
                                               .bottom,
                                         ),
                                         child: ScripDepthInfo(
-                                            wlValue: depthArgs)));
+                                            wlValue: depthArgs, isBasket: '' )));
                               }
                             },
                             contentPadding:

@@ -80,7 +80,7 @@ class OptChainPutList extends ConsumerWidget {
                             BorderRadius.vertical(top: Radius.circular(16))),
                     backgroundColor: const Color(0xffffffff),
                     context: context,
-                    builder: (context) => ScripDepthInfo(wlValue: depthArgs));
+                    builder: (context) => ScripDepthInfo(wlValue: depthArgs, isBasket: ''));
               }
             },
             child: Container(

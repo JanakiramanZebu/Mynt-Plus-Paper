@@ -6,6 +6,7 @@ import '../../provider/order_provider.dart';
 // import '../../provider/sip_order_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+// import 'basket/basket_list.dart';
 import 'gtt_order_book.dart';
 import 'order_book.dart';
 // import 'sip_order_book_screen.dart';
@@ -101,9 +102,7 @@ class _OrderBookScreenState extends State<OrderBookScreen>
                     OrderBook(orderBook: orderBook.executedOrder!),
                     GttOrderBook(
                         gttOrderBook: orderBook.gttOrderBookModel ?? []),
-                    // Container(
-                    //   child: Center(child: Text("Basket order")),
-                    // ),
+                    // const BasketList(),
                     TradeBook(tradeBook: orderBook.tradeBook ?? []),
                     const PendingAlert(),
                     SipOrderBook(

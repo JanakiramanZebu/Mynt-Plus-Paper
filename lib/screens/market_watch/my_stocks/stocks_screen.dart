@@ -142,7 +142,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                       backgroundColor: const Color(0xffffffff),
                                       context: context,
                                       builder: (context) =>
-                                          ScripDepthInfo(wlValue: depthArgs));
+                                          ScripDepthInfo(wlValue: depthArgs, isBasket: '' ));
 
                                   //  await watch(portfolioProvider).    isOpenScripInfo ("${holdingProvide[index].exchTsym![0].token}");
                                   //  }

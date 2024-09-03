@@ -47,6 +47,7 @@ class Routes {
   static const String ipoDetail = 'ipoDetail';
   static const String closedIpoDetail = 'closedIpoDetail';
   static const String orderBook = 'orderBook';
+    static const String bsktScripList = 'bsktScripList';
 
   static const String bondsdetails = "Bondsdetails";
 

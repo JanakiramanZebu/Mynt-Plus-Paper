@@ -218,7 +218,7 @@ class WatchListScreen extends ConsumerWidget {
                                               .bottom,
                                         ),
                                         child: ScripDepthInfo(
-                                            wlValue: depthArgs)));
+                                            wlValue: depthArgs, isBasket: '' )));
                               }
                             },
                             contentPadding:

@@ -1,21 +1,40 @@
+import 'dart:convert';
+
 class BasketModel {
-  String? basketname;
-  String? createdDate;
-  String? max;
+  String basketname;
+  String createdDate;
+  String max;
+  String curLength;
 
-  BasketModel({this.basketname, this.createdDate, this.max});
+  BasketModel(
+      {required this.basketname,
+      required this.createdDate,
+      required this.max,
+      required this.curLength});
 
-  BasketModel.fromJson(Map<String, dynamic> json) {
-    basketname = json['basketname'];
-    createdDate = json['createdDate'];
-    max = json['max'];
+  // Convert the object to a Map
+  Map<String, dynamic> toMap() {
+    return {
+      'basketname': basketname,
+      'createdDate': createdDate,
+      'max': max,
+      'curLength': curLength
+    };
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['basketname'] = basketname;
-    data['createdDate'] = createdDate;
-    data['max'] = max;
-    return data;
+  // Create an object from a Map
+  factory BasketModel.fromMap(Map<String, dynamic> map) {
+    return BasketModel(
+        basketname: map['basketname'],
+        createdDate: map['createdDate'],
+        max: map['max'],
+        curLength: map['curLength']);
   }
+
+  // Convert the object to a JSON string
+  String toJson() => json.encode(toMap());
+
+  // Create an object from a JSON string
+  factory BasketModel.fromJson(String source) =>
+      BasketModel.fromMap(json.decode(source));
 }

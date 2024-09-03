@@ -83,8 +83,13 @@ class Preferences {
   Future setBasketNameList(List<String> clients) async =>
       await _prefInstance!.setStringList(_basketName, clients);
 
+  Future setBasketScrip(String scrips) async =>
+      await _prefInstance!.setString(_basketScrips, scrips);
+
   List<String>? get basketNameList =>
       _prefInstance?.getStringList(_basketName) ?? [];
+
+  String? get bsktScrips => _prefInstance?.getString(_basketScrips) ?? "";
 }
 
 const String _userTheme = 'userTheme';
@@ -107,3 +112,4 @@ const String _clientName = 'clientName';
 const String _clientList = 'clientList';
 
 const String _basketName = 'basketName';
+const String _basketScrips = 'basketScrips';

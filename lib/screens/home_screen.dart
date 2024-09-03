@@ -27,6 +27,7 @@ import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/watchlist_screen.dart';
 import 'market_watch/watchlists_bottom_sheet.dart';
 import 'mutual_fund/mutual_fund_screen.dart';
+// import 'order_book/basket/create_basket.dart';
 import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
 import 'profile_screen/logged_user_bottom_sheet.dart';
@@ -110,717 +111,590 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
 
     return WillPopScope(
-      onWillPop: showExitPopup,
-      child: Consumer(builder: (context, ScopedReader watch, _) {
-        final marketWatchList = watch(marketWatchProvider);
-        final indexProvide = watch(indexListProvider);
-        final internet = watch(networkStateProvider);
-        final portfolio = watch(portfolioProvider);
-        final userProfile = watch(userProfileProvider);
-        final theme = context.read(themeProvider);
-        return GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: UpgradeAlert(
-            upgrader: upgrader,
-            showIgnore: false,
-            showLater: false,
-            child: Scaffold(
-                appBar: AppBar(
-                    shadowColor: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,
-                    leadingWidth: 205,
-                    elevation: .3,
-                    leading: indexProvide.selectedBtmIndx == 1
-                        ? InkWell(
-                            onTap: () {
-                              FocusScope.of(context).unfocus();
+        onWillPop: showExitPopup,
+        child: Consumer(builder: (context, ScopedReader watch, _) {
+          final marketWatchList = watch(marketWatchProvider);
+          final indexProvide = watch(indexListProvider);
+          final internet = watch(networkStateProvider);
+          final portfolio = watch(portfolioProvider);
+          final userProfile = watch(userProfileProvider);
+          final theme = context.read(themeProvider);
+          return GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: UpgradeAlert(
+                  upgrader: upgrader,
+                  showIgnore: false,
+                  showLater: false,
+                  child: Scaffold(
+                      appBar: AppBar(
+                          shadowColor: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider,
+                          leadingWidth: 205,
+                          elevation: .3,
+                          leading: indexProvide.selectedBtmIndx == 1
+                              ? InkWell(
+                                  onTap: () {
+                                    FocusScope.of(context).unfocus();
 
-                              showModalBottomSheet(
-                                  useSafeArea: true,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16))),
-                                  context: context,
-                                  builder: (context) {
-                                    return WatchlistsBottomSheet(
-                                        currentWLName: marketWatchList.wlName);
-                                  });
-                            },
-                            child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 16),
-                                child: Row(children: [
-                                  Expanded(
-                                    child: Text(
-                                      marketWatchList.wlName.isEmpty
-                                          ? marketWatchList.wlName
-                                          : marketWatchList.isPreDefWLs == "Yes"
-                                              ? marketWatchList.wlName ==
-                                                      "My Stocks"
-                                                  ? marketWatchList.wlName
-                                                  : marketWatchList.wlName
-                                              : "${marketWatchList.wlName[0].toUpperCase()}${marketWatchList.wlName.substring(1)}'s Watchlist",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  Text(
-                                      marketWatchList.wlName == "My Stocks"
-                                          ? "(${portfolio.holdingsModel!.length})"
-                                          : "(${marketWatchList.scrips.length >= 50 ? 50 : marketWatchList.scrips.length})",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorLightBlue
-                                              : colors.colorBlue,
-                                          15,
-                                          FontWeight.w600)),
-                                  const SizedBox(width: 3),
-                                  SvgPicture.asset(assets.downArrow,
-                                      color: theme.isDarkMode
-                                          ? colors.colorLightBlue
-                                          : colors.colorBlue,
-                                      width: 14)
-                                ])))
-                        : Padding(
-                            padding: const EdgeInsets.all(18),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  indexProvide.selectedBtmIndx == 3
-                                      ? "Orderbook"
-                                      : indexProvide.selectedBtmIndx == 2
-                                          ? "Portfolio"
-                                          : indexProvide.selectedBtmIndx == 5
-                                              ?
-                                              // indexProvide.selectedBtmIndx == 0
-                                              //     ? stockProvide.exploreName
-                                              //     :
-                                              "IPO"
-                                              : indexProvide.selectedBtmIndx ==
-                                                      6
-                                                  ? "Bonds"
-                                                  : "Mutual Fund",
-                                  style: textStyles.appBarTitleTxt.copyWith(
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack),
-                                ),
-                              ],
-                            ),
-                          ),
-                    actions: indexProvide.selectedBtmIndx == 0
-                        ? null
-                        : [
-                            if (indexProvide.selectedBtmIndx == 1 &&
-                                marketWatchList.isPreDefWLs != "Yes") ...[
-                              marketWatchList.scrips.length > 1
-                                  ? InkWell(
-                                      onTap: () {
-                                        //                     context
-                                        //                       .read(showcaseProvide).showToast("Reconnecting",
-                                        //  context);
-                                        FocusScope.of(context).unfocus();
-                                        showModalBottomSheet(
-                                            useSafeArea: true,
-                                            isScrollControlled: true,
-                                            shape: const RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.vertical(
-                                                        top: Radius.circular(
-                                                            16))),
-                                            context: context,
-                                            builder: (context) {
-                                              return const ScripFilterBottomSheet();
-                                            });
-                                      },
-                                      child: Container(
-                                          padding: EdgeInsets.only(
-                                              left: 8,
-                                              right: marketWatchList
-                                                          .watchListValues
-                                                          .length >=
-                                                      50
-                                                  ? 0
-                                                  : 8),
-                                          child: SvgPicture.asset(
-                                              assets.filterLines,
-                                              width: 19,
-                                              color: colors.colorGrey)),
-                                    )
-                                  : Container(),
-                              marketWatchList.watchListValues.length >= 50
-                                  ? const SizedBox()
-                                  : InkWell(
-                                      onTap: () {
-                                        context
-                                            .read(marketWatchProvider)
-                                            .requestMWScrip(
-                                                context: context,
-                                                isSubscribe: false);
-                                        Navigator.pushNamed(
-                                            context, Routes.searchScrip,
-                                            arguments: marketWatchList.wlName);
-                                      },
-                                      child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              right: 16, left: 8),
-                                          child: SvgPicture.asset(
-                                              assets.searchIcon,
-                                              width: 19,
-                                              color: colors.colorGrey)),
-                                    ),
-                            ] else if (indexProvide.selectedBtmIndx == 2 &&
-                                portfolio.postionBookModel!.isNotEmpty &&
-                                portfolio.selectedTab == 0) ...[
-                              if (portfolio.postionBookModel![0].stat == "Ok")
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 15.0),
-                                  child: Row(children: [
-                                    // Container(
-                                    //     margin: EdgeInsets.only(right: 8),
-                                    //     height: 27,
-                                    //     child: OutlinedButton(
-                                    //         onPressed: () {
-                                    //           showModalBottomSheet(
-                                    //               useSafeArea: true,
-                                    //               isScrollControlled: true,
-                                    //               shape: const RoundedRectangleBorder(
-                                    //                   borderRadius:
-                                    //                       BorderRadius.vertical(
-                                    //                           top: Radius
-                                    //                               .circular(
-                                    //                                   16))),
-                                    //               context: context,
-                                    //               builder: (context) {
-                                    //                 return const PositionGroup();
-                                    //               });
-                                    //         },
-                                    //         style: OutlinedButton.styleFrom(
-                                    //             side: BorderSide(
-                                    //                 color: theme.isDarkMode
-                                    //                     ? colors.colorGrey
-                                    //                     : colors.colorBlack),
-                                    //             shape:
-                                    //                 const RoundedRectangleBorder(
-                                    //                     borderRadius:
-                                    //                         BorderRadius.all(
-                                    //                             Radius.circular(
-                                    //                                 32)))),
-                                    //         child: Text("Group By",
-                                    //             style: textStyle(
-                                    //                 theme.isDarkMode
-                                    //                     ? colors.colorWhite
-                                    //                     : colors.colorBlack,
-                                    //                 12,
-                                    //                 FontWeight.w600)))),
-                                    Text("DAY",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            13,
-                                            FontWeight.w500)),
-                                    const SizedBox(width: 6),
-                                    CustomSwitch(
-                                        onChanged: (bool value) {
-                                          portfolio.chngPositionPnl(true);
-                                          portfolio.positionToggle(
-                                              value, context);
-                                        },
-                                        value: portfolio.isDay),
-                                    const SizedBox(width: 6),
-                                    Text("NET",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            13,
-                                            FontWeight.w500)),
-                                  ]),
-                                )
-                            ]
-                            // else if (indexProvide.selectedBtmIndx == 3 &&
-                            //     watch(orderProvider).selectedTab == 4) ...[
-                            //   Row(
-                            //     children: [
-                            //       Container(
-                            //           margin: const EdgeInsets.only(right: 8),
-                            //           height: 30,
-                            //           child: OutlinedButton(
-                            //               onPressed: () {
-                            //                 showDialog(
-                            //                     context: context,
-                            //                     builder:
-                            //                         (BuildContext context) {
-                            //                       return const CreateBasket();
-                            //                     });
-                            //               },
-                            //               style: OutlinedButton.styleFrom(
-                            //                   side: BorderSide(
-                            //                       color: theme.isDarkMode
-                            //                           ? colors.colorGrey
-                            //                           : colors.colorBlack),
-                            //                   shape:
-                            //                       const RoundedRectangleBorder(
-                            //                           borderRadius:
-                            //                               BorderRadius.all(
-                            //                                   Radius.circular(
-                            //                                       32)))),
-                            //               child: Text("Create Basket",
-                            //                   style: textStyle(
-                            //                       theme.isDarkMode
-                            //                           ? colors.colorWhite
-                            //                           : colors.colorBlack,
-                            //                       12,
-                            //                       FontWeight.w600)))),
-                            //     ],
-                            //   ),
-                            // ]
-                          ],
-                    bottom: indexProvide.selectedBtmIndx == 1
-                        ? const PreferredSize(
-                            preferredSize: Size(20, 44),
-                            child: DefaultIndexList())
-                        : indexProvide.selectedBtmIndx == 4
-                            ? PreferredSize(
-                                preferredSize: const Size(20, 20),
-                                child: ListTile(
-                                    onTap: () {
-                                      showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          isDismissible: true,
-                                          shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(10),
-                                              topRight: Radius.circular(10),
-                                            ),
-                                          ),
-                                          builder: (_) =>
-                                              const LoggedUserBottomSheet(
-                                                  initRoute: 'switchAcc'));
-                                    },
-                                    dense: true,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    leading: CircleAvatar(
-                                      backgroundColor: const Color(0xffF1F3F8),
-                                      child: Text(
-                                          userProfile.userDetailModel!.uname !=
-                                                  null
-                                              ? userProfile
-                                                  .userDetailModel!.uname![0]
-                                              : "",
-                                          style: textStyle(
-                                              const Color(0xff000000),
-                                              18,
-                                              FontWeight.w600)),
-                                    ),
-                                    title: Text(
-                                        "${userProfile.userDetailModel!.uname}",
-                                        overflow: TextOverflow.ellipsis,
-                                        style: textStyle(
-                                            Color(theme.isDarkMode
-                                                ? 0xffffffff
-                                                : 0xff000000),
-                                            16,
-                                            FontWeight.w600)),
-                                    subtitle: Text(
-                                        "User ID ${userProfile.userDetailModel!.uid}",
-                                        style: textStyle(
-                                            const Color(0xff666666),
-                                            12,
-                                            FontWeight.w500)),
-                                    trailing: SizedBox(
-                                        width: 100,
-                                        child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              IconButton(
-                                                splashRadius: 26,
-                                                onPressed: () {
-                                                  Navigator.pushNamed(context,
-                                                      Routes.qrscanner);
-                                                },
-                                                icon: SvgPicture.asset(
-                                                    "assets/profile/qr_code.svg",
-                                                    width: 20,
-                                                    height: 24,
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack),
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Icon(
-                                                  Icons
-                                                      .arrow_drop_down_circle_outlined,
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack)
-                                            ]))))
-                            : null),
-                bottomNavigationBar: BottomAppBar(
-                    height: 58,
-                    shadowColor: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,
-                    padding: EdgeInsets.zero,
-                    child:
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
-                      // Expanded(
-                      //   child: InkWell(
-                      //     onTap: internet.connectionStatus ==
-                      //             ConnectivityResult.none
-                      //         ? null
-                      //         : () async {
-                      //             await context
-                      //                 .read(indexListProvider)
-                      //                 .checkSession(context);
-                      //             await portfolio.requestWSHoldings(
-                      //                 context: context, isSubscribe: false);
-
-                      //             // await context
-                      //             //     .read(orderProvider)
-                      //             //     .requestWSOrderBook(
-                      //             //         context: context,
-                      //             //         isSubscribe: false);
-                      //             await portfolio.requestWSPosition(
-                      //                 context: context, isSubscribe: false);
-
-                      //             await context
-                      //                 .read(marketWatchProvider)
-                      //                 .requestMWScrip(
-                      //                     context: context, isSubscribe: true);
-
-                      //             indexProvide.bottomMenu(0);
-                      //           },
-                      //     child: Container(
-                      //       margin: const EdgeInsets.symmetric(horizontal: 7),
-                      //       decoration: BoxDecoration(
-                      //           border: indexProvide.selectedBtmIndx == 0
-                      //               ? Border(
-                      //                   top: BorderSide(
-                      //                       color: theme.isDarkMode
-                      //                           ? colors.colorLightBlue
-                      //                           : colors.colorBlue,
-                      //                       width: 2))
-                      //               : null),
-                      //       child: Column(
-                      //         mainAxisAlignment: MainAxisAlignment.center,
-                      //         crossAxisAlignment: CrossAxisAlignment.center,
-                      //         children: [
-                      //           SvgPicture.asset(assets.bookmarkedIcon,
-                      //               color: theme.isDarkMode &&
-                      //                       indexProvide.selectedBtmIndx == 0
-                      //                   ? colors.colorLightBlue
-                      //                   : indexProvide.selectedBtmIndx == 0
-                      //                       ? colors.colorBlue
-                      //                       : colors.colorGrey),
-                      //           const SizedBox(height: 4),
-                      //           Text("Explore",
-                      //               style: textStyle(
-                      //                   theme.isDarkMode &&
-                      //                           indexProvide.selectedBtmIndx ==
-                      //                               0
-                      //                       ? colors.colorLightBlue
-                      //                       : indexProvide.selectedBtmIndx == 0
-                      //                           ? colors.colorBlue
-                      //                           : colors.colorGrey,
-                      //                   12,
-                      //                   indexProvide.selectedBtmIndx == 0
-                      //                       ? FontWeight.w600
-                      //                       : FontWeight.w500)),
-                      //         ],
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
-                      Expanded(
-                          child: InkWell(
-                              onTap: internet.connectionStatus ==
-                                      ConnectivityResult.none
-                                  ? null
-                                  : () async {
-                                      indexProvide.bottomMenu(1);
-                                      await context
-                                          .read(indexListProvider)
-                                          .checkSession(context);
-                                      if (indexProvide.checkSess!.stat ==
-                                          "Ok") {
-                                        await portfolio.requestWSHoldings(
-                                            context: context,
-                                            isSubscribe: false);
-
-                                        await context
-                                            .read(orderProvider)
-                                            .requestWSOrderBook(
-                                                context: context,
-                                                isSubscribe: false);
-                                        await portfolio.requestWSPosition(
-                                            context: context,
-                                            isSubscribe: false);
-
-                                        await context
-                                            .read(marketWatchProvider)
-                                            .requestMWScrip(
-                                                context: context,
-                                                isSubscribe: true);
-                                      }
-                                    },
-                              child: Container(
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 7),
-                                  decoration: BoxDecoration(
-                                      border: indexProvide.selectedBtmIndx == 1
-                                          ? Border(
-                                              top: BorderSide(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorLightBlue
-                                                      : colors.colorBlue,
-                                                  width: 2))
-                                          : null),
-                                  child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        SvgPicture.asset(assets.bookmarkedIcon,
-                                            color: theme.isDarkMode &&
-                                                    indexProvide
-                                                            .selectedBtmIndx ==
-                                                        1
-                                                ? colors.colorLightBlue
-                                                : indexProvide
-                                                            .selectedBtmIndx ==
-                                                        1
-                                                    ? colors.colorBlue
-                                                    : colors.colorGrey),
-                                        const SizedBox(height: 4),
-                                        Text("Watchlist",
-                                            style: textStyle(
-                                                theme.isDarkMode &&
-                                                        indexProvide
-                                                                .selectedBtmIndx ==
-                                                            1
-                                                    ? colors.colorLightBlue
-                                                    : indexProvide
-                                                                .selectedBtmIndx ==
-                                                            1
-                                                        ? colors.colorBlue
-                                                        : colors.colorGrey,
-                                                12,
-                                                indexProvide.selectedBtmIndx ==
-                                                        1
-                                                    ? FontWeight.w600
-                                                    : FontWeight.w500))
-                                      ])))),
-                      Expanded(
-                          child: InkWell(
-                        onTap:
-                            internet.connectionStatus == ConnectivityResult.none
-                                ? null
-                                : () async {
-                                    await context
-                                        .read(indexListProvider)
-                                        .checkSession(context);
-
-                                    if (indexProvide.checkSess!.stat == "Ok") {
-                                      await portfolio.fetchMFHoldings(context);
-                                      indexProvide.bottomMenu(2);
-                                      await marketWatchList.requestMWScrip(
-                                          context: context, isSubscribe: false);
-
-                                      await context
-                                          .read(orderProvider)
-                                          .requestWSOrderBook(
-                                              context: context,
-                                              isSubscribe: false);
-                                      if (portfolio.selectedTab == 1) {
-                                        await portfolio.requestWSHoldings(
-                                            context: context,
-                                            isSubscribe: true);
-                                      }
-                                      if (portfolio.selectedTab == 0) {
-                                        await portfolio.requestWSPosition(
-                                            context: context,
-                                            isSubscribe: true);
-                                      }
-                                    }
+                                    showModalBottomSheet(
+                                        useSafeArea: true,
+                                        isScrollControlled: true,
+                                        shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.vertical(
+                                                top: Radius.circular(16))),
+                                        context: context,
+                                        builder: (context) {
+                                          return WatchlistsBottomSheet(
+                                              currentWLName:
+                                                  marketWatchList.wlName);
+                                        });
                                   },
-                        child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 7),
-                            decoration: BoxDecoration(
-                                border: indexProvide.selectedBtmIndx == 2
-                                    ? Border(
-                                        top: BorderSide(
+                                  child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10, horizontal: 16),
+                                      child: Row(children: [
+                                        Expanded(
+                                          child: Text(
+                                            marketWatchList.wlName.isEmpty
+                                                ? marketWatchList.wlName
+                                                : marketWatchList.isPreDefWLs ==
+                                                        "Yes"
+                                                    ? marketWatchList.wlName ==
+                                                            "My Stocks"
+                                                        ? marketWatchList.wlName
+                                                        : marketWatchList.wlName
+                                                    : "${marketWatchList.wlName[0].toUpperCase()}${marketWatchList.wlName.substring(1)}'s Watchlist",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                14,
+                                                FontWeight.w600),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Text(
+                                            marketWatchList.wlName ==
+                                                    "My Stocks"
+                                                ? "(${portfolio.holdingsModel!.length})"
+                                                : "(${marketWatchList.scrips.length >= 50 ? 50 : marketWatchList.scrips.length})",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorLightBlue
+                                                    : colors.colorBlue,
+                                                15,
+                                                FontWeight.w600)),
+                                        const SizedBox(width: 3),
+                                        SvgPicture.asset(assets.downArrow,
                                             color: theme.isDarkMode
                                                 ? colors.colorLightBlue
                                                 : colors.colorBlue,
-                                            width: 2))
-                                    : null),
-                            child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SvgPicture.asset(assets.barChart,
-                                      color: theme.isDarkMode &&
-                                              indexProvide.selectedBtmIndx == 2
-                                          ? colors.colorLightBlue
-                                          : indexProvide.selectedBtmIndx == 2
-                                              ? colors.colorBlue
-                                              : colors.colorGrey),
-                                  const SizedBox(height: 4),
-                                  Text("Portfolio",
-                                      style: textStyle(
-                                          theme.isDarkMode &&
-                                                  indexProvide
-                                                          .selectedBtmIndx ==
-                                                      2
-                                              ? colors.colorLightBlue
-                                              : indexProvide.selectedBtmIndx ==
-                                                      2
-                                                  ? colors.colorBlue
-                                                  : colors.colorGrey,
-                                          12,
-                                          indexProvide.selectedBtmIndx == 2
-                                              ? FontWeight.w600
-                                              : FontWeight.w500)),
-                                ])),
-                      )),
-                      Expanded(
-                          child: InkWell(
+                                            width: 14)
+                                      ])))
+                              : Padding(
+                                  padding: const EdgeInsets.all(18),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        indexProvide.selectedBtmIndx == 3
+                                            ? "Orderbook"
+                                            : indexProvide.selectedBtmIndx == 2
+                                                ? "Portfolio"
+                                                : indexProvide
+                                                            .selectedBtmIndx ==
+                                                        5
+                                                    ?
+                                                    // indexProvide.selectedBtmIndx == 0
+                                                    //     ? stockProvide.exploreName
+                                                    //     :
+                                                    "IPO"
+                                                    : indexProvide
+                                                                .selectedBtmIndx ==
+                                                            6
+                                                        ? "Bonds"
+                                                        : "Mutual Fund",
+                                        style: textStyles.appBarTitleTxt
+                                            .copyWith(
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                          actions: indexProvide.selectedBtmIndx == 0
+                              ? null
+                              : [
+                                  if (indexProvide.selectedBtmIndx == 1 &&
+                                      marketWatchList.isPreDefWLs != "Yes") ...[
+                                    marketWatchList.scrips.length > 1
+                                        ? InkWell(
+                                            onTap: () {
+                                              //                     context
+                                              //                       .read(showcaseProvide).showToast("Reconnecting",
+                                              //  context);
+                                              FocusScope.of(context).unfocus();
+                                              showModalBottomSheet(
+                                                  useSafeArea: true,
+                                                  isScrollControlled: true,
+                                                  shape: const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.vertical(
+                                                              top: Radius
+                                                                  .circular(
+                                                                      16))),
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return const ScripFilterBottomSheet();
+                                                  });
+                                            },
+                                            child: Container(
+                                                padding: EdgeInsets.only(
+                                                    left: 8,
+                                                    right: marketWatchList
+                                                                .watchListValues
+                                                                .length >=
+                                                            50
+                                                        ? 0
+                                                        : 8),
+                                                child: SvgPicture.asset(
+                                                    assets.filterLines,
+                                                    width: 19,
+                                                    color: colors.colorGrey)),
+                                          )
+                                        : Container(),
+                                    marketWatchList.watchListValues.length >= 50
+                                        ? const SizedBox()
+                                        : InkWell(
+                                            onTap: () {
+                                              context
+                                                  .read(marketWatchProvider)
+                                                  .requestMWScrip(
+                                                      context: context,
+                                                      isSubscribe: false);
+                                              Navigator.pushNamed(
+                                                  context, Routes.searchScrip,
+                                                  arguments:
+                                                      marketWatchList.wlName);
+                                            },
+                                            child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                    right: 16, left: 8),
+                                                child: SvgPicture.asset(
+                                                    assets.searchIcon,
+                                                    width: 19,
+                                                    color: colors.colorGrey)),
+                                          ),
+                                  ] else if (indexProvide.selectedBtmIndx ==
+                                          2 &&
+                                      portfolio.postionBookModel!.isNotEmpty &&
+                                      portfolio.selectedTab == 0) ...[
+                                    if (portfolio.postionBookModel![0].stat ==
+                                        "Ok")
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 15.0),
+                                        child: Row(children: [
+                                          // Container(
+                                          //     margin: EdgeInsets.only(right: 8),
+                                          //     height: 27,
+                                          //     child: OutlinedButton(
+                                          //         onPressed: () {
+                                          //           showModalBottomSheet(
+                                          //               useSafeArea: true,
+                                          //               isScrollControlled: true,
+                                          //               shape: const RoundedRectangleBorder(
+                                          //                   borderRadius:
+                                          //                       BorderRadius.vertical(
+                                          //                           top: Radius
+                                          //                               .circular(
+                                          //                                   16))),
+                                          //               context: context,
+                                          //               builder: (context) {
+                                          //                 return const PositionGroup();
+                                          //               });
+                                          //         },
+                                          //         style: OutlinedButton.styleFrom(
+                                          //             side: BorderSide(
+                                          //                 color: theme.isDarkMode
+                                          //                     ? colors.colorGrey
+                                          //                     : colors.colorBlack),
+                                          //             shape:
+                                          //                 const RoundedRectangleBorder(
+                                          //                     borderRadius:
+                                          //                         BorderRadius.all(
+                                          //                             Radius.circular(
+                                          //                                 32)))),
+                                          //         child: Text("Group By",
+                                          //             style: textStyle(
+                                          //                 theme.isDarkMode
+                                          //                     ? colors.colorWhite
+                                          //                     : colors.colorBlack,
+                                          //                 12,
+                                          //                 FontWeight.w600)))),
+                                          Text("DAY",
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  13,
+                                                  FontWeight.w500)),
+                                          const SizedBox(width: 6),
+                                          CustomSwitch(
+                                              onChanged: (bool value) {
+                                                portfolio.chngPositionPnl(true);
+                                                portfolio.positionToggle(
+                                                    value, context);
+                                              },
+                                              value: portfolio.isDay),
+                                          const SizedBox(width: 6),
+                                          Text("NET",
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  13,
+                                                  FontWeight.w500)),
+                                        ]),
+                                      )
+                                  ] 
+                                  // else if (indexProvide.selectedBtmIndx ==
+                                  //         3 &&
+                                  //     watch(orderProvider).selectedTab ==
+                                  //         4) ...[
+                                  //   Row(children: [
+                                  //     Container(
+                                  //         margin: const EdgeInsets.only(
+                                  //             right: 8),
+                                  //         height: 30,
+                                  //         child: OutlinedButton(
+                                  //             onPressed: () {
+                                  //               showDialog(
+                                  //                   context: context,
+                                  //                   builder:
+                                  //                       (BuildContext context) {
+                                  //                     return const CreateBasket();
+                                  //                   });
+                                  //             },
+                                  //             style: OutlinedButton.styleFrom(
+                                  //                 side: BorderSide(
+                                  //                     color: theme.isDarkMode
+                                  //                         ? colors.colorGrey
+                                  //                         : colors.colorBlack),
+                                  //                 shape:
+                                  //                     const RoundedRectangleBorder(
+                                  //                         borderRadius:
+                                  //                             BorderRadius.all(
+                                  //                                 Radius.circular(
+                                  //                                     32)))),
+                                  //             child: Text("Create Basket",
+                                  //                 style: textStyle(
+                                  //                     theme.isDarkMode
+                                  //                         ? colors.colorWhite
+                                  //                         : colors.colorBlack,
+                                  //                     12,
+                                  //                     FontWeight.w600))))
+                                  //   ])
+                                  // ]
+                                ],
+                          bottom: indexProvide.selectedBtmIndx == 1
+                              ? const PreferredSize(
+                                  preferredSize: Size(20, 44),
+                                  child: DefaultIndexList())
+                              : indexProvide.selectedBtmIndx == 4
+                                  ? PreferredSize(
+                                      preferredSize: const Size(20, 20),
+                                      child: ListTile(
+                                          onTap: () {
+                                            showModalBottomSheet(
+                                                context: context,
+                                                isScrollControlled: true,
+                                                isDismissible: true,
+                                                shape:
+                                                    const RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.only(
+                                                    topLeft:
+                                                        Radius.circular(10),
+                                                    topRight:
+                                                        Radius.circular(10),
+                                                  ),
+                                                ),
+                                                builder: (_) =>
+                                                    const LoggedUserBottomSheet(
+                                                        initRoute:
+                                                            'switchAcc'));
+                                          },
+                                          dense: true,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 16),
+                                          leading: CircleAvatar(
+                                            backgroundColor:
+                                                const Color(0xffF1F3F8),
+                                            child: Text(
+                                                userProfile.userDetailModel!
+                                                            .uname !=
+                                                        null
+                                                    ? userProfile
+                                                        .userDetailModel!
+                                                        .uname![0]
+                                                    : "",
+                                                style: textStyle(
+                                                    const Color(0xff000000),
+                                                    18,
+                                                    FontWeight.w600)),
+                                          ),
+                                          title: Text(
+                                              "${userProfile.userDetailModel!.uname}",
+                                              overflow: TextOverflow.ellipsis,
+                                              style: textStyle(
+                                                  Color(theme.isDarkMode
+                                                      ? 0xffffffff
+                                                      : 0xff000000),
+                                                  16,
+                                                  FontWeight.w600)),
+                                          subtitle: Text(
+                                              "User ID ${userProfile.userDetailModel!.uid}",
+                                              style: textStyle(
+                                                  const Color(0xff666666),
+                                                  12,
+                                                  FontWeight.w500)),
+                                          trailing: SizedBox(
+                                              width: 100,
+                                              child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    IconButton(
+                                                      splashRadius: 26,
+                                                      onPressed: () {
+                                                        Navigator.pushNamed(
+                                                            context,
+                                                            Routes.qrscanner);
+                                                      },
+                                                      icon: SvgPicture.asset(
+                                                          "assets/profile/qr_code.svg",
+                                                          width: 20,
+                                                          height: 24,
+                                                          color: theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack),
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Icon(
+                                                        Icons
+                                                            .arrow_drop_down_circle_outlined,
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack)
+                                                  ]))))
+                                  : null),
+                      bottomNavigationBar: BottomAppBar(
+                          height: 58,
+                          shadowColor: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                          padding: EdgeInsets.zero,
+                          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
+                            // Expanded(
+                            //   child: InkWell(
+                            //     onTap: internet.connectionStatus ==
+                            //             ConnectivityResult.none
+                            //         ? null
+                            //         : () async {
+                            //             await context
+                            //                 .read(indexListProvider)
+                            //                 .checkSession(context);
+                            //             await portfolio.requestWSHoldings(
+                            //                 context: context, isSubscribe: false);
+
+                            //             // await context
+                            //             //     .read(orderProvider)
+                            //             //     .requestWSOrderBook(
+                            //             //         context: context,
+                            //             //         isSubscribe: false);
+                            //             await portfolio.requestWSPosition(
+                            //                 context: context, isSubscribe: false);
+
+                            //             await context
+                            //                 .read(marketWatchProvider)
+                            //                 .requestMWScrip(
+                            //                     context: context, isSubscribe: true);
+
+                            //             indexProvide.bottomMenu(0);
+                            //           },
+                            //     child: Container(
+                            //       margin: const EdgeInsets.symmetric(horizontal: 7),
+                            //       decoration: BoxDecoration(
+                            //           border: indexProvide.selectedBtmIndx == 0
+                            //               ? Border(
+                            //                   top: BorderSide(
+                            //                       color: theme.isDarkMode
+                            //                           ? colors.colorLightBlue
+                            //                           : colors.colorBlue,
+                            //                       width: 2))
+                            //               : null),
+                            //       child: Column(
+                            //         mainAxisAlignment: MainAxisAlignment.center,
+                            //         crossAxisAlignment: CrossAxisAlignment.center,
+                            //         children: [
+                            //           SvgPicture.asset(assets.bookmarkedIcon,
+                            //               color: theme.isDarkMode &&
+                            //                       indexProvide.selectedBtmIndx == 0
+                            //                   ? colors.colorLightBlue
+                            //                   : indexProvide.selectedBtmIndx == 0
+                            //                       ? colors.colorBlue
+                            //                       : colors.colorGrey),
+                            //           const SizedBox(height: 4),
+                            //           Text("Explore",
+                            //               style: textStyle(
+                            //                   theme.isDarkMode &&
+                            //                           indexProvide.selectedBtmIndx ==
+                            //                               0
+                            //                       ? colors.colorLightBlue
+                            //                       : indexProvide.selectedBtmIndx == 0
+                            //                           ? colors.colorBlue
+                            //                           : colors.colorGrey,
+                            //                   12,
+                            //                   indexProvide.selectedBtmIndx == 0
+                            //                       ? FontWeight.w600
+                            //                       : FontWeight.w500)),
+                            //         ],
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
+                            Expanded(
+                                child: InkWell(
+                                    onTap: internet.connectionStatus ==
+                                            ConnectivityResult.none
+                                        ? null
+                                        : () async {
+                                            indexProvide.bottomMenu(1);
+                                            await context
+                                                .read(indexListProvider)
+                                                .checkSession(context);
+                                            if (indexProvide.checkSess!.stat ==
+                                                "Ok") {
+                                              await portfolio.requestWSHoldings(
+                                                  context: context,
+                                                  isSubscribe: false);
+
+                                              await context
+                                                  .read(orderProvider)
+                                                  .requestWSOrderBook(
+                                                      context: context,
+                                                      isSubscribe: false);
+                                              await portfolio.requestWSPosition(
+                                                  context: context,
+                                                  isSubscribe: false);
+
+                                              await context
+                                                  .read(marketWatchProvider)
+                                                  .requestMWScrip(
+                                                      context: context,
+                                                      isSubscribe: true);
+                                            }
+                                          },
+                                    child: Container(
+                                        margin:
+                                            const EdgeInsets
+                                                .symmetric(horizontal: 7),
+                                        decoration: BoxDecoration(
+                                            border: indexProvide
+                                                        .selectedBtmIndx ==
+                                                    1
+                                                ? Border(
+                                                    top: BorderSide(
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .colorLightBlue
+                                                            : colors.colorBlue,
+                                                        width: 2))
+                                                : null),
+                                        child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              SvgPicture.asset(
+                                                  assets.bookmarkedIcon,
+                                                  color: theme.isDarkMode &&
+                                                          indexProvide
+                                                                  .selectedBtmIndx ==
+                                                              1
+                                                      ? colors.colorLightBlue
+                                                      : indexProvide
+                                                                  .selectedBtmIndx ==
+                                                              1
+                                                          ? colors.colorBlue
+                                                          : colors.colorGrey),
+                                              const SizedBox(height: 4),
+                                              Text("Watchlist",
+                                                  style: textStyle(
+                                                      theme.isDarkMode &&
+                                                              indexProvide
+                                                                      .selectedBtmIndx ==
+                                                                  1
+                                                          ? colors
+                                                              .colorLightBlue
+                                                          : indexProvide
+                                                                      .selectedBtmIndx ==
+                                                                  1
+                                                              ? colors.colorBlue
+                                                              : colors
+                                                                  .colorGrey,
+                                                      12,
+                                                      indexProvide.selectedBtmIndx ==
+                                                              1
+                                                          ? FontWeight.w600
+                                                          : FontWeight.w500))
+                                            ])))),
+                            Expanded(
+                                child: InkWell(
                               onTap: internet.connectionStatus ==
                                       ConnectivityResult.none
                                   ? null
                                   : () async {
-                                      indexProvide.bottomMenu(3);
                                       await context
                                           .read(indexListProvider)
                                           .checkSession(context);
+
                                       if (indexProvide.checkSess!.stat ==
                                           "Ok") {
-                                        await context
-                                            .read(orderProvider)
-                                            .fetchSipOrderHistory();
-                                        await marketWatchList
-                                            .fetchPendingAlert(context);
+                                        await portfolio
+                                            .fetchMFHoldings(context);
+                                        indexProvide.bottomMenu(2);
                                         await marketWatchList.requestMWScrip(
                                             context: context,
                                             isSubscribe: false);
-                                        await portfolio.requestWSHoldings(
-                                            context: context,
-                                            isSubscribe: false);
 
-                                        await portfolio.requestWSPosition(
-                                            context: context,
-                                            isSubscribe: false);
-
-                                        context
-                                            .read(orderProvider)
-                                            .requestWSOrderBook(
-                                                context: context,
-                                                isSubscribe: true);
-                                      }
-                                    },
-                              child: Container(
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 7),
-                                  decoration: BoxDecoration(
-                                      border: indexProvide.selectedBtmIndx == 3
-                                          ? Border(
-                                              top: BorderSide(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorLightBlue
-                                                      : colors.colorBlue,
-                                                  width: 2))
-                                          : null),
-                                  child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        SvgPicture.asset(assets.bag,
-                                            color: theme.isDarkMode &&
-                                                    indexProvide
-                                                            .selectedBtmIndx ==
-                                                        3
-                                                ? colors.colorLightBlue
-                                                : indexProvide
-                                                            .selectedBtmIndx ==
-                                                        3
-                                                    ? colors.colorBlue
-                                                    : colors.colorGrey),
-                                        const SizedBox(height: 4),
-                                        Text("Orders",
-                                            style: textStyle(
-                                                theme.isDarkMode &&
-                                                        indexProvide
-                                                                .selectedBtmIndx ==
-                                                            3
-                                                    ? colors.colorLightBlue
-                                                    : indexProvide
-                                                                .selectedBtmIndx ==
-                                                            3
-                                                        ? colors.colorBlue
-                                                        : colors.colorGrey,
-                                                12,
-                                                indexProvide.selectedBtmIndx ==
-                                                        3
-                                                    ? FontWeight.w600
-                                                    : FontWeight.w500))
-                                      ])))),
-                      Expanded(
-                          child: InkWell(
-                              onTap: internet.connectionStatus ==
-                                      ConnectivityResult.none
-                                  ? null
-                                  : () async {
-                                      await context
-                                          .read(fundProvider)
-                                          .fetchFunds(context);
-                                      indexProvide.bottomMenu(4);
-                                      if (context
-                                              .read(fundProvider)
-                                              .fundDetailModel!
-                                              .stat ==
-                                          "Ok") {
-                                        if (userProfile.profileMenu.isEmpty) {
-                                          await userProfile.fetchprofilemenu();
-                                        }
-
-                                        marketWatchList.requestMWScrip(
-                                            context: context,
-                                            isSubscribe: false);
-                                        portfolio.requestWSHoldings(
-                                            context: context,
-                                            isSubscribe: false);
-
-                                        context
+                                        await context
                                             .read(orderProvider)
                                             .requestWSOrderBook(
                                                 context: context,
                                                 isSubscribe: false);
-                                        portfolio.requestWSPosition(
-                                            context: context,
-                                            isSubscribe: false);
+                                        if (portfolio.selectedTab == 1) {
+                                          await portfolio.requestWSHoldings(
+                                              context: context,
+                                              isSubscribe: true);
+                                        }
+                                        if (portfolio.selectedTab == 0) {
+                                          await portfolio.requestWSPosition(
+                                              context: context,
+                                              isSubscribe: true);
+                                        }
                                       }
                                     },
                               child: Container(
                                   margin:
                                       const EdgeInsets.symmetric(horizontal: 7),
                                   decoration: BoxDecoration(
-                                      border: indexProvide.selectedBtmIndx == 4
+                                      border: indexProvide.selectedBtmIndx == 2
                                           ? Border(
                                               top: BorderSide(
                                                   color: theme.isDarkMode
@@ -834,117 +708,297 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        SvgPicture.asset(
-                                            "assets/profile/userlogo.svg",
-                                            height: 18,
+                                        SvgPicture.asset(assets.barChart,
                                             color: theme.isDarkMode &&
                                                     indexProvide
                                                             .selectedBtmIndx ==
-                                                        4
+                                                        2
                                                 ? colors.colorLightBlue
                                                 : indexProvide
                                                             .selectedBtmIndx ==
-                                                        4
+                                                        2
                                                     ? colors.colorBlue
                                                     : colors.colorGrey),
-                                        const SizedBox(height: 5),
-                                        Text("Profile",
+                                        const SizedBox(height: 4),
+                                        Text("Portfolio",
                                             style: textStyle(
                                                 theme.isDarkMode &&
                                                         indexProvide
                                                                 .selectedBtmIndx ==
-                                                            4
+                                                            2
                                                     ? colors.colorLightBlue
                                                     : indexProvide
                                                                 .selectedBtmIndx ==
-                                                            4
+                                                            2
                                                         ? colors.colorBlue
                                                         : colors.colorGrey,
                                                 12,
                                                 indexProvide.selectedBtmIndx ==
-                                                        4
+                                                        2
                                                     ? FontWeight.w600
-                                                    : FontWeight.w500))
-                                      ])))),
-                      // Expanded(
-                      //     child: InkWell(
-                      //         onTap: internet.connectionStatus ==
-                      //                 ConnectivityResult.none
-                      //             ? null
-                      //             : () async {
-                      //                 showModalBottomSheet(
-                      //                     useSafeArea: true,
-                      //                     isScrollControlled: true,
-                      //                     shape: const RoundedRectangleBorder(
-                      //                         borderRadius:
-                      //                             BorderRadius.vertical(
-                      //                                 top:
-                      //                                     Radius.circular(16))),
-                      //                     context: context,
-                      //                     builder: (context) {
-                      //                       return const MoreMenuBottomSheet();
-                      //                     });
-                      //               },
-                      //         child: Container(
-                      //             margin:
-                      //                 const EdgeInsets.symmetric(horizontal: 7),
-                      //             decoration: BoxDecoration(
-                      //                 border: indexProvide.selectedBtmIndx > 4
-                      //                     ? Border(
-                      //                         top: BorderSide(
-                      //                             color: theme.isDarkMode
-                      //                                 ? colors.colorLightBlue
-                      //                                 : colors.colorBlue,
-                      //                             width: 2))
-                      //                     : null),
-                      //             child: Column(
-                      //                 mainAxisAlignment:
-                      //                     MainAxisAlignment.center,
-                      //                 crossAxisAlignment:
-                      //                     CrossAxisAlignment.center,
-                      //                 children: [
-                      //                   SvgPicture.asset(
-                      //                       "assets/profile/userlogo.svg",
-                      //                       height: 18,
-                      //                       color: theme.isDarkMode &&
-                      //                               indexProvide
-                      //                                       .selectedBtmIndx >
-                      //                                   4
-                      //                           ? colors.colorLightBlue
-                      //                           : indexProvide.selectedBtmIndx >
-                      //                                   4
-                      //                               ? colors.colorBlue
-                      //                               : colors.colorGrey),
-                      //                   const SizedBox(height: 5),
-                      //                   Text("Menu",
-                      //                       style: textStyle(
-                      //                           theme.isDarkMode &&
-                      //                                   indexProvide
-                      //                                           .selectedBtmIndx >
-                      //                                       4
-                      //                               ? colors.colorLightBlue
-                      //                               : indexProvide
-                      //                                           .selectedBtmIndx >
-                      //                                       4
-                      //                                   ? colors.colorBlue
-                      //                                   : colors.colorGrey,
-                      //                           12,
-                      //                           indexProvide.selectedBtmIndx > 4
-                      //                               ? FontWeight.w600
-                      //                               : FontWeight.w500))
-                      //                 ]))))
-                    ])),
-                body: Stack(
-                  children: [
-                    _onItemTapped(indexProvide.selectedBtmIndx),
-                    if (internet.connectionStatus ==
-                        ConnectivityResult.none) ...[const NoInternetWidget()]
-                  ],
-                )),
-          ),
-        );
-      }),
-    );
+                                                    : FontWeight.w500)),
+                                      ])),
+                            )),
+                            Expanded(
+                                child: InkWell(
+                                    onTap: internet.connectionStatus ==
+                                            ConnectivityResult.none
+                                        ? null
+                                        : () async {
+                                            indexProvide.bottomMenu(3);
+                                            await context
+                                                .read(indexListProvider)
+                                                .checkSession(context);
+                                            if (indexProvide.checkSess!.stat ==
+                                                "Ok") {
+                                              await context
+                                                  .read(orderProvider)
+                                                  .fetchSipOrderHistory();
+                                              await marketWatchList
+                                                  .fetchPendingAlert(context);
+                                              await marketWatchList
+                                                  .requestMWScrip(
+                                                      context: context,
+                                                      isSubscribe: false);
+                                              await portfolio.requestWSHoldings(
+                                                  context: context,
+                                                  isSubscribe: false);
+
+                                              await portfolio.requestWSPosition(
+                                                  context: context,
+                                                  isSubscribe: false);
+
+                                              context
+                                                  .read(orderProvider)
+                                                  .requestWSOrderBook(
+                                                      context: context,
+                                                      isSubscribe: true);
+                                            }
+                                          },
+                                    child: Container(
+                                        margin:
+                                            const EdgeInsets
+                                                .symmetric(horizontal: 7),
+                                        decoration: BoxDecoration(
+                                            border: indexProvide
+                                                        .selectedBtmIndx ==
+                                                    3
+                                                ? Border(
+                                                    top: BorderSide(
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .colorLightBlue
+                                                            : colors.colorBlue,
+                                                        width: 2))
+                                                : null),
+                                        child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              SvgPicture.asset(assets.bag,
+                                                  color: theme.isDarkMode &&
+                                                          indexProvide
+                                                                  .selectedBtmIndx ==
+                                                              3
+                                                      ? colors.colorLightBlue
+                                                      : indexProvide
+                                                                  .selectedBtmIndx ==
+                                                              3
+                                                          ? colors.colorBlue
+                                                          : colors.colorGrey),
+                                              const SizedBox(height: 4),
+                                              Text("Orders",
+                                                  style: textStyle(
+                                                      theme.isDarkMode &&
+                                                              indexProvide
+                                                                      .selectedBtmIndx ==
+                                                                  3
+                                                          ? colors
+                                                              .colorLightBlue
+                                                          : indexProvide
+                                                                      .selectedBtmIndx ==
+                                                                  3
+                                                              ? colors.colorBlue
+                                                              : colors
+                                                                  .colorGrey,
+                                                      12,
+                                                      indexProvide.selectedBtmIndx ==
+                                                              3
+                                                          ? FontWeight.w600
+                                                          : FontWeight.w500))
+                                            ])))),
+                            Expanded(
+                                child: InkWell(
+                                    onTap: internet.connectionStatus ==
+                                            ConnectivityResult.none
+                                        ? null
+                                        : () async {
+                                            await context
+                                                .read(fundProvider)
+                                                .fetchFunds(context);
+                                            indexProvide.bottomMenu(4);
+                                            if (context
+                                                    .read(fundProvider)
+                                                    .fundDetailModel!
+                                                    .stat ==
+                                                "Ok") {
+                                              if (userProfile
+                                                  .profileMenu.isEmpty) {
+                                                await userProfile
+                                                    .fetchprofilemenu();
+                                              }
+
+                                              marketWatchList.requestMWScrip(
+                                                  context: context,
+                                                  isSubscribe: false);
+                                              portfolio.requestWSHoldings(
+                                                  context: context,
+                                                  isSubscribe: false);
+
+                                              context
+                                                  .read(orderProvider)
+                                                  .requestWSOrderBook(
+                                                      context: context,
+                                                      isSubscribe: false);
+                                              portfolio.requestWSPosition(
+                                                  context: context,
+                                                  isSubscribe: false);
+                                            }
+                                          },
+                                    child: Container(
+                                        margin:
+                                            const EdgeInsets
+                                                .symmetric(horizontal: 7),
+                                        decoration: BoxDecoration(
+                                            border: indexProvide
+                                                        .selectedBtmIndx ==
+                                                    4
+                                                ? Border(
+                                                    top: BorderSide(
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .colorLightBlue
+                                                            : colors.colorBlue,
+                                                        width: 2))
+                                                : null),
+                                        child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              SvgPicture.asset(
+                                                  "assets/profile/userlogo.svg",
+                                                  height: 18,
+                                                  color: theme.isDarkMode &&
+                                                          indexProvide
+                                                                  .selectedBtmIndx ==
+                                                              4
+                                                      ? colors.colorLightBlue
+                                                      : indexProvide
+                                                                  .selectedBtmIndx ==
+                                                              4
+                                                          ? colors.colorBlue
+                                                          : colors.colorGrey),
+                                              const SizedBox(height: 5),
+                                              Text("Profile",
+                                                  style: textStyle(
+                                                      theme.isDarkMode &&
+                                                              indexProvide
+                                                                      .selectedBtmIndx ==
+                                                                  4
+                                                          ? colors
+                                                              .colorLightBlue
+                                                          : indexProvide
+                                                                      .selectedBtmIndx ==
+                                                                  4
+                                                              ? colors.colorBlue
+                                                              : colors
+                                                                  .colorGrey,
+                                                      12,
+                                                      indexProvide.selectedBtmIndx ==
+                                                              4
+                                                          ? FontWeight.w600
+                                                          : FontWeight.w500))
+                                            ])))),
+                            // Expanded(
+                            //     child: InkWell(
+                            //         onTap: internet.connectionStatus ==
+                            //                 ConnectivityResult.none
+                            //             ? null
+                            //             : () async {
+                            //                 showModalBottomSheet(
+                            //                     useSafeArea: true,
+                            //                     isScrollControlled: true,
+                            //                     shape: const RoundedRectangleBorder(
+                            //                         borderRadius:
+                            //                             BorderRadius.vertical(
+                            //                                 top:
+                            //                                     Radius.circular(16))),
+                            //                     context: context,
+                            //                     builder: (context) {
+                            //                       return const MoreMenuBottomSheet();
+                            //                     });
+                            //               },
+                            //         child: Container(
+                            //             margin:
+                            //                 const EdgeInsets.symmetric(horizontal: 7),
+                            //             decoration: BoxDecoration(
+                            //                 border: indexProvide.selectedBtmIndx > 4
+                            //                     ? Border(
+                            //                         top: BorderSide(
+                            //                             color: theme.isDarkMode
+                            //                                 ? colors.colorLightBlue
+                            //                                 : colors.colorBlue,
+                            //                             width: 2))
+                            //                     : null),
+                            //             child: Column(
+                            //                 mainAxisAlignment:
+                            //                     MainAxisAlignment.center,
+                            //                 crossAxisAlignment:
+                            //                     CrossAxisAlignment.center,
+                            //                 children: [
+                            //                   SvgPicture.asset(
+                            //                       "assets/profile/userlogo.svg",
+                            //                       height: 18,
+                            //                       color: theme.isDarkMode &&
+                            //                               indexProvide
+                            //                                       .selectedBtmIndx >
+                            //                                   4
+                            //                           ? colors.colorLightBlue
+                            //                           : indexProvide.selectedBtmIndx >
+                            //                                   4
+                            //                               ? colors.colorBlue
+                            //                               : colors.colorGrey),
+                            //                   const SizedBox(height: 5),
+                            //                   Text("Menu",
+                            //                       style: textStyle(
+                            //                           theme.isDarkMode &&
+                            //                                   indexProvide
+                            //                                           .selectedBtmIndx >
+                            //                                       4
+                            //                               ? colors.colorLightBlue
+                            //                               : indexProvide
+                            //                                           .selectedBtmIndx >
+                            //                                       4
+                            //                                   ? colors.colorBlue
+                            //                                   : colors.colorGrey,
+                            //                           12,
+                            //                           indexProvide.selectedBtmIndx > 4
+                            //                               ? FontWeight.w600
+                            //                               : FontWeight.w500))
+                            //                 ]))))
+                          ])),
+                      body: Stack(children: [
+                        _onItemTapped(indexProvide.selectedBtmIndx),
+                        if (internet.connectionStatus ==
+                            ConnectivityResult.none) ...[
+                          const NoInternetWidget()
+                        ]
+                      ]))));
+        }));
   }
 
   _onItemTapped(index) {
@@ -971,64 +1025,58 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   Future<bool> showExitPopup() async {
     return await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              backgroundColor: context.read(themeProvider).isDarkMode
-                  ? const Color.fromARGB(255, 18, 18, 18)
-                  : colors.colorWhite,
-              titleTextStyle: textStyles.appBarTitleTxt.copyWith(
-                  color: context.read(themeProvider).isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack),
-              contentTextStyle: textStyles.menuTxt,
-              titlePadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(14))),
-              scrollable: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-              ),
-              insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-              title: const Text("Exit App"),
-              content: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text("Do you want to Exit the App?")],
-                ),
-              ),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text("No",
-                        style: textStyles.textBtn.copyWith(
-                            color: context.read(themeProvider).isDarkMode
-                                ? colors.colorLightBlue
-                                : colors.colorBlue))),
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: context.read(themeProvider).isDarkMode
-                          ? colors.colorbluegrey
-                          : colors.colorBlack,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      )),
-                  child: Text("Yes",
-                      style: textStyle(
-                          !context.read(themeProvider).isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          14,
-                          FontWeight.w500)),
-                ),
-              ],
-            );
-          },
-        ) ??
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                  backgroundColor: context.read(themeProvider).isDarkMode
+                      ? const Color.fromARGB(255, 18, 18, 18)
+                      : colors.colorWhite,
+                  titleTextStyle: textStyles.appBarTitleTxt.copyWith(
+                      color: context.read(themeProvider).isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack),
+                  contentTextStyle: textStyles.menuTxt,
+                  titlePadding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(14))),
+                  scrollable: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+                  insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  title: const Text("Exit App"),
+                  content: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [Text("Do you want to Exit the App?")])),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: Text("No",
+                            style: textStyles.textBtn.copyWith(
+                                color: context.read(themeProvider).isDarkMode
+                                    ? colors.colorLightBlue
+                                    : colors.colorBlue))),
+                    ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor:
+                                context.read(themeProvider).isDarkMode
+                                    ? colors.colorbluegrey
+                                    : colors.colorBlack,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            )),
+                        child: Text("Yes",
+                            style: textStyle(
+                                !context.read(themeProvider).isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w500)))
+                  ]);
+            }) ??
         false;
   }
 }

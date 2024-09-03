@@ -9,7 +9,8 @@ import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
-// import '../models/order_book_model/basket_model.dart';
+import 'package:intl/intl.dart';
+import '../models/order_book_model/basket_model.dart';
 import '../models/order_book_model/cancel_order_model.dart';
 import '../models/order_book_model/get_brokerage.dart';
 import '../models/order_book_model/gtt_order_book.dart';
@@ -90,6 +91,14 @@ class OrderProvider extends DefaultChangeNotifier {
   ModifySIPModel? _modifySipModel;
   ModifySIPModel? get modifySipModel => _modifySipModel;
 
+  List<BasketModel> _basketName = [];
+  List<BasketModel> get basketName => _basketName;
+
+  Map _bsktScrips = {};
+  Map get bsktScrips => _bsktScrips;
+
+  String? bsketNameError;
+
   final TextEditingController orderSearchCtrl = TextEditingController();
 
   OrderProvider(this.ref);
@@ -104,29 +113,33 @@ class OrderProvider extends DefaultChangeNotifier {
   bool get showSearchHold => _showSearchOrder;
   changeTabIndex(int index) {
     _selectedTab = index;
+
+    // if (index == 4) {
+    //   getBasketName();
+    // }
+  }
+
+  String _selectedBsktName = "";
+  String get selectedBsktName => _selectedBsktName;
+
+  chngBsktName(String val) {
+    _selectedBsktName = val;
+    notifyListeners();
   }
 
   tabSize() {
     _orderTabName = [
       Tab(text: "All (${_allOrder!.length})"),
       Tab(text: "Open (${_openOrder!.length})"),
-
       Tab(text: "Executed (${_executedOrder!.length})"),
-
       Tab(
           text:
               "GTT Order (${_gttOrderBookModel == null ? 0 : _gttOrderBookModel!.length})"),
-
-      // Tab(
-      //     text:
-      //         "Basket Order (${_gttOrderBookModel == null ? 0 : _gttOrderBookModel!.length})"),
-
+      // Tab(text: "Basket Order (${pref.basketNameList!.length})"),
       Tab(text: "Trade Book (${_tradeBook == null ? 0 : _tradeBook!.length})"),
-
       Tab(
           text:
               "Alert (${ref(marketWatchProvider).alertPendingModel!.length})"),
-
       Tab(
           text:
               "SIP Order(${_siporderBookModel?.sipDetails?.length == null ? 0 : _siporderBookModel!.sipDetails!.length})"),
@@ -296,22 +309,21 @@ class OrderProvider extends DefaultChangeNotifier {
           _allOrder = [];
           _selectedTab = 0;
           for (var element in _orderBookModel!) {
+            if (element.exch == "BFO" && element.dname != null) {
+              List<String> splitVal = element.dname!.split(" ");
 
-             if (element.exch == "BFO" && element.dname != null) {
-                List<String> splitVal = element.dname!.split(" ");
+              element.symbol = splitVal[0];
+              element.expDate = "${splitVal[1]} ${splitVal[2]}";
+              element.option = splitVal.length > 4
+                  ? "${splitVal[3]} ${splitVal[4]}"
+                  : splitVal[3];
+            } else {
+              Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
-                element.symbol = splitVal[0];
-                element.expDate = "${splitVal[1]} ${splitVal[2]}";
-                element.option = splitVal.length > 4
-                    ? "${splitVal[3]} ${splitVal[4]}"
-                    : splitVal[3];
-              } else {
-            Map spilitSymbol = spilitTsym(value: "${element.tsym}");
-
-            element.symbol = "${spilitSymbol["symbol"]}";
-            element.expDate = "${spilitSymbol["expDate"]}";
-            element.option = "${spilitSymbol["option"]}";
-              }
+              element.symbol = "${spilitSymbol["symbol"]}";
+              element.expDate = "${spilitSymbol["expDate"]}";
+              element.option = "${spilitSymbol["option"]}";
+            }
             if (element.stat == "Ok") {
               if (element.status == "REJECTED" ||
                   element.status == "CANCELED" ||
@@ -361,20 +373,21 @@ class OrderProvider extends DefaultChangeNotifier {
         if (_tradeBook![0].stat == "Ok") {
           ConstantName.sessCheck = true;
           for (var element in _tradeBook!) {
-             if (element.exch == "BFO" && element.dname != null) {
-                List<String> splitVal = element.dname!.split(" ");
+            if (element.exch == "BFO" && element.dname != null) {
+              List<String> splitVal = element.dname!.split(" ");
 
-                element.symbol = splitVal[0];
-                element.expDate = "${splitVal[1]} ${splitVal[2]}";
-                element.option = splitVal.length > 4
-                    ? "${splitVal[3]} ${splitVal[4]}"
-                    : splitVal[3];
-              } else {
-            Map spilitSymbol = spilitTsym(value: "${element.tsym}");
+              element.symbol = splitVal[0];
+              element.expDate = "${splitVal[1]} ${splitVal[2]}";
+              element.option = splitVal.length > 4
+                  ? "${splitVal[3]} ${splitVal[4]}"
+                  : splitVal[3];
+            } else {
+              Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
-            element.symbol = "${spilitSymbol["symbol"]}";
-            element.expDate = "${spilitSymbol["expDate"]}";
-            element.option = "${spilitSymbol["option"]}";}
+              element.symbol = "${spilitSymbol["symbol"]}";
+              element.expDate = "${spilitSymbol["expDate"]}";
+              element.option = "${spilitSymbol["option"]}";
+            }
           }
         }
         if (_tradeBook![0].emsg == "Session Expired :  Invalid Session Key" &&
@@ -865,21 +878,77 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
-  createBasketOrder(String val) async {
+  createBasketOrder(String val, BuildContext context) async {
+    final now = DateTime.now();
+
+    final inputFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+    final inputDatetime = inputFormat.parse("$now");
+
+    final outputFormat = DateFormat("dd MMM yyyy, hh:mm a");
+    final formattedDatetime = outputFormat.format(inputDatetime);
+
+    List<BasketModel> basketList = [
+      BasketModel(
+          basketname: val,
+          createdDate: formattedDatetime,
+          max: '20',
+          curLength: '0')
+    ];
+
+    _basketName = await getLocalData();
+
+    await setLocalData(_basketName, basketList);
+
+    _basketName = await getLocalData();
+
+    Navigator.pop(context);
     notifyListeners();
   }
 
-  //  Future<List<BasketModel>> getLocalData() async {
-  //   List<String>? jsonList = pref.loggedClient;
+  getBasketName() async {
+    _basketName = await getLocalData();
+    _bsktScrips = {};
+    if (_basketName.isNotEmpty) {
+      for (var element in _basketName) {
+        _bsktScrips.addAll({element.basketname: []});
+      }
+      print("basket scrips ${_bsktScrips}");
+    }
+    notifyListeners();
+  }
 
-  //   if (jsonList != null) {
-  //     return jsonList
-  //         .map((jsonString) => BasketModel.fromJson(jsonString))
-  //         .toList();
-  //   } else {
-  //     return [];
-  //   }
-  // }
+  Future<void> setLocalData(
+      List<BasketModel> list, List<BasketModel> currentUser) async {
+    List<BasketModel> uniqueList = [];
+    list.add(currentUser[0]);
+
+    Set<String> uniqueCombos = <String>{};
+    for (var element in list.reversed) {
+      String combo = element.basketname;
+
+      if (!uniqueCombos.contains(combo)) {
+        uniqueCombos.add(combo);
+        uniqueList.add(element);
+      }
+    }
+
+    final List<String> jsonList =
+        uniqueList.map((obj) => obj.toJson()).toList();
+
+    pref.setBasketNameList(jsonList);
+  }
+
+  Future<List<BasketModel>> getLocalData() async {
+    List<String>? jsonList = pref.basketNameList;
+
+    if (jsonList != null) {
+      return jsonList
+          .map((jsonString) => BasketModel.fromJson(jsonString))
+          .toList();
+    } else {
+      return [];
+    }
+  }
 
   fetchSipPlaceOrder(BuildContext context, SipInputField sipOrderInput) async {
     try {

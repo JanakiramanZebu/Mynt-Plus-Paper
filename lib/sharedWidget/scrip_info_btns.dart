@@ -129,7 +129,7 @@ class ScripInfoBtns extends ConsumerWidget {
                           backgroundColor: const Color(0xffffffff),
                           context: context,
                           builder: (context) =>
-                              ScripDepthInfo(wlValue: depthArgs));
+                              ScripDepthInfo(wlValue: depthArgs, isBasket: ''));
                     },
                     child: Row(
                       children: [
