@@ -280,7 +280,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
     double invest = 0.0;
     try {
       toggleLoadingOn(true);
-
+      _oneDayChngPer = 0.00;
+      _showSearchHold = false;
       _holdingsModel = [];
       _holdingsModel = await api.getHolding();
       _totInvesHold = "0.00";
@@ -346,15 +347,16 @@ class PortfolioProvider extends DefaultChangeNotifier {
           }
 
           _totInvesHold = invest.toStringAsFixed(2);
-          // if (initail == "Refresh") {
-          //   await requestWSHoldings(isSubscribe: true, context: context);
-          // }
+          if (initail == "Refresh") {
+            await requestWSHoldings(isSubscribe: true, context: context);
+          }
         } else {
           if (_holdingsModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _holdingsModel![0].stat == "Not_Ok") {
             ref(authProvider).ifSessionExpired(context);
           }
+          _holdingsModel = [];
         }
       }
       notifyListeners();
@@ -531,7 +533,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         _totalPnlHolding = _holdingsModel!.fold(
             0,
             (sum, next) =>
-                sum + double.parse("${next.exchTsym![0].profitNloss ?? 0.00}"));
+                sum + double.parse("${next.exchTsym![0].profitNloss}"));
         _oneDayChng = _holdingsModel!.fold(
             0,
             (sum, next) =>

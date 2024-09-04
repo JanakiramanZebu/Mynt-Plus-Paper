@@ -148,7 +148,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                           ? colors.colorWhite
                                           : colors.colorBlack),
                                   const SizedBox(width: 8),
-                                  Text("Add another account",
+                                  Text("Add account",
                                       style: textStyle(
                                           theme.isDarkMode
                                               ? colors.colorWhite

@@ -12,8 +12,7 @@ import '../api/core/api_link.dart';
 import '../locator/constant.dart';
 
 import '../locator/locator.dart';
-import '../locator/preference.dart';
-import '../models/websockt_model/touchline_ack.dart';
+import '../locator/preference.dart'; 
 import 'fund_provider.dart';
 import 'index_list_provider.dart';
 import 'network_state_provider.dart';
@@ -27,16 +26,8 @@ class WebSocketProvider extends ChangeNotifier {
   bool _wsConnected = false;
 
   bool get wsConnected => _wsConnected;
-  // WebSocketChannel? channel;
-  final Reader ref;
-  StreamController<UpdateStream> mwStream =
-      StreamController<UpdateStream>.broadcast();
-  StreamController<TouchlineAckStream> touchAcknowledgementStream =
-      StreamController<TouchlineAckStream>.broadcast();
-  // StreamController<DepthWSUpdateResponse> dpUpdateStream =
-  //     StreamController<DepthWSUpdateResponse>.broadcast();
-  // StreamController<DepthWsAckResponse> dpAckStream =
-  //     StreamController<DepthWsAckResponse>.broadcast();
+ 
+  final Reader ref; 
   WebSocketProvider(this.ref);
 
   static WebSocketChannel channel =
@@ -64,7 +55,7 @@ class WebSocketProvider extends ChangeNotifier {
   reconnectWS() {
     if (ref(networkStateProvider).connectionStatus != ConnectivityResult.none &&
         _wsConnected) {
-      // channel.sink.add(jsonEncode({"t": "h"}));
+        channel.sink.add(jsonEncode({"t": "h"}));
     }
   }
 
@@ -103,33 +94,10 @@ class WebSocketProvider extends ChangeNotifier {
                 task.toLowerCase() == 'ud') {
               connectTouchLine(
                   input: channelInput, task: task, context: context);
-              // Timer(
-              //     const Duration(seconds: 3),
-              //     () => channel.sink
-              //         .add(jsonEncode({"t": "o", "actid": ApiLinks.userID})));
+               
             }
           }
-
-          switch (res['t'].toString().toLowerCase()) {
-            case "tf":
-          // print("Socket Data Update ===> $res");
-              if (res['lp'] != "null") {
-                // log("Scrip Updates :: => $data");
-                mwStream.add(
-                  UpdateStream.fromJson(res as Map<String, dynamic>),
-                );
-              }
-              break;
-
-            case "tk":
-          //  print("Socket Data Ack ===> $res");
-              // debugPrint("Scrip Acknowledgement :::: $data");
-
-              touchAcknowledgementStream.add(
-                  TouchlineAckStream.fromJson(res as Map<String, dynamic>));
-              // notifyListeners();
-              break;
-          }
+ 
           if (res['t'].toString().toLowerCase() == "tf" ||
               res['t'].toString().toLowerCase() == "df") {
             // fToast!.removeQueuedCustomToasts();
@@ -410,14 +378,12 @@ class WebSocketProvider extends ChangeNotifier {
                 //   :
                 res["c"])).toStringAsFixed(2);
             _socketDatas.addAll({"${res['tk']}": res});
-
-            if (ref(indexListProvider).selectedBtmIndx == 1 &&
-                ref(portfolioProvider).selectedTab == 1) {
-              // ref(portfolioProvider).holdingCalc(_socketDatas);
-            }
+ 
 
             // log("Soxket data ${jsonEncode(_socketDatas)}");
-          } else if (res['t'].toString().toLowerCase() == "om") {
+          } 
+          else
+           if (res['t'].toString().toLowerCase() == "om") {
             ref(indexListProvider)
                 .logError
                 .add({"type": "Order Response", "Error": "$res"});
@@ -495,41 +461,9 @@ class WebSocketProvider extends ChangeNotifier {
       {required String task,
       required String input,
       required BuildContext context}) {
-    // if (task == "t" || task == "d") {
-    //   _isGetData = false;
-    // }
-    // _fToast = FToast();
+    
     final data = {"t": task, "k": input};
-    // log('Subscription ws::$input $task');
-    // log('Status ws::$wsConnected');
-    // fToast!.removeQueuedCustomToasts();
-    // Future.delayed(const Duration(seconds: 3), () {
-    //   if (!_isGetData && (task == "t" || task == "d")) {
-    //     print("Something Wrong");
-
-    //     ref(showcaseProvide).showToast("Please Check your Internet Connection",
-    //         () async {
-    //       fToast!.removeQueuedCustomToasts();
-
-    //       if (ref(indexListProvider).selectedBtmIndx == 0) {
-    //         await ref(marketWatchProvider)
-    //             .fetchMWScrip(ref(marketWatchProvider).wlName, context);
-
-    //         await ref(marketWatchProvider)
-    //             .requestWSMarketWatchScrip(context: context, isSubscribe: true);
-    //       } else if (ref(indexListProvider).selectedBtmIndx == 1) {
-    //         await ref(portfolioProvider).fetchHoldings(context);
-    //         await ref(portfolioProvider).fetchPositionBook(context, false);
-    //       } else if (ref(indexListProvider).selectedBtmIndx == 2) {
-    //         ref(orderProvider).fetchOrderBook(context, true);
-    //         ref(orderProvider).fetchTradeBook(context);
-
-    //         ref(orderProvider).fetchGTTOrderBook(context, "");
-    //       }
-    //     });
-    //   }
-    // });
-    // _
+     
     if (input.isNotEmpty) {
       channel.sink.add(jsonEncode(data));
     }
