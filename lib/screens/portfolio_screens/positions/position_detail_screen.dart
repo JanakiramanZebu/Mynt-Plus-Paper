@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; 
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -8,7 +8,7 @@ import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
-import '../../../routes/route_names.dart'; 
+import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/scrip_info_btns.dart';
@@ -36,64 +36,68 @@ class PositionDetailScreen extends ConsumerWidget {
             leadingWidth: 41,
             titleSpacing: 6,
             leading: const CustomBackBtn(),
-            title:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Text("${positionList.symbol}",
-                          style: textStyles.appBarTitleTxt.copyWith(
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack)),
-                      Text(" ${positionList.option} ",
-                          overflow: TextOverflow.ellipsis,
-                          style: textStyles.scripNameTxtStyle.copyWith(
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack)),
-                    ],
-                  ),
-                  Text("₹${positionList.lp}",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          16,
-                          FontWeight.w600)),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+            title: Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(children: [
-                      CustomExchBadge(exch: "${positionList.exch}"),
-                      Text("  ${positionList.expDate}",
-                          style: textStyle(
-                              const Color(0xff000000), 12, FontWeight.w600))
-                    ]),
-                    Text(
-                        "${double.parse("${positionList.chng ?? 0.00} ").toStringAsFixed(2)} (${positionList.perChange ?? 0.00}%)",
-                        style: textStyle(
-                            (positionList.chng == "null" ||
-                                        positionList.chng == null) ||
-                                    positionList.chng == "0.00"
-                                ? colors.ltpgrey
-                                : positionList.chng!.startsWith("-") ||
-                                        positionList.perChange!.startsWith("-")
-                                    ? colors.darkred
-                                    : colors.ltpgreen,
-                            12,
-                            FontWeight.w500))
-                  ])
-            ])),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Text("${positionList.symbol}",
+                                style: textStyles.appBarTitleTxt.copyWith(
+                                    color: theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack)),
+                            Text(" ${positionList.option} ",
+                                overflow: TextOverflow.ellipsis,
+                                style: textStyles.scripNameTxtStyle.copyWith(
+                                    color: theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack)),
+                          ],
+                        ),
+                        Text("₹${positionList.lp}",
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                16,
+                                FontWeight.w600)),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Row(children: [
+                            CustomExchBadge(exch: "${positionList.exch}"),
+                            Text("  ${positionList.expDate}",
+                                style: textStyle(const Color(0xff000000), 12,
+                                    FontWeight.w600))
+                          ]),
+                          Text(
+                              "${double.parse("${positionList.chng ?? 0.00} ").toStringAsFixed(2)} (${positionList.perChange ?? 0.00}%)",
+                              style: textStyle(
+                                  (positionList.chng == "null" ||
+                                              positionList.chng == null) ||
+                                          positionList.chng == "0.00"
+                                      ? colors.ltpgrey
+                                      : positionList.chng!.startsWith("-") ||
+                                              positionList.perChange!
+                                                  .startsWith("-")
+                                          ? colors.darkred
+                                          : colors.ltpgreen,
+                                  12,
+                                  FontWeight.w500))
+                        ])
+                  ]),
+            )),
         body: ListView(children: [
           Container(
-            
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
             child: Row(
               mainAxisAlignment: positionList.sPrdtAli == "BO" ||
@@ -118,13 +122,20 @@ class PositionDetailScreen extends ConsumerWidget {
                     },
                     child: Container(
                         decoration: BoxDecoration(
-                            border: Border.all(color:theme.isDarkMode?colors.colorGrey:colors.colorBlack),
+                            border: Border.all(
+                                color: theme.isDarkMode
+                                    ? colors.colorGrey
+                                    : colors.colorBlack),
                             borderRadius: BorderRadius.circular(32)),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
                         child: Text("Convert",
                             style: textStyle(
-                              theme.isDarkMode?colors.colorWhite:colors.colorBlack, 13, FontWeight.w600))),
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                13,
+                                FontWeight.w600))),
                   )
                 ],
                 Column(
@@ -141,7 +152,7 @@ class PositionDetailScreen extends ConsumerWidget {
                           Text(
                               "₹${positionList.profitNloss ?? positionList.rpnl}",
                               style: textStyle(
-                                 positionList.profitNloss != null
+                                  positionList.profitNloss != null
                                       ? positionList.profitNloss!
                                               .startsWith("-")
                                           ? colors.darkred
@@ -159,7 +170,7 @@ class PositionDetailScreen extends ConsumerWidget {
                           Text("₹${positionList.mTm}",
                               style: textStyle(
                                   positionList.mTm!.startsWith("-")
-                                      ?  colors.darkred
+                                      ? colors.darkred
                                       : positionList.mTm == "0.00"
                                           ? colors.ltpgrey
                                           : colors.ltpgreen,
@@ -185,9 +196,11 @@ class PositionDetailScreen extends ConsumerWidget {
                     const SizedBox(height: 10),
                     Text("Position details",
                         style: textStyle(
-                       theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 16, FontWeight.w600)),
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            16,
+                            FontWeight.w600)),
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -196,30 +209,43 @@ class PositionDetailScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text("Price",
-                                  style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
                                       FontWeight.w600)),
                               const SizedBox(height: 2),
                               Text("${positionList.dayavgprc ?? 0.00}",
-                                  style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
                                       FontWeight.w600)),
-                              const SizedBox(height: 2),Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                              const SizedBox(height: 2),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider),
                               Text("Day Buy Avg",
                                   style: textStyle(const Color(0xff666666), 12,
                                       FontWeight.w500)),
                               const SizedBox(height: 2),
                               Text(
                                 "${positionList.daybuyavgprc ?? 0.00}",
-                                style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    14,
                                     FontWeight.w500),
                               ),
                               const SizedBox(height: 2),
-                        Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider),
                             ],
                           ),
                         ),
@@ -229,29 +255,43 @@ class PositionDetailScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text("Net Qty",
-                                  style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
                                       FontWeight.w600)),
                               const SizedBox(height: 2),
                               Text("${positionList.netqty ?? 0}",
-                                  style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
                                       FontWeight.w600)),
-                              const SizedBox(height: 2),Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                              const SizedBox(height: 2),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider),
                               Text("Day Buy Qty",
                                   style: textStyle(const Color(0xff666666), 12,
                                       FontWeight.w500)),
                               const SizedBox(height: 2),
                               Text(
                                 "${positionList.daybuyqty ?? 0}",
-                                style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    14,
                                     FontWeight.w500),
                               ),
-                              const SizedBox(height: 2),Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                              const SizedBox(height: 2),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider),
                             ],
                           ),
                         ),
@@ -270,12 +310,18 @@ class PositionDetailScreen extends ConsumerWidget {
                               const SizedBox(height: 2),
                               Text(
                                 "${positionList.daysellavgprc ?? 0.00}",
-                                style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    14,
                                     FontWeight.w500),
                               ),
-                              const SizedBox(height: 2),Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                              const SizedBox(height: 2),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider),
                             ],
                           ),
                         ),
@@ -290,13 +336,18 @@ class PositionDetailScreen extends ConsumerWidget {
                               const SizedBox(height: 2),
                               Text(
                                 "${positionList.daysellqty ?? 0}",
-                                style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    14,
                                     FontWeight.w500),
                               ),
                               const SizedBox(height: 2),
-                           Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider),
                             ],
                           ),
                         ),
@@ -315,13 +366,18 @@ class PositionDetailScreen extends ConsumerWidget {
                               const SizedBox(height: 2),
                               Text(
                                 "${positionList.cfbuyavgprc ?? 0.00}",
-                                style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    14,
                                     FontWeight.w500),
                               ),
                               const SizedBox(height: 2),
-                           Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider),
                             ],
                           ),
                         ),
@@ -336,13 +392,18 @@ class PositionDetailScreen extends ConsumerWidget {
                               const SizedBox(height: 2),
                               Text(
                                 "${positionList.cfbuyqty ?? 0}",
-                                style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    14,
                                     FontWeight.w500),
                               ),
                               const SizedBox(height: 2),
-                          Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider),
                             ],
                           ),
                         ),
@@ -361,13 +422,18 @@ class PositionDetailScreen extends ConsumerWidget {
                               const SizedBox(height: 2),
                               Text(
                                 "${positionList.cfsellavgprc ?? 0.00}",
-                                style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    14,
                                     FontWeight.w500),
                               ),
                               const SizedBox(height: 2),
-                            Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider),
                             ],
                           ),
                         ),
@@ -382,13 +448,18 @@ class PositionDetailScreen extends ConsumerWidget {
                               const SizedBox(height: 2),
                               Text(
                                 "${positionList.cfsellqty ?? 0}",
-                                style: textStyle( theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    14,
                                     FontWeight.w500),
                               ),
                               const SizedBox(height: 2),
-                            Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider),
                             ],
                           ),
                         ),
@@ -397,40 +468,57 @@ class PositionDetailScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text("Net Buy Value",
                         style: textStyle(
-                             theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14, FontWeight.w500)),
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w500)),
                     const SizedBox(height: 2),
                     Text(
                       "${positionList.totbuyamt ?? 0.00}",
                       style: textStyle(
-                         theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14, FontWeight.w500),
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w500),
                     ),
-                    const SizedBox(height: 2),  Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                    const SizedBox(height: 2),
+                    Divider(
+                        color: theme.isDarkMode
+                            ? colors.darkColorDivider
+                            : colors.colorDivider),
                     const SizedBox(height: 4),
                     Text("Net Sell Value",
                         style: textStyle(
-                          theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14, FontWeight.w500)),
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w500)),
                     const SizedBox(height: 2),
                     Text(
                       "${positionList.totsellamt ?? 0.00}",
                       style: textStyle(
-                        theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14, FontWeight.w500),
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w500),
                     ),
                     const SizedBox(height: 2),
-                    Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                    Divider(
+                        color: theme.isDarkMode
+                            ? colors.darkColorDivider
+                            : colors.colorDivider),
                     const SizedBox(height: 4),
                     Text("Net Value",
                         style: textStyle(
-                        theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14, FontWeight.w500)),
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w500)),
                     const SizedBox(height: 2),
                     Text(
                       (double.parse("${positionList.totbuyamt ?? 0.00}") +
@@ -438,10 +526,12 @@ class PositionDetailScreen extends ConsumerWidget {
                                   "${positionList.totsellamt ?? 0.00}"))
                           .toStringAsFixed(2),
                       style: textStyle(
-                         theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack, 14, FontWeight.w500),
-                    ), 
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w500),
+                    ),
                   ])),
           // ScripInfoBtns(exch: '${positionList.exch}', token: '${positionList.token}', insName: '')
         ]),
@@ -451,107 +541,115 @@ class PositionDetailScreen extends ConsumerWidget {
             : BottomAppBar(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 shape: const CircularNotchedRectangle(),
-                child: Row(children: [
-                  Expanded(
-                    child: Container(
-                        height: 38,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                            color: const Color(0xff43A833),
-                            borderRadius: BorderRadius.circular(32)),
-                        width: MediaQuery.of(context).size.width,
-                        child: InkWell(
-                          onTap: () async {
-                            await context
-                                .read(marketWatchProvider)
-                                .fetchScripInfo("${positionList.token}",
-                                    '${positionList.exch}', context);
-                            Navigator.pop(context);
-                            OrderScreenArgs orderArgs = OrderScreenArgs(
-                                exchange: '${positionList.exch}',
-                                tSym: '${positionList.tsym}',
-                                isExit: false,
-                                token: "${positionList.token}",
-                                transType: true,
-                                // change: depthData.chng,
-                                // close: depthData.c,
-                                lotSize: positionList.netqty,
-                                ltp: positionList.lp,
-                                perChange: positionList.perChange ?? "0.00",
-                                orderTpye: '',
-                                holdQty: '${positionList.netqty}',
-                                isModify: false);
-
-                            Navigator.pushNamed(
-                                context, Routes.placeOrderScreen,
-                                arguments: {
-                                  "orderArg": orderArgs,
-                                  "scripInfo": context
-                                      .read(marketWatchProvider)
-                                      .scripInfoModel!
-                                });
-                          },
-                          child: Center(
-                              child: Text("Add More",
-                                  style: textStyle(const Color(0xffFFFFFF), 14,
-                                      FontWeight.w600))),
-                        )),
-                  ),
-                  if (positionList.qty != "0" && !positions.isDay) ...[
-                    const SizedBox(width: 12),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Row(children: [
                     Expanded(
-                        child: Container(
-                            height: 38,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                                color: colors.darkred,
-                                borderRadius: BorderRadius.circular(32)),
-                            width: MediaQuery.of(context).size.width,
-                            child: InkWell(
-                              onTap: () async {
-                                await context
-                                    .read(marketWatchProvider)
-                                    .fetchScripInfo("${positionList.token}",
-                                        '${positionList.exch}', context);
-                                Navigator.pop(context);
-                                OrderScreenArgs orderArgs = OrderScreenArgs(
-                                    exchange: '${positionList.exch}',
-                                    tSym: '${positionList.tsym}',
-                                    isExit: false,
-                                    token: "${positionList.token}",
-                                    transType:
-                                        int.parse(positionList.netqty!) < 0
-                                            ? true
-                                            : false,
-                                    // change: depthData.chng,
-                                    // close: depthData.c,
-                                    lotSize: positionList.netqty,
-                                    ltp: positionList.lp,
-                                    perChange: positionList.perChange ?? "0.00",
-                                    orderTpye: '',
-                                    holdQty: '${positionList.netqty}',
-                                    isModify: false);
+                      child: Container(
+                          height: 38,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                              color: const Color(0xff43A833),
+                              borderRadius: BorderRadius.circular(32)),
+                          width: MediaQuery.of(context).size.width,
+                          child: InkWell(
+                            onTap: () async {
+                              await context
+                                  .read(marketWatchProvider)
+                                  .fetchScripInfo("${positionList.token}",
+                                      '${positionList.exch}', context);
+                              Navigator.pop(context);
+                              OrderScreenArgs orderArgs = OrderScreenArgs(
+                                  exchange: '${positionList.exch}',
+                                  tSym: '${positionList.tsym}',
+                                  isExit: false,
+                                  token: "${positionList.token}",
+                                  transType: true,
+                                  // change: depthData.chng,
+                                  // close: depthData.c,
+                                  lotSize: positionList.netqty,
+                                  ltp: positionList.lp,
+                                  perChange: positionList.perChange ?? "0.00",
+                                  orderTpye: '',
+                                  holdQty: '${positionList.netqty}',
+                                  isModify: false);
 
-                                Navigator.pushNamed(
-                                    context, Routes.placeOrderScreen,
-                                    arguments: {
-                                      "orderArg": orderArgs,
-                                      "scripInfo": context
-                                          .read(marketWatchProvider)
-                                          .scripInfoModel!
-                                    });
-                              },
-                              child: Center(
-                                  child: Text("Exit",
-                                      style: textStyle(const Color(0xffFFFFFF),
-                                          14, FontWeight.w600))),
-                            )))
-                  ]
-                ])));
+                              Navigator.pushNamed(
+                                  context, Routes.placeOrderScreen,
+                                  arguments: {
+                                    "orderArg": orderArgs,
+                                    "scripInfo": context
+                                        .read(marketWatchProvider)
+                                        .scripInfoModel!,
+                                    "isBskt": ""
+                                  });
+                            },
+                            child: Center(
+                                child: Text("Add More",
+                                    style: textStyle(const Color(0xffFFFFFF),
+                                        14, FontWeight.w600))),
+                          )),
+                    ),
+                    if (positionList.qty != "0" && !positions.isDay) ...[
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: Container(
+                              height: 38,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                  color: colors.darkred,
+                                  borderRadius: BorderRadius.circular(32)),
+                              width: MediaQuery.of(context).size.width,
+                              child: InkWell(
+                                onTap: () async {
+                                  await context
+                                      .read(marketWatchProvider)
+                                      .fetchScripInfo("${positionList.token}",
+                                          '${positionList.exch}', context);
+                                  Navigator.pop(context);
+                                  OrderScreenArgs orderArgs = OrderScreenArgs(
+                                      exchange: '${positionList.exch}',
+                                      tSym: '${positionList.tsym}',
+                                      isExit: false,
+                                      token: "${positionList.token}",
+                                      transType:
+                                          int.parse(positionList.netqty!) < 0
+                                              ? true
+                                              : false,
+                                      // change: depthData.chng,
+                                      // close: depthData.c,
+                                      lotSize: positionList.netqty,
+                                      ltp: positionList.lp,
+                                      perChange:
+                                          positionList.perChange ?? "0.00",
+                                      orderTpye: '',
+                                      holdQty: '${positionList.netqty}',
+                                      isModify: false);
+
+                                  Navigator.pushNamed(
+                                      context, Routes.placeOrderScreen,
+                                      arguments: {
+                                        "orderArg": orderArgs,
+                                        "scripInfo": context
+                                            .read(marketWatchProvider)
+                                            .scripInfoModel!,
+                                        "isBskt": ""
+                                      });
+                                },
+                                child: Center(
+                                    child: Text("Exit",
+                                        style: textStyle(
+                                            const Color(0xffFFFFFF),
+                                            14,
+                                            FontWeight.w600))),
+                              )))
+                    ]
+                  ]),
+                )));
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {

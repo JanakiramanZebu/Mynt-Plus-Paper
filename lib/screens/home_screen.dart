@@ -359,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   FontWeight.w500)),
                                         ]),
                                       )
-                                  ] 
+                                  ]
                                   // else if (indexProvide.selectedBtmIndx ==
                                   //         3 &&
                                   //     watch(orderProvider).selectedTab ==
@@ -678,16 +678,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             .requestWSOrderBook(
                                                 context: context,
                                                 isSubscribe: false);
-                                        if (portfolio.selectedTab == 1) {
-                                          await portfolio.requestWSHoldings(
-                                              context: context,
-                                              isSubscribe: true);
-                                        }
-                                        if (portfolio.selectedTab == 0) {
-                                          await portfolio.requestWSPosition(
-                                              context: context,
-                                              isSubscribe: true);
-                                        }
+
+                                        await portfolio.requestWSHoldings(
+                                            context: context,
+                                            isSubscribe: true);
+
+                                        await portfolio.requestWSPosition(
+                                            context: context,
+                                            isSubscribe: true);
                                       }
                                     },
                               child: Container(

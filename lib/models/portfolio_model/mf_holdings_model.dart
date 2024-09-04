@@ -112,8 +112,8 @@ class ExchTsym {
     pp = json['pp'];
     ti = json['ti'];
     nav = json['nav'];
-    pnl=json['pnl'];
-    pnlPerChng=json['pnlPerChng'];
+    pnl=json['pnl'].toString();
+    pnlPerChng=json['pnlPerChng'].toString();
   }
 
   Map<String, dynamic> toJson() {

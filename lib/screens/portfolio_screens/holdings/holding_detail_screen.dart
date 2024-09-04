@@ -39,45 +39,48 @@ class HoldingDetailScreen extends ConsumerWidget {
                 ? colors.darkColorDivider
                 : colors.colorDivider,
             title:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("${exchTsym.tsym}",
-                      style: textStyles.appBarTitleTxt.copyWith(
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack)),
-                  Text("₹${exchTsym.lp}",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          16,
-                          FontWeight.w600)),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
+                   Padding(
+                  padding: const EdgeInsets.only(right:  8.0),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    CustomExchBadge(exch: exchTsym.exch!),
-                    Text(
-                        "${double.parse("${exchTsym.change.toString()=="null"?"0.00":exchTsym.change} ").toStringAsFixed(2)} (${exchTsym.perChange.toString()=="null"?"0.00":exchTsym.perChange}%)",
+                    Text("${exchTsym.tsym}",
+                        style: textStyles.appBarTitleTxt.copyWith(
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack)),
+                    Text("₹${exchTsym.lp}",
                         style: textStyle(
-                           (exchTsym.change == "null" ||
-                                        exchTsym.change == null) ||
-                                    exchTsym.change == "0.00"
-                                ? colors.ltpgrey
-                                : exchTsym.change!.startsWith("-") ||
-                                        exchTsym.perChange!.startsWith("-")
-                                    ? colors.darkred
-                                    : colors.ltpgreen,
-                            12,
-                            FontWeight.w500))
-                  ])
-            ])),
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            16,
+                            FontWeight.w600)),
+                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      CustomExchBadge(exch: exchTsym.exch!),
+                      Text(
+                          "${double.parse("${exchTsym.change.toString()=="null"?"0.00":exchTsym.change} ").toStringAsFixed(2)} (${exchTsym.perChange.toString()=="null"?"0.00":exchTsym.perChange}%)",
+                          style: textStyle(
+                             (exchTsym.change == "null" ||
+                                          exchTsym.change == null) ||
+                                      exchTsym.change == "0.00"
+                                  ? colors.ltpgrey
+                                  : exchTsym.change!.startsWith("-") ||
+                                          exchTsym.perChange!.startsWith("-")
+                                      ? colors.darkred
+                                      : colors.ltpgreen,
+                              12,
+                              FontWeight.w500))
+                    ])
+                              ]),
+                )),
         body: ListView(children: [
           Container(
               padding:
@@ -369,122 +372,126 @@ class HoldingDetailScreen extends ConsumerWidget {
           // ScripInfoBtns(exch: '${exchTsym.exch}', token: '${exchTsym.token}', insName: '')
         ]),
         bottomNavigationBar: BottomAppBar(
+          
             padding: const EdgeInsets.symmetric(horizontal: 16),
             shape: const CircularNotchedRectangle(),
-            child: Row(children: [
-              Expanded(
-                child: Container(
-                    height: 38,
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    decoration: BoxDecoration(
-                        color: const Color(0xff43A833),
-                        borderRadius: BorderRadius.circular(32)),
-                    width: MediaQuery.of(context).size.width,
-                    child: InkWell(
-                      onTap: () async {
-                        context.read(websocketProvider).establishConnection(
-                            channelInput: "${exchTsym.exch}|${exchTsym.token}#",
-                            task: "t",
-                            context: context);
-                        // context
-                        //     .read(marketWatchProvider)
-                        //     .lastScbTok("${exchTsym.exch}|${exchTsym.token}#");
-                        await context.read(marketWatchProvider).fetchScripInfo(
-                            "${exchTsym.token}", '${exchTsym.exch}', context);
-                        OrderScreenArgs orderArgs = OrderScreenArgs(
-                            exchange: '${exchTsym.exch}',
-                            tSym: '${exchTsym.tsym}',
-                            token: '',
-                            transType: true,
-                            lotSize: '${exchTsym.ls}',
-                            orderTpye: "${holdingData.sPrdtAli}",
-                            isExit: false,
-                            ltp: '${exchTsym.lp}',
-                            perChange: '${exchTsym.perChange}',
-                            holdQty: '',
-                            isModify: false);
-                        // ignore: use_build_context_synchronously
-                        Navigator.pushNamed(context, Routes.placeOrderScreen,
-                            arguments: {
-                              "orderArg": orderArgs,
-                              "scripInfo": context
-                                  .read(marketWatchProvider)
-                                  .scripInfoModel!
-                            });
-                      },
-                      child: Center(
-                          child: Text("Add More",
-                              style: textStyle(const Color(0xffFFFFFF), 14,
-                                  FontWeight.w600))),
-                    )),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Row(children: [
+                Expanded(
                   child: Container(
                       height: 38,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 5,
-                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 5),
                       decoration: BoxDecoration(
-                          color: holdingData.saleableQty == 0
-                              ?  colors.darkred.withOpacity(.8)
-                              : colors.darkred,
+                          color: const Color(0xff43A833),
                           borderRadius: BorderRadius.circular(32)),
                       width: MediaQuery.of(context).size.width,
                       child: InkWell(
                         onTap: () async {
-                          if (holdingData.saleableQty == 0) {
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialogue(
-                                    scripName: "${exchTsym.tsym}",
-                                    exch: "${exchTsym.exch}",
-                                    content:
-                                        'You are unable to exit because there are no sealable quantity.',
-                                  );
-                                });
-                          } else {
-                            context.read(websocketProvider).establishConnection(
-                                channelInput:
-                                    "${exchTsym.exch}|${exchTsym.token}#",
-                                task: "t",
-                                context: context);
-                            // context
-                            //     .read(marketWatchProvider)
-                            //     .lastScbTok("${exchTsym.exch}|${exchTsym.token}#");
-                            await context
-                                .read(marketWatchProvider)
-                                .fetchScripInfo("${exchTsym.token}",
-                                    '${exchTsym.exch}', context);
-                            OrderScreenArgs orderArgs = OrderScreenArgs(
-                                exchange: '${exchTsym.exch}',
-                                tSym: '${exchTsym.tsym}',
-                                token: '',
-                                transType: false,
-                                lotSize: '${exchTsym.ls}',
-                                isExit: true,
-                                ltp: '${exchTsym.lp}',
-                                perChange: '${exchTsym.perChange}',
-                                orderTpye: "${holdingData.sPrdtAli}",
-                                holdQty: "${holdingData.saleableQty ?? 0}",
-                                isModify: false);
-                            Navigator.pushNamed(
-                                context, Routes.placeOrderScreen,
-                                arguments: {
-                                  "orderArg": orderArgs,
-                                  "scripInfo": context
-                                      .read(marketWatchProvider)
-                                      .scripInfoModel!
-                                });
-                          }
+                          context.read(websocketProvider).establishConnection(
+                              channelInput: "${exchTsym.exch}|${exchTsym.token}#",
+                              task: "t",
+                              context: context);
+                          // context
+                          //     .read(marketWatchProvider)
+                          //     .lastScbTok("${exchTsym.exch}|${exchTsym.token}#");
+                          await context.read(marketWatchProvider).fetchScripInfo(
+                              "${exchTsym.token}", '${exchTsym.exch}', context);
+                          OrderScreenArgs orderArgs = OrderScreenArgs(
+                              exchange: '${exchTsym.exch}',
+                              tSym: '${exchTsym.tsym}',
+                              token: '',
+                              transType: true,
+                              lotSize: '${exchTsym.ls}',
+                              orderTpye: "${holdingData.sPrdtAli}",
+                              isExit: false,
+                              ltp: '${exchTsym.lp}',
+                              perChange: '${exchTsym.perChange}',
+                              holdQty: '',
+                              isModify: false);
+                          // ignore: use_build_context_synchronously
+                          Navigator.pushNamed(context, Routes.placeOrderScreen,
+                              arguments: {
+                                "orderArg": orderArgs,
+                                "scripInfo": context
+                                    .read(marketWatchProvider)
+                                    .scripInfoModel!, "isBskt":""
+                              });
                         },
                         child: Center(
-                            child: Text("Exit",
+                            child: Text("Add More",
                                 style: textStyle(const Color(0xffFFFFFF), 14,
                                     FontWeight.w600))),
-                      )))
-            ])));
+                      )),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: Container(
+                        height: 38,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                            color: holdingData.saleableQty == 0
+                                ?  colors.darkred.withOpacity(.8)
+                                : colors.darkred,
+                            borderRadius: BorderRadius.circular(32)),
+                        width: MediaQuery.of(context).size.width,
+                        child: InkWell(
+                          onTap: () async {
+                            if (holdingData.saleableQty == 0) {
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialogue(
+                                      scripName: "${exchTsym.tsym}",
+                                      exch: "${exchTsym.exch}",
+                                      content:
+                                          'You are unable to exit because there are no sealable quantity.',
+                                    );
+                                  });
+                            } else {
+                              context.read(websocketProvider).establishConnection(
+                                  channelInput:
+                                      "${exchTsym.exch}|${exchTsym.token}#",
+                                  task: "t",
+                                  context: context);
+                              // context
+                              //     .read(marketWatchProvider)
+                              //     .lastScbTok("${exchTsym.exch}|${exchTsym.token}#");
+                              await context
+                                  .read(marketWatchProvider)
+                                  .fetchScripInfo("${exchTsym.token}",
+                                      '${exchTsym.exch}', context);
+                              OrderScreenArgs orderArgs = OrderScreenArgs(
+                                  exchange: '${exchTsym.exch}',
+                                  tSym: '${exchTsym.tsym}',
+                                  token: '',
+                                  transType: false,
+                                  lotSize: '${exchTsym.ls}',
+                                  isExit: true,
+                                  ltp: '${exchTsym.lp}',
+                                  perChange: '${exchTsym.perChange}',
+                                  orderTpye: "${holdingData.sPrdtAli}",
+                                  holdQty: "${holdingData.saleableQty ?? 0}",
+                                  isModify: false);
+                              Navigator.pushNamed(
+                                  context, Routes.placeOrderScreen,
+                                  arguments: {
+                                    "orderArg": orderArgs,
+                                    "scripInfo": context
+                                        .read(marketWatchProvider)
+                                        .scripInfoModel!, "isBskt":""
+                                  });
+                            }
+                          },
+                          child: Center(
+                              child: Text("Exit",
+                                  style: textStyle(const Color(0xffFFFFFF), 14,
+                                      FontWeight.w600))),
+                        )))
+              ]),
+            )));
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
