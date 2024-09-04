@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -304,7 +302,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
           for (var element in _holdingsModel!) {
             element.isExitHoldings = false;
-            
+
             Map spilitSymbol =
                 spilitTsym(value: "${element.exchTsym![0].tsym}");
 
@@ -530,7 +528,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
   pnlHoldCal() {
     if (_holdingsModel!.isNotEmpty) {
       if (_holdingsModel![0].stat != "Not_Ok") {
-      
         _totalPnlHolding = _holdingsModel!.fold(
             0,
             (sum, next) =>
@@ -548,35 +545,32 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
         _oneDayChngPer = ((_oneDayChng / _totalCurrentVal) * 100);
 
+        double val = _holdingsModel!.fold(
+            0, (sum, next) => sum + double.parse("${next.invested ?? 0.00}"));
 
-       
-         
-     double val=    _holdingsModel!.fold(0,
-            (sum, next) => sum + double.parse("${next.invested ?? 0.00}"));
-    
-      _totInvesHold= val.toStringAsFixed(2);
+        _totInvesHold = val.toStringAsFixed(2);
 
         _totalCurrentVal = _holdingsModel!.fold(0,
             (sum, next) => sum + double.parse("${next.currentValue ?? 0.00}"));
       }
 
-      DateTime now = DateTime.now();
-      DateTime threeThirtyPM = DateTime(now.year, now.month, now.day, 15, 30);
-      DateTime nineFifteenAM = DateTime(now.year, now.month, now.day, 9, 15);
+      // DateTime now = DateTime.now();
+      // DateTime threeThirtyPM = DateTime(now.year, now.month, now.day, 15, 30);
+      // DateTime nineFifteenAM = DateTime(now.year, now.month, now.day, 9, 15);
 
-      // Check if the current time is after 3:30 PM or before 9:15 AM
-      bool isInTimeRange =
-          now.isAfter(threeThirtyPM) || now.isBefore(nineFifteenAM);
+      // // Check if the current time is after 3:30 PM or before 9:15 AM
+      // bool isInTimeRange =
+      //     now.isAfter(threeThirtyPM) || now.isBefore(nineFifteenAM);
 
-      if (isInTimeRange) {
-      
-          // notifyListeners();
-            log("sdns ${now.hour}");
-     
-      }else{
+      // if (isInTimeRange) {
 
-        print(" sdns object");
-      }
+      //     // notifyListeners();
+      //       log("sdns ${now.hour}");
+
+      // }else{
+
+      //   print(" sdns object");
+      // }
 
       // print("sdns ${now.hour}- ${now.minute}");
     }
@@ -682,21 +676,21 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
         totBuyAmts += double.parse(element.totbuyamt ?? "0.00");
         totSellAmts += double.parse(element.totsellamt ?? "0.00");
- if (element.exch == "BFO" && element.dname != null) {
-                List<String> splitVal = element.dname!.split(" ");
+        if (element.exch == "BFO" && element.dname != null) {
+          List<String> splitVal = element.dname!.split(" ");
 
-                element.symbol = splitVal[0];
-                element.expDate = "${splitVal[1]} ${splitVal[2]}";
-                element.option = splitVal.length > 4
-                    ? "${splitVal[3]} ${splitVal[4]}"
-                    : splitVal[3];
-              } else {
-        Map spilitSymbol = spilitTsym(value: "${element.tsym}");
+          element.symbol = splitVal[0];
+          element.expDate = "${splitVal[1]} ${splitVal[2]}";
+          element.option = splitVal.length > 4
+              ? "${splitVal[3]} ${splitVal[4]}"
+              : splitVal[3];
+        } else {
+          Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
-        element.symbol = "${spilitSymbol["symbol"]}";
-        element.expDate = "${spilitSymbol["expDate"]}";
-        element.option = "${spilitSymbol["option"]}";
-              }
+          element.symbol = "${spilitSymbol["symbol"]}";
+          element.expDate = "${spilitSymbol["expDate"]}";
+          element.option = "${spilitSymbol["option"]}";
+        }
         // if (_positionGroup.containsKey(element.symbol)) {
         //   _positionGroup["${element.symbol}"] =
         //       _positionGroup["${element.symbol}"]! + 1;

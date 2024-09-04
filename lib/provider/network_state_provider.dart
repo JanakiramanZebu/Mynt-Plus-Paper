@@ -115,20 +115,20 @@ class NetworkStateProvider extends ChangeNotifier {
             context: _globbcontext!);
       }
 
-      if (ref(indexListProvider).selectedBtmIndx == 0) {
+      if (ref(indexListProvider).selectedBtmIndx == 1) {
         // await ref(marketWatchProvider)
         //     .fetchMWScrip(ref(marketWatchProvider).wlName,  _globbcontext!);
 
         await ref(marketWatchProvider)
             .requestMWScrip(context: _globbcontext!, isSubscribe: true);
-      } else if (ref(indexListProvider).selectedBtmIndx == 1) {
+      } else if (ref(indexListProvider).selectedBtmIndx == 2) {
         await ref(portfolioProvider)
             .requestWSHoldings(isSubscribe: true, context: _globbcontext!);
         await ref(portfolioProvider)
             .requestWSPosition(isSubscribe: true, context: _globbcontext!);
         // await ref(portfolioProvider).fetchHoldings(_globbcontext, "");
         // await ref(portfolioProvider).fetchPositionBook(_globbcontext!, false);
-      } else if (ref(indexListProvider).selectedBtmIndx == 2) {
+      } else if (ref(indexListProvider).selectedBtmIndx == 3) {
         await ref(orderProvider)
             .requestWSOrderBook(isSubscribe: true, context: _globbcontext!);
 

@@ -1711,7 +1711,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     String input = "";
     _delScripQty = 0;
     ref(indexListProvider)
-        .requestdefaultIndex(isSubscribe: true, context: context);
+        .requestdefaultIndex(isSubscribe: isSubscribe, context: context);
     if (_scrips.isNotEmpty) {
       for (var element in _scrips) {
         element['isSelected'] = false;
