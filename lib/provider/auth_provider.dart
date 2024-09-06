@@ -704,7 +704,7 @@ class AuthProvider extends DefaultChangeNotifier {
       _logoutMsg = "";
 
       if (ref(indexListProvider).checkSess!.stat == "Ok") {
-        //  ref(indexListProvider).fetchNotifyMsg();
+         ref(indexListProvider).fetchNotifyMsg();
         ref(portfolioProvider).changeTabIndex(0);
         await ref(userProfileProvider).fetchUserDetail(
             context, "${pref.clientId}", "${pref.clientSession}", "");
