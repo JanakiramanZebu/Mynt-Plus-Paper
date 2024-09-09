@@ -1924,7 +1924,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       _setAlertModel =
           await api.getSetAlert(exch, tysm, value, alertTypeVal, remark);
-      ref(orderProvider).changeTabIndex(5);
+      ref(orderProvider).changeTabIndex(5,context);
 
       if (_setAlertModel!.stat! == "OI created") {
         fetchPendingAlert(context);

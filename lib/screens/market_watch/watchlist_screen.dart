@@ -227,8 +227,7 @@ class WatchListScreen extends ConsumerWidget {
                             title: Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text(
-                                    "${marketWatch.scrips[idx]["symbol"].toString().toUpperCase()} ",
+                                Text( "${marketWatch.scrips[idx]["symbol"].toString().toUpperCase()} ",
                                     style: textStyles.scripNameTxtStyle
                                         .copyWith(
                                             color: theme.isDarkMode

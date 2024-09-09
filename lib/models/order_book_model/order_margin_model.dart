@@ -7,6 +7,7 @@ class OrderMarginModel {
   String? marginusedprev;
   String? ordermargin;
   String? emsg;
+  String? marginusedtrade;
   OrderMarginModel(
       {this.requestTime,
       this.stat,
@@ -15,7 +16,7 @@ class OrderMarginModel {
       this.remarks,
       this.marginusedprev,
       this.emsg,
-      this.ordermargin});
+      this.ordermargin,this.marginusedtrade});
 
   OrderMarginModel.fromJson(Map<String, dynamic> json) {
     requestTime = json['request_time'];
@@ -25,7 +26,8 @@ class OrderMarginModel {
     marginused = json['marginused'];
     remarks = json['remarks'];
     marginusedprev = json['marginusedprev'];
-    ordermargin = json['ordermargin'];
+    marginusedtrade=json['marginusedtrade']
+;    ordermargin = json['ordermargin'];
   }
 
   Map<String, dynamic> toJson() {
@@ -38,6 +40,7 @@ class OrderMarginModel {
     data['remarks'] = remarks;
     data['marginusedprev'] = marginusedprev;
     data['ordermargin'] = ordermargin;
+    data['marginusedtrade']=marginusedtrade;
     return data;
   }
 }

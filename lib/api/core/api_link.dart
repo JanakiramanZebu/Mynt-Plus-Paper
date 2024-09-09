@@ -74,6 +74,8 @@ class ApiLinks {
   String get cancleSiporder => '$goMyntURL/CancelSipOrder';
   String get pendingGttorder => '$goMyntURL/GetPendingGTTOrder';
   String get cancelGTTOrder => '$goMyntURL/CancelGTTOrder';
+String get basketMargin=> '$goMyntURL/GetBasketMargin';
+  
 
 // Order
 

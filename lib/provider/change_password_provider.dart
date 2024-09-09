@@ -51,7 +51,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
   void clearTextField() {
     oldPassword.clear();
     newPassword.clear();
-    userIdController.clear();
+    
     forGetloginMethCtrl.clear();
     notifyListeners();
   }
@@ -161,11 +161,13 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
         ConstantName.sessCheck = true;
         ScaffoldMessenger.of(context).showSnackBar(successMessage(
             context, 'New Password is Sended Through Email/Sms'));
-        forgetMethod();
+        
         userIdController.text = '${_forgetPasswordModel!.clientid}';
-        clearError();
-        forGetloginMethCtrl.clear();
+       
+        
         Future.delayed(const Duration(seconds: 2), () {
+          forgetMethod();
+           clearError();
           Navigator.pushNamed(context, Routes.changePass, arguments: "No");
         });
       } else if (_forgetPasswordModel!.stat == "Not_Ok") {
@@ -199,15 +201,15 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
           await api.getChangePasswordProfile(userId, oldpassword, password);
       if (_changepasswordmodel!.stat == "Ok") {
         ConstantName.sessCheck = true;
-        clearError();
-        clearTextField();
+       
         ConstantName.timer!.cancel();
         ref(authProvider).clearTextField();
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, '${_changepasswordmodel!.dmsg}'));
 
-        changePassMethod();
+       
         Future.delayed(const Duration(seconds: 2), () {
+         changePassMethod();
           Navigator.pushNamedAndRemoveUntil(
               context,
               Routes.loginScreen,

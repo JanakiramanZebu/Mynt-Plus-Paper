@@ -1,4 +1,5 @@
- 
+import 'dart:convert'; 
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../../res/res.dart';
+import '../../locator/locator.dart';
+import '../../locator/preference.dart';
 import '../../models/marketwatch_model/scrip_info.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../models/order_book_model/order_margin_model.dart';
@@ -70,6 +73,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
   TextEditingController sipLtpctrl = TextEditingController();
   TextEditingController sipname = TextEditingController();
   TextEditingController sipqtyctrl = TextEditingController();
+
+  final Preferences pref = locator<Preferences>();
 
   DateTime now = DateTime.now();
   String formattedDate = "";
@@ -335,13 +340,13 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
 
                                             if (index == 1 || index == 2) {
                                               addStoploss = true;
+                                            }else {
+                                              addStoploss = false;
                                             }
                                             if (orderType == "SIP") {
                                               sip.startdatemethod("0");
                                               sip.numberofSips.clear();
-                                            } else {
-                                              addStoploss = false;
-                                            }
+                                            } 
                                           });
 
                                           if (orderTypes[index]['type'] !=
@@ -1744,8 +1749,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         price = result
                                                             .toStringAsFixed(2);
                                                       }
-
-                                                      
                                                     } else {
                                                       priceCtrl.text =
                                                           "${widget.orderArg.ltp}";
@@ -3393,121 +3396,72 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
 
   placeOrder(OrderInputProvider orderInput, bool isSliceOrd,
       ThemesProvider theme) async {
-    if (!isSliceOrd) {
-      PlaceOrderInput placeOrderInput = PlaceOrderInput(
-          amo: isAmo ? "Yes" : "",
-          blprc: orderType == "Cover" || orderType == "Bracket"
-              ? stopLossCtrl.text
-              : '',
-          bpprc: orderType == "Bracket" ? targetCtrl.text : '',
-          dscqty: discQtyCtrl.text,
-          exch: widget.scripInfo.exch!,
-          prc: priceCtrl.text,
-          prctype: orderInput.prcType,
-          prd: orderInput.orderType,
-          qty: qtyCtrl.text,
-          ret: validityType,
-          trailprc: '',
-          trantype: isBuy! ? 'B' : 'S',
-          trgprc: priceType == "SL Limit" || priceType == "SL MKT"
-              ? triggerPriceCtrl.text
-              : "",
-          tsym: widget.scripInfo.tsym!,
-          mktProt: priceType == "Market" || priceType == "SL MKT"
-              ? mktProtCtrl.text
-              : '',
-          channel: '',
-          userAgent: '',
-          appInstaId: '');
-      await context
-          .read(orderProvider)
-          .fetchPlaceOrder(context, placeOrderInput, widget.orderArg.isExit);
+    String bsktName = context.read(orderProvider).selectedBsktName;
+    if (widget.isBasket == "Basket") {
+      addBasketScrip(orderInput, bsktName);
     } else {
-      showModalBottomSheet(
-          isScrollControlled: true,
-          useSafeArea: true,
-          isDismissible: true,
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-          context: context,
-          builder: (context) => Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color:
-                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Color(0xff999999),
-                        blurRadius: 4.0,
-                        offset: Offset(2.0, 0.0))
-                  ]),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CustomDragHandler(),
-                    Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text("Slice Order",
-                            style: textStyles.appBarTitleTxt.copyWith(
-                                color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack))),
-                    Divider(
-                        color: theme.isDarkMode
-                            ? colors.darkColorDivider
-                            : colors.colorDivider),
-                    Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(children: [
-                                      Text("${widget.scripInfo.symbol} ",
-                                          style: textStyles.scripNameTxtStyle
-                                              .copyWith(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack)),
-                                      Text("${widget.scripInfo.option}",
-                                          style: textStyles.scripNameTxtStyle
-                                              .copyWith(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack))
-                                    ]),
-                                    const SizedBox(height: 4),
-                                    Row(children: [
-                                      CustomExchBadge(
-                                          exch: "${widget.scripInfo.exch}"),
-                                      Text("${widget.scripInfo.expDate}",
-                                          style: textStyles.scripExchTxtStyle
-                                              .copyWith(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack))
-                                    ])
-                                  ]),
-                              Row(children: [
-                                Text("Qty: $frezQty ",
-                                    style: textStyles.scripNameTxtStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)),
-                                Text(" X ${quantity >= 28 ? 28 : quantity}",
-                                    style: textStyles.scripExchTxtStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack))
-                              ])
-                            ])),
-                    if (reminder != 0) ...[
+      if (!isSliceOrd) {
+        PlaceOrderInput placeOrderInput = PlaceOrderInput(
+            amo: isAmo ? "Yes" : "",
+            blprc: orderType == "Cover" || orderType == "Bracket"
+                ? stopLossCtrl.text
+                : '',
+            bpprc: orderType == "Bracket" ? targetCtrl.text : '',
+            dscqty: discQtyCtrl.text,
+            exch: widget.scripInfo.exch!,
+            prc: priceCtrl.text,
+            prctype: orderInput.prcType,
+            prd: orderInput.orderType,
+            qty: qtyCtrl.text,
+            ret: validityType,
+            trailprc: '',
+            trantype: isBuy! ? 'B' : 'S',
+            trgprc: priceType == "SL Limit" || priceType == "SL MKT"
+                ? triggerPriceCtrl.text
+                : "",
+            tsym: widget.scripInfo.tsym!,
+            mktProt: priceType == "Market" || priceType == "SL MKT"
+                ? mktProtCtrl.text
+                : '',
+            channel: '',
+            userAgent: '',
+            appInstaId: '');
+        await context
+            .read(orderProvider)
+            .fetchPlaceOrder(context, placeOrderInput, widget.orderArg.isExit);
+      } else {
+        showModalBottomSheet(
+            isScrollControlled: true,
+            useSafeArea: true,
+            isDismissible: true,
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            context: context,
+            builder: (context) => Container(
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: theme.isDarkMode
+                        ? colors.colorBlack
+                        : colors.colorWhite,
+                    boxShadow: const [
+                      BoxShadow(
+                          color: Color(0xff999999),
+                          blurRadius: 4.0,
+                          offset: Offset(2.0, 0.0))
+                    ]),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CustomDragHandler(),
+                      Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text("Slice Order",
+                              style: textStyles.appBarTitleTxt.copyWith(
+                                  color: theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack))),
                       Divider(
                           color: theme.isDarkMode
                               ? colors.darkColorDivider
@@ -3548,13 +3502,13 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                       ])
                                     ]),
                                 Row(children: [
-                                  Text("Qty: $reminder ",
+                                  Text("Qty: $frezQty ",
                                       style: textStyles.scripNameTxtStyle
                                           .copyWith(
                                               color: theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack)),
-                                  Text(" X 1",
+                                  Text(" X ${quantity >= 28 ? 28 : quantity}",
                                       style: textStyles.scripExchTxtStyle
                                           .copyWith(
                                               color: theme.isDarkMode
@@ -3562,141 +3516,97 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                   : colors.colorBlack))
                                 ])
                               ])),
-                      const SizedBox(height: 6)
-                    ],
-                    Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
-                        width: MediaQuery.of(context).size.width,
-                        child: ElevatedButton(
-                            onPressed: () async {
-                              if (quantity >= 28) {
-                                for (var i = 0; i < 28; i++) {
-                                  PlaceOrderInput placeOrderInput =
-                                      PlaceOrderInput(
-                                          amo: isAmo ? "Yes" : "",
-                                          blprc: orderType == "Cover" ||
-                                                  orderType == "Bracket"
-                                              ? stopLossCtrl.text
-                                              : '',
-                                          bpprc: orderType ==
-                                                  "Bracket"
-                                              ? targetCtrl.text
-                                              : '',
-                                          dscqty: discQtyCtrl.text,
-                                          exch: widget.scripInfo.exch!,
-                                          prc:
-                                              ((widget.scripInfo.exch == "MCX" ||
-                                                          widget.scripInfo
-                                                                  .exch ==
-                                                              "BSE") &&
-                                                      (priceType == "Market" ||
-                                                          priceType ==
-                                                              "SL MKT"))
-                                                  ? "0"
-                                                  : price,
-                                          prctype: orderInput.prcType,
-                                          prd: orderInput.orderType,
-                                          qty: "$frezQty",
-                                          ret: validityType,
-                                          trailprc: '',
-                                          trantype: isBuy! ? 'B' : 'S',
-                                          trgprc: priceType == "SL Limit" ||
-                                                  priceType == "SL MKT"
-                                              ? triggerPriceCtrl.text
-                                              : "",
-                                          tsym: widget.scripInfo.tsym!,
-                                          mktProt: priceType == "Market" ||
-                                                  priceType == "SL MKT"
-                                              ? mktProtCtrl.text
-                                              : '',
-                                          channel: '',
-                                          userAgent: '',
-                                          appInstaId: '');
-                                  await context
-                                      .read(orderProvider)
-                                      .slicePlaceOrder(
-                                          context, placeOrderInput);
-                                }
-                              } else {
-                                for (var i = 0; i < quantity; i++) {
-                                  PlaceOrderInput placeOrderInput =
-                                      PlaceOrderInput(
-                                          amo: isAmo ? "Yes" : "",
-                                          blprc: orderType == "Cover" ||
-                                                  orderType == "Bracket"
-                                              ? stopLossCtrl.text
-                                              : '',
-                                          bpprc: orderType ==
-                                                  "Bracket"
-                                              ? targetCtrl.text
-                                              : '',
-                                          dscqty: discQtyCtrl.text,
-                                          exch: widget.scripInfo.exch!,
-                                          prc:
-                                              ((widget.scripInfo.exch == "MCX" ||
-                                                          widget.scripInfo
-                                                                  .exch ==
-                                                              "BSE") &&
-                                                      (priceType == "Market" ||
-                                                          priceType ==
-                                                              "SL MKT"))
-                                                  ? "0"
-                                                  : price,
-                                          prctype: orderInput.prcType,
-                                          prd: orderInput.orderType,
-                                          qty: "$frezQty",
-                                          ret: validityType,
-                                          trailprc: '',
-                                          trantype: isBuy! ? 'B' : 'S',
-                                          trgprc: priceType == "SL Limit" ||
-                                                  priceType == "SL MKT"
-                                              ? triggerPriceCtrl.text
-                                              : "",
-                                          tsym: widget.scripInfo.tsym!,
-                                          mktProt: priceType == "Market" ||
-                                                  priceType == "SL MKT"
-                                              ? mktProtCtrl.text
-                                              : '',
-                                          channel: '',
-                                          userAgent: '',
-                                          appInstaId: '');
-                                  await context
-                                      .read(orderProvider)
-                                      .slicePlaceOrder(
-                                          context, placeOrderInput);
-                                }
-                              }
-
-                              if (reminder != 0) {
-                                PlaceOrderInput placeOrderInput =
-                                    PlaceOrderInput(
+                      if (reminder != 0) ...[
+                        Divider(
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : colors.colorDivider),
+                        Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(children: [
+                                          Text("${widget.scripInfo.symbol} ",
+                                              style: textStyles
+                                                  .scripNameTxtStyle
+                                                  .copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack)),
+                                          Text("${widget.scripInfo.option}",
+                                              style: textStyles
+                                                  .scripNameTxtStyle
+                                                  .copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack))
+                                        ]),
+                                        const SizedBox(height: 4),
+                                        Row(children: [
+                                          CustomExchBadge(
+                                              exch: "${widget.scripInfo.exch}"),
+                                          Text("${widget.scripInfo.expDate}",
+                                              style: textStyles
+                                                  .scripExchTxtStyle
+                                                  .copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack))
+                                        ])
+                                      ]),
+                                  Row(children: [
+                                    Text("Qty: $reminder ",
+                                        style: textStyles.scripNameTxtStyle
+                                            .copyWith(
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack)),
+                                    Text(" X 1",
+                                        style: textStyles.scripExchTxtStyle
+                                            .copyWith(
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack))
+                                  ])
+                                ])),
+                        const SizedBox(height: 6)
+                      ],
+                      Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 4),
+                          width: MediaQuery.of(context).size.width,
+                          child: ElevatedButton(
+                              onPressed: () async {
+                                if (quantity >= 28) {
+                                  for (var i = 0; i < 28; i++) {
+                                    PlaceOrderInput placeOrderInput = PlaceOrderInput(
                                         amo: isAmo ? "Yes" : "",
                                         blprc: orderType == "Cover" ||
                                                 orderType == "Bracket"
                                             ? stopLossCtrl.text
                                             : '',
-                                        bpprc: orderType ==
-                                                "Bracket"
+                                        bpprc: orderType == "Bracket"
                                             ? targetCtrl.text
                                             : '',
                                         dscqty: discQtyCtrl.text,
                                         exch: widget.scripInfo.exch!,
-                                        prc:
-                                            ((widget.scripInfo
-                                                                .exch ==
-                                                            "MCX" ||
-                                                        widget.scripInfo
-                                                                .exch ==
-                                                            "BSE") &&
-                                                    (priceType ==
-                                                            "Market" ||
-                                                        priceType == "SL MKT"))
-                                                ? "0"
-                                                : price,
+                                        prc: ((widget.scripInfo.exch == "MCX" ||
+                                                    widget.scripInfo.exch ==
+                                                        "BSE") &&
+                                                (priceType == "Market" ||
+                                                    priceType == "SL MKT"))
+                                            ? "0"
+                                            : price,
                                         prctype: orderInput.prcType,
                                         prd: orderInput.orderType,
-                                        qty: "$reminder",
+                                        qty: "$frezQty",
                                         ret: validityType,
                                         trailprc: '',
                                         trantype: isBuy! ? 'B' : 'S',
@@ -3712,31 +3622,132 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                         channel: '',
                                         userAgent: '',
                                         appInstaId: '');
+                                    await context
+                                        .read(orderProvider)
+                                        .slicePlaceOrder(
+                                            context, placeOrderInput);
+                                  }
+                                } else {
+                                  for (var i = 0; i < quantity; i++) {
+                                    PlaceOrderInput placeOrderInput = PlaceOrderInput(
+                                        amo: isAmo ? "Yes" : "",
+                                        blprc: orderType == "Cover" ||
+                                                orderType == "Bracket"
+                                            ? stopLossCtrl.text
+                                            : '',
+                                        bpprc: orderType == "Bracket"
+                                            ? targetCtrl.text
+                                            : '',
+                                        dscqty: discQtyCtrl.text,
+                                        exch: widget.scripInfo.exch!,
+                                        prc: ((widget.scripInfo.exch == "MCX" ||
+                                                    widget.scripInfo.exch ==
+                                                        "BSE") &&
+                                                (priceType == "Market" ||
+                                                    priceType == "SL MKT"))
+                                            ? "0"
+                                            : price,
+                                        prctype: orderInput.prcType,
+                                        prd: orderInput.orderType,
+                                        qty: "$frezQty",
+                                        ret: validityType,
+                                        trailprc: '',
+                                        trantype: isBuy! ? 'B' : 'S',
+                                        trgprc: priceType == "SL Limit" ||
+                                                priceType == "SL MKT"
+                                            ? triggerPriceCtrl.text
+                                            : "",
+                                        tsym: widget.scripInfo.tsym!,
+                                        mktProt: priceType == "Market" ||
+                                                priceType == "SL MKT"
+                                            ? mktProtCtrl.text
+                                            : '',
+                                        channel: '',
+                                        userAgent: '',
+                                        appInstaId: '');
+                                    await context
+                                        .read(orderProvider)
+                                        .slicePlaceOrder(
+                                            context, placeOrderInput);
+
+
+                                            if (context
+                                        .read(orderProvider).placeOrderModel!.emsg== "Session Expired :  Invalid Session Key") {
+                                                break;
+                                            }
+                                            
+                                  }
+                                }
+
+                                if (reminder != 0) {
+                                  PlaceOrderInput placeOrderInput =
+                                      PlaceOrderInput(
+                                          amo: isAmo ? "Yes" : "",
+                                          blprc: orderType == "Cover" ||
+                                                  orderType == "Bracket"
+                                              ? stopLossCtrl.text
+                                              : '',
+                                          bpprc: orderType ==
+                                                  "Bracket"
+                                              ? targetCtrl.text
+                                              : '',
+                                          dscqty: discQtyCtrl.text,
+                                          exch: widget.scripInfo.exch!,
+                                          prc:
+                                              ((widget.scripInfo.exch == "MCX" ||
+                                                          widget.scripInfo
+                                                                  .exch ==
+                                                              "BSE") &&
+                                                      (priceType == "Market" ||
+                                                          priceType ==
+                                                              "SL MKT"))
+                                                  ? "0"
+                                                  : price,
+                                          prctype: orderInput.prcType,
+                                          prd: orderInput.orderType,
+                                          qty: "$reminder",
+                                          ret: validityType,
+                                          trailprc: '',
+                                          trantype: isBuy! ? 'B' : 'S',
+                                          trgprc: priceType == "SL Limit" ||
+                                                  priceType == "SL MKT"
+                                              ? triggerPriceCtrl.text
+                                              : "",
+                                          tsym: widget.scripInfo.tsym!,
+                                          mktProt: priceType == "Market" ||
+                                                  priceType == "SL MKT"
+                                              ? mktProtCtrl.text
+                                              : '',
+                                          channel: '',
+                                          userAgent: '',
+                                          appInstaId: '');
+                                  await context
+                                      .read(orderProvider)
+                                      .slicePlaceOrder(
+                                          context, placeOrderInput);
+                                }
                                 await context
                                     .read(orderProvider)
-                                    .slicePlaceOrder(context, placeOrderInput);
-                              }
-                              await context
-                                  .read(orderProvider)
-                                  .fetchOrderBook(context, true);
+                                    .fetchOrderBook(context, true);
 
-                              await context
-                                  .read(indexListProvider)
-                                  .bottomMenu(2);
-                              Navigator.pop(context);
-                              Navigator.pop(context);
-                            },
-                            style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
-                                backgroundColor:
-                                    isBuy! ? colors.ltpgreen : colors.darkred,
-                                shape: const StadiumBorder()),
-                            child: Text(isBuy! ? 'Buy Now' : "Sell Now",
-                                style: textStyle(const Color(0xffffffff), 14,
-                                    FontWeight.w600)))),
-                    const SizedBox(height: 10)
-                  ])));
+                                await context
+                                    .read(indexListProvider)
+                                    .bottomMenu(2);
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  backgroundColor:
+                                      isBuy! ? colors.ltpgreen : colors.darkred,
+                                  shape: const StadiumBorder()),
+                              child: Text(isBuy! ? 'Buy Now' : "Sell Now",
+                                  style: textStyle(const Color(0xffffffff), 14,
+                                      FontWeight.w600)))),
+                      const SizedBox(height: 10)
+                    ])));
+      }
     }
   }
 
@@ -3834,5 +3845,60 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
             : "",
         alid: '');
     await context.read(orderProvider).fetchOCOPlaceOrder(input, context);
+  }
+
+  addBasketScrip(OrderInputProvider orderInput, String bsktName) async {
+    Map<String, dynamic> data = {};
+    String curDate = convDateWithTime();
+    data = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
+
+    List scripList = data[bsktName] ?? [];
+
+    scripList.add({
+      "dname": "${widget.scripInfo.dname}",
+      "token": widget.scripInfo.token,
+      "date": curDate,
+      "amo": isAmo ? "Yes" : "",
+      "blprc": orderType == "Cover" || orderType == "Bracket"
+          ? stopLossCtrl.text
+          : '',
+      "bpprc": orderType == "Bracket" ? targetCtrl.text : '',
+      "dscqty": discQtyCtrl.text,
+      "exch": widget.scripInfo.exch!,
+      "prc": priceCtrl.text,
+      "prctype": orderInput.prcType,
+      "prd": orderInput.orderType,
+      "ordType": orderInput.orderType == "I"
+          ? "MIS"
+          : orderInput.orderType == "C"
+              ? "CNC"
+              : orderInput.orderType == "M"
+                  ? "NRML"
+                  : orderInput.orderType == "H"
+                      ? "CO"
+                      : "BO",
+      "qty": qtyCtrl.text,
+      "ret": validityType,
+      "trailprc": '',
+      "trantype": isBuy! ? 'B' : 'S',
+      "trgprc": priceType == "SL Limit" || priceType == "SL MKT"
+          ? triggerPriceCtrl.text
+          : "",
+      "tsym": widget.scripInfo.tsym!,
+      "mktProt":
+          priceType == "Market" || priceType == "SL MKT" ? mktProtCtrl.text : ''
+    });
+
+    data.addAll({bsktName: scripList});
+
+    String jsonData = jsonEncode(data);
+
+    pref.setBasketScrip(jsonData);
+
+    await context.read(orderProvider).getBasketName();
+
+ await context.read(orderProvider).fetchBasketMargin();
+    Navigator.pop(context);
+    Navigator.pop(context);
   }
 }

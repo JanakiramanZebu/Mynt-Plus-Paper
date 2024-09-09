@@ -133,8 +133,8 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                       Colors.grey, 13, FontWeight.w400),
                                   hintText:
                                       authForgetpassword.isMobileForgetpass
-                                          ? "Enter Client ID to begin"
-                                          : "Enter Mobile Numer to begin",
+                                          ? "Enter Client ID"
+                                          : "Enter Mobile Numer",
                                   enabledBorder: const UnderlineInputBorder(
                                     borderSide:
                                         BorderSide(color: Color(0xff999999)),
@@ -166,8 +166,8 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                       horizontal: 7, vertical: 10),
                                   child: Text(
                                       authForgetpassword.isMobileForgetpass
-                                          ? "Login with Mobile"
-                                          : "Login with Client ID",
+                                          ? "Switch to Mobile"
+                                          : "Switch to Client ID",
                                       style: textStyle(
                                           theme.isDarkMode
                                               ? colors.colorLightBlue

@@ -112,12 +112,12 @@ class _CreateBasketState extends State<CreateBasket> {
                         errorText = "Please enter basket name";
                       } else {
                         List listofBasket =
-                            jsonDecode("${pref.basketNameList ?? []}");
+                       pref.bsktList!.isEmpty?[]:     jsonDecode("${pref.bsktList?? []}");
 
                         if (listofBasket.isNotEmpty) {
                           for (var element in listofBasket) {
                             bskt.add(
-                                element['basketname'].toString().toLowerCase());
+                                element['bsketName'].toString().toLowerCase());
                           }
 
                           if (bskt

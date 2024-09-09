@@ -62,7 +62,7 @@ mixin OrderAPI on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
-      // log("PlaceOrder => ${res.body}");
+      log("PlaceOrder => ${res.body}");
       final json = jsonDecode(res.body);
 
       return PlaceOrderModel.fromJson(json as Map<String, dynamic>);
@@ -284,7 +284,7 @@ mixin OrderAPI on ApiCore {
         "dscqty": input.dscqty,
         "ordersource": ApiLinks.source
       };
-   
+
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
@@ -371,7 +371,6 @@ mixin OrderAPI on ApiCore {
     }
   }
 
-  
   Future<PlaceGttOrderModel> getPlaceGTTOrder(PlaceGTTOrderInput input) async {
     try {
       final uri = Uri.parse(apiLinks.placeGTTOrder);
@@ -604,6 +603,41 @@ mixin OrderAPI on ApiCore {
       }
 
       return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<OrderMarginModel> getBasketMargin(
+      OrderMarginInput input, List basket) async {
+    try {
+      final uri = Uri.parse(apiLinks.basketMargin);
+
+      Map payload = {
+        "uid": "${prefs.clientId}",
+        "actid": "${prefs.clientId}",
+        "exch": input.exch,
+        "tsym": input.tsym.contains("&")
+            ? input.tsym.replaceAll("&", "%26")
+            : input.tsym,
+        "qty": input.qty,
+        "prc": input.prc,
+        "prd": input.prd,
+        "trantype": input.trantype,
+        "prctyp": input.prctyp
+      };
+
+      if (basket.isNotEmpty) {
+        payload.addAll({"basketlists": basket});
+      }
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
+
+      log("Basket Order Margin => ${res.body}");
+      final json = jsonDecode(res.body);
+
+      return OrderMarginModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

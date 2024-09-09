@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:flutter_svg/svg.dart'; 
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/order_provider.dart';
@@ -626,9 +625,5 @@ class OrderBookDetail extends ConsumerWidget {
     ]);
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+  
 }

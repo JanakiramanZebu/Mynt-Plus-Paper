@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../provider/order_provider.dart';
-// import '../../provider/sip_order_provider.dart';
+import '../../provider/order_provider.dart'; 
 import '../../provider/thems.dart';
 import '../../res/res.dart';
-// import 'basket/basket_list.dart';
+import 'basket/basket_list.dart';
 import 'gtt_order_book.dart';
-import 'order_book.dart';
-// import 'sip_order_book_screen.dart';
+import 'order_book.dart'; 
 import 'pending_alert_card.dart';
 import 'sip_order_book_screen.dart';
 import 'trade_book.dart';
@@ -32,19 +30,11 @@ class _OrderBookScreenState extends State<OrderBookScreen>
           initialIndex: context.read(orderProvider).selectedTab);
 
       context.read(orderProvider).tabCtrl.addListener(() {
-        context.read(orderProvider).tabSize();
+       
 
         context
             .read(orderProvider)
-            .changeTabIndex(context.read(orderProvider).tabCtrl.index);
-        context.read(orderProvider).showOrderSearch(false);
-        context.read(orderProvider).clearOrderSearch();
-        context.read(orderProvider).orderSearch(
-            context.read(orderProvider).orderSearchCtrl.text, context);
-
-        context
-            .read(orderProvider)
-            .requestWSOrderBook(isSubscribe: true, context: context);
+            .changeTabIndex(context.read(orderProvider).tabCtrl.index,context); 
       });
     });
     super.initState();
@@ -102,7 +92,7 @@ class _OrderBookScreenState extends State<OrderBookScreen>
                     OrderBook(orderBook: orderBook.executedOrder!),
                     GttOrderBook(
                         gttOrderBook: orderBook.gttOrderBookModel ?? []),
-                    // const BasketList(),
+                    const BasketList(),
                     TradeBook(tradeBook: orderBook.tradeBook ?? []),
                     const PendingAlert(),
                     SipOrderBook(

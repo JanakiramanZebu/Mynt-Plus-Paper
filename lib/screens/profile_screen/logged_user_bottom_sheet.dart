@@ -104,7 +104,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                           14,
                                           FontWeight.w500)),
                                   subtitle: Text(
-                                      "User ID ${loggedUser.loggedMobile[index].clientId}",
+                                      "Client ID ${loggedUser.loggedMobile[index].clientId}",
                                       style: textStyle(const Color(0xff666666),
                                           12, FontWeight.w500)),
                                   trailing:

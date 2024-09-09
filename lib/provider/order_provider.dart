@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,8 +10,6 @@ import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
-import 'package:intl/intl.dart';
-import '../models/order_book_model/basket_model.dart';
 import '../models/order_book_model/cancel_order_model.dart';
 import '../models/order_book_model/get_brokerage.dart';
 import '../models/order_book_model/gtt_order_book.dart';
@@ -26,6 +25,7 @@ import '../models/order_book_model/sip_order_cancel.dart';
 import '../models/order_book_model/sip_place_order.dart';
 import '../models/order_book_model/trade_book_model.dart';
 
+import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
@@ -47,6 +47,9 @@ class OrderProvider extends DefaultChangeNotifier {
   PlaceOrderModel? get placeOrderModel => _placeOrderModel;
   OrderMarginModel? _orderMarginModel;
   OrderMarginModel? get orderMarginModel => _orderMarginModel;
+
+  OrderMarginModel? _bsktOrderMargin;
+  OrderMarginModel? get bsktOrderMargin => _bsktOrderMargin;
   CancelOrderModel? _cancelOrderModel;
   CancelOrderModel? get cancelOrderModel => _cancelOrderModel;
   ModifyOrderModel? _modifyOrderModel;
@@ -91,8 +94,11 @@ class OrderProvider extends DefaultChangeNotifier {
   ModifySIPModel? _modifySipModel;
   ModifySIPModel? get modifySipModel => _modifySipModel;
 
-  List<BasketModel> _basketName = [];
-  List<BasketModel> get basketName => _basketName;
+  List _bsktScripList = [];
+  List get bsktScripList => _bsktScripList;
+
+  List _bsktList = [];
+  List get bsktList => _bsktList;
 
   Map _bsktScrips = {};
   Map get bsktScrips => _bsktScrips;
@@ -111,19 +117,46 @@ class OrderProvider extends DefaultChangeNotifier {
 
   bool _showSearchOrder = false;
   bool get showSearchHold => _showSearchOrder;
-  changeTabIndex(int index) {
+  changeTabIndex(int index, BuildContext context) {
     _selectedTab = index;
 
-    // if (index == 4) {
-    //   getBasketName();
-    // }
+    tabSize();
+    showOrderSearch(false);
+    clearOrderSearch();
+    orderSearch(orderSearchCtrl.text, context);
+    if (index <= 3) {
+      requestWSOrderBook(isSubscribe: true, context: context);
+    }
+
+    if (index == 4) {
+      getBasketName();
+    }
   }
 
   String _selectedBsktName = "";
   String get selectedBsktName => _selectedBsktName;
 
-  chngBsktName(String val) {
+  chngBsktName(String val, BuildContext context) async {
     _selectedBsktName = val;
+
+    _bsktScrips = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
+
+    _bsktScripList = _bsktScrips[val] ?? [];
+
+    if (_bsktScripList.isNotEmpty) {
+      String input = "";
+      for (var i = 0; i < _bsktScripList.length; i++) {
+        input += "${_bsktScripList[i]['exch']}|${_bsktScripList[i]['token']}#";
+      }
+      if (input.isNotEmpty) {
+        ref(websocketProvider).establishConnection(
+            channelInput: input, task: "t", context: context);
+      }
+    }
+
+    await fetchBasketMargin();
+
+    Navigator.pushNamed(context, Routes.bsktScripList, arguments: val);
     notifyListeners();
   }
 
@@ -135,14 +168,14 @@ class OrderProvider extends DefaultChangeNotifier {
       Tab(
           text:
               "GTT Order (${_gttOrderBookModel == null ? 0 : _gttOrderBookModel!.length})"),
-      // Tab(text: "Basket Order (${pref.basketNameList!.length})"),
+      Tab(text: "Basket Order (${pref.basketNameList!.length})"),
       Tab(text: "Trade Book (${_tradeBook == null ? 0 : _tradeBook!.length})"),
       Tab(
           text:
               "Alert (${ref(marketWatchProvider).alertPendingModel!.length})"),
       Tab(
           text:
-              "SIP Order(${_siporderBookModel?.sipDetails?.length == null ? 0 : _siporderBookModel!.sipDetails!.length})"),
+              "SIP Order(${_siporderBookModel?.sipDetails?.length == null ? 0 : _siporderBookModel!.sipDetails!.length})")
     ];
 
     notifyListeners();
@@ -231,12 +264,6 @@ class OrderProvider extends DefaultChangeNotifier {
         ref(indexListProvider).bottomMenu(3);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
-        // ScaffoldMessenger.of(context).clearSnackBars();
-        // ScaffoldMessenger.of(context)
-        //     .showSnackBar(successSnackBar("Order Placed"));
-
-        // Navigator.pop(context);
-        // Navigator.pushNamed(context, Routes.portfolioOrderbookScreen);
       } else {
         if (_placeOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
@@ -291,7 +318,6 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   Future fetchOrderBook(context, bool websocCon) async {
-    //
     try {
       toggleLoadingOn(true);
       _executedOrder = [];
@@ -879,74 +905,105 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   createBasketOrder(String val, BuildContext context) async {
-    final now = DateTime.now();
+    String curDate = convDateWithTime();
 
-    final inputFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
-    final inputDatetime = inputFormat.parse("$now");
+    getBasketName();
 
-    final outputFormat = DateFormat("dd MMM yyyy, hh:mm a");
-    final formattedDatetime = outputFormat.format(inputDatetime);
+    _bsktList.add({
+      "bsketName": val,
+      "createdDate": curDate,
+      "max": '20',
+      "curLength": '0'
+    });
+    await pref.setBasketList(jsonEncode(_bsktList));
 
-    List<BasketModel> basketList = [
-      BasketModel(
-          basketname: val,
-          createdDate: formattedDatetime,
-          max: '20',
-          curLength: '0')
-    ];
-
-    _basketName = await getLocalData();
-
-    await setLocalData(_basketName, basketList);
-
-    _basketName = await getLocalData();
-
+    getBasketName();
+    tabSize();
     Navigator.pop(context);
     notifyListeners();
   }
 
   getBasketName() async {
-    _basketName = await getLocalData();
-    _bsktScrips = {};
-    if (_basketName.isNotEmpty) {
-      for (var element in _basketName) {
-        _bsktScrips.addAll({element.basketname: []});
+    _bsktList = pref.bsktList!.isEmpty ? [] : jsonDecode(pref.bsktList!);
+
+    _bsktScrips = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
+
+    if (_bsktList.isNotEmpty) {
+      for (var element in _bsktList) {
+        List scipList = _bsktScrips[element['bsketName']] ?? [];
+        element['curLength'] = "${scipList.length}";
+        if (_selectedBsktName == element['bsketName']) {
+          _bsktScripList = scipList;
+        }
       }
-      print("basket scrips ${_bsktScrips}");
     }
+
+    log("${_bsktScrips}");
     notifyListeners();
   }
 
-  Future<void> setLocalData(
-      List<BasketModel> list, List<BasketModel> currentUser) async {
-    List<BasketModel> uniqueList = [];
-    list.add(currentUser[0]);
+  removeBasket(int index) async {
+    _bsktList.removeAt(index);
 
-    Set<String> uniqueCombos = <String>{};
-    for (var element in list.reversed) {
-      String combo = element.basketname;
+    await pref.setBasketList(jsonEncode(_bsktList));
+    _bsktList = pref.bsktList!.isEmpty ? [] : jsonDecode(pref.bsktList!);
 
-      if (!uniqueCombos.contains(combo)) {
-        uniqueCombos.add(combo);
-        uniqueList.add(element);
-      }
-    }
-
-    final List<String> jsonList =
-        uniqueList.map((obj) => obj.toJson()).toList();
-
-    pref.setBasketNameList(jsonList);
+    notifyListeners();
   }
 
-  Future<List<BasketModel>> getLocalData() async {
-    List<String>? jsonList = pref.basketNameList;
+  removeBsktScrip(int index, String bsktName) {
+    Map<String, dynamic> data = {};
+    data = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
 
-    if (jsonList != null) {
-      return jsonList
-          .map((jsonString) => BasketModel.fromJson(jsonString))
-          .toList();
-    } else {
-      return [];
+    _bsktScripList.removeAt(index);
+
+    data.addAll({bsktName: _bsktScripList});
+
+    String jsonData = jsonEncode(data);
+
+    pref.setBasketScrip(jsonData);
+
+    getBasketName();
+  }
+
+  fetchBasketMargin() async {
+    try {
+      List basket = [];
+      if (_bsktScripList.isNotEmpty) {
+        for (var i = 0; i < _bsktScripList.length; i++) {
+          if (i > 0) {
+            basket.add({
+              "exch": '${_bsktScripList[i]["exch"]}',
+              "tsym": '${_bsktScripList[i]["tsym"]}'.contains("&")
+                  ? '${_bsktScripList[i]["tsym"]}'.replaceAll("&", "%26")
+                  : '${_bsktScripList[i]["tsym"]}',
+              "qty": '${_bsktScripList[i]["qty"]}',
+              "prc": '${_bsktScripList[i]["prc"]}',
+              "prd": '${_bsktScripList[i]["prd"]}',
+              "trantype": '${_bsktScripList[i]["trantype"]}',
+              "prctyp": '${_bsktScripList[i]["prctyp"]}'
+            });
+          }
+        }
+
+        OrderMarginInput inputs = OrderMarginInput(
+            exch: '${_bsktScripList[0]["exch"]}',
+            prc: '${_bsktScripList[0]["prc"]}',
+            prctyp: '${_bsktScripList[0]["prctyp"]}',
+            prd: '${_bsktScripList[0]["prd"]}',
+            qty: '${_bsktScripList[0]["qty"]}',
+            trantype: '${_bsktScripList[0]["trantype"]}',
+            tsym: '${_bsktScripList[0]["tsym"]}',
+            trgprc: '',
+            rorgprc: '',
+            rorgqty: '',
+            blprc: '');
+        _bsktOrderMargin = await api.getBasketMargin(inputs, basket);
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
     }
   }
 
@@ -955,9 +1012,9 @@ class OrderProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _sipPlaceOrder = await api.getPlaceSipOrder(sipOrderInput);
       if (_sipPlaceOrder!.reqStatus == "OK") {
-        changeTabIndex(6);
+        changeTabIndex(6, context);
         ref(indexListProvider).bottomMenu(3);
-        fetchSipOrderHistory();
+        fetchSipOrderHistory(context);
         tabSize();
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -985,7 +1042,7 @@ class OrderProvider extends DefaultChangeNotifier {
       if (_modifySipModel!.reqStatus == "OK") {
         Navigator.pop(context);
         Navigator.pop(context);
-        fetchSipOrderHistory();
+        fetchSipOrderHistory(context);
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "Order is Modified Sucessfully"));
       }
@@ -1008,56 +1065,62 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchSipOrderHistory() async {
+  Future fetchSipOrderHistory(BuildContext context) async {
     try {
       _siporderBookModel = await api.getSipOrderBook();
       tabSize();
       List ltpArgs = [];
-      if (_siporderBookModel!.sipDetails!.isNotEmpty) {
-        ConstantName.sessCheck = true;
-        for (var main = 0;
-            main < _siporderBookModel!.sipDetails!.length;
-            main++) {
-          for (var i = 0;
-              i < _siporderBookModel!.sipDetails![main].scrips!.length;
-              i++) {
-            ltpArgs.add({
-              "exch":
-                  "${_siporderBookModel!.sipDetails![main].scrips![i].exch}",
-              "token":
-                  "${_siporderBookModel!.sipDetails![main].scrips![i].token}"
-            });
-          }
-        }
-        final response = await api.getLTP(ltpArgs);
-        Map res = jsonDecode(response.body);
-
-        for (var main = 0;
-            main < _siporderBookModel!.sipDetails!.length;
-            main++) {
-          for (var i = 0;
-              i < _siporderBookModel!.sipDetails![main].scrips!.length;
-              i++) {
-            if (_siporderBookModel!.sipDetails![main].scrips![i].token
-                    .toString() ==
-                "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]['token']}") {
-              _siporderBookModel!.sipDetails![main].scrips![i].ltp =
-                  "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["lp"]}";
-              _siporderBookModel!.sipDetails![main].scrips![i].close =
-                  "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["close"]}";
-
-              _siporderBookModel!.sipDetails![main].scrips![i].perChange =
-                  "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["change"]}";
-              _siporderBookModel!
-                  .sipDetails![main].scrips![i].change = (double.parse(
-                          "${_siporderBookModel!.sipDetails![main].scrips![i].ltp == "0" ? _siporderBookModel!.sipDetails![main].scrips![i].close : _siporderBookModel!.sipDetails![main].scrips![i].ltp}") -
-                      double.parse(
-                          "${_siporderBookModel!.sipDetails![main].scrips![i].close}"))
-                  .toStringAsFixed(2);
-            } else {
-              siporderBookModel!.sipDetails!.isEmpty;
-              ConstantName.sessCheck = false;
+      if (_siporderBookModel != null) {
+        if (_siporderBookModel!.stat == "Ok") {
+          if (_siporderBookModel!.sipDetails != null) {
+            ConstantName.sessCheck = true;
+            for (var main = 0;
+                main < _siporderBookModel!.sipDetails!.length;
+                main++) {
+              for (var i = 0;
+                  i < _siporderBookModel!.sipDetails![main].scrips!.length;
+                  i++) {
+                ltpArgs.add({
+                  "exch":
+                      "${_siporderBookModel!.sipDetails![main].scrips![i].exch}",
+                  "token":
+                      "${_siporderBookModel!.sipDetails![main].scrips![i].token}"
+                });
+              }
             }
+            final response = await api.getLTP(ltpArgs);
+            Map res = jsonDecode(response.body);
+
+            for (var main = 0;
+                main < _siporderBookModel!.sipDetails!.length;
+                main++) {
+              for (var i = 0;
+                  i < _siporderBookModel!.sipDetails![main].scrips!.length;
+                  i++) {
+                if (_siporderBookModel!.sipDetails![main].scrips![i].token
+                        .toString() ==
+                    "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]['token']}") {
+                  _siporderBookModel!.sipDetails![main].scrips![i].ltp =
+                      "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["lp"]}";
+                  _siporderBookModel!.sipDetails![main].scrips![i].close =
+                      "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["close"]}";
+
+                  _siporderBookModel!.sipDetails![main].scrips![i].perChange =
+                      "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["change"]}";
+                  _siporderBookModel!
+                      .sipDetails![main].scrips![i].change = (double.parse(
+                              "${_siporderBookModel!.sipDetails![main].scrips![i].ltp == "0" ? _siporderBookModel!.sipDetails![main].scrips![i].close : _siporderBookModel!.sipDetails![main].scrips![i].ltp}") -
+                          double.parse(
+                              "${_siporderBookModel!.sipDetails![main].scrips![i].close}"))
+                      .toStringAsFixed(2);
+                }
+              }
+            }
+          }
+        } else {
+          if (_siporderBookModel!.emsg ==
+              "Session Expired :  Invalid Session Key") {
+            ref(authProvider).ifSessionExpired(context);
           }
         }
       }
@@ -1074,7 +1137,7 @@ class OrderProvider extends DefaultChangeNotifier {
   Future fetchSipOrderCancel(String sipOrderno, context) async {
     try {
       _cancleSipOrder = await api.getSipCancelOrder(sipOrderno);
-      await fetchSipOrderHistory();
+      await fetchSipOrderHistory(context);
       if (_cancleSipOrder!.reqStatus == "OK") {
         tabSize();
         Navigator.pop(context);
@@ -1093,5 +1156,64 @@ class OrderProvider extends DefaultChangeNotifier {
           .add({"type": "SIP CANCEL API", "Error": "$e"});
       notifyListeners();
     } finally {}
+  }
+
+  placeBasketOrder(BuildContext context) async {
+    try {
+      for (var element in _bsktScripList) {
+        PlaceOrderInput placeOrderInput = PlaceOrderInput(
+            amo: element['amo'],
+            blprc: element['blprc'],
+            bpprc: element['bpprc'],
+            dscqty: element['dscqty'],
+            exch: element['exch'],
+            prc: element['mktProt'].toString().isNotEmpty
+                ? element['lp']
+                : element['prc'],
+            prctype: element['prctype'],
+            prd: element['prd'],
+            qty: element['qty'],
+            ret: element['ret'],
+            trailprc: '',
+            trantype: element['trantype'],
+            trgprc: element['trgprc'],
+            tsym: element['tsym'],
+            mktProt: element['mktProt'],
+            channel: defaultTargetPlatform == TargetPlatform.android
+                ? '${ref(authProvider).deviceInfo["brand"]}'
+                : "${ref(authProvider).deviceInfo["model"]}",
+            userAgent: defaultTargetPlatform == TargetPlatform.android
+                ? '${ref(authProvider).deviceInfo["model"]}'
+                : "${ref(authProvider).deviceInfo["name"]}",
+            appInstaId: defaultTargetPlatform == TargetPlatform.android
+                ? '${ref(authProvider).deviceInfo["id"]}'
+                : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
+
+        _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+
+        if (_placeOrderModel!.emsg ==
+                "Session Expired :  Invalid Session Key" &&
+            _placeOrderModel!.stat == "Not_Ok") {
+          ref(authProvider).ifSessionExpired(context);
+          break;
+        } else {
+          ConstantName.sessCheck = true;
+        }
+      }
+      ref(indexListProvider).bottomMenu(2);
+
+      await fetchOrderBook(context, false);
+      await changeTabIndex(0, context);
+      ref(indexListProvider).bottomMenu(3);
+
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+          successMessage(context, "Basket Order Sucessfully Placed"));
+    } catch (e) {
+      ref(indexListProvider)
+          .logError
+          .add({"type": "API Place Slice  Order", "Error": "$e"});
+      notifyListeners();
+    }
   }
 }

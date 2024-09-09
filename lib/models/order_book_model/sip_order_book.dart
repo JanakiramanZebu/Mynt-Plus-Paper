@@ -1,11 +1,15 @@
 class SipOrderBookModel {
   String? stat;
+  String? requestTime;
+  String? emsg;
   List<SipDetails>? sipDetails;
 
   SipOrderBookModel({this.stat, this.sipDetails});
 
   SipOrderBookModel.fromJson(Map<String, dynamic> json) {
     stat = json['stat'];
+    requestTime = json['request_time'];
+    emsg = json['emsg'];
     if (json['SipDetails'] != null) {
       sipDetails = <SipDetails>[];
       json['SipDetails'].forEach((v) {
@@ -17,6 +21,8 @@ class SipOrderBookModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['stat'] = stat;
+    data['request_time'] = requestTime;
+    data['emsg'] = emsg;
     if (sipDetails != null) {
       data['SipDetails'] = sipDetails!.map((v) => v.toJson()).toList();
     }

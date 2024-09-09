@@ -12,7 +12,7 @@ import '../api/core/api_link.dart';
 import '../locator/constant.dart';
 
 import '../locator/locator.dart';
-import '../locator/preference.dart'; 
+import '../locator/preference.dart';
 import 'fund_provider.dart';
 import 'index_list_provider.dart';
 import 'network_state_provider.dart';
@@ -26,8 +26,8 @@ class WebSocketProvider extends ChangeNotifier {
   bool _wsConnected = false;
 
   bool get wsConnected => _wsConnected;
- 
-  final Reader ref; 
+
+  final Reader ref;
   WebSocketProvider(this.ref);
 
   static WebSocketChannel channel =
@@ -55,7 +55,7 @@ class WebSocketProvider extends ChangeNotifier {
   reconnectWS() {
     if (ref(networkStateProvider).connectionStatus != ConnectivityResult.none &&
         _wsConnected) {
-        channel.sink.add(jsonEncode({"t": "h"}));
+      channel.sink.add(jsonEncode({"t": "h"}));
     }
   }
 
@@ -84,7 +84,7 @@ class WebSocketProvider extends ChangeNotifier {
         (data) {
           //  log("Socket Data ===> $data");
           final res = jsonDecode(data.toString());
- 
+
           if (res['s'].toString().toLowerCase() == "ok" &&
               res['t'].toString() == "ck") {
             _wsConnected = true;
@@ -94,10 +94,9 @@ class WebSocketProvider extends ChangeNotifier {
                 task.toLowerCase() == 'ud') {
               connectTouchLine(
                   input: channelInput, task: task, context: context);
-               
             }
           }
- 
+
           if (res['t'].toString().toLowerCase() == "tf" ||
               res['t'].toString().toLowerCase() == "df") {
             // fToast!.removeQueuedCustomToasts();
@@ -378,12 +377,9 @@ class WebSocketProvider extends ChangeNotifier {
                 //   :
                 res["c"])).toStringAsFixed(2);
             _socketDatas.addAll({"${res['tk']}": res});
- 
 
             // log("Soxket data ${jsonEncode(_socketDatas)}");
-          } 
-          else
-           if (res['t'].toString().toLowerCase() == "om") {
+          } else if (res['t'].toString().toLowerCase() == "om") {
             ref(indexListProvider)
                 .logError
                 .add({"type": "Order Response", "Error": "$res"});
@@ -417,18 +413,16 @@ class WebSocketProvider extends ChangeNotifier {
             });
             if (ref(networkStateProvider).connectionStatus !=
                 ConnectivityResult.none) {
-              Future.delayed(const Duration(milliseconds: 100)).then(
-                (value) {
-                  establishConnection(
-                      channelInput: ConstantName.lastSubscribe,
-                      task: "t",
-                      context: context);
-                  establishConnection(
-                      channelInput: ConstantName.lastSubscribeDepth,
-                      task: "d",
-                      context: context);
-                },
-              );
+              Future.delayed(const Duration(milliseconds: 1000)).then((value) {
+                establishConnection(
+                    channelInput: ConstantName.lastSubscribe,
+                    task: "t",
+                    context: context);
+                establishConnection(
+                    channelInput: ConstantName.lastSubscribeDepth,
+                    task: "d",
+                    context: context);
+              });
             }
           }
           // notifyListeners();
@@ -461,9 +455,8 @@ class WebSocketProvider extends ChangeNotifier {
       {required String task,
       required String input,
       required BuildContext context}) {
-    
     final data = {"t": task, "k": input};
-     
+
     if (input.isNotEmpty) {
       channel.sink.add(jsonEncode(data));
     }

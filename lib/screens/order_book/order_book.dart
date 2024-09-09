@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
@@ -10,7 +10,7 @@ import '../../provider/shocase_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
-import '../../routes/route_names.dart'; 
+import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_data_found.dart';
@@ -22,7 +22,8 @@ class OrderBook extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-    final order = watch(orderProvider);        final theme = context.read(themeProvider);
+    final order = watch(orderProvider);
+    final theme = context.read(themeProvider);
     final socketDatas = watch(websocketProvider).socketDatas;
     return orderBook.isNotEmpty
         ? RefreshIndicator(
@@ -33,11 +34,16 @@ class OrderBook extends ConsumerWidget {
             child: Column(children: [
               if (orderBook.length > 1)
                 Container(
-                    decoration:   BoxDecoration(
-                        color: theme.isDarkMode?colors.colorBlack:colors.colorWhite,
+                    decoration: BoxDecoration(
+                        color: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
                         border: Border(
                             bottom: BorderSide(
-                                color:  theme.isDarkMode?colors.darkGrey: const Color(0xffF1F3F8), width: 6))),
+                                color: theme.isDarkMode
+                                    ? colors.darkGrey
+                                    : const Color(0xffF1F3F8),
+                                width: 6))),
                     child: Padding(
                         padding: const EdgeInsets.only(
                             left: 16, right: 2, top: 8, bottom: 8),
@@ -49,7 +55,6 @@ class OrderBook extends ConsumerWidget {
                                     onTap: () async {
                                       FocusScope.of(context).unfocus();
                                       showModalBottomSheet(
-                                          
                                           useSafeArea: true,
                                           isScrollControlled: true,
                                           shape: const RoundedRectangleBorder(
@@ -57,7 +62,6 @@ class OrderBook extends ConsumerWidget {
                                                   BorderRadius.vertical(
                                                       top:
                                                           Radius.circular(16))),
-                                         
                                           context: context,
                                           builder: (context) {
                                             return const OrderbookFilterBottomSheet();
@@ -69,8 +73,8 @@ class OrderBook extends ConsumerWidget {
                                         child: SvgPicture.asset(
                                             assets.filterLines,
                                             color: theme.isDarkMode
-                                            ?colors.darkiconcolor
-                                             :const Color(0xff333333)))),
+                                                ? colors.darkiconcolor
+                                                : const Color(0xff333333)))),
                                 // InkWell(
                                 //     onTap: () {
                                 //       order.showOrderSearch(true);
@@ -88,11 +92,13 @@ class OrderBook extends ConsumerWidget {
                 Container(
                   height: 62,
                   padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-                  decoration:   BoxDecoration(
-                      
+                  decoration: BoxDecoration(
                       border: Border(
-                          bottom:
-                              BorderSide(color:  theme.isDarkMode?colors.darkGrey: const Color(0xffF1F3F8), width: 6))),
+                          bottom: BorderSide(
+                              color: theme.isDarkMode
+                                  ? colors.darkGrey
+                                  : const Color(0xffF1F3F8),
+                              width: 6))),
                   child: Row(
                     children: [
                       Expanded(
@@ -152,10 +158,9 @@ class OrderBook extends ConsumerWidget {
                     ],
                   ),
                 ),
-
-              // if(order.orderBookSearchItem!.isEmpty)
               Expanded(
-                  child: SingleChildScrollView(  physics: const BouncingScrollPhysics(),
+                  child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
                 child: ListView.separated(
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
@@ -172,7 +177,7 @@ class OrderBook extends ConsumerWidget {
                             await context
                                 .read(marketWatchProvider)
                                 .fetchLinkeScrip("${orderBook[index].token}",
-                                    "${orderBook[index].exch}",context);
+                                    "${orderBook[index].exch}", context);
 
                             await watch(marketWatchProvider).fetchScripQuote(
                                 "${orderBook[index].token}",
@@ -222,13 +227,25 @@ class OrderBook extends ConsumerWidget {
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     style: textStyles
-                                                        .scripNameTxtStyle.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack)),
+                                                        .scripNameTxtStyle
+                                                        .copyWith(
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack)),
                                                 Text(
                                                     "${orderBook[index].option} ",
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     style: textStyles
-                                                        .scripNameTxtStyle.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack)),
+                                                        .scripNameTxtStyle
+                                                        .copyWith(
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack)),
                                               ]),
                                               Row(
                                                 children: [
@@ -241,7 +258,11 @@ class OrderBook extends ConsumerWidget {
                                                   Text(
                                                       "₹${orderBook[index].ltp ?? orderBook[index].close ?? 0.00}",
                                                       style: textStyle(
-                                                        theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                          theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
                                                           14,
                                                           FontWeight.w500)),
                                                 ],
@@ -259,8 +280,9 @@ class OrderBook extends ConsumerWidget {
                                             children: [
                                               Row(
                                                 children: [
-                                                   CustomExchBadge(exch: "${orderBook[index].exch}"),
-                                                
+                                                  CustomExchBadge(
+                                                      exch:
+                                                          "${orderBook[index].exch}"),
                                                   Text(
                                                       " ${orderBook[index].expDate} ",
                                                       overflow:
@@ -268,13 +290,17 @@ class OrderBook extends ConsumerWidget {
                                                       style: textStyles
                                                           .scripExchTxtStyle
                                                           .copyWith(
-                                                              color: theme.isDarkMode?colors.colorWhite:colors.colorBlack))
+                                                              color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack))
                                                 ],
                                               ),
                                               Text(
                                                   " (${orderBook[index].perChange ?? 0.00}%)",
                                                   style: textStyle(
-                                                     orderBook[index]
+                                                      orderBook[index]
                                                               .perChange!
                                                               .startsWith("-")
                                                           ? colors.darkred
@@ -287,7 +313,10 @@ class OrderBook extends ConsumerWidget {
                                                       FontWeight.w500)),
                                             ]),
                                         const SizedBox(height: 4),
-                                      Divider(color:theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
+                                        Divider(
+                                            color: theme.isDarkMode
+                                                ? colors.darkColorDivider
+                                                : colors.colorDivider),
                                         const SizedBox(height: 2),
                                         Row(
                                             mainAxisAlignment:
@@ -295,21 +324,32 @@ class OrderBook extends ConsumerWidget {
                                             children: [
                                               Row(children: [
                                                 Container(
-                                                    padding: const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 2),
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 2),
                                                     decoration: BoxDecoration(
-                                                        borderRadius: BorderRadius.circular(
-                                                            4),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
                                                         color: theme.isDarkMode
-                                                            ? orderBook[index].trantype == "S" ? colors.darkred.withOpacity(.2) : colors.ltpgreen
-                                                                .withOpacity(.2)
+                                                            ? orderBook[index]
+                                                                        .trantype ==
+                                                                    "S"
+                                                                ? colors.darkred
+                                                                    .withOpacity(
+                                                                        .2)
+                                                                : colors.ltpgreen
+                                                                    .withOpacity(
+                                                                        .2)
                                                             : Color(orderBook[index].trantype == "S"
                                                                 ? 0xffFCF3F3
                                                                 : 0xffECF8F1)),
                                                     child: Text(orderBook[index].trantype == "S" ? "SELL" : "BUY",
                                                         style: textStyle(
-                                                          orderBook[index].trantype == "S" ? colors.darkred : colors.ltpgreen,
+                                                            orderBook[index].trantype == "S"
+                                                                ? colors.darkred
+                                                                : colors.ltpgreen,
                                                             12,
                                                             FontWeight.w600))),
                                                 Container(
@@ -320,7 +360,7 @@ class OrderBook extends ConsumerWidget {
                                                         const EdgeInsets.symmetric(
                                                             horizontal: 7,
                                                             vertical: 2),
-                                                     decoration: BoxDecoration(
+                                                    decoration: BoxDecoration(
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                                 4),
@@ -333,8 +373,7 @@ class OrderBook extends ConsumerWidget {
                                                     child: Text(
                                                         "${orderBook[index].sPrdtAli}",
                                                         style: textStyle(
-                                                            const Color(
-                                                                0xff666666),
+                                                            const Color(0xff666666),
                                                             11,
                                                             FontWeight.w600)))
                                               ]),
@@ -347,7 +386,9 @@ class OrderBook extends ConsumerWidget {
                                                 Text(
                                                     "${orderBook[index].status == "COMPLETE" ? orderBook[index].rqty ?? 0 : orderBook[index].dscqty ?? 0}/${orderBook[index].qty ?? 0}",
                                                     style: textStyle(
-                                                       theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                        theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
                                                         14,
                                                         FontWeight.w500))
                                               ])
@@ -373,7 +414,9 @@ class OrderBook extends ConsumerWidget {
                                                 Text(
                                                     " ${orderBook[index].status![0].toUpperCase()}${orderBook[index].status!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
                                                     style: textStyle(
-                                                      theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                        theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
                                                         13,
                                                         FontWeight.w500)),
                                                 Text(
@@ -394,26 +437,27 @@ class OrderBook extends ConsumerWidget {
                                                 Text(
                                                     "${orderBook[index].avgprc ?? orderBook[index].prc ?? 0.00}",
                                                     style: textStyle(
-                                                    theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                        theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
                                                         14,
                                                         FontWeight.w500))
                                               ])
                                             ])
                                       ]))
-
-                              //  OrderBookList(orderBookList: orderBook[index])
                               : Container());
                     },
                     itemCount: orderBook.length,
                     separatorBuilder: (BuildContext context, int index) {
                       return Container(
-                          color: theme.isDarkMode?colors.darkGrey: const Color(0xffF1F3F8), height: 6);
+                          color: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
+                          height: 6);
                     }),
               ))
             ]),
           )
         : const NoDataFound();
   }
-
- 
 }

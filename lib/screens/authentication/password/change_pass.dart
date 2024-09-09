@@ -88,7 +88,7 @@ class ChangePass extends ConsumerWidget {
                         ),
                         contentPadding: const EdgeInsets.only(top: 5),
                         hintStyle: textStyle(Colors.grey, 13, FontWeight.w400),
-                        hintText: "Enter client Id to begin",
+                        hintText: "Enter client Id",
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(color: Color(0xff999999)),
                         ),
@@ -156,8 +156,8 @@ class ChangePass extends ConsumerWidget {
                         ),
                         hintStyle: textStyle(Colors.grey, 13, FontWeight.w400),
                         hintText: isChangePass == "Yes"
-                            ? "Enter Old Password to begin"
-                            : "Enter Generated Password to begin",
+                            ? "Enter Old Password"
+                            : "Enter Generated Password",
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(color: Color(0xff999999)),
                         ),
@@ -221,7 +221,7 @@ class ChangePass extends ConsumerWidget {
                         ),
                         contentPadding: const EdgeInsets.only(top: 12),
                         hintStyle: textStyle(Colors.grey, 13, FontWeight.w400),
-                        hintText: "Enter New Password to begin",
+                        hintText: "Enter New Password",
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(color: Color(0xff999999)),
                         ),

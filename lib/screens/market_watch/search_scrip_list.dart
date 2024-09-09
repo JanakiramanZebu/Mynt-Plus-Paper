@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-
+import 'package:flutter_svg/svg.dart'; 
 import '../../../provider/market_watch_provider.dart';
 import '../../../res/res.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
@@ -78,9 +76,9 @@ class SearchScripList extends ConsumerWidget {
                         token: '${searchValue[index].token}',
                         tsym: '${searchValue[index].tsym}',
                         instname: searchValue[index].instname ?? "",
-                        symbol: '${searchValue[index].symbol}',
-                        expDate: '${searchValue[index].expDate}',
-                        option: '${searchValue[index].option}');
+                        symbol: "${searchValue[index].symbol != null ? searchValue[index].symbol!.isEmpty ? searchValue[index].tsym : searchValue[index].symbol! : searchValue[index].tsym!}",
+                        expDate: searchValue[index].expDate??"",
+                        option: searchValue[index].option??"");
 
                     showModalBottomSheet(
                         isScrollControlled: true,
@@ -94,7 +92,8 @@ class SearchScripList extends ConsumerWidget {
                             padding: EdgeInsets.only(
                               bottom: MediaQuery.of(context).viewInsets.bottom,
                             ),
-                            child: ScripDepthInfo(wlValue: depthArgs,isBasket:wlName)));
+                            child: ScripDepthInfo(
+                                wlValue: depthArgs, isBasket: wlName)));
                   }
                 },
                 dense: true,
@@ -102,24 +101,27 @@ class SearchScripList extends ConsumerWidget {
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
                 title: Row(
                   children: [
-                    Text("${searchValue[index].symbol} ",
+                    Text(
+                        "${searchValue[index].symbol != null ? searchValue[index].symbol!.isEmpty ? searchValue[index].tsym : searchValue[index].symbol! : searchValue[index].tsym!} ",
                         style: textStyles.scripNameTxtStyle.copyWith(
                             color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack)),
-                    Text("${searchValue[index].option}",
-                        style: textStyles.scripNameTxtStyle
-                            .copyWith(color: const Color(0xff666666))),
+                    if (searchValue[index].option != null)
+                      Text("${searchValue[index].option}",
+                          style: textStyles.scripNameTxtStyle
+                              .copyWith(color: const Color(0xff666666))),
                   ],
                 ),
                 subtitle: Row(
                   children: [
                     CustomExchBadge(exch: "${searchValue[index].exch}"),
-                    Text("${searchValue[index].expDate} ",
-                        style: textStyles.scripExchTxtStyle.copyWith(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack))
+                    if (searchValue[index].expDate != null)
+                      Text("${searchValue[index].expDate} ",
+                          style: textStyles.scripExchTxtStyle.copyWith(
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack))
                   ],
                 ),
                 trailing: wlName == "Basket"
@@ -178,9 +180,5 @@ class SearchScripList extends ConsumerWidget {
         : const NoDataFound();
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+   
 }

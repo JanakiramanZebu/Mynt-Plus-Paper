@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/order_book_model/sip_order_book.dart';
 import '../../../res/res.dart';
 import '../../provider/order_provider.dart';
 import '../../provider/thems.dart';
+import '../../sharedWidget/functions.dart';
 
 class SipCancelAlert extends ConsumerWidget {
   final SipDetails sipdetails;
@@ -71,7 +71,6 @@ class SipCancelAlert extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(50),
                       )),
                   onPressed: () async {
-                    
                     context.read(orderProvider).fetchSipOrderCancel(
                         "${sipdetails.internal!.sipId}", context);
                   },
@@ -87,11 +86,5 @@ class SipCancelAlert extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

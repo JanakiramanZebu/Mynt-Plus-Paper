@@ -37,7 +37,8 @@ class ScripDepthInfo extends StatefulWidget {
   final DepthInputArgs wlValue;
   final String isBasket;
 
-  const ScripDepthInfo({super.key, required this.wlValue, required this. isBasket});
+  const ScripDepthInfo(
+      {super.key, required this.wlValue, required this.isBasket});
 
   @override
   State<ScripDepthInfo> createState() => _ScripDepthInfoState();
@@ -872,7 +873,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                               FontWeight.w500)),
                                       const SizedBox(height: 4),
                                       lowHighBar(
-                                          "  ${ depthData.l  ==  (depthData.lp ?? depthData.c ?? 0.00)?depthData.c??0.00: depthData.l ?? 0.00}",
+                                          "${depthData.l == (depthData.lp ?? depthData.c ?? 0.00) ? depthData.c ?? 0.00 : depthData.l ?? 0.00}",
                                           "${depthData.h ?? 0.00}",
                                           "${depthData.lp ?? depthData.c ?? 0.00}",
                                           theme),
@@ -891,7 +892,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 FontWeight.w500)),
                                         const SizedBox(height: 4),
                                         lowHighBar(
-                                            "${depthData.wk52L ?? 0.00}",
+                                            depthData.wk52L == depthData.wk52H
+                                                ? "0.00"
+                                                : "${depthData.wk52L ?? 0.00}",
                                             "${depthData.wk52H ?? 0.00}",
                                             "${depthData.lp ?? depthData.c ?? 0.00}",
                                             theme),
@@ -1448,7 +1451,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
     Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
       "scripInfo": ctx.read(marketWatchProvider).scripInfoModel!,
-      "isBskt":widget.isBasket
+      "isBskt": widget.isBasket
     });
   }
 

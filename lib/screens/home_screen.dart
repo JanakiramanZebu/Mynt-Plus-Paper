@@ -28,6 +28,7 @@ import 'market_watch/watchlist_screen.dart';
 import 'market_watch/watchlists_bottom_sheet.dart';
 import 'mutual_fund/mutual_fund_screen.dart';
 // import 'order_book/basket/create_basket.dart';
+import 'order_book/basket/create_basket.dart';
 import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
 import 'profile_screen/logged_user_bottom_sheet.dart';
@@ -359,45 +360,44 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   FontWeight.w500)),
                                         ]),
                                       )
+                                  ] else if (indexProvide.selectedBtmIndx ==
+                                          3 &&
+                                      watch(orderProvider).selectedTab ==
+                                          4) ...[
+                                    Row(children: [
+                                      Container(
+                                          margin: const EdgeInsets.only(
+                                              right: 8),
+                                          height: 30,
+                                          child: OutlinedButton(
+                                              onPressed: () {
+                                                showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return const CreateBasket();
+                                                    });
+                                              },
+                                              style: OutlinedButton.styleFrom(
+                                                  side: BorderSide(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorGrey
+                                                          : colors.colorBlack),
+                                                  shape:
+                                                      const RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.all(
+                                                                  Radius.circular(
+                                                                      32)))),
+                                              child: Text("Create Basket",
+                                                  style: textStyle(
+                                                      theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
+                                                      12,
+                                                      FontWeight.w600))))
+                                    ])
                                   ]
-                                  // else if (indexProvide.selectedBtmIndx ==
-                                  //         3 &&
-                                  //     watch(orderProvider).selectedTab ==
-                                  //         4) ...[
-                                  //   Row(children: [
-                                  //     Container(
-                                  //         margin: const EdgeInsets.only(
-                                  //             right: 8),
-                                  //         height: 30,
-                                  //         child: OutlinedButton(
-                                  //             onPressed: () {
-                                  //               showDialog(
-                                  //                   context: context,
-                                  //                   builder:
-                                  //                       (BuildContext context) {
-                                  //                     return const CreateBasket();
-                                  //                   });
-                                  //             },
-                                  //             style: OutlinedButton.styleFrom(
-                                  //                 side: BorderSide(
-                                  //                     color: theme.isDarkMode
-                                  //                         ? colors.colorGrey
-                                  //                         : colors.colorBlack),
-                                  //                 shape:
-                                  //                     const RoundedRectangleBorder(
-                                  //                         borderRadius:
-                                  //                             BorderRadius.all(
-                                  //                                 Radius.circular(
-                                  //                                     32)))),
-                                  //             child: Text("Create Basket",
-                                  //                 style: textStyle(
-                                  //                     theme.isDarkMode
-                                  //                         ? colors.colorWhite
-                                  //                         : colors.colorBlack,
-                                  //                     12,
-                                  //                     FontWeight.w600))))
-                                  //   ])
-                                  // ]
                                 ],
                           bottom: indexProvide.selectedBtmIndx == 1
                               ? const PreferredSize(
@@ -457,7 +457,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   16,
                                                   FontWeight.w600)),
                                           subtitle: Text(
-                                              "User ID ${userProfile.userDetailModel!.uid}",
+                                              "Client ID ${userProfile.userDetailModel!.uid}",
                                               style: textStyle(
                                                   const Color(0xff666666),
                                                   12,
@@ -751,7 +751,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 "Ok") {
                                               await context
                                                   .read(orderProvider)
-                                                  .fetchSipOrderHistory();
+                                                  .fetchSipOrderHistory(context);
                                               await marketWatchList
                                                   .fetchPendingAlert(context);
                                               await marketWatchList

@@ -51,7 +51,7 @@ class SipOrderBook extends ConsumerWidget {
                         itemBuilder: (context, index) {
                           return InkWell(
                               onTap: () async {
-                                context.read(orderProvider).fetchSipOrderHistory();
+                                context.read(orderProvider).fetchSipOrderHistory(context);
                                 Navigator.pushNamed(context, Routes.sipDetails,
                                     arguments: sipbook![index]);
                               },

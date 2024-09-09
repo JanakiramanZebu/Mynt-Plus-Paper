@@ -77,7 +77,10 @@ Map spilitTsym({required String value}) {
 
   RegExp datePattern = RegExp(r'\d{2}[A-Z]{3}\d{2,4}');
 
-  String? dateMatch = datePattern.firstMatch(value)?.group(0);
+  String? dateMatch = datePattern.firstMatch(value)?.group(0) ;
+
+ 
+
   if (dateMatch != null) {
     int index = value.indexOf(dateMatch);
 
@@ -107,6 +110,8 @@ Map spilitTsym({required String value}) {
     expDate = "";
     option = "";
   }
+
+
   return {"symbol": symbol, "expDate": expDate, "option": option};
 }
 
@@ -224,4 +229,15 @@ sipdateformat(String date) {
   // Format the date to the desired format
   String formattedDate = DateFormat('ddMMyyyy').format(parsedDate);
   return formattedDate.toString();
+}
+
+String convDateWithTime() {
+  final now = DateTime.now();
+
+  final inputFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+  final inputDatetime = inputFormat.parse("$now");
+
+  final outputFormat = DateFormat("dd MMM yyyy, hh:mm a");
+  final formattedDatetime = outputFormat.format(inputDatetime);
+  return formattedDatetime.toString();
 }
