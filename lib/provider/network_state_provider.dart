@@ -105,14 +105,18 @@ class NetworkStateProvider extends ChangeNotifier {
     } else {
       ref(websocketProvider).websockConn(false);
       if (ConstantName.sessCheck) {
-        ref(websocketProvider).establishConnection(
-            channelInput: ConstantName.lastSubscribe,
-            task: "t",
-            context: _globbcontext!);
-        ref(websocketProvider).establishConnection(
-            channelInput: ConstantName.lastSubscribeDepth,
-            task: "d",
-            context: _globbcontext!);
+        if (ConstantName.lastSubscribe.isNotEmpty) {
+          ref(websocketProvider).establishConnection(
+              channelInput: ConstantName.lastSubscribe,
+              task: "t",
+              context: _globbcontext!);
+        }
+        if (ConstantName.lastSubscribeDepth.isNotEmpty) {
+          ref(websocketProvider).establishConnection(
+              channelInput: ConstantName.lastSubscribeDepth,
+              task: "d",
+              context: _globbcontext!);
+        }
       }
 
       if (ref(indexListProvider).selectedBtmIndx == 1) {

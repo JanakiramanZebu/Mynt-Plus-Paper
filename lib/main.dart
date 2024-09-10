@@ -36,7 +36,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     message.data["imageUrl"] != "" ? NotificationService.showNotification(
         title: message.notification!.title,
         body: message.notification!.body,
-        summary: "Small Summary",
+        summary: "Mynt+",
         notificationLayout: NotificationLayout.BigPicture,
         bigPicture: message.data["imageUrl"],
         payload: {"navigate": "true", "url": message.data["url"]})
@@ -44,9 +44,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         NotificationService.showNotification(
         title: message.notification!.title,
         body: message.notification!.body,
-        summary: "Small Summary",
-        notificationLayout: NotificationLayout.Default,
-        payload: {"navigate": "true", "url": message.data["url"]})
+        summary: "Mynt+",
+        notificationLayout: NotificationLayout.Default,)
         ;
   }
 }
@@ -100,6 +99,7 @@ void main() async {
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {}
   });
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print("Message $message");
     if (kDebugMode) {
       print('Handling a foreground message: ${message.messageId}');
       print('Message data: ${message.data}');
@@ -108,21 +108,20 @@ void main() async {
       print('Message notification: ${message.data["imageUrl"]}');
     }
 
-    message.data["imageUrl"] != "" ? NotificationService.showNotification(
-        title: message.notification!.title,
-        body: message.notification!.body,
-        summary: "Mynt+ Notification",
-        notificationLayout: NotificationLayout.BigPicture,
-        bigPicture: message.data["imageUrl"],
-        payload: {"navigate": "true", "url": message.data["url"]})
-        :
-        NotificationService.showNotification(
-        title: message.notification!.title,
-        body: message.notification!.body,
-        summary: "Mynt+ Notification",
-        notificationLayout: NotificationLayout.Default,
-        payload: {"navigate": "true", "url": message.data["url"]})
-        ;
+    // message.data["imageUrl"] != "" ? NotificationService.showNotification(
+    //     title: message.notification!.title,
+    //     body: message.notification!.body,
+    //     summary: "Mynt+",
+    //     notificationLayout: NotificationLayout.BigPicture,
+    //     bigPicture: message.data["imageUrl"],
+    //     payload: {"navigate": "true", "url": message.data["url"]})
+    //     :
+    //     NotificationService.showNotification(
+    //     title: message.notification!.title,
+    //     body: message.notification!.body,
+    //     summary: "Mynt+",
+    //     notificationLayout: NotificationLayout.Default)
+    //     ;
 
     // NotificationService().showNotification(
     //     title: message.notification?.title, body: message.notification?.body);

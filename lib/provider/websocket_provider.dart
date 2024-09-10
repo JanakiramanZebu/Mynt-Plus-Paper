@@ -92,8 +92,10 @@ class WebSocketProvider extends ChangeNotifier {
                 task.toLowerCase() == 'u' ||
                 task.toLowerCase() == 'd' ||
                 task.toLowerCase() == 'ud') {
-              connectTouchLine(
-                  input: channelInput, task: task, context: context);
+              if (channelInput.isNotEmpty) {
+                connectTouchLine(
+                    input: channelInput, task: task, context: context);
+              }
             }
           }
 
@@ -446,7 +448,9 @@ class WebSocketProvider extends ChangeNotifier {
           task.toLowerCase() == 'u' ||
           task.toLowerCase() == 'd' ||
           task.toLowerCase() == 'ud') {
-        connectTouchLine(input: channelInput, task: task, context: context);
+        if (channelInput.isNotEmpty) {
+          connectTouchLine(input: channelInput, task: task, context: context);
+        }
       }
     }
   }

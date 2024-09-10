@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mynt_plus/provider/thems.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/core/api_export.dart';
@@ -20,7 +19,8 @@ import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
-import 'websocket_provider.dart';
+import 'market_watch_provider.dart';
+import 'thems.dart';
 
 final indexListProvider =
     ChangeNotifierProvider((ref) => IndexListProvider(ref.read));
@@ -77,6 +77,9 @@ class IndexListProvider extends DefaultChangeNotifier {
 
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
+
+  String _indexToken = "";
+  String get indexToken => _indexToken;
 
   // More menus
 
@@ -369,7 +372,7 @@ class IndexListProvider extends DefaultChangeNotifier {
       _defaultIndexList!.indValues!.insert(3, addNewIndex);
     }
 
-    print("___==== ${_defaultIndexList!.indValues!}");
+ 
 
     localstorage.setStringList(
         "marketIndex",
@@ -384,6 +387,9 @@ class IndexListProvider extends DefaultChangeNotifier {
     notifyListeners();
 
     await getIndeexListFromLocal(context);
+
+    ref(marketWatchProvider)
+        .requestMWScrip(isSubscribe: true, context: context);
     ScaffoldMessenger.of(context)
         .showSnackBar(successMessage(context, "Index scrip modified"));
   }
@@ -394,6 +400,8 @@ class IndexListProvider extends DefaultChangeNotifier {
         localstorage.getStringList("marketIndex") ?? [];
     if (indexList.isNotEmpty) {
       final List<IndexValue> list = [..._defaultIndexList!.indValues ?? []];
+
+      _indexToken = "";
       for (var e in indexList) {
         int index = int.parse(e.split(":").first);
         final splitted = e.split(":");
@@ -403,28 +411,23 @@ class IndexListProvider extends DefaultChangeNotifier {
       }
       _defaultIndexList!.indValues = list;
     }
-    await requestdefaultIndex(context: context, isSubscribe: true);
+
+    await requestdefaultIndex();
     notifyListeners();
 
     //
   }
 
-  requestdefaultIndex(
-      {required bool isSubscribe, required BuildContext context}) {
-    String input = "";
-
+  requestdefaultIndex() {
+    _indexToken = "";
     if (_defaultIndexList != null) {
       if (_defaultIndexList!.indValues!.isNotEmpty) {
         for (var element in _defaultIndexList!.indValues!) {
-          input += "${element.exch}|${element.token}#";
+          _indexToken += "${element.exch}|${element.token}#";
         }
       }
     }
-
-    if (input.isNotEmpty) {
-      ref(websocketProvider).establishConnection(
-          channelInput: input, task: isSubscribe ? "t" : "u", context: context);
-    }
+    notifyListeners(); 
   }
 
   checkSession(BuildContext context) async {

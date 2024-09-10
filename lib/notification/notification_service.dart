@@ -138,7 +138,7 @@ class NotificationService extends ChangeNotifier {
     final String? title,
     final String? body,
     final String? summary,
-    required final Map<String, String> payload,
+    final Map<String, String>? payload,
     final ActionType actionType = ActionType.Default,
     final NotificationLayout notificationLayout = NotificationLayout.Default,
     final NotificationCategory? category,

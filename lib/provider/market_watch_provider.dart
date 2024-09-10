@@ -1710,8 +1710,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       {required bool isSubscribe, required BuildContext context}) async {
     String input = "";
     _delScripQty = 0;
-    ref(indexListProvider)
-        .requestdefaultIndex(isSubscribe: isSubscribe, context: context);
+    // ref(indexListProvider)
+    //     .requestdefaultIndex(isSubscribe: isSubscribe, context: context);
+    if (ref(indexListProvider).indexToken.isNotEmpty) {
+      input = ref(indexListProvider).indexToken;
+    }
+// print("Inmdex token -- $input");
     if (_scrips.isNotEmpty) {
       for (var element in _scrips) {
         element['isSelected'] = false;
@@ -1924,7 +1928,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       _setAlertModel =
           await api.getSetAlert(exch, tysm, value, alertTypeVal, remark);
-      ref(orderProvider).changeTabIndex(5,context);
+      ref(orderProvider).changeTabIndex(5, context);
 
       if (_setAlertModel!.stat! == "OI created") {
         fetchPendingAlert(context);
@@ -2027,6 +2031,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       debugPrint(e.toString());
     }
   }
+
 ///// new code by dd
   Future fetchWatchListRename(
       String oldName, String newName, BuildContext context) async {
