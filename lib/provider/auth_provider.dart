@@ -684,7 +684,15 @@ class AuthProvider extends DefaultChangeNotifier {
           Timer.periodic(const Duration(seconds: 1), (timer) {});
       ConstantName.timer!.cancel();
       await ref(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4);
-      ref(websocketProvider).websockConn(false);
+      // ref(websocketProvider).websockConn(false);
+      if(s.isNotEmpty ){
+        ref(websocketProvider).closeSocket();
+      }
+
+        if(pref.clientSession!.isNotEmpty ){
+        ref(websocketProvider).closeSocket();
+      }
+
       // await ref(stocksProvide).defaultSectorThemematicData();
       // await ref(indexListProvider).fetchDefTopIndex(context);
       // await ref(stocksProvide)
@@ -710,9 +718,9 @@ class AuthProvider extends DefaultChangeNotifier {
             context, "${pref.clientId}", "${pref.clientSession}", "");
         await ref(portfolioProvider).fetchHoldings(context, "");
 
+        await ref(indexListProvider).getDeafultIndexList(context);
         await ref(marketWatchProvider).fetchMWList(context);
 
-        await ref(indexListProvider).getDeafultIndexList(context);
         await ref(portfolioProvider).fetchPositionBook(context, false);
         await ref(orderProvider).fetchOrderBook(context, false);
         await ref(orderProvider).fetchTradeBook(context);
