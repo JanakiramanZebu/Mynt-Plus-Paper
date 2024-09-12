@@ -1,8 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
+ 
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/svg.dart'; 
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
@@ -83,6 +83,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                         .loggedMobile[index].userName);
 
                                     pref.setMobileLogin(true);
+
                                     await context
                                         .read(authProvider)
                                         .fetchMobileLogin(
@@ -125,6 +126,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                         child: OutlinedButton(
                             onPressed: () {
                               pref.setLogout(false);
+                              //  watch(websocketProvider).closeSocket();
                               loggedUser.addClient(true);
                               Navigator.pop(context);
                               Navigator.pushNamed(context, Routes.loginScreen);

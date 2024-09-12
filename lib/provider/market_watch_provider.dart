@@ -1710,12 +1710,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       {required bool isSubscribe, required BuildContext context}) async {
     String input = "";
     _delScripQty = 0;
-    // ref(indexListProvider)
-    //     .requestdefaultIndex(isSubscribe: isSubscribe, context: context);
+   await ref(indexListProvider)
+        .requestdefaultIndex( );
     if (ref(indexListProvider).indexToken.isNotEmpty) {
       input = ref(indexListProvider).indexToken;
     }
-// print("Inmdex token -- $input");
+
     if (_scrips.isNotEmpty) {
       for (var element in _scrips) {
         element['isSelected'] = false;
@@ -1727,6 +1727,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       await ref(websocketProvider).establishConnection(
           channelInput: input, task: isSubscribe ? "t" : "u", context: context);
     }
+      
   }
 
   getSortByWL(String val) {

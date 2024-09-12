@@ -47,15 +47,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void initState() {
     WidgetsBinding.instance.addObserver(this);
 
-    context
-        .read(marketWatchProvider)
-        .requestMWScrip(isSubscribe: true, context: context);
-    context.read(networkStateProvider).networkStream();
+    // context
+    //     .read(marketWatchProvider)
+    //     .requestMWScrip(isSubscribe: true, context: context);
+   
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
         context.read(websocketProvider).reconnectWS();
       }
-    });
+    }); 
+    context.read(networkStateProvider).networkStream();
     context.read(marketWatchProvider).fToast.init(context);
     super.initState();
   }
@@ -579,6 +580,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 .checkSession(context);
                                             if (indexProvide.checkSess!.stat ==
                                                 "Ok") {
+
                                               await portfolio.requestWSHoldings(
                                                   context: context,
                                                   isSubscribe: false);
@@ -591,12 +593,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               await portfolio.requestWSPosition(
                                                   context: context,
                                                   isSubscribe: false);
-
-                                              await context
+                                                await context
                                                   .read(marketWatchProvider)
                                                   .requestMWScrip(
                                                       context: context,
                                                       isSubscribe: true);
+                                             
                                             }
                                           },
                                     child: Container(

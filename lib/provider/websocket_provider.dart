@@ -46,16 +46,24 @@ class WebSocketProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+bool conectionClosed=false;
+
   final Preferences pref = locator<Preferences>();
 
-  void closeSocket() {
+  void closeSocket() { 
+    conectionClosed=true;
+    _wsConnected = false;
     channel.sink.close();
   }
 
   reconnectWS() {
     if (ref(networkStateProvider).connectionStatus != ConnectivityResult.none &&
         _wsConnected) {
-      channel.sink.add(jsonEncode({"t": "h"}));
+
+          if (!conectionClosed ) {
+            channel.sink.add(jsonEncode({"t": "h"}));
+          }
+      
     }
   }
 
@@ -407,7 +415,7 @@ class WebSocketProvider extends ChangeNotifier {
           // log("Connection closed ${channel.closeRe
           //ason} ${channel.closeCode}");
           if (channel.closeCode != null) {
-            // closeSocket();
+            closeSocket();
             _wsConnected = false;
             ref(indexListProvider).logError.add({
               "type": "Websocket ${channel.closeCode} ",
@@ -424,13 +432,13 @@ class WebSocketProvider extends ChangeNotifier {
                     channelInput: ConstantName.lastSubscribeDepth,
                     task: "d",
                     context: context);
-              });
+             });
             }
           }
           // notifyListeners();
         },
         onError: (error) {
-          // closeSocket();
+          closeSocket();
           _wsConnected = false;
           log("ref(networkStateProvider).connectionStatus ${ref(networkStateProvider).connectionStatus}");
           if (ref(networkStateProvider).connectionStatus !=

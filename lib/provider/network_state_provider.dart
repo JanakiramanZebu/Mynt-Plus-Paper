@@ -103,7 +103,7 @@ class NetworkStateProvider extends ChangeNotifier {
       ref(websocketProvider).closeSocket();
       ref(websocketProvider).websockConn(false);
     } else {
-      ref(websocketProvider).websockConn(false);
+      // ref(websocketProvider).websockConn(false);
       if (ConstantName.sessCheck) {
         if (ConstantName.lastSubscribe.isNotEmpty) {
           ref(websocketProvider).establishConnection(
