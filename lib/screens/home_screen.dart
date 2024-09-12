@@ -50,12 +50,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     // context
     //     .read(marketWatchProvider)
     //     .requestMWScrip(isSubscribe: true, context: context);
-   
+
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
         context.read(websocketProvider).reconnectWS();
       }
-    }); 
+    });
     context.read(networkStateProvider).networkStream();
     context.read(marketWatchProvider).fToast.init(context);
     super.initState();
@@ -88,6 +88,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               context
                   .read(portfolioProvider)
                   .requestWSPosition(context: context, isSubscribe: true);
+            }
+            if (context.read(indexListProvider).selectedBtmIndx == 3) {
+              context
+                  .read(orderProvider)
+                  .requestWSOrderBook(context: context, isSubscribe: true);
             }
           }
         }
@@ -580,7 +585,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 .checkSession(context);
                                             if (indexProvide.checkSess!.stat ==
                                                 "Ok") {
-
                                               await portfolio.requestWSHoldings(
                                                   context: context,
                                                   isSubscribe: false);
@@ -593,12 +597,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               await portfolio.requestWSPosition(
                                                   context: context,
                                                   isSubscribe: false);
-                                                await context
+                                              await context
                                                   .read(marketWatchProvider)
                                                   .requestMWScrip(
                                                       context: context,
                                                       isSubscribe: true);
-                                             
                                             }
                                           },
                                     child: Container(
@@ -753,7 +756,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 "Ok") {
                                               await context
                                                   .read(orderProvider)
-                                                  .fetchSipOrderHistory(context);
+                                                  .fetchSipOrderHistory(
+                                                      context);
                                               await marketWatchList
                                                   .fetchPendingAlert(context);
                                               await marketWatchList
