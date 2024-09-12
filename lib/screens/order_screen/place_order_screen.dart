@@ -1977,9 +1977,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               fit: BoxFit.scaleDown)),
                                                       textCtrl: priceCtrl,
                                                       textAlign: TextAlign.start)),
-                                              Text(
-                                                  "${widget.scripInfo.lc ?? 0.00} / ${widget.scripInfo.uc ?? 0.00}"),
-                                            ]))
+                                              ]))
                                       ])),
                               const SizedBox(height: 3),
                               Divider(
