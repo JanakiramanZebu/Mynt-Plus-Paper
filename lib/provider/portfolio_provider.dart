@@ -586,6 +586,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _totPnL = "0.00";
       _totMtm = "0.00";
       _exitAll = false;
+      _totBookedPnL="0.00";
+   _totUnRealMtm = '0.00';
       _postionBookModel = await api.getPositionBook();
       // splitPositionBook(isDay);
       if (_postionBookModel!.isNotEmpty) {
