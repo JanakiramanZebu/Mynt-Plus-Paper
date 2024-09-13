@@ -1431,23 +1431,21 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {
-    await scripInfo.fetchScripInfo(
-        widget.wlValue.token, widget.wlValue.exch, ctx);
-    Navigator.pop(ctx);
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: widget.wlValue.exch,
         tSym: widget.wlValue.tsym,
         isExit: false,
         token: widget.wlValue.token,
         transType: transType,
-        // change: depthData.chng,
-        // close: depthData.c,
         lotSize: depthData.ls,
-        ltp: depthData.lp ?? "0.00",
+        ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
         perChange: depthData.pc ?? "0.00",
         orderTpye: '',
         holdQty: '',
         isModify: false);
+    await scripInfo.fetchScripInfo(
+        widget.wlValue.token, widget.wlValue.exch, ctx);
+    Navigator.pop(ctx);
     Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
       "scripInfo": ctx.read(marketWatchProvider).scripInfoModel!,

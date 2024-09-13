@@ -69,9 +69,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.resumed:
+        await context.read(portfolioProvider).fetchPositionBook(context, false);
+
+        if (context.read(portfolioProvider).postionBookModel![0].stat == "Ok") {
+          context.read(portfolioProvider).fetchHoldings(context, "");
+          context.read(orderProvider).fetchOrderBook(context, false);
+          context.read(orderProvider).fetchTradeBook(context);
+        }
+
         if (context.read(websocketProvider).wsConnected == false ||
             context.read(websocketProvider).wsConnected == true) {
           if (context.read(networkStateProvider).connectionStatus !=
