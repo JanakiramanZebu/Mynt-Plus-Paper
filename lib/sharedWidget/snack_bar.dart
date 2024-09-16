@@ -6,11 +6,7 @@ import '../../res/res.dart';
 SnackBar error(BuildContext context, String error) => SnackBar(
     content: ListTile(
         minLeadingWidth: 10,
-        leading: const Icon(
-          Icons.error,
-          size: 20,
-          color: Colors.red,
-        ),
+        leading: const Icon(Icons.error, size: 20, color: Colors.red),
         title: Text(error,
             style: TextStyle(fontSize: 14, color: colors.colorWhite))),
     showCloseIcon: true,

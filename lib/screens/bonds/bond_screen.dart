@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+ 
+ 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import 'package:flutter_svg/svg.dart';
 import '../../provider/bond_provider.dart';
 
@@ -19,7 +21,7 @@ class _BondScreenState extends State<BondScreen> {
   @override
   Widget build(BuildContext context) {
     int current = 0;
-    final CarouselController controller = CarouselController();
+    // final CarouselController controller = CarouselController();
 
     return Consumer(builder: (context, ScopedReader watch, _) {
       // final theme = watch(themeProvider);
@@ -43,7 +45,7 @@ class _BondScreenState extends State<BondScreen> {
           ListView(children: [
         const SizedBox(height: 12),
         CarouselSlider(
-          carouselController: controller,
+          // carouselController: controller,
           options: CarouselOptions(
               autoPlay: true,
               initialPage: current,

@@ -1,13 +1,9 @@
-import 'dart:async';
 import 'dart:developer';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-
-import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../provider/auth_provider.dart';
@@ -15,6 +11,7 @@ import '../provider/network_state_provider.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/no_internet_widget.dart';
+import '../sharedWidget/snack_bar.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -23,68 +20,23 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> { ConnectivityResult _connectionStatus = ConnectivityResult.none;
-  final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
- 
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_) {
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
       initializeResources(context: context);
-      // context.read(networkStateProvider).networkStream();
+      await context.read(networkStateProvider).networkStream();
       context.read(networkStateProvider).getContext(context);
-      // initialRoute();
-    }); initConnectivity();
-
-    _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-
-        setState(() {
-           ConstantName.timer = Timer.periodic(const Duration(seconds: 0), (timer) {});
-        });
+      initialRoute();
+    });
   }
 
   @override
   void dispose() {
-    _connectivitySubscription.cancel();
     super.dispose();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initConnectivity() async {
-    // late ConnectivityResult result;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      _connectionStatus = await _connectivity.checkConnectivity();
-    } on PlatformException catch (e) {
-      log('Couldn\'t check connectivity status', error: e);
-      return;
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) {
-      return Future.value(null);
-    }
-
-    // return _updateConnectionStatus(result);
-  }
-
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
-    setState(() {
-      _connectionStatus = result;
-
-      if (_connectionStatus == ConnectivityResult.wifi) {
-        initialRoute();
-      } else if (_connectionStatus == ConnectivityResult.mobile) {
-        initialRoute();
-      }
-
-      log("_connectionStatus $_connectionStatus");
-    });
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,7 +56,8 @@ class _SplashScreenState extends State<SplashScreen> { ConnectivityResult _conne
   initialRoute() async {
     final Preferences pref = locator<Preferences>();
     try {
-      print("Device  Name  ${pref.deviceName!} - ${pref.clientSession}");
+      print(
+          "Device  Name  ${pref.deviceName!} - ${pref.clientSession} ----  ${context.read(networkStateProvider).connectionStatus} ");
       context.read(authProvider).loginMethCtrl.text =
           pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
       context
@@ -123,23 +76,15 @@ class _SplashScreenState extends State<SplashScreen> { ConnectivityResult _conne
         Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, (route) => false);
       } else {
-        // if (pref.logoutClient == "Logout") {
-
-        //   Navigator.pushNamedAndRemoveUntil(
-        //       context, Routes.loginScreen, (route) => false,
-        //       arguments: "deviceLogin");
-        // } else {
         pref.setMobileLogin(true);
         await context
             .read(authProvider)
             .fetchMobileLogin(context, "", pref.clientId!, "");
-        // }
       }
-
-      // }
-
-      // context.read(marketWatchProvider).fetchScripMaster();
     } catch (e) {
+
+       ScaffoldMessenger.of(context)
+            .showSnackBar(error(context, "Something Wrong !!!"));
       log("faild to build --- $e");
     }
   }

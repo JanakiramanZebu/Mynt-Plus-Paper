@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -320,347 +321,366 @@ class HoldingScreen extends ConsumerWidget {
                                       : colors.colorBlue)))
                     ])),
               Expanded(
-                  child: ListView(shrinkWrap: true, children: [
-                if (holdingProvide.holdingSearchItem!.isEmpty)
-                  holdingProvide.holdingsModel!.isNotEmpty
-                      ? ListView.separated(
-                          primary: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemBuilder: (BuildContext context, int index) {
-                            if (socketDatas.containsKey(holdingProvide
-                                .holdingsModel![index].exchTsym![0].token)) {
-                              holdingProvide
-                                      .holdingsModel![index].exchTsym![0].lp =
-                                  "${socketDatas["${holdingProvide.holdingsModel![index].exchTsym![0].token}"]['lp'] ?? 0.00}";
-
-                              holdingProvide.holdingsModel![index].exchTsym![0]
-                                      .perChange =
-                                  "${socketDatas["${holdingProvide.holdingsModel![index].exchTsym![0].token}"]['pc'] ?? 0.00}";
-
-                              holdingProvide.holdingsModel![index].exchTsym![0]
-                                      .close =
-                                  "${socketDatas["${holdingProvide.holdingsModel![index].exchTsym![0].token}"]['c'] ?? 0.00}";
-
-                              holdingProvide.holdingsModel![index]
-                                  .currentValue = (int.parse(
-                                          "${holdingProvide.holdingsModel![index].currentQty ?? 0}") *
-                                      double.parse(
-                                          "${holdingProvide.holdingsModel![index].exchTsym![0].lp ?? 0.0}"))
-                                  .toStringAsFixed(2);
-
-                              double avgCost = double.parse(
-                                  "${holdingProvide.holdingsModel![index].upldprc == "0.00" ? holdingProvide.holdingsModel![index].exchTsym![0].close ?? 0.0 : holdingProvide.holdingsModel![index].upldprc ?? 0.00}");
-
-                              holdingProvide.holdingsModel![index].invested =
-                                  (holdingProvide.holdingsModel![index]
-                                              .currentQty! *
-                                          avgCost)
-                                      .toStringAsFixed(2);
-
-                              holdingProvide.holdingsModel![index].exchTsym![0]
-                                  .pNlChng = holdingProvide
-                                          .holdingsModel![index].invested ==
-                                      "0.00"
-                                  ? "0.00"
-                                  : ((double.parse(
-                                                  "${holdingProvide.holdingsModel![index].exchTsym![0].profitNloss}") /
-                                              double.parse(
-                                                  "${holdingProvide.holdingsModel![index].invested ?? 0.00}")) *
-                                          100)
-                                      .toStringAsFixed(2)
-                                      .toString();
-
-                              holdingProvide.holdingsModel![index].exchTsym![0]
-                                  .oneDayChg = ((double.parse(holdingProvide
-                                                  .holdingsModel![index]
-                                                  .exchTsym![0]
-                                                  .lp ??
-                                              "0.00") -
-                                          (double.parse(holdingProvide
-                                                  .holdingsModel![index]
-                                                  .exchTsym![0]
-                                                  .close ??
-                                              "0.00"))) *
-                                      int.parse(
-                                          "${holdingProvide.holdingsModel![index].currentQty ?? 0}"))
-                                  .toStringAsFixed(2);
-
-                              if (holdingProvide
-                                      .holdingsModel![index].currentQty ==
-                                  0) {
-                                double sellAmt = double.parse(holdingProvide
-                                        .holdingsModel![index].sellAmt ??
-                                    "0.00");
-
-                                int usedQty = int.parse(holdingProvide
-                                        .holdingsModel![index].usedqty ??
-                                    "0");
-                                double price = (sellAmt / usedQty);
-
-                                double pnl = price -
-                                    double.parse(holdingProvide
-                                            .holdingsModel![index].upldprc ??
-                                        "0.0");
+                  child: RefreshIndicator(
+                onRefresh: () async {
+                  await holdingProvide.fetchHoldings(context, "Refresh");
+                },
+                child: ListView(shrinkWrap: true, children: [
+                  if (holdingProvide.holdingSearchItem!.isEmpty)
+                    holdingProvide.holdingsModel!.isNotEmpty
+                        ? ListView.separated(
+                            primary: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemBuilder: (BuildContext context, int index) {
+                              if (socketDatas.containsKey(holdingProvide
+                                  .holdingsModel![index].exchTsym![0].token)) {
+                                holdingProvide
+                                        .holdingsModel![index].exchTsym![0].lp =
+                                    "${socketDatas["${holdingProvide.holdingsModel![index].exchTsym![0].token}"]['lp'] ?? 0.00}";
 
                                 holdingProvide.holdingsModel![index]
-                                        .exchTsym![0].profitNloss =
-                                    (pnl * usedQty).toStringAsFixed(2);
-                              } else {
+                                        .exchTsym![0].perChange =
+                                    "${socketDatas["${holdingProvide.holdingsModel![index].exchTsym![0].token}"]['pc'] ?? 0.00}";
+
+                                holdingProvide.holdingsModel![index]
+                                        .exchTsym![0].close =
+                                    "${socketDatas["${holdingProvide.holdingsModel![index].exchTsym![0].token}"]['c'] ?? 0.00}";
+
+                                holdingProvide.holdingsModel![index]
+                                    .currentValue = (int.parse(
+                                            "${holdingProvide.holdingsModel![index].currentQty ?? 0}") *
+                                        double.parse(
+                                            "${holdingProvide.holdingsModel![index].exchTsym![0].lp ?? 0.0}"))
+                                    .toStringAsFixed(2);
+
+                                double avgCost = double.parse(
+                                    "${holdingProvide.holdingsModel![index].upldprc == "0.00" ? holdingProvide.holdingsModel![index].exchTsym![0].close ?? 0.0 : holdingProvide.holdingsModel![index].upldprc ?? 0.00}");
+
+                                holdingProvide.holdingsModel![index].invested =
+                                    (holdingProvide.holdingsModel![index]
+                                                .currentQty! *
+                                            avgCost)
+                                        .toStringAsFixed(2);
+
+                                holdingProvide.holdingsModel![index]
+                                    .exchTsym![0].pNlChng = holdingProvide
+                                            .holdingsModel![index].invested ==
+                                        "0.00"
+                                    ? "0.00"
+                                    : ((double.parse(
+                                                    "${holdingProvide.holdingsModel![index].exchTsym![0].profitNloss}") /
+                                                double.parse(
+                                                    "${holdingProvide.holdingsModel![index].invested ?? 0.00}")) *
+                                            100)
+                                        .toStringAsFixed(2)
+                                        .toString();
+
                                 holdingProvide
                                     .holdingsModel![index]
                                     .exchTsym![0]
-                                    .profitNloss = (double.parse(holdingProvide
-                                                .holdingsModel![index]
-                                                .currentValue ??
-                                            "0.00") -
-                                        double.parse(holdingProvide
-                                                .holdingsModel![index]
-                                                .invested ??
-                                            "0.00"))
+                                    .oneDayChg = ((double.parse(holdingProvide
+                                                    .holdingsModel![index]
+                                                    .exchTsym![0]
+                                                    .lp ??
+                                                "0.00") -
+                                            (double.parse(holdingProvide
+                                                    .holdingsModel![index]
+                                                    .exchTsym![0]
+                                                    .close ??
+                                                "0.00"))) *
+                                        int.parse(
+                                            "${holdingProvide.holdingsModel![index].currentQty ?? 0}"))
                                     .toStringAsFixed(2);
+
+                                if (holdingProvide
+                                        .holdingsModel![index].currentQty ==
+                                    0) {
+                                  double sellAmt = double.parse(holdingProvide
+                                          .holdingsModel![index].sellAmt ??
+                                      "0.00");
+
+                                  int usedQty = int.parse(holdingProvide
+                                          .holdingsModel![index].usedqty ??
+                                      "0");
+                                  double price = (sellAmt / usedQty);
+
+                                  double pnl = price -
+                                      double.parse(holdingProvide
+                                              .holdingsModel![index].upldprc ??
+                                          "0.0");
+
+                                  holdingProvide.holdingsModel![index]
+                                          .exchTsym![0].profitNloss =
+                                      (pnl * usedQty).toStringAsFixed(2);
+                                } else {
+                                  holdingProvide.holdingsModel![index]
+                                      .exchTsym![0].profitNloss = (double.parse(
+                                              holdingProvide
+                                                      .holdingsModel![index]
+                                                      .currentValue ??
+                                                  "0.00") -
+                                          double.parse(holdingProvide
+                                                  .holdingsModel![index]
+                                                  .invested ??
+                                              "0.00"))
+                                      .toStringAsFixed(2);
+                                }
+
+                                SchedulerBinding.instance
+                                    .addPostFrameCallback((_) async {
+                                  holdingProvide.pnlHoldCal();
+                                });
                               }
-                              holdingProvide.pnlHoldCal();
-                            }
-                            return InkWell(
-                                onLongPress: () {
-                                  Navigator.pushNamed(
-                                      context, Routes.holdingExit);
-                                },
-                                onTap: () async {
-                                  await watch(marketWatchProvider).fetchLinkeScrip(
-                                      "${holdingProvide.holdingsModel![index].exchTsym![0].token}",
-                                      "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
-                                      context);
-                                  if (watch(marketWatchProvider)
-                                          .linkedScrips!
-                                          .stat ==
-                                      "Ok") {
-                                    await watch(marketWatchProvider).fetchScripQuote(
+                              return InkWell(
+                                  onLongPress: () {
+                                    Navigator.pushNamed(
+                                        context, Routes.holdingExit);
+                                  },
+                                  onTap: () async {
+                                    await watch(marketWatchProvider).fetchLinkeScrip(
                                         "${holdingProvide.holdingsModel![index].exchTsym![0].token}",
                                         "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
                                         context);
+                                    if (watch(marketWatchProvider)
+                                            .linkedScrips!
+                                            .stat ==
+                                        "Ok") {
+                                      await watch(marketWatchProvider).fetchScripQuote(
+                                          "${holdingProvide.holdingsModel![index].exchTsym![0].token}",
+                                          "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
+                                          context);
 
-                                    if ((holdingProvide.holdingsModel![index]
-                                                .exchTsym![0].exch ==
-                                            "NSE" ||
-                                        holdingProvide.holdingsModel![index]
-                                                .exchTsym![0].exch ==
-                                            "BSE")) {
-                                      context
-                                          .read(marketWatchProvider)
-                                          .depthBtns
-                                          .add({
-                                        "btnName": "Fundamental",
-                                        "imgPath": assets.dInfo,
-                                        "case":
-                                            "Click here to view fundamental data."
-                                      });
+                                      if ((holdingProvide.holdingsModel![index]
+                                                  .exchTsym![0].exch ==
+                                              "NSE" ||
+                                          holdingProvide.holdingsModel![index]
+                                                  .exchTsym![0].exch ==
+                                              "BSE")) {
+                                        context
+                                            .read(marketWatchProvider)
+                                            .depthBtns
+                                            .add({
+                                          "btnName": "Fundamental",
+                                          "imgPath": assets.dInfo,
+                                          "case":
+                                              "Click here to view fundamental data."
+                                        });
 
-                                      await context.read(marketWatchProvider).fetchTechData(
-                                          context: context,
-                                          exch:
-                                              "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
-                                          tradeSym:
-                                              "${holdingProvide.holdingsModel![index].exchTsym![0].tsym}",
-                                          lastPrc:
-                                              "${holdingProvide.holdingsModel![index].exchTsym![0].lp}");
+                                        await context
+                                            .read(marketWatchProvider)
+                                            .fetchTechData(
+                                                context: context,
+                                                exch:
+                                                    "${holdingProvide.holdingsModel![index].exchTsym![0].exch}",
+                                                tradeSym:
+                                                    "${holdingProvide.holdingsModel![index].exchTsym![0].tsym}",
+                                                lastPrc:
+                                                    "${holdingProvide.holdingsModel![index].exchTsym![0].lp}");
+                                      }
                                     }
-                                  }
-                                  Navigator.pushNamed(
-                                      context, Routes.holdingDetail,
-                                      arguments: {
-                                        "holdingData": holdingProvide
-                                            .holdingsModel![index],
-                                        "exchTsym": holdingProvide
-                                            .holdingsModel![index].exchTsym![0]
-                                      });
-                                },
-                                child: HoldingsList(
-                                    holdingData:
-                                        holdingProvide.holdingsModel![index],
-                                    exchTsym: holdingProvide
-                                        .holdingsModel![index].exchTsym![0]));
-                          },
-                          itemCount: holdingProvide.holdingsModel!.length,
-                          separatorBuilder: (BuildContext context, int index) {
-                            return Container(
-                                color: theme.isDarkMode
-                                    ? const Color(0xffB5C0CF).withOpacity(.15)
-                                    : const Color(0xffF1F3F8),
-                                height: 6);
-                          })
-                      : const SizedBox(
-                          height: 400,
-                          child: NoDataFound(),
-                        ),
-                if (holdingProvide.holdingSearchItem!.isNotEmpty)
-                  ListView.separated(
-                      primary: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (BuildContext context, int index) {
-                        if (socketDatas.containsKey(holdingProvide
-                            .holdingSearchItem![index].exchTsym![0].token)) {
-                          holdingProvide
-                                  .holdingSearchItem![index].exchTsym![0].lp =
-                              "${socketDatas["${holdingProvide.holdingSearchItem![index].exchTsym![0].token}"]['lp'] ?? 0.00}";
-
-                          holdingProvide.holdingSearchItem![index].exchTsym![0]
-                                  .perChange =
-                              "${socketDatas["${holdingProvide.holdingSearchItem![index].exchTsym![0].token}"]['pc'] ?? 0.00}";
-
-                          holdingProvide.holdingSearchItem![index].exchTsym![0]
-                                  .close =
-                              "${socketDatas["${holdingProvide.holdingSearchItem![index].exchTsym![0].token}"]['c'] ?? 0.00}";
-
-                          holdingProvide.holdingSearchItem![index]
-                              .currentValue = (int.parse(
-                                      "${holdingProvide.holdingSearchItem![index].currentQty ?? 0}") *
-                                  double.parse(
-                                      "${holdingProvide.holdingSearchItem![index].exchTsym![0].lp ?? 0.0}"))
-                              .toStringAsFixed(2);
-
-                          double avgCost = double.parse(
-                              "${holdingProvide.holdingSearchItem![index].upldprc == "0.00" ? holdingProvide.holdingSearchItem![index].exchTsym![0].close ?? 0.0 : holdingProvide.holdingSearchItem![index].upldprc ?? 0.00}");
-
-                          holdingProvide.holdingSearchItem![index].invested =
-                              (holdingProvide.holdingSearchItem![index]
-                                          .currentQty! *
-                                      avgCost)
-                                  .toStringAsFixed(2);
-
-                          holdingProvide.holdingSearchItem![index].exchTsym![0]
-                              .pNlChng = holdingProvide
-                                      .holdingSearchItem![index].invested ==
-                                  "0.00"
-                              ? "0.00"
-                              : ((double.parse(
-                                              "${holdingProvide.holdingSearchItem![index].exchTsym![0].profitNloss}") /
-                                          double.parse(
-                                              "${holdingProvide.holdingSearchItem![index].invested ?? 0.00}")) *
-                                      100)
-                                  .toStringAsFixed(2)
-                                  .toString();
-
-                          holdingProvide.holdingSearchItem![index].exchTsym![0]
-                              .oneDayChg = ((double.parse(holdingProvide
-                                              .holdingSearchItem![index]
+                                    Navigator.pushNamed(
+                                        context, Routes.holdingDetail,
+                                        arguments: {
+                                          "holdingData": holdingProvide
+                                              .holdingsModel![index],
+                                          "exchTsym": holdingProvide
+                                              .holdingsModel![index]
                                               .exchTsym![0]
-                                              .lp ??
-                                          "0.00") -
-                                      (double.parse(holdingProvide
-                                              .holdingSearchItem![index]
-                                              .exchTsym![0]
-                                              .close ??
-                                          "0.00"))) *
-                                  int.parse(
-                                      "${holdingProvide.holdingSearchItem![index].currentQty ?? 0}"))
-                              .toStringAsFixed(2);
-
-                          if (holdingProvide
-                                  .holdingSearchItem![index].currentQty ==
-                              0) {
-                            double sellAmt = double.parse(holdingProvide
-                                    .holdingSearchItem![index].sellAmt ??
-                                "0.00");
-
-                            int usedQty = int.parse(holdingProvide
-                                    .holdingSearchItem![index].usedqty ??
-                                "0");
-                            double price = (sellAmt / usedQty);
-
-                            double pnl = price -
-                                double.parse(holdingProvide
-                                        .holdingSearchItem![index].upldprc ??
-                                    "0.0");
+                                        });
+                                  },
+                                  child: HoldingsList(
+                                      holdingData:
+                                          holdingProvide.holdingsModel![index],
+                                      exchTsym: holdingProvide
+                                          .holdingsModel![index].exchTsym![0]));
+                            },
+                            itemCount: holdingProvide.holdingsModel!.length,
+                            separatorBuilder:
+                                (BuildContext context, int index) {
+                              return Container(
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffB5C0CF).withOpacity(.15)
+                                      : const Color(0xffF1F3F8),
+                                  height: 6);
+                            })
+                        : const SizedBox(
+                            height: 400,
+                            child: NoDataFound(),
+                          ),
+                  if (holdingProvide.holdingSearchItem!.isNotEmpty)
+                    ListView.separated(
+                        primary: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemBuilder: (BuildContext context, int index) {
+                          if (socketDatas.containsKey(holdingProvide
+                              .holdingSearchItem![index].exchTsym![0].token)) {
+                            holdingProvide
+                                    .holdingSearchItem![index].exchTsym![0].lp =
+                                "${socketDatas["${holdingProvide.holdingSearchItem![index].exchTsym![0].token}"]['lp'] ?? 0.00}";
 
                             holdingProvide.holdingSearchItem![index]
-                                    .exchTsym![0].profitNloss =
-                                (pnl * usedQty).toStringAsFixed(2);
-                          } else {
+                                    .exchTsym![0].perChange =
+                                "${socketDatas["${holdingProvide.holdingSearchItem![index].exchTsym![0].token}"]['pc'] ?? 0.00}";
+
+                            holdingProvide.holdingSearchItem![index]
+                                    .exchTsym![0].close =
+                                "${socketDatas["${holdingProvide.holdingSearchItem![index].exchTsym![0].token}"]['c'] ?? 0.00}";
+
+                            holdingProvide.holdingSearchItem![index]
+                                .currentValue = (int.parse(
+                                        "${holdingProvide.holdingSearchItem![index].currentQty ?? 0}") *
+                                    double.parse(
+                                        "${holdingProvide.holdingSearchItem![index].exchTsym![0].lp ?? 0.0}"))
+                                .toStringAsFixed(2);
+
+                            double avgCost = double.parse(
+                                "${holdingProvide.holdingSearchItem![index].upldprc == "0.00" ? holdingProvide.holdingSearchItem![index].exchTsym![0].close ?? 0.0 : holdingProvide.holdingSearchItem![index].upldprc ?? 0.00}");
+
+                            holdingProvide.holdingSearchItem![index].invested =
+                                (holdingProvide.holdingSearchItem![index]
+                                            .currentQty! *
+                                        avgCost)
+                                    .toStringAsFixed(2);
+
+                            holdingProvide.holdingSearchItem![index]
+                                .exchTsym![0].pNlChng = holdingProvide
+                                        .holdingSearchItem![index].invested ==
+                                    "0.00"
+                                ? "0.00"
+                                : ((double.parse(
+                                                "${holdingProvide.holdingSearchItem![index].exchTsym![0].profitNloss}") /
+                                            double.parse(
+                                                "${holdingProvide.holdingSearchItem![index].invested ?? 0.00}")) *
+                                        100)
+                                    .toStringAsFixed(2)
+                                    .toString();
+
                             holdingProvide
                                 .holdingSearchItem![index]
                                 .exchTsym![0]
-                                .profitNloss = (double.parse(holdingProvide
-                                            .holdingSearchItem![index]
-                                            .currentValue ??
-                                        "0.00") -
-                                    double.parse(holdingProvide
-                                            .holdingSearchItem![index]
-                                            .invested ??
-                                        "0.00"))
+                                .oneDayChg = ((double.parse(holdingProvide
+                                                .holdingSearchItem![index]
+                                                .exchTsym![0]
+                                                .lp ??
+                                            "0.00") -
+                                        (double.parse(holdingProvide
+                                                .holdingSearchItem![index]
+                                                .exchTsym![0]
+                                                .close ??
+                                            "0.00"))) *
+                                    int.parse(
+                                        "${holdingProvide.holdingSearchItem![index].currentQty ?? 0}"))
                                 .toStringAsFixed(2);
+
+                            if (holdingProvide
+                                    .holdingSearchItem![index].currentQty ==
+                                0) {
+                              double sellAmt = double.parse(holdingProvide
+                                      .holdingSearchItem![index].sellAmt ??
+                                  "0.00");
+
+                              int usedQty = int.parse(holdingProvide
+                                      .holdingSearchItem![index].usedqty ??
+                                  "0");
+                              double price = (sellAmt / usedQty);
+
+                              double pnl = price -
+                                  double.parse(holdingProvide
+                                          .holdingSearchItem![index].upldprc ??
+                                      "0.0");
+
+                              holdingProvide.holdingSearchItem![index]
+                                      .exchTsym![0].profitNloss =
+                                  (pnl * usedQty).toStringAsFixed(2);
+                            } else {
+                              holdingProvide
+                                  .holdingSearchItem![index]
+                                  .exchTsym![0]
+                                  .profitNloss = (double.parse(holdingProvide
+                                              .holdingSearchItem![index]
+                                              .currentValue ??
+                                          "0.00") -
+                                      double.parse(holdingProvide
+                                              .holdingSearchItem![index]
+                                              .invested ??
+                                          "0.00"))
+                                  .toStringAsFixed(2);
+                            }
+                            holdingProvide.pnlHoldCal();
                           }
-                          holdingProvide.pnlHoldCal();
-                        }
-                        return InkWell(
-                            onLongPress: () {
-                              Navigator.pushNamed(context, Routes.holdingExit);
-                            },
-                            onTap: () async {
-                              await watch(marketWatchProvider).fetchLinkeScrip(
-                                  "${holdingProvide.holdingSearchItem![index].exchTsym![0].token}",
-                                  "${holdingProvide.holdingSearchItem![index].exchTsym![0].exch}",
-                                  context);
-                              if (watch(marketWatchProvider)
-                                      .linkedScrips!
-                                      .stat ==
-                                  "Ok") {
-                                await watch(marketWatchProvider).fetchScripQuote(
+                          return InkWell(
+                              onLongPress: () {
+                                Navigator.pushNamed(
+                                    context, Routes.holdingExit);
+                              },
+                              onTap: () async {
+                                await watch(marketWatchProvider).fetchLinkeScrip(
                                     "${holdingProvide.holdingSearchItem![index].exchTsym![0].token}",
                                     "${holdingProvide.holdingSearchItem![index].exchTsym![0].exch}",
                                     context);
+                                if (watch(marketWatchProvider)
+                                        .linkedScrips!
+                                        .stat ==
+                                    "Ok") {
+                                  await watch(marketWatchProvider).fetchScripQuote(
+                                      "${holdingProvide.holdingSearchItem![index].exchTsym![0].token}",
+                                      "${holdingProvide.holdingSearchItem![index].exchTsym![0].exch}",
+                                      context);
 
-                                if ((holdingProvide.holdingSearchItem![index]
-                                            .exchTsym![0].exch ==
-                                        "NSE" ||
-                                    holdingProvide.holdingSearchItem![index]
-                                            .exchTsym![0].exch ==
-                                        "BSE")) {
-                                  context
-                                      .read(marketWatchProvider)
-                                      .depthBtns
-                                      .add({
-                                    "btnName": "Fundamental",
-                                    "imgPath": assets.dInfo,
-                                    "case":
-                                        "Click here to view fundamental data."
-                                  });
+                                  if ((holdingProvide.holdingSearchItem![index]
+                                              .exchTsym![0].exch ==
+                                          "NSE" ||
+                                      holdingProvide.holdingSearchItem![index]
+                                              .exchTsym![0].exch ==
+                                          "BSE")) {
+                                    context
+                                        .read(marketWatchProvider)
+                                        .depthBtns
+                                        .add({
+                                      "btnName": "Fundamental",
+                                      "imgPath": assets.dInfo,
+                                      "case":
+                                          "Click here to view fundamental data."
+                                    });
 
-                                  await context.read(marketWatchProvider).fetchTechData(
-                                      context: context,
-                                      exch:
-                                          "${holdingProvide.holdingSearchItem![index].exchTsym![0].exch}",
-                                      tradeSym:
-                                          "${holdingProvide.holdingSearchItem![index].exchTsym![0].tsym}",
-                                      lastPrc:
-                                          "${holdingProvide.holdingSearchItem![index].exchTsym![0].lp}");
+                                    await context.read(marketWatchProvider).fetchTechData(
+                                        context: context,
+                                        exch:
+                                            "${holdingProvide.holdingSearchItem![index].exchTsym![0].exch}",
+                                        tradeSym:
+                                            "${holdingProvide.holdingSearchItem![index].exchTsym![0].tsym}",
+                                        lastPrc:
+                                            "${holdingProvide.holdingSearchItem![index].exchTsym![0].lp}");
+                                  }
                                 }
-                              }
-                              Navigator.pushNamed(context, Routes.holdingDetail,
-                                  arguments: {
-                                    "holdingData": holdingProvide
-                                        .holdingSearchItem![index],
-                                    "exchTsym": holdingProvide
-                                        .holdingSearchItem![index].exchTsym![0]
-                                  });
-                            },
-                            child: HoldingsList(
-                                holdingData:
-                                    holdingProvide.holdingSearchItem![index],
-                                exchTsym: holdingProvide
-                                    .holdingSearchItem![index].exchTsym![0]));
-                      },
-                      itemCount: holdingProvide.holdingSearchItem!.length,
-                      separatorBuilder: (BuildContext context, int index) {
-                        return Container(
-                            color: theme.isDarkMode
-                                ? const Color(0xffB5C0CF).withOpacity(.15)
-                                : const Color(0xffF1F3F8),
-                            height: 6);
-                      })
-              ]))
+                                Navigator.pushNamed(
+                                    context, Routes.holdingDetail,
+                                    arguments: {
+                                      "holdingData": holdingProvide
+                                          .holdingSearchItem![index],
+                                      "exchTsym": holdingProvide
+                                          .holdingSearchItem![index]
+                                          .exchTsym![0]
+                                    });
+                              },
+                              child: HoldingsList(
+                                  holdingData:
+                                      holdingProvide.holdingSearchItem![index],
+                                  exchTsym: holdingProvide
+                                      .holdingSearchItem![index].exchTsym![0]));
+                        },
+                        itemCount: holdingProvide.holdingSearchItem!.length,
+                        separatorBuilder: (BuildContext context, int index) {
+                          return Container(
+                              color: theme.isDarkMode
+                                  ? const Color(0xffB5C0CF).withOpacity(.15)
+                                  : const Color(0xffF1F3F8),
+                              height: 6);
+                        })
+                ]),
+              ))
             ]));
   }
 }

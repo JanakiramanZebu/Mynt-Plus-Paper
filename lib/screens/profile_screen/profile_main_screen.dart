@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart'; 
 import 'package:share_plus/share_plus.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
@@ -407,15 +406,11 @@ class UserAccountScreen extends ConsumerWidget {
             Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text("Version 3.0.2 Build 1.0.37(02) Released on 13 Sep",
+                child: Text("Version 3.0.2 Build 1.0.38(01) Released on 16 Sep",
                     style: textStyle(
                         const Color(0xff666666), 11, FontWeight.w500)))
           ]);
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+  
 }

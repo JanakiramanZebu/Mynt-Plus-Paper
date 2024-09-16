@@ -46,12 +46,12 @@ class WebSocketProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-bool conectionClosed=false;
+  bool conectionClosed = false;
 
   final Preferences pref = locator<Preferences>();
 
-  void closeSocket() { 
-    conectionClosed=true;
+  void closeSocket() {
+    conectionClosed = true;
     _wsConnected = false;
     channel.sink.close();
   }
@@ -59,11 +59,9 @@ bool conectionClosed=false;
   reconnectWS() {
     if (ref(networkStateProvider).connectionStatus != ConnectivityResult.none &&
         _wsConnected) {
-
-          if (!conectionClosed ) {
-            channel.sink.add(jsonEncode({"t": "h"}));
-          }
-      
+      if (!conectionClosed) {
+        channel.sink.add(jsonEncode({"t": "h"}));
+      }
     }
   }
 
@@ -432,7 +430,7 @@ bool conectionClosed=false;
                     channelInput: ConstantName.lastSubscribeDepth,
                     task: "d",
                     context: context);
-             });
+              });
             }
           }
           // notifyListeners();
@@ -469,7 +467,7 @@ bool conectionClosed=false;
       required BuildContext context}) {
     final data = {"t": task, "k": input};
 
-    if (input.isNotEmpty) {
+    if (input.isNotEmpty && _wsConnected) {
       channel.sink.add(jsonEncode(data));
     }
   }
