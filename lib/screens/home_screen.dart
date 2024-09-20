@@ -301,12 +301,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     width: 19,
                                                     color: colors.colorGrey)),
                                           ),
-                                  ] else if (indexProvide.selectedBtmIndx ==
+                                  ] else if ((indexProvide.selectedBtmIndx ==
                                           2 &&
-                                      portfolio.postionBookModel!.length>1 &&
+                                      portfolio.allPostionList .length > 1) &&
                                       portfolio.selectedTab == 0) ...[
-                                    if (portfolio.postionBookModel![0].stat ==
-                                        "Ok")
+                                  
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(right: 15.0),
@@ -335,7 +334,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 shape: const RoundedRectangleBorder(
                                     borderRadius:
                                         BorderRadius.all(Radius.circular(32)))),
-                            child: Text("Group by",
+                            child: Text("Group by"  ,
                                 style: textStyle(
                                     theme.isDarkMode
                                         ? colors.colorWhite

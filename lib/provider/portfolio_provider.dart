@@ -625,7 +625,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
           _allPostionList.add(element);
         }
       }
-
+      if (_allPostionList.length <= 1) {
+        _posSelection = "All position";
+      }
       await positionCal(isDay);
 
       await positionGroupCal(isDay, {});
