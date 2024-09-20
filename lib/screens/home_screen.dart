@@ -16,8 +16,7 @@ import '../provider/thems.dart';
 import '../provider/user_profile_provider.dart';
 import '../provider/websocket_provider.dart';
 import '../res/res.dart';
-import '../routes/route_names.dart';
-import '../sharedWidget/custom_switch_btn.dart';
+import '../routes/route_names.dart'; 
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/no_internet_widget.dart';
 import 'bonds/bond_screen.dart';
@@ -26,8 +25,7 @@ import 'market_watch/index/index_screen.dart';
 import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/watchlist_screen.dart';
 import 'market_watch/watchlists_bottom_sheet.dart';
-import 'mutual_fund/mutual_fund_screen.dart';
-// import 'order_book/basket/create_basket.dart';
+import 'mutual_fund/mutual_fund_screen.dart'; 
 import 'order_book/basket/create_basket.dart';
 import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
@@ -305,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           ),
                                   ] else if (indexProvide.selectedBtmIndx ==
                                           2 &&
-                                      portfolio.postionBookModel!.isNotEmpty &&
+                                      portfolio.postionBookModel!.length>1 &&
                                       portfolio.selectedTab == 0) ...[
                                     if (portfolio.postionBookModel![0].stat ==
                                         "Ok")
@@ -345,29 +343,109 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     12,
                                     FontWeight.w600))),
                       ),
-                                          Text("DAY",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  13,
-                                                  FontWeight.w500)),
-                                          const SizedBox(width: 6),
-                                          CustomSwitch(
-                                              onChanged: (bool value) {
-                                                portfolio.chngPositionPnl(true);
-                                                portfolio.positionToggle(
-                                                    value, context);
-                                              },
-                                              value: portfolio.isDay),
-                                          const SizedBox(width: 6),
-                                          Text("NET",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  13,
-                                                  FontWeight.w500)),
+                                      if (portfolio.exitAll &&
+                      portfolio.posSelection == "All position")
+                      SizedBox(
+                        height: 27,
+                        child: OutlinedButton(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    backgroundColor: theme.isDarkMode
+                                        ? const Color.fromARGB(255, 18, 18, 18)
+                                        : colors.colorWhite,
+                                    titleTextStyle: textStyles.appBarTitleTxt
+                                        .copyWith(
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack),
+                                    contentTextStyle: textStyles.menuTxt
+                                        .copyWith(
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack),
+                                    titlePadding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 12),
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(14))),
+                                    scrollable: true,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                    ),
+                                    insetPadding: const EdgeInsets.symmetric(
+                                        horizontal: 20),
+                                    title: const Text("Exit Position"),
+                                    content: SizedBox(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: const Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                              "Are you sure you want to exit all positions?")
+                                        ],
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: Text("No",
+                                              style: textStyles.textBtn
+                                                  .copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .colorLightBlue
+                                                          : colors.colorBlue))),
+                                      ElevatedButton(
+                                        onPressed: () async {
+                                          await portfolio.exitAllPosition(
+                                              context, false);
+                                          Navigator.of(context).pop(true);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                            elevation: 0,
+                                            backgroundColor: theme.isDarkMode
+                                                ? colors.colorbluegrey
+                                                : colors.colorBlack,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                            )),
+                                        child: Text("Yes",
+                                            style: textStyle(
+                                                !theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                14,
+                                                FontWeight.w500)),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.colorGrey
+                                        : colors.colorBlack),
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(32)))),
+                            child: Text("Exit All",
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    12,
+                                    FontWeight.w600))),
+                      ),
+                                     
+                                          
                                         ]),
                                       )
                                   ] else if (indexProvide.selectedBtmIndx ==

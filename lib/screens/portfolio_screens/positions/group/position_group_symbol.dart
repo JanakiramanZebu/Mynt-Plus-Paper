@@ -19,7 +19,7 @@ class PositionGroupSymbol extends ConsumerWidget {
     final socketDatas = watch(websocketProvider).socketDatas;
     final theme = context.read(themeProvider);
     return ExpandedTileList.separated(
-        initiallyOpenedControllersIndexes: const [0],
+        // initiallyOpenedControllersIndexes: const [0],
         padding: const EdgeInsets.symmetric(horizontal: 4),
         itemCount: positionBook.groupPositionSym.length,
         maxOpened: positionBook.groupPositionSym.length,
