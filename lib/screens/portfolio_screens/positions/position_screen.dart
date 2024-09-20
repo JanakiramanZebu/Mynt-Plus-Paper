@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:google_fonts/google_fonts.dart';
+import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
@@ -10,10 +12,10 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
+import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import 'filter_scrip_bottom_sheet.dart';
-import 'group/position_group_bottomsheet.dart'; 
+import 'filter_scrip_bottom_sheet.dart'; 
 import 'group/position_group_symbol.dart';
 import 'position_list_card.dart';
 
@@ -153,7 +155,7 @@ class PositionScreen extends ConsumerWidget {
                             )
                           ])
                     ])),
-            if (listofPosition.isNotEmpty)
+            if (listofPosition.isNotEmpty )
               Container(
                 padding: const EdgeInsets.only(
                     left: 16, right: 4, top: 8, bottom: 8),
@@ -270,39 +272,9 @@ class PositionScreen extends ConsumerWidget {
                                     12,
                                     FontWeight.w600))),
                       ),
-                    if (listofPosition.length > 1) ...[
-                      SizedBox(
-                        height: 27,
-                        child: OutlinedButton(
-                            onPressed: () {
-                              showModalBottomSheet(
-                                  useSafeArea: true,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16))),
-                                  context: context,
-                                  builder: (context) {
-                                    return const PositionGroupBottomSheet();
-                                  });
-                            },
-                            style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.colorGrey
-                                        : colors.colorBlack),
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(32)))),
-                            child: Text("${positionBook.posSelection}",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    12,
-                                    FontWeight.w600))),
-                      ),
-                      if (positionBook.posSelection == "All position")
+                    if (listofPosition.length > 1 && positionBook.posSelection == "All position") ...[
+                      
+                     
                         Row(
                           children: [
                             InkWell(
@@ -366,6 +338,13 @@ class PositionScreen extends ConsumerWidget {
                                 : colors.colorBlack,
                             16,
                             FontWeight.w600),
+                        textCapitalization: TextCapitalization.characters,
+                        inputFormatters: [
+                          UpperCaseTextFormatter(),
+                          RemoveEmojiInputFormatter(),
+                          FilteringTextInputFormatter.deny(
+                              RegExp('[π£•₹€℅™∆√¶/.,]'))
+                        ],
                         decoration: InputDecoration(
                             fillColor: theme.isDarkMode
                                 ? colors.darkGrey

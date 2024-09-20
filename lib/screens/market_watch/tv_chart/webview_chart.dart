@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart'; 
-import 'package:google_fonts/google_fonts.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
@@ -19,6 +18,7 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
+import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
 import 'charttype_bottom.dart';
 import 'drwaing_bottom.dart';
@@ -68,8 +68,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   }
 
   @override
-  void dispose() { 
- 
+  void dispose() {
     // ConstantName.webViewController!.clearCache() ;
     // ConstantName.webViewController!.evaluateJavascript(
     //     source: 'window.localStorage.removeItem("tick_tick")');
@@ -308,11 +307,18 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                               "t": "df",
                               "e": widget.chartArgs.exch,
                               "tk": widget.chartArgs.token,
-                              "lp": socketDatas[widget.chartArgs.token]['lp'].toString()=="null"?
-                                  "0.00":socketDatas[widget.chartArgs.token]['lp'],
-                              "v": socketDatas[widget.chartArgs.token]['v'].toString()=="null"? "0.00":socketDatas[widget.chartArgs.token]['v'],
+                              "lp": socketDatas[widget.chartArgs.token]['lp']
+                                          .toString() ==
+                                      "null"
+                                  ? "0.00"
+                                  : socketDatas[widget.chartArgs.token]['lp'],
+                              "v": socketDatas[widget.chartArgs.token]['v']
+                                          .toString() ==
+                                      "null"
+                                  ? "0.00"
+                                  : socketDatas[widget.chartArgs.token]['v'],
                             };
-                            ConstantName.webViewController!.evaluateJavascript(
+                            controller.evaluateJavascript(
                                 source:
                                     'window.localStorage.setItem("tick_tick",\'${jsonEncode(json)}\')');
                           });
@@ -332,9 +338,5 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     });
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+   
 }

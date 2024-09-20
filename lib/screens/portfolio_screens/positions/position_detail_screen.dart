@@ -107,37 +107,70 @@ class PositionDetailScreen extends ConsumerWidget {
                   : MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if ((positionList.netqty != "0") &&
+
+                Row(
+                  children: [
+                    Container(
+                                                              margin:
+                                                                  const EdgeInsets.only(
+                                                                    right: 8),
+                                                              padding:
+                                                                  const EdgeInsets.symmetric(
+                                                                      horizontal: 10,
+                                                                      vertical: 4),
+                                                              decoration: BoxDecoration(
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                          4),
+                                                                  color: theme.isDarkMode
+                                                                      ? const Color(0xff666666)
+                                                                          .withOpacity(.2)
+                                                                      : const Color(0xff999999)
+                                                                          .withOpacity(
+                                                                              .2)),
+                                                              child: Text(
+                                                                  "${positionList.sPrdtAli}",
+                                                                  style: textStyle(
+                                                                      const Color(0xff666666),
+                                                                      12,
+                                                                      FontWeight.w600))), if ((positionList.netqty != "0") &&
                     (positionList.sPrdtAli == "MIS" ||
                         positionList.sPrdtAli == "CNC" ||
                         positionList.sPrdtAli == "NRML")) ...[
-                  InkWell(
-                    onTap: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return ConvertPositionDialogue(
-                                convertPosition: positionList);
-                          });
-                    },
-                    child: Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(
-                                color: theme.isDarkMode
-                                    ? colors.colorGrey
-                                    : colors.colorBlack),
-                            borderRadius: BorderRadius.circular(32)),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        child: Text("Convert",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                13,
-                                FontWeight.w600))),
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return ConvertPositionDialogue(
+                                    convertPosition: positionList);
+                              });
+                        },
+                        child: Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: theme.isDarkMode
+                                        ? colors.colorGrey
+                                        : colors.colorBlack),
+                                borderRadius: BorderRadius.circular(32)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            child: Text("Convert",
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    13,
+                                    FontWeight.w600))),
+                      ),
+                    ],
                   )
                 ],
+                  ],
+                ),
+               
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.center,

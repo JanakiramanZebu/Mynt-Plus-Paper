@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -424,30 +423,18 @@ class WebSocketProvider extends ChangeNotifier {
             });
             if (ref(networkStateProvider).connectionStatus !=
                 ConnectivityResult.none) {
-              if (channel.closeCode == 1000) {
-                Future.delayed(const Duration(milliseconds: 1500))
-                    .then((value) {
-                  establishConnection(
-                      channelInput: ConstantName.lastSubscribe,
-                      task: "t",
-                      context: context);
-                  establishConnection(
-                      channelInput: ConstantName.lastSubscribeDepth,
-                      task: "d",
-                      context: context);
-                });
-              } else {
-                Future.delayed(const Duration(milliseconds: 800)).then((value) {
-                  establishConnection(
-                      channelInput: ConstantName.lastSubscribe,
-                      task: "t",
-                      context: context);
-                  establishConnection(
-                      channelInput: ConstantName.lastSubscribeDepth,
-                      task: "d",
-                      context: context);
-                });
-              }
+              Future.delayed(Duration(
+                      milliseconds: channel.closeCode == 1000 ? 1400 : 700))
+                  .then((value) {
+                establishConnection(
+                    channelInput: ConstantName.lastSubscribe,
+                    task: "t",
+                    context: context);
+                establishConnection(
+                    channelInput: ConstantName.lastSubscribeDepth,
+                    task: "d",
+                    context: context);
+              });
             }
           }
           notifyListeners();
@@ -456,15 +443,11 @@ class WebSocketProvider extends ChangeNotifier {
           closeSocket();
           conectionClosed = true;
           _wsConnected = false;
-          log("ref(networkStateProvider).connectionStatus ${ref(networkStateProvider).connectionStatus}");
-          if (ref(networkStateProvider).connectionStatus !=
-              ConnectivityResult.none) {
-            // ref(showcaseProvide).showToast("Reconnecting", context);
-          }
+
           ref(indexListProvider)
               .logError
               .add({"type": "Websocket Error", "Error": "$error"});
-          print("eeee $error");
+
           notifyListeners();
         },
       );

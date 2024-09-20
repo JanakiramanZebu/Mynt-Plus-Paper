@@ -31,6 +31,7 @@ import 'mutual_fund/mutual_fund_screen.dart';
 import 'order_book/basket/create_basket.dart';
 import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
+import 'portfolio_screens/positions/group/position_group_bottomsheet.dart';
 import 'profile_screen/logged_user_bottom_sheet.dart';
 import 'profile_screen/profile_main_screen.dart';
 // import 'stocks/explore/explore_screens.dart';
@@ -312,43 +313,38 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         padding:
                                             const EdgeInsets.only(right: 15.0),
                                         child: Row(children: [
-                                          // Container(
-                                          //     margin: EdgeInsets.only(right: 8),
-                                          //     height: 27,
-                                          //     child: OutlinedButton(
-                                          //         onPressed: () {
-                                          //           showModalBottomSheet(
-                                          //               useSafeArea: true,
-                                          //               isScrollControlled: true,
-                                          //               shape: const RoundedRectangleBorder(
-                                          //                   borderRadius:
-                                          //                       BorderRadius.vertical(
-                                          //                           top: Radius
-                                          //                               .circular(
-                                          //                                   16))),
-                                          //               context: context,
-                                          //               builder: (context) {
-                                          //                 return const PositionGroup();
-                                          //               });
-                                          //         },
-                                          //         style: OutlinedButton.styleFrom(
-                                          //             side: BorderSide(
-                                          //                 color: theme.isDarkMode
-                                          //                     ? colors.colorGrey
-                                          //                     : colors.colorBlack),
-                                          //             shape:
-                                          //                 const RoundedRectangleBorder(
-                                          //                     borderRadius:
-                                          //                         BorderRadius.all(
-                                          //                             Radius.circular(
-                                          //                                 32)))),
-                                          //         child: Text("Group By",
-                                          //             style: textStyle(
-                                          //                 theme.isDarkMode
-                                          //                     ? colors.colorWhite
-                                          //                     : colors.colorBlack,
-                                          //                 12,
-                                          //                 FontWeight.w600)))),
+                                         Container(
+                        height: 27,
+                        padding: EdgeInsets.only(right: 10),
+                        child: OutlinedButton(
+                            onPressed: () {
+                              showModalBottomSheet(
+                                  useSafeArea: true,
+                                  isScrollControlled: true,
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(16))),
+                                  context: context,
+                                  builder: (context) {
+                                    return const PositionGroupBottomSheet();
+                                  });
+                            },
+                            style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.colorGrey
+                                        : colors.colorBlack),
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(32)))),
+                            child: Text("Group by",
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    12,
+                                    FontWeight.w600))),
+                      ),
                                           Text("DAY",
                                               style: textStyle(
                                                   theme.isDarkMode

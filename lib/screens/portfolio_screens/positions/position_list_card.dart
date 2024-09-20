@@ -103,15 +103,15 @@ class PositionListCard extends ConsumerWidget {
                   thickness: 1.2),
               const SizedBox(height: 2),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Row(children: [
+               
                   Text("${positionList.sPrdtAli}",
                       style: textStyle(
                           theme.isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack,
                           13,
-                          FontWeight.w600))
-                ]),
+                          FontWeight.w600)),
+               
                 positions.isNetPnl
                     ? Row(children: [
                         Text("P&L: ",

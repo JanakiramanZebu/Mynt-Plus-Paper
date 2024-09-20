@@ -34,6 +34,7 @@ import '../screens/portfolio_screens/holdings/edies_webview.dart';
 import '../screens/portfolio_screens/holdings/exit_holdings_screen.dart';
 import '../screens/portfolio_screens/holdings/holding_detail_screen.dart';
 import '../screens/portfolio_screens/positions/exit_position_screen.dart';
+import '../screens/portfolio_screens/positions/group/position_group_detail.dart';
 import '../screens/portfolio_screens/positions/position_detail_screen.dart';
 import '../screens/profile_screen/app_webview/fund_transaction.dart';
 import '../screens/profile_screen/app_webview/option_z.dart';
@@ -424,6 +425,25 @@ class AppRoutes {
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               PositionDetailScreen(positionList: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0.0, 1.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+        case Routes.positionGroupDetail:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              PositionGroupDetail(positionData: args),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;

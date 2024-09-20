@@ -81,6 +81,8 @@ class Routes {
   static const String futures = 'Futures';
 
   static const String positionDetail = 'PositionDetail';
+  static const String positionGroupDetail = 'positionGroupDetail';
+  
   static const String positionExit = 'PositionExit';
   static const String holdingDetail = 'HoldingDetail';
   static const String holdingExit = 'HoldingExit';

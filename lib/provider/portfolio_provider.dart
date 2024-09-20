@@ -147,19 +147,19 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   String _posSelection = "All position";
 
-  String get  posSelection => _posSelection;
+  String get posSelection => _posSelection;
 
-  List<String> posType=["All position","Group by symbol"];
+  List<String> posType = ["All position", "Group by symbol"];
 
   changeTabIndex(int index) {
     _selectedTab = index;
   }
 
+  chngPosSelection(String val) {
+    _posSelection = val;
+    notifyListeners();
+  }
 
-chngPosSelection(String val){
-_posSelection=val;
-  notifyListeners();
-}
   tabSize() {
     _portTabName = [
       Tab(
@@ -451,95 +451,6 @@ _posSelection=val;
     } finally {}
   }
 
-  // holdingCalc(String token, String ltp) {
-  //   _totalCurrentVal = 0.00;
-  //   _oneDayChng = 0.00;
-
-  //   double totPnl = 0.00;
-  //   if (_holdingsModel!.isNotEmpty) {
-  //     if (_holdingsModel![0].stat != "Not_Ok") {
-  //       // for (var element in _holdingsModel!) {
-  //       // int qty = (int.parse(
-  //       //         "${element.npoadqty ?? element.brkcolqty ?? element.npoadt1qty??element.holdqty}")) -
-  //       //     int.parse("${element.usedqty}");
-
-  //       // if (socketDatas.containsKey(element.exchTsym![0].token)) {
-  //       //   element.exchTsym![0].lp =
-  //       //       "${socketDatas["${element.exchTsym![0].token}"]['lp']}";
-
-  //       //   element.exchTsym![0].perChange =
-  //       //       "${socketDatas["${element.exchTsym![0].token}"]['pc']}";
-
-  //       //   element.exchTsym![0].close =
-  //       //       "${socketDatas["${element.exchTsym![0].token}"]['c']}";
-  //       // }
-  //       // int qty = (int.parse("${element.npoadqty ?? 0}") +
-  //       //         int.parse("${element.brkcolqty ?? 0}") +
-  //       //         int.parse("${element.npoadt1qty ?? 0}") +
-  //       //         int.parse("${element.holdqty ?? 0}") +
-  //       //         int.parse("${element.btstqty ?? 0}")) -
-  //       //     int.parse("${element.usedqty}");
-  //       // element.currentQty = qty;
-  //       // double avgCost = double.parse(
-  //       //     "${element.upldprc == "0.00" ? element.exchTsym![0].close ?? 0.0 : element.upldprc ?? 0.00}");
-
-  //       // element.saleableQty = (int.parse("${element.holdqty ?? 0}") +
-  //       //         int.parse("${element.dpQty ?? 0}") +
-  //       //         int.parse("${element.btstqty ?? 0}")) -
-  //       //     int.parse("${element.usedqty ?? 0}");
-  //       // element.invested = (qty * avgCost).toStringAsFixed(2);
-
-  //       // invest += double.parse("${element.invested}");
-  //       // for (var ele in element.exchTsym!) {
-
-  //       // double lastPrice = double.parse(ltp);
-
-  //       // element.exchTsym![0].profitNloss =
-  //       //     ((lastPrice - double.parse(element.avgPrc ?? "0.00")) *
-  //       //             int.parse("${element.currentQty ?? 0}"))
-  //       //         .toStringAsFixed(2)
-  //       //         .toString();
-  //       // double closePrice =
-  //       //     double.parse("${element.exchTsym![0].close ?? 0.0}");
-
-  //       // element.exchTsym![0].pNlChng = element.invested == "0.00"
-  //       //     ? "0.00"
-  //       //     : ((double.parse("${element.exchTsym![0].profitNloss}") /
-  //       //                 double.parse("${element.invested ?? 0.00}")) *
-  //       //             100)
-  //       //         .toStringAsFixed(2)
-  //       //         .toString();
-  //       // element.exchTsym![0].oneDayChg = ((lastPrice - closePrice) *
-  //       //         int.parse("${element.currentQty ?? 0}"))
-  //       //     .toStringAsFixed(2);
-  //       // totPnl+=
-  //       //           double.parse("${element.exchTsym![0].profitNloss}");
-  //       //       _oneDayChng += double.parse("${element.exchTsym![0].oneDayChg??0.00}");
-
-  //       //       // element.currentValue = (int.parse("${element.currentQty ?? 0}") *
-  //       //       //         double.parse("${element.exchTsym![0].lp ?? 0.0}"))
-  //       //       //     .toStringAsFixed(2);
-  //       //       _totalCurrentVal += double.parse(element.currentValue??"0.00");
-
-  //       // }
-  //       // }
-  //       _totalPnlHolding = totPnl;
-  //       _totPnlPercHolding = _totInvesHold == "0.00"
-  //           ? "0.00"
-  //           : ((double.parse("$_totalPnlHolding") /
-  //                       double.parse(_totInvesHold)) *
-  //                   100)
-  //               .toStringAsFixed(2);
-
-  //       _oneDayChngPer = ((_oneDayChng / _totalCurrentVal) * 100);
-  //       // _totPnlPercHolding = totPnlPercHolding;
-
-  //       print("sdfs ${_totalPnlHolding}");
-  //     }
-  //   }
-  //   // notifyListeners();
-  // }
-
   pnlHoldCal() {
     if (_holdingsModel!.isNotEmpty) {
       if (_holdingsModel![0].stat != "Not_Ok") {
@@ -569,24 +480,7 @@ _posSelection=val;
             (sum, next) => sum + double.parse("${next.currentValue ?? 0.00}"));
       }
 
-      // DateTime now = DateTime.now();
-      // DateTime threeThirtyPM = DateTime(now.year, now.month, now.day, 15, 30);
-      // DateTime nineFifteenAM = DateTime(now.year, now.month, now.day, 9, 15);
-
-      // // Check if the current time is after 3:30 PM or before 9:15 AM
-      // bool isInTimeRange =
-      //     now.isAfter(threeThirtyPM) || now.isBefore(nineFifteenAM);
-
-      // if (isInTimeRange) {
-
       notifyListeners();
-      //       log("sdns ${now.hour}");
-
-      // }else{
-
-      // }
-
-      // print("sdns ${now.hour}- ${now.minute}");
     }
   }
 
@@ -706,15 +600,7 @@ _posSelection=val;
           element.expDate = "${spilitSymbol["expDate"]}";
           element.option = "${spilitSymbol["option"]}";
         }
-
-        // if (_positionGroup.containsKey(element.symbol)) {
-        //   _positionGroup["${element.symbol}"] =
-        //       _positionGroup["${element.symbol}"]! + 1;
-        // } else {
-        //   _positionGroup["${element.symbol}"] = 1;
-        // }
       }
-// _groupedBySymbol=jsonDecode( jsonEncode( _groupedBySymbol) );
 
       _totBuyAmt = totBuyAmts.toStringAsFixed(2);
       _totSellAmt = totSellAmts.toStringAsFixed(2);
@@ -739,10 +625,8 @@ _posSelection=val;
           _allPostionList.add(element);
         }
       }
-      // _postionGropList = _allPostionList;
 
-      // await allPositionPnl(isDay);
-      await positionCal(isDay   );
+      await positionCal(isDay);
 
       await positionGroupCal(isDay, {});
       tabSize();
@@ -750,22 +634,6 @@ _posSelection=val;
       notifyListeners();
     }
   }
-
-  // groupByPosition(String val) async {
-  //   _positionGrpName = val;
-
-  //   if (val == "All") {
-  //     splitPositionBook(_isDay);
-  //   } else {
-  //     _allPostionList = _postionGropList
-  //         .where((element) =>
-  //             element.symbol!.toUpperCase().contains(val.toUpperCase()))
-  //         .toList();
-  //     await positionCal(isDay);
-  //   }
-
-  //   notifyListeners();
-  // }
 
   selectExitPosition(int index) {
     for (var i = 0; i < _allPostionList.length; i++) {
@@ -881,7 +749,6 @@ _posSelection=val;
   }
 
   positionCal(bool isDay) {
- 
     double totalMtm = 0.00;
     double totalPnl = 0.00;
     double unRealMtm = 0.00;
@@ -1008,8 +875,6 @@ _posSelection=val;
             double.parse("${element.profitNloss ?? element.rpnl ?? 0.00}");
       }
     }
-
-     
 
     _totMtm = totalMtm.toStringAsFixed(2);
 
@@ -1257,8 +1122,6 @@ _posSelection=val;
                 } else {
                   element.profitNloss = element.rpnl;
                 }
-
-                // print(" 34 ${element.profitNloss}");
               } else {
                 element.profitNloss = (((lastPrice -
                                 double.parse(
@@ -1266,14 +1129,8 @@ _posSelection=val;
                             qty) +
                         double.parse("${element.rpnl ?? 0.00}"))
                     .toStringAsFixed(2);
-
-                // print(  "34   ${element.profitNloss}");
               }
             }
-
-            // totalMtm += double.parse(element.mTm!);
-            // totalPnl +=
-            //     double.parse("${element.profitNloss ?? element.rpnl ?? 0.00}");
           }
         }
       }
@@ -1305,16 +1162,19 @@ _posSelection=val;
       double totalMtms = value['groupList'].fold(0.0, (sum, item) {
         return sum + double.parse(item['mTm'] ?? "0.00");
       });
+      bool shouldExit = value['groupList'].any((item) => item['qty'] != '0');
 
-      // Assign the calculated total to the totPnl key
+      // Assign
       value['totPnl'] = totalProfitNloss.toStringAsFixed(2);
 
       totalPnl += totalProfitNloss;
       value['totMtm'] = totalMtms.toStringAsFixed(2);
       totalMtm += totalMtms;
+
+      value['isexit'] = shouldExit ? "true" : "false";
     });
 
-    ("Position Group ${jsonEncode(_groupedBySymbol)}  $_groupPositionSym");
+    // ("Position Group ${jsonEncode(_groupedBySymbol)}  $_groupPositionSym");
 
     _totMtm = totalMtm.toStringAsFixed(2);
 
@@ -1351,12 +1211,8 @@ _posSelection=val;
       if (_holdingsModel!.isNotEmpty) {
         if (_holdingsModel![0].stat != "Not_Ok") {
           for (var i = 0; i < _holdingsModel!.length; i++) {
-            // for (var j = 0; j < _holdingsModel![i].exchTsym!.length; j++) {
-            // if (_holdingsModel![i].exchTsym![j].exch == 'NSE' ) {
             input +=
                 "${_holdingsModel![i].exchTsym![0].exch}|${_holdingsModel![i].exchTsym![0].token}#";
-            // }
-            // }
           }
         }
       }

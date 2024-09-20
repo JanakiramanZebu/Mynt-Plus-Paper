@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
@@ -137,7 +139,7 @@ class HoldingScreen extends ConsumerWidget {
                                               16,
                                               FontWeight.w500)),
                                       Text(
-                                          " (${holdingProvide.oneDayChngPer.toStringAsFixed(2)}%)",
+                                          " (${holdingProvide.oneDayChngPer.isNaN ? "0.00" : holdingProvide.oneDayChngPer.toStringAsFixed(2)}%)",
                                           style: textStyle(
                                               holdingProvide.oneDayChngPer
                                                       .toStringAsFixed(2)
@@ -262,7 +264,13 @@ class HoldingScreen extends ConsumerWidget {
                                   16,
                                   FontWeight.w600),
                               keyboardType: TextInputType.text,
-                              inputFormatters: [UpperCaseTextFormatter()],
+                            textCapitalization: TextCapitalization.characters,
+                              inputFormatters: [
+                                        UpperCaseTextFormatter(),
+                                        RemoveEmojiInputFormatter(),
+                                        FilteringTextInputFormatter.deny(
+                                            RegExp('[π£•₹€℅™∆√¶/.,]')) 
+                                      ],
                               decoration: InputDecoration(
                                   fillColor: theme.isDarkMode
                                       ? colors.darkGrey
@@ -608,7 +616,10 @@ class HoldingScreen extends ConsumerWidget {
                                           "0.00"))
                                   .toStringAsFixed(2);
                             }
-                            // holdingProvide.pnlHoldCal();
+                   SchedulerBinding.instance
+                                    .addPostFrameCallback((_) async {
+                                  holdingProvide.pnlHoldCal();
+                                });
                           }
                           return InkWell(
                               onLongPress: () {
