@@ -806,6 +806,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _scripInfoModel!.stat == "Not_Ok") {
         ref(authProvider).ifSessionExpired(context);
       }
+
+      notifyListeners();
       return _scripInfoModel;
     } catch (e) {
       print(e);

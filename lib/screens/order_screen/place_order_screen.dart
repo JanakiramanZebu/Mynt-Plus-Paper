@@ -25,6 +25,7 @@ import '../../provider/shocase_provider.dart';
 import '../../provider/sip_order_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
+import '../../provider/websocket_provider.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -193,7 +194,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
       isBuy = widget.orderArg.transType;
       sipqtyctrl = TextEditingController(text: "1");
-      priceCtrl = TextEditingController(text: "${widget.orderArg.ltp}");
+
       qtyCtrl = TextEditingController(
           text: widget.orderArg.isExit
               ? widget.orderArg.holdQty!.replaceAll("-", "")
@@ -202,7 +203,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
       discQtyCtrl = TextEditingController(text: "0");
       product = widget.orderArg.orderTpye == "CNC" ? "C" : "I";
 
-      ordPrice = "${widget.orderArg.ltp}";
+      if (context
+          .read(websocketProvider)
+          .socketDatas
+          .containsKey(widget.scripInfo.token)) {
+        ordPrice =
+            "${context.read(websocketProvider).socketDatas["${widget.scripInfo.token}"]['lp']}";
+        priceCtrl.text = ordPrice;
+      }
     });
     super.initState();
   }
@@ -221,7 +229,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
       final orderInput = watch(ordInputProvider);
       final internet = watch(networkStateProvider);
       final theme = context.read(themeProvider);
+
       final sip = watch(siprovider);
+
       return GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: Scaffold(
@@ -1977,7 +1987,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               fit: BoxFit.scaleDown)),
                                                       textCtrl: priceCtrl,
                                                       textAlign: TextAlign.start)),
-                                              ]))
+                                            ]))
                                       ])),
                               const SizedBox(height: 3),
                               Divider(

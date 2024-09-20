@@ -495,7 +495,7 @@ class AuthProvider extends DefaultChangeNotifier {
         // _isMobileLogin = true;
         // localstorage.setString("logout", _logoutMsg);
         pref.clearClientSession();
-        pref.setLogout(true);
+        pref.setLogout(true); pref.setHideLoginOptBtn(false);
         ref(indexListProvider).bottomMenu(1);
         loginMethCtrl.text =
             pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
@@ -707,6 +707,9 @@ class AuthProvider extends DefaultChangeNotifier {
       // await ref(stocksProvide).getNews();
 
       // if (pref.islogIn!) {
+
+
+      
       await ref(indexListProvider).checkSession(context);
       await ref(marketWatchProvider).changeWlName("", "No");
       _logoutMsg = "";
@@ -714,20 +717,23 @@ class AuthProvider extends DefaultChangeNotifier {
       if (ref(indexListProvider).checkSess!.stat == "Ok") {
          ref(indexListProvider).fetchNotifyMsg();
         ref(portfolioProvider).changeTabIndex(0);
-        await ref(userProfileProvider).fetchUserDetail(
-            context, "${pref.clientId}", "${pref.clientSession}", "");
+      
         await ref(portfolioProvider).fetchHoldings(context, "");
 
         await ref(indexListProvider).getDeafultIndexList(context);
         await ref(marketWatchProvider).fetchMWList(context);
+   ref(userProfileProvider).fetchUserDetail(
+            context );
+         ref(portfolioProvider).fetchPositionBook(context, false);
+        ref(orderProvider).fetchOrderBook(context, false);
+          ref(orderProvider).fetchTradeBook(context);
 
-        await ref(portfolioProvider).fetchPositionBook(context, false);
-        await ref(orderProvider).fetchOrderBook(context, false);
-        await ref(orderProvider).fetchTradeBook(context);
-
-        await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
-
+         ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
+  print("object -------");
         if (s.isEmpty) {
+
+
+            print("object  dsgfv -------");
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.homeScreen, (route) => false);
           // if (pref.islogIn!) {

@@ -15,7 +15,7 @@ import '../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
-import '../../res/res.dart';
+import '../../res/res.dart'; 
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -1431,6 +1431,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {
+
+       await context.read(marketWatchProvider)  .fetchScripInfo(
+        widget.wlValue.token, widget.wlValue.exch , context);
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: widget.wlValue.exch,
         tSym: widget.wlValue.tsym,

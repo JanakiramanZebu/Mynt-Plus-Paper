@@ -11,7 +11,7 @@ import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/network_state_provider.dart';
-import '../../provider/user_profile_provider.dart';
+// import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/no_internet_widget.dart';
@@ -37,7 +37,7 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
       onWillPop: showExitPopup,
       child: Consumer(builder: (context, ScopedReader watch, _) {
         final loggedUser = watch(authProvider);
-        final user = watch(userProfileProvider);
+        // final user = watch(userProfileProvider);
         final internet = watch(networkStateProvider);
         return Scaffold(
           appBar: AppBar(
@@ -72,8 +72,7 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
                                       loggedUser.loggedMobile[index].clientId);
 
                                   pref.setClientMob(
-                                      loggedUser.loggedMobile[index].mobile
-                                  );
+                                      loggedUser.loggedMobile[index].mobile);
                                   pref.setClientSession(
                                       loggedUser.loggedMobile[index].sesstion);
                                   pref.setClientName(
@@ -101,11 +100,11 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
                                     //     localstorage.getString("session") ?? "";
                                   });
 
-                                  await user.fetchUserDetail(
-                                      context,
-                                      loggedUser.loggedMobile[index].clientId,
-                                      loggedUser.loggedMobile[index].sesstion,
-                                      "preLoginDecive");
+                                  // await user.fetchUserDetail(
+                                  //     context,
+                                  //     loggedUser.loggedMobile[index].clientId,
+                                  //     loggedUser.loggedMobile[index].sesstion,
+                                  //     "preLoginDecive");
                                   // if (initRoute != "initialRoute") {
                                   //   if (user.userDetailModel!.stat == "Ok") {
                                   //     Navigator.pop(context);
@@ -154,7 +153,7 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
                               style: textStyle(const Color(0xff666666), 12,
                                   FontWeight.w500)),
                           trailing: loggedUser.loggedMobile[index].clientId ==
-                                 pref.clientId
+                                  pref.clientId
                               ? Text("Last active",
                                   style: textStyle(const Color(0xff0037B7), 13,
                                       FontWeight.w600))
@@ -210,43 +209,39 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              titleTextStyle: textStyles.appBarTitleTxt,
-              contentTextStyle: textStyles.menuTxt,
-              titlePadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(14))),
-              scrollable: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-              ),
-              insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-              title: const Text("Exit App"),
-              content: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text("Do you want to Exit an App?")],
+                titleTextStyle: textStyles.appBarTitleTxt,
+                contentTextStyle: textStyles.menuTxt,
+                titlePadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(14))),
+                scrollable: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
                 ),
-              ),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text("No", style: textStyles.textBtn)),
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: const Color(0xff0037B7),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      )),
-                  child: Text("Yes",
-                      style: textStyle(
-                          const Color(0xffFFFFFF), 14, FontWeight.w500)),
-                ),
-              ],
-            );
+                insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                title: const Text("Exit App"),
+                content: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [Text("Do you want to Exit an App?")])),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text("No", style: textStyles.textBtn)),
+                  ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor: const Color(0xff0037B7),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          )),
+                      child: Text("Yes",
+                          style: textStyle(
+                              const Color(0xffFFFFFF), 14, FontWeight.w500)))
+                ]);
           },
         ) ??
         false;

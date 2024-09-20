@@ -168,7 +168,7 @@ class OrderProvider extends DefaultChangeNotifier {
       Tab(
           text:
               "GTT Order (${_gttOrderBookModel == null ? 0 : _gttOrderBookModel!.length})"),
-      Tab(text: "Basket Order (${pref.basketNameList!.length})"),
+      Tab(text: "Basket Order (${_bsktList.length})"),
       Tab(text: "Trade Book (${_tradeBook == null ? 0 : _tradeBook!.length})"),
       Tab(
           text:
@@ -947,7 +947,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
     await pref.setBasketList(jsonEncode(_bsktList));
     _bsktList = pref.bsktList!.isEmpty ? [] : jsonDecode(pref.bsktList!);
-
+    tabSize();
     notifyListeners();
   }
 

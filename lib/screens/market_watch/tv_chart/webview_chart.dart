@@ -308,9 +308,9 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                               "t": "df",
                               "e": widget.chartArgs.exch,
                               "tk": widget.chartArgs.token,
-                              "lp": socketDatas[widget.chartArgs.token]['lp'] ??
-                                  "0.00",
-                              "v": socketDatas[widget.chartArgs.token]['v']
+                              "lp": socketDatas[widget.chartArgs.token]['lp'].toString()=="null"?
+                                  "0.00":socketDatas[widget.chartArgs.token]['lp'],
+                              "v": socketDatas[widget.chartArgs.token]['v'].toString()=="null"? "0.00":socketDatas[widget.chartArgs.token]['v'],
                             };
                             ConstantName.webViewController!.evaluateJavascript(
                                 source:

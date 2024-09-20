@@ -14,12 +14,8 @@ import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
-import 'core/default_change_notifier.dart';
-import 'fund_provider.dart';
-import 'index_list_provider.dart';
-import 'market_watch_provider.dart';
-import 'order_provider.dart';
-import 'portfolio_provider.dart';
+import 'core/default_change_notifier.dart'; 
+import 'index_list_provider.dart';  
 import 'shocase_provider.dart';
 import '../models/profile_model/qr_login_res.dart';
 
@@ -86,11 +82,10 @@ class UserProfileProvider extends DefaultChangeNotifier {
   ClientDetailModel? get clientDetailModel => _clientDetailModel;
   UserProfileProvider(this.ref);
 
-  Future fetchUserDetail(BuildContext context, String ueserId, String session,
-      String toRoute) async {
+  Future fetchUserDetail(BuildContext context  ) async {
     try {
       toggleLoadingOn(true);
-      _userDetailModel = await api.getUserDetail(ueserId, session);
+      _userDetailModel = await api.getUserDetail( );
 
       if (_userDetailModel!.stat == "Ok") {
         // await ref(marketWatchProvider).changeWlName("");
@@ -108,21 +103,21 @@ class UserProfileProvider extends DefaultChangeNotifier {
         //   Navigator.pushNamedAndRemoveUntil(
         //       context, Routes.homeScreen, (route) => false);
         // }
-        if (toRoute == "switchAcc") {
-          Navigator.pop(context);
+        // if (toRoute == "switchAcc") {
+        //   Navigator.pop(context);
 
-          ref(fundProvider).fetchFunds(context);
-          await ref(portfolioProvider).fetchHoldings(context, "");
+        //   ref(fundProvider).fetchFunds(context);
+        //   await ref(portfolioProvider).fetchHoldings(context, "");
 
-          await ref(marketWatchProvider).fetchMWList(context);
+        //   await ref(marketWatchProvider).fetchMWList(context);
 
-          await ref(indexListProvider).getDeafultIndexList(context);
-          await ref(portfolioProvider).fetchPositionBook(context, false);
-          await ref(orderProvider).fetchOrderBook(context, false);
-          await ref(orderProvider).fetchTradeBook(context);
+        //   await ref(indexListProvider).getDeafultIndexList(context);
+        //   await ref(portfolioProvider).fetchPositionBook(context, false);
+        //   await ref(orderProvider).fetchOrderBook(context, false);
+        //   await ref(orderProvider).fetchTradeBook(context);
 
-          await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
-        }
+        //   await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
+        // }
       } else {
         if (_userDetailModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&

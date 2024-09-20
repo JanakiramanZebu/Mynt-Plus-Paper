@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/portfolio_model/position_book_model.dart';
-import '../../../provider/portfolio_provider.dart';
-import '../../../provider/thems.dart'; 
-import '../../../res/res.dart';
-import '../../../sharedWidget/functions.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
+import '../../../../provider/portfolio_provider.dart';
+import '../../../../provider/thems.dart'; 
+import '../../../../res/res.dart';
+import '../../../../sharedWidget/functions.dart';
 
-class PositionListCard extends ConsumerWidget {
-  final PositionBookModel positionList;
+class PositionListGrpCard extends ConsumerWidget {
+ final Map<String, dynamic> groupData;
 
-  const PositionListCard({super.key, required this.positionList});
+  const PositionListGrpCard({super.key, required this. groupData});
 
   @override
   Widget build(BuildContext context, watch) {
@@ -17,10 +16,10 @@ class PositionListCard extends ConsumerWidget {
     final theme = context.read(themeProvider);
     return Container(
         color: theme.isDarkMode
-            ? positionList.qty == "0"
+            ? groupData['qty'] == "0"
                 ? colors.darkGrey
                 : colors.colorBlack
-            : Color(positionList.qty == "0" ? 0xffF1F3F8 : 0xffffffff),
+            : Color(groupData['qty'] == "0" ? 0xffF1F3F8 : 0xffffffff),
         padding: const EdgeInsets.all(16),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,13 +27,13 @@ class PositionListCard extends ConsumerWidget {
             children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Row(children: [
-                  Text("${positionList.symbol} ",
+                  Text("${groupData['symbol']} ",
                       overflow: TextOverflow.ellipsis,
                       style: textStyles.scripNameTxtStyle.copyWith(
                           color: theme.isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack)),
-                  Text("${positionList.option} ",
+                  Text("${groupData['option']} ",
                       overflow: TextOverflow.ellipsis,
                       style: textStyles.scripNameTxtStyle.copyWith(
                           color: theme.isDarkMode
@@ -45,7 +44,7 @@ class PositionListCard extends ConsumerWidget {
                   Text(" LTP: ",
                       style: textStyle(
                           const Color(0xff5E6B7D), 13, FontWeight.w600)),
-                  Text("₹${positionList.lp}",
+                  Text("₹${groupData['lp']}",
                       style: textStyle(
                           theme.isDarkMode
                               ? colors.colorWhite
@@ -64,13 +63,13 @@ class PositionListCard extends ConsumerWidget {
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(2),
                           color: theme.isDarkMode
-                              ? positionList.qty == "0"
+                              ? groupData['qty'] == "0"
                                   ? colors.colorBlack
                                   : const Color(0xff666666).withOpacity(.2)
-                              : positionList.qty == "0"
+                              : groupData['qty'] == "0"
                                   ? colors.colorWhite
                                   : const Color(0xffECEDEE)),
-                      child: Text("${positionList.exch}",
+                      child: Text("${groupData['exch']}",
                           overflow: TextOverflow.ellipsis,
                           style: textStyle(
                               theme.isDarkMode
@@ -78,18 +77,18 @@ class PositionListCard extends ConsumerWidget {
                                   : const Color(0xff666666),
                               10,
                               FontWeight.w500))),
-                  Text("  ${positionList.expDate} ",
+                  Text("  ${groupData['expDate']} ",
                       overflow: TextOverflow.ellipsis,
                       style: textStyles.scripExchTxtStyle.copyWith(
                           color: theme.isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack))
                 ]),
-                Text(" (${positionList.perChange ?? 0.00}%)",
+                Text(" (${groupData['perChange'] ?? 0.00}%)",
                     style: textStyle(
-                        positionList.perChange.toString().startsWith("-")
+                        groupData['perChange'].toString().startsWith("-")
                             ? colors.darkred
-                            : positionList.perChange == "0.00"
+                            : groupData['perChange'] == "0.00"
                                 ? colors.ltpgrey
                                 : colors.ltpgreen,
                         12,
@@ -99,12 +98,12 @@ class PositionListCard extends ConsumerWidget {
                   color: theme.isDarkMode
                       ? colors.darkGrey
                       : Color(
-                          positionList.netqty == "0" ? 0xffffffff : 0xffECEDEE),
+                          groupData['netqty'] == "0" ? 0xffffffff : 0xffECEDEE),
                   thickness: 1.2),
               const SizedBox(height: 2),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Row(children: [
-                  Text("${positionList.sPrdtAli}",
+                  Text("${groupData['s_prdt_ali']}",
                       style: textStyle(
                           theme.isDarkMode
                               ? colors.colorWhite
@@ -118,17 +117,17 @@ class PositionListCard extends ConsumerWidget {
                             style: textStyle(
                                 const Color(0xff5E6B7D), 13, FontWeight.w500)),
                         Text(
-                            "₹${positionList.profitNloss ?? positionList.rpnl}",
+                            "₹${groupData['profitNloss'] ?? groupData['rpnl']}",
                             style: textStyle(
-                                positionList.profitNloss != null
-                                    ? positionList.profitNloss!.startsWith("-")
+                                groupData['profitNloss'] != null
+                                    ? groupData['profitNloss']!.startsWith("-")
                                         ? colors.darkred
-                                        : positionList.profitNloss == "0.00"
+                                        : groupData['profitNloss'] == "0.00"
                                             ? colors.ltpgrey
                                             : colors.ltpgreen
-                                    : positionList.rpnl!.startsWith("-")
+                                    : groupData['rpnl']!.startsWith("-")
                                         ? colors.darkred
-                                        : positionList.rpnl == "0.00"
+                                        : groupData['rpnl'] == "0.00"
                                             ? colors.ltpgrey
                                             : colors.ltpgreen,
                                 15,
@@ -138,11 +137,11 @@ class PositionListCard extends ConsumerWidget {
                         Text("MTM: ",
                             style: textStyle(
                                 const Color(0xff5E6B7D), 13, FontWeight.w500)),
-                        Text("₹${positionList.mTm}",
+                        Text("₹${groupData['mTm']}",
                             style: textStyle(
-                                positionList.mTm!.startsWith("-")
+                                groupData['mTm'].toString().startsWith("-")
                                     ? colors.darkred
-                                    : positionList.mTm == "0.00"
+                                    : groupData['mTm'] == "0.00"
                                         ? colors.ltpgrey
                                         : colors.ltpgreen,
                                 15,
@@ -157,7 +156,7 @@ class PositionListCard extends ConsumerWidget {
                     Text("Qty: ",
                         style: textStyle(
                             const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                    Text("${positionList.qty}",
+                    Text("${groupData['qty']}",
                         style: textStyle(
                             theme.isDarkMode
                                 ? colors.colorWhite
@@ -170,11 +169,11 @@ class PositionListCard extends ConsumerWidget {
                       // Text("MTM: ",
                       //     style: textStyle(
                       //         const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                      // Text("₹${positionList.mTm}",
+                      // Text("₹${groupData[mTm}",
                       //     style: textStyle(
-                      //         Color(positionList.mTm!.startsWith("-")
+                      //         Color(groupData[mTm!.startsWith("-")
                       //             ? 0XFFFF1717
-                      //             : positionList.mTm == "0.00"
+                      //             : groupData[mTm == "0.00"
                       //                 ? 0xff999999
                       //                 : 0xff43A833),
                       //         15,
@@ -183,7 +182,7 @@ class PositionListCard extends ConsumerWidget {
                       Text("Avg: ",
                           style: textStyle(
                               const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                      Text("${positionList.avgPrc}",
+                      Text("${groupData['avgPrc']}",
                           style: textStyle(
                               theme.isDarkMode
                                   ? colors.colorWhite
@@ -203,7 +202,7 @@ class PositionListCard extends ConsumerWidget {
               //         Text("Avg: ",
               //             style: textStyle(
               //                 const Color(0xff5E6B7D), 14, FontWeight.w500)),
-              //         Text("${positionList.netavgprc}",
+              //         Text("${groupData[netavgprc}",
               //             style: textStyle(6
               //                 const Color(0xff000000), 14, FontWeight.w500)),
               //       ],
@@ -213,7 +212,7 @@ class PositionListCard extends ConsumerWidget {
               //     //     Text("LTP: ",
               //     //         style: textStyle(
               //     //             const Color(0xff5E6B7D), 14, FontWeight.w600)),
-              //     //     Text("${positionList.lp}",
+              //     //     Text("${groupData[lp}",
               //     //         style: textStyle(
               //     //             const Color(0xff000000), 15, FontWeight.w600)),
               //     //   ],

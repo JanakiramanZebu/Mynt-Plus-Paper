@@ -1,12 +1,11 @@
- 
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
+import 'package:flutter_svg/svg.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/thems.dart';
+import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
@@ -126,7 +125,8 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                         child: OutlinedButton(
                             onPressed: () {
                               pref.setLogout(false);
-                              //  watch(websocketProvider).closeSocket();
+                              pref.setHideLoginOptBtn(true);
+                             watch(websocketProvider).closeSocket();
                               loggedUser.addClient(true);
                               Navigator.pop(context);
                               Navigator.pushNamed(context, Routes.loginScreen);

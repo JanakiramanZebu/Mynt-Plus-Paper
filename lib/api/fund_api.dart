@@ -32,7 +32,7 @@ mixin FundApi on ApiCore {
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
 
       final json = jsonDecode(res.body);
-      // print(res.body);
+      //  print(res.body);
 
       return FundDetailModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {

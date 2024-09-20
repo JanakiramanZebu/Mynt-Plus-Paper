@@ -80,16 +80,10 @@ class Preferences {
 
   // Orders
 
-  Future setBasketNameList(List<String> clients) async =>
-      await _prefInstance!.setStringList(_basketName, clients);
-
   Future setBasketScrip(String scrips) async =>
       await _prefInstance!.setString(_basketScrips, scrips);
   Future setBasketList(String scrips) async =>
       await _prefInstance!.setString(_basketList, scrips);
-
-  List<String>? get basketNameList =>
-      _prefInstance?.getStringList(_basketName) ?? [];
 
   String? get bsktScrips => _prefInstance?.getString(_basketScrips) ?? "";
 
@@ -115,6 +109,5 @@ const String _clientMob = 'clientMob';
 const String _clientName = 'clientName';
 const String _clientList = 'clientList';
 
-const String _basketName = 'basketName';
 const String _basketList = 'basketList';
 const String _basketScrips = 'basketScrips';

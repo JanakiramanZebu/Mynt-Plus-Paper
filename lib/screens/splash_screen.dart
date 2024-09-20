@@ -24,11 +24,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      initializeResources(context: context);
-      await context.read(networkStateProvider).networkStream();
+    SchedulerBinding.instance.addPostFrameCallback((_)  {
+      initializeResources(context: context);  initialRoute();
+      context.read(networkStateProvider).networkStream();
       context.read(networkStateProvider).getContext(context);
-      initialRoute();
+    
     });
   }
 

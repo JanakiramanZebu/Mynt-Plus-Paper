@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../locator/preference.dart';
 import '../../../provider/auth_provider.dart'; 
 import '../../../provider/thems.dart';
 import '../../../res/res.dart'; 
@@ -26,7 +27,7 @@ class _OtpScreenState extends State<OtpScreen> {
     startTimer();
     super.initState();
   }
-
+  Preferences pref = Preferences();
   void startTimer() {
     const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
@@ -69,6 +70,7 @@ class _OtpScreenState extends State<OtpScreen> {
       final theme = watch(themeProvider);
       return WillPopScope(
         onWillPop: () async {
+          pref.setLogout(false);
           auth.clearTextField();
           auth.clearError();
 

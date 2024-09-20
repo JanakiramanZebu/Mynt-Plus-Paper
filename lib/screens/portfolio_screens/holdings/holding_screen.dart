@@ -608,7 +608,7 @@ class HoldingScreen extends ConsumerWidget {
                                           "0.00"))
                                   .toStringAsFixed(2);
                             }
-                            holdingProvide.pnlHoldCal();
+                            // holdingProvide.pnlHoldCal();
                           }
                           return InkWell(
                               onLongPress: () {

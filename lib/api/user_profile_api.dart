@@ -5,7 +5,7 @@ import 'core/api_core.dart';
 import 'package:http/http.dart';
 
 mixin UserProfileAPI on ApiCore {
-  Future<UserDetailModel> getUserDetail(String ueserId, String session) async {
+  Future<UserDetailModel> getUserDetail( ) async {
     try {
       final uri = Uri.parse(apiLinks.userDetail);
       final res = await apiClient.post(uri,

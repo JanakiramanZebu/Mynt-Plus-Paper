@@ -53,6 +53,7 @@ class WebSocketProvider extends ChangeNotifier {
   void closeSocket() {
     conectionClosed = true;
     _wsConnected = false;
+    notifyListeners();
     channel.sink.close();
   }
 
@@ -75,7 +76,7 @@ class WebSocketProvider extends ChangeNotifier {
       ConstantName.lastSubscribeDepth = channelInput;
     }
     // _socketDatas = {};
-    if (!wsConnected) {
+    if (!_wsConnected) {
       final data = {
         "t": "c",
         "actid": pref.clientId,
@@ -94,6 +95,7 @@ class WebSocketProvider extends ChangeNotifier {
           if (res['s'].toString().toLowerCase() == "ok" &&
               res['t'].toString() == "ck") {
             _wsConnected = true;
+            conectionClosed = false;
             if (task.toLowerCase() == 't' ||
                 task.toLowerCase() == 'u' ||
                 task.toLowerCase() == 'd' ||
@@ -414,6 +416,7 @@ class WebSocketProvider extends ChangeNotifier {
           //ason} ${channel.closeCode}");
           if (channel.closeCode != null) {
             closeSocket();
+            conectionClosed = true;
             _wsConnected = false;
             ref(indexListProvider).logError.add({
               "type": "Websocket ${channel.closeCode} ",
@@ -421,22 +424,37 @@ class WebSocketProvider extends ChangeNotifier {
             });
             if (ref(networkStateProvider).connectionStatus !=
                 ConnectivityResult.none) {
-              Future.delayed(const Duration(milliseconds: 1000)).then((value) {
-                establishConnection(
-                    channelInput: ConstantName.lastSubscribe,
-                    task: "t",
-                    context: context);
-                establishConnection(
-                    channelInput: ConstantName.lastSubscribeDepth,
-                    task: "d",
-                    context: context);
-              });
+              if (channel.closeCode == 1000) {
+                Future.delayed(const Duration(milliseconds: 1500))
+                    .then((value) {
+                  establishConnection(
+                      channelInput: ConstantName.lastSubscribe,
+                      task: "t",
+                      context: context);
+                  establishConnection(
+                      channelInput: ConstantName.lastSubscribeDepth,
+                      task: "d",
+                      context: context);
+                });
+              } else {
+                Future.delayed(const Duration(milliseconds: 800)).then((value) {
+                  establishConnection(
+                      channelInput: ConstantName.lastSubscribe,
+                      task: "t",
+                      context: context);
+                  establishConnection(
+                      channelInput: ConstantName.lastSubscribeDepth,
+                      task: "d",
+                      context: context);
+                });
+              }
             }
           }
-          // notifyListeners();
+          notifyListeners();
         },
         onError: (error) {
           closeSocket();
+          conectionClosed = true;
           _wsConnected = false;
           log("ref(networkStateProvider).connectionStatus ${ref(networkStateProvider).connectionStatus}");
           if (ref(networkStateProvider).connectionStatus !=
@@ -447,6 +465,7 @@ class WebSocketProvider extends ChangeNotifier {
               .logError
               .add({"type": "Websocket Error", "Error": "$error"});
           print("eeee $error");
+          notifyListeners();
         },
       );
     } else {
