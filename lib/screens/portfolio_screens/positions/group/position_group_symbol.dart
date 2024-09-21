@@ -193,16 +193,30 @@ class PositionGroupSymbol extends ConsumerWidget {
                                   positionBook.isNetPnl
                                       ? "Total P&L: "
                                       : "Total MTM: ",
-                                  style: textStyle(const Color(0xff5E6B7D), 12,
+                                  style: textStyle(const Color(0xff5E6B7D), 13,
                                       FontWeight.w500)),
                               Text(
                                   "${positionBook.isNetPnl ? positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['totPnl'] : positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['totMtm']}",
                                   style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
+                                      positionBook.isNetPnl
+                                          ? positionBook.groupedBySymbol[
+                                                      positionBook
+                                                              .groupPositionSym[
+                                                          index]]['totPnl']
+                                                  .toString()
+                                                  .startsWith("-")
+                                              ? colors.darkred
+                                              : colors.ltpgreen
+                                          : positionBook
+                                                  .groupedBySymbol[positionBook
+                                                          .groupPositionSym[
+                                                      index]]['totMtm']
+                                                  .toString()
+                                                  .startsWith('-')
+                                              ? colors.darkred
+                                              : colors.ltpgreen,
                                       14,
-                                      FontWeight.w500))
+                                      FontWeight.w600))
                             ])
                           ])
                     ])

@@ -1475,7 +1475,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _positionSearchItem = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _positionSearchItem = _allPostionList
-          .where((element) => element.tsym!.toLowerCase().contains(value))
+          .where((element) => element.tsym!.toLowerCase().contains(value.toLowerCase()))
           .toList();
       if (_positionSearchItem.isEmpty) {
         ScaffoldMessenger.of(context)

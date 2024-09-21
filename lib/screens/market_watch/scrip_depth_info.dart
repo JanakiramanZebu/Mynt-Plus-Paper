@@ -873,7 +873,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                               FontWeight.w500)),
                                       const SizedBox(height: 4),
                                       lowHighBar(
-                                          "${depthData.l == (depthData.lp ?? depthData.c ?? 0.00) ? depthData.c ?? 0.00 : depthData.l ?? 0.00}",
+                                          "${ depthData.l ?? 0.00}",
                                           "${depthData.h ?? 0.00}",
                                           "${depthData.lp ?? depthData.c ?? 0.00}",
                                           theme),
@@ -892,9 +892,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 FontWeight.w500)),
                                         const SizedBox(height: 4),
                                         lowHighBar(
-                                            depthData.wk52L == depthData.wk52H
-                                                ? "0.00"
-                                                : "${depthData.wk52L ?? 0.00}",
+                                             "${depthData.wk52L ?? 0.00}",
                                             "${depthData.wk52H ?? 0.00}",
                                             "${depthData.lp ?? depthData.c ?? 0.00}",
                                             theme),
@@ -1459,7 +1457,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
   Row lowHighBar(String low, String high, String value, ThemesProvider theme) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(
-          "${double.parse(low) <= double.parse(value) ? double.parse(low) : double.parse(value)}",
+          low,
           style: textStyle(
               theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               14,
@@ -1502,13 +1500,13 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
               ? double.parse(high)
               : double.parse(value),
           values: [double.parse(value)],
-          onDragging: (handlerIndex, lowerValue, upperValue) {},
+          onDragging:null,
           jump: false,
           disabled: true,
         ),
       ),
       Text(
-          "${double.parse(high) >= double.parse(value) ? double.parse(high) : double.parse(value)}",
+          high,
           style: textStyle(
               theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               14,

@@ -108,20 +108,20 @@ void main() async {
       print('Message notification: ${message.data["imageUrl"]}');
     }
 
-    // message.data["imageUrl"] != "" ? NotificationService.showNotification(
-    //     title: message.notification!.title,
-    //     body: message.notification!.body,
-    //     summary: "Mynt+",
-    //     notificationLayout: NotificationLayout.BigPicture,
-    //     bigPicture: message.data["imageUrl"],
-    //     payload: {"navigate": "true", "url": message.data["url"]})
-    //     :
-    //     NotificationService.showNotification(
-    //     title: message.notification!.title,
-    //     body: message.notification!.body,
-    //     summary: "Mynt+",
-    //     notificationLayout: NotificationLayout.Default)
-    //     ;
+    message.data["imageUrl"] != "" ? NotificationService.showNotification(
+        title: message.notification!.title,
+        body: message.notification!.body,
+        summary: "Mynt+",
+        notificationLayout: NotificationLayout.BigPicture,
+        bigPicture: message.data["imageUrl"],
+        payload: {"navigate": "true", "url": message.data["url"]})
+        :
+        NotificationService.showNotification(
+        title: message.notification!.title,
+        body: message.notification!.body,
+        summary: "Mynt+",
+        notificationLayout: NotificationLayout.Default)
+        ;
 
     // NotificationService().showNotification(
     //     title: message.notification?.title, body: message.notification?.body);

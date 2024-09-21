@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/res/res.dart'; 
+import 'package:mynt_plus/res/res.dart';
 
 import '../../../provider/index_list_provider.dart';
 
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
+import '../../../sharedWidget/functions.dart';
 import 'index_bottom_sheet.dart';
 
 class DefaultIndexList extends ConsumerWidget {
@@ -30,36 +30,20 @@ class DefaultIndexList extends ConsumerWidget {
           if (socketDatas.containsKey(
               indexProvide.defaultIndexList!.indValues![index].token)) {
             indexProvide.defaultIndexList!.indValues![index].ltp =
-                "${socketDatas["${indexProvide.defaultIndexList!.indValues![index].token}"]['lp']}";
+                "${socketDatas["${indexProvide.defaultIndexList!.indValues![index].token}"]['lp'] ?? 0.00}";
             indexProvide.defaultIndexList!.indValues![index].change =
-                "${socketDatas["${indexProvide.defaultIndexList!.indValues![index].token}"]['chng']}";
+                "${socketDatas["${indexProvide.defaultIndexList!.indValues![index].token}"]['chng'] ?? 0.00}";
             indexProvide.defaultIndexList!.indValues![index].perChange =
-                "${socketDatas["${indexProvide.defaultIndexList!.indValues![index].token}"]['pc']}";
+                "${socketDatas["${indexProvide.defaultIndexList!.indValues![index].token}"]['pc'] ?? 0.00}";
           }
-          return
-              // ShowCaseView(
-              //    showtour: true,
-              //   nip: BubbleNip.leftTop,
-              //   margin: const EdgeInsets.only(left: 40),
-              //   index: 0,
-              //   text: "Click here to view all index list.",
-              //   globalKey: index == 0
-              //       ? context.read(showcaseProvide).indexcardcase
-              //       : GlobalKey(debugLabel: "$index"),
-              //   postion: TooltipPosition.bottom,
-              //   childs:
-
-              InkWell(
+          return InkWell(
             onTap: () async {
               await context
                   .read(indexListProvider)
                   .fetchIndexList("NSE", context);
-              // _showSimpleDialog(context, widget.indexProvide, index);
               showModalBottomSheet(
                   context: context,
-             
                   isScrollControlled: true,
-                
                   isDismissible: true,
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.only(
@@ -73,7 +57,9 @@ class DefaultIndexList extends ConsumerWidget {
                 padding:
                     const EdgeInsets.symmetric(vertical: 6.0, horizontal: 11),
                 decoration: BoxDecoration(
-                    color:theme .isDarkMode? const Color(0xffB5C0CF).withOpacity(.15): const Color(0xffF1F3F8),
+                    color: theme.isDarkMode
+                        ? const Color(0xffB5C0CF).withOpacity(.15)
+                        : const Color(0xffF1F3F8),
                     borderRadius: BorderRadius.circular(5)),
                 width: MediaQuery.of(context).size.width * 0.47,
                 child: Row(
@@ -88,7 +74,11 @@ class DefaultIndexList extends ConsumerWidget {
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                           style: textStyle(
-                           theme .isDarkMode?const Color(0xffB5C0CF):   const Color(0xff000000), 14, FontWeight.w600),
+                              theme.isDarkMode
+                                  ? const Color(0xffB5C0CF)
+                                  : const Color(0xff000000),
+                              14,
+                              FontWeight.w600),
                         ),
                       ),
                       Column(
@@ -97,46 +87,59 @@ class DefaultIndexList extends ConsumerWidget {
                           children: [
                             Text(
                                 "₹${indexProvide.defaultIndexList!.indValues![index].ltp ?? 0.00}",
-                                style: textStyle( theme .isDarkMode?const Color(0xffE5E5E5):const Color(0xff000000), 13,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? const Color(0xffE5E5E5)
+                                        : const Color(0xff000000),
+                                    13,
                                     FontWeight.w600)),
                             const SizedBox(height: 2),
-                            Text(
-                              "${indexProvide.defaultIndexList!.indValues![index].change=="null" ?0.00 :indexProvide.defaultIndexList!.indValues![index].change} (${indexProvide.defaultIndexList!.indValues![index].perChange=="null" ?0.00:indexProvide.defaultIndexList!.indValues![index].perChange}%)",
-                              style: textStyle(
-                                  
-                                 
-
-                                  (indexProvide
-                                                      .defaultIndexList!
-                                                      .indValues![index]
-                                                      .change ==
-                                                  "null" ||
-                                              indexProvide
+                            Row(
+                              children: [
+                                Text(
+                                    "${indexProvide.defaultIndexList!.indValues![index].change == "null" ? 0.00 : indexProvide.defaultIndexList!.indValues![index].change} ",
+                                    style: textStyle(
+                                        (indexProvide
+                                                        .defaultIndexList!
+                                                        .indValues![index]
+                                                        .change ==
+                                                    "null") ||
+                                                (indexProvide
+                                                        .defaultIndexList!
+                                                        .indValues![index]
+                                                        .change ==
+                                                    "0.00")
+                                            ? colors.ltpgrey
+                                            : indexProvide.defaultIndexList!
+                                                    .indValues![index].change!
+                                                    .startsWith("-")
+                                                ? colors.darkred
+                                                : colors.ltpgreen,
+                                        12,
+                                        FontWeight.w600)),
+                                Text(
+                                  "(${indexProvide.defaultIndexList!.indValues![index].perChange == "null" ? 0.00 : indexProvide.defaultIndexList!.indValues![index].perChange}%)",
+                                  style: textStyle(
+                                      (indexProvide
                                                       .defaultIndexList!
                                                       .indValues![index]
                                                       .perChange ==
                                                   "null") ||
-                                          (indexProvide
-                                                      .defaultIndexList!
-                                                      .indValues![index]
-                                                      .change ==
-                                                  "0.00" ||
-                                              indexProvide
+                                              (indexProvide
                                                       .defaultIndexList!
                                                       .indValues![index]
                                                       .perChange ==
                                                   "0.00")
-                                      ? colors.ltpgrey
-                                      : indexProvide.defaultIndexList!
-                                                  .indValues![index].change!
-                                                  .startsWith("-") ||
-                                              indexProvide.defaultIndexList!
+                                          ? colors.ltpgrey
+                                          : indexProvide.defaultIndexList!
                                                   .indValues![index].perChange!
                                                   .startsWith('-')
-                                          ? colors.darkred
-                                          : colors.ltpgreen,
-                                  12,
-                                    FontWeight.w600),
+                                              ? colors.darkred
+                                              : colors.ltpgreen,
+                                      12,
+                                      FontWeight.w600),
+                                ),
+                              ],
                             )
                           ])
                     ])
@@ -153,11 +156,5 @@ class DefaultIndexList extends ConsumerWidget {
         },
       ),
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

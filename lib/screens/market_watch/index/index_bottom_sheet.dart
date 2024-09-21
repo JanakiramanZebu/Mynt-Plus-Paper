@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:dropdown_button2/dropdown_button2.dart'; 
+import 'package:fluttertoast/fluttertoast.dart'; 
+import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../../provider/index_list_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/list_divider.dart'; 
+import '../../../sharedWidget/functions.dart';
+import '../../../sharedWidget/list_divider.dart';
 
 class IndexBottomSheet extends ConsumerWidget {
   final int defaultIndex;
@@ -77,11 +77,12 @@ class IndexBottomSheet extends ConsumerWidget {
                                 width: 90,
                                 decoration: BoxDecoration(
                                     color: theme.isDarkMode
-                                        ? const Color(0xffB5C0CF).withOpacity(.15)
+                                        ? const Color(0xffB5C0CF)
+                                            .withOpacity(.15)
                                         : const Color(0xffF1F3F8),
                                     // border: Border.all(color: Colors.grey),
-                                    borderRadius:
-                                        const BorderRadius.all(Radius.circular(32)))),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(32)))),
                             // buttonDecoration: const BoxDecoration(
                             //     color: Color(0xffF1F3F8),
                             //     // border: Border.all(color: Colors.grey),
@@ -117,7 +118,10 @@ class IndexBottomSheet extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Divider(color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider),
+                Divider(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider),
                 Expanded(
                   child: indexProvide.isLoad
                       ? const Center(child: CircularProgressIndicator())
@@ -203,8 +207,12 @@ class IndexBottomSheet extends ConsumerWidget {
                                         }
                                       },
                                       icon: SvgPicture.asset(
-                                        color:  theme.isDarkMode &&  ischeck?colors.colorLightBlue:ischeck?colors.colorBlue:colors.colorGrey,
-                                        ischeck 
+                                        color: theme.isDarkMode && ischeck
+                                            ? colors.colorLightBlue
+                                            : ischeck
+                                                ? colors.colorBlue
+                                                : colors.colorGrey,
+                                        ischeck
                                             ? assets.bookmarkIcon
                                             : assets.bookmarkedIcon,
                                       )),
@@ -222,9 +230,5 @@ class IndexBottomSheet extends ConsumerWidget {
         });
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+  
 }
