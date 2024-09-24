@@ -16,7 +16,7 @@ import '../provider/thems.dart';
 import '../provider/user_profile_provider.dart';
 import '../provider/websocket_provider.dart';
 import '../res/res.dart';
-import '../routes/route_names.dart'; 
+import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/no_internet_widget.dart';
 import 'bonds/bond_screen.dart';
@@ -25,7 +25,7 @@ import 'market_watch/index/index_screen.dart';
 import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/watchlist_screen.dart';
 import 'market_watch/watchlists_bottom_sheet.dart';
-import 'mutual_fund/mutual_fund_screen.dart'; 
+import 'mutual_fund/mutual_fund_screen.dart';
 import 'order_book/basket/create_basket.dart';
 import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
@@ -192,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             marketWatchList.wlName ==
                                                     "My Stocks"
                                                 ? "(${portfolio.holdingsModel!.length})"
-                                                : "(${marketWatchList.scrips.length >= 50 ? 50 : marketWatchList.scrips.length})",
+                                                : "(${marketWatchList.scrips.length })",
                                             style: textStyle(
                                                 theme.isDarkMode
                                                     ? colors.colorLightBlue
@@ -267,9 +267,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             child: Container(
                                                 padding: EdgeInsets.only(
                                                     left: 8,
-                                                    right: marketWatchList
-                                                                .watchListValues
-                                                                .length >=
+                                                    right: marketWatchList.scrips.length
+                                                                 >=
                                                             50
                                                         ? 0
                                                         : 8),
@@ -279,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     color: colors.colorGrey)),
                                           )
                                         : Container(),
-                                    marketWatchList.watchListValues.length >= 50
+                                    marketWatchList.scrips.length >= 50
                                         ? const SizedBox()
                                         : InkWell(
                                             onTap: () {
@@ -302,151 +301,202 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     color: colors.colorGrey)),
                                           ),
                                   ] else if ((indexProvide.selectedBtmIndx ==
-                                          2 &&
-                                      portfolio.allPostionList .length > 1) &&
+                                              2 &&
+                                          portfolio.allPostionList.length >
+                                              1) &&
                                       portfolio.selectedTab == 0) ...[
-                                  
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 15.0),
-                                        child: Row(children: [
-                                         Container(
-                        height: 27,
-                        padding: EdgeInsets.only(right: 10),
-                        child: OutlinedButton(
-                            onPressed: () {
-                              showModalBottomSheet(
-                                  useSafeArea: true,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16))),
-                                  context: context,
-                                  builder: (context) {
-                                    return const PositionGroupBottomSheet();
-                                  });
-                            },
-                            style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.colorGrey
-                                        : colors.colorBlack),
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(32)))),
-                            child: Text("Group by"  ,
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    12,
-                                    FontWeight.w600))),
-                      ),
-                                      if (portfolio.exitAll &&
-                      portfolio.posSelection == "All position")
-                      SizedBox(
-                        height: 27,
-                        child: OutlinedButton(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    backgroundColor: theme.isDarkMode
-                                        ? const Color.fromARGB(255, 18, 18, 18)
-                                        : colors.colorWhite,
-                                    titleTextStyle: textStyles.appBarTitleTxt
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack),
-                                    contentTextStyle: textStyles.menuTxt
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack),
-                                    titlePadding: const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 12),
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(14))),
-                                    scrollable: true,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                    ),
-                                    insetPadding: const EdgeInsets.symmetric(
-                                        horizontal: 20),
-                                    title: const Text("Exit Position"),
-                                    content: SizedBox(
-                                      width: MediaQuery.of(context).size.width,
-                                      child: const Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              "Are you sure you want to exit all positions?")
-                                        ],
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                          onPressed: () =>
-                                              Navigator.of(context).pop(),
-                                          child: Text("No",
-                                              style: textStyles.textBtn
-                                                  .copyWith(
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 15.0),
+                                      child: Row(children: [
+                                        Container(
+                                          height: 27,
+                                          padding: const EdgeInsets.only(right: 10),
+                                          child: OutlinedButton(
+                                              onPressed: () {
+                                                showModalBottomSheet(
+                                                    useSafeArea: true,
+                                                    isScrollControlled: true,
+                                                    shape: const RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.vertical(
+                                                                top: Radius
+                                                                    .circular(
+                                                                        16))),
+                                                    context: context,
+                                                    builder: (context) {
+                                                      return const PositionGroupBottomSheet();
+                                                    });
+                                              },
+                                              style: OutlinedButton.styleFrom(
+                                                  side: BorderSide(
                                                       color: theme.isDarkMode
-                                                          ? colors
-                                                              .colorLightBlue
-                                                          : colors.colorBlue))),
-                                      ElevatedButton(
-                                        onPressed: () async {
-                                          await portfolio.exitAllPosition(
-                                              context, false);
-                                          Navigator.of(context).pop(true);
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                            elevation: 0,
-                                            backgroundColor: theme.isDarkMode
-                                                ? colors.colorbluegrey
-                                                : colors.colorBlack,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(50),
-                                            )),
-                                        child: Text("Yes",
-                                            style: textStyle(
-                                                !theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                14,
-                                                FontWeight.w500)),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.colorGrey
-                                        : colors.colorBlack),
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(32)))),
-                            child: Text("Exit All",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    12,
-                                    FontWeight.w600))),
-                      ),
-                                     
-                                          
-                                        ]),
-                                      )
+                                                          ? colors.colorGrey
+                                                          : colors.colorBlack),
+                                                  shape:
+                                                      const RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.all(
+                                                                  Radius
+                                                                      .circular(
+                                                                          32)))),
+                                              child: Text("Group by",
+                                                  style: textStyle(
+                                                      theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
+                                                      12,
+                                                      FontWeight.w600))),
+                                        ),
+                                        if (portfolio.exitAll &&
+                                            portfolio.posSelection ==
+                                                "All position" &&
+                                            portfolio.openPosition!.length > 1)
+                                          SizedBox(
+                                            height: 27,
+                                            child: OutlinedButton(
+                                                onPressed: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return AlertDialog(
+                                                        backgroundColor: theme
+                                                                .isDarkMode
+                                                            ? const Color
+                                                                .fromARGB(
+                                                                255, 18, 18, 18)
+                                                            : colors.colorWhite,
+                                                        titleTextStyle: textStyles
+                                                            .appBarTitleTxt
+                                                            .copyWith(
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorBlack),
+                                                        contentTextStyle: textStyles
+                                                            .menuTxt
+                                                            .copyWith(
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorBlack),
+                                                        titlePadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 14,
+                                                                vertical: 12),
+                                                        shape: const RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            14))),
+                                                        scrollable: true,
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                          horizontal: 14,
+                                                        ),
+                                                        insetPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 20),
+                                                        title: const Text(
+                                                            "Exit Position"),
+                                                        content: SizedBox(
+                                                          width: MediaQuery.of(
+                                                                  context)
+                                                              .size
+                                                              .width,
+                                                          child: const Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                  "Are you sure you want to exit all positions?")
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        actions: [
+                                                          TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.of(
+                                                                          context)
+                                                                      .pop(),
+                                                              child: Text("No",
+                                                                  style: textStyles
+                                                                      .textBtn
+                                                                      .copyWith(
+                                                                          color: theme.isDarkMode
+                                                                              ? colors.colorLightBlue
+                                                                              : colors.colorBlue))),
+                                                          ElevatedButton(
+                                                            onPressed:
+                                                                () async {
+                                                              await portfolio
+                                                                  .exitAllPosition(
+                                                                      context,
+                                                                      false);
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(true);
+                                                            },
+                                                            style: ElevatedButton
+                                                                .styleFrom(
+                                                                    elevation:
+                                                                        0,
+                                                                    backgroundColor: theme.isDarkMode
+                                                                        ? colors
+                                                                            .colorbluegrey
+                                                                        : colors
+                                                                            .colorBlack,
+                                                                    shape:
+                                                                        RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              50),
+                                                                    )),
+                                                            child: Text("Yes",
+                                                                style: textStyle(
+                                                                    !theme.isDarkMode
+                                                                        ? colors
+                                                                            .colorWhite
+                                                                        : colors
+                                                                            .colorBlack,
+                                                                    14,
+                                                                    FontWeight
+                                                                        .w500)),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                                style: OutlinedButton.styleFrom(
+                                                    side: BorderSide(
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorGrey
+                                                            : colors
+                                                                .colorBlack),
+                                                    shape: const RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                                Radius.circular(
+                                                                    32)))),
+                                                child: Text("Exit All",
+                                                    style: textStyle(
+                                                        theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                                                        12,
+                                                        FontWeight.w600))),
+                                          ),
+                                      ]),
+                                    )
                                   ] else if (indexProvide.selectedBtmIndx ==
                                           3 &&
                                       watch(orderProvider).selectedTab ==

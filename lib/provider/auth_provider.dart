@@ -495,7 +495,8 @@ class AuthProvider extends DefaultChangeNotifier {
         // _isMobileLogin = true;
         // localstorage.setString("logout", _logoutMsg);
         pref.clearClientSession();
-        pref.setLogout(true); pref.setHideLoginOptBtn(false);
+        pref.setLogout(true);
+        pref.setHideLoginOptBtn(false);
         ref(indexListProvider).bottomMenu(1);
         loginMethCtrl.text =
             pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
@@ -523,7 +524,7 @@ class AuthProvider extends DefaultChangeNotifier {
           final phone = await autoFill.hint;
 
           _isonTapMobile = false;
- 
+
           if (phone == null) {
             loginMethCtrl.text = "";
           } else if (phone.contains('+91')) {
@@ -685,11 +686,11 @@ class AuthProvider extends DefaultChangeNotifier {
       ConstantName.timer!.cancel();
       await ref(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4);
       // ref(websocketProvider).websockConn(false);
-      if(s.isNotEmpty ){
+      if (s.isNotEmpty) {
         ref(websocketProvider).closeSocket();
       }
 
-        if(pref.clientSession!.isNotEmpty ){
+      if (pref.clientSession!.isNotEmpty) {
         ref(websocketProvider).closeSocket();
       }
 
@@ -708,32 +709,28 @@ class AuthProvider extends DefaultChangeNotifier {
 
       // if (pref.islogIn!) {
 
-
-      
       await ref(indexListProvider).checkSession(context);
       await ref(marketWatchProvider).changeWlName("", "No");
       _logoutMsg = "";
 
       if (ref(indexListProvider).checkSess!.stat == "Ok") {
-         ref(indexListProvider).fetchNotifyMsg();
+        ref(indexListProvider).fetchNotifyMsg();
         ref(portfolioProvider).changeTabIndex(0);
-      
+
         await ref(portfolioProvider).fetchHoldings(context, "");
 
         await ref(indexListProvider).getDeafultIndexList(context);
         await ref(marketWatchProvider).fetchMWList(context);
-   ref(userProfileProvider).fetchUserDetail(
-            context );
-         ref(portfolioProvider).fetchPositionBook(context, false);
+        ref(userProfileProvider).fetchUserDetail(context);
+        ref(portfolioProvider).fetchPositionBook(context, false);
         ref(orderProvider).fetchOrderBook(context, false);
-          ref(orderProvider).fetchTradeBook(context);
+        ref(orderProvider).fetchTradeBook(context);
 
-         ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
-  print("object -------");
+        // ref(portfolioProvider).fetchPosGroupSymbol("");
+        ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
+        print("object -------");
         if (s.isEmpty) {
-
-
-            print("object  dsgfv -------");
+          print("object  dsgfv -------");
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.homeScreen, (route) => false);
           // if (pref.islogIn!) {

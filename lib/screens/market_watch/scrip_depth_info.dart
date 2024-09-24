@@ -840,7 +840,26 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                     13,
                                                     FontWeight.w500))
                                           ]))
-                                ]
+                                
+                                
+                                ,
+                                if (scripInfo.isPreDefWLs != "Yes")   Container(
+ 
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      decoration: BoxDecoration(
+                          color: const Color(0xffe3f2fd),
+                          borderRadius: BorderRadius.circular(6)),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(assets.dInfo,
+                                color: colors.colorBlue),
+                            Text(
+                                " Long press to add ${scripInfo.wlName}'s Watchlist",
+                                style: textStyle(
+                                    colors.colorBlue, 12, FontWeight.w500))
+                          ]))
+                                 ]
                               ])
                         ]),
                     Expanded(

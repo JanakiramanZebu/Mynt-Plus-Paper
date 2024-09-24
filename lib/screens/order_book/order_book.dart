@@ -457,10 +457,10 @@ class OrderBook extends ConsumerWidget {
                                     ? colors.darkGrey
                                     : const Color(0xffF1F3F8),
                                 height: 6);
-                          }) : SizedBox(
+                          }) : const SizedBox(
                             
                             height: 500,
-                            child: const NoDataFound()),
+                            child: NoDataFound()),
                     ],
                   ),
                 ))

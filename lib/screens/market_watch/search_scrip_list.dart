@@ -138,7 +138,7 @@ class SearchScripList extends ConsumerWidget {
                                 context,
                                 false,
                                 false,
-                                false);
+                                false,false);
                           } else {
                             await searchScrip.isActiveAddBtn(true, index);
                             await searchScrip.addDelMarketScrip(
@@ -147,7 +147,7 @@ class SearchScripList extends ConsumerWidget {
                                 context,
                                 true,
                                 false,
-                                false);
+                                false,false);
                           }
                           // await context
                           //     .read(marketWatchProvider)

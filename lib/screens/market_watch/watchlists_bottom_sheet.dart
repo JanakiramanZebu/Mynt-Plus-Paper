@@ -208,7 +208,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                   wlname: watchlist[index]);
                                             });
                                       },
-                                      child: Icon(
+                                      child: const Icon(
                                         Icons.edit_outlined,
                                         color: Color(0xff666666),
                                       )),

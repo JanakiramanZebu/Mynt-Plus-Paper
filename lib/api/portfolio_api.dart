@@ -1,10 +1,11 @@
- 
+import 'dart:developer';
 
 import '../models/portfolio_model/holdings_model.dart';
 import '../models/portfolio_model/mf_holdings_model.dart';
 import '../models/portfolio_model/mf_quotes.dart';
 import '../models/portfolio_model/position_book_model.dart';
 import '../models/portfolio_model/position_convertion_model.dart';
+import '../models/portfolio_model/position_group_model.dart';
 import 'core/api_core.dart';
 import 'core/api_link.dart';
 
@@ -16,7 +17,7 @@ mixin PortfolioAPI on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","prd":"C"}&jKey=${prefs.clientSession}''');
-        // log("Holdings res=>${res.body} ");
+      // log("Holdings res=>${res.body} ");
       final List<HoldingsModel> data = [];
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
@@ -52,7 +53,7 @@ mixin PortfolioAPI on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","prd":"C"}&jKey=${prefs.clientSession}''');
-        // log("MF Holdings res=>${res.body} ");
+      // log("MF Holdings res=>${res.body} ");
       final List<MFHoldingsModel> data = [];
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
@@ -104,7 +105,7 @@ mixin PortfolioAPI on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
-    // log("PositionBook => ${res.body}");
+      // log("PositionBook => ${res.body}");
 
       final List<PositionBookModel> data = [];
 
@@ -156,6 +157,58 @@ mixin PortfolioAPI on ApiCore {
       final json = jsonDecode(res.body);
 
       return PositionConvertionModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<GetGroupSymbol>> getGroupPosition() async {
+    try {
+      final uri =
+          Uri.parse("${apiLinks.positionGrp}?clientid=${prefs.clientId}");
+      final res = await apiClient.get(uri, headers: defaultHeaders);
+
+      log("Position Group => ${res.body}");
+      final json = jsonDecode(res.body);
+      final List<GetGroupSymbol> data = [];
+
+      for (final item in json) {
+        data.add(GetGroupSymbol.fromJson(item as Map<String, dynamic>));
+      }
+      return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<CreateGroupName> createGroupName(String name) async {
+    try {
+      final uri = Uri.parse(apiLinks.creatGrpName);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:jsonEncode({"clientid": "${prefs.clientId}", "posname": name}));
+
+      log("Position Group Name => ${res.body}");
+      final json = jsonDecode(res.body);
+
+      return CreateGroupName.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+
+  Future<CreateGroupName> addGroupNameSymbol(String name ,Map data) async {
+    try {
+      final uri = Uri.parse(apiLinks.addSymbolGrp);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:jsonEncode({"clientid": "${prefs.clientId}", "posname": name,"symdata":data}));
+
+      log("Add symbol Group Name => ${res.body}");
+      final json = jsonDecode(res.body);
+
+      return CreateGroupName.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

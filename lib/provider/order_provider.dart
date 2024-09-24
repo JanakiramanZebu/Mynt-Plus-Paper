@@ -938,7 +938,7 @@ class OrderProvider extends DefaultChangeNotifier {
       }
     }
 
-    log("${_bsktScrips}");
+    log("$_bsktScrips");
     notifyListeners();
   }
 

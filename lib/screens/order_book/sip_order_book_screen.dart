@@ -132,7 +132,7 @@ class SipOrderBook extends ConsumerWidget {
                                       Divider(
                                           color: theme.isDarkMode
                                               ? colors.darkColorDivider
-                                              : Color(0xffECEDEE)),
+                                              : const Color(0xffECEDEE)),
                                       const SizedBox(height: 3),
                                       Row(
                                         mainAxisAlignment:

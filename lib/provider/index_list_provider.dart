@@ -184,7 +184,7 @@ class IndexListProvider extends DefaultChangeNotifier {
   }
 
   Future getDeafultIndexList(BuildContext context) async {
-      final localstorage = await SharedPreferences.getInstance();
+    final localstorage = await SharedPreferences.getInstance();
     try {
       Map data = {
         "values": [
@@ -199,18 +199,18 @@ class IndexListProvider extends DefaultChangeNotifier {
           jsonDecode(jsonEncode(data)) as Map<String, dynamic>);
 
       _defaultIndexList = resp;
-if(localstorage.getStringList(  "marketIndex")==null){
-localstorage.setStringList(
-        "marketIndex",
-        _defaultIndexList!.indValues!
-            .map((e) => IndexListOrder(
-                    index: _defaultIndexList!.indValues!.indexOf(e),
-                    idxname: e.idxname!,
-                    token: e.token!,
-                    exch: e.exch!)
-                .toString())
-            .toList());
-}
+      if (localstorage.getStringList("marketIndex") == null) {
+        localstorage.setStringList(
+            "marketIndex",
+            _defaultIndexList!.indValues!
+                .map((e) => IndexListOrder(
+                        index: _defaultIndexList!.indValues!.indexOf(e),
+                        idxname: e.idxname!,
+                        token: e.token!,
+                        exch: e.exch!)
+                    .toString())
+                .toList());
+      }
 
       await getIndeexListFromLocal(context);
     } catch (e) {
@@ -385,8 +385,6 @@ localstorage.setStringList(
       _defaultIndexList!.indValues!.insert(3, addNewIndex);
     }
 
- 
-
     localstorage.setStringList(
         "marketIndex",
         _defaultIndexList!.indValues!
@@ -439,8 +437,8 @@ localstorage.setStringList(
           _indexToken += "${element.exch}|${element.token}#";
         }
       }
-    } 
-    notifyListeners(); 
+    }
+    notifyListeners();
   }
 
   checkSession(BuildContext context) async {

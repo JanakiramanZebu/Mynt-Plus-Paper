@@ -785,7 +785,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                       child: Column(children: [
                                     Text(
                                       "₹${resultsip == 0.0 ? widget.orderArg.ltp : resultsip.toStringAsFixed(2)}",
-                                      style: textStyle(Color(0xff43A833), 20,
+                                      style: textStyle(const Color(0xff43A833), 20,
                                           FontWeight.w600),
                                     ),
                                     Text("Installment Amount",
