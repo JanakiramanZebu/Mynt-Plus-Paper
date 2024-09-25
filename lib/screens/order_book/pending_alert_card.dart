@@ -10,6 +10,7 @@ import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
+import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/no_data_found.dart';
 import 'filter_alert_pending.dart';
 
@@ -96,6 +97,8 @@ class _PendingAlertState extends State<PendingAlert> {
                 children: [
                   Expanded(
                     child: TextFormField(
+                      textCapitalization: TextCapitalization.characters,
+                    inputFormatters: [UpperCaseTextFormatter()],
                       controller: manage.alertPendingSearchtext,
                       style: textStyle(
                           const Color(0xff000000), 16, FontWeight.w600),

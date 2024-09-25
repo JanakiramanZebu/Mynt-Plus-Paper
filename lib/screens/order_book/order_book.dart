@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
 
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
@@ -92,6 +93,8 @@ class OrderBook extends ConsumerWidget {
               children: [
                 Expanded(
                   child: TextFormField(
+                    textCapitalization: TextCapitalization.characters,
+                    inputFormatters: [UpperCaseTextFormatter()],
                     controller: order.orderSearchCtrl,
                     style:
                         textStyle(const Color(0xff000000), 16, FontWeight.w600),

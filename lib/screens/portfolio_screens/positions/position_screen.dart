@@ -16,7 +16,7 @@ import '../../../sharedWidget/custom_switch_btn.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import 'filter_scrip_bottom_sheet.dart'; 
+import 'filter_scrip_bottom_sheet.dart';
 import 'group/position_group_symbol.dart';
 import 'position_list_card.dart';
 
@@ -156,7 +156,7 @@ class PositionScreen extends ConsumerWidget {
                             )
                           ])
                     ])),
-            if (listofPosition.isNotEmpty )
+            if (listofPosition.isNotEmpty)
               Container(
                 padding: const EdgeInsets.only(
                     left: 16, right: 4, top: 8, bottom: 8),
@@ -168,77 +168,73 @@ class PositionScreen extends ConsumerWidget {
                                 : const Color(0xffF1F3F8),
                             width: 6))),
                 child: Row(
-                  mainAxisAlignment: positionBook.exitAll
-                      ? MainAxisAlignment.spaceBetween
-                      : MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                   
-                   
+                    Row(
+                      children: [
+                        Text("DAY",
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                13,
+                                FontWeight.w500)),
+                        const SizedBox(width: 6),
+                        CustomSwitch(
+                            onChanged: (bool value) {
+                              positionBook.chngPositionPnl(true);
+                              positionBook.positionToggle(value, context);
+                            },
+                            value: positionBook.isDay),
+                        const SizedBox(width: 6),
+                        Text("NET",
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                13,
+                                FontWeight.w500)),
+                      ],
+                    ),
+                    if (listofPosition.length > 1 &&
+                        positionBook.posSelection == "All position") ...[
                       Row(
                         children: [
-                          Text("DAY",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      13,
-                                                      FontWeight.w500)),  const SizedBox(width: 6),
-                                          CustomSwitch(
-                                              onChanged: (bool value) {
-                                              positionBook.chngPositionPnl(true);
-                                            positionBook.positionToggle(
-                                                    value, context);
-                                              },
-                                              value: positionBook.isDay),
-                                          const SizedBox(width: 6),
-                                          Text("NET",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  13,
-                                                  FontWeight.w500)),
+                          InkWell(
+                              onTap: () async {
+                                showModalBottomSheet(
+                                    useSafeArea: true,
+                                    isScrollControlled: true,
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(16))),
+                                    context: context,
+                                    builder: (context) {
+                                      return const PositionScripFilterBottomSheet();
+                                    });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: SvgPicture.asset(assets.filterLines,
+                                    color: theme.isDarkMode
+                                        ? const Color(0xffBDBDBD)
+                                        : colors.colorGrey),
+                              )),
+                          InkWell(
+                              onTap: () {
+                                positionBook.showPositionSearch(true);
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.only(right: 12, left: 10),
+                                child: SvgPicture.asset(assets.searchIcon,
+                                    width: 19,
+                                    color: theme.isDarkMode
+                                        ? const Color(0xffBDBDBD)
+                                        : colors.colorGrey),
+                              )),
                         ],
-                      ),
-                                        
-                      if (listofPosition.length > 1 && positionBook.posSelection == "All position") ...[
-                        Row(
-                          children: [
-                            InkWell(
-                                onTap: () async {
-                                  showModalBottomSheet(
-                                      useSafeArea: true,
-                                      isScrollControlled: true,
-                                      shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(16))),
-                                      context: context,
-                                      builder: (context) {
-                                        return const PositionScripFilterBottomSheet();
-                                      });
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 12),
-                                  child: SvgPicture.asset(assets.filterLines,
-                                      color: theme.isDarkMode
-                                          ? const Color(0xffBDBDBD)
-                                          : colors.colorGrey),
-                                )),
-                            InkWell(
-                                onTap: () {
-                                  positionBook.showPositionSearch(true);
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      right: 12, left: 10),
-                                  child: SvgPicture.asset(assets.searchIcon,
-                                      width: 19,
-                                      color: theme.isDarkMode
-                                          ? const Color(0xffBDBDBD)
-                                          : colors.colorGrey),
-                                )),
-                          ],
-                        )
+                      )
                     ]
                   ],
                 ),
@@ -338,7 +334,9 @@ class PositionScreen extends ConsumerWidget {
                     child: ListView(
                       children: [
                         if (listofPosition.isNotEmpty) ...[
-                          if (positionBook.posSelection == "All position")
+                          if (positionBook.posSelection == "Group by symbol")
+                            const PositionGroupSymbol()
+                          else
                             ListView.separated(
                               physics: const NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
@@ -431,8 +429,6 @@ class PositionScreen extends ConsumerWidget {
                                     height: 6);
                               },
                             )
-                          else
-                            const PositionGroupSymbol()
                         ] else
                           const SizedBox(height: 500, child: NoDataFound())
                       ],

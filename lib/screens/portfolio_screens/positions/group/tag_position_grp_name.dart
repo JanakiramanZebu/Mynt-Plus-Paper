@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/models/portfolio_model/position_book_model.dart';
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
@@ -8,8 +9,9 @@ import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import 'create_group.dart';
 
-class PositionGroupBottomSheet extends StatelessWidget {
-  const PositionGroupBottomSheet({super.key});
+class TagPositionGrpName extends StatelessWidget {
+  final PositionBookModel positionList;
+  const TagPositionGrpName({super.key, required this.positionList});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,7 @@ class PositionGroupBottomSheet extends StatelessWidget {
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("Group by",
+                          Text("Tag",
                               style: textStyles.appBarTitleTxt.copyWith(
                                   color: theme.isDarkMode
                                       ? colors.colorWhite
@@ -75,34 +77,27 @@ class PositionGroupBottomSheet extends StatelessWidget {
                     shrinkWrap: true,
                     itemCount: positionBook.posGrpNames.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return ListTile(
-                          onTap: () async {
-
-                            // if (index==0||index==1) {
-                                positionBook.chngPosSelection(
-                                positionBook.posGrpNames[index]);
-                            // }else{ 
-                              //  positionBook.chngPosSelection(
-                              //   positionBook.posGrpNames[index]);
-                              //  positionBook.fetchPosGroupSymbol(positionBook.posGrpNames[index]);
-                            // }
-                          
-                            Navigator.pop(context);
-                          },
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 0),
-                          dense: true,
-                          title: Text(positionBook.posGrpNames[index],
-                              style: textStyles.prdText),
-                          trailing: SvgPicture.asset(theme.isDarkMode
-                              ? positionBook.posGrpNames[index] ==
-                                      positionBook.posSelection
-                                  ? assets.darkActProductIcon
-                                  : assets.darkProductIcon
-                              : positionBook.posGrpNames[index] ==
-                                      positionBook.posSelection
-                                  ? assets.actProductIcon
-                                  : assets.productIcon));
+                      return index == 0 || index == 1
+                          ? Container(height: 0)
+                          : ListTile(
+                              onTap: () async {
+                                Map data = {
+                                  "tsym": "${positionList.tsym}",
+                                  "token": "${positionList.token}",
+                                  "expDate": "${positionList.expDate}",
+                                  "symbol": "${positionList.symbol}",
+                                  "exch": "${positionList.exch}"
+                                };
+                                positionBook.fetchAddGroupSymbol(
+                                    positionBook.posGrpNames[index],
+                                    context,
+                                    data);
+                              },
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 0),
+                              dense: true,
+                              title: Text(positionBook.posGrpNames[index],
+                                  style: textStyles.prdText));
                     },
                     separatorBuilder: (BuildContext context, int index) {
                       return const ListDivider();

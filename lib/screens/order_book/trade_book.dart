@@ -12,6 +12,7 @@ import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
+import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_data_found.dart';
 import 'filter_trade_book.dart';
@@ -83,7 +84,7 @@ class TradeBook extends ConsumerWidget {
                                           color: const Color(0xff333333))))
                             ])
                           ]))),
-            if (order.showSiptradebookSearch)
+            if (order.showtradebookSearch)
               Container(
                 height: 62,
                 padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
@@ -98,6 +99,8 @@ class TradeBook extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: TextFormField(
+                        textCapitalization: TextCapitalization.characters,
+                        inputFormatters: [UpperCaseTextFormatter()],
                         controller: order.orderTradebookCtrl,
                         style: textStyle(
                             const Color(0xff000000), 16, FontWeight.w600),

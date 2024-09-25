@@ -10,6 +10,7 @@ import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
+import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_data_found.dart';
 import 'filter_gtt_bottom_sheet.dart';
@@ -82,6 +83,8 @@ class GttOrderBook extends ConsumerWidget {
             children: [
               Expanded(
                 child: TextFormField(
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [UpperCaseTextFormatter()],
                   controller: order.orderGttSearchCtrl,
                   style:
                       textStyle(const Color(0xff000000), 16, FontWeight.w600),

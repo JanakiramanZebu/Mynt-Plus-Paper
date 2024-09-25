@@ -7,6 +7,7 @@ import 'package:mynt_plus/res/res.dart';
 import '../../models/order_book_model/sip_order_book.dart';
 import '../../provider/thems.dart';
 import '../../routes/route_names.dart';
+import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_data_found.dart';
 import 'filter_sip.dart';
@@ -92,6 +93,8 @@ class SipOrderBook extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          textCapitalization: TextCapitalization.characters,
+                          inputFormatters: [UpperCaseTextFormatter()],
                           controller: order.orderSipSearchCtrl,
                           style: textStyle(
                               const Color(0xff000000), 16, FontWeight.w600),
@@ -146,7 +149,6 @@ class SipOrderBook extends ConsumerWidget {
                     ],
                   ),
                 ),
-              
               Expanded(
                 child: SingleChildScrollView(
                   physics: const ScrollPhysics(),

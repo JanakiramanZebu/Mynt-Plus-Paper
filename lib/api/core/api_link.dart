@@ -74,8 +74,7 @@ class ApiLinks {
   String get cancleSiporder => '$goMyntURL/CancelSipOrder';
   String get pendingGttorder => '$goMyntURL/GetPendingGTTOrder';
   String get cancelGTTOrder => '$goMyntURL/CancelGTTOrder';
-String get basketMargin=> '$goMyntURL/GetBasketMargin';
-  
+  String get basketMargin => '$goMyntURL/GetBasketMargin';
 
 // Order
 
@@ -124,6 +123,13 @@ String get basketMargin=> '$goMyntURL/GetBasketMargin';
 
   String get preDefdMWatchScrip => '$mainBaseURL/PreDefinedMW';
   String get getAllIndx => '$mainBaseURL/GetIndexList';
+
+  // Position Group
+  String get positionGrp => '$mainBaseURL/Getpositiongrp';
+  String get creatGrpName => '$mainBaseURL/Createpositiongrp';
+String get addSymbolGrp => '$mainBaseURL/addsymbolpositiongrp';
+  
+
 
   // Scrip Overview
 

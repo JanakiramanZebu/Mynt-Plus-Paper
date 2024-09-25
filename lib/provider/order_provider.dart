@@ -67,7 +67,7 @@ class OrderProvider extends DefaultChangeNotifier {
   final Preferences pref = locator<Preferences>();
   List<TradeBookModel>? _tradeBook;
   List<TradeBookModel>? get tradeBook => _tradeBook;
-  List<TradeBookModel>? _tradeBooksearch;
+  List<TradeBookModel>? _tradeBooksearch = [];
   List<TradeBookModel>? get tradeBooksearch => _tradeBooksearch;
   List<OrderBookModel>? _allOrder = [];
   List<OrderBookModel>? get allOrder => _allOrder;
@@ -132,13 +132,13 @@ class OrderProvider extends DefaultChangeNotifier {
   bool _showSipOrderSearch = false;
   bool get showSipOrderSearch => _showSipOrderSearch;
 
-  bool _showSiptradebookSearch = false;
-  bool get showSiptradebookSearch => _showSiptradebookSearch;
- 
+  bool _showtradebookSearch = false;
+  bool get showtradebookSearch => _showtradebookSearch;
+
   String _selectedBsktName = "";
   String get selectedBsktName => _selectedBsktName;
 
-   changeTabIndex(int index, BuildContext context) {
+  changeTabIndex(int index, BuildContext context) {
     _selectedTab = index;
     tabSize();
     showOrderSearch(false);
@@ -229,8 +229,8 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   showTradeSearch(bool value) {
-    _showSiptradebookSearch = value;
-    if (!_showSiptradebookSearch) {
+    _showtradebookSearch = value;
+    if (!_showtradebookSearch) {
       _tradeBooksearch = [];
     }
     notifyListeners();
@@ -265,7 +265,8 @@ class OrderProvider extends DefaultChangeNotifier {
       _orderSearchItem = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _orderSearchItem = _allOrder!
-          .where((element) => element.tsym!.toLowerCase().contains(value))
+          .where((element) =>
+              element.tsym!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       if (_orderSearchItem!.isEmpty) {
         ScaffoldMessenger.of(context)
@@ -285,7 +286,8 @@ class OrderProvider extends DefaultChangeNotifier {
       _gttOrderBookSearch = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _gttOrderBookSearch = _gttOrderBookModel!
-          .where((element) => element.tsym!.toLowerCase().contains(value))
+          .where((element) =>
+              element.tsym!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       if (_gttOrderBookSearch!.isEmpty) {
         ScaffoldMessenger.of(context)
@@ -305,7 +307,8 @@ class OrderProvider extends DefaultChangeNotifier {
       _siporderBookSearch = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _siporderBookSearch = _siporderBookModel!.sipDetails!
-          .where((element) => element.sipName!.toLowerCase().contains(value))
+          .where((element) =>
+              element.sipName!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       if (_siporderBookSearch!.isEmpty) {
         ScaffoldMessenger.of(context)
@@ -325,7 +328,8 @@ class OrderProvider extends DefaultChangeNotifier {
       _tradeBooksearch = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _tradeBooksearch = _tradeBook!
-          .where((element) => element.tsym!.toLowerCase().contains(value))
+          .where((element) =>
+              element.tsym!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       if (_tradeBooksearch!.isEmpty) {
         ScaffoldMessenger.of(context)
@@ -1169,7 +1173,7 @@ class OrderProvider extends DefaultChangeNotifier {
       }
     }
 
-    log("${_bsktScrips}");
+    log("$_bsktScrips");
     notifyListeners();
   }
 

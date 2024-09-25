@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart'; 
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
@@ -9,6 +8,7 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
+import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/snack_bar.dart';
@@ -64,7 +64,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                           "This is a pre-defined watchlist that cannot be edited!"));
                                 }
                               },
-                              onTap: () async {
+                              onTap: () async { marketWatch.chngDephBtn("Overview");
                                 await marketWatch.fetchScripQuote(
                                     "${holdingProvide[index].exchTsym![0].token}",
                                     "${holdingProvide[index].exchTsym![0].exch}",
@@ -82,19 +82,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                   await marketWatch.fetchLinkeScrip(
                                       "${holdingProvide[index].exchTsym![0].token}",
                                       "${holdingProvide[index].exchTsym![0].exch}",context);
-// if ((holdingProvide[index].exchTsym![0].exch == "NSE" ||
-//                                        holdingProvide[index].exchTsym![0].exch ==
-//                                             "BSE")  ) {
-//                                   context
-//                                       .read(marketWatchProvider)
-//                                       .depthBtns
-//                                       .add({
-//                                     "btnName": "Fundamental",
-//                                     "imgPath": assets.dInfo,
-//                                     "key": "",
-//                                     "case":
-//                                         "Click here to view fundamental data."
-//                                   });}
+ 
 
                                   marketWatch.fetchFundamentalData(
                                       tradeSym:
@@ -273,9 +261,5 @@ class _StocksScreenState extends State<StocksScreen> {
     });
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+  
 }

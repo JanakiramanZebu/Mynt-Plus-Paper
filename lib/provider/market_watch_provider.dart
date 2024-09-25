@@ -98,7 +98,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     "Sensex"
   ];
 
-  List<Tab> _searchTabList = const [
+  final List<Tab> _searchTabList = const [
     Tab(text: "All"),
     Tab(text: "Equity"),
     Tab(text: "F&O"),
@@ -510,7 +510,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-    orderAletrPendingSearch(String value, BuildContext context) {
+  orderAletrPendingSearch(String value, BuildContext context) {
     if (value.length > 1) {
       _alertPendingSearch = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -1721,7 +1721,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   addDelMarketScrip(String wlName, String scripTok, BuildContext context,
-      bool isAdd, bool isEdit, bool isReOrder) async {
+      bool isAdd, bool isEdit, bool isReOrder, bool isOptionStike) async {
     _addDeleteScripModel = await api.getAddDeleteSciptoMW(
         isAdd: isAdd, scripToken: scripTok, wlname: wlName);
 
@@ -1736,7 +1736,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, "Scrip order was changed"));
       }
-
       if (!isEdit) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(successMessage(
@@ -1744,6 +1743,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             isAdd
                 ? "Scrip was added to watchlist $wlName"
                 : "Scrip was removed from watchlist $wlName"));
+      }
+      if (isEdit && isOptionStike) {
+        Fluttertoast.showToast(
+            msg: "Scrip was added to watchlist $wlName",
+            timeInSecForIosWeb: 2,
+            backgroundColor: colors.colorBlack,
+            textColor: colors.colorWhite,
+            fontSize: 14.0);
       }
     } else if (_addDeleteScripModel!.emsg ==
         "Session Expired :  Invalid Session Key") {
@@ -1777,8 +1784,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _sortByWL = val;
     notifyListeners();
   }
-
-   
 
   filterPendingAlert(String sorting) {
     if (sorting == "ASC") {
@@ -1832,8 +1837,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       for (var element in _scrips) {
         addInput += "${element['exch']}|${element['token']}#";
       }
-      await addDelMarketScrip(wlName, delInput, context, false, true, false);
-      await addDelMarketScrip(wlName, addInput, context, true, true, false);
+      await addDelMarketScrip(
+          wlName, delInput, context, false, true, false, false);
+      await addDelMarketScrip(
+          wlName, addInput, context, true, true, false, false);
     } else if (sorting == "Scrip - A to Z") {
       _scrips.sort((a, b) {
         filterData.add("${b['exch']}|${b['token']}#");
@@ -1848,8 +1855,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         addInput += "${element['exch']}|${element['token']}#";
       }
 
-      await addDelMarketScrip(wlName, delInput, context, false, true, false);
-      await addDelMarketScrip(wlName, addInput, context, true, true, false);
+      await addDelMarketScrip(
+          wlName, delInput, context, false, true, false, false);
+      await addDelMarketScrip(
+          wlName, addInput, context, true, true, false, false);
     } else if (sorting == "Price - Low to High") {
       _scrips.sort((a, b) {
         filterData.add("${b['exch']}|${b['token']}#");
@@ -1864,8 +1873,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       for (var element in _scrips) {
         addInput += "${element['exch']}|${element['token']}#";
       }
-      await addDelMarketScrip(wlName, delInput, context, false, true, false);
-      await addDelMarketScrip(wlName, addInput, context, true, true, false);
+      await addDelMarketScrip(
+          wlName, delInput, context, false, true, false, false);
+      await addDelMarketScrip(
+          wlName, addInput, context, true, true, false, false);
     } else if (sorting == "Price - High to Low") {
       _scrips.sort((a, b) {
         filterData.add("${b['exch']}|${b['token']}#");
@@ -1880,8 +1891,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       for (var element in _scrips) {
         addInput += "${element['exch']}|${element['token']}#";
       }
-      await addDelMarketScrip(wlName, delInput, context, false, true, false);
-      await addDelMarketScrip(wlName, addInput, context, true, true, false);
+      await addDelMarketScrip(
+          wlName, delInput, context, false, true, false, false);
+      await addDelMarketScrip(
+          wlName, addInput, context, true, true, false, false);
     } else if (sorting == "Per.Chng - High to Low") {
       _scrips.sort((a, b) {
         filterData.add("${b['exch']}|${b['token']}#");
@@ -1896,8 +1909,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       for (var element in _scrips) {
         addInput += "${element['exch']}|${element['token']}#";
       }
-      await addDelMarketScrip(wlName, delInput, context, false, true, false);
-      await addDelMarketScrip(wlName, addInput, context, true, true, false);
+      await addDelMarketScrip(
+          wlName, delInput, context, false, true, false, false);
+      await addDelMarketScrip(
+          wlName, addInput, context, true, true, false, false);
     } else if (sorting == "Per.Chng - Low to High") {
       _scrips.sort((a, b) {
         filterData.add("${b['exch']}|${b['token']}#");
@@ -1912,8 +1927,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       for (var element in _scrips) {
         addInput += "${element['exch']}|${element['token']}#";
       }
-      await addDelMarketScrip(wlName, delInput, context, false, true, false);
-      await addDelMarketScrip(wlName, addInput, context, true, true, false);
+      await addDelMarketScrip(
+          wlName, delInput, context, false, true, false, false);
+      await addDelMarketScrip(
+          wlName, addInput, context, true, true, false, false);
     }
 
     _sortByWL = sorting;
@@ -1945,7 +1962,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         input += "${element['exch']}|${element['token']}#";
       }
     }
-    await addDelMarketScrip(wlName, input, context, false, false, false);
+    await addDelMarketScrip(wlName, input, context, false, false, false, false);
 
     if (_scrips.isEmpty) {
       Navigator.pop(context);
@@ -1976,13 +1993,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     _scrips.insert(newI, element);
 
-    await addDelMarketScrip(wlName, deleteInput, context, false, true, true);
+    await addDelMarketScrip(
+        wlName, deleteInput, context, false, true, true, false);
 
     for (var elements in _scrips) {
       addInput += "${elements['exch']}|${elements['token']}#";
     }
 
-    await addDelMarketScrip(wlName, addInput, context, true, true, false);
+    await addDelMarketScrip(
+        wlName, addInput, context, true, true, false, false);
     _sortByWL = "";
 
     localstorage.setString("sortByWL", _sortByWL);

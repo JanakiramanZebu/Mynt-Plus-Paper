@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/portfolio_provider.dart';
-import '../../../provider/thems.dart'; 
+import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
+// import 'group/create_group.dart';
+// import 'group/tag_position_grp_name.dart';
 
 class PositionListCard extends ConsumerWidget {
   final PositionBookModel positionList;
@@ -13,7 +15,7 @@ class PositionListCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, watch) {
-    final positions = watch(portfolioProvider); 
+    final positions = watch(portfolioProvider);
     final theme = context.read(themeProvider);
     return Container(
         color: theme.isDarkMode
@@ -39,7 +41,31 @@ class PositionListCard extends ConsumerWidget {
                       style: textStyles.scripNameTxtStyle.copyWith(
                           color: theme.isDarkMode
                               ? colors.colorWhite
-                              : colors.colorBlack))
+                              : colors.colorBlack)),
+                  // if (positions.posSelection == "All position")
+                  //   InkWell(
+                  //       onTap: () {
+                  //         if (positions.posGrpNames.length <= 2) {
+                  //           showDialog(
+                  //               context: context,
+                  //               builder: (BuildContext context) {
+                  //                 return const CreateGroupPos();
+                  //               });
+                  //         } else {
+                  //           showModalBottomSheet(
+                  //               useSafeArea: true,
+                  //               isScrollControlled: true,
+                  //               shape: const RoundedRectangleBorder(
+                  //                   borderRadius: BorderRadius.vertical(
+                  //                       top: Radius.circular(16))),
+                  //               context: context,
+                  //               builder: (context) {
+                  //                 return TagPositionGrpName(
+                  //                     positionList: positionList);
+                  //               });
+                  //         }
+                  //       },
+                  //       child: const Icon(Icons.label_important_outline_sharp))
                 ]),
                 Row(children: [
                   Text(" LTP: ",
@@ -103,15 +129,13 @@ class PositionListCard extends ConsumerWidget {
                   thickness: 1.2),
               const SizedBox(height: 2),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-               
-                  Text("${positionList.sPrdtAli}",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          13,
-                          FontWeight.w600)),
-               
+                Text("${positionList.sPrdtAli}",
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        13,
+                        FontWeight.w600)),
                 positions.isNetPnl
                     ? Row(children: [
                         Text("P&L: ",
@@ -150,50 +174,45 @@ class PositionListCard extends ConsumerWidget {
                       ])
               ]),
               const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(children: [
-                    Text("Qty: ",
-                        style: textStyle(
-                            const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                    Text("${positionList.qty}",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            14,
-                            FontWeight.w500))
-                  ]),
-                  Row(
-                    children: [
-                      // Text("MTM: ",
-                      //     style: textStyle(
-                      //         const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                      // Text("₹${positionList.mTm}",
-                      //     style: textStyle(
-                      //         Color(positionList.mTm!.startsWith("-")
-                      //             ? 0XFFFF1717
-                      //             : positionList.mTm == "0.00"
-                      //                 ? 0xff999999
-                      //                 : 0xff43A833),
-                      //         15,
-                      //         FontWeight.w600)),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Row(children: [
+                  Text("Qty: ",
+                      style: textStyle(
+                          const Color(0xff5E6B7D), 14, FontWeight.w500)),
+                  Text("${positionList.qty}",
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w500))
+                ]),
+                Row(children: [
+                  // Text("MTM: ",
+                  //     style: textStyle(
+                  //         const Color(0xff5E6B7D), 14, FontWeight.w500)),
+                  // Text("₹${positionList.mTm}",
+                  //     style: textStyle(
+                  //         Color(positionList.mTm!.startsWith("-")
+                  //             ? 0XFFFF1717
+                  //             : positionList.mTm == "0.00"
+                  //                 ? 0xff999999
+                  //                 : 0xff43A833),
+                  //         15,
+                  //         FontWeight.w600)),
 
-                      Text("Avg: ",
-                          style: textStyle(
-                              const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                      Text("${positionList.avgPrc}",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500))
-                    ]
-                  )
-                ]
-              ),
+                  Text("Avg: ",
+                      style: textStyle(
+                          const Color(0xff5E6B7D), 14, FontWeight.w500)),
+                  Text("${positionList.avgPrc}",
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w500))
+                ])
+              ]),
               // const SizedBox(height: 10),
               // Row(
               //   mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -16,6 +16,8 @@ import '../models/portfolio_model/mf_quotes.dart';
 import '../models/portfolio_model/position_book_model.dart';
 import '../models/portfolio_model/position_convertion_model.dart';
 
+import '../models/portfolio_model/position_group_model.dart';
+import '../res/res.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
@@ -137,6 +139,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
 
+// Position Grouping -----------
+
   Map _groupedBySymbol = {};
   Map get groupedBySymbol => _groupedBySymbol;
 
@@ -149,7 +153,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   String get posSelection => _posSelection;
 
-  List<String> posType = ["All position", "Group by symbol"];
+  List<String> _posGrpNames = ["All position", "Group by symbol"];
+
+  List<String> get posGrpNames => _posGrpNames;
+
+  List<GetGroupSymbol> _getPositionGroupSymbol = [];
+  List<GetGroupSymbol> get getPositionGroupSymbol => _getPositionGroupSymbol;
+
+  CreateGroupName? _groupName;
+  CreateGroupName? get groupName => _groupName;
 
   changeTabIndex(int index) {
     _selectedTab = index;
@@ -334,7 +346,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     int.parse("${element.npoadt1qty ?? 0}") +
                     int.parse("${element.holdqty ?? 0}") +
                     int.parse("${element.btstqty ?? 0}")) -
-                int.parse("${element.usedqty}");
+                int.parse("${element.usedqty ?? 0}");
             element.currentQty = qty;
             ref(websocketProvider)
                 .socketDatas["${element.exchTsym![0].token}"] = {'holdQty': ""};
@@ -912,7 +924,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
     _groupedBySymbol = {};
 
     double avgPrc = 0.00;
-
     String pnl = "0.00";
     for (var element in _allPostionList) {
       if (groupData.isEmpty) {
@@ -944,6 +955,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
             unRealMtm += double.parse(element.profitNloss!);
           } else {
+            element.profitNloss = element.rpnl;
             bookPnl += double.parse(element.rpnl!);
           }
         } else {
@@ -1067,6 +1079,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
               unRealMtm += double.parse(element.profitNloss!);
             } else {
+              element.profitNloss = element.rpnl;
               bookPnl += double.parse(element.rpnl!);
             }
           } else {
@@ -1654,5 +1667,72 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _positionSearchItem = [];
     }
     notifyListeners();
+  }
+
+  Future fetchPosGroupSymbol(String name) async {
+    try {
+      _getPositionGroupSymbol = await api.getGroupPosition();
+
+      _posGrpNames = ["All position", "Group by symbol"];
+
+      _allPostionList = [];
+      for (var element in _getPositionGroupSymbol) {
+        _posGrpNames.add(element.posname.toString());
+
+        if (name==element.posname) {
+          for (var item in element.posdata!) {
+
+            if (_postionBookModel![0].stat.toString().toLowerCase()=="ok") {
+                for (var pos in _postionBookModel!) {
+              if (item.token==pos.token) {
+                _allPostionList.add(pos);
+              }
+            }
+            }
+
+          }
+        }
+      }
+      notifyListeners();
+    } catch (e) {}
+  }
+
+  Future fetchGroupName(String name, BuildContext c) async {
+    try {
+      _groupName = await api.createGroupName(name);
+
+      if (_groupName!.status == "Data inserted") {
+        await fetchPosGroupSymbol(name);
+
+        Navigator.pop(c);
+      } else {
+        Fluttertoast.showToast(
+            msg: "${_groupName!.status}",
+            timeInSecForIosWeb: 2,
+            backgroundColor: colors.colorBlack,
+            textColor: colors.colorWhite,
+            fontSize: 14.0);
+      }
+    } catch (e) {}
+  }
+
+  Future fetchAddGroupSymbol(String name, BuildContext c, Map data) async {
+    try {
+      _groupName = await api.addGroupNameSymbol(name, data);
+
+      if (_groupName!.status == "symbol added") {
+        await fetchPosGroupSymbol(name);
+        ScaffoldMessenger.of(c)
+            .showSnackBar(warningMessage(c, 'Scrip was added to $name'));
+        Navigator.pop(c);
+      } else {
+        Fluttertoast.showToast(
+            msg: "${_groupName!.status}",
+            timeInSecForIosWeb: 2,
+            backgroundColor: colors.colorBlack,
+            textColor: colors.colorWhite,
+            fontSize: 14.0);
+      }
+    } catch (e) {}
   }
 }
