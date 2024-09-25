@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
+import '../../../locator/preference.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
@@ -19,30 +19,41 @@ class PositionScripFilterBottomSheet extends StatefulWidget {
 
 class _PositionScripBottomSheetState
     extends State<PositionScripFilterBottomSheet> {
-  List<String> fliterList = [
-    "Scrip - A to Z",
-    "Scrip - Z to A",
-    "Price - High to Low",
-    "Price - Low to High",
-    "Open Position",
-    "Close Position"
-  ];
+  Preferences pref = Preferences();
+  late bool scripisAscending;
+  late bool pricepisAscending;
+  late bool qtyisAscending;
+  late bool perchangisAscending;
+  late bool postion;
+
+  @override
+  void initState() {
+    setState(() {
+      scripisAscending = pref.isPosScripname ?? true;
+      pricepisAscending = pref.isPosPrice ?? true;
+      qtyisAscending = pref.isPosQuantity ?? true;
+      perchangisAscending = pref.isPosPerchang ?? true;
+      postion = pref.isPostion ?? true;
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
-      // final watchlist = watch(marketWatchProvider);   
-       final theme = context.read(themeProvider);
+      // final watchlist = watch(marketWatchProvider);
+      final theme = context.read(themeProvider);
       return Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Color(0xff999999),
-                        blurRadius: 4.0,
-                        offset: Offset(2.0, 0.0))
-                  ]),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            boxShadow: const [
+              BoxShadow(
+                  color: Color(0xff999999),
+                  blurRadius: 4.0,
+                  offset: Offset(2.0, 0.0))
+            ]),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -50,63 +61,261 @@ class _PositionScripBottomSheetState
           children: [
             const CustomDragHandler(),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     "Sort by",
-                    style: textStyles.appBarTitleTxt.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack),
+                    style: textStyles.appBarTitleTxt.copyWith(
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack),
                   ),
                 ],
               ),
             ),
-            Divider(color: theme.isDarkMode?colors.darkColorDivider:colors.colorDivider),
-            ListView.separated(
-              shrinkWrap: true,
-              itemCount: fliterList.length,
-              itemBuilder: (BuildContext context, int index) {
-                return ListTile(
-                    onTap: () async {
-                      selctedSortValue(index);
-                      Navigator.pop(context);
-                    },
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                    dense: true,
-                    title: Text(
-                      fliterList[index],
-                      style: textStyles.prdText ,
+            Divider(
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (scripisAscending == true) {
+                    context
+                        .read(portfolioProvider)
+                        .sortPositions(sorting: "ASC");
+                  } else if (scripisAscending == false) {
+                    context
+                        .read(portfolioProvider)
+                        .sortPositions(sorting: "DSC");
+                  }
+
+                  scripisAscending = !scripisAscending;
+                  pref.setPosScrip(scripisAscending);
+                  Navigator.pop(context);
+                });
+              },
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isPosScripname == true
+                              ? "Scrip - A to Z"
+                              : "Scrip - Z to A",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isPosScripname == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
                     ),
-                    trailing: SvgPicture.asset(
-                      theme.isDarkMode?  index == 0 ? assets.darkActProductIcon : assets.darkProductIcon:
-                        index == 0 ? assets.actProductIcon : assets.productIcon));
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+           
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (pricepisAscending == true) {
+                    context
+                        .read(portfolioProvider)
+                        .sortPositions(sorting: "LTPDSC");
+                  } else if (pricepisAscending == false) {
+                    context
+                        .read(portfolioProvider)
+                        .sortPositions(sorting: "LTPASC");
+                  }
+
+                  pricepisAscending = !pricepisAscending;
+                  pref.setPosPrice(pricepisAscending);
+                  Navigator.pop(context);
+                });
               },
-              separatorBuilder: (BuildContext context, int index) {
-                return const ListDivider();
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isPosPrice == true
+                              ? "Price - High to Low"
+                              : "Price - Low to High",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isPosPrice == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+            
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (qtyisAscending == true) {
+                    context
+                        .read(portfolioProvider)
+                        .sortPositions(sorting: "QTYDSC");
+                  } else if (qtyisAscending == false) {
+                    context
+                        .read(portfolioProvider)
+                        .sortPositions(sorting: "QTYASC");
+                  }
+
+                  qtyisAscending = !qtyisAscending;
+                  pref.setPosqty(qtyisAscending);
+                  Navigator.pop(context);
+                });
               },
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isPosQuantity == true
+                              ? "Qty - High to Low"
+                              : "Qty - Low to High",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isPosQuantity == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+            
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (perchangisAscending == true) {
+                    context
+                        .read(portfolioProvider)
+                        .sortPositions(sorting: "PCDESC");
+                  } else if (perchangisAscending == false) {
+                    context
+                        .read(portfolioProvider)
+                        .sortPositions(sorting: "PCASC");
+                  }
+
+                  perchangisAscending = !perchangisAscending;
+                  pref.setPosPerchnage(perchangisAscending);
+                  Navigator.pop(context);
+                });
+              },
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isPosPerchang == true
+                              ? "Per.chng - High to Low"
+                              : "Per.chng - Low to High ",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isPosPerchang == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (postion == true) {
+                    context
+                        .read(portfolioProvider)
+                        .sortPositions(sorting: "Open");
+                  } else if (postion == false) {
+                    context
+                        .read(portfolioProvider)
+                        .sortPositions(sorting: "Close");
+                  }
+
+                  postion = !postion;
+                  pref.setPostion(postion);
+                  Navigator.pop(context);
+                });
+              },
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isPostion == true
+                              ? "Open Position"
+                              : "Close Position",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isPostion == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
             ),
           ],
         ),
       );
-    });
-  }
-
-  void selctedSortValue(int value) {
-    return setState(() {
-      if (value == 0) {
-        context.read(portfolioProvider).sortPositions(sorting: "ASC");
-      } else if (value == 1) {
-        context.read(portfolioProvider).sortPositions(sorting: "DSC");
-      } else if (value == 2) {
-        context.read(portfolioProvider).sortPositions(sorting: "LTPDSC");
-      } else if (value == 3) {
-        context.read(portfolioProvider).sortPositions(sorting: "LTPASC");
-      } else if (value == 4) {
-        context.read(portfolioProvider).sortPositions(sorting: "Open");
-      } else {
-        context.read(portfolioProvider).sortPositions(sorting: "Close");
-      }
     });
   }
 }

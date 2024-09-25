@@ -2,14 +2,12 @@
 
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
@@ -62,6 +60,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     const Tab(text: "Overview"),
     const Tab(text: "Chart")
   ];
+
+  final TextEditingController alertPendingSearchtext = TextEditingController();
 
   String _sortByWL = "";
   String get sortByWL => _sortByWL;
@@ -164,6 +164,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   List<AlertPendingModel>? _alertPendingModel = [];
   List<AlertPendingModel>? get alertPendingModel => _alertPendingModel;
+
+  List<AlertPendingModel>? _alertPendingSearch = [];
+  List<AlertPendingModel>? get alertPendingSearch => _alertPendingSearch;
 
   WatchlistRenameModel? _watchlistRenameModel;
   WatchlistRenameModel? get watchlistRenameModel => _watchlistRenameModel;
@@ -274,6 +277,24 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   int _selectedMfHoldindex = 0;
   int get selectedMfHoldindex => _selectedMfHoldindex;
+
+  bool _showAlertSearch = false;
+  bool get showAlertSearch => _showAlertSearch;
+
+  showAlertPendingSearch(bool value) {
+    _showAlertSearch = value;
+    if (!_showAlertSearch) {
+      _alertPendingSearch = [];
+    }
+    notifyListeners();
+  }
+
+  clearAlertSearch() {
+    alertPendingSearchtext.clear();
+    _alertPendingSearch = [];
+    notifyListeners();
+  }
+
   chngMfHoldDate(String val, int index) {
     _selectedMfHolddate = val;
     _selectedMfHoldindex = index;
@@ -489,6 +510,26 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+    orderAletrPendingSearch(String value, BuildContext context) {
+    if (value.length > 1) {
+      _alertPendingSearch = [];
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      _alertPendingSearch = _alertPendingModel!
+          .where((element) => element.tsym!.toLowerCase().contains(value))
+          .toList();
+      if (_alertPendingSearch!.isEmpty) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'No Data Found'));
+      } else {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    } else {
+      _alertPendingSearch = [];
+    }
+
+    notifyListeners();
+  }
+
   scripSearch(String value, BuildContext context) async {
     if (value.length > 1) {
       await fetchSearchScrip(searchText: value, context: context);
@@ -537,7 +578,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   Future fetchMWList(BuildContext context) async {
     try {
       _marketWatchlist = await api.getMWList();
-
+      pref.setMWScrip(true);
+      pref.setMWPrice(true);
+      pref.setMWPerchnage(true);
       if (_marketWatchlist!.stat == "Ok") {
         ConstantName.sessCheck = true;
         if (_marketWatchlist!.values!.isEmpty) {
@@ -1712,8 +1755,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       {required bool isSubscribe, required BuildContext context}) async {
     String input = "";
     _delScripQty = 0;
-   await ref(indexListProvider)
-        .requestdefaultIndex( );
+    await ref(indexListProvider).requestdefaultIndex();
     if (ref(indexListProvider).indexToken.isNotEmpty) {
       input = ref(indexListProvider).indexToken;
     }
@@ -1729,11 +1771,41 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       await ref(websocketProvider).establishConnection(
           channelInput: input, task: isSubscribe ? "t" : "u", context: context);
     }
-      
   }
 
   getSortByWL(String val) {
     _sortByWL = val;
+    notifyListeners();
+  }
+
+   
+
+  filterPendingAlert(String sorting) {
+    if (sorting == "ASC") {
+      _alertPendingModel!.sort((a, b) => a.tsym!.compareTo(b.tsym!));
+    } else if (sorting == "DSC") {
+      _alertPendingModel!.sort((a, b) => b.tsym!.compareTo(a.tsym!));
+    } else if (sorting == "LTPDSC") {
+      _alertPendingModel!.sort((a, b) {
+        return double.parse(b.ltp ?? "0.00")
+            .compareTo(double.parse(a.ltp ?? "0.00"));
+      });
+    } else if (sorting == "LTPASC") {
+      _alertPendingModel!.sort((a, b) {
+        return double.parse(a.ltp ?? "0.00")
+            .compareTo(double.parse(b.ltp ?? "0.00"));
+      });
+    } else if (sorting == "ALERTVALUEDSC") {
+      _alertPendingModel!.sort((a, b) {
+        return double.parse(b.d ?? "0.00")
+            .compareTo(double.parse(a.d ?? "0.00"));
+      });
+    } else if (sorting == "ALERTVALUEASC") {
+      _alertPendingModel!.sort((a, b) {
+        return double.parse(a.d ?? "0.00")
+            .compareTo(double.parse(b.d ?? "0.00"));
+      });
+    }
     notifyListeners();
   }
 

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-
 import '../../../provider/market_watch_provider.dart';
+import '../../locator/preference.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
-import '../../sharedWidget/list_divider.dart';  
+import '../../sharedWidget/list_divider.dart';
 
 class ScripFilterBottomSheet extends StatefulWidget {
   const ScripFilterBottomSheet({
@@ -18,14 +17,21 @@ class ScripFilterBottomSheet extends StatefulWidget {
 }
 
 class _WatchlistsBottomSheetState extends State<ScripFilterBottomSheet> {
-  List<String> fliterList = [
-    "Scrip - A to Z",
-    "Scrip - Z to A",
-    "Price - High to Low",
-    "Price - Low to High",
-    "Per.Chng - High to Low",
-    "Per.Chng - Low to High"
-  ];
+  Preferences pref = Preferences();
+  late bool scripisAscending;
+  late bool pricepisAscending;
+  late bool perchangisAscending;
+
+  @override
+  void initState() {
+    setState(() {
+      scripisAscending = pref.isMWScripname ?? true;
+      pricepisAscending = pref.isMWPrice ?? true;
+      perchangisAscending = pref.isMWPerchang ?? true;
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,42 +72,149 @@ class _WatchlistsBottomSheetState extends State<ScripFilterBottomSheet> {
                 color: theme.isDarkMode
                     ? colors.darkColorDivider
                     : colors.colorDivider),
-            ListView.separated(
-              shrinkWrap: true,
-              itemCount: fliterList.length,
-              itemBuilder: (BuildContext context, int index) {
-                return ListTile(
-                    onTap: () async {
-                      await context.read(marketWatchProvider).filterMWScrip(
-                          sorting: fliterList[index],
-                          wlName: watchlist.wlName,
-                          context: context);
-                      Navigator.pop(context);
-                    },
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                    dense: true,
-                    title: Text(
-                      fliterList[index],
-                      style: textStyles.prdText.copyWith(
-                          color: theme.isDarkMode &&
-                                  watchlist.sortByWL == fliterList[index]
-                              ? colors.colorWhite
-                              : watchlist.sortByWL == fliterList[index]
-                                  ? colors.colorBlack
-                                  : colors.colorGrey),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (scripisAscending == true) {
+                    context.read(marketWatchProvider).filterMWScrip(
+                        sorting: "Scrip - A to Z",
+                        wlName: watchlist.wlName,
+                        context: context);
+                  } else if (scripisAscending == false) {
+                    context.read(marketWatchProvider).filterMWScrip(
+                        sorting: "Scrip - Z to A",
+                        wlName: watchlist.wlName,
+                        context: context);
+                  }
+
+                  scripisAscending = !scripisAscending;
+                  pref.setMWScrip(scripisAscending);
+                  Navigator.pop(context);
+                });
+              },
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isMWScripname == true
+                              ? "Scrip - A to Z"
+                              : "Scrip - Z to A",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isMWScripname == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
                     ),
-                    trailing: SvgPicture.asset(theme.isDarkMode
-                        ? watchlist.sortByWL == fliterList[index]
-                            ? assets.darkActProductIcon
-                            : assets.darkProductIcon
-                        : watchlist.sortByWL == fliterList[index]
-                            ? assets.actProductIcon
-                            : assets.productIcon));
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (pricepisAscending == true) {
+                    context.read(marketWatchProvider).filterMWScrip(
+                        sorting: "Price - High to Low",
+                        wlName: watchlist.wlName,
+                        context: context);
+                  } else if (pricepisAscending == false) {
+                    context.read(marketWatchProvider).filterMWScrip(
+                        sorting: "Price - Low to High",
+                        wlName: watchlist.wlName,
+                        context: context);
+                  }
+
+                  pricepisAscending = !pricepisAscending;
+                  pref.setMWPrice(pricepisAscending);
+                  Navigator.pop(context);
+                });
               },
-              separatorBuilder: (BuildContext context, int index) {
-                return const ListDivider();
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isMWPrice == true
+                              ? "Price - High to Low"
+                              : "Price - Low to High",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isMWPrice == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (perchangisAscending == true) {
+                    context.read(marketWatchProvider).filterMWScrip(
+                        sorting: "Per.Chng - High to Low",
+                        wlName: watchlist.wlName,
+                        context: context);
+                  } else if (perchangisAscending == false) {
+                    context.read(marketWatchProvider).filterMWScrip(
+                        sorting: "Per.Chng - Low to High",
+                        wlName: watchlist.wlName,
+                        context: context);
+                  }
+
+                  perchangisAscending = !perchangisAscending;
+                  pref.setMWPerchnage(perchangisAscending);
+                  Navigator.pop(context);
+                });
               },
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isMWPerchang == true
+                              ? "Per.Chng - High to Low"
+                              : "Per.Chng - Low to High",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isMWPerchang == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
             ),
           ],
         ),

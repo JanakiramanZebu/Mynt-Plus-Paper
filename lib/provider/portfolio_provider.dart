@@ -306,6 +306,12 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _nonSealableHoldings = [];
       _holdingsModel = await api.getHolding();
 
+      pref.setScrip(true);
+      pref.setPrice(true);
+      pref.setPerchnage(true);
+      pref.setqty(true);
+      pref.setInvestby(true);
+
       tabSize();
       if (_holdingsModel!.isNotEmpty) {
         if (_holdingsModel![0].stat != "Not_Ok") {
@@ -392,6 +398,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _mfTotCurrentVal = 0.00;
       _mfTotalPnl = 0.00;
       _mfTotalPnlPerchng = 0.00;
+      pref.setMfScrip(true);
+      pref.setMfPrice(true);
+      pref.setMfPerchnage(true);
+      pref.setMfqty(true);
+      pref.setMfInvestby(true);
       tabSize();
       if (_mfHoldingsModel!.isNotEmpty) {
         if (_mfHoldingsModel![0].stat != "Not_Ok") {
@@ -495,6 +506,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _totBookedPnL = "0.00";
       _totUnRealMtm = '0.00';
       _postionBookModel = await api.getPositionBook();
+      pref.setPosScrip(true);
+      pref.setPosPrice(true);
+      pref.setPosPerchnage(true);
+      pref.setPosqty(true);
+      pref.setPostion(true);
       // splitPositionBook(isDay);
       if (_postionBookModel!.isNotEmpty) {
         if (_postionBookModel![0].stat != "Not_Ok") {
@@ -1256,6 +1272,66 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     ? "0.00"
                     : "${b.exchTsym![0].lp}"));
       });
+    } else if (sorting == "QTYDSC") {
+      _holdingsModel!.sort((a, b) {
+        return int.parse(b.currentQty == null || b.currentQty == "null"
+                ? "0.00"
+                : "${b.currentQty}")
+            .compareTo(int.parse(
+                a.currentQty == null || a.currentQty == "null"
+                    ? "0.00"
+                    : "${a.currentQty}"));
+      });
+    } else if (sorting == "QTYASC") {
+      _holdingsModel!.sort((a, b) {
+        return int.parse(a.currentQty == null || a.currentQty == "null"
+                ? "0.00"
+                : "${a.currentQty}")
+            .compareTo(int.parse(
+                b.currentQty == null || b.currentQty == "null"
+                    ? "0.00"
+                    : "${b.currentQty}"));
+      });
+    } else if (sorting == "PCDESC") {
+      _holdingsModel!.sort((a, b) {
+        return double.parse(b.exchTsym![0].perChange == null ||
+                    b.exchTsym![0].perChange == "null"
+                ? "0.00"
+                : "${b.exchTsym![0].perChange}")
+            .compareTo(double.parse(a.exchTsym![0].perChange == null ||
+                    a.exchTsym![0].perChange == "null"
+                ? "0.00"
+                : "${a.exchTsym![0].perChange}"));
+      });
+    } else if (sorting == "PCASC") {
+      _holdingsModel!.sort((a, b) {
+        return double.parse(a.exchTsym![0].perChange == null ||
+                    a.exchTsym![0].perChange == "null"
+                ? "0.00"
+                : "${a.exchTsym![0].perChange}")
+            .compareTo(double.parse(b.exchTsym![0].perChange == null ||
+                    b.exchTsym![0].perChange == "null"
+                ? "0.00"
+                : "${b.exchTsym![0].perChange}"));
+      });
+    } else if (sorting == "INVDESC") {
+      _holdingsModel!.sort((a, b) {
+        return double.parse(b.invested == null || b.invested == "null"
+                ? "0.00"
+                : "${b.invested}")
+            .compareTo(double.parse(a.invested == null || a.invested == "null"
+                ? "0.00"
+                : "${a.invested}"));
+      });
+    } else if (sorting == "INVASC") {
+      _holdingsModel!.sort((a, b) {
+        return double.parse(a.invested == null || a.invested == "null"
+                ? "0.00"
+                : "${a.invested}")
+            .compareTo(double.parse(b.invested == null || b.invested == "null"
+                ? "0.00"
+                : "${b.invested}"));
+      });
     }
 
     notifyListeners();
@@ -1291,6 +1367,64 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     ? "0.00"
                     : "${b.exchTsym![0].nav}"));
       });
+    } else if (sorting == "QTYDSC") {
+      _mfHoldingsModel!.sort((a, b) {
+        return int.parse(b.holdqty == null || b.holdqty == "null"
+                ? "0.00"
+                : "${b.holdqty}")
+            .compareTo(int.parse(a.holdqty == null || a.holdqty == "null"
+                ? "0.00"
+                : "${a.holdqty}"));
+      });
+    } else if (sorting == "QTYASC") {
+      _mfHoldingsModel!.sort((a, b) {
+        return double.parse(a.holdqty == null || a.holdqty == "null"
+                ? "0.00"
+                : "${a.holdqty}")
+            .compareTo(double.parse(b.holdqty == null || b.holdqty == "null"
+                ? "0.00"
+                : "${b.holdqty}"));
+      });
+    } else if (sorting == "PCDESC") {
+      _mfHoldingsModel!.sort((a, b) {
+        return double.parse(b.exchTsym![0].pnlPerChng == null ||
+                    b.exchTsym![0].pnlPerChng == "null"
+                ? "0.00"
+                : "${b.exchTsym![0].pnlPerChng}")
+            .compareTo(double.parse(a.exchTsym![0].pnlPerChng == null ||
+                    a.exchTsym![0].pnlPerChng == "null"
+                ? "0.00"
+                : "${a.exchTsym![0].pnlPerChng}"));
+      });
+    } else if (sorting == "PCASC") {
+      _mfHoldingsModel!.sort((a, b) {
+        return double.parse(a.exchTsym![0].pnlPerChng == null ||
+                    a.exchTsym![0].pnlPerChng == "null"
+                ? "0.00"
+                : "${a.exchTsym![0].pnlPerChng}")
+            .compareTo(double.parse(b.exchTsym![0].pnlPerChng == null ||
+                    b.exchTsym![0].pnlPerChng == "null"
+                ? "0.00"
+                : "${b.exchTsym![0].pnlPerChng}"));
+      });
+    } else if (sorting == "INVDESC") {
+      _mfHoldingsModel!.sort((a, b) {
+        return double.parse(b.invested == null || b.invested == "null"
+                ? "0.00"
+                : "${b.invested}")
+            .compareTo(double.parse(a.invested == null || a.invested == "null"
+                ? "0.00"
+                : "${a.invested}"));
+      });
+    } else if (sorting == "INVASC") {
+      _mfHoldingsModel!.sort((a, b) {
+        return double.parse(a.invested == null || a.invested == "null"
+                ? "0.00"
+                : "${a.invested}")
+            .compareTo(double.parse(b.invested == null || b.invested == "null"
+                ? "0.00"
+                : "${b.invested}"));
+      });
     }
 
     notifyListeners();
@@ -1312,6 +1446,38 @@ class PortfolioProvider extends DefaultChangeNotifier {
         return double.parse(a.lp == null || a.lp == "null" ? "0.00" : "${a.lp}")
             .compareTo(double.parse(
                 b.lp == null || b.lp == "null" ? "0.00" : "${b.lp}"));
+      });
+    } else if (sorting == "QTYDSC") {
+      _allPostionList.sort((a, b) {
+        return int.parse(
+                b.qty == null || b.qty == "null" ? "0" : "${b.qty}")
+            .compareTo(int.parse(
+                a.qty == null || a.qty == "null" ? "0" : "${a.qty}"));
+      });
+    } else if (sorting == "QTYASC") {
+      _allPostionList.sort((a, b) {
+        return int.parse(
+                a.qty == null || a.qty == "null" ? "0" : "${a.qty}")
+            .compareTo(int.parse(
+                b.qty == null || b.qty == "null" ? "0.00" : "${b.qty}"));
+      });
+    } else if (sorting == "PCDESC") {
+      _allPostionList.sort((a, b) {
+        return double.parse(b.perChange == null || b.perChange == "null"
+                ? "0.00"
+                : "${b.perChange}")
+            .compareTo(double.parse(a.perChange == null || a.perChange == "null"
+                ? "0.00"
+                : "${a.perChange}"));
+      });
+    } else if (sorting == "PCASC") {
+      _allPostionList.sort((a, b) {
+        return double.parse(a.perChange == null || a.perChange == "null"
+                ? "0.00"
+                : "${a.perChange}")
+            .compareTo(double.parse(b.perChange == null || b.perChange == "null"
+                ? "0.00"
+                : "${b.perChange}"));
       });
     } else if (sorting == "Close") {
       _allPostionList.sort((a, b) {
@@ -1475,7 +1641,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _positionSearchItem = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _positionSearchItem = _allPostionList
-          .where((element) => element.tsym!.toLowerCase().contains(value.toLowerCase()))
+          .where((element) =>
+              element.tsym!.toLowerCase().contains(value.toLowerCase()))
           .toList();
       if (_positionSearchItem.isEmpty) {
         ScaffoldMessenger.of(context)

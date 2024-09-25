@@ -134,6 +134,8 @@ class Scrips {
     perChange = json['perChange'];
   }
 
+  get length => null;
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['exch'] = exch;

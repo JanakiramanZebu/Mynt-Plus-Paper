@@ -9,7 +9,7 @@ class GttOrderBookModel {
   String? remarks;
   String? validity;
   String? norentm;
-   String? ordDate;
+  String? ordDate;
   String? pp;
   String? ls;
   String? ti;
@@ -73,7 +73,8 @@ class GttOrderBookModel {
       this.close,
       this.low,
       this.change,
-      this.perChange,this.ordDate});
+      this.perChange,
+      this.ordDate});
 
   GttOrderBookModel.fromJson(Map<String, dynamic> json) {
     stat = json['stat'];
@@ -89,7 +90,7 @@ class GttOrderBookModel {
     pp = json['pp'];
     ls = json['ls'];
     ti = json['ti'];
-    ordDate=json['ordDate'];
+    ordDate = json['ordDate'];
     brkname = json['brkname'];
     actid = json['actid'];
     trantype = json['trantype'];
@@ -116,7 +117,7 @@ class GttOrderBookModel {
     option = json['option'];
     symbol = json['symbol'];
     ltp = json['ltp'];
- 
+
     low = low == null ? "0.00" : json['low'];
     high = high == null ? "0.00" : json['high'];
     open = open == null ? "0.00" : json['open'];
@@ -146,7 +147,7 @@ class GttOrderBookModel {
     data['qty'] = qty;
     data['prc'] = prc;
     data['C'] = c;
-    data['ordDate']=ordDate;
+    data['ordDate'] = ordDate;
     data['prd'] = prd;
     data['ordersource'] = ordersource;
     if (placeOrderParams != null) {
@@ -167,7 +168,7 @@ class GttOrderBookModel {
     data["open"] = open;
     data["high"] = high;
     data["close"] = close;
-    data["low"] = low; 
+    data["low"] = low;
     data["perChange"] = perChange;
     data["change"] = change;
     return data;
@@ -195,7 +196,8 @@ class PlaceOrderParamsLeg2 {
       this.c,
       this.prd,
       this.ordersource,
-      this.ipaddr,this.trgprc});
+      this.ipaddr,
+      this.trgprc});
 
   PlaceOrderParamsLeg2.fromJson(Map<String, dynamic> json) {
     actid = json['actid'];
@@ -207,7 +209,7 @@ class PlaceOrderParamsLeg2 {
     prd = json['prd'];
     ordersource = json['ordersource'];
     ipaddr = json['ipaddr'];
-    trgprc=json['trgprc'];
+    trgprc = json['trgprc'];
   }
 
   Map<String, dynamic> toJson() {
@@ -221,7 +223,7 @@ class PlaceOrderParamsLeg2 {
     data['prd'] = prd;
     data['ordersource'] = ordersource;
     data['ipaddr'] = ipaddr;
-    data['trgprc']=trgprc;
+    data['trgprc'] = trgprc;
     return data;
   }
 }
@@ -237,7 +239,7 @@ class PlaceOrderParams {
   String? prd;
   String? ordersource;
   String? ipaddr;
- 
+
   String? trgprc;
 
   PlaceOrderParams(
@@ -250,7 +252,8 @@ class PlaceOrderParams {
       this.sPrdtAli,
       this.prd,
       this.ordersource,
-      this.ipaddr,this.trgprc});
+      this.ipaddr,
+      this.trgprc});
 
   PlaceOrderParams.fromJson(Map<String, dynamic> json) {
     actid = json['actid'];
@@ -263,7 +266,7 @@ class PlaceOrderParams {
     prd = json['prd'];
     ordersource = json['ordersource'];
     ipaddr = json['ipaddr'];
-    trgprc=json['trgprc'];
+    trgprc = json['trgprc'];
   }
 
   Map<String, dynamic> toJson() {
@@ -278,7 +281,7 @@ class PlaceOrderParams {
     data['prd'] = prd;
     data['ordersource'] = ordersource;
     data['ipaddr'] = ipaddr;
-    data['trgprc']=trgprc;
+    data['trgprc'] = trgprc;
     return data;
   }
 }

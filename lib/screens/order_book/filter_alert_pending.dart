@@ -2,36 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../res/res.dart';
 import '../../locator/preference.dart';
-import '../../provider/order_provider.dart';
+import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
 
-class OrderbookFilterBottomSheet extends StatefulWidget {
-  const OrderbookFilterBottomSheet({super.key});
+class OrderbookPendingAlertkFilterBottomSheet extends StatefulWidget {
+  const OrderbookPendingAlertkFilterBottomSheet({super.key});
 
   @override
-  State<OrderbookFilterBottomSheet> createState() =>
-      _OrderbookFilterBottomSheetState();
+  State<OrderbookPendingAlertkFilterBottomSheet> createState() =>
+      _OrderbookPendingAlertkFilterBottomSheetState();
 }
 
-class _OrderbookFilterBottomSheetState
-    extends State<OrderbookFilterBottomSheet> {
+class _OrderbookPendingAlertkFilterBottomSheetState
+    extends State<OrderbookPendingAlertkFilterBottomSheet> {
   Preferences pref = Preferences();
   late bool scripisAscending;
   late bool pricepisAscending;
-  late bool qtyisAscending;
-  late bool productisAscending;
-  late bool timeisAscending;
+  late bool alertvalueisAscending;
 
   @override
   void initState() {
     setState(() {
-      scripisAscending = pref.isObScripname ?? true;
-      pricepisAscending = pref.isObPrice ?? true;
-      qtyisAscending = pref.isObqty ?? true;
-      productisAscending = pref.isObProduct ?? true;
-      timeisAscending = pref.isObtime ?? true;
+      scripisAscending = pref.isPAScripname ?? true;
+      pricepisAscending = pref.isPAPrice ?? true;
+      alertvalueisAscending = pref.isPAPricealert ?? true;
     });
 
     super.initState();
@@ -76,13 +72,13 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (scripisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "ASC");
+                  context.read(marketWatchProvider).filterPendingAlert("DSC");
                 } else if (scripisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "DSC");
+                  context.read(marketWatchProvider).filterPendingAlert("ASC");
                 }
 
                 scripisAscending = !scripisAscending;
-                pref.setOBScrip(scripisAscending);
+                pref.setPAScrip(scripisAscending);
                 Navigator.pop(context);
               });
             },
@@ -95,99 +91,13 @@ class _OrderbookFilterBottomSheetState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        pref.isObScripname == true
+                        pref.isPAScripname == true
                             ? "Scrip - A to Z"
                             : "Scrip - Z to A",
                         style: textStyles.prdText,
                       ),
                       Icon(
-                        pref.isObScripname == true
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        size: 20,
-                        color: colors.colorGrey,
-                      )
-                    ],
-                  ),
-                ),
-                const ListDivider(),
-              ],
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              setState(() {
-                if (productisAscending == true) {
-                  context
-                      .read(orderProvider)
-                      .filterOrders(sorting: "PRODUCTASC");
-                } else if (productisAscending == false) {
-                  context
-                      .read(orderProvider)
-                      .filterOrders(sorting: "PRODUCTDSC");
-                }
-
-                productisAscending = !productisAscending;
-                pref.setOBproduct(productisAscending);
-                Navigator.pop(context);
-              });
-            },
-            child: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Product",
-                        style: textStyles.prdText,
-                      ),
-                      Icon(
-                        pref.isObProduct == true
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        size: 20,
-                        color: colors.colorGrey,
-                      )
-                    ],
-                  ),
-                ),
-                const ListDivider(),
-              ],
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              setState(() {
-                if (qtyisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "QTYDSC");
-                } else if (qtyisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "QTYASC");
-                }
-
-                qtyisAscending = !qtyisAscending;
-                pref.setOBqty(qtyisAscending);
-                Navigator.pop(context);
-              });
-            },
-            child: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        pref.isObqty == true
-                            ? "Qty - High to Low"
-                            : "Qty - Low to High",
-                        style: textStyles.prdText,
-                      ),
-                      Icon(
-                        pref.isObqty == true
+                        pref.isPAScripname == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
@@ -204,13 +114,17 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (pricepisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "LTPDSC");
+                  context
+                      .read(marketWatchProvider)
+                      .filterPendingAlert("LTPASC");
                 } else if (pricepisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "LTPASC");
+                  context
+                      .read(marketWatchProvider)
+                      .filterPendingAlert("LTPDSC");
                 }
 
                 pricepisAscending = !pricepisAscending;
-                pref.setOBPrice(pricepisAscending);
+                pref.setPAPrice(pricepisAscending);
                 Navigator.pop(context);
               });
             },
@@ -223,13 +137,13 @@ class _OrderbookFilterBottomSheetState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        pref.isObPrice == true
+                        pref.isPAPrice == true
                             ? "Price - High to Low"
                             : "Price - Low to High",
                         style: textStyles.prdText,
                       ),
                       Icon(
-                        pref.isObPrice == true
+                        pref.isPAPrice == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
@@ -245,14 +159,18 @@ class _OrderbookFilterBottomSheetState
           InkWell(
             onTap: () {
               setState(() {
-                if (timeisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "TIMEDSC");
-                } else if (timeisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "TIMEASC");
+                if (alertvalueisAscending == true) {
+                  context
+                      .read(marketWatchProvider)
+                      .filterPendingAlert("ALERTVALUEASC");
+                } else if (alertvalueisAscending == false) {
+                  context
+                      .read(marketWatchProvider)
+                      .filterPendingAlert("ALERTVALUEDSC");
                 }
 
-                timeisAscending = !timeisAscending;
-                pref.setOBtime(timeisAscending);
+                alertvalueisAscending = !alertvalueisAscending;
+                pref.setPAPriceAlert(alertvalueisAscending);
                 Navigator.pop(context);
               });
             },
@@ -265,11 +183,13 @@ class _OrderbookFilterBottomSheetState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Time",
+                        pref.isPAPricealert == true
+                            ? "Alert price High to Low"
+                            : "Alert price Low to High",
                         style: textStyles.prdText,
                       ),
                       Icon(
-                        pref.isObtime == true
+                        pref.isPAPricealert == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,

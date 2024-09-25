@@ -1,11 +1,11 @@
-import '../models/profile_model/client_detail_model.dart'; 
+import '../models/profile_model/client_detail_model.dart';
 import '../models/profile_model/qr_login_res.dart';
 import '../models/profile_model/user_detail_model.dart';
 import 'core/api_core.dart';
 import 'package:http/http.dart';
 
 mixin UserProfileAPI on ApiCore {
-  Future<UserDetailModel> getUserDetail( ) async {
+  Future<UserDetailModel> getUserDetail() async {
     try {
       final uri = Uri.parse(apiLinks.userDetail);
       final res = await apiClient.post(uri,
@@ -87,6 +87,4 @@ mixin UserProfileAPI on ApiCore {
       rethrow;
     }
   }
-
-  
 }

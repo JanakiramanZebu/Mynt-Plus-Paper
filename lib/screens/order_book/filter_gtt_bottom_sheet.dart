@@ -7,16 +7,16 @@ import '../../provider/thems.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
 
-class OrderbookFilterBottomSheet extends StatefulWidget {
-  const OrderbookFilterBottomSheet({super.key});
+class OrderbooGTTkFilterBottomSheet extends StatefulWidget {
+  const OrderbooGTTkFilterBottomSheet({super.key});
 
   @override
-  State<OrderbookFilterBottomSheet> createState() =>
-      _OrderbookFilterBottomSheetState();
+  State<OrderbooGTTkFilterBottomSheet> createState() =>
+      _OrderbooGTTkFilterBottomSheetState();
 }
 
-class _OrderbookFilterBottomSheetState
-    extends State<OrderbookFilterBottomSheet> {
+class _OrderbooGTTkFilterBottomSheetState
+    extends State<OrderbooGTTkFilterBottomSheet> {
   Preferences pref = Preferences();
   late bool scripisAscending;
   late bool pricepisAscending;
@@ -27,11 +27,11 @@ class _OrderbookFilterBottomSheetState
   @override
   void initState() {
     setState(() {
-      scripisAscending = pref.isObScripname ?? true;
-      pricepisAscending = pref.isObPrice ?? true;
-      qtyisAscending = pref.isObqty ?? true;
-      productisAscending = pref.isObProduct ?? true;
-      timeisAscending = pref.isObtime ?? true;
+      scripisAscending = pref.isGttScripname ?? true;
+      pricepisAscending = pref.isGttPrice ?? true;
+      qtyisAscending = pref.isGttqty ?? true;
+      productisAscending = pref.isGttProduct ?? true;
+      timeisAscending = pref.isGtttime ?? true;
     });
 
     super.initState();
@@ -76,13 +76,13 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (scripisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "ASC");
+                  context.read(orderProvider).filterGttOrders("ASC");
                 } else if (scripisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "DSC");
+                  context.read(orderProvider).filterGttOrders("DSC");
                 }
 
                 scripisAscending = !scripisAscending;
-                pref.setOBScrip(scripisAscending);
+                pref.setGTTScrip(scripisAscending);
                 Navigator.pop(context);
               });
             },
@@ -95,13 +95,13 @@ class _OrderbookFilterBottomSheetState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        pref.isObScripname == true
+                        pref.isGttScripname == true
                             ? "Scrip - A to Z"
                             : "Scrip - Z to A",
                         style: textStyles.prdText,
                       ),
                       Icon(
-                        pref.isObScripname == true
+                        pref.isGttScripname == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
@@ -118,17 +118,13 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (productisAscending == true) {
-                  context
-                      .read(orderProvider)
-                      .filterOrders(sorting: "PRODUCTASC");
+                  context.read(orderProvider).filterGttOrders("PRODUCTASC");
                 } else if (productisAscending == false) {
-                  context
-                      .read(orderProvider)
-                      .filterOrders(sorting: "PRODUCTDSC");
+                  context.read(orderProvider).filterGttOrders("PRODUCTDSC");
                 }
 
                 productisAscending = !productisAscending;
-                pref.setOBproduct(productisAscending);
+                pref.setGTTproduct(productisAscending);
                 Navigator.pop(context);
               });
             },
@@ -145,7 +141,7 @@ class _OrderbookFilterBottomSheetState
                         style: textStyles.prdText,
                       ),
                       Icon(
-                        pref.isObProduct == true
+                        pref.isGttProduct == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
@@ -162,13 +158,13 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (qtyisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "QTYDSC");
+                  context.read(orderProvider).filterGttOrders("QTYDSC");
                 } else if (qtyisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "QTYASC");
+                  context.read(orderProvider).filterGttOrders("QTYASC");
                 }
 
                 qtyisAscending = !qtyisAscending;
-                pref.setOBqty(qtyisAscending);
+                pref.setGTTqty(qtyisAscending);
                 Navigator.pop(context);
               });
             },
@@ -181,13 +177,13 @@ class _OrderbookFilterBottomSheetState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        pref.isObqty == true
+                        pref.isGttqty == true
                             ? "Qty - High to Low"
                             : "Qty - Low to High",
                         style: textStyles.prdText,
                       ),
                       Icon(
-                        pref.isObqty == true
+                        pref.isGttqty == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
@@ -204,13 +200,13 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (pricepisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "LTPDSC");
+                  context.read(orderProvider).filterGttOrders("LTPDSC");
                 } else if (pricepisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "LTPASC");
+                  context.read(orderProvider).filterGttOrders("LTPASC");
                 }
 
                 pricepisAscending = !pricepisAscending;
-                pref.setOBPrice(pricepisAscending);
+                pref.setGTTPrice(pricepisAscending);
                 Navigator.pop(context);
               });
             },
@@ -223,13 +219,13 @@ class _OrderbookFilterBottomSheetState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        pref.isObPrice == true
+                        pref.isGttPrice == true
                             ? "Price - High to Low"
                             : "Price - Low to High",
                         style: textStyles.prdText,
                       ),
                       Icon(
-                        pref.isObPrice == true
+                        pref.isGttPrice == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
@@ -246,13 +242,13 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (timeisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "TIMEDSC");
+                  context.read(orderProvider).filterGttOrders("TIMEDSC");
                 } else if (timeisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "TIMEASC");
+                  context.read(orderProvider).filterGttOrders("TIMEASC");
                 }
 
                 timeisAscending = !timeisAscending;
-                pref.setOBtime(timeisAscending);
+                pref.setGTTtime(timeisAscending);
                 Navigator.pop(context);
               });
             },
@@ -269,7 +265,7 @@ class _OrderbookFilterBottomSheetState
                         style: textStyles.prdText,
                       ),
                       Icon(
-                        pref.isObtime == true
+                        pref.isGtttime == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-
 import '../../res/res.dart';
 
 SnackBar error(BuildContext context, String error) => SnackBar(
@@ -34,19 +32,14 @@ SnackBar successMessage(BuildContext context, String success) => SnackBar(
 
 SnackBar warningMessage(BuildContext context, String warning) => SnackBar(
     content: ListTile(
-        minLeadingWidth: 10,
-        leading: const Icon(Icons.warning_amber_outlined,
-            size: 20, color: Colors.amber),
-        title: Text(warning,
-            style: TextStyle(fontSize: 14, color: colors.colorWhite)),
-        trailing: InkWell(
-            customBorder:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            onTap: () {
-              ScaffoldMessenger.of(context).removeCurrentSnackBar();
-            },
-            child: SvgPicture.asset(assets.removeIcon,
-                color: colors.colorWhite, fit: BoxFit.scaleDown))),
+      minLeadingWidth: 10,
+      leading: const Icon(Icons.warning_amber_outlined,
+          size: 20, color: Colors.amber),
+      title: Text(warning,
+          style: TextStyle(fontSize: 14, color: colors.colorWhite)),
+    ),
+    showCloseIcon: true,
+    closeIconColor: const Color(0xffFFFFFF),
     duration: const Duration(seconds: 5),
     backgroundColor: Colors.black87,
     behavior: SnackBarBehavior.floating,

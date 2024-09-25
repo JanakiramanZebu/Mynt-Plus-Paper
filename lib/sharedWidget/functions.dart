@@ -70,6 +70,21 @@ String formatDateTime({required String value}) {
   return formatedDate;
 }
 
+String formatToDateTime(String timestamp) {
+  List<String> parts = timestamp.split(' ');
+  String time = parts[0];
+  String date = parts[1];
+
+  // Convert '27-03-2024' into '2024-03-27' for DateTime parsing
+  List<String> dateParts = date.split('-');
+  String formattedDate = '${dateParts[2]}-${dateParts[1]}-${dateParts[0]}';
+  return '$formattedDate $time';
+}
+
+DateTime parseDate(String dateStr) {
+  return DateFormat('ddMMyyyy').parse(dateStr);
+}
+
 Map spilitTsym({required String value}) {
   String symbol = "";
   String expDate = "";
@@ -77,9 +92,7 @@ Map spilitTsym({required String value}) {
 
   RegExp datePattern = RegExp(r'\d{2}[A-Z]{3}\d{2,4}');
 
-  String? dateMatch = datePattern.firstMatch(value)?.group(0) ;
-
- 
+  String? dateMatch = datePattern.firstMatch(value)?.group(0);
 
   if (dateMatch != null) {
     int index = value.indexOf(dateMatch);
@@ -110,7 +123,6 @@ Map spilitTsym({required String value}) {
     expDate = "";
     option = "";
   }
-
 
   return {"symbol": symbol, "expDate": expDate, "option": option};
 }

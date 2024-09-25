@@ -24,7 +24,6 @@ import '../models/order_book_model/sip_order_book.dart';
 import '../models/order_book_model/sip_order_cancel.dart';
 import '../models/order_book_model/sip_place_order.dart';
 import '../models/order_book_model/trade_book_model.dart';
-
 import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
@@ -47,7 +46,6 @@ class OrderProvider extends DefaultChangeNotifier {
   PlaceOrderModel? get placeOrderModel => _placeOrderModel;
   OrderMarginModel? _orderMarginModel;
   OrderMarginModel? get orderMarginModel => _orderMarginModel;
-
   OrderMarginModel? _bsktOrderMargin;
   OrderMarginModel? get bsktOrderMargin => _bsktOrderMargin;
   CancelOrderModel? _cancelOrderModel;
@@ -64,9 +62,13 @@ class OrderProvider extends DefaultChangeNotifier {
   List<OrderBookModel>? get orderBookModel => _orderBookModel;
   List<GttOrderBookModel>? _gttOrderBookModel = [];
   List<GttOrderBookModel>? get gttOrderBookModel => _gttOrderBookModel;
+  List<GttOrderBookModel>? _gttOrderBookSearch = [];
+  List<GttOrderBookModel>? get gttOrderBookSearch => _gttOrderBookSearch;
   final Preferences pref = locator<Preferences>();
   List<TradeBookModel>? _tradeBook;
   List<TradeBookModel>? get tradeBook => _tradeBook;
+  List<TradeBookModel>? _tradeBooksearch;
+  List<TradeBookModel>? get tradeBooksearch => _tradeBooksearch;
   List<OrderBookModel>? _allOrder = [];
   List<OrderBookModel>? get allOrder => _allOrder;
   List<OrderBookModel>? _openOrder = [];
@@ -88,6 +90,9 @@ class OrderProvider extends DefaultChangeNotifier {
   SipOrderBookModel? _siporderBookModel;
   SipOrderBookModel? get siporderBookModel => _siporderBookModel;
 
+  List<SipDetails>? _siporderBookSearch = [];
+  List<SipDetails>? get siporderBookSearch => _siporderBookSearch;
+
   CancleSipOrder? _cancleSipOrder;
   CancleSipOrder? get cancleSipOrder => _cancleSipOrder;
 
@@ -106,6 +111,9 @@ class OrderProvider extends DefaultChangeNotifier {
   String? bsketNameError;
 
   final TextEditingController orderSearchCtrl = TextEditingController();
+  final TextEditingController orderGttSearchCtrl = TextEditingController();
+  final TextEditingController orderSipSearchCtrl = TextEditingController();
+  final TextEditingController orderTradebookCtrl = TextEditingController();
 
   OrderProvider(this.ref);
 
@@ -117,12 +125,30 @@ class OrderProvider extends DefaultChangeNotifier {
 
   bool _showSearchOrder = false;
   bool get showSearchHold => _showSearchOrder;
-  changeTabIndex(int index, BuildContext context) {
-    _selectedTab = index;
 
+  bool _showGttOrderSearch = false;
+  bool get showGttOrderSearch => _showGttOrderSearch;
+
+  bool _showSipOrderSearch = false;
+  bool get showSipOrderSearch => _showSipOrderSearch;
+
+  bool _showSiptradebookSearch = false;
+  bool get showSiptradebookSearch => _showSiptradebookSearch;
+ 
+  String _selectedBsktName = "";
+  String get selectedBsktName => _selectedBsktName;
+
+   changeTabIndex(int index, BuildContext context) {
+    _selectedTab = index;
     tabSize();
     showOrderSearch(false);
+    showGTTOrderSearch(false);
+    ref(marketWatchProvider).showAlertPendingSearch(false);
+    showSipSearch(false);
+    ref(marketWatchProvider).clearAlertSearch();
     clearOrderSearch();
+    clearGttOrderSearch();
+    clearSipSearch();
     orderSearch(orderSearchCtrl.text, context);
     if (index <= 3) {
       requestWSOrderBook(isSubscribe: true, context: context);
@@ -132,9 +158,6 @@ class OrderProvider extends DefaultChangeNotifier {
       getBasketName();
     }
   }
-
-  String _selectedBsktName = "";
-  String get selectedBsktName => _selectedBsktName;
 
   chngBsktName(String val, BuildContext context) async {
     _selectedBsktName = val;
@@ -189,10 +212,51 @@ class OrderProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  showGTTOrderSearch(bool value) {
+    _showGttOrderSearch = value;
+    if (!_showGttOrderSearch) {
+      _gttOrderBookSearch = [];
+    }
+    notifyListeners();
+  }
+
+  showSipSearch(bool value) {
+    _showSipOrderSearch = value;
+    if (!_showSipOrderSearch) {
+      _siporderBookSearch = [];
+    }
+    notifyListeners();
+  }
+
+  showTradeSearch(bool value) {
+    _showSiptradebookSearch = value;
+    if (!_showSiptradebookSearch) {
+      _tradeBooksearch = [];
+    }
+    notifyListeners();
+  }
+
+  clearGttOrderSearch() {
+    orderGttSearchCtrl.clear();
+    _gttOrderBookSearch = [];
+    notifyListeners();
+  }
+
   clearOrderSearch() {
     orderSearchCtrl.clear();
     _orderSearchItem = [];
+    notifyListeners();
+  }
 
+  clearSipSearch() {
+    orderSipSearchCtrl.clear();
+    _siporderBookSearch = [];
+    notifyListeners();
+  }
+
+  clearTradeBookSearch() {
+    orderTradebookCtrl.clear();
+    _tradeBooksearch = [];
     notifyListeners();
   }
 
@@ -211,6 +275,66 @@ class OrderProvider extends DefaultChangeNotifier {
       }
     } else {
       _orderSearchItem = [];
+    }
+
+    notifyListeners();
+  }
+
+  orderGttSearch(String value, BuildContext context) {
+    if (value.length > 1) {
+      _gttOrderBookSearch = [];
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      _gttOrderBookSearch = _gttOrderBookModel!
+          .where((element) => element.tsym!.toLowerCase().contains(value))
+          .toList();
+      if (_gttOrderBookSearch!.isEmpty) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'No Data Found'));
+      } else {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    } else {
+      _gttOrderBookSearch = [];
+    }
+
+    notifyListeners();
+  }
+
+  orderSipSearch(String value, BuildContext context) {
+    if (value.length > 1) {
+      _siporderBookSearch = [];
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      _siporderBookSearch = _siporderBookModel!.sipDetails!
+          .where((element) => element.sipName!.toLowerCase().contains(value))
+          .toList();
+      if (_siporderBookSearch!.isEmpty) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'No Data Found'));
+      } else {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    } else {
+      _siporderBookSearch = [];
+    }
+
+    notifyListeners();
+  }
+
+  orderTradeBookSearch(String value, BuildContext context) {
+    if (value.length > 1) {
+      _tradeBooksearch = [];
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      _tradeBooksearch = _tradeBook!
+          .where((element) => element.tsym!.toLowerCase().contains(value))
+          .toList();
+      if (_tradeBooksearch!.isEmpty) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'No Data Found'));
+      } else {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    } else {
+      _tradeBooksearch = [];
     }
 
     notifyListeners();
@@ -320,6 +444,11 @@ class OrderProvider extends DefaultChangeNotifier {
   Future fetchOrderBook(context, bool websocCon) async {
     try {
       toggleLoadingOn(true);
+      pref.setOBScrip(true);
+      pref.setOBPrice(true);
+      pref.setOBtime(true);
+      pref.setOBqty(true);
+      pref.setOBproduct(true);
       _executedOrder = [];
       _openOrder = [];
       _allOrder = [];
@@ -395,6 +524,10 @@ class OrderProvider extends DefaultChangeNotifier {
     try {
       _tradeBook = [];
       _tradeBook = await api.getTradeBook();
+      pref.setTbScrip(true);
+      pref.setTbPrice(true);
+      pref.setTbBuyOrSell(true);
+      pref.setTbTime(true);
       if (_tradeBook!.isNotEmpty) {
         if (_tradeBook![0].stat == "Ok") {
           ConstantName.sessCheck = true;
@@ -673,6 +806,86 @@ class OrderProvider extends DefaultChangeNotifier {
     // notifyListeners();
   }
 
+  filterTradeBook(String sorting) {
+    if (sorting == "ASC") {
+      _tradeBook!.sort((a, b) => a.tsym!.compareTo(b.tsym!));
+    } else if (sorting == "DSC") {
+      _tradeBook!.sort((a, b) => b.tsym!.compareTo(a.tsym!));
+    } else if (sorting == "LTPDSC") {
+      _tradeBook!.sort((a, b) {
+        return double.parse(b.prc ?? "0.00")
+            .compareTo(double.parse(a.prc ?? "0.00"));
+      });
+    } else if (sorting == "LTPASC") {
+      _tradeBook!.sort((a, b) {
+        return double.parse(a.prc ?? "0.00")
+            .compareTo(double.parse(b.prc ?? "0.00"));
+      });
+    } else if (sorting == "BUY") {
+      _tradeBook!.sort((a, b) => a.trantype!.compareTo(b.trantype!));
+    } else if (sorting == "SELL") {
+      _tradeBook!.sort((a, b) => b.trantype!.compareTo(a.trantype!));
+    } else if (sorting == "TIMEHIGH") {
+      _tradeBook!.sort((a, b) {
+        DateTime dateA = DateTime.parse(formatToDateTime("${a.norentm}"));
+        DateTime dateB = DateTime.parse(formatToDateTime("${b.norentm}"));
+        return dateA.compareTo(dateB);
+      });
+    } else if (sorting == "TIMELOW") {
+      _tradeBook!.sort((a, b) {
+        DateTime dateA = DateTime.parse(formatToDateTime("${a.norentm}"));
+        DateTime dateB = DateTime.parse(formatToDateTime("${b.norentm}"));
+        return dateB.compareTo(dateA);
+      });
+    }
+    notifyListeners();
+  }
+
+  filterGttOrders(String sorting) {
+    if (sorting == "ASC") {
+      _gttOrderBookModel!.sort((a, b) => a.tsym!.compareTo(b.tsym!));
+    } else if (sorting == "DSC") {
+      _gttOrderBookModel!.sort((a, b) => b.tsym!.compareTo(a.tsym!));
+    } else if (sorting == "LTPDSC") {
+      _gttOrderBookModel!.sort((a, b) {
+        return double.parse(b.ltp ?? "0.00")
+            .compareTo(double.parse(a.ltp ?? "0.00"));
+      });
+    } else if (sorting == "LTPASC") {
+      _gttOrderBookModel!.sort((a, b) {
+        return double.parse(a.ltp ?? "0.00")
+            .compareTo(double.parse(b.ltp ?? "0.00"));
+      });
+    } else if (sorting == "QTYDSC") {
+      _gttOrderBookModel!.sort((a, b) {
+        return int.parse("${b.qty ?? "0"}")
+            .compareTo(int.parse("${a.qty ?? "0"}"));
+      });
+    } else if (sorting == "QTYASC") {
+      _gttOrderBookModel!.sort((a, b) {
+        return int.parse("${a.qty ?? "0"}")
+            .compareTo(int.parse("${b.qty ?? "0"}"));
+      });
+    } else if (sorting == "PRODUCTASC") {
+      _gttOrderBookModel!.sort((a, b) => a.prd!.compareTo(b.prd!));
+    } else if (sorting == "PRODUCTDSC") {
+      _gttOrderBookModel!.sort((a, b) => b.prd!.compareTo(a.prd!));
+    } else if (sorting == "TIMEDSC") {
+      _gttOrderBookModel!.sort((a, b) {
+        DateTime dateA = DateTime.parse(formatToDateTime("${a.norentm}"));
+        DateTime dateB = DateTime.parse(formatToDateTime("${b.norentm}"));
+        return dateB.compareTo(dateA);
+      });
+    } else if (sorting == "TIMEASC") {
+      _gttOrderBookModel!.sort((a, b) {
+        DateTime dateA = DateTime.parse(formatToDateTime("${a.norentm}"));
+        DateTime dateB = DateTime.parse(formatToDateTime("${b.norentm}"));
+        return dateA.compareTo(dateB);
+      });
+    }
+    notifyListeners();
+  }
+
   filterOrders({required String sorting}) async {
     if (_selectedTab == 0) {
       if (sorting == "ASC") {
@@ -689,16 +902,22 @@ class OrderProvider extends DefaultChangeNotifier {
           return double.parse(a.ltp ?? "0.00")
               .compareTo(double.parse(b.ltp ?? "0.00"));
         });
-      } else if (sorting == "PCDESC") {
+      } else if (sorting == "QTYDSC") {
         _allOrder!.sort((a, b) {
-          return double.parse(b.perChange ?? "0.00")
-              .compareTo(double.parse(a.perChange ?? "0.00"));
+          return int.parse(b.qty ?? "0").compareTo(int.parse(a.qty ?? "0"));
         });
-      } else {
+      } else if (sorting == "QTYASC") {
         _allOrder!.sort((a, b) {
-          return double.parse(a.perChange ?? "0.00")
-              .compareTo(double.parse(b.perChange ?? "0.00"));
+          return int.parse(a.qty ?? "0").compareTo(int.parse(b.qty ?? "0"));
         });
+      } else if (sorting == "PRODUCTASC") {
+        _allOrder!.sort((a, b) => a.sPrdtAli!.compareTo(b.sPrdtAli!));
+      } else if (sorting == "PRODUCTDSC") {
+        _allOrder!.sort((a, b) => b.sPrdtAli!.compareTo(a.sPrdtAli!));
+      } else if (sorting == "TIMEDSC") {
+        _allOrder!.sort((a, b) => b.norentm!.compareTo(a.norentm!));
+      } else if (sorting == "TIMEASC") {
+        _allOrder!.sort((a, b) => a.norentm!.compareTo(b.norentm!));
       }
     } else if (_selectedTab == 1) {
       if (sorting == "ASC") {
@@ -715,16 +934,22 @@ class OrderProvider extends DefaultChangeNotifier {
           return double.parse(a.ltp ?? "0.00")
               .compareTo(double.parse(b.ltp ?? "0.00"));
         });
-      } else if (sorting == "PCDESC") {
+      } else if (sorting == "QTYDSC") {
         _openOrder!.sort((a, b) {
-          return double.parse(b.perChange ?? "0.00")
-              .compareTo(double.parse(a.perChange ?? "0.00"));
+          return int.parse(b.qty ?? "0").compareTo(int.parse(a.qty ?? "0"));
         });
-      } else {
+      } else if (sorting == "QTYASC") {
         _openOrder!.sort((a, b) {
-          return double.parse(a.perChange ?? "0.00")
-              .compareTo(double.parse(b.perChange ?? "0.00"));
+          return int.parse(a.qty ?? "0").compareTo(int.parse(b.qty ?? "0"));
         });
+      } else if (sorting == "PRODUCTASC") {
+        _openOrder!.sort((a, b) => a.sPrdtAli!.compareTo(b.sPrdtAli!));
+      } else if (sorting == "PRODUCTDSC") {
+        _openOrder!.sort((a, b) => b.sPrdtAli!.compareTo(a.sPrdtAli!));
+      } else if (sorting == "TIMEDSC") {
+        _openOrder!.sort((a, b) => b.norentm!.compareTo(a.norentm!));
+      } else if (sorting == "TIMEASC") {
+        _openOrder!.sort((a, b) => a.norentm!.compareTo(b.norentm!));
       }
     } else if (_selectedTab == 2) {
       if (sorting == "ASC") {
@@ -741,16 +966,22 @@ class OrderProvider extends DefaultChangeNotifier {
           return double.parse(a.ltp ?? "0.00")
               .compareTo(double.parse(b.ltp ?? "0.00"));
         });
-      } else if (sorting == "PCDESC") {
+      } else if (sorting == "QTYDSC") {
         _executedOrder!.sort((a, b) {
-          return double.parse(b.perChange ?? "0.00")
-              .compareTo(double.parse(a.perChange ?? "0.00"));
+          return int.parse(b.qty ?? "0").compareTo(int.parse(a.qty ?? "0"));
         });
-      } else {
+      } else if (sorting == "QTYASC") {
         _executedOrder!.sort((a, b) {
-          return double.parse(a.perChange ?? "0.00")
-              .compareTo(double.parse(b.perChange ?? "0.00"));
+          return int.parse(a.qty ?? "0").compareTo(int.parse(b.qty ?? "0"));
         });
+      } else if (sorting == "PRODUCTASC") {
+        _executedOrder!.sort((a, b) => a.sPrdtAli!.compareTo(b.sPrdtAli!));
+      } else if (sorting == "PRODUCTDSC") {
+        _executedOrder!.sort((a, b) => b.sPrdtAli!.compareTo(a.sPrdtAli!));
+      } else if (sorting == "TIMEDSC") {
+        _executedOrder!.sort((a, b) => b.norentm!.compareTo(a.norentm!));
+      } else if (sorting == "TIMEASC") {
+        _executedOrder!.sort((a, b) => a.norentm!.compareTo(b.norentm!));
       }
     }
     {}
@@ -1065,55 +1296,96 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
+  filterSipOrder(String sorting) {
+    if (sorting == "ASC") {
+      _siporderBookModel!.sipDetails!
+          .sort((a, b) => a.sipName!.compareTo(b.sipName!));
+    } else if (sorting == "DSC") {
+      _siporderBookModel!.sipDetails!
+          .sort((a, b) => b.sipName!.compareTo(a.sipName!));
+    } else if (sorting == "LTPASC") {
+      _siporderBookModel!.sipDetails!.sort((a, b) {
+        return double.parse(a.scrips![0].ltp ?? "0.00")
+            .compareTo(double.parse(b.scrips![0].ltp ?? "0.00"));
+      });
+    } else if (sorting == "LTPDSC") {
+      _siporderBookModel!.sipDetails!.sort((a, b) {
+        return double.parse(b.scrips![0].ltp ?? "0.00")
+            .compareTo(double.parse(a.scrips![0].ltp ?? "0.00"));
+      });
+    } else if (sorting == "PRECHANGASC") {
+      _siporderBookModel!.sipDetails!.sort((a, b) {
+        return double.parse(a.scrips![0].perChange ?? "0.00")
+            .compareTo(double.parse(b.scrips![0].perChange ?? "0.00"));
+      });
+    } else if (sorting == "PRECHANGDSC") {
+      _siporderBookModel!.sipDetails!.sort((a, b) {
+        return double.parse(b.scrips![0].perChange ?? "0.00")
+            .compareTo(double.parse(a.scrips![0].perChange ?? "0.00"));
+      });
+    } else if (sorting == "DATEASC") {
+      _siporderBookModel!.sipDetails!.sort((a, b) {
+        String dateA = duedateformate(value: "${a.internal!.dueDate}");
+        String dateB = duedateformate(value: "${b.internal!.dueDate}");
+        return dateA.compareTo(dateB);
+      });
+    } else if (sorting == "DATEDSC") {
+      _siporderBookModel!.sipDetails!.sort((a, b) {
+        String dateA = duedateformate(value: "${a.internal!.dueDate}");
+        String dateB = duedateformate(value: "${b.internal!.dueDate}");
+        return dateB.compareTo(dateA);
+      });
+    }
+    notifyListeners();
+  }
+
   Future fetchSipOrderHistory(BuildContext context) async {
     try {
       _siporderBookModel = await api.getSipOrderBook();
       tabSize();
       List ltpArgs = [];
       if (_siporderBookModel != null) {
-        if (_siporderBookModel!.stat == "Ok") {
-          if (_siporderBookModel!.sipDetails != null) {
-            ConstantName.sessCheck = true;
-            for (var main = 0;
-                main < _siporderBookModel!.sipDetails!.length;
-                main++) {
-              for (var i = 0;
-                  i < _siporderBookModel!.sipDetails![main].scrips!.length;
-                  i++) {
-                ltpArgs.add({
-                  "exch":
-                      "${_siporderBookModel!.sipDetails![main].scrips![i].exch}",
-                  "token":
-                      "${_siporderBookModel!.sipDetails![main].scrips![i].token}"
-                });
-              }
+        if (_siporderBookModel!.sipDetails != null) {
+          ConstantName.sessCheck = true;
+          for (var main = 0;
+              main < _siporderBookModel!.sipDetails!.length;
+              main++) {
+            for (var i = 0;
+                i < _siporderBookModel!.sipDetails![main].scrips!.length;
+                i++) {
+              ltpArgs.add({
+                "exch":
+                    "${_siporderBookModel!.sipDetails![main].scrips![i].exch}",
+                "token":
+                    "${_siporderBookModel!.sipDetails![main].scrips![i].token}"
+              });
             }
-            final response = await api.getLTP(ltpArgs);
-            Map res = jsonDecode(response.body);
+          }
+          final response = await api.getLTP(ltpArgs);
+          Map res = jsonDecode(response.body);
 
-            for (var main = 0;
-                main < _siporderBookModel!.sipDetails!.length;
-                main++) {
-              for (var i = 0;
-                  i < _siporderBookModel!.sipDetails![main].scrips!.length;
-                  i++) {
-                if (_siporderBookModel!.sipDetails![main].scrips![i].token
-                        .toString() ==
-                    "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]['token']}") {
-                  _siporderBookModel!.sipDetails![main].scrips![i].ltp =
-                      "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["lp"]}";
-                  _siporderBookModel!.sipDetails![main].scrips![i].close =
-                      "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["close"]}";
+          for (var main = 0;
+              main < _siporderBookModel!.sipDetails!.length;
+              main++) {
+            for (var i = 0;
+                i < _siporderBookModel!.sipDetails![main].scrips!.length;
+                i++) {
+              if (_siporderBookModel!.sipDetails![main].scrips![i].token
+                      .toString() ==
+                  "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]['token']}") {
+                _siporderBookModel!.sipDetails![main].scrips![i].ltp =
+                    "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["lp"]}";
+                _siporderBookModel!.sipDetails![main].scrips![i].close =
+                    "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["close"]}";
 
-                  _siporderBookModel!.sipDetails![main].scrips![i].perChange =
-                      "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["change"]}";
-                  _siporderBookModel!
-                      .sipDetails![main].scrips![i].change = (double.parse(
-                              "${_siporderBookModel!.sipDetails![main].scrips![i].ltp == "0" ? _siporderBookModel!.sipDetails![main].scrips![i].close : _siporderBookModel!.sipDetails![main].scrips![i].ltp}") -
-                          double.parse(
-                              "${_siporderBookModel!.sipDetails![main].scrips![i].close}"))
-                      .toStringAsFixed(2);
-                }
+                _siporderBookModel!.sipDetails![main].scrips![i].perChange =
+                    "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["change"]}";
+                _siporderBookModel!
+                    .sipDetails![main].scrips![i].change = (double.parse(
+                            "${_siporderBookModel!.sipDetails![main].scrips![i].ltp == "0" ? _siporderBookModel!.sipDetails![main].scrips![i].close : _siporderBookModel!.sipDetails![main].scrips![i].ltp}") -
+                        double.parse(
+                            "${_siporderBookModel!.sipDetails![main].scrips![i].close}"))
+                    .toStringAsFixed(2);
               }
             }
           }

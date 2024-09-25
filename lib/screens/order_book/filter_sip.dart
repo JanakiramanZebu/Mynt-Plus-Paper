@@ -7,31 +7,29 @@ import '../../provider/thems.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
 
-class OrderbookFilterBottomSheet extends StatefulWidget {
-  const OrderbookFilterBottomSheet({super.key});
+class OrderbookSipkFilterBottomSheet extends StatefulWidget {
+  const OrderbookSipkFilterBottomSheet({super.key});
 
   @override
-  State<OrderbookFilterBottomSheet> createState() =>
-      _OrderbookFilterBottomSheetState();
+  State<OrderbookSipkFilterBottomSheet> createState() =>
+      _OrderbookSipkFilterBottomSheetState();
 }
 
-class _OrderbookFilterBottomSheetState
-    extends State<OrderbookFilterBottomSheet> {
+class _OrderbookSipkFilterBottomSheetState
+    extends State<OrderbookSipkFilterBottomSheet> {
   Preferences pref = Preferences();
   late bool scripisAscending;
   late bool pricepisAscending;
-  late bool qtyisAscending;
-  late bool productisAscending;
-  late bool timeisAscending;
+  late bool chnageisAscending;
+  late bool dateisAscending;
 
   @override
   void initState() {
     setState(() {
-      scripisAscending = pref.isObScripname ?? true;
-      pricepisAscending = pref.isObPrice ?? true;
-      qtyisAscending = pref.isObqty ?? true;
-      productisAscending = pref.isObProduct ?? true;
-      timeisAscending = pref.isObtime ?? true;
+      scripisAscending = pref.isSipScripname ?? true;
+      pricepisAscending = pref.isSipPrice ?? true;
+      // chnageisAscending = pref.isSipChange ?? true;
+      dateisAscending = pref.isSipDate ?? true;
     });
 
     super.initState();
@@ -76,13 +74,13 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (scripisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "ASC");
+                  context.read(orderProvider).filterSipOrder("ASC");
                 } else if (scripisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "DSC");
+                  context.read(orderProvider).filterSipOrder("DSC");
                 }
 
                 scripisAscending = !scripisAscending;
-                pref.setOBScrip(scripisAscending);
+                pref.setSipScrip(scripisAscending);
                 Navigator.pop(context);
               });
             },
@@ -95,99 +93,13 @@ class _OrderbookFilterBottomSheetState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        pref.isObScripname == true
+                        pref.isSipScripname == true
                             ? "Scrip - A to Z"
                             : "Scrip - Z to A",
                         style: textStyles.prdText,
                       ),
                       Icon(
-                        pref.isObScripname == true
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        size: 20,
-                        color: colors.colorGrey,
-                      )
-                    ],
-                  ),
-                ),
-                const ListDivider(),
-              ],
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              setState(() {
-                if (productisAscending == true) {
-                  context
-                      .read(orderProvider)
-                      .filterOrders(sorting: "PRODUCTASC");
-                } else if (productisAscending == false) {
-                  context
-                      .read(orderProvider)
-                      .filterOrders(sorting: "PRODUCTDSC");
-                }
-
-                productisAscending = !productisAscending;
-                pref.setOBproduct(productisAscending);
-                Navigator.pop(context);
-              });
-            },
-            child: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Product",
-                        style: textStyles.prdText,
-                      ),
-                      Icon(
-                        pref.isObProduct == true
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        size: 20,
-                        color: colors.colorGrey,
-                      )
-                    ],
-                  ),
-                ),
-                const ListDivider(),
-              ],
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              setState(() {
-                if (qtyisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "QTYDSC");
-                } else if (qtyisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "QTYASC");
-                }
-
-                qtyisAscending = !qtyisAscending;
-                pref.setOBqty(qtyisAscending);
-                Navigator.pop(context);
-              });
-            },
-            child: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        pref.isObqty == true
-                            ? "Qty - High to Low"
-                            : "Qty - Low to High",
-                        style: textStyles.prdText,
-                      ),
-                      Icon(
-                        pref.isObqty == true
+                        pref.isSipScripname == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
@@ -204,13 +116,13 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (pricepisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "LTPDSC");
+                  context.read(orderProvider).filterSipOrder("LTPDSC");
                 } else if (pricepisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "LTPASC");
+                  context.read(orderProvider).filterSipOrder("LTPASC");
                 }
 
                 pricepisAscending = !pricepisAscending;
-                pref.setOBPrice(pricepisAscending);
+                pref.setSipPrice(pricepisAscending);
                 Navigator.pop(context);
               });
             },
@@ -223,13 +135,13 @@ class _OrderbookFilterBottomSheetState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        pref.isObPrice == true
+                        pref.isSipPrice == true
                             ? "Price - High to Low"
                             : "Price - Low to High",
                         style: textStyles.prdText,
                       ),
                       Icon(
-                        pref.isObPrice == true
+                        pref.isSipPrice == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
@@ -242,17 +154,60 @@ class _OrderbookFilterBottomSheetState
               ],
             ),
           ),
+          // InkWell(
+          //   onTap: () {
+          //     setState(() {
+          //       if (chnageisAscending == true) {
+          //         context.read(orderProvider).filterSipOrder("PRECHANGDSC");
+          //       } else if (chnageisAscending == false) {
+          //         context.read(orderProvider).filterSipOrder("PRECHANGASC");
+          //       }
+
+          //       chnageisAscending = !chnageisAscending;
+          //       pref.setSipChange(chnageisAscending);
+          //       Navigator.pop(context);
+          //     });
+          //   },
+          //   child: Column(
+          //     children: [
+          //       Padding(
+          //         padding:
+          //             const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+          //         child: Row(
+          //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //           children: [
+          //             Text(
+          //               pref.isSipChange == true
+          //                   ? "Per.change - High to Low"
+          //                   : "Per.change - Low to High",
+          //               style: textStyles.prdText,
+          //             ),
+          //             Icon(
+          //               pref.isSipChange == true
+          //                   ? Icons.arrow_upward
+          //                   : Icons.arrow_downward,
+          //               size: 20,
+          //               color: colors.colorGrey,
+          //             )
+          //           ],
+          //         ),
+          //       ),
+          //       const ListDivider(),
+          //     ],
+          //   ),
+          // ),
+
           InkWell(
             onTap: () {
               setState(() {
-                if (timeisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "TIMEDSC");
-                } else if (timeisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "TIMEASC");
+                if (dateisAscending == true) {
+                  context.read(orderProvider).filterSipOrder("DATEDSC");
+                } else if (dateisAscending == false) {
+                  context.read(orderProvider).filterSipOrder("DATEASC");
                 }
 
-                timeisAscending = !timeisAscending;
-                pref.setOBtime(timeisAscending);
+                dateisAscending = !dateisAscending;
+                pref.setSipDate(dateisAscending);
                 Navigator.pop(context);
               });
             },
@@ -265,11 +220,11 @@ class _OrderbookFilterBottomSheetState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Time",
+                        "Start Date",
                         style: textStyles.prdText,
                       ),
                       Icon(
-                        pref.isObtime == true
+                        pref.isSipDate == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,

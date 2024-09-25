@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
+import '../../../locator/preference.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
-import '../../../sharedWidget/list_divider.dart'; 
+import '../../../sharedWidget/list_divider.dart';
 
 class MFHoldingsScripFilterBottomSheet extends StatefulWidget {
   const MFHoldingsScripFilterBottomSheet({
@@ -19,15 +19,25 @@ class MFHoldingsScripFilterBottomSheet extends StatefulWidget {
 
 class _MFHoldingsScripFilterBottomSheetState
     extends State<MFHoldingsScripFilterBottomSheet> {
-  List<String> fliterList = [
-    "Scrip - A to Z",
-    "Scrip - Z to A",
-    "Price - High to Low",
-    "Price - Low to High"
-    // ,
-    // "Per.Chng - High to Low",
-    // "Per.Chng - Low to High"
-  ];
+  Preferences pref = Preferences();
+  late bool scripisAscending;
+  late bool pricepisAscending;
+  late bool qtyisAscending;
+  late bool perchangisAscending;
+  late bool investbyisAscending;
+
+  @override
+  void initState() {
+    setState(() {
+      scripisAscending = pref.isMfScripname ?? true;
+      pricepisAscending = pref.isMfPrice ?? true;
+      qtyisAscending = pref.isMfQuantity ?? true;
+      perchangisAscending = pref.isMfPerchang ?? true;
+      investbyisAscending = pref.isMfInvestby ?? true;
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,67 +76,243 @@ class _MFHoldingsScripFilterBottomSheetState
                 ],
               ),
             ),
-            Divider(color:theme.isDarkMode?colors.darkColorDivider: colors.colorDivider),
-            ListView.separated(
-              shrinkWrap: true,
-              itemCount: fliterList.length,
-              itemBuilder: (BuildContext context, int index) {
-                return ListTile(
-                    onTap: () async {
-                      selctedSortValue(
-                        index,
-                        context,
-                      );
-                      Navigator.pop(context);
-                    },
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                    dense: true,
-                    title: Text(
-                      fliterList[index],
-                      style: textStyles.prdText,
+            Divider(
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (scripisAscending == true) {
+                    context
+                        .read(portfolioProvider)
+                        .filterMfHoldings(sorting: "ASC", context: context);
+                  } else if (scripisAscending == false) {
+                    context
+                        .read(portfolioProvider)
+                        .filterMfHoldings(sorting: "DSC", context: context);
+                  }
+
+                  scripisAscending = !scripisAscending;
+                  pref.setMfScrip(scripisAscending);
+                  Navigator.pop(context);
+                });
+              },
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isMfScripname == true
+                              ? "Scrip - A to Z"
+                              : "Scrip - Z to A",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isMfScripname == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
                     ),
-                    trailing: SvgPicture.asset(
-                      theme.isDarkMode? index == 0
-                        ? assets.darkActProductIcon
-                        : assets.darkProductIcon:
-                      index == 0
-                        ? assets.actProductIcon
-                        : assets.productIcon));
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (pricepisAscending == true) {
+                    context
+                        .read(portfolioProvider)
+                        .filterMfHoldings(sorting: "LTPDSC", context: context);
+                  } else if (pricepisAscending == false) {
+                    context
+                        .read(portfolioProvider)
+                        .filterMfHoldings(sorting: "LTPASC", context: context);
+                  }
+
+                  pricepisAscending = !pricepisAscending;
+                  pref.setMfPrice(pricepisAscending);
+                  Navigator.pop(context);
+                });
               },
-              separatorBuilder: (BuildContext context, int index) {
-                return const ListDivider();
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isMfPrice == true
+                              ? "Price - High to Low"
+                              : "Price - Low to High",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isMfPrice == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (qtyisAscending == true) {
+                    context
+                        .read(portfolioProvider)
+                        .filterMfHoldings(sorting: "QTYDSC", context: context);
+                  } else if (qtyisAscending == false) {
+                    context
+                        .read(portfolioProvider)
+                        .filterMfHoldings(sorting: "QTYASC", context: context);
+                  }
+
+                  qtyisAscending = !qtyisAscending;
+                  pref.setMfqty(qtyisAscending);
+                  Navigator.pop(context);
+                });
               },
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isMfQuantity == true
+                              ? "Qty - High to Low"
+                              : "Qty - Low to High",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isMfQuantity == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (perchangisAscending == true) {
+                    context
+                        .read(portfolioProvider)
+                        .filterMfHoldings(sorting: "PCDESC", context: context);
+                  } else if (perchangisAscending == false) {
+                    context
+                        .read(portfolioProvider)
+                        .filterMfHoldings(sorting: "PCASC", context: context);
+                  }
+
+                  perchangisAscending = !perchangisAscending;
+                  pref.setMfPerchnage(perchangisAscending);
+                  Navigator.pop(context);
+                });
+              },
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isMfPerchang == true
+                              ? "Per.chng - High to Low"
+                              : "Per.chng - Low to High ",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isMfPerchang == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (investbyisAscending == true) {
+                    context
+                        .read(portfolioProvider)
+                        .filterMfHoldings(sorting: "INVDESC", context: context);
+                  } else if (investbyisAscending == false) {
+                    context
+                        .read(portfolioProvider)
+                        .filterMfHoldings(sorting: "INVASC", context: context);
+                  }
+
+                  investbyisAscending = !investbyisAscending;
+                  pref.setMfInvestby(investbyisAscending);
+                  Navigator.pop(context);
+                });
+              },
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          pref.isMfInvestby == true
+                              ? "Inv.by - High to Low"
+                              : "Inv.by - Low to High",
+                          style: textStyles.prdText,
+                        ),
+                        Icon(
+                          pref.isMfInvestby == true
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: colors.colorGrey,
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
             ),
           ],
         ),
       );
-    });
-  }
-
-  void selctedSortValue(
-    int value,
-    BuildContext context,
-  ) {
-    return setState(() {
-      if (value == 0) {
-        context
-            .read(portfolioProvider)
-            .filterMfHoldings(sorting: "ASC", context: context);
-      } else if (value == 1) {
-        context
-            .read(portfolioProvider)
-            .filterMfHoldings(sorting: "DSC", context: context);
-      } else if (value == 2) {
-        context
-            .read(portfolioProvider)
-            .filterMfHoldings(sorting: "LTPDSC", context: context);
-      } else if (value == 3) {
-        context
-            .read(portfolioProvider)
-            .filterMfHoldings(sorting: "LTPASC", context: context);
-      }
-       
     });
   }
 }
