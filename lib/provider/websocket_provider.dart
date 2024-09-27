@@ -424,7 +424,7 @@ class WebSocketProvider extends ChangeNotifier {
             if (ref(networkStateProvider).connectionStatus !=
                 ConnectivityResult.none) {
               Future.delayed(Duration(
-                      milliseconds: channel.closeCode == 1000 ? 1400 : 700))
+                      milliseconds: channel.closeCode == 1000 ? 1500 : 700))
                   .then((value) {
                 establishConnection(
                     channelInput: ConstantName.lastSubscribe,

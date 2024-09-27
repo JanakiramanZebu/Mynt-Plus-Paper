@@ -103,7 +103,7 @@ class _CreateGroupPosState extends State<CreateGroupPos> {
                   errorText = "Please enter group name";
                 });
               } else {
-               context.read(portfolioProvider) . fetchGroupName(textCtrl.text,context );
+               context.read(portfolioProvider) . fetchGroupName(textCtrl.text,context,true );
               }
               // });
             },

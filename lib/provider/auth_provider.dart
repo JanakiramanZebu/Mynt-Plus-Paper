@@ -726,7 +726,7 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(orderProvider).fetchOrderBook(context, false);
         ref(orderProvider).fetchTradeBook(context);
 
-        // ref(portfolioProvider).fetchPosGroupSymbol("");
+          ref(portfolioProvider).fetchPosGroupSymbol("",false);
         ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
         print("object -------");
         if (s.isEmpty) {

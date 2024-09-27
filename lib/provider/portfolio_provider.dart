@@ -516,6 +516,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _totMtm = "0.00";
       _exitAll = false;
       _totBookedPnL = "0.00";
+      _posSelection = "All position";
       _totUnRealMtm = '0.00';
       _postionBookModel = await api.getPositionBook();
       pref.setPosScrip(true);
@@ -597,6 +598,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _allPostionList = [];
       // _postionGropList = [];
       // _positionGroup = {};
+      _totPnL = "0.00";
+      _totMtm = "0.00";
+      _exitAll = false;
+      _totBookedPnL = "0.00";
+      _totUnRealMtm = '0.00';
       _openPosition = [];
 
       for (var element in _postionBookModel!) {
@@ -1290,20 +1296,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
         return int.parse(b.currentQty == null || b.currentQty == "null"
                 ? "0.00"
                 : "${b.currentQty}")
-            .compareTo(int.parse(
-                a.currentQty == null || a.currentQty == "null"
-                    ? "0.00"
-                    : "${a.currentQty}"));
+            .compareTo(int.parse(a.currentQty == null || a.currentQty == "null"
+                ? "0.00"
+                : "${a.currentQty}"));
       });
     } else if (sorting == "QTYASC") {
       _holdingsModel!.sort((a, b) {
         return int.parse(a.currentQty == null || a.currentQty == "null"
                 ? "0.00"
                 : "${a.currentQty}")
-            .compareTo(int.parse(
-                b.currentQty == null || b.currentQty == "null"
-                    ? "0.00"
-                    : "${b.currentQty}"));
+            .compareTo(int.parse(b.currentQty == null || b.currentQty == "null"
+                ? "0.00"
+                : "${b.currentQty}"));
       });
     } else if (sorting == "PCDESC") {
       _holdingsModel!.sort((a, b) {
@@ -1462,15 +1466,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
       });
     } else if (sorting == "QTYDSC") {
       _allPostionList.sort((a, b) {
-        return int.parse(
-                b.qty == null || b.qty == "null" ? "0" : "${b.qty}")
-            .compareTo(int.parse(
-                a.qty == null || a.qty == "null" ? "0" : "${a.qty}"));
+        return int.parse(b.qty == null || b.qty == "null" ? "0" : "${b.qty}")
+            .compareTo(
+                int.parse(a.qty == null || a.qty == "null" ? "0" : "${a.qty}"));
       });
     } else if (sorting == "QTYASC") {
       _allPostionList.sort((a, b) {
-        return int.parse(
-                a.qty == null || a.qty == "null" ? "0" : "${a.qty}")
+        return int.parse(a.qty == null || a.qty == "null" ? "0" : "${a.qty}")
             .compareTo(int.parse(
                 b.qty == null || b.qty == "null" ? "0.00" : "${b.qty}"));
       });
@@ -1669,27 +1671,30 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  Future fetchPosGroupSymbol(String name) async {
+  Future fetchPosGroupSymbol(String name, bool isCreateGrp) async {
     try {
       _getPositionGroupSymbol = await api.getGroupPosition();
-
+      _totPnL = "0.00";
+      _totMtm = "0.00";
+      _exitAll = false;
+      _totBookedPnL = "0.00";
+      _totUnRealMtm = '0.00';
       _posGrpNames = ["All position", "Group by symbol"];
 
-      _allPostionList = [];
       for (var element in _getPositionGroupSymbol) {
         _posGrpNames.add(element.posname.toString());
-
-        if (name==element.posname) {
-          for (var item in element.posdata!) {
-
-            if (_postionBookModel![0].stat.toString().toLowerCase()=="ok") {
+        if (!isCreateGrp) {
+          if (name == element.posname) {
+            _allPostionList = [];
+            for (var item in element.posdata!) {
+              if (_postionBookModel![0].stat.toString().toLowerCase() == "ok") {
                 for (var pos in _postionBookModel!) {
-              if (item.token==pos.token) {
-                _allPostionList.add(pos);
+                  if (item.token == pos.token) {
+                    _allPostionList.add(pos);
+                  }
+                }
               }
             }
-            }
-
           }
         }
       }
@@ -1697,12 +1702,12 @@ class PortfolioProvider extends DefaultChangeNotifier {
     } catch (e) {}
   }
 
-  Future fetchGroupName(String name, BuildContext c) async {
+  Future fetchGroupName(String name, BuildContext c, bool isCreateGrp) async {
     try {
       _groupName = await api.createGroupName(name);
 
       if (_groupName!.status == "Data inserted") {
-        await fetchPosGroupSymbol(name);
+        await fetchPosGroupSymbol(name, isCreateGrp);
 
         Navigator.pop(c);
       } else {
@@ -1716,18 +1721,22 @@ class PortfolioProvider extends DefaultChangeNotifier {
     } catch (e) {}
   }
 
-  Future fetchAddGroupSymbol(String name, BuildContext c, Map data) async {
+  Future fetchAddGroupSymbol(
+    String name,
+    BuildContext c,
+    Map data,
+  ) async {
     try {
       _groupName = await api.addGroupNameSymbol(name, data);
 
       if (_groupName!.status == "symbol added") {
-        await fetchPosGroupSymbol(name);
+        await fetchPosGroupSymbol(name, false);
         ScaffoldMessenger.of(c)
             .showSnackBar(warningMessage(c, 'Scrip was added to $name'));
         Navigator.pop(c);
       } else {
         Fluttertoast.showToast(
-            msg: "${_groupName!.status}",
+            msg: "${_groupName!.status} to $name",
             timeInSecForIosWeb: 2,
             backgroundColor: colors.colorBlack,
             textColor: colors.colorWhite,

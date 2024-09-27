@@ -186,7 +186,7 @@ mixin PortfolioAPI on ApiCore {
       final uri = Uri.parse(apiLinks.creatGrpName);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body:jsonEncode({"clientid": "${prefs.clientId}", "posname": name}));
+          body: jsonEncode({"clientid": "${prefs.clientId}", "posname": name}));
 
       log("Position Group Name => ${res.body}");
       final json = jsonDecode(res.body);
@@ -197,13 +197,16 @@ mixin PortfolioAPI on ApiCore {
     }
   }
 
-
-  Future<CreateGroupName> addGroupNameSymbol(String name ,Map data) async {
+  Future<CreateGroupName> addGroupNameSymbol(String name, Map data) async {
     try {
       final uri = Uri.parse(apiLinks.addSymbolGrp);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body:jsonEncode({"clientid": "${prefs.clientId}", "posname": name,"symdata":data}));
+          body: jsonEncode({
+            "clientid": "${prefs.clientId}",
+            "posname": name,
+            "symdata": data
+          }));
 
       log("Add symbol Group Name => ${res.body}");
       final json = jsonDecode(res.body);
@@ -214,3 +217,4 @@ mixin PortfolioAPI on ApiCore {
     }
   }
 }
+  

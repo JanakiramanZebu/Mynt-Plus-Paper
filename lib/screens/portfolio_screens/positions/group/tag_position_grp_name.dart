@@ -91,7 +91,7 @@ class TagPositionGrpName extends StatelessWidget {
                                 positionBook.fetchAddGroupSymbol(
                                     positionBook.posGrpNames[index],
                                     context,
-                                    data);
+                                    data );
                               },
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 0),

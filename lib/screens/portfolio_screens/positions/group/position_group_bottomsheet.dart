@@ -77,16 +77,18 @@ class PositionGroupBottomSheet extends StatelessWidget {
                     itemBuilder: (BuildContext context, int index) {
                       return ListTile(
                           onTap: () async {
-
                             // if (index==0||index==1) {
-                                positionBook.chngPosSelection(
+                            positionBook.chngPosSelection(
                                 positionBook.posGrpNames[index]);
-                            // }else{ 
-                              //  positionBook.chngPosSelection(
-                              //   positionBook.posGrpNames[index]);
-                              //  positionBook.fetchPosGroupSymbol(positionBook.posGrpNames[index]);
-                            // }
-                          
+
+                            if (index > 1) {
+                              positionBook.fetchPosGroupSymbol(
+                                  positionBook.posGrpNames[index], false);
+                            }else{
+                                positionBook.splitPositionBook(     positionBook.isDay);
+                            }
+                            
+
                             Navigator.pop(context);
                           },
                           contentPadding: const EdgeInsets.symmetric(
