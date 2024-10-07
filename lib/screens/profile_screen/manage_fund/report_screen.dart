@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../locator/locator.dart';
+import '../../../locator/preference.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/user_profile_provider.dart';
@@ -16,6 +19,8 @@ class ReportsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final userProfile = watch(userProfileProvider);
+    final hstoken = watch(fundProvider);
+    final Preferences pref = locator<Preferences>();
     final theme = context.read(themeProvider);
     return Scaffold(
       appBar: AppBar(
@@ -44,13 +49,25 @@ class ReportsScreen extends ConsumerWidget {
                     arguments: "holding");
               } else if (index == 2) {
                 Navigator.pushNamed(context, Routes.reportWebViewApp,
-                    arguments: "pnl");
-              } else if (index == 3) {
+                    arguments: "positions");
+              } 
+              else if (index == 3) {
                 Navigator.pushNamed(context, Routes.reportWebViewApp,
-                    arguments: "taxpnl");
+                    arguments: "pnl");
               } else if (index == 4) {
                 Navigator.pushNamed(context, Routes.reportWebViewApp,
+                    arguments: "calenderpnl");
+              } else if (index == 5) {
+                Navigator.pushNamed(context, Routes.reportWebViewApp,
+                    arguments: "taxpnl");
+              }  else if (index == 6) {
+                Navigator.pushNamed(context, Routes.reportWebViewApp,
                     arguments: "tradebook");
+              }  else if (index == 7) {
+               
+                launch('https://profile.mynt.in/pdfdownload/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}');
+                // Navigator.pushNamed(context, Routes.reportWebViewApp,
+                //     arguments: "pdfdownload");
               }
             },
             dense: true,

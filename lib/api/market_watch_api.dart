@@ -140,7 +140,7 @@ mixin MarketWatchApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","stext":"$searchText"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","stext":"${searchText.replaceAll("&", "%")}"}&jKey=${prefs.clientSession}''');
 
       //  log("Search Scrip => ${res.body}");
       final json = jsonDecode(res.body);

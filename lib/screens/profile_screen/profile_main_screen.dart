@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart'; 
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/api_key_provider.dart';
@@ -44,7 +45,7 @@ class UserAccountScreen extends ConsumerWidget {
                       contentPadding:
                           const EdgeInsets.symmetric(horizontal: 16),
                       onTap: () async {
-                        if (index == 3 || index == 4 || index == 5) {
+                        if (index == 3 || index == 4 || index == 5 || index == 6 || index == 7 ){
                           await funds.fetchHstoken(context);
                         }
                         if (index == 0) {
@@ -56,17 +57,25 @@ class UserAccountScreen extends ConsumerWidget {
                           Navigator.pushNamed(context, Routes.reports);
                         } else if (index == 3) {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
+                              arguments: "tradeverify");
+                        } 
+                        else if (index == 4) {
+                          Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "corporateaction");
-                        } else if (index == 4) {
+                        } else if (index == 5) {
+                          Navigator.pushNamed(context, Routes.reportWebViewApp,
+                              arguments: "event");
+                        }
+                        else if (index == 6) {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "pledge");
-                        } else if (index == 5) {
+                        } else if (index == 7) {
                           funds.optionZ(context);
-                        } else if (index == 6) {
+                        } else if (index == 8) {
                           await Share.share(
                             "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
                           );
-                        } else if (index == 7) {
+                        } else if (index == 9) {
                           await context
                               .read(userProfileProvider)
                               .fetchsetting();
@@ -75,7 +84,7 @@ class UserAccountScreen extends ConsumerWidget {
                               .fetchapikey(context);
                           Navigator.pushNamed(
                               context, Routes.profilesettingscreen);
-                        } else if (index == 8) {
+                        } else if (index == 10) {
                           await context
                               .read(notificationprovider)
                               .fetchexchagemsg(context);
@@ -84,7 +93,7 @@ class UserAccountScreen extends ConsumerWidget {
                               .read(notificationprovider)
                               .fetchbrokermsg(context);
                           Navigator.pushNamed(context, Routes.notificationpage);
-                        } else if (index == 9) {
+                        } else if (index == 11) {
                           showModalBottomSheet(
                               useSafeArea: true,
                               isScrollControlled: true,
@@ -95,18 +104,18 @@ class UserAccountScreen extends ConsumerWidget {
                               builder: (context) {
                                 return const NeedHelpScreen();
                               });
-                        } else if (index == 10) {
+                        } else if (index == 12) {
                           await context.read(ipoProvide).getSmeIpo();
                           await context.read(ipoProvide).getmainstreamipo();
                           await context
                               .read(ipoProvide)
                               .getipoperfomance(currentYear);
                           Navigator.pushNamed(context, Routes.ipo);
-                        } else if (index == 11) {
+                        } else if (index == 13) {
                           await context.read(ipoProvide).getipoorderbookmodel();
                           await context.read(ipoProvide).ipotab();
                           Navigator.pushNamed(context, Routes.ipoorderbook);
-                        } else if (index == 12) {
+                        } else if (index == 14) {
                           await context.read(bondProvider).fetchGovtBonds();
                           Navigator.pushNamed(context, Routes.bonds);
                         } else {
@@ -151,12 +160,15 @@ class UserAccountScreen extends ConsumerWidget {
                                             borderRadius:
                                                 BorderRadius.circular(50))),
                                     onPressed: () async {
-                                      await context
-                                          .read(fundProvider)
-                                          .fetchHstoken(context);
-                                      Navigator.pushNamed(
-                                          context, Routes.fundTransaction,
-                                          arguments: "fund");
+                                      await funds.fetchHstoken(context);
+                                      launch(
+                                           'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}');
+                                      // await context
+                                      //     .read(fundProvider)
+                                      //     .fetchHstoken(context);
+                                      // Navigator.pushNamed(
+                                      //     context, Routes.fundTransaction,
+                                      //     arguments: "fund");
                                     },
                                     child: Text("Deposit Money",
                                         textAlign: TextAlign.center,
@@ -167,7 +179,7 @@ class UserAccountScreen extends ConsumerWidget {
                                             12,
                                             FontWeight.w500))))
                           ],
-                          if (index == 6) ...[
+                          if (index == 8) ...[
                             TextButton(
                                 onPressed: () async {
                                   await Share.share(
@@ -178,7 +190,7 @@ class UserAccountScreen extends ConsumerWidget {
                                     style: theme.isDarkMode
                                         ? textStyles.darktextBtn
                                         : textStyles.textBtn))
-                          ] else if (index == 7) ...[
+                          ] else if (index == 9) ...[
                             TextButton(
                                 onPressed: () async {
                                   showDialog(
@@ -264,8 +276,7 @@ class UserAccountScreen extends ConsumerWidget {
                                                           : colors.colorBlack,
                                                   shape: RoundedRectangleBorder(
                                                     borderRadius:
-                                                        BorderRadius.circular(
-                                                            50),
+                                                        BorderRadius.circular(    50) 
                                                   )),
                                               child: Text("Continue",
                                                   style: textStyle(
@@ -406,7 +417,7 @@ class UserAccountScreen extends ConsumerWidget {
             Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text("Version 3.0.2 Build 1.0.39(01) Released on 20 Sep",
+                child: Text("Version 3.0.2 Build 1.0.40(15) Released on 07 Oct",
                     style: textStyle(
                         const Color(0xff666666), 11, FontWeight.w500)))
           ]);

@@ -54,24 +54,30 @@ class UserProfileProvider extends DefaultChangeNotifier {
   List _profileMenu = [];
 
   final List _accountMenu = [
-    {"title": "Profile Info", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Personal Info", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Bank", "trailing": "assets/profile/greater_arrow.svg"},
     {
-      "title": "Depository Participant",
+      "title": "Demat",
       "trailing": "assets/profile/greater_arrow.svg"
     },
-    {"title": "Closure", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Segments", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Trading Preference", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Margin Trading Facility (MTF)", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Annual Income", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Nominee", "trailing": "assets/profile/greater_arrow.svg"}
+    {"title": "Nominee", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Family Account", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Closure", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Form Download", "trailing": "assets/profile/greater_arrow.svg"},
   ];
 
   final List _reporttMenu = [
     {"title": "Ledger", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Holdings", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Positions - (Beta)", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Profit & Loss", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Calender P&L (Beta)", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Tax P&L", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Trade", "trailing": "assets/profile/greater_arrow.svg"}
+    {"title": "TradeBook/Contract", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "PDF Download", "trailing": "assets/profile/greater_arrow.svg"}
   ];
 
   List get profileMenu => _profileMenu;
@@ -216,11 +222,27 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "case": "Click here to view the report page."
       },
       {
+        "title": "Verified P&L",
+        "subTitle": "Verified P&L",
+        "leading": "assets/profileimage/verifiedpl.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": "",
+        "case": "Click here to view the report page."
+      },
+      {
         "title": "Corporate Action",
         "subTitle": "Corporate Action",
         "leading": "assets/profileimage/coa_edited.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).corporateactioncase,
+        "case": "Click here to view the Corporate Action page."
+      },
+       {
+        "title": "CA Events",
+        "subTitle": "CA Event",
+        "leading": "assets/profileimage/caevent.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": "",
         "case": "Click here to view the Corporate Action page."
       },
       {

@@ -161,7 +161,7 @@ class AuthProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  void clearTextField() {
+  clearTextField() {
     otpCtrl.clear();
     loginMethCtrl.clear();
     passCtrl.clear();
@@ -308,6 +308,7 @@ class AuthProvider extends DefaultChangeNotifier {
       } else if (_mobileLogin!.emsg ==
           "Your mobile registered in multiple accounts, Please login with client ID") {
         loginMethod();
+        pref.setHideLoginOptBtn(false);
         ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
             "Multiple accounts linked to your mobile no. Login with Client ID"));
       } else if (_mobileLogin!.emsg == "mobile_unique not valid") {
@@ -318,12 +319,13 @@ class AuthProvider extends DefaultChangeNotifier {
             "This user id logged in another device, Please login again"));
         _isDisableBtn = true;
         pref.setHideLoginOptBtn(false);
+
         clearError();
         clearTextField();
+        pref.setMobileLogin(false);
         pref.setLogout(true);
         ref(indexListProvider).bottomMenu(1);
-        loginMethCtrl.text =
-            pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
+        loginMethCtrl.text = pref.clientId!;
         Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, (route) => false);
       } else if (_mobileLogin!.apitoken != null && _mobileLogin!.stat == "Ok") {
@@ -497,9 +499,9 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.clearClientSession();
         pref.setLogout(true);
         pref.setHideLoginOptBtn(false);
+        pref.setMobileLogin(false);
         ref(indexListProvider).bottomMenu(1);
-        loginMethCtrl.text =
-            pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
+        loginMethCtrl.text = pref.clientId!;
         notifyListeners();
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'Logged out'));
@@ -685,7 +687,7 @@ class AuthProvider extends DefaultChangeNotifier {
           Timer.periodic(const Duration(seconds: 1), (timer) {});
       ConstantName.timer!.cancel();
       await ref(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4);
-      // ref(websocketProvider).websockConn(false);
+
       if (s.isNotEmpty) {
         ref(websocketProvider).closeSocket();
       }
@@ -693,21 +695,6 @@ class AuthProvider extends DefaultChangeNotifier {
       if (pref.clientSession!.isNotEmpty) {
         ref(websocketProvider).closeSocket();
       }
-
-      // await ref(stocksProvide).defaultSectorThemematicData();
-      // await ref(indexListProvider).fetchDefTopIndex(context);
-      // await ref(stocksProvide)
-      //     .fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
-      // await ref(stocksProvide)
-      //     .fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
-      // await ref(stocksProvide).fetchCorporateAction();
-
-      // await ref(stocksProvide).fetchIndicesAdvdec();
-      // await ref(stocksProvide).fetchStockMonitor("NSE",
-      //     ref(stocksProvide).slectBaskt, ref(stocksProvide).slectFilterCont);
-      // await ref(stocksProvide).getNews();
-
-      // if (pref.islogIn!) {
 
       await ref(indexListProvider).checkSession(context);
       await ref(marketWatchProvider).changeWlName("", "No");
@@ -726,11 +713,10 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(orderProvider).fetchOrderBook(context, false);
         ref(orderProvider).fetchTradeBook(context);
 
-          ref(portfolioProvider).fetchPosGroupSymbol("",false);
+        // ref(portfolioProvider).fetchPosGroupSymbol("",false);
         ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
-        print("object -------");
+
         if (s.isEmpty) {
-          print("object  dsgfv -------");
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.homeScreen, (route) => false);
           // if (pref.islogIn!) {
@@ -757,10 +743,6 @@ class AuthProvider extends DefaultChangeNotifier {
           await ref(fundProvider).fetchFunds(context);
         }
       }
-      // }
-      // ConstantName.timer!.cancel();
-
-      // }
     } finally {
       initLaod(false);
     }
@@ -772,9 +754,12 @@ class AuthProvider extends DefaultChangeNotifier {
     ref(indexListProvider).bottomMenu(1);
 
     pref.setHideLoginOptBtn(false);
+    loginMethCtrl.text = pref.clientId!;
+    pref.setMobileLogin(false);
     pref.clearClientSession();
+
     ConstantName.sessCheck = false;
-    loginMethCtrl.text = pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
+
     ScaffoldMessenger.of(context).showSnackBar(
         warningMessage(context, "Session Expired,Kindly login Again!"));
     ConstantName.timer!.cancel();

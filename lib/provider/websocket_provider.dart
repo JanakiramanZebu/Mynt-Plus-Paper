@@ -128,6 +128,7 @@ class WebSocketProvider extends ChangeNotifier {
               }
               if (res["lp"] != null) {
                 _socketDatas["${res['tk']}"]["lp"] = res["lp"];
+                ref(portfolioProvider).updateHoldingValues(  "${res['tk']}", _socketDatas["${res['tk']}"]);
               }
               if (res["v"] != null) {
                 _socketDatas["${res['tk']}"]["v"] = res["v"];
@@ -386,6 +387,7 @@ class WebSocketProvider extends ChangeNotifier {
                 //   :
                 res["c"])).toStringAsFixed(2);
             _socketDatas.addAll({"${res['tk']}": res});
+            ref(portfolioProvider).updateHoldingValues(  "${res['tk']}", res);
 
             // log("Soxket data ${jsonEncode(_socketDatas)}");
           } else if (res['t'].toString().toLowerCase() == "om") {
@@ -474,3 +476,7 @@ class WebSocketProvider extends ChangeNotifier {
     }
   }
 }
+
+
+
+

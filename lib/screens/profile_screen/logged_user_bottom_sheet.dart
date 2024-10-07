@@ -124,6 +124,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                             horizontal: 16, vertical: 5),
                         child: OutlinedButton(
                             onPressed: () {
+                                  pref.setMobileLogin(true);
                               pref.setLogout(false);
                               pref.setHideLoginOptBtn(true);
                              watch(websocketProvider).closeSocket();

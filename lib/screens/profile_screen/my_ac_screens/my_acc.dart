@@ -46,16 +46,25 @@ class MyAccount extends ConsumerWidget {
                     arguments: "deposltory");
               } else if (index == 3) {
                 Navigator.pushNamed(context, Routes.profileWebViewApp,
-                    arguments: "closure");
+                    arguments: "segment");
               } else if (index == 4) {
                 Navigator.pushNamed(context, Routes.profileWebViewApp,
-                    arguments: "segment");
+                    arguments: "mtf");
               } else if (index == 5) {
                 Navigator.pushNamed(context, Routes.profileWebViewApp,
                     arguments: "annualincome");
               } else if (index == 6) {
                 Navigator.pushNamed(context, Routes.profileWebViewApp,
                     arguments: "nominee");
+              } else if (index == 7) {
+                Navigator.pushNamed(context, Routes.profileWebViewApp,
+                    arguments: "family");
+              } else if (index == 8) {
+                Navigator.pushNamed(context, Routes.profileWebViewApp,
+                    arguments: "closure");
+              } else if (index == 9) {
+                Navigator.pushNamed(context, Routes.profileWebViewApp,
+                    arguments: "formdownload");
               }
             },
             dense: true,

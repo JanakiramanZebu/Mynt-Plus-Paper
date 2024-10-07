@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../locator/locator.dart';
+import '../../../locator/preference.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
@@ -16,6 +19,7 @@ class SecureFund extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final funds = watch(fundProvider);
     final theme = watch(themeProvider);
+    final Preferences pref = locator<Preferences>();
     final List<ChartData> donutChart = [
       if (funds.fundDetailModel?.margincurper != null)
         ChartData(
@@ -407,9 +411,12 @@ class SecureFund extends ConsumerWidget {
                                     await context
                                         .read(fundProvider)
                                         .fetchHstoken(context);
-                                    Navigator.pushNamed(
-                                        context, Routes.fundTransaction,
-                                        arguments: "fund");
+                                        await funds.fetchHstoken(context);
+                                      launch(
+                                           'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}');
+                                    // Navigator.pushNamed(
+                                    //     context, Routes.fundTransaction,
+                                    //     arguments: "fund");
                                   },
                                   child: Text("Deposit Money",
                                       textAlign: TextAlign.center,
@@ -437,9 +444,11 @@ class SecureFund extends ConsumerWidget {
                                     await context
                                         .read(fundProvider)
                                         .fetchHstoken(context);
-                                    Navigator.pushNamed(
-                                        context, Routes.fundTransaction,
-                                        arguments: "withdrawal");
+                                        launch(
+                                        'https://fund.mynt.in/withdrawal/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}');
+                                    // Navigator.pushNamed(
+                                    //     context, Routes.fundTransaction,
+                                    //     arguments: "withdrawal");
                                   },
                                   child: Text("Withdraw Money",
                                       textAlign: TextAlign.center,

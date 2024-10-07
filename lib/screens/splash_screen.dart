@@ -58,8 +58,7 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       print(
           "Device  Name  ${pref.deviceName!} - ${pref.clientSession} ----  ${context.read(networkStateProvider).connectionStatus} ");
-      context.read(authProvider).loginMethCtrl.text =
-          pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
+      context.read(authProvider).loginMethCtrl.text =  pref.clientId!;
       context
           .read(authProvider)
           .switchMobToClinent(pref.clientId!.isEmpty ? false : true);
@@ -67,6 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {
         await context.read(authProvider).getDeviceDetails();
       }
       if (pref.clientSession!.isEmpty && pref.clientId!.isNotEmpty) {
+         pref.setMobileLogin(false);
         pref.setHideLoginOptBtn(false);
       } else {
         pref.setHideLoginOptBtn(true);

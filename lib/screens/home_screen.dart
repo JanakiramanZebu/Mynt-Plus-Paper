@@ -192,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             marketWatchList.wlName ==
                                                     "My Stocks"
                                                 ? "(${portfolio.holdingsModel!.length})"
-                                                : "(${marketWatchList.scrips.length })",
+                                                : "(${marketWatchList.scrips.length})",
                                             style: textStyle(
                                                 theme.isDarkMode
                                                     ? colors.colorLightBlue
@@ -267,8 +267,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             child: Container(
                                                 padding: EdgeInsets.only(
                                                     left: 8,
-                                                    right: marketWatchList.scrips.length
-                                                                 >=
+                                                    right: marketWatchList
+                                                                .scrips
+                                                                .length >=
                                                             50
                                                         ? 0
                                                         : 8),
@@ -301,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     color: colors.colorGrey)),
                                           ),
                                   ] else if ((indexProvide.selectedBtmIndx ==
-                                              2 ) &&
+                                          2 && portfolio.allPostionList.length>1) &&
                                       portfolio.selectedTab == 0) ...[
                                     Padding(
                                       padding:
@@ -436,9 +437,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             onPressed:
                                                                 () async {
                                                               await portfolio
-                                                                  .exitAllPosition(
+                                                                  .exitPosition(
                                                                       context,
-                                                                      false);
+                                                                      true);
                                                               Navigator.of(
                                                                       context)
                                                                   .pop(true);
@@ -707,7 +708,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     onTap: internet.connectionStatus ==
                                             ConnectivityResult.none
                                         ? null
-                                        : () async {
+                                        : () async {        portfolio. cancelTimer();
                                             indexProvide.bottomMenu(1);
                                             await context
                                                 .read(indexListProvider)
@@ -876,7 +877,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     onTap: internet.connectionStatus ==
                                             ConnectivityResult.none
                                         ? null
-                                        : () async {
+                                        : () async {        portfolio. cancelTimer();
                                             indexProvide.bottomMenu(3);
                                             await context
                                                 .read(indexListProvider)
@@ -968,6 +969,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             ConnectivityResult.none
                                         ? null
                                         : () async {
+
+                                            portfolio. cancelTimer();
                                             await context
                                                 .read(fundProvider)
                                                 .fetchFunds(context);

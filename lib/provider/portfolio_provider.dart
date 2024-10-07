@@ -1,4 +1,5 @@
-import 'dart:convert';
+import 'dart:async';
+import 'dart:convert'; 
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,7 @@ import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
-import 'order_provider.dart';
+ 
 import 'websocket_provider.dart';
 
 final portfolioProvider =
@@ -180,7 +181,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
             Text(
-                "Positions ${_allPostionList.isNotEmpty ? "(${_allPostionList.length})" : ""}"),
+                "Position${_allPostionList.isNotEmpty ? "s (${_allPostionList.length})" : ""}"),
           ])),
       Tab(
         child: Row(
@@ -188,7 +189,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-                "Holdings ${_holdingsModel!.isNotEmpty ? "(${_holdingsModel!.length})" : ""}")
+                "Holding${_holdingsModel!.isNotEmpty ? "s (${_holdingsModel!.length})" : ""}")
           ],
         ),
       ),
@@ -380,6 +381,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           _totInvesHold = invest.toStringAsFixed(2);
           if (initail == "Refresh") {
             await requestWSHoldings(isSubscribe: true, context: context);
+            timerfunc();
           }
         } else {
           if (_holdingsModel![0].emsg ==
@@ -474,37 +476,80 @@ class PortfolioProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
-  pnlHoldCal() {
-    if (_holdingsModel!.isNotEmpty) {
-      if (_holdingsModel![0].stat != "Not_Ok") {
-        _totalPnlHolding = _holdingsModel!.fold(
-            0,
-            (sum, next) =>
-                sum + double.parse("${next.exchTsym![0].profitNloss}"));
-        _oneDayChng = _holdingsModel!.fold(
-            0,
-            (sum, next) =>
-                sum + double.parse("${next.exchTsym![0].oneDayChg ?? 0.00}"));
-        _totPnlPercHolding = _totInvesHold == "0.00"
-            ? "0.00"
-            : ((double.parse("$_totalPnlHolding") /
-                        double.parse(_totInvesHold)) *
-                    100)
-                .toStringAsFixed(2);
+  setTotPnlHoldings(double val) {
+    _totalPnlHolding = val;
+  }
 
-        _oneDayChngPer = ((_oneDayChng / _totalCurrentVal) * 100);
+  setOneDayChng(double val) {
+    _oneDayChng = val;
+  }
 
-        double val = _holdingsModel!.fold(
-            0, (sum, next) => sum + double.parse("${next.invested ?? 0.00}"));
+  // setTotPnlPercHolding(String val) {
+  //   _totPnlPercHolding = val;
+  // }
 
-        _totInvesHold = val.toStringAsFixed(2);
+  setTotInvHoldings(double val) {
+    _totInvesHold = val.toStringAsFixed(2);
+  }
 
-        _totalCurrentVal = _holdingsModel!.fold(0,
-            (sum, next) => sum + double.parse("${next.currentValue ?? 0.00}"));
-      }
+  setTotCurrentVal(double val) {
+    _totalCurrentVal = val;
+    _totPnlPercHolding = _totInvesHold == "0.00"
+        ? "0.00"
+        : ((double.parse("$_totalPnlHolding") / double.parse(_totInvesHold)) *
+                100)
+            .toStringAsFixed(2);
+  }
 
-      notifyListeners();
+  setOneDayChngPer() {
+    _oneDayChngPer = ((_oneDayChng / _totalCurrentVal) * 100);
+  }
+
+  Timer? _timer;
+  cancelTimer() {
+    times = false;
+    if (_timer != null) {
+      _timer!.cancel();
     }
+  }
+
+  bool times = false;
+
+  void timerfunc() {
+    if (!times) {
+      print("Timer called");
+      _timer = Timer.periodic(Duration(milliseconds: 500), (Timer t) {
+        times = true;
+        pnlHoldCal();
+      });
+    }
+  }
+
+  pnlHoldCal() {
+    _totalPnlHolding = 0.00;
+    _oneDayChng = 0.00;
+    double invest = 0.00;
+    _totalCurrentVal = 0.00;
+    _oneDayChngPer == 0.00;
+    _totPnlPercHolding = "0.00";
+    for (var holdingJson in holdingsModel!) {
+      _totalPnlHolding +=
+          double.parse("${holdingJson.exchTsym![0].profitNloss ?? 0.0}");
+      _oneDayChng +=
+          double.parse("${holdingJson.exchTsym![0].oneDayChg ?? 0.0}");
+      invest += double.parse("${holdingJson.invested ?? 0.0}");
+      _totInvesHold = invest.toStringAsFixed(2);
+      _totalCurrentVal += double.parse("${holdingJson.currentValue ?? 0.0}");
+    }
+    _oneDayChngPer = ((_oneDayChng / _totalCurrentVal) * 100);
+
+    _totPnlPercHolding = _totInvesHold == "0.00"
+        ? "0.00"
+        : ((double.parse("$_totalPnlHolding") / double.parse(_totInvesHold)) *
+                100)
+            .toStringAsFixed(2);
+
+    notifyListeners();
   }
 
   Future fetchPositionBook(BuildContext context, bool isDay) async {
@@ -533,6 +578,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
           // await requestWSPosition(context: context, isSubscribe: true);
         } else {
+          _postionBookModel = [];
           _openPosition = [];
           if (_postionBookModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
@@ -612,7 +658,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
           _closedPosion!.add(element);
           _closedPosion!.sort((a, b) => a.tsym!.compareTo(b.tsym!));
         } else {
-          _exitAll = true;
           _openPosition!.add(element);
           _openPosition!.sort((a, b) => a.tsym!.compareTo(b.tsym!));
         }
@@ -641,15 +686,32 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       _netVal = (double.parse(_totBuyAmt) - double.parse(_totSellAmt))
           .toStringAsFixed(2);
-      for (var element in _openPosition!) {
-        if (isDay) {
+
+      _exitAll = false;
+      if (isDay) {
+        int check = 0;
+        for (var element in _openPosition!) {
           if (element.daybuyqty != "0" || element.daysellqty != "0") {
+            check = check + 1;
             _allPostionList.add(element);
+
+            if (check >= 2) {
+              _exitAll = true;
+            }
+             
           }
-        } else {
+        }
+      } else {
+        int check = 0;
+        for (var element in _openPosition!) {
+          check = check + 1;
           _allPostionList.add(element);
         }
+        if (check >= 2) {
+          _exitAll = true;
+        }
       }
+
       for (var element in _closedPosion!) {
         if (isDay) {
           if (element.daybuyqty != "0" || element.daysellqty != "0") {
@@ -659,9 +721,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
           _allPostionList.add(element);
         }
       }
-      if (_allPostionList.length <= 1) {
-        _posSelection = "All position";
-      }
+      // if (_allPostionList.length <= 1) {
+      //   _posSelection = "All position";
+      // }
       await positionCal(isDay);
 
       await positionGroupCal(isDay, {});
@@ -762,7 +824,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         } else {
           await fetchHoldings(context, "Refresh");
         }
-
+        Navigator.pop(context);
         // ref(orderProvider).fetchOrderBook(context, false);
       } else {
         if (_placeOrderModel!.emsg ==
@@ -927,10 +989,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
     double bookPnl = 0.00;
 
     int qty = 0;
-    _groupedBySymbol = {};
 
     double avgPrc = 0.00;
     String pnl = "0.00";
+    _groupedBySymbol = {};
+
     for (var element in _allPostionList) {
       if (groupData.isEmpty) {
         double lastPrice = double.parse(
@@ -1178,6 +1241,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       } else {
         _groupedBySymbol.addAll({
           "${element.symbol}": {
+            "isCustomGrp": false,
             "totMtm": "0.00",
             "totPnl": "0.00",
             "groupList": [jsonDecode(jsonEncode(element))]
@@ -1186,32 +1250,54 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
     }
 
+    for (var element in _getPositionGroupSymbol) {
+      if (_groupedBySymbol.containsKey(element.posname)) {
+        _groupedBySymbol['${element.posname}']["groupList"]
+            .add(jsonDecode(jsonEncode(element.posdata)));
+      } else {
+        _groupedBySymbol.addAll({
+          "${element.posname}": {
+            "isCustomGrp": true,
+            "totMtm": "0.00",
+            "totPnl": "0.00",
+            "groupList": jsonDecode(jsonEncode(element.posdata))
+          }
+        });
+      }
+    }
+
     _groupPositionSym = [];
 
-    for (var element in _groupedBySymbol.keys) {
-      _groupPositionSym.add(element);
+    if (_groupedBySymbol.keys.isNotEmpty) {
+      for (var element in _groupedBySymbol.keys) {
+        _groupPositionSym.add(element);
+
+        List data = _groupedBySymbol['$element']["groupList"];
+
+        if (data.isNotEmpty) {
+          double totalProfitNloss = 0.00;
+          double totalMtms = 0.00;
+
+          for (var i = 0; i < data.length; i++) {
+            totalProfitNloss = (totalProfitNloss +
+                double.parse(data[i]['profitNloss'] ?? "0.00"));
+            totalMtms = (totalMtms + double.parse(data[i]['mTm'] ?? "0.00"));
+          }
+
+          bool shouldExit = data.any((item) => item['qty'] != '0');
+
+          _groupedBySymbol['$element']['totPnl'] =
+              totalProfitNloss.toStringAsFixed(2);
+
+          totalPnl += totalProfitNloss;
+          _groupedBySymbol['$element']['totMtm'] = totalMtms.toStringAsFixed(2);
+          totalMtm += totalMtms;
+
+          _groupedBySymbol['$element']['isexit'] =
+              shouldExit ? "true" : "false";
+        }
+      }
     }
-    _groupedBySymbol.forEach((key, value) {
-      // Calculate the total profitNloss for each groupList
-      double totalProfitNloss = value['groupList'].fold(0.0, (sum, item) {
-        return sum + double.parse(item['profitNloss'] ?? "0.00");
-      });
-      double totalMtms = value['groupList'].fold(0.0, (sum, item) {
-        return sum + double.parse(item['mTm'] ?? "0.00");
-      });
-      bool shouldExit = value['groupList'].any((item) => item['qty'] != '0');
-
-      // Assign
-      value['totPnl'] = totalProfitNloss.toStringAsFixed(2);
-
-      totalPnl += totalProfitNloss;
-      value['totMtm'] = totalMtms.toStringAsFixed(2);
-      totalMtm += totalMtms;
-
-      value['isexit'] = shouldExit ? "true" : "false";
-    });
-
-    // ("Position Group ${jsonEncode(_groupedBySymbol)}  $_groupPositionSym");
 
     _totMtm = totalMtm.toStringAsFixed(2);
 
@@ -1507,12 +1593,43 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  exitAllPosition(BuildContext context, bool isSelectionExit) async {
+  exitPosition(BuildContext context, bool exitAll) async {
     for (var element in _allPostionList) {
       if (element.qty != "0") {
         if (((element.sPrdtAli == "MIS" || element.sPrdtAli == "CNC") ||
             element.sPrdtAli == "NRML")) {
-          if (isSelectionExit) {
+          if (exitAll) {
+            PlaceOrderInput placeOrderInput = PlaceOrderInput(
+                amo: "",
+                blprc: '',
+                bpprc: '',
+                dscqty: "",
+                exch: "${element.exch}",
+                prc: "0",
+                prctype: "MKT",
+                prd: "${element.prd}",
+                qty: element.qty!.replaceAll("-", ""),
+                ret: "DAY",
+                trailprc: '',
+                trantype: int.parse(element.qty!) < 0 ? 'B' : 'S',
+                trgprc: "",
+                tsym: "${element.tsym}",
+                mktProt: '',
+                channel: defaultTargetPlatform == TargetPlatform.android
+                    ? '${ref(authProvider).deviceInfo["brand"]}'
+                    : "${ref(authProvider).deviceInfo["model"]}",
+                userAgent: defaultTargetPlatform == TargetPlatform.android
+                    ? '${ref(authProvider).deviceInfo["model"]}'
+                    : "${ref(authProvider).deviceInfo["name"]}",
+                appInstaId: defaultTargetPlatform == TargetPlatform.android
+                    ? '${ref(authProvider).deviceInfo["id"]}'
+                    : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
+            _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+
+            if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
+              break;
+            }
+          } else {
             if (element.isExitSelection!) {
               PlaceOrderInput placeOrderInput = PlaceOrderInput(
                   amo: "",
@@ -1541,41 +1658,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
                       : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
               await fetchExitPosition(context, placeOrderInput, true);
             }
-          } else {
-            PlaceOrderInput placeOrderInput = PlaceOrderInput(
-                amo: "",
-                blprc: '',
-                bpprc: '',
-                dscqty: "",
-                exch: "${element.exch}",
-                prc: "0",
-                prctype: "MKT",
-                prd: "${element.prd}",
-                qty: element.qty!.replaceAll("-", ""),
-                ret: "DAY",
-                trailprc: '',
-                trantype: int.parse(element.qty!) < 0 ? 'B' : 'S',
-                trgprc: "",
-                tsym: "${element.tsym}",
-                mktProt: '',
-                channel: defaultTargetPlatform == TargetPlatform.android
-                    ? '${ref(authProvider).deviceInfo["brand"]}'
-                    : "${ref(authProvider).deviceInfo["model"]}",
-                userAgent: defaultTargetPlatform == TargetPlatform.android
-                    ? '${ref(authProvider).deviceInfo["model"]}'
-                    : "${ref(authProvider).deviceInfo["name"]}",
-                appInstaId: defaultTargetPlatform == TargetPlatform.android
-                    ? '${ref(authProvider).deviceInfo["id"]}'
-                    : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
-            await ref(orderProvider)
-                .fetchPlaceOrder(context, placeOrderInput, true);
           }
         }
       }
     }
 
-    ref(indexListProvider).bottomMenu(2);
-    Navigator.pop(context);
+    // ref(indexListProvider).bottomMenu(2);
+    // Navigator.pop(context);
   }
 
   exitAllHoldings(BuildContext context) async {
@@ -1680,33 +1769,44 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _totBookedPnL = "0.00";
       _totUnRealMtm = '0.00';
       _posGrpNames = ["All position", "Group by symbol"];
-
-      for (var element in _getPositionGroupSymbol) {
-        _posGrpNames.add(element.posname.toString());
-        if (!isCreateGrp) {
-          if (name == element.posname) {
-            _allPostionList = [];
-            for (var item in element.posdata!) {
-              if (_postionBookModel![0].stat.toString().toLowerCase() == "ok") {
-                for (var pos in _postionBookModel!) {
-                  if (item.token == pos.token) {
-                    _allPostionList.add(pos);
-                  }
-                }
-              }
-            }
-          }
+      if (_getPositionGroupSymbol.isNotEmpty) {
+        if (isCreateGrp) {
+          _posSelection = "Group by symbol";
+          await positionGroupCal(isDay, {});
+          //  ref(indexListProvider).bottomMenu(2);
         }
       }
+
+      // for (var element in _getPositionGroupSymbol) {
+      //     _posGrpNames.add(element.posname.toString());
+      //   if (isCreateGrp) {
+      //      await positionGroupCal(isDay, {});
+      //   }
+      //     if (name == element.posname) {
+      //       _allPostionList = [];
+      //       for (var item in element.posdata!) {
+      //         if (_postionBookModel![0].stat.toString().toLowerCase() == "ok") {
+      //           for (var pos in _postionBookModel!) {
+      //             if (item.token == pos.token) {
+      //               _allPostionList.add(pos);
+      //             }
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }
+      //  }?
       notifyListeners();
     } catch (e) {}
   }
 
   Future fetchGroupName(String name, BuildContext c, bool isCreateGrp) async {
     try {
+      toggleLoadingOn(true);
       _groupName = await api.createGroupName(name);
 
       if (_groupName!.status == "Data inserted") {
+        //  ref(indexListProvider).bottomMenu(1);
         await fetchPosGroupSymbol(name, isCreateGrp);
 
         Navigator.pop(c);
@@ -1718,14 +1818,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
             textColor: colors.colorWhite,
             fontSize: 14.0);
       }
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      toggleLoadingOn(false);
+    }
   }
 
-  Future fetchAddGroupSymbol(
-    String name,
-    BuildContext c,
-    Map data,
-  ) async {
+  Future fetchAddGroupSymbol(String name, BuildContext c, Map data) async {
     try {
       _groupName = await api.addGroupNameSymbol(name, data);
 
@@ -1743,5 +1842,96 @@ class PortfolioProvider extends DefaultChangeNotifier {
             fontSize: 14.0);
       }
     } catch (e) {}
+  }
+
+  Future fetchDeleteGroupName(String name, BuildContext c) async {
+    try {
+      _groupName = await api.deletePositionGrpName(name);
+
+      if (_groupName!.status == "Data deleted") {
+        await fetchPosGroupSymbol(name, false);
+        ScaffoldMessenger.of(c)
+            .showSnackBar(warningMessage(c, 'Group name was deleted'));
+        Navigator.pop(c);
+      } else {
+        Fluttertoast.showToast(
+            msg: "${_groupName!.status}",
+            timeInSecForIosWeb: 2,
+            backgroundColor: colors.colorBlack,
+            textColor: colors.colorWhite,
+            fontSize: 14.0);
+      }
+    } catch (e) {}
+  }
+
+  Future fetchDeleteGroupSymbol(
+      String name, BuildContext c, String tsym) async {
+    try {
+      _groupName = await api.deletePositionGrpSym(name, tsym);
+
+      if (_groupName!.status == "symbol removed") {
+        await fetchPosGroupSymbol(name, false);
+        ScaffoldMessenger.of(c)
+            .showSnackBar(warningMessage(c, 'Group symbol $tsym was deleted'));
+      } else {
+        Fluttertoast.showToast(
+            msg: "${_groupName!.status}",
+            timeInSecForIosWeb: 2,
+            backgroundColor: colors.colorBlack,
+            textColor: colors.colorWhite,
+            fontSize: 14.0);
+      }
+    } catch (e) {}
+  }
+
+  void updateHoldingValues(String token, Map<String, dynamic> socketData) {
+    var index = _holdingsModel!
+        .indexWhere((holding) => holding.exchTsym![0].token == token);
+
+    if (index != -1) {
+      var holding = _holdingsModel![index];
+
+      holding.exchTsym![0].lp = "${socketData['lp'] ?? 0.00}";
+      holding.exchTsym![0].perChange = "${socketData['pc'] ?? 0.00}";
+      holding.exchTsym![0].close = "${socketData['c'] ?? 0.00}";
+
+      // Calculate current value, invested, and P&L
+      holding.currentValue = (int.parse("${holding.currentQty ?? 0}") *
+              double.parse("${holding.exchTsym![0].lp ?? 0.0}"))
+          .toStringAsFixed(2);
+
+      double avgCost = double.parse(
+          "${holding.upldprc == "0.00" ? holding.exchTsym![0].close ?? 0.0 : holding.upldprc ?? 0.00}");
+      holding.invested = (holding.currentQty! * avgCost).toStringAsFixed(2);
+
+      holding.exchTsym![0].pNlChng = holding.invested == "0.00"
+          ? "0.00"
+          : ((double.parse("${holding.exchTsym![0].profitNloss}") /
+                      double.parse("${holding.invested ?? 0.00}")) *
+                  100)
+              .toStringAsFixed(2)
+              .toString();
+
+      holding.exchTsym![0].oneDayChg =
+          ((double.parse(holding.exchTsym![0].lp ?? "0.00") -
+                      double.parse(holding.exchTsym![0].close ?? "0.00")) *
+                  int.parse("${holding.currentQty ?? 0}"))
+              .toStringAsFixed(2);
+
+      if (holding.currentQty == 0) {
+        double sellAmt = double.parse(holding.sellAmt ?? "0.00");
+        int usedQty = int.parse(holding.usedqty ?? "0");
+        double price = (sellAmt / usedQty);
+        double pnl = price - double.parse(holding.upldprc ?? "0.0");
+        holding.exchTsym![0].profitNloss = (pnl * usedQty).toStringAsFixed(2);
+      } else {
+        holding.exchTsym![0].profitNloss =
+            (double.parse(holding.currentValue ?? "0.00") -
+                    double.parse(holding.invested ?? "0.00"))
+                .toStringAsFixed(2);
+      }
+
+      notifyListeners(); // Notify to update UI
+    }
   }
 }

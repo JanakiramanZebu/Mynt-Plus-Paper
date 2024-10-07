@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -11,6 +10,7 @@ import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
+import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/scrip_info_btns.dart';
 import 'convert_position_dialogue.dart';
 
@@ -107,70 +107,57 @@ class PositionDetailScreen extends ConsumerWidget {
                   : MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-
                 Row(
                   children: [
                     Container(
-                                                              margin:
-                                                                  const EdgeInsets.only(
-                                                                    right: 8),
-                                                              padding:
-                                                                  const EdgeInsets.symmetric(
-                                                                      horizontal: 10,
-                                                                      vertical: 4),
-                                                              decoration: BoxDecoration(
-                                                                  borderRadius:
-                                                                      BorderRadius.circular(
-                                                                          4),
-                                                                  color: theme.isDarkMode
-                                                                      ? const Color(0xff666666)
-                                                                          .withOpacity(.2)
-                                                                      : const Color(0xff999999)
-                                                                          .withOpacity(
-                                                                              .2)),
-                                                              child: Text(
-                                                                  "${positionList.sPrdtAli}",
-                                                                  style: textStyle(
-                                                                      const Color(0xff666666),
-                                                                      12,
-                                                                      FontWeight.w600))), if ((positionList.netqty != "0") &&
-                    (positionList.sPrdtAli == "MIS" ||
-                        positionList.sPrdtAli == "CNC" ||
-                        positionList.sPrdtAli == "NRML")) ...[
-                  Row(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return ConvertPositionDialogue(
-                                    convertPosition: positionList);
-                              });
-                        },
-                        child: Container(
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: theme.isDarkMode
-                                        ? colors.colorGrey
-                                        : colors.colorBlack),
-                                borderRadius: BorderRadius.circular(32)),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            child: Text("Convert",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    13,
-                                    FontWeight.w600))),
-                      ),
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: theme.isDarkMode
+                                ? const Color(0xff666666).withOpacity(.2)
+                                : const Color(0xff999999).withOpacity(.2)),
+                        child: Text("${positionList.sPrdtAli}",
+                            style: textStyle(
+                                const Color(0xff666666), 12, FontWeight.w600))),
+                    if ((positionList.netqty != "0") &&
+                        (positionList.sPrdtAli == "MIS" ||
+                            positionList.sPrdtAli == "CNC" ||
+                            positionList.sPrdtAli == "NRML")) ...[
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return ConvertPositionDialogue(
+                                        convertPosition: positionList);
+                                  });
+                            },
+                            child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: theme.isDarkMode
+                                            ? colors.colorGrey
+                                            : colors.colorBlack),
+                                    borderRadius: BorderRadius.circular(32)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                child: Text("Convert",
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        13,
+                                        FontWeight.w600))),
+                          ),
+                        ],
+                      )
                     ],
-                  )
-                ],
                   ],
                 ),
-               
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -683,11 +670,5 @@ class PositionDetailScreen extends ConsumerWidget {
                     ]
                   ]),
                 )));
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

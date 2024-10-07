@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
-import '../locator/locator.dart'; 
+import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/auth_model/forgot_pass_model.dart';
 import '../models/auth_model/mynt_changepass_model.dart';
-import '../routes/route_names.dart'; 
+import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
-import 'index_list_provider.dart'; 
+import 'index_list_provider.dart';
 
 final changePasswordProvider =
     ChangeNotifierProvider((ref) => ChangePasswordProvider(ref.read));
@@ -51,7 +51,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
   void clearTextField() {
     oldPassword.clear();
     newPassword.clear();
-    
+
     forGetloginMethCtrl.clear();
     notifyListeners();
   }
@@ -161,20 +161,20 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
         ConstantName.sessCheck = true;
         ScaffoldMessenger.of(context).showSnackBar(successMessage(
             context, 'New Password is Sended Through Email/Sms'));
-        
+
         userIdController.text = '${_forgetPasswordModel!.clientid}';
-       
-        
+
         Future.delayed(const Duration(seconds: 2), () {
           forgetMethod();
-           clearError();
+          clearError();
           Navigator.pushNamed(context, Routes.changePass, arguments: "No");
         });
       } else if (_forgetPasswordModel!.stat == "Not_Ok") {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _forgetPasswordModel!.emsg!));
       } else if (_forgetPasswordModel!.emsg ==
-          "Session Expired :  Invalid Session Key") {               ref(authProvider). ifSessionExpired(  context);
+          "Session Expired :  Invalid Session Key") {
+        ref(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();
@@ -201,26 +201,25 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
           await api.getChangePasswordProfile(userId, oldpassword, password);
       if (_changepasswordmodel!.stat == "Ok") {
         ConstantName.sessCheck = true;
-       
-        ConstantName.timer!.cancel();
         ref(authProvider).clearTextField();
+
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, '${_changepasswordmodel!.dmsg}'));
+        pref.setHideLoginOptBtn(false);
+        ref(authProvider).loginMethCtrl.text = pref.clientId!;
+        pref.setMobileLogin(false);
 
-       
         Future.delayed(const Duration(seconds: 2), () {
-         changePassMethod();
+          changePassMethod();
           Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              
-              (route) => false);
+              context, Routes.loginScreen, (route) => false);
         });
       } else if (_changepasswordmodel!.stat == "Not_Ok") {
         warningToaster(context,
             _changepasswordmodel!.emsg!.replaceAll("Error Occurred :", ""));
       } else if (_changepasswordmodel!.emsg ==
-          "Session Expired :  Invalid Session Key") {              ref(authProvider). ifSessionExpired(  context);
+          "Session Expired :  Invalid Session Key") {
+        ref(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();

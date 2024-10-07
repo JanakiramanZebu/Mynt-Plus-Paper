@@ -1,3 +1,5 @@
+ 
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
@@ -5,10 +7,6 @@ import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
-import 'group/create_group.dart';
-import 'group/tag_position_grp_name.dart';
-// import 'group/create_group.dart';
-// import 'group/tag_position_grp_name.dart';
 
 class PositionListCard extends ConsumerWidget {
   final PositionBookModel positionList;
@@ -44,30 +42,43 @@ class PositionListCard extends ConsumerWidget {
                           color: theme.isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack)),
-                  if (positions.posSelection == "All position")
-                    InkWell(
-                        onTap: () {
-                          if (positions.posGrpNames.length <= 2) {
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return const CreateGroupPos();
-                                });
-                          } else {
-                            showModalBottomSheet(
-                                useSafeArea: true,
-                                isScrollControlled: true,
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(16))),
-                                context: context,
-                                builder: (context) {
-                                  return TagPositionGrpName(
-                                      positionList: positionList);
-                                });
-                          }
-                        },
-                        child: const Icon(Icons.label_important_outline_sharp))
+                  // InkWell(
+                  //     onTap: () async {
+                  //       // if (positions.posSelection == "All position") {
+                  //       //   if (positions.posGrpNames.length <= 2) {
+                  //       //     showDialog(
+                  //       //         context: context,
+                  //       //         builder: (BuildContext context) {
+                  //       //           return const CreateGroupPos();
+                  //       //         });
+                  //       //   } else {
+                  //       //     showModalBottomSheet(
+                  //       //         useSafeArea: true,
+                  //       //         isScrollControlled: true,
+                  //       //         shape: const RoundedRectangleBorder(
+                  //       //             borderRadius: BorderRadius.vertical(
+                  //       //                 top: Radius.circular(16))),
+                  //       //         context: context,
+                  //       //         builder: (context) {
+                  //       //           return TagPositionGrpName(
+                  //       //               positionList: positionList);
+                  //       //         });
+                  //       //   }
+                  //       // } else {
+                  //       //   positions.fetchDeleteGroupSymbol(
+                  //       //       positions.posSelection,
+                  //       //       context,
+                  //       //       positionList.tsym!);
+                  //       // }
+
+                  //       Map data = jsonDecode(jsonEncode(positionList));
+                  //       print(data);
+                  //     },
+                  //     child: Icon(
+                  //         positions.posSelection == "All position"
+                  //             ? Icons.label_important_outline_sharp
+                  //             : Icons.delete_outlined,
+                  //         color: Color(0xff666666)))
                 ]),
                 Row(children: [
                   Text(" LTP: ",

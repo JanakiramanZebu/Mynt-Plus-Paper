@@ -105,7 +105,7 @@ mixin PortfolioAPI on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
-      // log("PositionBook => ${res.body}");
+        // log("PositionBook => ${res.body}");
 
       final List<PositionBookModel> data = [];
 
@@ -168,7 +168,7 @@ mixin PortfolioAPI on ApiCore {
           Uri.parse("${apiLinks.positionGrp}?clientid=${prefs.clientId}");
       final res = await apiClient.get(uri, headers: defaultHeaders);
 
-      log("Position Group => ${res.body}");
+      log("Position Group List => ${res.body}");
       final json = jsonDecode(res.body);
       final List<GetGroupSymbol> data = [];
 
@@ -216,5 +216,41 @@ mixin PortfolioAPI on ApiCore {
       rethrow;
     }
   }
+
+  Future<CreateGroupName> deletePositionGrpName(String name) async {
+    try {
+      final uri = Uri.parse(
+          "${apiLinks.delpositiongrpName}?clientid=${prefs.clientId}&posname=$name");
+      final res = await apiClient.get(uri, headers: defaultHeaders);
+
+      log("Delete vPosition Group  Name => ${res.body}");
+      final json = jsonDecode(res.body);
+
+      return CreateGroupName.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<CreateGroupName> deletePositionGrpSym(
+      String grpName, String tsym) async {
+    try {
+      final uri = Uri.parse(apiLinks.delpositiongrpSym);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({
+            "clientid": "${prefs.clientId}",
+            "posname": grpName,
+            "tsym": tsym
+          }));
+
+      log("Delete Position Group Symbol => ${res.body}");
+      final json = jsonDecode(res.body);
+
+      return CreateGroupName.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
-  
+// "symbol removed"

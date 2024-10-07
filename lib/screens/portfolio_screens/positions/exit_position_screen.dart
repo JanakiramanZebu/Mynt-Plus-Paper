@@ -378,7 +378,7 @@ class ExitPositionScreen extends ConsumerWidget {
                   onTap: positions.exitPositionQty == 0
                       ? () {}
                       : () async {
-                          await positions.exitAllPosition(context, true);
+                          await positions.exitPosition(context, false);
                         },
                   child: Center(
                       child: Text(

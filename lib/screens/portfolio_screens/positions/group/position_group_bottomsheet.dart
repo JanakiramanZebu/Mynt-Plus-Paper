@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
-import '../../../../sharedWidget/list_divider.dart';
-import 'create_group.dart';
+import '../../../../sharedWidget/list_divider.dart'; 
 
 class PositionGroupBottomSheet extends StatelessWidget {
   const PositionGroupBottomSheet({super.key});
@@ -35,59 +33,28 @@ class PositionGroupBottomSheet extends StatelessWidget {
                 Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16.0, vertical: 0),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Group by",
-                              style: textStyles.appBarTitleTxt.copyWith(
-                                  color: theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack)),
-                          InkWell(
-                              onTap: () {
-                                Navigator.pop(context);
-                                showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return const CreateGroupPos();
-                                    });
-                              },
-                              child: Padding(
-                                  padding: const EdgeInsets.all(5),
-                                  child: Row(children: [
-                                    SvgPicture.asset(assets.addCircleIcon,
-                                        color: theme.isDarkMode
-                                            ? colors.colorLightBlue
-                                            : colors.colorBlue),
-                                    const SizedBox(width: 3),
-                                    Text("Create New Group",
-                                        style: textStyles.textBtn.copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorLightBlue
-                                                : colors.colorBlue))
-                                  ])))
-                        ])),
+                    child: Text("Group by",
+                        style: textStyles.appBarTitleTxt.copyWith(
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack))),
                 Divider(
+                  height: 2,
                     color: theme.isDarkMode
                         ? colors.darkColorDivider
                         : colors.colorDivider),
                 ListView.separated(
                     shrinkWrap: true,
+                
                     itemCount: positionBook.posGrpNames.length,
                     itemBuilder: (BuildContext context, int index) {
                       return ListTile(
                           onTap: () async {
-                            // if (index==0||index==1) {
+                        
                             positionBook.chngPosSelection(
                                 positionBook.posGrpNames[index]);
 
-                            if (index > 1) {
-                              positionBook.fetchPosGroupSymbol(
-                                  positionBook.posGrpNames[index], false);
-                            }else{
-                                positionBook.splitPositionBook(     positionBook.isDay);
-                            }
-                            
+                             
 
                             Navigator.pop(context);
                           },
@@ -95,16 +62,22 @@ class PositionGroupBottomSheet extends StatelessWidget {
                               horizontal: 16, vertical: 0),
                           dense: true,
                           title: Text(positionBook.posGrpNames[index],
-                              style: textStyles.prdText),
-                          trailing: SvgPicture.asset(theme.isDarkMode
-                              ? positionBook.posGrpNames[index] ==
-                                      positionBook.posSelection
-                                  ? assets.darkActProductIcon
-                                  : assets.darkProductIcon
-                              : positionBook.posGrpNames[index] ==
-                                      positionBook.posSelection
-                                  ? assets.actProductIcon
-                                  : assets.productIcon));
+                              style: textStyles.prdText.copyWith(
+                                  color: positionBook.posGrpNames[index] ==
+                                          positionBook.posSelection
+                                      ? colors.colorBlack
+                                      : colors.colorGrey)),
+                          trailing: index > 1
+                              ? InkWell(
+                                  child: const Icon(
+                                    Icons.delete_outlined,
+                                    color: Color(0xff666666),
+                                  ),
+                                  onTap: () async {
+                                  //      positionBook
+                                  // .fetchDeleteGroupName(positionBook.posGrpNames[index], context);
+                                  })
+                              : Container(width: 0.1));
                     },
                     separatorBuilder: (BuildContext context, int index) {
                       return const ListDivider();

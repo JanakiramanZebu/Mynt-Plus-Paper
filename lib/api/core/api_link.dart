@@ -127,7 +127,10 @@ class ApiLinks {
   // Position Group
   String get positionGrp => '$mainBaseURL/Getpositiongrp';
   String get creatGrpName => '$mainBaseURL/Createpositiongrp';
-String get addSymbolGrp => '$mainBaseURL/addsymbolpositiongrp';
+  String get addSymbolGrp => '$mainBaseURL/addsymbolpositiongrp';
+  String get delpositiongrpName => '$mainBaseURL/Deletepositiongrp';
+  String get delpositiongrpSym => '$mainBaseURL/removesymbolpositiongrp';
+
   
 
 
