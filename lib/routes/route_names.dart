@@ -140,4 +140,8 @@ class Routes {
   static const String mfWatchlist = 'mfWatchlist';
   static const String mforderScreen = 'mforderScreen';
   static const String mfStockDetail = 'mfStockDetail';
+//fund
+  static const String fundscreen = "fundscreen";
+  static const String paymentstatus = 'paymentstatus';
+  static const String upiIDpaymentstatus = 'UpiIDpaymentstatus';
 }

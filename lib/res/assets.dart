@@ -161,4 +161,8 @@ class Assets {
   final String percentage = "assets/icon/percentage.svg";
     final String lowRisk = "assets/icon/low_risk.svg";
   final String highRisk = "assets/icon/high_risk.svg";
+
+  // payment icons
+  final String upiIcon = "assets/icon/icons8-bhim.svg";
+  final String razPayicon = "assets/icon/razpay.svg";
 }

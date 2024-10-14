@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
+import 'package:flutter_svg/svg.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/api_key_provider.dart';
@@ -14,6 +13,7 @@ import '../../provider/mf_provider.dart';
 import '../../provider/notification_provider.dart';
 
 import '../../provider/thems.dart';
+import '../../provider/transcation_provider.dart';
 import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
@@ -25,8 +25,10 @@ class UserAccountScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
+    int indexss = 0;
     final userProfile = watch(userProfileProvider);
     final theme = watch(themeProvider);
+    final trancation = watch(transcationProvider);
     int currentYear = DateTime.now().year;
     // final portfolio = watch(portfolioProvider);
     // final indexProvide = watch(indexListProvider);
@@ -45,7 +47,11 @@ class UserAccountScreen extends ConsumerWidget {
                       contentPadding:
                           const EdgeInsets.symmetric(horizontal: 16),
                       onTap: () async {
-                        if (index == 3 || index == 4 || index == 5 || index == 6 || index == 7 ){
+                        if (index == 3 ||
+                            index == 4 ||
+                            index == 5 ||
+                            index == 6 ||
+                            index == 7) {
                           await funds.fetchHstoken(context);
                         }
                         if (index == 0) {
@@ -58,15 +64,13 @@ class UserAccountScreen extends ConsumerWidget {
                         } else if (index == 3) {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "tradeverify");
-                        } 
-                        else if (index == 4) {
+                        } else if (index == 4) {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "corporateaction");
                         } else if (index == 5) {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "event");
-                        }
-                        else if (index == 6) {
+                        } else if (index == 6) {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "pledge");
                         } else if (index == 7) {
@@ -160,9 +164,20 @@ class UserAccountScreen extends ConsumerWidget {
                                             borderRadius:
                                                 BorderRadius.circular(50))),
                                     onPressed: () async {
-                                      await funds.fetchHstoken(context);
-                                      launch(
-                                           'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}');
+                                      Navigator.pushNamed(
+                                          context, Routes.fundscreen,
+                                          arguments: trancation);
+                                      await context
+                                          .read(transcationProvider)
+                                          .fetchupiIdView(
+                                              trancation.bankdetails!
+                                                  .dATA![indexss][1],
+                                              trancation.bankdetails!
+                                                  .dATA![indexss][2]);
+                                      // await funds.fetchHstoken(context);
+
+                                      //launch(
+                                      //  'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}');
                                       // await context
                                       //     .read(fundProvider)
                                       //     .fetchHstoken(context);
@@ -275,9 +290,9 @@ class UserAccountScreen extends ConsumerWidget {
                                                           ? colors.colorbluegrey
                                                           : colors.colorBlack,
                                                   shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(    50) 
-                                                  )),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              50))),
                                               child: Text("Continue",
                                                   style: textStyle(
                                                       !context
@@ -422,6 +437,4 @@ class UserAccountScreen extends ConsumerWidget {
                         const Color(0xff666666), 11, FontWeight.w500)))
           ]);
   }
-
-  
 }

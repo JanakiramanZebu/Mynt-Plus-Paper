@@ -253,3 +253,23 @@ String convDateWithTime() {
   final formattedDatetime = outputFormat.format(inputDatetime);
   return formattedDatetime.toString();
 }
+
+String capitalizeFirstLetter(String text) {
+  if (text.isEmpty) return text;
+  return text[0].toUpperCase() + text.substring(1);
+}
+
+String formatDateTimepaymet({required String value}) {
+  String formatedDate = '';
+  if (value.isNotEmpty) {
+    final inputDatetimeString = value;
+    final inputFormat = DateFormat("yyyy:MM:dd HH:mm:ss");
+    final inputDatetime = inputFormat.parse(inputDatetimeString);
+    // Format the datetime in the desired format
+    final outputFormat = DateFormat("dd MMM yyyy, hh:mm a");
+    final formattedDatetime = outputFormat.format(inputDatetime);
+    formatedDate = formattedDatetime;
+    // print("Formatted Datetime: $formattedDatetime");
+  }
+  return formatedDate;
+}

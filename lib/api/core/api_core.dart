@@ -1,5 +1,5 @@
 import 'package:http/http.dart' show Client;
- 
+
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import 'api_link.dart';
@@ -10,7 +10,7 @@ export 'dart:convert';
 
 mixin ApiCore {
   final apiClient = Client();
-   final prefs = locator<Preferences>();
+  final prefs = locator<Preferences>();
   final apiLinks = locator<ApiLinks>();
   Map<String, String> get defaultHeaders {
     return {
@@ -20,11 +20,18 @@ mixin ApiCore {
     };
   }
 
-   Map<String, String> get funddefaultHeaders {
+  Map<String, String> get funddefaultHeaders {
     return {
       'Authorization': "${prefs.token}",
       'clientid': "${prefs.clientId}",
       'Content-Type': 'application/json'
+    };
+  }
+
+  Map<String, String> get razorpaytHeaders {
+    return {
+      'Authorization': "${prefs.token}",
+      'clientid': "${prefs.clientId}",
     };
   }
 
