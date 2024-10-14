@@ -40,7 +40,10 @@ import '../screens/profile_screen/app_webview/fund_transaction.dart';
 import '../screens/profile_screen/app_webview/option_z.dart';
 import '../screens/profile_screen/app_webview/profile_web_view.dart';
 import '../screens/profile_screen/app_webview/report_web_view.dart';
+import '../screens/profile_screen/fund_screen/fund_screen.dart';
 import '../screens/profile_screen/fund_screen/secure_fund.dart';
+import '../screens/profile_screen/fund_screen/upi_apps_screens/upi_apps_payment_status.dart';
+import '../screens/profile_screen/fund_screen/upi_id_screens/upi_id_payment_status.dart';
 import '../screens/profile_screen/log_message.dart';
 import '../screens/profile_screen/manage_fund/report_screen.dart';
 import '../screens/profile_screen/my_ac_screens/bank_detail.dart';
@@ -1003,6 +1006,59 @@ class AppRoutes {
             );
           },
         );
+
+      /////
+       case Routes.fundscreen:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              FundScreen(dd: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+      case Routes.paymentstatus:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              PaymentStatus(ss: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+      case Routes.upiIDpaymentstatus:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              UpiIdPaymentStatus(ss: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
 
       default:
         return _errorRoute();

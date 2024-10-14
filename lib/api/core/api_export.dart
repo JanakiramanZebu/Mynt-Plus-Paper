@@ -11,6 +11,7 @@ import '../notification_api.dart';
 import '../order_api.dart';
 import '../portfolio_api.dart';
 import '../stocks_api.dart';
+import '../transcation_api.dart';
 import '../user_profile_api.dart';
 import 'api_core.dart';
 
@@ -29,5 +30,5 @@ class ApiExporter
         StocksAPI,
         UserProfileAPI,
         GenerateApiKey,
-        IPOApi,MutualFundApi
+        IPOApi,MutualFundApi,TranscationApi
         {}

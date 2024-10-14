@@ -188,9 +188,24 @@ class ApiLinks {
 
   // String get mfSip=> "$dashBoardURL/mf/sip_values";
 
+   String get mainfund => 'https://fundapi.mynt.in/api';
+  String get clientcheck => '$mainfund/client_check';
+  String get bankcheck => '$mainfund/bank_check';
+  String get fundUpiIdView => 'https://fundapi.mynt.in/withdraw/upi_id_view';
+  String get withdraw => 'https://fundapi.mynt.in/withdraw/payout';
+  
+
+  /////
+  String get upimainfund => 'https://fundapi.mynt.in';
+  String get fundpayment => "$upimainfund/hdfc/upi/UPItransactionRequest";
+  String get fundUpiStatus => "$upimainfund/hdfc/upi/MobileUPIstatus";
+
   //hdfc mainurl//
   String get hdfcmainurl => 'https://fundapi.mynt.in/hdfc/upi';
   String get verifyUPI => '$hdfcmainurl/checkClientVPA';
+  String get moneytransction => '$hdfcmainurl/transactionRequest';
+  String get tranctiontstatus => '$hdfcmainurl/paymentstatus';
+
   //fund urlss///
   String get viewupiid => 'https://fundapi.mynt.in/withdraw/view_upi_id';
 
