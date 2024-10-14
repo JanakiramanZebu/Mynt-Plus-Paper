@@ -302,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     color: colors.colorGrey)),
                                           ),
                                   ] else if ((indexProvide.selectedBtmIndx ==
-                                          2 && portfolio.allPostionList.length>1) &&
+                                          2 && portfolio.allPostionList.isNotEmpty) &&
                                       portfolio.selectedTab == 0) ...[
                                     Padding(
                                       padding:

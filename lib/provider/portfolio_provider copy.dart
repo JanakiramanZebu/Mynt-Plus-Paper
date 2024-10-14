@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:convert'; 
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -153,7 +154,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   String get posSelection => _posSelection;
 
-  final List<String> _posGrpNames = ["All position", "Group by symbol"];
+  List<String> _posGrpNames = ["All position", "Group by symbol"];
 
   List<String> get posGrpNames => _posGrpNames;
 
@@ -724,9 +725,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       // }
       await positionCal(isDay);
 
-      // await positionGroupCal(isDay, {});
-
-      getPositionGroupNames();
+      await positionGroupCal(isDay, {});
       tabSize();
 
       notifyListeners();
@@ -766,19 +765,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
           _exitPositionQty = _exitPositionQty + 1;
         } else {
           _allPostionList[i].isExitSelection = false;
-        }
-      }
-    }
-
-    notifyListeners();
-  }
-
-  cusGrpSelectPosition(List addedSymbol) {
-    for (var element in _postionBookModel!) {
-      element.isExitSelection = false;
-      for (var addedSymbol in addedSymbol) {
-        if (element.tsym == addedSymbol['tsym']) {
-          element.isExitSelection = true;
         }
       }
     }
@@ -995,9 +981,259 @@ class PortfolioProvider extends DefaultChangeNotifier {
     _totBookedPnL = bookPnl.toStringAsFixed(2);
   }
 
-  getPositionGroupNames() {
+  positionGroupCal(bool isDay, Map<String, dynamic> groupData) {
+    double totalMtm = 0.00;
+    double totalPnl = 0.00;
+    double unRealMtm = 0.00;
+    double bookPnl = 0.00;
+
+    int qty = 0;
+
+    double avgPrc = 0.00;
+    String pnl = "0.00";
     _groupedBySymbol = {};
+
     for (var element in _allPostionList) {
+      if (groupData.isEmpty) {
+        double lastPrice = double.parse(
+            element.lp == null || element.lp == "null"
+                ? "0.00"
+                : "${element.lp}");
+        if (isDay) {
+          element.avgPrc = element.netqty == "0" ? "0.00" : element.dayavgprc;
+
+          avgPrc = double.parse(element.avgPrc ?? "0.00");
+          qty = (int.parse("${element.daybuyqty ?? 0}") -
+              int.parse("${element.daysellqty ?? 0}"));
+
+          element.qty = "$qty";
+
+          if (qty != 0) {
+            pnl = element.netqty == "0"
+                ? (double.parse("${element.totsellamt ?? 0.00}") -
+                        double.parse("${element.totbuyamt ?? 0.00}"))
+                    .toStringAsFixed(2)
+                : (element.exch == "MCX" || element.exch == "CDS")
+                    ? ((lastPrice - avgPrc) *
+                            (int.parse("${element.mult ?? 0}") * qty))
+                        .toStringAsFixed(2)
+                    : ((lastPrice - avgPrc) * qty).toStringAsFixed(2);
+
+            element.profitNloss = pnl;
+
+            unRealMtm += double.parse(element.profitNloss!);
+          } else {
+            element.profitNloss = element.rpnl;
+            bookPnl += double.parse(element.rpnl!);
+          }
+        } else {
+          element.qty = "${element.netqty}";
+
+          qty = int.parse(element.qty ?? "0");
+
+          element.avgPrc = qty == 0
+              ? "0.00"
+              : _isNetPnl
+                  ? element.upldprc == "0.00"
+                      ? element.dayavgprc
+                      : element.upldprc
+                  : element.netavgprc;
+
+          avgPrc = double.parse(element.avgPrc ?? "0.00");
+          if (element.exch == "MCX" || element.exch == "CDS") {
+            double value =
+                (lastPrice - double.parse(element.netavgprc ?? "0.00")) *
+                    (int.parse("${element.mult ?? 0}") * qty);
+
+            element.mTm = qty == 0 ? element.rpnl : value.toStringAsFixed(2);
+
+            if (qty == 0) {
+              if (element.cfbuyqty != "0") {
+                element.profitNloss =
+                    (double.parse("${element.daysellavgprc ?? 0.00}") *
+                                int.parse("${element.daysellqty ?? 0}") -
+                            int.parse("${element.cfbuyqty ?? 0}") *
+                                double.parse("${element.upldprc ?? 0.00}"))
+                        .toStringAsFixed(2);
+              } else if (element.cfsellqty != "0") {
+                element.profitNloss = (int.parse("${element.cfsellqty ?? 0}") *
+                            double.parse("${element.upldprc ?? 0.00}") -
+                        double.parse("${element.daybuyavgprc ?? 0.00}") *
+                            int.parse("${element.daybuyqty ?? 0}"))
+                    .toStringAsFixed(2);
+              }
+            } else {
+              element.profitNloss = ((lastPrice -
+                          double.parse(
+                              "${element.upldprc == "0.00" ? element.avgPrc : element.upldprc}")) *
+                      (int.parse("${element.mult ?? 0}") * qty))
+                  .toStringAsFixed(2);
+            }
+          } else {
+            double value =
+                (((lastPrice - double.parse(element.netavgprc ?? "0.00")) *
+                        qty) +
+                    double.parse("${element.rpnl ?? 0.00}"));
+
+            element.mTm =
+                qty != 0 ? value.toStringAsFixed(2) : "${element.rpnl}";
+
+            if (qty == 0) {
+              if (element.cfbuyqty != "0") {
+                element.profitNloss =
+                    (double.parse("${element.daysellavgprc ?? 0.00}") *
+                                int.parse("${element.daysellqty ?? 0}") -
+                            int.parse("${element.cfbuyqty ?? 0}") *
+                                double.parse("${element.upldprc ?? 0.00}"))
+                        .toStringAsFixed(2);
+              } else if (element.cfsellqty != "0") {
+                element.profitNloss = (int.parse("${element.cfsellqty ?? 0}") *
+                            double.parse("${element.upldprc ?? 0.00}") -
+                        double.parse("${element.daybuyavgprc ?? 0.00}") *
+                            int.parse("${element.daybuyqty ?? 0}"))
+                    .toStringAsFixed(2);
+              } else {
+                element.profitNloss = element.rpnl;
+              }
+
+              // print(" 34 ${element.profitNloss}");
+            } else {
+              element.profitNloss = (((lastPrice -
+                              double.parse(
+                                  "${element.upldprc == "0.00" ? element.avgPrc : element.upldprc}")) *
+                          qty) +
+                      double.parse("${element.rpnl ?? 0.00}"))
+                  .toStringAsFixed(2);
+
+              // print(  "34   ${element.profitNloss}");
+            }
+          }
+
+          // totalMtm += double.parse(element.mTm!);
+          // totalPnl +=
+          //     double.parse("${element.profitNloss ?? element.rpnl ?? 0.00}");
+        }
+      } else {
+        if (element.token == groupData['token']) {
+          element.lp = groupData['lp'];
+
+          element.perChange = groupData['perChange'];
+
+          double lastPrice = double.parse(
+              element.lp == null || element.lp == "null"
+                  ? "0.00"
+                  : "${element.lp}");
+          if (isDay) {
+            element.avgPrc = element.netqty == "0" ? "0.00" : element.dayavgprc;
+
+            avgPrc = double.parse(element.avgPrc ?? "0.00");
+            qty = (int.parse("${element.daybuyqty ?? 0}") -
+                int.parse("${element.daysellqty ?? 0}"));
+
+            element.qty = "$qty";
+
+            if (qty != 0) {
+              pnl = element.netqty == "0"
+                  ? (double.parse("${element.totsellamt ?? 0.00}") -
+                          double.parse("${element.totbuyamt ?? 0.00}"))
+                      .toStringAsFixed(2)
+                  : (element.exch == "MCX" || element.exch == "CDS")
+                      ? ((lastPrice - avgPrc) *
+                              (int.parse("${element.mult ?? 0}") * qty))
+                          .toStringAsFixed(2)
+                      : ((lastPrice - avgPrc) * qty).toStringAsFixed(2);
+
+              element.profitNloss = pnl;
+
+              unRealMtm += double.parse(element.profitNloss!);
+            } else {
+              element.profitNloss = element.rpnl;
+              bookPnl += double.parse(element.rpnl!);
+            }
+          } else {
+            element.qty = "${element.netqty}";
+
+            qty = int.parse(element.qty ?? "0");
+
+            element.avgPrc = qty == 0
+                ? "0.00"
+                : _isNetPnl
+                    ? element.upldprc == "0.00"
+                        ? element.dayavgprc
+                        : element.upldprc
+                    : element.netavgprc;
+
+            avgPrc = double.parse(element.avgPrc ?? "0.00");
+            if (element.exch == "MCX" || element.exch == "CDS") {
+              double value =
+                  (lastPrice - double.parse(element.netavgprc ?? "0.00")) *
+                      (int.parse("${element.mult ?? 0}") * qty);
+
+              element.mTm = qty == 0 ? element.rpnl : value.toStringAsFixed(2);
+
+              if (qty == 0) {
+                if (element.cfbuyqty != "0") {
+                  element.profitNloss =
+                      (double.parse("${element.daysellavgprc ?? 0.00}") *
+                                  int.parse("${element.daysellqty ?? 0}") -
+                              int.parse("${element.cfbuyqty ?? 0}") *
+                                  double.parse("${element.upldprc ?? 0.00}"))
+                          .toStringAsFixed(2);
+                } else if (element.cfsellqty != "0") {
+                  element.profitNloss =
+                      (int.parse("${element.cfsellqty ?? 0}") *
+                                  double.parse("${element.upldprc ?? 0.00}") -
+                              double.parse("${element.daybuyavgprc ?? 0.00}") *
+                                  int.parse("${element.daybuyqty ?? 0}"))
+                          .toStringAsFixed(2);
+                }
+              } else {
+                element.profitNloss = ((lastPrice -
+                            double.parse(
+                                "${element.upldprc == "0.00" ? element.avgPrc : element.upldprc}")) *
+                        (int.parse("${element.mult ?? 0}") * qty))
+                    .toStringAsFixed(2);
+              }
+            } else {
+              double value =
+                  (((lastPrice - double.parse(element.netavgprc ?? "0.00")) *
+                          qty) +
+                      double.parse("${element.rpnl ?? 0.00}"));
+
+              element.mTm =
+                  qty != 0 ? value.toStringAsFixed(2) : "${element.rpnl}";
+
+              if (qty == 0) {
+                if (element.cfbuyqty != "0") {
+                  element.profitNloss =
+                      (double.parse("${element.daysellavgprc ?? 0.00}") *
+                                  int.parse("${element.daysellqty ?? 0}") -
+                              int.parse("${element.cfbuyqty ?? 0}") *
+                                  double.parse("${element.upldprc ?? 0.00}"))
+                          .toStringAsFixed(2);
+                } else if (element.cfsellqty != "0") {
+                  element.profitNloss =
+                      (int.parse("${element.cfsellqty ?? 0}") *
+                                  double.parse("${element.upldprc ?? 0.00}") -
+                              double.parse("${element.daybuyavgprc ?? 0.00}") *
+                                  int.parse("${element.daybuyqty ?? 0}"))
+                          .toStringAsFixed(2);
+                } else {
+                  element.profitNloss = element.rpnl;
+                }
+              } else {
+                element.profitNloss = (((lastPrice -
+                                double.parse(
+                                    "${element.upldprc == "0.00" ? element.avgPrc : element.upldprc}")) *
+                            qty) +
+                        double.parse("${element.rpnl ?? 0.00}"))
+                    .toStringAsFixed(2);
+              }
+            }
+          }
+        }
+      }
+
       if (_groupedBySymbol.containsKey(element.symbol)) {
         _groupedBySymbol['${element.symbol}']["groupList"]
             .add(jsonDecode(jsonEncode(element)));
@@ -1013,201 +1249,76 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
     }
 
-    for (var element in _getPositionGroupSymbol) {
-      if (_groupedBySymbol.containsKey(element.posname)) {
-        _groupedBySymbol['${element.posname}']["groupList"]
-            .add(jsonDecode(jsonEncode(element.posdata)));
-      } else {
-// log("${jsonDecode(jsonEncode(element.posdata))  }");
+//     for (var element in _getPositionGroupSymbol) {
+//       if (_groupedBySymbol.containsKey(element.posname)) {
+//         _groupedBySymbol['${element.posname}']["groupList"]
+//             .add(jsonDecode(jsonEncode(element.posdata)));
+//       } else {
+// // log("${jsonDecode(jsonEncode(element.posdata))  }");
 
-        _groupedBySymbol.addAll({
-          "${element.posname}": {
-            "isCustomGrp": true,
-            "totMtm": "0.00",
-            "totPnl": "0.00",
-            "groupList": jsonDecode(jsonEncode(element.posdata))
-          }
-        });
-      }
-    }
+
+//         _groupedBySymbol.addAll({
+//           "${element.posname}": {
+//             "isCustomGrp": true,
+//             "totMtm": "0.00",
+//             "totPnl": "0.00",
+//             "groupList": jsonDecode(jsonEncode(element.posdata))
+//           }
+//         });
+//       }
+//     }
 
     _groupPositionSym = [];
 
     if (_groupedBySymbol.keys.isNotEmpty) {
       for (var element in _groupedBySymbol.keys) {
         _groupPositionSym.add(element);
-      }
-    }
-    notifyListeners();
-  }
 
-  positionGroupCal(
-      bool isDay, List groupData, String groupName, bool iscusGrop) {
-    // double totalMtm = 0.00;
-    // double totalPnl = 0.00;
-    double unRealMtm = 0.00;
-    double bookPnl = 0.00;
+        List data = _groupedBySymbol['$element']["groupList"];
 
-    int qty = 0;
-    double totalProfitNloss = 0.00;
-    double totalMtms = 0.00;
+        if (data.isNotEmpty) {
+          double totalProfitNloss = 0.00;
+          double totalMtms = 0.00;
 
-    double avgPrc = 0.00;
-    String pnl = "0.00";
+          double df = 0.00;
+          double dsf = 0.00;
 
-    if (groupData.isNotEmpty) {
-      for (var element in groupData) {
-        double lastPrice = double.parse(
-            element["lp"] == null || element["lp"] == "null"
-                ? "0.00"
-                : "${element["lp"]}");
-        if (isDay) {
-          element["avgPrc"] =
-              element["netqty"] == "0" ? "0.00" : element["dayavgprc"];
-
-          avgPrc = double.parse(element["avgPrc"] ?? "0.00");
-          qty = (int.parse("${element["daybuyqty"] ?? 0}") -
-              int.parse("${element["daysellqty"] ?? 0}"));
-
-          element["qty"] = "$qty";
-
-          if (qty != 0) {
-            pnl = element["netqty"] == "0"
-                ? (double.parse("${element["totsellamt"] ?? 0.00}") -
-                        double.parse("${element["totbuyamt"] ?? 0.00}"))
-                    .toStringAsFixed(2)
-                : (element["exch"] == "MCX" || element["exch"] == "CDS")
-                    ? ((lastPrice - avgPrc) *
-                            (int.parse("${element['mult'] ?? 0}") * qty))
-                        .toStringAsFixed(2)
-                    : ((lastPrice - avgPrc) * qty).toStringAsFixed(2);
-
-            element["profitNloss"] = pnl;
-
-            unRealMtm += double.parse(pnl);
-            _groupedBySymbol[groupName]['totPnl'] =
-                unRealMtm.toStringAsFixed(2);
-          } else {
-            element["profitNloss"] = element["rpnl"];
-            bookPnl += double.parse(element["rpnl"] ?? "0.00");
-            _groupedBySymbol[groupName]['totPnl'] = bookPnl.toStringAsFixed(2);
-          }
-        } else {
-          element["qty"] = "${element["netqty"]}";
-
-          qty = int.parse(element["qty"] ?? "0");
-
-          element["avgPrc"] = qty == 0
-              ? "0.00"
-              : _isNetPnl
-                  ? element["upldprc"] == "0.00"
-                      ? element["dayavgprc"]
-                      : element["upldprc"]
-                  : element["netavgprc"];
-
-          avgPrc = double.parse(element["avgPrc"] ?? "0.00");
-          if (element["exch"] == "MCX" || element["exch"] == "CDS") {
-            double value =
-                (lastPrice - double.parse(element["netavgprc"] ?? "0.00")) *
-                    (int.parse("${element['mult'] ?? 0}") * qty);
-
-            element['mTm'] =
-                qty == 0 ? element["rpnl"] : value.toStringAsFixed(2);
-
-            if (qty == 0) {
-              if (element["cfbuyqty"] != "0") {
-                element['profitNloss'] =
-                    (double.parse("${element['daysellavgprc'] ?? 0.00}") *
-                                int.parse("${element['daysellqty'] ?? 0}") -
-                            int.parse("${element['cfbuyqty'] ?? 0}") *
-                                double.parse("${element['upldprc'] ?? 0.00}"))
-                        .toStringAsFixed(2);
-              } else if (element['cfsellqty'] != "0") {
-                element['profitNloss'] =
-                    (int.parse("${element['cfsellqty'] ?? 0}") *
-                                double.parse("${element['upldprc'] ?? 0.00}") -
-                            double.parse("${element['daybuyavgprc'] ?? 0.00}") *
-                                int.parse("${element['daybuyqty'] ?? 0}"))
-                        .toStringAsFixed(2);
-              }
+          for (var i = 0; i < data.length; i++) {
+            if (_groupedBySymbol['$element']["isCustomGrp"] == false) {
+              totalProfitNloss = (totalProfitNloss +
+                  double.parse(data[i]['profitNloss'] ?? "0.00"));
+              totalMtms = (totalMtms + double.parse(data[i]['mTm'] ?? "0.00"));
             } else {
-              element['profitNloss'] = ((lastPrice -
-                          double.parse(
-                              "${element['upldprc'] == "0.00" ? element['avgPrc'] : element['upldprc']}")) *
-                      (int.parse("${element['mult'] ?? 0}") * qty))
-                  .toStringAsFixed(2);
-            }
-          } else {
-            double value =
-                (((lastPrice - double.parse(element['netavgprc'] ?? "0.00")) *
-                        qty) +
-                    double.parse("${element['rpnl'] ?? 0.00}"));
-
-            element['mTm'] =
-                qty != 0 ? value.toStringAsFixed(2) : "${element['rpnl']}";
-
-            if (qty == 0) {
-              if (element['cfbuyqty'] != "0") {
-                element['profitNloss'] =
-                    (double.parse("${element['daysellavgprc'] ?? 0.00}") *
-                                int.parse("${element['daysellqty'] ?? 0}") -
-                            int.parse("${element['cfbuyqty'] ?? 0}") *
-                                double.parse("${element['upldprc'] ?? 0.00}"))
-                        .toStringAsFixed(2);
-              } else if (element['cfsellqty'] != "0") {
-                element['profitNloss'] =
-                    (int.parse("${element['cfsellqty'] ?? 0}") *
-                                double.parse("${element['upldprc'] ?? 0.00}") -
-                            double.parse("${element['daybuyavgprc'] ?? 0.00}") *
-                                int.parse("${element['daybuyqty'] ?? 0}"))
-                        .toStringAsFixed(2);
-              } else {
-                element['profitNloss'] = element['rpnl'];
-              }
-
-              // print(" 34 ${element.profitNloss}");
-            } else {
-              element['profitNloss'] = (((lastPrice -
-                              double.parse(
-                                  "${element['upldprc'] == "0.00" ? element['avgPrc'] : element['upldprc']}")) *
-                          qty) +
-                      double.parse("${element['rpnl'] ?? 0.00}"))
-                  .toStringAsFixed(2);
-
-              // print(  "34   ${element.profitNloss}");
+              df = (df + double.parse(data[i]['profitNloss'] ?? "0.00"));
+              dsf = (dsf + double.parse(data[i]['mTm'] ?? "0.00"));
             }
           }
 
-          totalMtms += double.parse(element['mTm'] ?? "0.00");
-          totalProfitNloss += double.parse(
-              "${element['profitNloss'] ?? element['rpnl'] ?? 0.00}");
+          bool shouldExit = data.any((item) => item['qty'] != '0');
 
-          _groupedBySymbol[groupName]['totPnl'] =
-              totalProfitNloss.toStringAsFixed(2);
+          // _groupedBySymbol['$element']['totPnl'] =
+          //     totalProfitNloss.toStringAsFixed(2);
+          if (_groupedBySymbol['$element']["isCustomGrp"] == false) {
+            totalPnl += totalProfitNloss;
+            _groupedBySymbol['$element']['totPnl'] =
+                totalProfitNloss.toStringAsFixed(2);
+            _groupedBySymbol['$element']['totMtm'] =
+                totalMtms.toStringAsFixed(2);
+            totalMtm += totalMtms;
+          } else {
+            _groupedBySymbol['$element']['totPnl'] = df.toStringAsFixed(2);
+            _groupedBySymbol['$element']['totMtm'] = dsf.toStringAsFixed(2);
+          }
 
-          _groupedBySymbol[groupName]['totMtm'] = totalMtms.toStringAsFixed(2);
+          _groupedBySymbol['$element']['isexit'] =
+              shouldExit ? "true" : "false";
         }
-
-        bool shouldExit = groupData.any((item) => item['qty'] != '0');
-
-        _groupedBySymbol[groupName]['isexit'] = "$shouldExit";
       }
     }
 
-    double ctotPnl = 0.00;
+    _totMtm = totalMtm.toStringAsFixed(2);
 
-    double ctotMtm = 0.00;
-
-    for (var element in _groupPositionSym) {
-      if (_groupedBySymbol[element]["isCustomGrp"] == false) {
-        ctotPnl += double.parse(_groupedBySymbol[element]['totPnl']);
-        ctotMtm += double.parse(_groupedBySymbol[element]['totMtm']);
-      }
-    }
-
-    _totMtm = ctotMtm.toStringAsFixed(2);
-
-    _totPnL = ctotPnl.toStringAsFixed(2);
+    _totPnL = totalPnl.toStringAsFixed(2);
     _totUnRealMtm = unRealMtm.toStringAsFixed(2);
 
     _totBookedPnL = bookPnl.toStringAsFixed(2);
@@ -1252,51 +1363,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
       // ConstantName.lastSubscribe = input;
       ref(websocketProvider).establishConnection(
           channelInput: input, task: isSubscribe ? "t" : "u", context: context);
-    }
-  }
-
-  exitGroupedPosition(BuildContext context, List positionData) async {
-    if (positionData.isNotEmpty) {
-      for (var element in positionData) {
-        if (element['qty'].toString() != "0") {
-          if (((element['s_prdt_ali'] == "MIS" ||
-                  element['s_prdt_ali'] == "CNC") ||
-              element['s_prdt_ali'] == "NRML")) {
-            PlaceOrderInput placeOrderInput = PlaceOrderInput(
-                amo: "",
-                blprc: '',
-                bpprc: '',
-                dscqty: "",
-                exch: "${element['exch']}",
-                prc: "0",
-                prctype: "MKT",
-                prd: "${element['prd']}",
-                qty: element['qty'].toString().replaceAll("-", ""),
-                ret: "DAY",
-                trailprc: '',
-                trantype: int.parse(element['qty'] ?? "0") < 0 ? 'B' : 'S',
-                trgprc: "",
-                tsym: "${element['tsym']}",
-                mktProt: '',
-                channel: defaultTargetPlatform == TargetPlatform.android
-                    ? '${ref(authProvider).deviceInfo["brand"]}'
-                    : "${ref(authProvider).deviceInfo["model"]}",
-                userAgent: defaultTargetPlatform == TargetPlatform.android
-                    ? '${ref(authProvider).deviceInfo["model"]}'
-                    : "${ref(authProvider).deviceInfo["name"]}",
-                appInstaId: defaultTargetPlatform == TargetPlatform.android
-                    ? '${ref(authProvider).deviceInfo["id"]}'
-                    : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
-            _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
-
-            if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
-              break;
-            }
-          }
-        }
-      }
-   await fetchPositionBook(context, _isDay);
-
     }
   }
 
@@ -1721,11 +1787,12 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _exitAll = false;
       _totBookedPnL = "0.00";
       _totUnRealMtm = '0.00';
-
-      if (isCreateGrp) {
-        _posSelection = "Group by symbol";
+      if (_getPositionGroupSymbol.isNotEmpty) {
+        if (isCreateGrp) {
+          _posSelection = "Group by symbol";
+          await positionGroupCal(isDay, {});
+        }
       }
-      getPositionGroupNames();
 
       notifyListeners();
     } catch (e) {}
@@ -1761,13 +1828,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       if (_groupName!.status == "symbol added") {
         await fetchPosGroupSymbol(name, true);
-        Fluttertoast.showToast(
+Fluttertoast.showToast(
             msg: "Scrip was added to $name",
             timeInSecForIosWeb: 2,
             backgroundColor: colors.colorBlack,
             textColor: colors.colorWhite,
             fontSize: 14.0);
-        Navigator.pop(c);
+         Navigator.pop(c);
       } else {
         Fluttertoast.showToast(
             msg: "${_groupName!.status} to $name",
@@ -1809,14 +1876,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       if (_groupName!.status == "symbol removed") {
         await fetchPosGroupSymbol(name, false);
-
-        Fluttertoast.showToast(
-            msg: "Group symbol $tsym was deleted",
-            timeInSecForIosWeb: 2,
-            backgroundColor: colors.colorBlack,
-            textColor: colors.colorWhite,
-            fontSize: 14.0);
-        Navigator.pop(c);
+        ScaffoldMessenger.of(c)
+            .showSnackBar(warningMessage(c, 'Group symbol $tsym was deleted'));
       } else {
         Fluttertoast.showToast(
             msg: "${_groupName!.status}",
@@ -1875,7 +1936,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 .toStringAsFixed(2);
       }
 
-      notifyListeners();
+      notifyListeners(); // Notify to update UI
     }
   }
 }

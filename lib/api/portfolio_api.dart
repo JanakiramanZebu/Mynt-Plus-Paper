@@ -1,5 +1,4 @@
-import 'dart:developer';
-
+ 
 import '../models/portfolio_model/holdings_model.dart';
 import '../models/portfolio_model/mf_holdings_model.dart';
 import '../models/portfolio_model/mf_quotes.dart';
@@ -168,7 +167,7 @@ mixin PortfolioAPI on ApiCore {
           Uri.parse("${apiLinks.positionGrp}?clientid=${prefs.clientId}");
       final res = await apiClient.get(uri, headers: defaultHeaders);
 
-      log("Position Group List => ${res.body}");
+      // log("Position Group List => ${res.body}");
       final json = jsonDecode(res.body);
       final List<GetGroupSymbol> data = [];
 
@@ -188,7 +187,7 @@ mixin PortfolioAPI on ApiCore {
           headers: defaultHeaders,
           body: jsonEncode({"clientid": "${prefs.clientId}", "posname": name}));
 
-      log("Position Group Name => ${res.body}");
+      // log("Position Group Name => ${res.body}");
       final json = jsonDecode(res.body);
 
       return CreateGroupName.fromJson(json as Map<String, dynamic>);
@@ -208,7 +207,7 @@ mixin PortfolioAPI on ApiCore {
             "symdata": data
           }));
 
-      log("Add symbol Group Name => ${res.body}");
+      // log("Add symbol Group Name => ${res.body}");
       final json = jsonDecode(res.body);
 
       return CreateGroupName.fromJson(json as Map<String, dynamic>);
@@ -223,7 +222,7 @@ mixin PortfolioAPI on ApiCore {
           "${apiLinks.delpositiongrpName}?clientid=${prefs.clientId}&posname=$name");
       final res = await apiClient.get(uri, headers: defaultHeaders);
 
-      log("Delete vPosition Group  Name => ${res.body}");
+      // log("Delete vPosition Group  Name => ${res.body}");
       final json = jsonDecode(res.body);
 
       return CreateGroupName.fromJson(json as Map<String, dynamic>);
@@ -244,7 +243,7 @@ mixin PortfolioAPI on ApiCore {
             "tsym": tsym
           }));
 
-      log("Delete Position Group Symbol => ${res.body}");
+      // log("Delete Position Group Symbol => ${res.body}");
       final json = jsonDecode(res.body);
 
       return CreateGroupName.fromJson(json as Map<String, dynamic>);

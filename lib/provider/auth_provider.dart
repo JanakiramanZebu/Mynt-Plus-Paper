@@ -713,7 +713,7 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(orderProvider).fetchOrderBook(context, false);
         ref(orderProvider).fetchTradeBook(context);
 
-        // ref(portfolioProvider).fetchPosGroupSymbol("",false);
+         ref(portfolioProvider).fetchPosGroupSymbol("",false);
         ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
 
         if (s.isEmpty) {
@@ -759,12 +759,12 @@ class AuthProvider extends DefaultChangeNotifier {
     pref.clearClientSession();
 
     ConstantName.sessCheck = false;
-
+ ref(websocketProvider).closeSocket();
     ScaffoldMessenger.of(context).showSnackBar(
         warningMessage(context, "Session Expired,Kindly login Again!"));
     ConstantName.timer!.cancel();
 
-    ref(websocketProvider).closeSocket();
+   
     ref(websocketProvider).websockConn(false);
     Navigator.pushNamedAndRemoveUntil(
         context, Routes.loginScreen, (route) => false);

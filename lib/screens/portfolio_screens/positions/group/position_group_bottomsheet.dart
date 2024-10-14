@@ -39,7 +39,7 @@ class PositionGroupBottomSheet extends StatelessWidget {
                                 ? colors.colorWhite
                                 : colors.colorBlack))),
                 Divider(
-                  height: 2,
+                  height: 3,
                     color: theme.isDarkMode
                         ? colors.darkColorDivider
                         : colors.colorDivider),

@@ -125,7 +125,7 @@ class PositionListGrpCard extends ConsumerWidget {
                                         : groupData['profitNloss'] == "0.00"
                                             ? colors.ltpgrey
                                             : colors.ltpgreen
-                                    : groupData['rpnl']!.startsWith("-")
+                                    : groupData['rpnl'].toString().startsWith("-")
                                         ? colors.darkred
                                         : groupData['rpnl'] == "0.00"
                                             ? colors.ltpgrey

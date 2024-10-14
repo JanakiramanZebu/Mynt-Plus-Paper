@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/marketwatch_model/opt_chain_model.dart';
@@ -79,7 +80,11 @@ class OptChainCallList extends ConsumerWidget {
               await scripData.fetchScripQuote("${callData![index].token}",
                   "${callData![index].exch}", context);
 
-              await context.read(marketWatchProvider).fetchLinkeScrip(
+           
+
+              if (watch(marketWatchProvider).getQuotes!.stat == "Ok") {
+                Navigator.pop(context);
+                   await context.read(marketWatchProvider).fetchLinkeScrip(
                   "${callData![index].token}",
                   "${callData![index].exch}",
                   context);
@@ -89,9 +94,6 @@ class OptChainCallList extends ConsumerWidget {
                       "${callData![index].exch}|${callData![index].token}",
                   task: "d",
                   context: context);
-
-              if (watch(marketWatchProvider).getQuotes!.stat == "Ok") {
-                Navigator.pop(context);
                 DepthInputArgs depthArgs = DepthInputArgs(
                     exch: '${callData![index].exch}',
                     token: '${callData![index].token}',
@@ -174,7 +176,12 @@ class OptChainCallList extends ConsumerWidget {
                                 FontWeight.w500)),
                       ],
                     ),
-                  ),
+                  ),SvgPicture.asset(assets.suitcase,
+                                          height: 12,
+                                          width: 16,
+                                          color: theme.isDarkMode
+                                              ? colors.colorLightBlue
+                                              : colors.colorBlue),
                 ],
               ),
             ));

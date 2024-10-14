@@ -1,3 +1,5 @@
+import 'position_book_model.dart';
+
 class CreateGroupName {
   int? id;
   String? status;
@@ -35,7 +37,7 @@ class AddGroupSymbol {
 
 class GetGroupSymbol {
   int? id;
-  List<Posdata>? posdata;
+  List<PositionBookModel>? posdata;
   String? posname;
 
   GetGroupSymbol({this.id, this.posdata, this.posname});
@@ -43,9 +45,9 @@ class GetGroupSymbol {
   GetGroupSymbol.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     if (json['posdata'] != null) {
-      posdata = <Posdata>[];
+      posdata = <PositionBookModel>[];
       json['posdata'].forEach((v) {
-        posdata!.add(Posdata.fromJson(v));
+        posdata!.add(PositionBookModel.fromJson(v));
       });
     }
     posname = json['posname'];
@@ -61,28 +63,5 @@ class GetGroupSymbol {
     return data;
   }
 }
+ 
 
-class Posdata {
-  String? expDate;
-  String? symbol;
-  String? token;
-  String? tsym;
-
-  Posdata({this.expDate, this.symbol, this.token, this.tsym});
-
-  Posdata.fromJson(Map<String, dynamic> json) {
-    expDate = json['expDate'];
-    symbol = json['symbol'];
-    token = json['token'];
-    tsym = json['tsym'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['expDate'] = expDate;
-    data['symbol'] = symbol;
-    data['token'] = token;
-    data['tsym'] = tsym;
-    return data;
-  }
-}

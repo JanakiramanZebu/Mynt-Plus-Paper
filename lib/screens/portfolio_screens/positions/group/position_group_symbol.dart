@@ -6,9 +6,11 @@ import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
-import '../../../../routes/route_names.dart'; 
+import '../../../../routes/route_names.dart';
+import '../../../../sharedWidget/custom_text_btn.dart';
 import '../../../../sharedWidget/functions.dart';
 import 'position_group_listcard.dart';
+import 'positionlist_bottom_sheet.dart';
 
 class PositionGroupSymbol extends ConsumerWidget {
   const PositionGroupSymbol({super.key});
@@ -45,11 +47,15 @@ class PositionGroupSymbol extends ConsumerWidget {
                           ['groupList']![i]['perChange'] =
                       "${socketDatas["${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![i]['token']}"]['pc']}";
                 }
-
-                positionBook.positionGroupCal(
-                    positionBook.isDay,
-                    positionBook.groupedBySymbol[
-                        positionBook.groupPositionSym[index]]['groupList']![i]);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  positionBook.positionGroupCal(
+                      positionBook.isDay,
+                      positionBook.groupedBySymbol[
+                          positionBook.groupPositionSym[index]]['groupList'],
+                      positionBook.groupPositionSym[index],
+                      positionBook.groupedBySymbol[
+                          positionBook.groupPositionSym[index]]["isCustomGrp"]);
+                });
               }
               return ExpandedTile(
                   theme: ExpandedTileThemeData(
@@ -82,8 +88,8 @@ class PositionGroupSymbol extends ConsumerWidget {
                                   Row(children: [
                                     Text(
                                         positionBook.isNetPnl
-                                            ? "Total P&L: "
-                                            : "Total MTM: ",
+                                            ? "Grouped P&L: "
+                                            : "Grouped MTM: ",
                                         style: textStyle(
                                             const Color(0xff5E6B7D),
                                             13,
@@ -117,82 +123,354 @@ class PositionGroupSymbol extends ConsumerWidget {
                           ])
                         ])
                   ]),
-                  content: ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: positionBook
-                          .groupedBySymbol[positionBook
-                              .groupPositionSym[index]]['groupList']
-                          .length,
-                      separatorBuilder: (BuildContext context, int ind) {
-                        return Container(
-                            color: theme.isDarkMode
-                                ? positionBook.groupedBySymbol[positionBook
+                  content: Column(children: [
+                    Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        child: Row(
+                            mainAxisAlignment: positionBook.groupedBySymbol[
+                                            positionBook
                                                 .groupPositionSym[index]]
-                                            ['groupList']![ind]['qty'] ==
-                                        "0"
-                                    ? colors.colorBlack
-                                    : colors.darkGrey
-                                : positionBook.groupedBySymbol[positionBook
+                                        ['isexit'] ==
+                                    "true"
+                                ? MainAxisAlignment.spaceBetween
+                                : MainAxisAlignment.end,
+                            children: [
+                              if (positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]
+                                      ['isexit'] ==
+                                  "true")
+                                Container(
+                                    decoration: BoxDecoration(
+                                        border: Border(
+                                            bottom: BorderSide(
+                                                color: theme.isDarkMode
+                                                    ? colors.darkGrey
+                                                    : const Color(0xffF1F3F8),
+                                                width: 6))),
+                                    child: SizedBox(
+                                        height: 27,
+                                        child: OutlinedButton(
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                        backgroundColor: theme.isDarkMode
+                                                            ? const Color.fromARGB(
+                                                                255, 18, 18, 18)
+                                                            : colors.colorWhite,
+                                                        titleTextStyle: textStyles
+                                                            .appBarTitleTxt
+                                                            .copyWith(
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorBlack),
+                                                        contentTextStyle: textStyles
+                                                            .menuTxt
+                                                            .copyWith(
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorBlack),
+                                                        titlePadding:
+                                                            const EdgeInsets.symmetric(
+                                                                horizontal: 14,
+                                                                vertical: 12),
+                                                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14))),
+                                                        scrollable: true,
+                                                        contentPadding: const EdgeInsets.symmetric(
+                                                          horizontal: 14,
+                                                        ),
+                                                        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                                                        title: const Text("Exit Position"),
+                                                        content: SizedBox(width: MediaQuery.of(context).size.width, child: Text("Are you sure you want to exit all positions in the ${positionBook.groupPositionSym[index]} group?")),
+                                                        actions: [
+                                                          TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.of(
+                                                                          context)
+                                                                      .pop(),
+                                                              child: Text("No",
+                                                                  style: textStyles
+                                                                      .textBtn
+                                                                      .copyWith(
+                                                                          color: theme.isDarkMode
+                                                                              ? colors.colorLightBlue
+                                                                              : colors.colorBlue))),
+                                                          ElevatedButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                await positionBook.exitGroupedPosition(
+                                                                    context,
+                                                                    positionBook
+                                                                        .groupedBySymbol[positionBook
+                                                                            .groupPositionSym[
+                                                                        index]]['groupList']);
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop(true);
+                                                              },
+                                                              style: ElevatedButton
+                                                                  .styleFrom(
+                                                                      elevation:
+                                                                          0,
+                                                                      backgroundColor: theme.isDarkMode
+                                                                          ? colors
+                                                                              .colorbluegrey
+                                                                          : colors
+                                                                              .colorBlack,
+                                                                      shape:
+                                                                          RoundedRectangleBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(50),
+                                                                      )),
+                                                              child: Text("Yes",
+                                                                  style: textStyle(
+                                                                      !theme.isDarkMode
+                                                                          ? colors
+                                                                              .colorWhite
+                                                                          : colors
+                                                                              .colorBlack,
+                                                                      14,
+                                                                      FontWeight
+                                                                          .w500)))
+                                                        ]);
+                                                  });
+                                            },
+                                            style: OutlinedButton.styleFrom(
+                                                side: BorderSide(
+                                                    color: theme.isDarkMode
+                                                        ? colors.colorGrey
+                                                        : colors.colorBlack),
+                                                shape: const RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.all(
+                                                        Radius.circular(32)))),
+                                            child: Text("Exit",
+                                                style: textStyle(
+                                                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 12, FontWeight.w600))))),
+                              if (positionBook.groupedBySymbol[positionBook
+                                  .groupPositionSym[index]]["isCustomGrp"])
+                                Row(children: [
+                                  CustomTextBtn(
+                                      label: 'Add symbol',
+                                      onPress: () async {
+                                        await positionBook.cusGrpSelectPosition(
+                                            positionBook.groupedBySymbol[
+                                                positionBook.groupPositionSym[
+                                                    index]]['groupList']);
+                                        showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            isDismissible: true,
+                                            shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(10),
+                                                topRight: Radius.circular(10),
+                                              ),
+                                            ),
+                                            builder: (_) =>
+                                                PositionListBottomSheet(
+                                                    grpName: positionBook
+                                                            .groupPositionSym[
+                                                        index]));
+                                      },
+                                      icon: assets.addCircleIcon),
+                                  InkWell(
+                                      child: const Icon(
+                                        Icons.delete_outlined,
+                                        color: Color(0xff666666),
+                                      ),
+                                      onTap: () async {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              backgroundColor: theme.isDarkMode
+                                                  ? const Color.fromARGB(
+                                                      255, 18, 18, 18)
+                                                  : colors.colorWhite,
+                                              titleTextStyle: textStyles
+                                                  .appBarTitleTxt
+                                                  .copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack),
+                                              contentTextStyle:
+                                                  textStyles.menuTxt.copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack),
+                                              titlePadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 14,
+                                                      vertical: 12),
+                                              shape:
+                                                  const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  14))),
+                                              scrollable: true,
+                 
+                                               contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 14,
+                                              ),
+                                              insetPadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20),
+                                              title: const Text("Delete Group"),
+                                              content: SizedBox(
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                        "Are you sure you want to Delete Group of ${positionBook.groupPositionSym[index]}?")
+                                                  ],
+                                                ),
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(),
+                                                    child: Text("No",
+                                                        style: textStyles.textBtn.copyWith(
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .colorLightBlue
+                                                                : colors  
+                                                                    .colorBlue))),
+                                                ElevatedButton(
+                                                  onPressed: () async {
+                                                    await positionBook
+                                                        .fetchDeleteGroupName(
+                                                            positionBook
+                                                                    .groupPositionSym[
+                                                                index],
+                                                            context);
+
+                                                    Navigator.of(context)
+                                                        .pop(true);
+                                                  },
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                          elevation: 0,
+                                                          backgroundColor: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .colorbluegrey
+                                                              : colors
+                                                                  .colorBlack,
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        50),
+                                                          )),
+                                                  child: Text("Yes",
+                                                      style: textStyle(
+                                                          !theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
+                                                          14,
+                                                          FontWeight.w500)),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      })
+                                ])
+                            ])),
+                    ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: positionBook
+                            .groupedBySymbol[positionBook
+                                .groupPositionSym[index]]['groupList']
+                            .length,
+                        separatorBuilder: (BuildContext context, int ind) {
+                          return Container(
+                              color: theme.isDarkMode
+                                  ? positionBook.groupedBySymbol[positionBook
+                                                  .groupPositionSym[index]]
+                                              ['groupList']![ind]['qty'] ==
+                                          "0"
+                                      ? colors.colorBlack
+                                      : colors.darkGrey
+                                  : positionBook.groupedBySymbol[positionBook
+                                                  .groupPositionSym[index]]
+                                              ['groupList']![ind]['qty'] ==
+                                          "0"
+                                      ? colors.colorWhite
+                                      : const Color(0xffF1F3F8),
+                              height: 6);
+                        },
+                        itemBuilder: (BuildContext context, int ind) {
+                          return InkWell(
+                              onTap: () async {
+                                await context.read(marketWatchProvider).fetchLinkeScrip(
+                                    "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['token']}",
+                                    "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",
+                                    context);
+
+                                await watch(marketWatchProvider).fetchScripQuote(
+                                    "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['token']}",
+                                    "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",
+                                    context);
+
+                                if ((positionBook.groupedBySymbol[positionBook
                                                 .groupPositionSym[index]]
-                                            ['groupList']![ind]['qty'] ==
-                                        "0"
-                                    ? colors.colorWhite
-                                    : const Color(0xffF1F3F8),
-                            height: 6);
-                      },
-                      itemBuilder: (BuildContext context, int ind) {
-                        return InkWell(
-                            onTap: () async {
-                              await context.read(marketWatchProvider).fetchLinkeScrip(
-                                  "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['token']}",
-                                  "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",
-                                  context);
-                  
-                              await watch(marketWatchProvider).fetchScripQuote(
-                                  "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['token']}",
-                                  "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",
-                                  context);
-                  
-                              if ((positionBook.groupedBySymbol[positionBook
-                                              .groupPositionSym[index]]
-                                          ['groupList']![ind]['exch'] ==
-                                      "NSE" ||
-                                  positionBook.groupedBySymbol[positionBook
-                                              .groupPositionSym[index]]
-                                          ['groupList']![ind]['exch'] ==
-                                      "BSE")) {
-                                context
-                                    .read(marketWatchProvider)
-                                    .depthBtns
-                                    .add({
-                                  "btnName": "Fundamental",
-                                  "imgPath": assets.dInfo,
-                                  "case":
-                                      "Click here to view fundamental data."
-                                });
-                  
-                                await context.read(marketWatchProvider).fetchTechData(
-                                    context: context,
-                                    exch:
-                                        "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",
-                                    tradeSym:
-                                        "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['tsym']}",
-                                    lastPrc:
-                                        "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['lp']}");
-                              }
-                              Navigator.pushNamed(
-                                  context, Routes.positionGroupDetail,
-                                  arguments: positionBook.groupedBySymbol[
-                                          positionBook
-                                              .groupPositionSym[index]]
-                                      ['groupList']![ind]);
-                            },
-                            child: PositionListGrpCard(
-                                groupData: positionBook.groupedBySymbol[
-                                        positionBook.groupPositionSym[index]]
-                                    ['groupList']![ind]));
-                      }));
+                                            ['groupList']![ind]['exch'] ==
+                                        "NSE" ||
+                                    positionBook.groupedBySymbol[positionBook
+                                                .groupPositionSym[index]]
+                                            ['groupList']![ind]['exch'] ==
+                                        "BSE")) {
+                                  context
+                                      .read(marketWatchProvider)
+                                      .depthBtns
+                                      .add({
+                                    "btnName": "Fundamental",
+                                    "imgPath": assets.dInfo,
+                                    "case":
+                                        "Click here to view fundamental data."
+                                  });
+
+                                  await context.read(marketWatchProvider).fetchTechData(
+                                      context: context,
+                                      exch:
+                                          "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",
+                                      tradeSym:
+                                          "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['tsym']}",
+                                      lastPrc:
+                                          "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['lp']}");
+                                }
+                                Navigator.pushNamed(
+                                    context, Routes.positionGroupDetail,
+                                    arguments: positionBook.groupedBySymbol[
+                                            positionBook
+                                                .groupPositionSym[index]]
+                                        ['groupList']![ind]);
+                              },
+                              child: PositionListGrpCard(
+                                  groupData: positionBook.groupedBySymbol[
+                                          positionBook.groupPositionSym[index]]
+                                      ['groupList']![ind]));
+                        })
+                  ]));
             },
             separatorBuilder: (BuildContext context, int index) {
               return Container(height: 8);

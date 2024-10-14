@@ -121,7 +121,15 @@ class SearchScripList extends ConsumerWidget {
                           style: textStyles.scripExchTxtStyle.copyWith(
                               color: theme.isDarkMode
                                   ? colors.colorWhite
-                                  : colors.colorBlack))
+                                  : colors.colorBlack)),if (searchValue[index].cname != null)
+                      Expanded(
+                        child: Text("${searchValue[index].cname}",
+                        overflow: TextOverflow.ellipsis,
+                            style: textStyles.scripExchTxtStyle.copyWith(
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack)),
+                      )
                   ],
                 ),
                 trailing: wlName == "Basket"

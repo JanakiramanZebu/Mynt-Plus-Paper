@@ -13,10 +13,12 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_switch_btn.dart'; 
+import '../../../sharedWidget/custom_text_btn.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import 'filter_scrip_bottom_sheet.dart'; 
+import 'group/create_group.dart';
 import 'group/position_group_symbol.dart';
 import 'position_list_card.dart';
 
@@ -236,16 +238,16 @@ class PositionScreen extends ConsumerWidget {
                         ],
                       )
                     ]
-                    // else...[ CustomTextBtn(
-                    //             label: 'Create Group',
-                    //             onPress: () {
-                    //                showDialog(
-                    //                 context: context,
-                    //                 builder: (BuildContext context) {
-                    //                   return const CreateGroupPos();
-                    //                 });
-                    //             },
-                    //             icon: assets.addCircleIcon),]
+                    else if( positionBook.posSelection != "All position")...[ CustomTextBtn(
+                                label: 'Create Group',
+                                onPress: () {
+                                   showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return const CreateGroupPos();
+                                    });
+                                },
+                                icon: assets.addCircleIcon)]
                   ],
                 ),
               ),

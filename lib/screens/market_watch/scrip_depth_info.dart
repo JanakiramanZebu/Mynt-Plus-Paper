@@ -705,7 +705,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                         : colors.colorBlack,
                                                     13,
                                                     FontWeight.w500)),
-                                            Text("    Call LTP ",
+                                            Text("  Call LTP   ",
                                                 style: textStyle(
                                                     theme.isDarkMode
                                                         ? colors.colorWhite
@@ -825,7 +825,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                   .colorBlue,
                                                           size: 20)
                                                     ]))),
-                                            Text("  Put LTP    ",
+                                            Text("  Put LTP   ",
                                                 style: textStyle(
                                                     theme.isDarkMode
                                                         ? colors.colorWhite
@@ -1249,7 +1249,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                     )
                                   ])),
                             CurStrkprice(
-                                token: depthData.undTk ?? depthData.token!),
+                                token: depthData.undTk ?? depthData.token??"0.00"),
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 12.0),
