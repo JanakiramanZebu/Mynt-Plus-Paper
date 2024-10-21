@@ -1,22 +1,22 @@
 class HdfcPaymentStatus {
-  Data? data;
+  UpiId? upiId;
 
-  HdfcPaymentStatus({this.data});
+  HdfcPaymentStatus({this.upiId});
 
   HdfcPaymentStatus.fromJson(Map<String, dynamic> json) {
-    data = json['data'] != null ? Data.fromJson(json['data']) : null;
+    upiId = json['data'] != null ? UpiId.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    if (this.data != null) {
-      data['data'] = this.data!.toJson();
+    if (this.upiId != null) {
+      data['data'] = this.upiId!.toJson();
     }
     return data;
   }
 }
 
-class Data {
+class UpiId {
   String? approvalNumber;
   String? nPCIclientRefNo;
   String? tempReferenceID;
@@ -29,7 +29,7 @@ class Data {
   String? statusDescription;
   String? upiTransactionNo;
 
-  Data(
+  UpiId(
       {this.approvalNumber,
       this.nPCIclientRefNo,
       this.tempReferenceID,
@@ -42,7 +42,7 @@ class Data {
       this.statusDescription,
       this.upiTransactionNo});
 
-  Data.fromJson(Map<String, dynamic> json) {
+  UpiId.fromJson(Map<String, dynamic> json) {
     approvalNumber = json['Approval Number'];
     nPCIclientRefNo = json['NPCIclientRefNo'];
     tempReferenceID = json['TempReferenceID'];

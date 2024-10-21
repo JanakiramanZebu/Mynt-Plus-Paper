@@ -165,4 +165,14 @@ class Assets {
   // payment icons
   final String upiIcon = "assets/icon/icons8-bhim.svg";
   final String razPayicon = "assets/icon/razpay.svg";
+  final String gpay = "assets/icon/gpay.svg";
+  final String phnpay = "assets/icon/phonepay.svg";
+  final String paytm = "assets/icon/paytm.svg";
+
+
+  /////
+  final String bigupiIcon = "assets/icon/paymentIcon/upi.svg";
+  final String biggpay = "assets/icon/paymentIcon/gpay.svg";
+  final String bigphnpay = "assets/icon/paymentIcon/phonepe.svg";
+  final String bigpaytm = "assets/icon/paymentIcon/paytm.svg";
 }

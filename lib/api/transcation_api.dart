@@ -156,8 +156,8 @@ mixin TranscationApi on ApiCore {
       final json = jsonDecode(res.body);
 
       final decryptedData = decryptionFunction(json["str"]);
-      //  log("------------ ${jsonDecode(jsonEncode(decryptedData))}}");
-
+       log("CLIENT DATAA------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+   
       return DecryptClientCheck.fromJson(jsonDecode(decryptedData));
     } catch (e) {
       rethrow;

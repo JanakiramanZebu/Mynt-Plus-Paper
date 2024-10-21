@@ -54,5 +54,11 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>gpay</string>
+        <string>phonepe</string>
+        <string>paytm</string>
+    </array>
 </dict>
 </plist>

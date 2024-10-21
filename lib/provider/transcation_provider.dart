@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -16,6 +17,8 @@ import '../models/func_model_testing_copy/fund_withdraw_model.dart';
 import '../models/func_model_testing_copy/secured_bank_detalis_model.dart';
 import '../models/func_model_testing_copy/secured_client_data_model.dart';
 import '../models/func_model_testing_copy/view_upi_id.dart';
+import '../screens/profile_screen/fund_screen/upi_apps_screens/upi_apps_payment_failed.dart';
+import '../screens/profile_screen/fund_screen/upi_id_screens/upi_id_payment_fail_or_success.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -27,9 +30,19 @@ class TranctionProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   TextEditingController amount = TextEditingController();
   TextEditingController upiid = TextEditingController();
+  TextEditingController withdrawamount = TextEditingController();
 
   bool _isUpiAppAvailable = false;
   bool get isUpiAppAvailable => _isUpiAppAvailable;
+
+  bool _isBottomSheetShown = true;
+  bool get isBottomSheetShown => _isBottomSheetShown;
+
+  changeValue(bool value, BuildContext context) {
+    _isBottomSheetShown = value;
+    Navigator.pop(context);
+    notifyListeners();
+  }
 
   String? amounterror, upiiderror;
 
@@ -84,6 +97,9 @@ class TranctionProvider extends DefaultChangeNotifier {
   HdfcPaymentStatus? _hdfcpaymentstatus;
   HdfcPaymentStatus? get hdfcpaymentstatus => _hdfcpaymentstatus;
 
+  List<UpiId>? _upiid;
+  List<UpiId>? get upiId => _upiid;
+
   HdfcDirectPayment? _hdfcdirectpayment;
   HdfcDirectPayment? get hdfcdirectpayment => _hdfcdirectpayment;
 
@@ -96,45 +112,7 @@ class TranctionProvider extends DefaultChangeNotifier {
   HdfcUPIStatus? _hdfcUPIStatus;
   HdfcUPIStatus? get hdfcUPIStatus => _hdfcUPIStatus;
 
-  final List _upimenu = [
-    {
-      "title": "Paying with UPI apps",
-      "leading": "assets/img/bankimage.png",
-      "subTitle": "₹50 - ₹2,00,000"
-    },
-    {
-      "title": "Paying with UPI ID",
-      "leading": "assets/img/upi_logo_icon.png",
-      "subTitle": "₹50 - ₹2,00,000"
-    },
-    {
-      "title": "Paying with Razorpay",
-      "leading": "assets/img/razorpay-icon.png",
-      "subTitle": "₹50 - ₹2,00,000"
-    }
-  ];
-  final List _bankdetail = [
-    {"title": "HDFC", "logo": "assets/icon/hdfc_bank_vector_logo.png"},
-    {"title": "ATOM", "logo": "assets/icon/images (1).png"}
-  ];
-  final List _netbanking = [
-    {"title": "RAZORPAY", "logo": "assets/icon/images.png"},
-    {"title": "ATOM", "logo": "assets/icon/images (1).png"}
-  ];
-  List get bankdetail => _bankdetail;
-  List get netbanking => _netbanking;
-
-  List get upimenu => _upimenu;
-
-  List _margin = [];
-  List _equity = [];
-  List _utlization = [];
-  List get margin => _margin;
-  List get equity => _equity;
-  List get utlization => _utlization;
-
-  List _logError = [];
-  List get logError => _logError;
+  
 
   final Reader ref;
 
@@ -155,6 +133,27 @@ class TranctionProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       _hdfcUPIStatus = await api.getHdfcUPIStatus(orderNo, upiTranID);
+      if (hdfcUPIStatus?.data?.status == "EXPIRED" ||
+          hdfcUPIStatus?.data?.status == "REJECTED" ||
+          hdfcUPIStatus?.data?.status == "SUCCESS") {
+        showModalBottomSheet(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            backgroundColor: const Color(0xffffffff),
+            isDismissible: false,
+            enableDrag: false,
+            showDragHandle: false,
+            useSafeArea: false,
+            isScrollControlled: true,
+            context: context,
+            builder: (BuildContext context) {
+              return WillPopScope(
+                  onWillPop: () async {
+                    return false;
+                  },
+                  child: const UPIAppsPaymentSuccessAlert());
+            });
+      }
 
       print("------------ ${_hdfcUPIStatus!.data!.orderNumber}");
     } catch (e) {
@@ -190,7 +189,7 @@ class TranctionProvider extends DefaultChangeNotifier {
 
       _payoutdetails = await api.getWithdrawPayout();
       //  print("------------ ${ApiLinks.token}");
-      print("WITHDRAW PAYOUT $_payoutdetails");
+      print("WITHDRAW PAYOUT ${_payoutdetails!.withdrawAmount}.");
     } catch (e) {
       log("Failed to fetch Profile Data:: ${e.toString()}");
       ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
@@ -220,6 +219,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       _hdfcpaymentdata = await api.getUPIIDPayment(upiId, clientId, accno);
+
       if (hdfcpaymentdata!.data!.verifiedVPAStatus1 == "Not Available" ||
           hdfcpaymentdata!.data!.verifiedVPAStatus2 == "Not Available") {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -266,7 +266,14 @@ class TranctionProvider extends DefaultChangeNotifier {
 
       _hdfcdirectpayment =
           await api.getUPIAppsPayment(amt, bankaccno, clientid, name);
-      //launch("${_hdfcdirectpayment!.data!.upilink}");
+          if (defaultTargetPlatform == TargetPlatform.iOS) {
+
+            
+          }else{
+            print("DDDDD ${_hdfcdirectpayment!.data!.upilink}");
+            launch("${_hdfcdirectpayment!.data!.upilink}");
+          }
+         
     } catch (e) {
       log("Failed to fetch bank Data:: ${e.toString()}");
       ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
@@ -282,8 +289,31 @@ class TranctionProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
 
       _hdfcpaymentstatus = await api.getHdfcPaymentstatus(ordno, upiTransid);
+      _isBottomSheetShown = true;
+      if (hdfcpaymentstatus?.upiId?.status == "EXPIRED" ||
+          hdfcpaymentstatus?.upiId?.status == "REJECTED" ||
+          hdfcpaymentstatus?.upiId?.status == "SUCCESS") {
+        _isBottomSheetShown = false;
+        showModalBottomSheet(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            backgroundColor: const Color(0xffffffff),
+            isDismissible: false,
+            enableDrag: false,
+            showDragHandle: false,
+            useSafeArea: false,
+            isScrollControlled: true,
+            context: context,
+            builder: (BuildContext context) {
+              return WillPopScope(
+                  onWillPop: () async {
+                    return false;
+                  },
+                  child: const UpiIdSucessorFaliureScreen());
+            });
+      }
 
-      print("HDFC PAYMENTSTATUS ${_hdfcpaymentstatus!.data!.clientVPA}");
+      print("HDFC PAYMENTSTATUS ${_hdfcpaymentstatus!.upiId!.clientVPA}");
     } catch (e) {
       log("Failed to fetch bank Data:: ${e.toString()}");
       ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});

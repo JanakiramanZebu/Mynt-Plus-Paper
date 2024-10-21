@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,15 +12,17 @@ import 'package:installed_apps/installed_apps.dart';
 import 'package:number_to_words/number_to_words.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
 import '../../../res/res.dart';
+import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_switch_btn.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/fund_function.dart';
-import 'cancel_request_alert_box.dart';
 import 'no_upi_apps_alert.dart';
-import 'upi_id_cancel_alert.dart';
+import 'upi_apps_screens/cancel_request_alert_box.dart';
+import 'upi_id_screens/upi_id_cancel_alert.dart';
 import 'withdraw_screen.dart';
 
 class FundScreen extends StatefulWidget {
@@ -34,6 +37,7 @@ class FundScreen extends StatefulWidget {
 }
 
 class _FundScreenState extends State<FundScreen> {
+  final FocusNode _focusNode = FocusNode();
   int intValue = 0;
   int _selectedIndex = -1;
   String initbank = '';
@@ -58,7 +62,10 @@ class _FundScreenState extends State<FundScreen> {
 
   @override
   void initState() {
-    checkForUpiApps();
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      checkForUpiApps();
+    }
+
     accno = widget.dd.bankdetails!.dATA![indexss][2];
     ifsc = widget.dd.bankdetails!.dATA![indexss][3];
     bankname = widget.dd.bankdetails!.dATA![indexss][1];
@@ -66,6 +73,15 @@ class _FundScreenState extends State<FundScreen> {
         '${widget.dd.bankdetails!.dATA![indexss][1]} - ${hideAccountNumber(accno)}';
     textValue = widget.dd.decryptclientcheck!.companyCode![0];
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      checkForUpiApps();
+    }
+
+    super.dispose();
   }
 
   @override
@@ -83,7 +99,7 @@ class _FundScreenState extends State<FundScreen> {
         return Scaffold(
           backgroundColor: const Color(0xffffffff),
           appBar: AppBar(
-            leadingWidth: 41,
+            leadingWidth: 4,
             titleSpacing: 6,
             elevation: .3,
             backgroundColor: const Color(0xffffffff),
@@ -96,12 +112,47 @@ class _FundScreenState extends State<FundScreen> {
                   fund.amount.clear();
                   Navigator.pop(context);
                 },
-                child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 9),
-                    child: SvgPicture.asset(assets.backArrow))),
+                child: SvgPicture.asset(assets.backArrow)),
           ),
+          
+          bottomNavigationBar: _enable == true
+              ? null
+              : Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  margin: EdgeInsets.symmetric(
+                      vertical:
+                          defaultTargetPlatform == TargetPlatform.iOS ? 20 : 0),
+                  width: MediaQuery.of(context).size.width,
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorbluegrey
+                            : colors.colorBlack,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                      ),
+                      onPressed: fund.withdrawamount.text.isEmpty ||
+                              fund.payoutdetails!.withdrawAmount == '0.0' ||
+                              int.parse(fund.withdrawamount.text) >
+                                  double.parse(fund
+                                          .payoutdetails!.withdrawAmount
+                                          .toString())
+                                      .toInt()
+                          ? null
+                          : () {},
+                      child: Text(
+                        'Withdraw amount',
+                        style:
+                            textStyle(colors.colorWhite, 16, FontWeight.w400),
+                      )),
+                ),
+          
           body: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
+            onTap: () {
+              _focusNode.unfocus();
+            },
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,7 +168,16 @@ class _FundScreenState extends State<FundScreen> {
                             style: textStyle(
                                 colors.colorBlack, 14, FontWeight.w500),
                           ))
-                      : Container(),
+                      : Container(
+                          width: MediaQuery.of(context).size.width,
+                          color: const Color(0xfffcefd4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          child: Text(
+                            "Fund withdraw to ${fund.decryptclientcheck!.clientCheck!.dATA![indexss][2]} ${fund.decryptclientcheck!.clientCheck!.dATA![indexss][0]}",
+                            style: textStyle(
+                                colors.colorBlack, 14, FontWeight.w500),
+                          )),
                   Padding(
                     padding: const EdgeInsets.only(left: 16, top: 10),
                     child: headerTitleText(
@@ -147,9 +207,7 @@ class _FundScreenState extends State<FundScreen> {
                                 ? context
                                     .read(transcationProvider)
                                     .fetchcwithdraw(context)
-                                : context
-                                    .read(transcationProvider)
-                                    .fetchc(context);
+                                : null;
                             setState(() {
                               _enable = val;
                             });
@@ -170,6 +228,7 @@ class _FundScreenState extends State<FundScreen> {
                       ],
                     ),
                   ),
+                  
                   _enable == true
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,6 +237,7 @@ class _FundScreenState extends State<FundScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 0, vertical: 0),
                               child: TextFormField(
+                                focusNode: _focusNode,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.digitsOnly
                                 ],
@@ -186,9 +246,8 @@ class _FundScreenState extends State<FundScreen> {
                                     colors.colorBlack, 35, FontWeight.w600),
                                 controller: fund.amount,
                                 onChanged: (value) {
-                                  // fund.validateamount();
+                                  _selectedIndex = 0;
                                   convertToText(value);
-
                                   setState(() {
                                     intValue = int.tryParse(value) ?? 0;
                                     if (intValue < 50) {
@@ -244,11 +303,13 @@ class _FundScreenState extends State<FundScreen> {
                                 "Bank account",
                               ),
                             ),
+                            
                             InkWell(
                               splashFactory: NoSplash.splashFactory,
                               splashColor: Colors.transparent,
                               onTap: () {
-                                showBottomSheetbank(fund);
+                                _focusNode.unfocus();
+                                showBottomSheetbank(fund, theme);
                               },
                               child: Container(
                                   decoration: BoxDecoration(
@@ -290,13 +351,15 @@ class _FundScreenState extends State<FundScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount: 3,
+                              itemCount:
+                                  defaultTargetPlatform == TargetPlatform.iOS
+                                      ? 5
+                                      : 3,
                               itemBuilder: (context, index) {
-                                return GestureDetector(
+                                return InkWell(
                                   onTap: () {
                                     setState(() {
                                       _selectedIndex = index;
-                                      FocusScope.of(context).unfocus();
                                     });
                                   },
                                   child: Container(
@@ -315,184 +378,697 @@ class _FundScreenState extends State<FundScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        if (index == 0) ...[
-                                          Row(
-                                            children: [
-                                              SvgPicture.asset(
-                                                assets.upiIcon,
-                                              ),
-                                              const SizedBox(
-                                                width: 20,
-                                              ),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Row(
-                                                          children: [
-                                                            Text(
-                                                              'UPI Apps',
-                                                              style: textStyle(
-                                                                  colors
-                                                                      .colorBlack,
-                                                                  15,
-                                                                  FontWeight
-                                                                      .w600),
-                                                            ),
-                                                            Container(
-                                                              decoration: BoxDecoration(
-                                                                  color: const Color(
-                                                                      0xffe3f2fd),
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              10)),
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      vertical:
-                                                                          1,
-                                                                      horizontal:
-                                                                          5),
-                                                              margin:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          4),
-                                                              child: Text(
-                                                                "free",
+                                        if (defaultTargetPlatform ==
+                                            TargetPlatform.iOS) ...[
+                                          if (index == 0) ...[
+                                            Row(
+                                              children: [
+                                                SvgPicture.asset(
+                                                  assets.gpay,
+                                                ),
+                                                const SizedBox(
+                                                  width: 20,
+                                                ),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                'GOOGLE PAY',
                                                                 style: textStyle(
-                                                                    const Color(
-                                                                        0xff0037B7),
-                                                                    12,
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    15,
+                                                                    FontWeight
+                                                                        .w600),
+                                                              ),
+                                                              Container(
+                                                                decoration: BoxDecoration(
+                                                                    color: const Color(
+                                                                        0xffe3f2fd),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            10)),
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical: 1,
+                                                                    horizontal:
+                                                                        5),
+                                                                margin: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        4),
+                                                                child: Text(
+                                                                  "free",
+                                                                  style: textStyle(
+                                                                      const Color(
+                                                                          0xff0037B7),
+                                                                      12,
+                                                                      FontWeight
+                                                                          .w500),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          _selectedIndex == 0
+                                                              ? Row(
+                                                                  children: [
+                                                                    Text(
+                                                                      '₹',
+                                                                      style: textStyle(
+                                                                          colors
+                                                                              .colorBlack,
+                                                                          15,
+                                                                          FontWeight
+                                                                              .w600),
+                                                                    ),
+                                                                    Text(
+                                                                      fund.amount.text
+                                                                              .isEmpty
+                                                                          ? "0.00"
+                                                                          : fund
+                                                                              .amount
+                                                                              .text,
+                                                                      style: textStyle(
+                                                                          colors
+                                                                              .colorBlack,
+                                                                          15,
+                                                                          FontWeight
+                                                                              .w600),
+                                                                    ),
+                                                                  ],
+                                                                )
+                                                              : Container()
+                                                        ],
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 5,
+                                                      ),
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                'Max Limit:',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorGrey,
+                                                                    13,
                                                                     FontWeight
                                                                         .w500),
                                                               ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        _selectedIndex == 0
-                                                            ? Row(
-                                                                children: [
-                                                                  Text(
-                                                                    '₹',
-                                                                    style: textStyle(
-                                                                        colors
-                                                                            .colorBlack,
-                                                                        15,
-                                                                        FontWeight
-                                                                            .w600),
-                                                                  ),
-                                                                  Text(
-                                                                    fund.amount.text
-                                                                            .isEmpty
-                                                                        ? "0.00"
-                                                                        : fund
-                                                                            .amount
-                                                                            .text,
-                                                                    style: textStyle(
-                                                                        colors
-                                                                            .colorBlack,
-                                                                        15,
-                                                                        FontWeight
-                                                                            .w600),
-                                                                  ),
-                                                                ],
-                                                              )
-                                                            : Container()
-                                                      ],
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 5,
-                                                    ),
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Row(
-                                                          children: [
-                                                            Text(
-                                                              'Max Limit:',
-                                                              style: textStyle(
-                                                                  colors
-                                                                      .colorGrey,
-                                                                  13,
-                                                                  FontWeight
-                                                                      .w500),
-                                                            ),
-                                                            Text(
-                                                              '₹1,00,000',
-                                                              style: textStyle(
-                                                                  colors
-                                                                      .colorBlack,
-                                                                  13,
-                                                                  FontWeight
-                                                                      .w500),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
+                                                              Text(
+                                                                '₹1,00,000',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    13,
+                                                                    FontWeight
+                                                                        .w500),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(
-                                            height:
-                                                _selectedIndex == 0 ? 10 : 0,
-                                          ),
-                                          if (_selectedIndex == 0)
+                                              ],
+                                            ),
                                             SizedBox(
-                                                width: MediaQuery.of(context)
-                                                    .size
-                                                    .width,
-                                                child: ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                          elevation: 0,
-                                                          backgroundColor: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .colorbluegrey
-                                                              : colors
-                                                                  .colorBlack,
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  vertical: 13),
-                                                          shape:
-                                                              RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        30),
-                                                          )),
-                                                  onPressed:
-                                                      fund.amount.text.isEmpty
-                                                          //     ||
-                                                          // intValue < 50
-                                                          ? null
-                                                          : () async {
-                                                              if (_isUpiAppAvailable ==
-                                                                  true) {
-                                                                showDialog(
-                                                                    context:
+                                              height:
+                                                  _selectedIndex == 0 ? 10 : 0,
+                                            ),
+                                            if (_selectedIndex == 0)
+                                              SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                      .size
+                                                      .width,
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                            elevation: 0,
+                                                            backgroundColor: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .colorbluegrey
+                                                                : colors
+                                                                    .colorBlack,
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical:
+                                                                        13),
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          30),
+                                                            )),
+                                                    onPressed: fund
+                                                            .amount.text.isEmpty
+                                                        //     ||
+                                                        // intValue < 50
+                                                        ? null
+                                                        : () async {
+                                                            _focusNode
+                                                                .unfocus();
+
+                                                            await context
+                                                                .read(
+                                                                    transcationProvider)
+                                                                .fetchUPIPaymet(
+                                                                  context,
+                                                                  "${fund.amount.text}.00",
+                                                                  accno,
+                                                                  fund
+                                                                      .decryptclientcheck!
+                                                                      .clientCheck!
+                                                                      .dATA![indexss][0],
+                                                                  fund
+                                                                      .decryptclientcheck!
+                                                                      .clientCheck!
+                                                                      .dATA![indexss][2],
+                                                                );
+
+                                                            await context
+                                                                .read(
+                                                                    transcationProvider)
+                                                                .fetchUpiPaymentstatus(
+                                                                  context,
+                                                                  "${fund.hdfcdirectpayment?.data?.orderNumber}",
+                                                                  "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
+                                                                );
+
+                                                            showModalBottomSheet(
+                                                                shape: const RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.vertical(
+                                                                            top: Radius.circular(
+                                                                                16))),
+                                                                backgroundColor:
+                                                                    const Color(
+                                                                        0xffffffff),
+                                                                isDismissible:
+                                                                    false,
+                                                                enableDrag:
+                                                                    false,
+                                                                showDragHandle:
+                                                                    false,
+                                                                useSafeArea:
+                                                                    false,
+                                                                isScrollControlled:
+                                                                    true,
+                                                                context:
+                                                                    context,
+                                                                builder:
+                                                                    (BuildContext
+                                                                        context) {
+                                                                  return WillPopScope(
+                                                                      onWillPop:
+                                                                          () async {
+                                                                        return false;
+                                                                      },
+                                                                      child:
+                                                                          const PaymentCancelAlert());
+                                                                });
+                                                            String upiurl =
+                                                                "${fund.hdfcdirectpayment!.data!.upilink}";
+
+                                                            // Replace "upi://" with "gpay://upi/"
+                                                            String modifiedUrl =
+                                                                upiurl.replaceFirst(
+                                                                    'upi://',
+                                                                    'gpay://upi/');
+                                                            launch(modifiedUrl);
+                                                            print(
+                                                                "DINESH $modifiedUrl");
+                                                          },
+                                                    child: fund.loading
+                                                        ? const SizedBox(
+                                                            width: 18,
+                                                            height: 20,
+                                                            child: CircularProgressIndicator(
+                                                                strokeWidth: 2,
+                                                                color: Color(
+                                                                    0xff666666)),
+                                                          )
+                                                        : Text("PAY VIA GPAY",
+                                                            style: textStyle(
+                                                                theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorBlack
+                                                                    : colors
+                                                                        .colorWhite,
+                                                                14,
+                                                                FontWeight
+                                                                    .w500)),
+                                                  )),
+                                          ],
+                                        ],
+                                        if (defaultTargetPlatform ==
+                                            TargetPlatform.android) ...[
+                                          if (index == 0) ...[
+                                            Row(
+                                              children: [
+                                                SvgPicture.asset(
+                                                  assets.upiIcon,
+                                                ),
+                                                const SizedBox(
+                                                  width: 20,
+                                                ),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                'UPI Apps',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    15,
+                                                                    FontWeight
+                                                                        .w600),
+                                                              ),
+                                                              Container(
+                                                                decoration: BoxDecoration(
+                                                                    color: const Color(
+                                                                        0xffe3f2fd),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            10)),
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical: 1,
+                                                                    horizontal:
+                                                                        5),
+                                                                margin: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        4),
+                                                                child: Text(
+                                                                  "free",
+                                                                  style: textStyle(
+                                                                      const Color(
+                                                                          0xff0037B7),
+                                                                      12,
+                                                                      FontWeight
+                                                                          .w500),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          _selectedIndex == 0
+                                                              ? Row(
+                                                                  children: [
+                                                                    Text(
+                                                                      '₹',
+                                                                      style: textStyle(
+                                                                          colors
+                                                                              .colorBlack,
+                                                                          15,
+                                                                          FontWeight
+                                                                              .w600),
+                                                                    ),
+                                                                    Text(
+                                                                      fund.amount.text
+                                                                              .isEmpty
+                                                                          ? "0.00"
+                                                                          : fund
+                                                                              .amount
+                                                                              .text,
+                                                                      style: textStyle(
+                                                                          colors
+                                                                              .colorBlack,
+                                                                          15,
+                                                                          FontWeight
+                                                                              .w600),
+                                                                    ),
+                                                                  ],
+                                                                )
+                                                              : Container()
+                                                        ],
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 5,
+                                                      ),
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                'Max Limit:',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorGrey,
+                                                                    13,
+                                                                    FontWeight
+                                                                        .w500),
+                                                              ),
+                                                              Text(
+                                                                '₹1,00,000',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    13,
+                                                                    FontWeight
+                                                                        .w500),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              height:
+                                                  _selectedIndex == 0 ? 10 : 0,
+                                            ),
+                                            if (_selectedIndex == 0)
+                                              SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                      .size
+                                                      .width,
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                            elevation: 0,
+                                                            backgroundColor: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .colorbluegrey
+                                                                : colors
+                                                                    .colorBlack,
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical:
+                                                                        13),
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          30),
+                                                            )),
+                                                    onPressed:
+                                                        fund.amount.text.isEmpty
+                                                            //     ||
+                                                            // intValue < 50
+                                                            ? null
+                                                            : () async {
+                                                                _focusNode
+                                                                    .unfocus();
+                                                                if (_isUpiAppAvailable ==
+                                                                    false) {
+                                                                  showDialog(
+                                                                      context:
+                                                                          context,
+                                                                      builder:
+                                                                          (BuildContext
+                                                                              context) {
+                                                                        return const NoUPIAppsAlert();
+                                                                      });
+                                                                } else if (_isUpiAppAvailable ==
+                                                                    true) {
+                                                                  await context
+                                                                      .read(
+                                                                          transcationProvider)
+                                                                      .fetchUPIPaymet(
                                                                         context,
-                                                                    builder:
-                                                                        (BuildContext
-                                                                            context) {
-                                                                      return const NoUPIAppsAlert();
-                                                                    });
-                                                              } else if (_isUpiAppAvailable ==
-                                                                  false) {
+                                                                        "${fund.amount.text}.00",
+                                                                        accno,
+                                                                        fund
+                                                                            .decryptclientcheck!
+                                                                            .clientCheck!
+                                                                            .dATA![indexss][0],
+                                                                        fund
+                                                                            .decryptclientcheck!
+                                                                            .clientCheck!
+                                                                            .dATA![indexss][2],
+                                                                      );
+
+                                                                  await context
+                                                                      .read(
+                                                                          transcationProvider)
+                                                                      .fetchUpiPaymentstatus(
+                                                                        context,
+                                                                        "${fund.hdfcdirectpayment?.data?.orderNumber}",
+                                                                        "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
+                                                                      );
+
+                                                                  showModalBottomSheet(
+                                                                      shape: const RoundedRectangleBorder(
+                                                                          borderRadius: BorderRadius.vertical(
+                                                                              top: Radius.circular(
+                                                                                  16))),
+                                                                      backgroundColor:
+                                                                          const Color(
+                                                                              0xffffffff),
+                                                                      isDismissible:
+                                                                          false,
+                                                                      enableDrag:
+                                                                          false,
+                                                                      showDragHandle:
+                                                                          false,
+                                                                      useSafeArea:
+                                                                          false,
+                                                                      isScrollControlled:
+                                                                          true,
+                                                                      context:
+                                                                          context,
+                                                                      builder:
+                                                                          (BuildContext
+                                                                              context) {
+                                                                        return WillPopScope(
+                                                                            onWillPop:
+                                                                                () async {
+                                                                              return false;
+                                                                            },
+                                                                            child:
+                                                                                const PaymentCancelAlert());
+                                                                      });
+                                                                }
+                                                              },
+                                                    child: fund.loading
+                                                        ? const SizedBox(
+                                                            width: 18,
+                                                            height: 20,
+                                                            child: CircularProgressIndicator(
+                                                                strokeWidth: 2,
+                                                                color: Color(
+                                                                    0xff666666)),
+                                                          )
+                                                        : Text("PAY VIA UPI",
+                                                            style: textStyle(
+                                                                theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorBlack
+                                                                    : colors
+                                                                        .colorWhite,
+                                                                14,
+                                                                FontWeight
+                                                                    .w500)),
+                                                  )),
+                                          ],
+                                        ],
+                                        if (defaultTargetPlatform ==
+                                            TargetPlatform.iOS) ...[
+                                          if (index == 1) ...[
+                                            Row(
+                                              children: [
+                                                SvgPicture.asset(
+                                                  assets.phnpay,
+                                                ),
+                                                const SizedBox(
+                                                  width: 20,
+                                                ),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                'PHONE PAY',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    15,
+                                                                    FontWeight
+                                                                        .w600),
+                                                              ),
+                                                              Container(
+                                                                decoration: BoxDecoration(
+                                                                    color: const Color(
+                                                                        0xffe3f2fd),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            10)),
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical: 1,
+                                                                    horizontal:
+                                                                        5),
+                                                                margin: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        4),
+                                                                child: Text(
+                                                                  "free",
+                                                                  style: textStyle(
+                                                                      const Color(
+                                                                          0xff0037B7),
+                                                                      12,
+                                                                      FontWeight
+                                                                          .w500),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          _selectedIndex == 1
+                                                              ? Row(
+                                                                  children: [
+                                                                    Text(
+                                                                      '₹',
+                                                                      style: textStyle(
+                                                                          colors
+                                                                              .colorBlack,
+                                                                          15,
+                                                                          FontWeight
+                                                                              .w600),
+                                                                    ),
+                                                                    Text(
+                                                                      fund.amount.text
+                                                                              .isEmpty
+                                                                          ? "0.00"
+                                                                          : fund
+                                                                              .amount
+                                                                              .text,
+                                                                      style: textStyle(
+                                                                          colors
+                                                                              .colorBlack,
+                                                                          15,
+                                                                          FontWeight
+                                                                              .w600),
+                                                                    ),
+                                                                  ],
+                                                                )
+                                                              : Container()
+                                                        ],
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 5,
+                                                      ),
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                'Max Limit:',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorGrey,
+                                                                    13,
+                                                                    FontWeight
+                                                                        .w500),
+                                                              ),
+                                                              Text(
+                                                                '₹1,00,000',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    13,
+                                                                    FontWeight
+                                                                        .w500),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              height:
+                                                  _selectedIndex == 1 ? 10 : 0,
+                                            ),
+                                            if (_selectedIndex == 1)
+                                              SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                      .size
+                                                      .width,
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                            elevation: 0,
+                                                            backgroundColor: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .colorbluegrey
+                                                                : colors
+                                                                    .colorBlack,
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical:
+                                                                        13),
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          30),
+                                                            )),
+                                                    onPressed:
+                                                        fund.amount.text.isEmpty
+                                                            //     ||
+                                                            // intValue < 50
+                                                            ? null
+                                                            : () async {
+                                                                _focusNode
+                                                                    .unfocus();
+
                                                                 await context
                                                                     .read(
                                                                         transcationProvider)
@@ -510,55 +1086,339 @@ class _FundScreenState extends State<FundScreen> {
                                                                           .dATA![indexss][2],
                                                                     );
 
-                                                                // await context
-                                                                //     .read(
-                                                                //         transcationProvider)
-                                                                //     .fetchUpiPaymentstatus(
-                                                                //       context,
-                                                                //       "${fund.hdfcdirectpayment?.data?.orderNumber}",
-                                                                //       "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
-                                                                //     );
+                                                                await context
+                                                                    .read(
+                                                                        transcationProvider)
+                                                                    .fetchUpiPaymentstatus(
+                                                                      context,
+                                                                      "${fund.hdfcdirectpayment?.data?.orderNumber}",
+                                                                      "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
+                                                                    );
 
-                                                                showDialog(
+                                                                showModalBottomSheet(
+                                                                    shape: const RoundedRectangleBorder(
+                                                                        borderRadius: BorderRadius.vertical(
+                                                                            top: Radius.circular(
+                                                                                16))),
+                                                                    backgroundColor:
+                                                                        const Color(
+                                                                            0xffffffff),
+                                                                    isDismissible:
+                                                                        false,
+                                                                    enableDrag:
+                                                                        false,
+                                                                    showDragHandle:
+                                                                        false,
+                                                                    useSafeArea:
+                                                                        false,
+                                                                    isScrollControlled:
+                                                                        true,
                                                                     context:
                                                                         context,
                                                                     builder:
                                                                         (BuildContext
                                                                             context) {
-                                                                      return PaymentCancelAlert(
-                                                                          fund:
-                                                                              fund);
+                                                                      return WillPopScope(
+                                                                          onWillPop:
+                                                                              () async {
+                                                                            return false;
+                                                                          },
+                                                                          child:
+                                                                              const PaymentCancelAlert());
                                                                     });
-
-                                                                // Navigator.pushNamed(
-                                                                //     context,
-                                                                //     Routes
-                                                                //         .paymentstatus,
-                                                                //     arguments:
-                                                                //         fund);
-                                                              }
-                                                            },
-                                                  child: fund.loading
-                                                      ? const SizedBox(
-                                                          width: 18,
-                                                          height: 20,
-                                                          child: CircularProgressIndicator(
-                                                              strokeWidth: 2,
-                                                              color: Color(
-                                                                  0xff666666)),
-                                                        )
-                                                      : Text("PAY VIA UPI",
-                                                          style: textStyle(
-                                                              theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorBlack
-                                                                  : colors
-                                                                      .colorWhite,
-                                                              14,
-                                                              FontWeight.w500)),
-                                                )),
+                                                                String upiurl =
+                                                                    "phonepe://${fund.hdfcdirectpayment!.data!.upilink}";
+                                                                launch(upiurl);
+                                                              },
+                                                    child: fund.loading
+                                                        ? const SizedBox(
+                                                            width: 18,
+                                                            height: 20,
+                                                            child: CircularProgressIndicator(
+                                                                strokeWidth: 2,
+                                                                color: Color(
+                                                                    0xff666666)),
+                                                          )
+                                                        : Text(
+                                                            "PAY VIA PHONE PAY",
+                                                            style: textStyle(
+                                                                theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorBlack
+                                                                    : colors
+                                                                        .colorWhite,
+                                                                14,
+                                                                FontWeight
+                                                                    .w500)),
+                                                  )),
+                                          ],
                                         ],
-                                        if (index == 1) ...[
+                                        if (defaultTargetPlatform ==
+                                            TargetPlatform.iOS) ...[
+                                          if (index == 2) ...[
+                                            Row(
+                                              children: [
+                                                SvgPicture.asset(
+                                                  assets.paytm,
+                                                ),
+                                                const SizedBox(
+                                                  width: 20,
+                                                ),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                'PAYTM',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    15,
+                                                                    FontWeight
+                                                                        .w600),
+                                                              ),
+                                                              Container(
+                                                                decoration: BoxDecoration(
+                                                                    color: const Color(
+                                                                        0xffe3f2fd),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            10)),
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical: 1,
+                                                                    horizontal:
+                                                                        5),
+                                                                margin: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        4),
+                                                                child: Text(
+                                                                  "free",
+                                                                  style: textStyle(
+                                                                      const Color(
+                                                                          0xff0037B7),
+                                                                      12,
+                                                                      FontWeight
+                                                                          .w500),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          _selectedIndex == 2
+                                                              ? Row(
+                                                                  children: [
+                                                                    Text(
+                                                                      '₹',
+                                                                      style: textStyle(
+                                                                          colors
+                                                                              .colorBlack,
+                                                                          15,
+                                                                          FontWeight
+                                                                              .w600),
+                                                                    ),
+                                                                    Text(
+                                                                      fund.amount.text
+                                                                              .isEmpty
+                                                                          ? "0.00"
+                                                                          : fund
+                                                                              .amount
+                                                                              .text,
+                                                                      style: textStyle(
+                                                                          colors
+                                                                              .colorBlack,
+                                                                          15,
+                                                                          FontWeight
+                                                                              .w600),
+                                                                    ),
+                                                                  ],
+                                                                )
+                                                              : Container()
+                                                        ],
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 5,
+                                                      ),
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                'Max Limit:',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorGrey,
+                                                                    13,
+                                                                    FontWeight
+                                                                        .w500),
+                                                              ),
+                                                              Text(
+                                                                '₹1,00,000',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    13,
+                                                                    FontWeight
+                                                                        .w500),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              height:
+                                                  _selectedIndex == 2 ? 10 : 0,
+                                            ),
+                                            if (_selectedIndex == 2)
+                                              SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                      .size
+                                                      .width,
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                            elevation: 0,
+                                                            backgroundColor: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .colorbluegrey
+                                                                : colors
+                                                                    .colorBlack,
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical:
+                                                                        13),
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          30),
+                                                            )),
+                                                    onPressed:
+                                                        fund.amount.text.isEmpty
+                                                            //     ||
+                                                            // intValue < 50
+                                                            ? null
+                                                            : () async {
+                                                                _focusNode
+                                                                    .unfocus();
+
+                                                                await context
+                                                                    .read(
+                                                                        transcationProvider)
+                                                                    .fetchUPIPaymet(
+                                                                      context,
+                                                                      "${fund.amount.text}.00",
+                                                                      accno,
+                                                                      fund
+                                                                          .decryptclientcheck!
+                                                                          .clientCheck!
+                                                                          .dATA![indexss][0],
+                                                                      fund
+                                                                          .decryptclientcheck!
+                                                                          .clientCheck!
+                                                                          .dATA![indexss][2],
+                                                                    );
+
+                                                                await context
+                                                                    .read(
+                                                                        transcationProvider)
+                                                                    .fetchUpiPaymentstatus(
+                                                                      context,
+                                                                      "${fund.hdfcdirectpayment?.data?.orderNumber}",
+                                                                      "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
+                                                                    );
+
+                                                                showModalBottomSheet(
+                                                                    shape: const RoundedRectangleBorder(
+                                                                        borderRadius: BorderRadius.vertical(
+                                                                            top: Radius.circular(
+                                                                                16))),
+                                                                    backgroundColor:
+                                                                        const Color(
+                                                                            0xffffffff),
+                                                                    isDismissible:
+                                                                        false,
+                                                                    enableDrag:
+                                                                        false,
+                                                                    showDragHandle:
+                                                                        false,
+                                                                    useSafeArea:
+                                                                        false,
+                                                                    isScrollControlled:
+                                                                        true,
+                                                                    context:
+                                                                        context,
+                                                                    builder:
+                                                                        (BuildContext
+                                                                            context) {
+                                                                      return WillPopScope(
+                                                                          onWillPop:
+                                                                              () async {
+                                                                            return false;
+                                                                          },
+                                                                          child:
+                                                                              const PaymentCancelAlert());
+                                                                    });
+                                                              String upiurl =
+                                                                "${fund.hdfcdirectpayment!.data!.upilink}";
+
+                                                            // Replace "upi://" with "gpay://upi/"
+                                                            String modifiedUrl =
+                                                                upiurl.replaceFirst(
+                                                                    'upi://',
+                                                                    'paytm://upi/');
+                                                            launch(modifiedUrl);
+                                                            print(
+                                                                "DINESH $modifiedUrl");
+                                                              },
+                                                    child: fund.loading
+                                                        ? const SizedBox(
+                                                            width: 18,
+                                                            height: 20,
+                                                            child: CircularProgressIndicator(
+                                                                strokeWidth: 2,
+                                                                color: Color(
+                                                                    0xff666666)),
+                                                          )
+                                                        : Text(
+                                                            "PAY VIA PAYTM",
+                                                            style: textStyle(
+                                                                theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorBlack
+                                                                    : colors
+                                                                        .colorWhite,
+                                                                14,
+                                                                FontWeight
+                                                                    .w500)),
+                                                  )),
+                                          ],
+                                        ],
+                                        
+                                        if (defaultTargetPlatform ==
+                                                TargetPlatform.iOS
+                                            ? index == 3
+                                            : index == 1) ...[
                                           Row(
                                             children: [
                                               SvgPicture.asset(
@@ -620,35 +1480,40 @@ class _FundScreenState extends State<FundScreen> {
                                                             ),
                                                           ],
                                                         ),
-                                                        _selectedIndex == 1
-                                                            ? Row(
-                                                                children: [
-                                                                  Text(
-                                                                    '₹',
-                                                                    style: textStyle(
-                                                                        colors
-                                                                            .colorBlack,
-                                                                        15,
-                                                                        FontWeight
-                                                                            .w600),
-                                                                  ),
-                                                                  Text(
-                                                                    fund.amount.text
-                                                                            .isEmpty
-                                                                        ? "0.00"
-                                                                        : fund
-                                                                            .amount
-                                                                            .text,
-                                                                    style: textStyle(
-                                                                        colors
-                                                                            .colorBlack,
-                                                                        15,
-                                                                        FontWeight
-                                                                            .w600),
-                                                                  ),
-                                                                ],
-                                                              )
-                                                            : Container()
+                                                        if (defaultTargetPlatform ==
+                                                                TargetPlatform
+                                                                    .iOS
+                                                            ? _selectedIndex ==
+                                                                3
+                                                            : _selectedIndex ==
+                                                                1)
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                '₹',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    15,
+                                                                    FontWeight
+                                                                        .w600),
+                                                              ),
+                                                              Text(
+                                                                fund.amount.text
+                                                                        .isEmpty
+                                                                    ? "0.00"
+                                                                    : fund
+                                                                        .amount
+                                                                        .text,
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    15,
+                                                                    FontWeight
+                                                                        .w600),
+                                                              ),
+                                                            ],
+                                                          )
                                                       ],
                                                     ),
                                                     const SizedBox(
@@ -688,11 +1553,15 @@ class _FundScreenState extends State<FundScreen> {
                                               ),
                                             ],
                                           ),
-                                          SizedBox(
-                                            height:
-                                                _selectedIndex == 1 ? 10 : 0,
-                                          ),
-                                          if (_selectedIndex == 1)
+                                          if (defaultTargetPlatform ==
+                                                  TargetPlatform.iOS
+                                              ? _selectedIndex == 3
+                                              : _selectedIndex == 1)
+                                            const SizedBox(height: 10),
+                                          if (defaultTargetPlatform ==
+                                                  TargetPlatform.iOS
+                                              ? _selectedIndex == 3
+                                              : _selectedIndex == 1)
                                             Column(
                                               children: [
                                                 TextFormField(
@@ -749,10 +1618,11 @@ class _FundScreenState extends State<FundScreen> {
                                                     filled: true,
                                                   ),
                                                 ),
-                                                SizedBox(
-                                                    height: _selectedIndex == 1
-                                                        ? 10
-                                                        : 0),
+                                                if (defaultTargetPlatform ==
+                                                        TargetPlatform.iOS
+                                                    ? _selectedIndex == 3
+                                                    : _selectedIndex == 1)
+                                                  const SizedBox(height: 10),
                                                 SizedBox(
                                                   width: MediaQuery.of(context)
                                                       .size
@@ -780,11 +1650,13 @@ class _FundScreenState extends State<FundScreen> {
                                                                           30),
                                                             )),
                                                     onPressed:
-                                                        fund.amount.text
-                                                                    .isEmpty ||
-                                                                intValue < 50
+                                                        fund.amount.text.isEmpty
+                                                            //     ||
+                                                            // intValue < 50
                                                             ? null
                                                             : () async {
+                                                                _focusNode
+                                                                    .unfocus();
                                                                 await context.read(transcationProvider).fetcUPIIDPayment(
                                                                     context,
                                                                     fund.upiid
@@ -817,14 +1689,46 @@ class _FundScreenState extends State<FundScreen> {
                                                                     fund.hdfcpaymentdata!.data!
                                                                             .verifiedVPAStatus2 ==
                                                                         "Available") {
-                                                                  showDialog(
+                                                                  showModalBottomSheet(
+                                                                      shape: const RoundedRectangleBorder(
+                                                                          borderRadius: BorderRadius.vertical(
+                                                                              top: Radius.circular(
+                                                                                  16))),
+                                                                      backgroundColor:
+                                                                          const Color(
+                                                                              0xffffffff),
+                                                                      isDismissible:
+                                                                          false,
+                                                                      enableDrag:
+                                                                          false,
+                                                                      showDragHandle:
+                                                                          false,
+                                                                      useSafeArea:
+                                                                          false,
+                                                                      isScrollControlled:
+                                                                          true,
                                                                       context:
                                                                           context,
                                                                       builder:
                                                                           (BuildContext
                                                                               context) {
-                                                                        return const UPIIDPaymentCancelAlert();
+                                                                        return WillPopScope(
+                                                                            onWillPop:
+                                                                                () async {
+                                                                              return false;
+                                                                            },
+                                                                            child:
+                                                                                const UPIIDPaymentCancelAlert());
                                                                       });
+
+                                                                  //showDialog(
+                                                                  // context:
+                                                                  //     context,
+                                                                  // builder:
+                                                                  //     (BuildContext
+                                                                  //         context) {
+                                                                  //   return const UPIIDPaymentCancelAlert(fund:fund);
+                                                                  // });
                                                                   // Navigator.pushNamed(
                                                                   //     context,
                                                                   //     Routes
@@ -864,7 +1768,10 @@ class _FundScreenState extends State<FundScreen> {
                                               ],
                                             ),
                                         ],
-                                        if (index == 2) ...[
+                                        if (defaultTargetPlatform ==
+                                                TargetPlatform.iOS
+                                            ? index == 4
+                                            : index == 2) ...[
                                           Row(
                                             children: [
                                               SvgPicture.asset(
@@ -926,35 +1833,40 @@ class _FundScreenState extends State<FundScreen> {
                                                             ),
                                                           ],
                                                         ),
-                                                        _selectedIndex == 2
-                                                            ? Row(
-                                                                children: [
-                                                                  Text(
-                                                                    '₹',
-                                                                    style: textStyle(
-                                                                        colors
-                                                                            .colorBlack,
-                                                                        15,
-                                                                        FontWeight
-                                                                            .w600),
-                                                                  ),
-                                                                  Text(
-                                                                    fund.amount.text
-                                                                            .isEmpty
-                                                                        ? "0.00"
-                                                                        : fund
-                                                                            .amount
-                                                                            .text,
-                                                                    style: textStyle(
-                                                                        colors
-                                                                            .colorBlack,
-                                                                        15,
-                                                                        FontWeight
-                                                                            .w600),
-                                                                  ),
-                                                                ],
-                                                              )
-                                                            : Container()
+                                                        if (defaultTargetPlatform ==
+                                                                TargetPlatform
+                                                                    .iOS
+                                                            ? _selectedIndex ==
+                                                                4
+                                                            : _selectedIndex ==
+                                                                2)
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                '₹',
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    15,
+                                                                    FontWeight
+                                                                        .w600),
+                                                              ),
+                                                              Text(
+                                                                fund.amount.text
+                                                                        .isEmpty
+                                                                    ? "0.00"
+                                                                    : fund
+                                                                        .amount
+                                                                        .text,
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .colorBlack,
+                                                                    15,
+                                                                    FontWeight
+                                                                        .w600),
+                                                              ),
+                                                            ],
+                                                          )
                                                       ],
                                                     ),
                                                     const SizedBox(
@@ -994,11 +1906,17 @@ class _FundScreenState extends State<FundScreen> {
                                               ),
                                             ],
                                           ),
-                                          SizedBox(
-                                            height:
-                                                _selectedIndex == 2 ? 10 : 0,
-                                          ),
-                                          if (_selectedIndex == 2)
+                                          if (defaultTargetPlatform ==
+                                                  TargetPlatform.iOS
+                                              ? _selectedIndex == 4
+                                              : _selectedIndex == 2)
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                          if (defaultTargetPlatform ==
+                                                  TargetPlatform.iOS
+                                              ? _selectedIndex == 4
+                                              : _selectedIndex == 2)
                                             SizedBox(
                                               width: MediaQuery.of(context)
                                                   .size
@@ -1024,6 +1942,7 @@ class _FundScreenState extends State<FundScreen> {
                                                         intValue < 50
                                                     ? null
                                                     : () async {
+                                                        _focusNode.unfocus();
                                                         context
                                                             .read(
                                                                 transcationProvider)
@@ -1133,7 +2052,7 @@ class _FundScreenState extends State<FundScreen> {
                             ),
                           ],
                         )
-                      : WithdrawScreen(withdarw: fund)
+                      : WithdrawScreen(withdarw: fund, foucs: _focusNode)
                 ],
               ),
             ),
@@ -1188,10 +2107,9 @@ class _FundScreenState extends State<FundScreen> {
     });
   }
 
-  showBottomSheetbank(TranctionProvider fund) {
+  showBottomSheetbank(TranctionProvider fund, ThemesProvider theme) {
     showModalBottomSheet(
       enableDrag: false,
-      showDragHandle: true,
       useSafeArea: true,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -1199,46 +2117,57 @@ class _FundScreenState extends State<FundScreen> {
       backgroundColor: const Color(0xffffffff),
       context: context,
       builder: (BuildContext context) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 16,
-              ),
-              child: headerTitleText('Choose an bank:'),
-            ),
-            const SizedBox(height: 10),
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: fund.bankdetails!.dATA!.length,
-              itemBuilder: (BuildContext context, int index) {
-                return InkWell(
-                  onTap: () {
-                    setState(() {
-                      initbank =
-                          '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}';
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              boxShadow: const [
+                BoxShadow(
+                    color: Color(0xff999999),
+                    blurRadius: 4.0,
+                    offset: Offset(2.0, 0.0))
+              ]),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CustomDragHandler(),
+              const SizedBox(height: 10),
+              headerTitleText('Choose an bank:'),
+              ListView.builder(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                shrinkWrap: true,
+                itemCount: fund.bankdetails!.dATA!.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        initbank =
+                            '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}';
 
-                      accno = widget.dd.bankdetails!.dATA![index][2];
-                      ifsc = widget.dd.bankdetails!.dATA![index][3];
-                      bankname = widget.dd.bankdetails!.dATA![index][1];
-                      print("$accno $ifsc $bankname");
-                    });
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 15),
-                    child: Text(
-                      '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
-                      style: textStyle(colors.colorBlack, 15, FontWeight.w600),
+                        accno = widget.dd.bankdetails!.dATA![index][2];
+                        ifsc = widget.dd.bankdetails!.dATA![index][3];
+                        bankname = widget.dd.bankdetails!.dATA![index][1];
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Text(
+                        '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
+                        style:
+                            textStyle(colors.colorBlack, 15, FontWeight.w600),
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ],
+                  );
+                },
+              ),
+              const SizedBox(
+                height: 5,
+              )
+            ],
+          ),
         );
       },
     );

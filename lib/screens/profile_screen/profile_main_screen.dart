@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/api_key_provider.dart';
@@ -18,6 +20,7 @@ import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/functions.dart';
+
 import 'need_help_screen.dart';
 
 class UserAccountScreen extends ConsumerWidget {
@@ -164,9 +167,7 @@ class UserAccountScreen extends ConsumerWidget {
                                             borderRadius:
                                                 BorderRadius.circular(50))),
                                     onPressed: () async {
-                                      Navigator.pushNamed(
-                                          context, Routes.fundscreen,
-                                          arguments: trancation);
+                                      context.read(transcationProvider).amount.clear();
                                       await context
                                           .read(transcationProvider)
                                           .fetchupiIdView(
@@ -174,10 +175,20 @@ class UserAccountScreen extends ConsumerWidget {
                                                   .dATA![indexss][1],
                                               trancation.bankdetails!
                                                   .dATA![indexss][2]);
-                                      // await funds.fetchHstoken(context);
+                                      // defaultTargetPlatform == TargetPlatform.iOS
+                                      // ?Navigator.pushNamed(
+                                      //     context, Routes.iosfundscreen,
+                                      //     arguments: trancation)
+                                      // :Navigator.pushNamed(
+                                      //     context, Routes.fundscreen,
+                                      //     arguments: trancation);
 
-                                      //launch(
-                                      //  'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}');
+                                     
+                                      
+                                      await funds.fetchHstoken(context);
+
+                                      launch(
+                                       'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}');
                                       // await context
                                       //     .read(fundProvider)
                                       //     .fetchHstoken(context);

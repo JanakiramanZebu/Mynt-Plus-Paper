@@ -38,6 +38,7 @@ import 'index_list_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
+import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
 
 final authProvider = ChangeNotifierProvider((ref) => AuthProvider(ref.read));
@@ -713,9 +714,11 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(orderProvider).fetchOrderBook(context, false);
         ref(orderProvider).fetchTradeBook(context);
 
-         ref(portfolioProvider).fetchPosGroupSymbol("",false);
+        ref(portfolioProvider).fetchPosGroupSymbol("", false);
         ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
-
+        ref(transcationProvider).fetchcwithdraw(context);
+        ref(transcationProvider).fetchfundbank(context);
+        ref(transcationProvider).fetchc(context);
         if (s.isEmpty) {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.homeScreen, (route) => false);
@@ -759,12 +762,11 @@ class AuthProvider extends DefaultChangeNotifier {
     pref.clearClientSession();
 
     ConstantName.sessCheck = false;
- ref(websocketProvider).closeSocket();
+    ref(websocketProvider).closeSocket();
     ScaffoldMessenger.of(context).showSnackBar(
         warningMessage(context, "Session Expired,Kindly login Again!"));
     ConstantName.timer!.cancel();
 
-   
     ref(websocketProvider).websockConn(false);
     Navigator.pushNamedAndRemoveUntil(
         context, Routes.loginScreen, (route) => false);
