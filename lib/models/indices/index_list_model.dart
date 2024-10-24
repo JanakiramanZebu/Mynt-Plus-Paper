@@ -41,6 +41,7 @@ class IndexValue {
   String? exch;
   String? perChange;
   String? open;
+  String? tsym;
   IndexValue({
     this.idxname,
     this.token,
@@ -52,6 +53,7 @@ class IndexValue {
     this.exch,
     this.perChange,
     this.open,
+    this.tsym
   });
 
   IndexValue.fromJson(Map<String, dynamic> json) {
@@ -65,6 +67,7 @@ class IndexValue {
     change = json['Change'].toString();
     perChange = json['PerChange'].toString();
     open = json['open'].toString();
+    tsym=json['tsym'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -80,6 +83,7 @@ class IndexValue {
     data['token'] = token;
     data['PerChange'] = perChange;
     data['open'] = open;
+    data['tsym']=tsym;
     return data;
   }
 

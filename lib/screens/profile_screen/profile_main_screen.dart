@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -188,7 +188,7 @@ class UserAccountScreen extends ConsumerWidget {
                                       await funds.fetchHstoken(context);
 
                                       launch(
-                                       'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}');
+                                       'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
                                       // await context
                                       //     .read(fundProvider)
                                       //     .fetchHstoken(context);
@@ -443,7 +443,7 @@ class UserAccountScreen extends ConsumerWidget {
             Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text("Version 3.0.2 Build 1.0.40(15) Released on 07 Oct",
+                child: Text("Version 3.0.2 Build 1.0.41(11) Released on 24 Oct",
                     style: textStyle(
                         const Color(0xff666666), 11, FontWeight.w500)))
           ]);

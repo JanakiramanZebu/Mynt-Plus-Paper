@@ -12,6 +12,7 @@ import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:sms_autofill/sms_autofill.dart';
+import 'package:uuid/uuid.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
@@ -64,7 +65,7 @@ class AuthProvider extends DefaultChangeNotifier {
   String get logoutMsg => _logoutMsg;
 
   List<LoggedMobile> _loggedMobile = [];
-
+var uuid = const Uuid();
   List<LoggedMobile> get loggedMobile => _loggedMobile;
   bool get isMobileLogin => _isMobileLogin;
   bool get isDisableBtn => _isDisableBtn;
@@ -190,11 +191,12 @@ class AuthProvider extends DefaultChangeNotifier {
     }
     _deviceData = deviceData!;
 
-    log("deviveInfo $_deviceData");
+ 
 
     deviveInfo = defaultTargetPlatform == TargetPlatform.android
         ? "${_deviceData['brand']}-${_deviceData['model']}-${_deviceData['id']}"
         : "${_deviceData['model']}-${_deviceData['name']}-${_deviceData['identifierForVendor']}";
+
 
     pref.setDeviceName(deviveInfo);
     notifyListeners();
@@ -249,7 +251,7 @@ class AuthProvider extends DefaultChangeNotifier {
     // }
     if (validateLogin()) {
       fetchMobileLogin(
-          context, passCtrl.text, loginMethCtrl.text.toUpperCase(), "");
+          context, passCtrl.text, loginMethCtrl.text.toUpperCase(), "",uuid.v4());
     }
   }
 
@@ -264,15 +266,18 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   fetchMobileLogin(BuildContext context, String password, String mobileRclint,
-      String s) async {
+      String s,String imei) async {
     try {
+
+      print('def $imei');
+pref.setImei(imei); 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
       _mobileLogin = await api.getMobileLogin(
-          uniqueId: pref.deviceName!,
+          uniqueId: "${pref.deviceName!}   ${pref.imei}",
           mobileRclient: mobileRclint,
           password: password,
-          context: context);
+          context: context, imei: imei);
       // final localstorage = await SharedPreferences.getInstance();
 
       if (_mobileLogin!.stat == "Ok" && s.isNotEmpty) {
@@ -344,7 +349,7 @@ class AuthProvider extends DefaultChangeNotifier {
               clientId: pref.clientId!,
               mobile: pref.clientMob!,
               sesstion: pref.clientSession!,
-              userName: pref.clientName!)
+              userName: pref.clientName!, imei:imei)
         ];
         _loggedMobile = await getLocalData();
 
@@ -380,10 +385,13 @@ class AuthProvider extends DefaultChangeNotifier {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
       _mobileLogin = await api.getMobileLogin(
-          uniqueId: pref.deviceName!,
+          uniqueId: "${pref.deviceName!}   ${pref.imei}",
           mobileRclient: mobileRclint,
           password: password,
-          context: context);
+          context: context, imei: pref.imei!);
+
+
+          print('def ${pref.imei!}');
       otpCtrl.clear();
       _isDisableOtpBtn = true;
       if (_mobileLogin!.stat == "Ok" &&
@@ -411,11 +419,12 @@ class AuthProvider extends DefaultChangeNotifier {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
       _mobileOtp = await api.getMobileOtp(
-          uniqueId: pref.deviceName!,
+          uniqueId:"${pref.deviceName!}   ${pref.imei}",
           mobileRclient: mobile_client,
           otp: otp,
-          context: context);
+          context: context, imei: pref.imei!);
 
+          print('def sd ${pref.imei!}');
       // final localstorage = await SharedPreferences.getInstance();
       if (_mobileOtp!.stat == "Ok") {
         _isDisableBtn = true;
@@ -433,13 +442,15 @@ class AuthProvider extends DefaultChangeNotifier {
               clientId: pref.clientId!,
               mobile: pref.clientMob!,
               sesstion: pref.clientSession!,
-              userName: pref.clientName!)
+              userName: pref.clientName!, imei:pref.imei!)
         ];
-        _loggedMobile = await getLocalData();
+        _loggedMobile = await getLocalData(); 
 
         await setLocalData(_loggedMobile, currentUser);
 
         _loggedMobile = await getLocalData();
+
+       log("loggued Useer -- ${pref.loggedClient}");
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, 'OTP Verified'));
         await deviceAuth(context, "");
@@ -478,7 +489,7 @@ class AuthProvider extends DefaultChangeNotifier {
   // Retrieve a list of objects from shared preferences
   Future<List<LoggedMobile>> getLocalData() async {
     List<String>? jsonList = pref.loggedClient;
-
+ 
     if (jsonList != null) {
       return jsonList
           .map((jsonString) => LoggedMobile.fromJson(jsonString))

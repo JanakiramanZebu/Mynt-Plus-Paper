@@ -14,6 +14,7 @@ import '../screens/ipo/mainstream_ipo/mainstream_order_screen/order_screen.dart'
 import '../screens/ipo/sme_ipo/sme_order_screen/sme_order.dart';
 import '../screens/market_watch/edit_scrip.dart';
 import '../screens/market_watch/futures/future_screen.dart';
+import '../screens/market_watch/option_chain/option_strategey.dart';
 import '../screens/market_watch/search_screen.dart';
 import '../screens/market_watch/tv_chart/webview_chart.dart';
 import '../screens/mutual_fund/mf_order_screen.dart';
@@ -167,7 +168,10 @@ class AppRoutes {
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               PlaceOrderScreen(
-                  orderArg: args['orderArg'], scripInfo: args['scripInfo'],isBasket: args["isBskt"],),
+            orderArg: args['orderArg'],
+            scripInfo: args['scripInfo'],
+            isBasket: args["isBskt"],
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;
@@ -442,7 +446,7 @@ class AppRoutes {
           },
         );
 
-        case Routes.positionGroupDetail:
+      case Routes.positionGroupDetail:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               PositionGroupDetail(positionData: args),
@@ -1007,42 +1011,49 @@ class AppRoutes {
         );
 
       /////
-       case Routes.fundscreen:
+      case Routes.fundscreen:
         return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              FundScreen(dd: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
-        );
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                FundScreen(dd: args),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
 
-      // 
-       /////
-       case Routes.iosfundscreen:
+      case Routes.iosfundscreen:
         return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              IosFundScreenCopy(fundIos: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
-        );
-
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                IosFundScreenCopy(fundIos: args),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+      case Routes.optionStrategy:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const OptionStrategey(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
 
       default:
         return _errorRoute();

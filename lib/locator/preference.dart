@@ -47,6 +47,8 @@ class Preferences {
       await _prefInstance!.setString(_apiToken, session);
   Future setClientName(String name) async =>
       await _prefInstance!.setString(_clientName, name);
+  Future setImei(String val) async =>
+      await _prefInstance!.setString(_imei, val);
   Future setClientMob(String mob) async =>
       await _prefInstance!.setString(_clientMob, mob);
   // Future setLogoutClient(String logout) async =>
@@ -249,6 +251,7 @@ class Preferences {
 
   // String? get logoutClient => _prefInstance?.getString(_logOutClient) ?? "";
   String? get deviceName => _prefInstance?.getString(_deviceName) ?? "";
+  String? get imei => _prefInstance?.getString(_imei) ?? "";
 
 // GET Cleint Details
   String? get clientId => _prefInstance?.getString(_clientId) ?? "";
@@ -278,6 +281,8 @@ const String _userAppTheme = 'userAppTheme';
 // const String _logOutClient = 'logOutClient';
 const String _isLogout = "isLogout";
 const String _deviceName = 'deviceName';
+const String _imei = 'imei';
+
 const String _ismobileLogin = 'ismobileLogin';
 
 const String _hideLoginOptBtn = 'hideLoginOptBtn';

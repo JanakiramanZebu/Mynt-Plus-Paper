@@ -1,4 +1,6 @@
 import 'dart:developer';
+import 'package:public_ip_address/public_ip_address.dart';
+
 import '../models/order_book_model/cancel_order_model.dart';
 import '../models/order_book_model/get_brokerage.dart';
 import '../models/order_book_model/gtt_order_book.dart';
@@ -19,6 +21,8 @@ import 'core/api_link.dart';
 mixin OrderAPI on ApiCore {
   Future<PlaceOrderModel> getPlaceOrder(PlaceOrderInput placeOrderInput) async {
     try {
+               String ip = await IpAddress().getIp();
+ 
       final uri = Uri.parse(apiLinks.placeOrder);
       Map payload = {
         "uid": prefs.clientId,
@@ -34,9 +38,10 @@ mixin OrderAPI on ApiCore {
         "prctyp": placeOrderInput.prctype,
         "ret": placeOrderInput.ret,
         "channel": placeOrderInput.channel,
-        "usr_agent": placeOrderInput.userAgent,
-        "app_inst_id": placeOrderInput.appInstaId,
-        "ordersource": ApiLinks.source
+        "usr_agent": "${prefs.deviceName!}   ${prefs.imei}",
+        "app_inst_id": "${prefs.imei}",
+        "ordersource": ApiLinks.source,
+        "ipaddr":ip
       };
       if (placeOrderInput.amo == "Yes") {
         payload.addAll({"amo": "Yes"});

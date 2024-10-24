@@ -117,7 +117,6 @@ class QrDetails extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 rowtable("IP Address", details.ip ?? "", theme),
-                rowtable("OS", details.os ?? "", theme),
                 rowtable("City", details.city ?? "", theme),
                 rowtable("State", details.region??"",theme),
                 Padding(
@@ -164,7 +163,7 @@ class QrDetails extends ConsumerWidget {
                         onPressed: () async{
                            await context
                               .read(userProfileProvider)
-                              .fetchQR(context, details.uniqueId.toString(),camera);
+                              .fetchQR(context, details.uniqueId.toString(),details.loginSource.toString(),camera);
                         },
                         child: Text(
                           "Confirm",

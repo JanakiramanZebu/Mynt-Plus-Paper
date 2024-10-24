@@ -3579,9 +3579,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
             mktProt: priceType == "Market" || priceType == "SL MKT"
                 ? mktProtCtrl.text
                 : '',
-            channel: '',
-            userAgent: '',
-            appInstaId: '');
+            channel: '' );
         await context
             .read(orderProvider)
             .fetchPlaceOrder(context, placeOrderInput, widget.orderArg.isExit);
@@ -3770,9 +3768,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                     priceType == "SL MKT"
                                                 ? mktProtCtrl.text
                                                 : '',
-                                            channel: '',
-                                            userAgent: '',
-                                            appInstaId: '');
+                                            channel: '' );
                                     await context
                                         .read(orderProvider)
                                         .slicePlaceOrder(
@@ -3808,9 +3804,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                     priceType == "SL MKT"
                                                 ? mktProtCtrl.text
                                                 : '',
-                                            channel: '',
-                                            userAgent: '',
-                                            appInstaId: '');
+                                            channel: '' );
                                     await context
                                         .read(orderProvider)
                                         .slicePlaceOrder(
@@ -3861,9 +3855,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                   priceType == "SL MKT"
                                               ? mktProtCtrl.text
                                               : '',
-                                          channel: '',
-                                          userAgent: '',
-                                          appInstaId: '');
+                                          channel: '' );
                                   await context
                                       .read(orderProvider)
                                       .slicePlaceOrder(

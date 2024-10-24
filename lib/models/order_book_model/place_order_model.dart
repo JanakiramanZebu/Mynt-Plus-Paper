@@ -38,9 +38,7 @@ class PlaceOrderInput {
   String prctype;
   String ret;
   String mktProt;
-  String channel;
-  String userAgent;
-  String appInstaId;
+  String channel; 
 
   PlaceOrderInput(
       {required this.amo,
@@ -57,7 +55,5 @@ class PlaceOrderInput {
       required this.trantype,
       required this.prctype,
       required this.ret,
-      required this.mktProt, required this.channel,
-      required this.userAgent,
-      required this.appInstaId});
+      required this.mktProt, required this.channel });
 }

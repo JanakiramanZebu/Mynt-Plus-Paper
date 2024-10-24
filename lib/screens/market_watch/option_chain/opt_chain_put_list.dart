@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/marketwatch_model/opt_chain_model.dart';
@@ -69,7 +68,8 @@ class OptChainPutList extends ConsumerWidget {
                     context,
                     true,
                     true,
-                    false,true);
+                    false,
+                    true);
               }
             },
             onTap: () async {
@@ -115,12 +115,13 @@ class OptChainPutList extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [SvgPicture.asset(assets.suitcase,
-                                          height: 12,
-                                          width: 16,
-                                          color: theme.isDarkMode
-                                              ? colors.colorLightBlue
-                                              : colors.colorBlue),
+                children: [
+                  // SvgPicture.asset(assets.suitcase,
+                  //                         height: 12,
+                  //                         width: 16,
+                  //                         color: theme.isDarkMode
+                  //                             ? colors.colorLightBlue
+                  //                             : colors.colorBlue),
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

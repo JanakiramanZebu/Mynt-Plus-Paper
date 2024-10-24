@@ -40,7 +40,7 @@ mixin UserProfileAPI on ApiCore {
     }
   }
 
-  Future<QrLoginResponces> getqr(String uniqueid) async {
+  Future<QrLoginResponces> getqr(String uniqueid , String loginsrc) async {
     try {
       final uri = Uri.parse(apiLinks.getQrScanner);
       final res = await apiClient.post(uri,
@@ -49,7 +49,8 @@ mixin UserProfileAPI on ApiCore {
             "unique_id": uniqueid,
             "clientid": "${prefs.clientId}",
             "apitoken": "${prefs.clientSession}",
-            "source": "MOB"
+            "source": "MOB",
+            "login_source": loginsrc
           }));
 
       final json = jsonDecode(res.body);

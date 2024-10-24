@@ -338,10 +338,10 @@ class UserProfileProvider extends DefaultChangeNotifier {
     return profileMenu;
   }
 
-  Future fetchQR(BuildContext context, String unquiid,
+  Future fetchQR(BuildContext context, String unquiid, String loginfsrc,
       MobileScannerController camera) async {
     try {
-      _qrLoginesponces = await api.getqr(unquiid);
+      _qrLoginesponces = await api.getqr(unquiid,loginfsrc);
       if (_qrLoginesponces!.msg == "logged in") {
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, "${_qrLoginesponces!.msg}"));

@@ -159,7 +159,7 @@ mixin MarketWatchApi on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","exch":"$exch","token":"$token"}&jKey=${prefs.clientSession}''');
 
-      // log(" LinkedScrips Info => ${res.body}");
+      //  log(" LinkedScrips Info => ${res.body}");
       final json = jsonDecode(res.body);
 
       return LinkedScrips.fromJson(json as Map<String, dynamic>);
@@ -182,7 +182,7 @@ mixin MarketWatchApi on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","exch":"$exchange" ,"tsym":"$tradeSym","cnt":"$numofStrike ","strprc":"$strPrc"}&jKey=${prefs.clientSession}''');
 
-      // log(" Option Chain   => ${res.body}");
+      //  log(" Option Chain   => ${res.body}");
 
       final resp = OptionChainModel.fromJson(
           jsonDecode(res.body) as Map<String, dynamic>);
@@ -299,9 +299,7 @@ mixin MarketWatchApi on ApiCore {
     }
   }
 
-  Future<CancelAlertModel> getCancelAlert(
-    String alId,
-  ) async {
+  Future<CancelAlertModel> getCancelAlert(String alId) async {
     try {
       final uri = Uri.parse(apiLinks.cancelAlert);
       final res = await apiClient.post(uri,

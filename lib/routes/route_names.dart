@@ -145,4 +145,7 @@ class Routes {
   static const String paymentstatus = 'paymentstatus';
   static const String upiIDpaymentstatus = 'UpiIDpaymentstatus';
   static const String iosfundscreen = "iosfundscreen";
+
+
+    static const String optionStrategy = "optionStrategy";
 }

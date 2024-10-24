@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import '../models/func_model_testing_copy/fund_direct_payment_model.dart';
 import '../models/func_model_testing_copy/fund_pay.model.dart';
 import '../models/func_model_testing_copy/fund_payment_status_model.dart';
@@ -43,7 +41,7 @@ mixin TranscationApi on ApiCore {
             "clientID": prefs.clientId
           }));
       final json = jsonDecode(res.body);
-      log("HDFC UPI STATUS => ${res.body}");
+      // log("HDFC UPI STATUS => ${res.body}");
       final hdfcupistatus = HdfcUPIStatus.fromJson(json);
       return hdfcupistatus;
     } catch (e) {
@@ -76,7 +74,7 @@ mixin TranscationApi on ApiCore {
       String amt, String accno, String name, String ifsc) async {
     String url =
         "https://fundapi.mynt.in/razorpay/razorpay?amount=$amt&method=netbanking&account_number=$accno&name=$name&ifsc=$ifsc&ccode=${prefs.clientId}";
-    log(url);
+
     try {
       final res = await apiClient.post(
         Uri.parse(url),
@@ -121,11 +119,7 @@ mixin TranscationApi on ApiCore {
   }
 
   Future<HdfcTranctionModel> getHdfcTranction(
-    String upiId,
-    int amount,
-    String accno,
-    String clientId,
-  ) async {
+      String upiId, int amount, String accno, String clientId) async {
     try {
       final uri = Uri.parse(apiLinks.moneytransction);
       final res = await apiClient.post(uri,
@@ -156,8 +150,8 @@ mixin TranscationApi on ApiCore {
       final json = jsonDecode(res.body);
 
       final decryptedData = decryptionFunction(json["str"]);
-       log("CLIENT DATAA------------ ${jsonDecode(jsonEncode(decryptedData))}}");
-   
+      //  log("CLIENT DATAA------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+
       return DecryptClientCheck.fromJson(jsonDecode(decryptedData));
     } catch (e) {
       rethrow;
@@ -174,7 +168,7 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode({"string": encryptedPayload}));
       final json = jsonDecode(res.body);
       final decryptedData = decryptionFunction(json["str"]);
-      log("------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+      // log("------------ ${jsonDecode(jsonEncode(decryptedData))}}");
       return PayoutDetails.fromJson(jsonDecode(decryptedData));
     } catch (e) {
       rethrow;
@@ -191,7 +185,7 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode({"code": encryptedPayload}));
       final json = jsonDecode(res.body);
       final decryptedData = decryptionFunction(json["str"]);
-      log("------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+      // log("------------ ${jsonDecode(jsonEncode(decryptedData))}}");
       return BankDetails.fromJson(jsonDecode(decryptedData));
     } catch (e) {
       rethrow;
@@ -219,7 +213,7 @@ mixin TranscationApi on ApiCore {
       for (var element in myList) {
         data.add(ViewUpiIdModel.fromJson(element as Map<String, dynamic>));
       }
-      log("VIEW UPI ID ---> $myList");
+      // log("VIEW UPI ID ---> $myList");
 
       return data;
     } catch (e) {
@@ -227,3 +221,8 @@ mixin TranscationApi on ApiCore {
     }
   }
 }
+
+
+
+
+

@@ -5,12 +5,13 @@ class LoggedMobile {
   String mobile;
   String userName;
   String sesstion;
-
+  String imei;
   LoggedMobile(
       {required this.clientId,
       required this.mobile,
       required this.sesstion,
-      required this.userName});
+      required this.userName,
+      required this.imei});
 
   // Convert the object to a Map
   Map<String, dynamic> toMap() {
@@ -18,7 +19,8 @@ class LoggedMobile {
       'clientId': clientId,
       'mobile': mobile,
       'sesstion': sesstion,
-      'userName': userName
+      'userName': userName,
+      'imei': imei
     };
   }
 
@@ -28,7 +30,8 @@ class LoggedMobile {
         clientId: map['clientId'],
         mobile: map['mobile'],
         sesstion: map['sesstion'],
-        userName: map['userName']);
+        userName: map['userName'],
+        imei: map['imei']);
   }
 
   // Convert the object to a JSON string

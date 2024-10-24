@@ -1636,13 +1636,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 mktProt: '',
                 channel: defaultTargetPlatform == TargetPlatform.android
                     ? '${ref(authProvider).deviceInfo["brand"]}'
-                    : "${ref(authProvider).deviceInfo["model"]}",
-                userAgent: defaultTargetPlatform == TargetPlatform.android
-                    ? '${ref(authProvider).deviceInfo["model"]}'
-                    : "${ref(authProvider).deviceInfo["name"]}",
-                appInstaId: defaultTargetPlatform == TargetPlatform.android
-                    ? '${ref(authProvider).deviceInfo["id"]}'
-                    : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
+                    : "${ref(authProvider).deviceInfo["model"]}" 
+                );
             _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
             if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
@@ -1668,13 +1663,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                   mktProt: '',
                   channel: defaultTargetPlatform == TargetPlatform.android
                       ? '${ref(authProvider).deviceInfo["brand"]}'
-                      : "${ref(authProvider).deviceInfo["model"]}",
-                  userAgent: defaultTargetPlatform == TargetPlatform.android
-                      ? '${ref(authProvider).deviceInfo["model"]}'
-                      : "${ref(authProvider).deviceInfo["name"]}",
-                  appInstaId: defaultTargetPlatform == TargetPlatform.android
-                      ? '${ref(authProvider).deviceInfo["id"]}'
-                      : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
+                      : "${ref(authProvider).deviceInfo["model"]}" );
               await fetchExitPosition(context, placeOrderInput, true);
             }
           }
@@ -1706,13 +1695,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           mktProt: '',
           channel: defaultTargetPlatform == TargetPlatform.android
               ? '${ref(authProvider).deviceInfo["brand"]}'
-              : "${ref(authProvider).deviceInfo["model"]}",
-          userAgent: defaultTargetPlatform == TargetPlatform.android
-              ? '${ref(authProvider).deviceInfo["model"]}'
-              : "${ref(authProvider).deviceInfo["name"]}",
-          appInstaId: defaultTargetPlatform == TargetPlatform.android
-              ? '${ref(authProvider).deviceInfo["id"]}'
-              : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
+              : "${ref(authProvider).deviceInfo["model"]}" );
       await fetchExitPosition(context, placeOrderInput, false);
     }
   }

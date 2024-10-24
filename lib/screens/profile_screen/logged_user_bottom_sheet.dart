@@ -80,7 +80,8 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                         .loggedMobile[index].sesstion);
                                     pref.setClientName(loggedUser
                                         .loggedMobile[index].userName);
-
+                                    pref.setImei(
+                                        loggedUser.loggedMobile[index].imei);
                                     pref.setMobileLogin(true);
 
                                     await context
@@ -90,7 +91,9 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                             "",
                                             loggedUser
                                                 .loggedMobile[index].clientId,
-                                            "switchAc");
+                                            "switchAc",
+                                            loggedUser
+                                                .loggedMobile[index].imei);
                                   },
                                   dense: true,
                                   contentPadding: const EdgeInsets.symmetric(
@@ -124,10 +127,10 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                             horizontal: 16, vertical: 5),
                         child: OutlinedButton(
                             onPressed: () {
-                                  pref.setMobileLogin(true);
+                              pref.setMobileLogin(true);
                               pref.setLogout(false);
                               pref.setHideLoginOptBtn(true);
-                             watch(websocketProvider).closeSocket();
+                              watch(websocketProvider).closeSocket();
                               loggedUser.addClient(true);
                               Navigator.pop(context);
                               Navigator.pushNamed(context, Routes.loginScreen);

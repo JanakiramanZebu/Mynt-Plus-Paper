@@ -415,7 +415,7 @@ class SecureFund extends ConsumerWidget {
                                         .fetchHstoken(context);
                                         await funds.fetchHstoken(context);
                                       launch(
-                                           'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}');
+                                           'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
                                     // Navigator.pushNamed(
                                     //     context, Routes.fundTransaction,
                                     //     arguments: "fund");
@@ -447,7 +447,7 @@ class SecureFund extends ConsumerWidget {
                                         .read(fundProvider)
                                         .fetchHstoken(context);
                                         launch(
-                                        'https://fund.mynt.in/withdrawal/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}');
+                                        'https://fund.mynt.in/withdrawal/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
                                     // Navigator.pushNamed(
                                     //     context, Routes.fundTransaction,
                                     //     arguments: "withdrawal");

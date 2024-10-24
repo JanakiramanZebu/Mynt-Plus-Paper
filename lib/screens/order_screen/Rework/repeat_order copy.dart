@@ -2306,9 +2306,7 @@ class _RepeatOrderState extends State<RepeatOrder> {
             orderInput.priceName == "Market" || orderInput.priceName == "SL MKT"
                 ? orderInput.mktProtCtrl.text
                 : '',
-        channel: '',
-        userAgent: '',
-        appInstaId: '',
+        channel: '' 
       );
       await context
           .read(orderProvider)
@@ -2511,9 +2509,7 @@ class _RepeatOrderState extends State<RepeatOrder> {
                                         orderInput.priceName == "SL MKT"
                                     ? orderInput.mktProtCtrl.text
                                     : '',
-                                channel: '',
-                                userAgent: '',
-                                appInstaId: '',
+                                channel: '' 
                               );
                               await context
                                   .read(orderProvider)
@@ -2554,9 +2550,7 @@ class _RepeatOrderState extends State<RepeatOrder> {
                                         orderInput.priceName == "SL MKT"
                                     ? orderInput.mktProtCtrl.text
                                     : '',
-                                channel: '',
-                                userAgent: '',
-                                appInstaId: '',
+                                channel: '' 
                               );
                               await context
                                   .read(orderProvider)

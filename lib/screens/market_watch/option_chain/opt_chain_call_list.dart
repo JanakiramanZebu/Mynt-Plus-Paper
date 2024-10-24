@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
+// import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/marketwatch_model/opt_chain_model.dart';
@@ -176,12 +176,13 @@ class OptChainCallList extends ConsumerWidget {
                                 FontWeight.w500)),
                       ],
                     ),
-                  ),SvgPicture.asset(assets.suitcase,
-                                          height: 12,
-                                          width: 16,
-                                          color: theme.isDarkMode
-                                              ? colors.colorLightBlue
-                                              : colors.colorBlue),
+                  )
+                  // ,SvgPicture.asset(assets.suitcase,
+                  //                         height: 12,
+                  //                         width: 16,
+                  //                         color: theme.isDarkMode
+                  //                             ? colors.colorLightBlue
+                  //                             : colors.colorBlue),
                 ],
               ),
             ));

@@ -350,14 +350,7 @@ class OrderProvider extends DefaultChangeNotifier {
       placeOrderInput.channel = defaultTargetPlatform == TargetPlatform.android
           ? '${ref(authProvider).deviceInfo["brand"]}'
           : "${ref(authProvider).deviceInfo["model"]}";
-      placeOrderInput.userAgent =
-          defaultTargetPlatform == TargetPlatform.android
-              ? '${ref(authProvider).deviceInfo["model"]}'
-              : "${ref(authProvider).deviceInfo["name"]}";
-      placeOrderInput.appInstaId =
-          defaultTargetPlatform == TargetPlatform.android
-              ? '${ref(authProvider).deviceInfo["id"]}'
-              : "${ref(authProvider).deviceInfo["identifierForVendor"]}";
+       
 
       _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
@@ -417,15 +410,7 @@ class OrderProvider extends DefaultChangeNotifier {
     try {
       placeOrderInput.channel = defaultTargetPlatform == TargetPlatform.android
           ? '${ref(authProvider).deviceInfo["brand"]}'
-          : "${ref(authProvider).deviceInfo["model"]}";
-      placeOrderInput.userAgent =
-          defaultTargetPlatform == TargetPlatform.android
-              ? '${ref(authProvider).deviceInfo["model"]}'
-              : "${ref(authProvider).deviceInfo["name"]}";
-      placeOrderInput.appInstaId =
-          defaultTargetPlatform == TargetPlatform.android
-              ? '${ref(authProvider).deviceInfo["id"]}'
-              : "${ref(authProvider).deviceInfo["identifierForVendor"]}";
+          : "${ref(authProvider).deviceInfo["model"]}"; 
 
       _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
@@ -1457,13 +1442,7 @@ class OrderProvider extends DefaultChangeNotifier {
             mktProt: element['mktProt'],
             channel: defaultTargetPlatform == TargetPlatform.android
                 ? '${ref(authProvider).deviceInfo["brand"]}'
-                : "${ref(authProvider).deviceInfo["model"]}",
-            userAgent: defaultTargetPlatform == TargetPlatform.android
-                ? '${ref(authProvider).deviceInfo["model"]}'
-                : "${ref(authProvider).deviceInfo["name"]}",
-            appInstaId: defaultTargetPlatform == TargetPlatform.android
-                ? '${ref(authProvider).deviceInfo["id"]}'
-                : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
+                : "${ref(authProvider).deviceInfo["model"]}"  );
 
         _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 

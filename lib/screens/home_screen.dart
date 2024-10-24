@@ -9,7 +9,7 @@ import '../models/upgrader_model.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
-import '../provider/network_state_provider.dart';
+import '../provider/network_state_provider.dart'; 
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
 import '../provider/thems.dart';
@@ -243,6 +243,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               : [
                                   if (indexProvide.selectedBtmIndx == 1 &&
                                       marketWatchList.isPreDefWLs != "Yes") ...[
+//                                      InkWell(
+//                                             onTap: ()async {
+
+//  await watch(optStrategyProvider).chngeOptionName("NIFTY" , context);
+
+//                                                  Navigator.pushNamed(
+//                                                   context, Routes.optionStrategy );
+//                                             },
+//                                             child: Container(
+//                                                 padding: EdgeInsets.only(
+//                                                     left: 8,
+//                                                     right: marketWatchList
+//                                                                 .scrips
+//                                                                 .length >=
+//                                                             50
+//                                                         ? 0
+//                                                         : 8),
+//                                                 child: SvgPicture.asset(
+//                                                  assets.optChainIcon,
+//                                                     width: 19,
+//                                                     color: colors.colorGrey)),
+//                                           ),
                                     marketWatchList.scrips.length > 1
                                         ? InkWell(
                                             onTap: () {
@@ -302,7 +324,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     color: colors.colorGrey)),
                                           ),
                                   ] else if ((indexProvide.selectedBtmIndx ==
-                                          2 && portfolio.allPostionList.isNotEmpty) &&
+                                              2 &&
+                                          portfolio
+                                              .allPostionList.isNotEmpty) &&
                                       portfolio.selectedTab == 0) ...[
                                     Padding(
                                       padding:
@@ -310,7 +334,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       child: Row(children: [
                                         Container(
                                           height: 27,
-                                          padding: const EdgeInsets.only(right: 10),
+                                          padding:
+                                              const EdgeInsets.only(right: 10),
                                           child: OutlinedButton(
                                               onPressed: () {
                                                 showModalBottomSheet(
@@ -708,7 +733,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     onTap: internet.connectionStatus ==
                                             ConnectivityResult.none
                                         ? null
-                                        : () async {        portfolio. cancelTimer();
+                                        : () async {
+                                            portfolio.cancelTimer();
                                             indexProvide.bottomMenu(1);
                                             await context
                                                 .read(indexListProvider)
@@ -877,7 +903,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     onTap: internet.connectionStatus ==
                                             ConnectivityResult.none
                                         ? null
-                                        : () async {        portfolio. cancelTimer();
+                                        : () async {
+                                            portfolio.cancelTimer();
                                             indexProvide.bottomMenu(3);
                                             await context
                                                 .read(indexListProvider)
@@ -969,8 +996,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             ConnectivityResult.none
                                         ? null
                                         : () async {
-
-                                            portfolio. cancelTimer();
+                                            portfolio.cancelTimer();
                                             await context
                                                 .read(fundProvider)
                                                 .fetchFunds(context);

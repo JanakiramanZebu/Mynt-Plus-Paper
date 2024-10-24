@@ -303,6 +303,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                           ConstantName.webViewController = controller;
                           ConstantName.charttimer = Timer.periodic(
                               const Duration(milliseconds: 300), (timer) {
+
+                             
                             Map json = {
                               "t": "df",
                               "e": widget.chartArgs.exch,
@@ -318,6 +320,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                                   ? "0.00"
                                   : socketDatas[widget.chartArgs.token]['v'],
                             };
+
+                               print("0 dsfx  ${json['lp']}");
                             controller.evaluateJavascript(
                                 source:
                                     'window.localStorage.setItem("tick_tick",\'${jsonEncode(json)}\')');

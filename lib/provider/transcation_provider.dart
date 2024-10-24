@@ -155,7 +155,7 @@ class TranctionProvider extends DefaultChangeNotifier {
             });
       }
 
-      print("------------ ${_hdfcUPIStatus!.data!.orderNumber}");
+      
     } catch (e) {
       log("Failed to fetch bank Data:: ${e.toString()}");
       //  ref(TranctionProvider).logError.add({"type": "API", "Error": "$e"});
@@ -172,7 +172,6 @@ class TranctionProvider extends DefaultChangeNotifier {
 
       _decryptclientcheck = await api.getClientDetails();
       // print("------------ ${ApiLinks.token}");
-      print("------------ ${_decryptclientcheck!.clientCheck!.dATA![0]}");
     } catch (e) {
       log("Failed to fetch Profile Data:: ${e.toString()}");
       ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
@@ -188,8 +187,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
 
       _payoutdetails = await api.getWithdrawPayout();
-      //  print("------------ ${ApiLinks.token}");
-      print("WITHDRAW PAYOUT ${_payoutdetails!.withdrawAmount}.");
+      //  print("------------ ${ApiLinks.token}"); 
     } catch (e) {
       log("Failed to fetch Profile Data:: ${e.toString()}");
       ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
@@ -204,7 +202,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       _bankdetails = await api.getbankDetails();
-      print("------------ ${_bankdetails!}");
+      
     } catch (e) {
       log("Failed to fetch bank Data:: ${e.toString()}");
       ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});

@@ -16,6 +16,7 @@ mixin AuthApi on ApiCore {
       {required String uniqueId,
       required String mobileRclient,
       required String password,
+      required String imei,
       required BuildContext context}) async {
     try {
       final uri = Uri.parse(apiLinks.mobileLogin);
@@ -24,14 +25,20 @@ mixin AuthApi on ApiCore {
           ? {
               "mobile_unique": uniqueId,
               "clientid": mobileRclient,
+              "imei": imei,
               "password": password
             }
           : password.isEmpty
-              ? {"mobile_unique": uniqueId, "clientid": mobileRclient}
+              ? {
+                  "mobile_unique": uniqueId,
+                  "clientid": mobileRclient,
+                  "imei": imei
+                }
               : {
                   "mobile_unique": uniqueId,
                   "mobile": mobileRclient,
-                  "password": password
+                  "password": password,
+                  "imei": imei
                 };
 
       final res = await apiClient.post(uri,
@@ -55,6 +62,7 @@ mixin AuthApi on ApiCore {
   Future<MobileOtpModel> getMobileOtp(
       {required String uniqueId,
       required String mobileRclient,
+   required   String imei,
       required String otp,
       required BuildContext context}) async {
     try {
@@ -65,13 +73,15 @@ mixin AuthApi on ApiCore {
               "mobile_unique": uniqueId,
               "clientid": mobileRclient,
               "otp": otp,
+                  "imei": imei,
               "source": ApiLinks.source
             }
           : {
               "mobile_unique": uniqueId,
               "mobile": mobileRclient,
               "otp": otp,
-              "source": ApiLinks.source
+              "source": ApiLinks.source,
+                  "imei": imei
             };
       final res = await apiClient.post(uri,
           headers: defaultHeaders, body: jsonEncode(data));
