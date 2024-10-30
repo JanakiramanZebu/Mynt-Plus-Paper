@@ -130,7 +130,7 @@ class _UPIIDPaymentCancelAlertState extends State<UPIIDPaymentCancelAlert> {
                                           : colors.colorBlack,
                                       14,
                                       FontWeight.w500))))),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   )
                 ])));

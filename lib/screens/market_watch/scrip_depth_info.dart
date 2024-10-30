@@ -1220,7 +1220,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                               const NoDataFound()
                             ]
                           ] else if (scripInfo.actDeptBtn == "Chart") ...[
-                            ChartScreenWebView(chartArgs: chartArgs!)
+                            ChartScreenWebView(chartArgs: chartArgs!, cHeight: 1.48)
                           ] else if (scripInfo.actDeptBtn == "Option") ...[
                             if (scripInfo.isLoad)
                               const Center(

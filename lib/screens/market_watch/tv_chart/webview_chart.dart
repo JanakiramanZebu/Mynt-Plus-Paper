@@ -1,39 +1,37 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'dart:io'; 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
+import 'package:flutter_svg/svg.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
 import '../../../models/marketwatch_model/market_watch_scrip_model.dart';
-import '../../../provider/market_watch_provider.dart';
-import '../../../provider/network_state_provider.dart';
+import '../../../provider/market_watch_provider.dart'; 
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
-import '../../../sharedWidget/functions.dart';
-import '../../../sharedWidget/no_internet_widget.dart';
+import '../../../sharedWidget/functions.dart'; 
 import 'charttype_bottom.dart';
 import 'drwaing_bottom.dart';
 import 'resolution_bottom.dart';
 
 class ChartScreenWebView extends StatefulWidget {
   final ChartArgs chartArgs;
-  const ChartScreenWebView({super.key, required this.chartArgs});
+
+  final double cHeight;
+  const ChartScreenWebView({super.key, required this.chartArgs,required this.cHeight});
 
   @override
   State<ChartScreenWebView> createState() => _ChartScreenWebViewState();
 }
 
 class _ChartScreenWebViewState extends State<ChartScreenWebView> {
-  // final pref = locator<Preferences>();
   double progress = 0;
   late ContextMenu contextMenu;
   final Preferences prefs = locator<Preferences>();
@@ -41,7 +39,6 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   @override
   void initState() {
     super.initState();
-    // context.read(networkStateProvider).networkStream();
 
     contextMenu = ContextMenu(
         menuItems: [
@@ -79,13 +76,12 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
-      final tvChart = watch(marketWatchProvider);
-      final internet = watch(networkStateProvider);
+      final tvChart = watch(marketWatchProvider); 
       final socketDatas = watch(websocketProvider).socketDatas;
       final theme = watch(themeProvider);
       return SizedBox(
-          height: MediaQuery.of(context).size.height / 1.49,
-          child: Stack(children: [
+          height: MediaQuery.of(context).size.height / widget.cHeight,
+          child:  
             Column(children: [
               Align(
                   alignment: Alignment.topCenter,
@@ -303,8 +299,6 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                           ConstantName.webViewController = controller;
                           ConstantName.charttimer = Timer.periodic(
                               const Duration(milliseconds: 300), (timer) {
-
-                             
                             Map json = {
                               "t": "df",
                               "e": widget.chartArgs.exch,
@@ -321,7 +315,6 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                                   : socketDatas[widget.chartArgs.token]['v'],
                             };
 
-                               print("0 dsfx  ${json['lp']}");
                             controller.evaluateJavascript(
                                 source:
                                     'window.localStorage.setItem("tick_tick",\'${jsonEncode(json)}\')');
@@ -335,12 +328,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                         });
                       }))
             ]),
-            if (internet.connectionStatus == ConnectivityResult.none) ...[
-              const NoInternetWidget()
-            ]
-          ]));
+            
+         );
     });
   }
-
-   
 }

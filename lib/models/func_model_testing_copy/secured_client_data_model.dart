@@ -12,7 +12,7 @@ class DecryptClientCheck {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (clientCheck != null) {
       data['client_check'] = clientCheck!.toJson();
     }
@@ -38,7 +38,7 @@ class ClientCheck {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['COLUMNS'] = cOLUMNS;
     if (dATA != null) {
       data['DATA'] = dATA!.map((v) => v).toList();

@@ -75,11 +75,11 @@ class _UPIAppsPaymentSuccessAlertState
               child: Text("Fri Oct 11 2024 12:31:51",
                   style: textStyle(colors.colorGrey, 12, FontWeight.w500)),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
-            ListDivider(),
-            SizedBox(
+            const ListDivider(),
+            const SizedBox(
               height: 10,
             ),
             Column(

@@ -37,15 +37,16 @@ class OptionValues {
   String? ti;
   String? lp;
   String? perChange;
-    String? close;
+  String? close;
   String? oi;
   String? poi;
   String? strprc;
   String? oiLack;
   String? oiPerChng;
   String? symbol;
-String?expDate;
-String? option;
+  String? expDate;
+  String? option;
+  String? transType;
   OptionValues(
       {this.exch,
       this.token,
@@ -61,8 +62,11 @@ String? option;
       this.poi,
       this.close,
       this.oiPerChng,
-      this.strprc ,this.expDate,
-      this.option,this.symbol});
+      this.strprc,
+      this.expDate,
+      this.option,
+      this.symbol,
+      transType});
 
   OptionValues.fromJson(Map<String, dynamic> json) {
     exch = json['exch'];
@@ -71,7 +75,7 @@ String? option;
     optt = json['optt'];
     pp = json['pp'];
     ls = json['ls'];
-    close=json["close"];
+    close = json["close"];
     ti = json['ti'];
     lp = json['lp'];
     perChange = json['perChange'];
@@ -80,8 +84,10 @@ String? option;
     oiPerChng = json['oiPerChng'];
     oiLack = json['oiLack'];
     strprc = json['strprc'];
-    expDate=json['expDate'];
-        symbol=json['symbol'];option= json['option'];
+    expDate = json['expDate'];
+    transType = json['transType'];
+    symbol = json['symbol'];
+    option = json['option'];
   }
 
   Map<String, dynamic> toJson() {
@@ -100,10 +106,11 @@ String? option;
     data['poi'] = poi;
     data['strprc'] = strprc;
     data['oiPerChng'] = oiPerChng;
-data['close']=close;
-    data['option']=option;
-    data['expDate']=expDate;
-    data['symbol']=symbol; 
+    data['close'] = close;
+    data['option'] = option;
+    data['expDate'] = expDate;
+    data['symbol'] = symbol;
+    data['transType'] = transType;
     return data;
   }
 }

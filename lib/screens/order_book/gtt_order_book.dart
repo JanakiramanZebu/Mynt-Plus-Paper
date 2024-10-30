@@ -33,7 +33,7 @@ class GttOrderBook extends ConsumerWidget {
                     bottom: BorderSide(
                         color: theme.isDarkMode
                             ? colors.darkGrey
-                            : Color(0xffF1F3F8),
+                            : const Color(0xffF1F3F8),
                         width: 6))),
             child: Padding(
                 padding: const EdgeInsets.only(

@@ -2136,7 +2136,7 @@ class _FundScreenState extends State<FundScreen> {
               const SizedBox(height: 10),
               headerTitleText('Choose an bank:'),
               ListView.builder(
-                padding: EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 shrinkWrap: true,
                 itemCount: fund.bankdetails!.dATA!.length,
                 itemBuilder: (BuildContext context, int index) {
@@ -2153,7 +2153,7 @@ class _FundScreenState extends State<FundScreen> {
                       Navigator.pop(context);
                     },
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(
                         '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
                         style:

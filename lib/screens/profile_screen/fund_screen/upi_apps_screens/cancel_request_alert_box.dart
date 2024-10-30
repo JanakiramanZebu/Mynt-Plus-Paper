@@ -92,7 +92,7 @@ class _PaymentCancelAlertState extends State<PaymentCancelAlert> {
                             style: textStyle(
                                 colors.colorGrey, 13, FontWeight.w500)),
                       ])),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   SizedBox(
@@ -120,7 +120,7 @@ class _PaymentCancelAlertState extends State<PaymentCancelAlert> {
                                           : colors.colorBlack,
                                       14,
                                       FontWeight.w500))))),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   )
                 ])));

@@ -130,7 +130,7 @@ mixin MarketWatchApi on ApiCore {
 
       return AddDeleteScripModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      rethrow;
+        rethrow;
     }
   }
 

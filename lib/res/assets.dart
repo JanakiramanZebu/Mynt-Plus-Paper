@@ -159,7 +159,7 @@ class Assets {
   final String goldCoin = "assets/icon/gold_coin.svg";
   final String globe = "assets/icon/globe.svg";
   final String percentage = "assets/icon/percentage.svg";
-    final String lowRisk = "assets/icon/low_risk.svg";
+  final String lowRisk = "assets/icon/low_risk.svg";
   final String highRisk = "assets/icon/high_risk.svg";
 
   // payment icons
@@ -168,7 +168,6 @@ class Assets {
   final String gpay = "assets/icon/gpay.svg";
   final String phnpay = "assets/icon/phonepay.svg";
   final String paytm = "assets/icon/paytm.svg";
-
 
   /////
   final String bigupiIcon = "assets/icon/paymentIcon/upi.svg";

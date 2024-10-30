@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/thems.dart';
@@ -6,7 +8,9 @@ import '../api/core/api_export.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/indices/index_list_model.dart';
+import '../models/json_model/strategy_model.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart';
+import '../models/marketwatch_model/opt_chain_model.dart';
 import '../res/res.dart';
 import 'core/default_change_notifier.dart';
 import 'market_watch_provider.dart';
@@ -20,7 +24,8 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
   final Reader ref;
 
   OptionStrategyProvider(this.ref);
-
+  StrategyJosnModel? _strategyData;
+  StrategyJosnModel? get strategyData => _strategyData;
   final List<IndexValue> _optionIndex = [
     IndexValue(idxname: "NIFTY", token: "26000", exch: "NSE", tsym: "Nifty 50"),
     IndexValue(
@@ -50,29 +55,42 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
   String _selectedTK = "26000";
   String get selectedTK => _selectedTK;
 
-
-String _selectBtn="Option";
-String get selectBtn=>_selectBtn;
+  String _selectBtn = "Option";
+  String get selectBtn => _selectBtn;
   List optBtns = [
     {"btnName": "Option", "imgPath": assets.optChainIcon},
     {"btnName": "Chart", "imgPath": assets.charticon}
   ];
-ChartArgs? _chartArgs;
-ChartArgs? get  chartArgs=>_chartArgs ;
-  chngBtn(String val){
-_selectBtn=val;
-notifyListeners();
+
+  String _strgName = "Bullish";
+  String get stratagyName => _strgName;
+
+  String _strgOptName = "Long call";
+  String get strgOptName => _strgOptName;
+  ChartArgs? _chartArgs;
+  ChartArgs? get chartArgs => _chartArgs;
+
+  List<OptionValues> _optStrgyStrike = [];
+  List<OptionValues> get optStrgyStrike => _optStrgyStrike;
+
+  chngBtn(String val) {
+    _selectBtn = val;
+    notifyListeners();
   }
 
   chngeOptionName(String val, BuildContext context) async {
     _selectedOptName = val;
-_selectBtn="Option";
+    _selectBtn = "Option";
     for (var element in _optionIndex) {
       if (val == element.idxname) {
         _selectedTK = element.token!;
-_chartArgs=ChartArgs(exch:element.exch! , tsym: '${element.tsym}', token: '${element.token}');
+        _chartArgs = ChartArgs(
+            exch: element.exch!,
+            tsym: '${element.tsym}',
+            token: '${element.token}');
 
-     await ref(marketWatchProvider).fetchScripQuote("${element.token}", "${element.exch}", context);
+        await ref(marketWatchProvider)
+            .fetchScripQuote("${element.token}", "${element.exch}", context);
         await ref(marketWatchProvider)
             .fetchLinkeScrip("${element.token}", "${element.exch}", context);
 
@@ -121,5 +139,141 @@ _chartArgs=ChartArgs(exch:element.exch! , tsym: '${element.tsym}', token: '${ele
       ]);
     }
     return menuItems;
+  }
+
+  Future fetchStrategyJson() async {
+    try {
+      _strategyData = await api.getStrategyJson();
+      notifyListeners();
+    } catch (e) {
+      log("$e");
+    }
+  }
+
+  strgStikeSelection(String strgName, String optionName) {
+    _strgOptName = optionName;
+    _strgName = strgName;
+    _optStrgyStrike = [];
+
+    if (strgName == "Bullish") {
+      for (var element in _strategyData!.bullish!) {
+        if (optionName == element.name) {
+          for (var item in element.data!) {
+            if (item.typeof == "ITM") {
+              if (item.type == "CE") {
+                ref(marketWatchProvider)
+                    .optChainCallUP[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+                _optStrgyStrike.add(ref(marketWatchProvider)
+                    .optChainCallUP[item.letselection!]);
+              } else {
+                ref(marketWatchProvider)
+                    .optChainPutUp[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+
+                _optStrgyStrike.add(
+                    ref(marketWatchProvider).optChainPutUp[item.letselection!]);
+              }
+            } else {
+              if (item.type == "CE") {
+                ref(marketWatchProvider)
+                    .optChainCallDown[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+
+                _optStrgyStrike.add(ref(marketWatchProvider)
+                    .optChainCallDown[item.letselection!]);
+              } else {
+                ref(marketWatchProvider)
+                    .optChainPutDown[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+
+                _optStrgyStrike.add(ref(marketWatchProvider)
+                    .optChainPutDown[item.letselection!]);
+              }
+            }
+          }
+        }
+      }
+    } else if (strgName == "Bearish") {
+      for (var element in _strategyData!.bearish!) {
+        if (optionName == element.name) {
+          for (var item in element.data!) {
+            if (item.typeof == "ITM") {
+              if (item.type == "CE") {
+                ref(marketWatchProvider)
+                    .optChainCallUP[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+                _optStrgyStrike.add(ref(marketWatchProvider)
+                    .optChainCallUP[item.letselection!]);
+              } else {
+                ref(marketWatchProvider)
+                    .optChainPutUp[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+
+                _optStrgyStrike.add(
+                    ref(marketWatchProvider).optChainPutUp[item.letselection!]);
+              }
+            } else {
+              if (item.type == "CE") {
+                ref(marketWatchProvider)
+                    .optChainCallDown[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+
+                _optStrgyStrike.add(ref(marketWatchProvider)
+                    .optChainCallDown[item.letselection!]);
+              } else {
+                ref(marketWatchProvider)
+                    .optChainPutDown[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+
+                _optStrgyStrike.add(ref(marketWatchProvider)
+                    .optChainPutDown[item.letselection!]);
+              }
+            }
+          }
+        }
+      }
+    } else {
+      for (var element in _strategyData!.neutral!) {
+        if (optionName == element.name) {
+          for (var item in element.data!) {
+            if (item.typeof == "ITM") {
+              if (item.type == "CE") {
+                ref(marketWatchProvider)
+                    .optChainCallUP[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+                _optStrgyStrike.add(ref(marketWatchProvider)
+                    .optChainCallUP[item.letselection!]);
+              } else {
+                ref(marketWatchProvider)
+                    .optChainPutUp[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+
+                _optStrgyStrike.add(
+                    ref(marketWatchProvider).optChainPutUp[item.letselection!]);
+              }
+            } else {
+              if (item.type == "CE") {
+                ref(marketWatchProvider)
+                    .optChainCallDown[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+
+                _optStrgyStrike.add(ref(marketWatchProvider)
+                    .optChainCallDown[item.letselection!]);
+              } else {
+                ref(marketWatchProvider)
+                    .optChainPutDown[item.letselection!]
+                    .transType = item.action == "BUY" ? "B" : "S";
+
+                _optStrgyStrike.add(ref(marketWatchProvider)
+                    .optChainPutDown[item.letselection!]);
+              }
+            }
+          }
+        }
+      }
+    }
+    notifyListeners();
+    print("Stategy ${_optStrgyStrike.length}");
   }
 }

@@ -1,16 +1,13 @@
-import 'dart:developer';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'dart:developer'; 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../provider/auth_provider.dart';
 import '../provider/network_state_provider.dart';
 import '../res/res.dart';
-import '../routes/route_names.dart';
-import '../sharedWidget/no_internet_widget.dart';
+import '../routes/route_names.dart'; 
 import '../sharedWidget/snack_bar.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -24,12 +21,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_)  {
-      initializeResources(context: context);  initialRoute();
+     Future.delayed(const Duration(seconds: 5), ()   {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      initializeResources(context: context);
+      initialRoute();
       context.read(networkStateProvider).networkStream();
       context.read(networkStateProvider).getContext(context);
-    
-    });
+    });});
   }
 
   @override
@@ -40,51 +38,54 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Stack(children: [
-      Center(
-          child: SvgPicture.asset("assets/icon/zebulogo.svg",
-              color: const Color(0xff003F9E),
-              height: 80,
-              width: 150,
-              fit: BoxFit.contain)),
-      if (context.read(networkStateProvider).connectionStatus ==
-          ConnectivityResult.none)
-        const NoInternetWidget()
-    ]));
+      backgroundColor: Color(0xff1E3465 ) ,
+     
+      body: Container( height: MediaQuery.of(context).size.height,
+        child: Image.asset(
+        
+          "assets/gif/diwali_wish.gif", 
+        ),
+      ),
+  
+     
+       
+   
+    );
   }
 
   initialRoute() async {
     final Preferences pref = locator<Preferences>();
     try {
-      print(
-          "Device  Name  ${pref.deviceName!} - ${pref.clientSession} ----  ${context.read(networkStateProvider).connectionStatus} ");
-      context.read(authProvider).loginMethCtrl.text =  pref.clientId!;
-      context
-          .read(authProvider)
-          .switchMobToClinent(pref.clientId!.isEmpty ? false : true);
-      if (pref.deviceName!.isEmpty) {
-        await context.read(authProvider).getDeviceDetails();
-      }
-      if (pref.clientSession!.isEmpty && pref.clientId!.isNotEmpty) {
-         pref.setMobileLogin(false);
-        pref.setHideLoginOptBtn(false);
-      } else {
-        pref.setHideLoginOptBtn(true);
-      }
-      if (pref.clientSession!.isEmpty) {
-        pref.setLogout(true);
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, (route) => false);
-      } else {
-        pref.setMobileLogin(true);
-        await context
+     
+        print(
+            "Device  Name  ${pref.deviceName!} - ${pref.clientSession} ----  ${context.read(networkStateProvider).connectionStatus} ");
+        context.read(authProvider).loginMethCtrl.text = pref.clientId!;
+        context
             .read(authProvider)
-            .fetchMobileLogin(context, "", pref.clientId!, "",pref.imei!);
-      }
+            .switchMobToClinent(pref.clientId!.isEmpty ? false : true);
+        if (pref.deviceName!.isEmpty) {
+          await context.read(authProvider).getDeviceDetails();
+        }
+        if (pref.clientSession!.isEmpty && pref.clientId!.isNotEmpty) {
+          pref.setMobileLogin(false);
+          pref.setHideLoginOptBtn(false);
+        } else {
+          pref.setHideLoginOptBtn(true);
+        }
+        if (pref.clientSession!.isEmpty) {
+          pref.setLogout(true);
+          Navigator.pushNamedAndRemoveUntil(
+              context, Routes.loginScreen, (route) => false);
+        } else {
+          pref.setMobileLogin(true);
+          await context
+              .read(authProvider)
+              .fetchMobileLogin(context, "", pref.clientId!, "", pref.imei!);
+        }
+       
     } catch (e) {
-
-       ScaffoldMessenger.of(context)
-            .showSnackBar(error(context, "Something Wrong !!!"));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(error(context, "Something Wrong !!!"));
       log("faild to build --- $e");
     }
   }

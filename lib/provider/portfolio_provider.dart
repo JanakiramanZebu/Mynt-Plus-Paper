@@ -517,7 +517,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   void timerfunc() {
     if (!times) {
       print("Timer called");
-      _timer = Timer.periodic(Duration(milliseconds: 500), (Timer t) {
+      _timer = Timer.periodic(const Duration(milliseconds: 500), (Timer t) {
         times = true;
         pnlHoldCal();
       });
@@ -1725,7 +1725,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
             textColor: colors.colorWhite,
             fontSize: 14.0);
       }
-    } catch (e) {
     } finally {
       toggleLoadingOn(false);
     }
@@ -1772,7 +1771,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
             textColor: colors.colorWhite,
             fontSize: 14.0);
       }
-    } catch (e) {
     } finally {
       toggleLoadingOn(false);
     }

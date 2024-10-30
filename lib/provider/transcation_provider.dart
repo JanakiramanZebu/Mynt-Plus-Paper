@@ -32,7 +32,7 @@ class TranctionProvider extends DefaultChangeNotifier {
   TextEditingController upiid = TextEditingController();
   TextEditingController withdrawamount = TextEditingController();
 
-  bool _isUpiAppAvailable = false;
+  final bool _isUpiAppAvailable = false;
   bool get isUpiAppAvailable => _isUpiAppAvailable;
 
   bool _isBottomSheetShown = true;

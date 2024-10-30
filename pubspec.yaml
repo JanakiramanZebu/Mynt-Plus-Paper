@@ -121,6 +121,11 @@ flutter:
     - assets/profile/profileimage.png
     - assets/keyboardicons/
     - assets/explore/
+    - assets/strategiesimg/
+    - assets/json/
+    - assets/json/strategy.json
+    - assets/gif/
+    - assets/gif/diwali_wish.gif
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

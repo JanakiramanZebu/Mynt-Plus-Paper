@@ -44,7 +44,7 @@ class TradeBook extends ConsumerWidget {
                           bottom: BorderSide(
                               color: theme.isDarkMode
                                   ? colors.darkGrey
-                                  : Color(0xffF1F3F8),
+                                  : const Color(0xffF1F3F8),
                               width: 6))),
                   child: Padding(
                       padding: const EdgeInsets.only(
@@ -199,7 +199,7 @@ class TradeBook extends ConsumerWidget {
                                   arguments: tradeBook[index]);
                             },
                             child: Container(
-                              padding: EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(16),
                               child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.start,
@@ -454,7 +454,7 @@ class TradeBook extends ConsumerWidget {
                             arguments: order.tradeBooksearch![index]);
                       },
                       child: Container(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.start,

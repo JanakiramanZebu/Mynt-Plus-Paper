@@ -9,7 +9,8 @@ import '../models/upgrader_model.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
-import '../provider/network_state_provider.dart'; 
+import '../provider/network_state_provider.dart';
+ 
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
 import '../provider/thems.dart';
@@ -243,28 +244,31 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               : [
                                   if (indexProvide.selectedBtmIndx == 1 &&
                                       marketWatchList.isPreDefWLs != "Yes") ...[
-//                                      InkWell(
-//                                             onTap: ()async {
-
-//  await watch(optStrategyProvider).chngeOptionName("NIFTY" , context);
-
-//                                                  Navigator.pushNamed(
-//                                                   context, Routes.optionStrategy );
-//                                             },
-//                                             child: Container(
-//                                                 padding: EdgeInsets.only(
-//                                                     left: 8,
-//                                                     right: marketWatchList
-//                                                                 .scrips
-//                                                                 .length >=
-//                                                             50
-//                                                         ? 0
-//                                                         : 8),
-//                                                 child: SvgPicture.asset(
-//                                                  assets.optChainIcon,
-//                                                     width: 19,
-//                                                     color: colors.colorGrey)),
-//                                           ),
+//                                     InkWell(
+//                                       onTap: () async {
+                                         
+//                                         watch(optStrategyProvider)
+//                                             .fetchStrategyJson();
+//                                         await watch(optStrategyProvider)
+//                                             .chngeOptionName("NIFTY", context);
+//  watch(optStrategyProvider).strgStikeSelection(   watch(optStrategyProvider).stratagyName
+//                              ,    watch(optStrategyProvider).strgOptName );
+//                                         Navigator.pushNamed(
+//                                             context, Routes.optionStrategy);
+//                                       },
+//                                       child: Container(
+//                                           padding: EdgeInsets.only(
+//                                               left: 8,
+//                                               right: marketWatchList
+//                                                           .scrips.length >=
+//                                                       50
+//                                                   ? 0
+//                                                   : 8),
+//                                           child: SvgPicture.asset(
+//                                               assets.optChainIcon,
+//                                               width: 19,
+//                                               color: colors.colorGrey)),
+//                                     ),
                                     marketWatchList.scrips.length > 1
                                         ? InkWell(
                                             onTap: () {
@@ -289,12 +293,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             child: Container(
                                                 padding: EdgeInsets.only(
                                                     left: 8,
-                                                    right: marketWatchList
-                                                                .scrips
-                                                                .length >=
-                                                            50
-                                                        ? 0
-                                                        : 8),
+                                                    right:   10),
                                                 child: SvgPicture.asset(
                                                     assets.filterLines,
                                                     width: 19,

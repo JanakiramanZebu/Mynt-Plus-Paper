@@ -8,12 +8,12 @@ class ProgressiveDotsLoader extends StatefulWidget {
   final Color dotColor;
 
   const ProgressiveDotsLoader({
-    Key? key,
+    super.key,
     this.numberOfDots = 8, // Default 8 dots
     this.dotSize = 10.0,
     this.duration = const Duration(seconds: 1),
     this.dotColor = Colors.grey,
-  }) : super(key: key);
+  });
 
   @override
   _ProgressiveDotsLoaderState createState() => _ProgressiveDotsLoaderState();

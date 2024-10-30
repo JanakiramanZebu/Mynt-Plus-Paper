@@ -14,9 +14,9 @@ import '../screens/ipo/mainstream_ipo/mainstream_order_screen/order_screen.dart'
 import '../screens/ipo/sme_ipo/sme_order_screen/sme_order.dart';
 import '../screens/market_watch/edit_scrip.dart';
 import '../screens/market_watch/futures/future_screen.dart';
-import '../screens/market_watch/option_chain/option_strategey.dart';
+import '../screens/market_watch/option_chain/strategy/option_strategey.dart';
 import '../screens/market_watch/search_screen.dart';
-import '../screens/market_watch/tv_chart/webview_chart.dart';
+// import '../screens/market_watch/tv_chart/webview_chart.dart';
 import '../screens/mutual_fund/mf_order_screen.dart';
 import '../screens/mutual_fund/mf_stock_detail_screen.dart';
 import '../screens/mutual_fund/mf_watchlist.dart';
@@ -246,24 +246,24 @@ class AppRoutes {
             );
           },
         );
-      case Routes.chartWebView:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              ChartScreenWebView(chartArgs: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
+      // case Routes.chartWebView:
+      //   return PageRouteBuilder(
+      //     pageBuilder: (context, animation, secondaryAnimation) =>
+      //         ChartScreenWebView(chartArgs: args),
+      //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      //       const begin = Offset(-1.0, 0.0);
+      //       const end = Offset.zero;
+      //       const curve = Curves.ease;
 
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      //       final tween =
+      //           Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
-        );
+      //       return SlideTransition(
+      //         position: animation.drive(tween),
+      //         child: child,
+      //       );
+      //     },
+      //   );
 
       case Routes.futures:
         return PageRouteBuilder(

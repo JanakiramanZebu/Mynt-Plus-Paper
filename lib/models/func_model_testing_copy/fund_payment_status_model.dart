@@ -9,8 +9,8 @@ class HdfcPaymentStatus {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    if (this.upiId != null) {
-      data['data'] = this.upiId!.toJson();
+    if (upiId != null) {
+      data['data'] = upiId!.toJson();
     }
     return data;
   }

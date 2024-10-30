@@ -1,0 +1,790 @@
+{
+    "bullish": [
+        {
+            "img": "assets/strategiesimg/long_call.svg",
+            "brk_even": "(strike + premium)",
+            "leg": 1,
+            "name": "Long call",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                }
+            ],
+            "info": {
+                "View": "Very bullish on gold",
+                "Stratery": "Buy call option",
+                "Risk": "Limited to premium",
+                "Reward": "Unlimited",
+                "Break even": "Strike Price + premium",
+                "Profit, when": "Gold price goes up",
+                "Loss, when": "Gold price goes down"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/short_put.svg",
+            "brk_even": "(strike - premium)",
+            "leg": 1,
+            "name": "Short put",
+            "data": [
+                {
+                    "action": "SELL",
+                    "type": "PE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                }
+            ],
+            "info": {
+                "View": "Bullish on gold",
+                "Stratery": "Sell put option",
+                "Risk": "Unlimited",
+                "Reward": "Limited to premium",
+                "Break even": "Strike Price - premium",
+                "Profit, when": "Gold price goes up",
+                "Loss, when": "Gold price goes down"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/call_spread_bullish.svg",
+            "brk_even": "(strike +(leg_1-leg_2))",
+            "leg": 2,
+            "name": "Call spread",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Moderately bullish on gold",
+                "Stratery": "Buy ITM call and selling OTM call (to reduce cost)",
+                "Risk": "Limited to net premium paid",
+                "Reward": "Limited to difference between the two strikes minus net premium paid",
+                "Break even": "Strike price of purchased call + net premiun paid",
+                "Max Profit": "Both option exercised",
+                "Max loss": "Both option un-exercised"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/put_spread_bullish.svg",
+            "brk_even": "(strike - (leg_1-leg_2))",
+            "leg": 2,
+            "name": "Put spread",
+            "data": [
+                {
+                    "action": "SELL",
+                    "type": "PE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "BUY",
+                    "type": "PE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Moderately bullish on gold",
+                "Stratery": "Sell OTM put and buy further OTM put to protect downside",
+                "Risk": "Limited to difference between the two strikes minus net premium paid",
+                "Reward": "Limited to net premium received",
+                "Break even": "Strike price of net premiun paid + received",
+                "Max Profit": "Both option un-exercised",
+                "Max loss": "Both option exercised"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/synthetic_call.svg",
+            "brk_even": "(strike +leg_2)",
+            "leg": 2,
+            "name": "Synthetic call",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "PE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Conservatively bullish on gold",
+                "Stratery": "Buy futures and buy put option to protect against unexpected fall",
+                "Risk": "Limited to future price + put premium - put strike price",
+                "Reward": "Unlimited",
+                "Break even": "Future price + Put premium",
+                "Profit, when": "Gold price goes up",
+                "Loss, when": "Gold price goes down"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/covered_call.svg",
+            "brk_even": "(strike-leg_2)",
+            "leg": 2,
+            "name": "Covered call",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Moderately bullish on existing long future",
+                "Stratery": "Sell OTM call option to earn premium",
+                "Risk": "Unlimited if gold falls. Benefits to the extent premium",
+                "Reward": "Limited to strike price - future price paid + premium received",
+                "Break even": "Future price paid + premium received",
+                "Profit, when": "Gold price goes up",
+                "Loss, when": "Gold price goes down"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/collar.svg",
+            "brk_even": "(strike -leg_3+leg_2))",
+            "leg": 3,
+            "name": "collar",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "PE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                },
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 3
+                }
+            ],
+            "info": {
+                "View": "Conservatively bullish",
+                "Stratery": "3 legs: Buy future, buy put (insure down side), sell call (partly finance put)",
+                "Risk": "Limited",
+                "Reward": "Limited",
+                "Break even": "Purchase price of future - call premium + put premium",
+                "Profit, when": "Gold price goes up",
+                "Loss, when": "Gold price goes down"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/long_combo.svg",
+            "brk_even": "(strike +(leg_1-leg_2))",
+            "leg": 2,
+            "name": "Long combo",
+            "data": [
+                {
+                    "action": "SELL",
+                    "type": "PE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 8,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Bullish on gold",
+                "Stratery": "Sell OTM put and buy OTM call",
+                "Risk": "Unlimited",
+                "Reward": "Unlimited",
+                "Break even": "Call strike + net premium",
+                "Profit, when": "Gold price goes up",
+                "Loss, when": "Gold price goes down"
+            }
+        }
+    ],
+    "bearish": [
+        {
+            "img": "assets/strategiesimg/long_put.svg",
+            "brk_even": "(strike - premium)",
+            "leg": 1,
+            "name": "Long put",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "PE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                }
+            ],
+            "info": {
+                "View": "Bearish on gold",
+                "Stratery": "Buy put option",
+                "Risk": "limited to premium",
+                "Reward": "Unlimited",
+                "Break even": "strike price + premium",
+                "Profit, when": "Gold price goes down",
+                "Loss, when": "Gold price goes up"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/short_call.svg",
+            "brk_even": "(strike +premiun)",
+            "leg": 1,
+            "name": "Short call",
+            "data": [
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                }
+            ],
+            "info": {
+                "View": "Bearish on gold",
+                "Stratery": "Buy put option",
+                "Risk": "limited to premium",
+                "Reward": "Unlimited",
+                "Break even": "strike price + premium",
+                "Profit, when": "Gold price goes down",
+                "Loss, when": "Gold price goes up"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/call_spread_bearish.svg",
+            "brk_even": "(strike +(leg_1-leg_2))",
+            "leg": 2,
+            "name": "Call spread",
+            "data": [
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Mildly Bearish on Gold",
+                "Stratery": "Sell ITM Call and Buy OTM Call, to protect against unexpected rise",
+                "Risk": "Limited to the difference between two strikes minus net premium",
+                "Reward": "Limited to Net Premium Received",
+                "Break even": "Strike Price of Short Call + Net Premium Received",
+                "Profit, when": "Gold price goes down",
+                "Loss, when": "Gold price goes up"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/put_spread_bearish.svg",
+            "brk_even": "(strike -(leg_1-leg_2))",
+            "leg": 2,
+            "name": "Put spread",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "PE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "SELL",
+                    "type": "PE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Moderately Bearish on Gold",
+                "Stratery": "Buy ITM Put and Sell OTM Put (to reduce cost)",
+                "Risk": "Limited to Net Premium Paid",
+                "Reward": "Limited to the difference between two strikes minus net premium paid",
+                "Break even": "Strike Price of Long Put - Net Premium Paid",
+                "Profit, when": "Gold price goes down",
+                "Loss, when": "Gold price goes up"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/synthetic_long_put.svg",
+            "brk_even": "(strike -leg_2)",
+            "leg": 2,
+            "name": "Synthetic long put",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "ITM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Bearish on Gold, but keep protected",
+                "Stratery": "Sell Future, Buy Call option Strategy: (to protect against rise)",
+                "Risk": "Limited to Call Strike Price - Future Risk: Price + Premium",
+                "Reward": "Unlimited",
+                "Break even": "Futures Price - Call Premium",
+                "Profit, when": "Gold price goes down",
+                "Loss, when": "Gold price goes up"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/covered_put.svg",
+            "brk_even": "(strike +leg_2)",
+            "leg": 2,
+            "name": "Covered put",
+            "data": [
+                {
+                    "action": "SELL",
+                    "type": "PE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Neutral to Bearish on Gold",
+                "Stratery": "Sell Future, Sell OTM Put to earn Premium",
+                "Risk": "Unlimited",
+                "Reward": "Future Price - Strike Price + Put Premium",
+                "Break even": "Futures Price + Premium Received",
+                "Profit, when": "Gold price goes down",
+                "Loss, when": "Gold price goes up"
+            }
+        }
+    ],
+    "neutral": [
+        {
+            "img": "assets/strategiesimg/long_strangle.svg",
+            "up_brk_even": "(strike +(leg_1+leg_2))",
+            "low_brk_even": "(strike - (leg_1+leg_2))",
+            "leg": 2,
+            "name": "Long straddle",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "BUY",
+                    "type": "PE",
+                    "typeof": "ITM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Gold price will be volatile",
+                "Stratery": "Buy Call, Buy Put of Same Strike Price",
+                "Risk": "Limited to Premium Paid",
+                "Reward": "Unlimited",
+                "Upper BE": "Strike Price of Long Call + Net Premium Paid",
+                "Lower  BE": "Strike Price of Long Put - Net Premium Paid",
+                "Profit, when": "One of the options exercised",
+                "Max Loss": "Both the options not exercised"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/short_straddle.svg",
+            "up_brk_even": "(strike +(leg_1+leg_2))",
+            "low_brk_even": "(strike - (leg_1+leg_2))",
+            "leg": 2,
+            "name": "Short straddle",
+            "data": [
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "SELL",
+                    "type": "PE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Gold price will not be volatile",
+                "Stratery": "Sell Call, Sell Put of Same Strike Price",
+                "Risk": "Unlimited",
+                "Reward": "Limited to Premium Received",
+                "Upper BE": "Strike Price of Short Call + Net Premium Received",
+                "Lower  BE": "Strike Price of Short Put - Net Premium Received",
+                "Profit, when": "Both the options not exercised",
+                "Max Loss": "One of the options exercised"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/long_strangle.svg",
+            "up_brk_even": "(strike +(leg_1+leg_2))",
+            "low_brk_even": "(strike - (leg_1+leg_2))",
+            "leg": 2,
+            "name": "Long strangle",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "BUY",
+                    "type": "PE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Gold price will be volatile",
+                "Stratery": "Buy OTM 1 Call and OTM 1 Put (OTM 1 - Strike close to ATM)",
+                "Risk": "Limited to Premium Paid",
+                "Reward": "Unlimited",
+                "Upper BE": "Strike Price of Call + Net Premium",
+                "Lower  BE": "Strike Price of Put - Net Premium",
+                "Profit, when": "One of the options exercised",
+                "Max Loss": "Both the options not exercised"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/short_strangle.svg",
+            "up_brk_even": "(strike +(leg_1+leg_2))",
+            "low_brk_even": "(strike - (leg_1+leg_2))",
+            "leg": 2,
+            "name": "Short strangle",
+            "data": [
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "SELL",
+                    "type": "PE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                }
+            ],
+            "info": {
+                "View": "Gold price will not be volatile",
+                "Stratery": "Sell OTM 1 Call and OTM 1 Put (OTM 1 - Strike close to ATM)",
+                "Risk": "Unlimited",
+                "Reward": "Limited to Premium Received",
+                "Upper BE": "Strike Price of Call + Net Premium",
+                "Lower  BE": "Strike Price of Put - Net Premium",
+                "Profit, when": "Both the options not exercised",
+                "Max Loss": "One of the options exercised"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/long_call_butterfly.svg",
+            "up_brk_even": "(strike - (leg_3+leg_4-leg_4))",
+            "low_brk_even": "(strike + (leg_3+leg_4-leg_4))",
+            "leg": 4,
+            "name": "Long call butterfly",
+            "data": [
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                },
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "ITM",
+                    "letselection": 8,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 3
+                },
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 8,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 4
+                }
+            ],
+            "info": {
+                "View": "Neutral on Gold, Bearish on Volatility",
+                "Stratery": "CALLS - Sell 2 ATM, Buy 1 ITM, Buy 1 OTM",
+                "Risk": "Limited to Net Premium Paid",
+                "Reward": "Limited to difference between adjacent strikes minus net premium debit",
+                "Upper BE": "Higher Strike Price - Net Premium",
+                "Lower  BE": "Lower Strike Price + Net Premium",
+                "Profit, when": "ITM Call exercised, Others not exercised",
+                "Max Loss": "All options exercised OR All not exercised"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/short_call_butterfly.svg",
+            "up_brk_even": "(strike - (leg_3+leg_4-leg_4))",
+            "low_brk_even": "(strike + (leg_3+leg_4-leg_4))",
+            "leg": 4,
+            "name": "Short call butterfly",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "ATM",
+                    "letselection": 0,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                },
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "ITM",
+                    "letselection": 8,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 3
+                },
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 8,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 4
+                }
+            ],
+            "info": {
+                "View": "Neutral on Gold, Bullish on Volatility",
+                "Stratery": "CALLS - Buy 2 ATM, Sell 1 ITM, Sell 1 OTM",
+                "Risk": "Limited to difference between adjacent strikes minus net premium received",
+                "Reward": "Limited to Net Premium Received",
+                "Upper BE": "Higher Strike Price - Net Premium",
+                "Lower  BE": "Lower Strike Price + Net Premium",
+                "Profit, when": "All options exercised OR All not exercised",
+                "Max Loss": "ITM Call exercised, Others not exercised"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/long_call_condor.svg",
+            "up_brk_even": "(strike - (leg_1 + leg_4 - leg_2 - leg_3))",
+            "low_brk_even": "(strike + (leg_1 + leg_4 - leg_2 - leg_3))",
+            "leg": 4,
+            "name": "Long call condor",
+            "data": [
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "ITM",
+                    "letselection": 8,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "ITM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                },
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 3
+                },
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "ITM",
+                    "letselection": 8,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 4
+                }
+            ],
+            "info": {
+                "View": "Range bound Movement of Gold price",
+                "Stratery": "CALLS - Buy 1 ITM (Lower Strike A), Sell 1 ITM (Lower Middle B), Sell 1 OTM (Higher Middle C), Buy 1 OTM (Higher Strike D)",
+                "Risk": "Limited to difference between lower strike spread less higher strike spread less premium paid",
+                "Reward": "Limited (Max when gold price between B and C)",
+                "Profit, when": "Option A and B exercised",
+                "Max Loss": "All options exercised OR All not exercised"
+            }
+        },
+        {
+            "img": "assets/strategiesimg/short_call_condor.svg",
+            "up_brk_even": "(strike - (leg_1 + leg_4 - leg_2 - leg_3))",
+            "low_brk_even": "(strike + (leg_1 + leg_4 - leg_2 - leg_3))",
+            "leg": 4,
+            "name": "Short call condor",
+            "data": [
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "ITM",
+                    "letselection": 8,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 1
+                },
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "ITM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 2
+                },
+                {
+                    "action": "BUY",
+                    "type": "CE",
+                    "typeof": "OTM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 3
+                },
+                {
+                    "action": "SELL",
+                    "type": "CE",
+                    "typeof": "ITM",
+                    "letselection": 5,
+                    "strike": "",
+                    "premiun": "",
+                    "leg": 4
+                }
+            ],
+            "info": {
+                "View": "Gold price to break-out trading range,but Direction is uncertain",
+                "Stratery": "CALLS - Sell 1 ITM (Lower Strike A), Buy 1 ITM (Lower Middle B), Buy 1 OTM (Higher Middle C), Sell 1 OTM (Higher Strike D)",
+                "Risk": "Limited (Max when gold price between Band C)",
+                "Reward": "Limited (Price Move above OR below A)",
+                "Max Profit": "All options exercised OR All not exercised",
+                "Max Loss": "Option A and B exercised"
+            }
+        }
+    ]
+}

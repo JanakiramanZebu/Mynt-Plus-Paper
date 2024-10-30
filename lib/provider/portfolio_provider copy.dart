@@ -154,7 +154,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   String get posSelection => _posSelection;
 
-  List<String> _posGrpNames = ["All position", "Group by symbol"];
+  final List<String> _posGrpNames = ["All position", "Group by symbol"];
 
   List<String> get posGrpNames => _posGrpNames;
 
@@ -518,7 +518,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   void timerfunc() {
     if (!times) {
       print("Timer called");
-      _timer = Timer.periodic(Duration(milliseconds: 500), (Timer t) {
+      _timer = Timer.periodic(const Duration(milliseconds: 500), (Timer t) {
         times = true;
         pnlHoldCal();
       });
@@ -1799,7 +1799,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
             textColor: colors.colorWhite,
             fontSize: 14.0);
       }
-    } catch (e) {
     } finally {
       toggleLoadingOn(false);
     }
@@ -1846,7 +1845,6 @@ Fluttertoast.showToast(
             textColor: colors.colorWhite,
             fontSize: 14.0);
       }
-    } catch (e) {
     } finally {
       toggleLoadingOn(false);
     }
