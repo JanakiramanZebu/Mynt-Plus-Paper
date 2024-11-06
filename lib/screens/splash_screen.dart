@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
         body: Stack(children: [
       Center(
           child: SvgPicture.asset("assets/icon/zebulogo.svg",
-              color: const Color(0xff003F9E),
+              color: const Color(0xff0037B7),
               height: 80,
               width: 150,
               fit: BoxFit.contain)),

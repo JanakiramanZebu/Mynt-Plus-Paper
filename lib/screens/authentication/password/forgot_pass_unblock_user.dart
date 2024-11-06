@@ -44,7 +44,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                           assets.appLogoIcon,
                           color: theme.isDarkMode
                               ? colors.colorWhite
-                              : colors.colorBlack,
+                              : colors.logoColor,
                           height: 60,
                         ),
                       ),

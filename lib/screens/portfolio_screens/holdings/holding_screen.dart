@@ -517,10 +517,12 @@ class HoldingScreen extends ConsumerWidget {
                                             : const Color(0xffF1F3F8),
                                         height: 6);
                                   })
-                              : const SizedBox(
-                                  height: 400,
-                                  child: NoDataFound(),
-                                )
+                              : const Center(
+                                child: SizedBox(
+                                    height: 400,
+                                    child: NoDataFound(),
+                                  ),
+                              )
                           : holdingProvide.holdingSearchItem!.isNotEmpty
                               ? ListView.separated(
                                   itemBuilder:

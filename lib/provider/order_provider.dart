@@ -1232,7 +1232,7 @@ class OrderProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _sipPlaceOrder = await api.getPlaceSipOrder(sipOrderInput);
       if (_sipPlaceOrder!.reqStatus == "OK") {
-        changeTabIndex(6, context);
+        changeTabIndex(7, context);
         ref(indexListProvider).bottomMenu(3);
         fetchSipOrderHistory(context);
         tabSize();
