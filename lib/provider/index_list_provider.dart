@@ -220,7 +220,7 @@ class IndexListProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchDefTopIndex(BuildContext context) async {
+  Future fetchStockTopIndex() async {
     try {
       Map data = {
         "values": [
@@ -237,31 +237,31 @@ class IndexListProvider extends DefaultChangeNotifier {
 
       _defTopIndex = resp;
 
-      // List ltpArgs = [];
+      List ltpArgs = [];
 
-      // for (var element in _defTopIndex!.indValues!) {
-      //   ltpArgs.add({"exch": "${element.exch}", "token": "${element.token}"});
-      // }
+      for (var element in _defTopIndex!.indValues!) {
+        ltpArgs.add({"exch": "${element.exch}", "token": "${element.token}"});
+      }
 
-      // final response = await api.getLTP(ltpArgs);
+      final response = await api.getLTP(ltpArgs);
 
-      // Map res = jsonDecode(response.body);
+      Map res = jsonDecode(response.body);
 
-      // for (var element in _defTopIndex!.indValues!) {
-      //   if (element.token.toString() ==
-      //       "${res["data"]["${element.token}"]['token']}") {
-      //     element.ltp = "${res["data"]["${element.token}"]["lp"]}";
+      for (var element in _defTopIndex!.indValues!) {
+        if (element.token.toString() ==
+            "${res["data"]["${element.token}"]['token']}") {
+          element.ltp = "${res["data"]["${element.token}"]["lp"]}";
 
-      //     element.close = "${res["data"]["${element.token}"]["close"]}";
+          element.close = "${res["data"]["${element.token}"]["close"]}";
 
-      //     element.perChange = "${res["data"]["${element.token}"]["change"]}";
+          element.perChange = "${res["data"]["${element.token}"]["change"]}";
 
-      //     element.change = (double.parse(
-      //                 "${element.ltp == "0" ? element.close : element.ltp}") -
-      //             double.parse("${element.close}"))
-      //         .toStringAsFixed(2);
-      //   }
-      // }
+          element.change = (double.parse(
+                      "${element.ltp == "0" ? element.close : element.ltp}") -
+                  double.parse("${element.close}"))
+              .toStringAsFixed(2);
+        }
+      }
 
       notifyListeners();
     } catch (e) {
@@ -437,7 +437,7 @@ class IndexListProvider extends DefaultChangeNotifier {
           _indexToken += "${element.exch}|${element.token}#";
         }
       }
-    }
+    } 
     notifyListeners();
   }
 
@@ -454,6 +454,12 @@ class IndexListProvider extends DefaultChangeNotifier {
   }
 
   fetchNotifyMsg() async {
-    await api.getNotifyMsg();
+
+    try {
+       await api.getNotifyMsg();
+    } catch (e) {
+      print("   $e");
+    }
+   
   }
 }

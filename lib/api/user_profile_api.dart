@@ -1,3 +1,5 @@
+// import 'dart:developer';
+
 import '../models/profile_model/client_detail_model.dart';
 import '../models/profile_model/qr_login_res.dart';
 import '../models/profile_model/user_detail_model.dart';
@@ -13,7 +15,7 @@ mixin UserProfileAPI on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
 
-      // log("UserDetails => ${res.body}");
+        // log("UserDetails => ${res.body}");
 
       final json = jsonDecode(res.body);
 

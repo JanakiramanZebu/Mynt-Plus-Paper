@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/iop_provider.dart';
+import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
@@ -16,21 +17,25 @@ class SMEIPO extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final ipos = watch(ipoProvide);
+    final theme = watch(themeProvider);
     return Column(
       children: [
-        const Divider(
-          color: Color(0xffECEDEE),
-        ),
+        Divider(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : const Color(0xffECEDEE)),
         const SizedBox(
           height: 20,
         ),
         ListTile(
             title: Text("Small and Medium Enterprises IPOs",
-                style: GoogleFonts.inter(
-                    textStyle: textStyle(
-                        const Color(0xff000000), 16, FontWeight.w600))),
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    16,
+                    FontWeight.w600)),
             leading: SvgPicture.asset(
               assets.building,
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
             ),
             trailing: InkWell(
               onTap: () {
@@ -40,15 +45,18 @@ class SMEIPO extends ConsumerWidget {
                   height: 28,
                   width: 28,
                   decoration: BoxDecoration(
-                      color: const Color(0xffEBF1FF),
+                      color: theme.isDarkMode
+                          ? colors.colorbluegrey
+                          : const Color(0xffEBF1FF),
                       borderRadius: BorderRadius.circular(20)),
                   child: SvgPicture.asset(
-                    ipos.isActiveSME ? assets.squareminus : assets.add,
-                    width: 40,
-                    height: 40,
-                    fit: BoxFit.scaleDown,
-                    color: const Color(0xff0037B7),
-                  )),
+                      ipos.isActiveSME ? assets.squareminus : assets.add,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.scaleDown,
+                      color: theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorBlue)),
             )),
         ipos.isActiveSME
             ? ListView.separated(
@@ -59,9 +67,12 @@ class SMEIPO extends ConsumerWidget {
                     children: [
                       ListTile(
                         title: Text("${ipos.smeIpoModel?.sMEIPO?[index].name}",
-                            style: GoogleFonts.inter(
-                                textStyle: textStyle(const Color(0xff000000),
-                                    15, FontWeight.w600))),
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                15,
+                                FontWeight.w600)),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 3.0),
                           child: Row(
@@ -70,7 +81,9 @@ class SMEIPO extends ConsumerWidget {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                      color: const Color(0xffF1F3F8),
+                                      color: theme.isDarkMode
+                                          ? colors.colorGrey.withOpacity(.1)
+                                          : const Color(0xffF1F3F8),
                                       // border: Border.all(
                                       //     color: const Color(0xffC1E7BA)),
                                       borderRadius: BorderRadius.circular(4)),
@@ -83,23 +96,25 @@ class SMEIPO extends ConsumerWidget {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                      color: Color(ipostartdate(
+                                      color: ipostartdate(
                                                   "${ipos.smeIpoModel!.sMEIPO![index].biddingStartDate}",
                                                   "${ipos.smeIpoModel!.sMEIPO![index].biddingEndDate}") ==
                                               "Open"
-                                          ? 0xffECF8F1
-                                          : 0xffFFF6E6),
-                                      // border: Border.all(
-                                      //     color: const Color(0xffC1E7BA)),
+                                          ? theme.isDarkMode
+                                              ? const Color(0xffECF8F1)
+                                                  .withOpacity(.3)
+                                              : const Color(0xffECF8F1)
+                                          : theme.isDarkMode
+                                              ? const Color(0xffFFF6E6)
+                                                  .withOpacity(.3)
+                                              : const Color(0xffFFF6E6),
                                       borderRadius: BorderRadius.circular(4)),
                                   child: Text(
                                       ipostartdate(
                                           "${ipos.smeIpoModel!.sMEIPO![index].biddingStartDate}",
                                           "${ipos.smeIpoModel!.sMEIPO![index].biddingEndDate}"),
                                       style: textStyle(
-                                          Color(ipostartdate("${ipos.smeIpoModel!.sMEIPO![index].biddingStartDate}", "${ipos.smeIpoModel!.sMEIPO![index].biddingEndDate}") == "Open"
-                                              ? 0xff43A833
-                                              : 0xffB37702),
+                                          Color(ipostartdate("${ipos.smeIpoModel!.sMEIPO![index].biddingStartDate}", "${ipos.smeIpoModel!.sMEIPO![index].biddingEndDate}") == "Open" ? 0xff43A833 : 0xffB37702),
                                           11,
                                           FontWeight.w500))),
                               const SizedBox(width: 10),
@@ -111,9 +126,10 @@ class SMEIPO extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      const Divider(
-                        color: Color(0xffECEDEE),
-                      ),
+                      Divider(
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider),
                       Padding(
                         padding: const EdgeInsets.only(
                             left: 16, right: 16, top: 2, bottom: 8),
@@ -124,51 +140,48 @@ class SMEIPO extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text("Price Range",
-                                    style: GoogleFonts.inter(
-                                        textStyle: textStyle(
-                                            const Color(0xff666666),
-                                            13,
-                                            FontWeight.w500))),
+                                    style: textStyle(const Color(0xff666666),
+                                        13, FontWeight.w500)),
                                 Text(
-                                    "₹${ipos.smeIpoModel!.sMEIPO![index].minPrice!.toInt()}- ₹${ipos.smeIpoModel!.sMEIPO![index].maxPrice!.toInt()}",
-                                    style: textStyle(const Color(0xff000000),
-                                        15, FontWeight.w500)),
+                                    "₹${double.parse(ipos.smeIpoModel!.sMEIPO![index].minPrice!).toInt()}- ₹${double.parse(ipos.smeIpoModel!.sMEIPO![index].maxPrice!).toInt()}",
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        15,
+                                        FontWeight.w500)),
                               ],
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text("Min Qty",
-                                    style: GoogleFonts.inter(
-                                        textStyle: textStyle(
-                                            const Color(0xff666666),
-                                            13,
-                                            FontWeight.w500))),
+                                    style: textStyle(const Color(0xff666666),
+                                        13, FontWeight.w500)),
                                 Text(
                                     "${ipos.smeIpoModel!.sMEIPO![index].minBidQuantity}",
-                                    style: GoogleFonts.inter(
-                                        textStyle: textStyle(
-                                            const Color(0xff000000),
-                                            15,
-                                            FontWeight.w500)))
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        15,
+                                        FontWeight.w500))
                               ],
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text("Min Amount",
-                                    style: GoogleFonts.inter(
-                                        textStyle: textStyle(
-                                            const Color(0xff666666),
-                                            13,
-                                            FontWeight.w500))),
+                                    style: textStyle(const Color(0xff666666),
+                                        13, FontWeight.w500)),
                                 Text(
-                                    "₹${mininv(ipos.smeIpoModel!.sMEIPO![index].minPrice!.toDouble(), ipos.smeIpoModel!.sMEIPO![index].minBidQuantity!.toInt()).toInt()}",
-                                    style: GoogleFonts.inter(
-                                        textStyle: textStyle(
-                                            const Color(0xff000000),
-                                            15,
-                                            FontWeight.w500)))
+                                    "₹${mininv(double.parse(ipos.smeIpoModel!.sMEIPO![index].minPrice!).toDouble(), int.parse(ipos.smeIpoModel!.sMEIPO![index].minBidQuantity!).toInt())}",
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        15,
+                                        FontWeight.w500))
                               ],
                             )
                           ],
@@ -180,12 +193,18 @@ class SMEIPO extends ConsumerWidget {
                         child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                                 elevation: 0,
-                                backgroundColor: const Color(0xffF1F3F8),
+                                backgroundColor: theme.isDarkMode
+                                    ? colors.colorbluegrey
+                                    : const Color(0xffF1F3F8),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(50),
                                 )),
                             onPressed: () async {
+                              await context
+                                  .read(ipoProvide)
+                                  .validateCurrentTime();
                               await context.read(fundProvider).fetchUpiDetail();
+                              await context.read(ipoProvide).smeipocategory();
                               Navigator.pushNamed(
                                 context,
                                 Routes.smeapplyIPO,
@@ -200,7 +219,11 @@ class SMEIPO extends ConsumerWidget {
                                   ? "Apply"
                                   : "Pre Apply",
                               style: textStyle(
-                                  colors.colorBlue, 13, FontWeight.w600),
+                                  theme.isDarkMode
+                                      ? colors.colorBlack
+                                      : colors.colorBlue,
+                                  13,
+                                  FontWeight.w600),
                             )),
                       )
                     ],
@@ -208,7 +231,12 @@ class SMEIPO extends ConsumerWidget {
                 },
                 itemCount: ipos.smeIpoModel!.sMEIPO!.length,
                 separatorBuilder: (BuildContext context, int index) {
-                  return Container(color: const Color(0xffF1F3F8), height: 7);
+                  return Container(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : const Color(0xffF1F3F8),
+                    height: 7,
+                  );
                 },
               )
             : Container()

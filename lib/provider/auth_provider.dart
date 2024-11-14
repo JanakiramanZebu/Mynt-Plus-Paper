@@ -39,6 +39,8 @@ import 'index_list_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
+import 'stocks_provider.dart';
+import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
 
 final authProvider = ChangeNotifierProvider((ref) => AuthProvider(ref.read));
@@ -720,16 +722,26 @@ class AuthProvider extends DefaultChangeNotifier {
         await ref(indexListProvider).getDeafultIndexList(context);
         await ref(marketWatchProvider).fetchMWList(context);
         ref(userProfileProvider).fetchUserDetail(context);
+        ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
         ref(portfolioProvider).fetchPositionBook(context, false);
         ref(orderProvider).fetchOrderBook(context, false);
         ref(orderProvider).fetchTradeBook(context);
 
         ref(portfolioProvider).fetchPosGroupSymbol("", false);
-        ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
 
-        // ref(transcationProvider).fetchcwithdraw(context);
-        // ref(transcationProvider).fetchfundbank(context);
-        // ref(transcationProvider).fetchc(context);
+        ref(transcationProvider).fetchcwithdraw(context);
+        ref(transcationProvider).fetchfundbank(context);
+        ref(transcationProvider).fetchc(context);
+
+// Explore
+        // ref(stocksProvide).fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
+        // await ref(indexListProvider).fetchStockTopIndex();
+        // ref(stocksProvide).fetchCorporateAction();
+        // ref(stocksProvide).defaultSectorThemematicData();
+        // ref(stocksProvide).getNews();
+        // ref(stocksProvide).chngTradeAct("Equity");
+
+// End Explore
         if (s.isEmpty) {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.homeScreen, (route) => false);

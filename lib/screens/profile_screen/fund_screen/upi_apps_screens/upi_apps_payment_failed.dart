@@ -31,10 +31,17 @@ class _UPIAppsPaymentSuccessAlertState
         builder: (context, watch, child) {
           final fund = watch(transcationProvider);
           final theme = watch(themeProvider);
-          return Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-            ),
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                boxShadow: const [
+                  BoxShadow(
+                      color: Color(0xff999999),
+                      blurRadius: 4.0,
+                      offset: Offset(2.0, 0.0))
+                ]),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -59,8 +66,12 @@ class _UPIAppsPaymentSuccessAlertState
                       ),
                       Text(
                         "${fund.hdfcUPIStatus!.data!.status}",
-                        style:
-                            textStyle(colors.colorBlack, 16, FontWeight.w600),
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            16,
+                            FontWeight.w600),
                       ),
                       const SizedBox(
                         height: 5,
@@ -76,8 +87,12 @@ class _UPIAppsPaymentSuccessAlertState
                       ),
                       Text(
                         "₹${fund.hdfcUPIStatus!.data!.amount}",
-                        style:
-                            textStyle(colors.colorBlack, 40, FontWeight.w600),
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            40,
+                            FontWeight.w600),
                       ),
                       const SizedBox(
                         height: 10,
@@ -99,24 +114,26 @@ class _UPIAppsPaymentSuccessAlertState
                   height: 10,
                 ),
                 headerTitleText("UPI Address"),
-                contantTitleText("${fund.hdfcUPIStatus!.data!.clientVPA}"),
+                contantTitleText(
+                    "${fund.hdfcUPIStatus!.data!.clientVPA}", theme),
                 const SizedBox(
                   height: 15,
                 ),
                 headerTitleText("Order ID"),
-                contantTitleText("${fund.hdfcUPIStatus!.data!.orderNumber}"),
+                contantTitleText(
+                    "${fund.hdfcUPIStatus!.data!.orderNumber}", theme),
                 const SizedBox(
                   height: 15,
                 ),
                 headerTitleText("UPI Transaction ID"),
                 contantTitleText(
-                    "${fund.hdfcUPIStatus!.data!.upiTransactionNo}"),
+                    "${fund.hdfcUPIStatus!.data!.upiTransactionNo}", theme),
                 const SizedBox(
                   height: 15,
                 ),
                 headerTitleText("Status Description"),
                 contantTitleText(
-                    "${fund.hdfcUPIStatus!.data!.statusDescription}"),
+                    "${fund.hdfcUPIStatus!.data!.statusDescription}", theme),
                 const SizedBox(
                   height: 10,
                 ),
@@ -138,9 +155,13 @@ class _UPIAppsPaymentSuccessAlertState
                         FocusScope.of(context).unfocus();
                       },
                       child: Text(
-                        'Done',
-                        style:
-                            textStyle(colors.colorWhite, 16, FontWeight.w400),
+                        'Close',
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.colorWhite,
+                            15,
+                            FontWeight.w600),
                       )),
                 ),
                 const SizedBox(
@@ -167,10 +188,11 @@ class _UPIAppsPaymentSuccessAlertState
     );
   }
 
-  Text contantTitleText(String text) {
+  Text contantTitleText(String text, ThemesProvider theme) {
     return Text(
       text,
-      style: textStyle(colors.colorBlack, 15, FontWeight.w600),
+      style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          15, FontWeight.w600),
     );
   }
 }

@@ -539,6 +539,7 @@ chngSMFilter(String val,String val1){
           marketCap: "",
           close: "")
     ];
+    fetchIndicesAdvdec();
     notifyListeners();
   }
 

@@ -31,10 +31,17 @@ class _UpiIdSucessorFaliureScreenState
         builder: (context, watch, child) {
           final fund = watch(transcationProvider);
           final theme = watch(themeProvider);
-          return Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-            ),
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                boxShadow: const [
+                  BoxShadow(
+                      color: Color(0xff999999),
+                      blurRadius: 4.0,
+                      offset: Offset(2.0, 0.0))
+                ]),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -60,8 +67,12 @@ class _UpiIdSucessorFaliureScreenState
                       ),
                       Text(
                         "${fund.hdfcpaymentstatus!.upiId!.status}",
-                        style:
-                            textStyle(colors.colorBlack, 16, FontWeight.w600),
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            16,
+                            FontWeight.w600),
                       ),
                       const SizedBox(
                         height: 5,
@@ -77,8 +88,12 @@ class _UpiIdSucessorFaliureScreenState
                       ),
                       Text(
                         "₹${fund.hdfcpaymentstatus!.upiId!.amount}",
-                        style:
-                            textStyle(colors.colorBlack, 40, FontWeight.w600),
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            40,
+                            FontWeight.w600),
                       ),
                       const SizedBox(
                         height: 10,
@@ -100,25 +115,28 @@ class _UpiIdSucessorFaliureScreenState
                   height: 10,
                 ),
                 headerTitleText("UPI Address"),
-                contantTitleText("${fund.hdfcpaymentstatus!.upiId!.clientVPA}"),
+                contantTitleText(
+                    "${fund.hdfcpaymentstatus!.upiId!.clientVPA}", theme),
                 const SizedBox(
                   height: 15,
                 ),
                 headerTitleText("Order ID"),
                 contantTitleText(
-                    "${fund.hdfcpaymentstatus!.upiId!.orderNumber}"),
+                    "${fund.hdfcpaymentstatus!.upiId!.orderNumber}", theme),
                 const SizedBox(
                   height: 15,
                 ),
                 headerTitleText("UPI Transaction ID"),
                 contantTitleText(
-                    "${fund.hdfcpaymentstatus!.upiId!.upiTransactionNo}"),
+                    "${fund.hdfcpaymentstatus!.upiId!.upiTransactionNo}",
+                    theme),
                 const SizedBox(
                   height: 15,
                 ),
                 headerTitleText("Status Description"),
                 contantTitleText(
-                    "${fund.hdfcpaymentstatus!.upiId!.statusDescription}"),
+                    "${fund.hdfcpaymentstatus!.upiId!.statusDescription}",
+                    theme),
                 const SizedBox(
                   height: 10,
                 ),
@@ -141,8 +159,12 @@ class _UpiIdSucessorFaliureScreenState
                       },
                       child: Text(
                         'Done',
-                        style:
-                            textStyle(colors.colorWhite, 16, FontWeight.w400),
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.colorWhite,
+                            15,
+                            FontWeight.w600),
                       )),
                 ),
                 const SizedBox(
@@ -169,10 +191,11 @@ class _UpiIdSucessorFaliureScreenState
     );
   }
 
-  Text contantTitleText(String text) {
+  Text contantTitleText(String text, ThemesProvider theme) {
     return Text(
       text,
-      style: textStyle(colors.colorBlack, 15, FontWeight.w600),
+      style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          15, FontWeight.w600),
     );
   }
 }

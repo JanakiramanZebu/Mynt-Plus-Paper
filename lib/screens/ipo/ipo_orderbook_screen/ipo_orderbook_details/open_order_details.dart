@@ -1,17 +1,18 @@
-// ignore_for_file: prefer_is_empty
+// ignore_for_file: prefer_is_empty, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/thems.dart';
 
 import '../../../../models/ipo_model/ipo_order_book_model.dart';
 import '../../../../provider/fund_provider.dart';
+import '../../../../provider/iop_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../ipo_cancel_alert/cancel_alert.dart';
-
 
 class IpoOpenOrderDetails extends ConsumerWidget {
   final IpoOrderBookModel ipodetails;
@@ -22,8 +23,8 @@ class IpoOpenOrderDetails extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
+    final theme = watch(themeProvider);
     return Scaffold(
-      backgroundColor: colors.colorWhite,
       appBar: AppBar(
           elevation: .2,
           centerTitle: false,
@@ -35,12 +36,20 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 9),
-              child: SvgPicture.asset(assets.backArrow),
+              child: SvgPicture.asset(
+                assets.backArrow,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              ),
             ),
           ),
-          backgroundColor: colors.colorWhite,
+          backgroundColor:
+              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           shadowColor: const Color(0xffECEFF3),
-          title: Text("Order Details", style: textStyles.appBarTitleTxt)),
+          title: Text("Order Details",
+              style: textStyles.appBarTitleTxt.copyWith(
+                  color: theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.colorBlack))),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,7 +61,10 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                 children: [
                   Text(
                     ipodetails.companyName.toString(),
-                    style: textStyles.scripNameTxtStyle,
+                    style: textStyles.scripNameTxtStyle.copyWith(
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack),
                   ),
                   const SizedBox(height: 5),
                   Text(ipodetails.symbol.toString(),
@@ -74,7 +86,11 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                                 ? "Success"
                                 : "Pending",
                             style: textStyle(
-                                colors.colorBlack, 14, FontWeight.w600),
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w600),
                           )
                         ],
                       ),
@@ -92,7 +108,11 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                                 ? "Success"
                                 : "Pending",
                             style: textStyle(
-                                colors.colorBlack, 14, FontWeight.w600),
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w600),
                           ),
                         ],
                       ),
@@ -117,7 +137,11 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                                 ? "Pending"
                                 : ipodetails.upiPaymentStatus.toString(),
                             style: textStyle(
-                                colors.colorBlack, 14, FontWeight.w600),
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w600),
                           )
                         ],
                       ),
@@ -134,7 +158,11 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                                 ? "Pending"
                                 : ipodetails.upiPaymentStatus.toString(),
                             style: textStyle(
-                                colors.colorBlack, 14, FontWeight.w600),
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w600),
                           ),
                         ],
                       ),
@@ -144,7 +172,61 @@ class IpoOpenOrderDetails extends ConsumerWidget {
               ),
             ),
             Divider(
-              color: colors.colorDivider,
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Start Date",
+                        style: textStyle(colors.colorGrey, 13, FontWeight.w600),
+                      ),
+                      Text(
+                        "End Date",
+                        style: textStyle(colors.colorGrey, 13, FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        ipodetails.biddingstartdate.toString(),
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w600),
+                      ),
+                      Text(
+                        ipodetails.type == "BSE"
+                            ? ipodetails.biddingendDate.toString()
+                            : ipodetails.biddingenddate.toString(),
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w600),
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ),
             const SizedBox(
               height: 10,
@@ -163,8 +245,12 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                       ),
                       Text(
                         ipodetails.applicationNumber.toString(),
-                        style:
-                            textStyle(colors.colorBlack, 14, FontWeight.w600),
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w600),
                       )
                     ],
                   ),
@@ -180,8 +266,12 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                         ipodetails.upiPaymentStatus == ""
                             ? "Pending"
                             : ipodetails.upiPaymentStatus.toString(),
-                        style:
-                            textStyle(colors.colorBlack, 14, FontWeight.w600),
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w600),
                       ),
                     ],
                   ),
@@ -196,33 +286,65 @@ class IpoOpenOrderDetails extends ConsumerWidget {
               child: Row(
                 // mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Expanded(
-                    child: OutlinedButton(
-                        onPressed: () async {
-                          await context.read(fundProvider).   fetchUpiDetail();
-                          Navigator.pushNamed(
-                            context,
-                            Routes.modifyipoorder,
-                            arguments: ipodetails,
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                                width: 1.4, color: Color(0xff000000)),
-                            padding: const EdgeInsets.symmetric(vertical: 10.5),
-                            shape: const RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(30)))),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Text("Modify Order",
-                              style: textStyle(const Color(0xff000000), 14,
-                                  FontWeight.w600)),
-                        )),
-                  ),
-                  const SizedBox(
-                    width: 20,
-                  ),
+                  modifyButtonStatus(
+                            ipodetails.biddingstartdate.toString(),
+                            ipodetails.type == "BSE"
+                                ? ipodetails.biddingendDate.toString()
+                                : ipodetails.biddingenddate.toString(),
+                          ) ==
+                          "Closed"
+                      ? Container()
+                      : Expanded(
+                          child: OutlinedButton(
+                              onPressed: () async {
+                                await context
+                                    .read(ipoProvide)
+                                    .validateCurrentTime();
+                                await context
+                                    .read(fundProvider)
+                                    .fetchUpiDetail();
+                                await context
+                                    .read(ipoProvide)
+                                    .modifyipocategory();
+                                Navigator.pushNamed(
+                                  context,
+                                  Routes.modifyipoorder,
+                                  arguments: ipodetails,
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                      width: 1.4,
+                                      color: theme.isDarkMode
+                                          ? colors.colorGrey
+                                          : colors.colorBlack),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10.5),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(30)))),
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                child: Text("Modify Order",
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        14,
+                                        FontWeight.w600)),
+                              )),
+                        ),
+                  SizedBox(
+                      width: modifyButtonStatus(
+                                ipodetails.biddingstartdate.toString(),
+                                ipodetails.type == "BSE"
+                                    ? ipodetails.biddingendDate.toString()
+                                    : ipodetails.biddingenddate.toString(),
+                              ) ==
+                              "Closed"
+                          ? 0
+                          : 20),
                   Expanded(
                     child: OutlinedButton(
                         onPressed: () async {
@@ -233,8 +355,11 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                               });
                         },
                         style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                                width: 1.4, color: Color(0xff000000)),
+                            side: BorderSide(
+                                width: 1.4,
+                                color: theme.isDarkMode
+                                    ? colors.colorGrey
+                                    : colors.colorBlack),
                             padding: const EdgeInsets.symmetric(vertical: 10.5),
                             shape: const RoundedRectangleBorder(
                                 borderRadius:
@@ -242,7 +367,11 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Text("Cancel Order",
-                              style: textStyle(const Color(0xff000000), 14,
+                              style: textStyle(
+                                  theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  14,
                                   FontWeight.w600)),
                         )),
                   ),
@@ -253,30 +382,36 @@ class IpoOpenOrderDetails extends ConsumerWidget {
               height: 10,
             ),
             Divider(
-              color: colors.colorDivider,
-            ),
-            // data(
-            //     "App no",
-            //     ipodetails.respBid![0].bidReferenceNumber == null
-            //         ? ""
-            //         : ipodetails.respBid![0].bidReferenceNumber.toString()),
-            data(
-              "Quantity",
-              ipodetails.bidDetail![0].quantity.toString(),
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
             ),
             data(
-              "Total amount",
-              "₹${getFormatter(
-                noDecimal: true,
-                v4d: false,
-                value:
-                    double.parse(ipodetails.bidDetail![0].amount!).toDouble(),
-              )}",
-            ),
+                "App no",
+                ipodetails.respBid == null ||
+                        ipodetails.respBid![0].bidReferenceNumber == "null"
+                    ? "NAN"
+                    : ipodetails.respBid![0].bidReferenceNumber.toString(),
+                theme),
+            data("Quantity", ipodetails.bidDetail![0].quantity.toString(),
+                theme),
             data(
-              "Price",
-              "₹${ipodetails.bidDetail![0].price}",
-            ),
+                "Total amount",
+                ipodetails.bidDetail![0].amount! == "null"
+                    ? "NAN"
+                    : "₹${getFormatter(
+                        noDecimal: true,
+                        v4d: false,
+                        value: double.parse(ipodetails.bidDetail![0].amount!)
+                            .toDouble(),
+                      )}",
+                theme),
+            data(
+                "Price",
+                ipodetails.type == "BSE"
+                    ? ipodetails.bidDetail![0].rate.toString()
+                    : "${double.parse(ipodetails.bidDetail![0].price.toString()).toInt()}",
+                theme),
             Padding(
               padding: const EdgeInsets.only(left: 16, top: 15, bottom: 5),
               child: Text(
@@ -285,7 +420,10 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                     : ipodetails.bidDetail!.length == 2
                         ? "Double bid order"
                         : "Triple bid order",
-                style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600),
               ),
             ),
             ListView.builder(
@@ -314,15 +452,21 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "₹${getFormatter(
-                                    noDecimal: true,
-                                    v4d: false,
-                                    value: double.parse(ipodetails
-                                            .bidDetail![index].amount!)
-                                        .toDouble(),
-                                  )}",
+                                  ipodetails.bidDetail![index].amount! == "null"
+                                      ? "NAN"
+                                      : "₹${getFormatter(
+                                          noDecimal: true,
+                                          v4d: false,
+                                          value: double.parse(ipodetails
+                                                  .bidDetail![index].amount!)
+                                              .toDouble(),
+                                        )}",
                                   style: textStyle(
-                                      colors.colorBlack, 14, FontWeight.w600),
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
+                                      FontWeight.w600),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
@@ -336,9 +480,16 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  ipodetails.bidDetail![index].price!,
+                                  ipodetails.type == "BSE"
+                                      ? ipodetails.bidDetail![index].rate
+                                          .toString()
+                                      : "${double.parse(ipodetails.bidDetail![index].price.toString()).toInt()}",
                                   style: textStyle(
-                                      colors.colorBlack, 14, FontWeight.w600),
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
+                                      FontWeight.w600),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
@@ -355,7 +506,11 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                                   ipodetails.bidDetail![index].quantity!
                                       .toString(),
                                   style: textStyle(
-                                      colors.colorBlack, 14, FontWeight.w600),
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
+                                      FontWeight.w600),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
@@ -369,10 +524,17 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  ipodetails.bidDetail![index].atCutOff!
-                                      .toString(),
+                                  ipodetails.type == "BSE"
+                                      ? ipodetails.bidDetail![index].cuttoffflag
+                                          .toString()
+                                      : ipodetails.bidDetail![index].atCutOff
+                                          .toString(),
                                   style: textStyle(
-                                      colors.colorBlack, 14, FontWeight.w600),
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
+                                      FontWeight.w600),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
@@ -388,7 +550,9 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                           height: 10,
                         ),
                         Divider(
-                          color: colors.colorDivider,
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider,
                         )
                       ],
                     ),
@@ -398,7 +562,10 @@ class IpoOpenOrderDetails extends ConsumerWidget {
               padding: const EdgeInsets.only(top: 8, left: 16, bottom: 5),
               child: Text(
                 "Reason",
-                style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600),
               ),
             ),
             Padding(
@@ -414,7 +581,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
     );
   }
 
-  Padding data(String name, String value) {
+  Padding data(String name, String value, ThemesProvider theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: 16,
@@ -429,11 +596,17 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             children: [
               Text(
                 name,
-                style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600),
               ),
               Text(
                 value,
-                style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600),
               )
             ],
           ),
@@ -441,7 +614,9 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             height: 4,
           ),
           Divider(
-            color: colors.colorDivider,
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider,
           )
         ],
       ),

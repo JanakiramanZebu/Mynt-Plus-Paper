@@ -17,7 +17,7 @@ mixin IndexApi on ApiCore {
             "clientid": prefs.clientId,
           }));
 
-      // print(res.body);
+      //  print("Message - ${res.body}");
 
       return res;
     } catch (e) {

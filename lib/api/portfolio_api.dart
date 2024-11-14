@@ -1,4 +1,6 @@
  
+import 'dart:developer';
+
 import '../models/portfolio_model/holdings_model.dart';
 import '../models/portfolio_model/mf_holdings_model.dart';
 import '../models/portfolio_model/mf_quotes.dart';
@@ -16,7 +18,7 @@ mixin PortfolioAPI on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","prd":"C"}&jKey=${prefs.clientSession}''');
-      // log("Holdings res=>${res.body} ");
+      //  log("Holdings res=>${res.body} ");
       final List<HoldingsModel> data = [];
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
@@ -104,7 +106,7 @@ mixin PortfolioAPI on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
-        // log("PositionBook => ${res.body}");
+      //  log("PositionBook => ${res.body}");
 
       final List<PositionBookModel> data = [];
 
@@ -167,7 +169,7 @@ mixin PortfolioAPI on ApiCore {
           Uri.parse("${apiLinks.positionGrp}?clientid=${prefs.clientId}");
       final res = await apiClient.get(uri, headers: defaultHeaders);
 
-      // log("Position Group List => ${res.body}");
+       log("Position Group List => ${res.body}");
       final json = jsonDecode(res.body);
       final List<GetGroupSymbol> data = [];
 

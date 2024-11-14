@@ -7,11 +7,11 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../provider/fund_provider.dart';
 import '../../../provider/iop_provider.dart';
+import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
-
 
 class MainStreamIpo extends StatefulWidget {
   const MainStreamIpo({super.key});
@@ -46,6 +46,7 @@ class _MainStreamIpoState extends State<MainStreamIpo>
     return Consumer(builder: (context, ScopedReader watch, _) {
       final ipos = watch(ipoProvide);
       final mainstreamipo = watch(ipoProvide);
+      final theme = watch(themeProvider);
       return Column(
         children: [
           Container(
@@ -60,6 +61,9 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                       width: 38,
                       height: 40,
                       fit: BoxFit.scaleDown,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
                     )
                   ],
                 ),
@@ -71,9 +75,12 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text("Main stream IPOs",
-                              style: GoogleFonts.inter(
-                                  textStyle: textStyle(const Color(0xff000000),
-                                      16, FontWeight.w600))),
+                              style: textStyle(
+                                  theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  16,
+                                  FontWeight.w600)),
                           InkWell(
                             onTap: () {
                               ipos.activeMainStreamBtn(
@@ -83,7 +90,9 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                 height: 28,
                                 width: 28,
                                 decoration: BoxDecoration(
-                                    color: const Color(0xffEBF1FF),
+                                    color: theme.isDarkMode
+                                        ? colors.colorbluegrey
+                                        : const Color(0xffEBF1FF),
                                     borderRadius: BorderRadius.circular(20)),
                                 child: SvgPicture.asset(
                                   ipos.isActiveMainStream
@@ -92,7 +101,9 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                   width: 40,
                                   height: 40,
                                   fit: BoxFit.scaleDown,
-                                  color: const Color(0xff0037B7),
+                                  color: theme.isDarkMode
+                                      ? colors.colorBlack
+                                      : const Color(0xff0037B7),
                                 )),
                           )
                         ],
@@ -100,9 +111,8 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                       const SizedBox(height: 3),
                       Text(
                           "Initial public offering a new stock issuance for the first time.",
-                          style: GoogleFonts.inter(
-                              textStyle: textStyle(const Color(0xff666666), 14,
-                                  FontWeight.w500))),
+                          style: textStyle(
+                              const Color(0xff666666), 14, FontWeight.w500)),
                     ],
                   ),
                 )
@@ -122,17 +132,25 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                 ListTile(
                                   title: Text(
                                       "${mainstreamipo.mainStreamIpoModel!.mainIPO![index].name}",
-                                      style: textStyle(const Color(0xff000000),
-                                          15, FontWeight.w600)),
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          15,
+                                          FontWeight.w600)),
                                   subtitle: Padding(
-                                    padding: const EdgeInsets.only(top: 3.0),
+                                    padding: const EdgeInsets.only(top: 3),
                                     child: Row(
                                       children: [
                                         Container(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                                color: const Color(0xffF1F3F8),
+                                                color: theme.isDarkMode
+                                                    ? colors.colorGrey
+                                                        .withOpacity(.1)
+                                                    : const Color(0xffF1F3F8),
+
                                                 // border: Border.all(
                                                 //     color: const Color(0xffC1E7BA)),
                                                 borderRadius:
@@ -140,7 +158,7 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                             child: Text(
                                                 "${mainstreamipo.mainStreamIpoModel!.mainIPO![index].symbol}",
                                                 style: textStyle(
-                                                    const Color(0xff666666),
+                                                    colors.colorGrey,
                                                     11,
                                                     FontWeight.w500))),
                                         const SizedBox(width: 10),
@@ -148,14 +166,18 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                                color: Color(ipostartdate(
+                                                color: ipostartdate(
                                                             "${mainstreamipo.mainStreamIpoModel!.mainIPO![index].biddingStartDate}",
                                                             "${mainstreamipo.mainStreamIpoModel!.mainIPO![index].biddingEndDate}") ==
                                                         "Open"
-                                                    ? 0xffECF8F1
-                                                    : 0xffFFF6E6),
-                                                // border: Border.all(
-                                                //     color: const Color(0xffC1E7BA)),
+                                                    ? theme.isDarkMode
+                                                        ? const Color(0xffECF8F1)
+                                                            .withOpacity(.3)
+                                                        : const Color(0xffECF8F1)
+                                                    : theme.isDarkMode
+                                                        ? const Color(0xffFFF6E6)
+                                                            .withOpacity(.3)
+                                                        : const Color(0xffFFF6E6),
                                                 borderRadius:
                                                     BorderRadius.circular(4)),
                                             child: Text(
@@ -177,9 +199,10 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                     ),
                                   ),
                                 ),
-                                const Divider(
-                                  color: Color(0xffECEDEE),
-                                ),
+                                Divider(
+                                    color: theme.isDarkMode
+                                        ? colors.darkColorDivider
+                                        : colors.colorDivider),
                                 Padding(
                                   padding: const EdgeInsets.only(
                                       left: 16, right: 16, top: 2, bottom: 8),
@@ -197,9 +220,11 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                                   13,
                                                   FontWeight.w500)),
                                           Text(
-                                              "₹${mainstreamipo.mainStreamIpoModel!.mainIPO![index].minPrice!.toInt()}- ₹${mainstreamipo.mainStreamIpoModel!.mainIPO![index].maxPrice!.toInt()}",
+                                              "₹${double.parse(mainstreamipo.mainStreamIpoModel!.mainIPO![index].minPrice!).toInt()}- ₹${double.parse(mainstreamipo.mainStreamIpoModel!.mainIPO![index].maxPrice!).toInt()}",
                                               style: textStyle(
-                                                  const Color(0xff000000),
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
                                                   15,
                                                   FontWeight.w500)),
                                         ],
@@ -216,7 +241,9 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                           Text(
                                               "${mainstreamipo.mainStreamIpoModel!.mainIPO![index].minBidQuantity}",
                                               style: textStyle(
-                                                  const Color(0xff000000),
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
                                                   15,
                                                   FontWeight.w500)),
                                         ],
@@ -231,9 +258,11 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                                   13,
                                                   FontWeight.w500)),
                                           Text(
-                                              "₹${mininv(mainstreamipo.mainStreamIpoModel!.mainIPO![index].minPrice!.toDouble(), mainstreamipo.mainStreamIpoModel!.mainIPO![index].minBidQuantity!.toInt()).toInt()}",
+                                              "₹${mininv(double.parse(mainstreamipo.mainStreamIpoModel!.mainIPO![index].minPrice!).toDouble(), int.parse(mainstreamipo.mainStreamIpoModel!.mainIPO![index].minBidQuantity!).toInt()).toInt()}",
                                               style: textStyle(
-                                                  const Color(0xff000000),
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
                                                   15,
                                                   FontWeight.w500))
                                         ],
@@ -248,35 +277,55 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                                   child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                           elevation: 0,
-                                          backgroundColor:
-                                              const Color(0xffF1F3F8),
+                                          backgroundColor: theme.isDarkMode
+                                              ? colors.colorbluegrey
+                                              : const Color(0xffF1F3F8),
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(50),
                                           )),
                                       onPressed: () async {
                                         await context
+                                            .read(ipoProvide)
+                                            .validateCurrentTime();
+                                        await context
                                             .read(fundProvider)
                                             .fetchUpiDetail();
                                         await context
                                             .read(ipoProvide)
-                                            .mainipocategory();
+                                            .mainipocategory(mainstreamipo
+                                                .mainStreamIpoModel!
+                                                .mainIPO![index]
+                                                .type
+                                                .toString());
                                         Navigator.pushNamed(
                                             context, Routes.applyIPO,
                                             arguments: mainstreamipo
                                                 .mainStreamIpoModel!
                                                 .mainIPO![index]);
                                       },
-                                      child: Text(
-                                        ipostartdate(
-                                                    "${mainstreamipo.mainStreamIpoModel!.mainIPO![index].biddingStartDate}",
-                                                    "${mainstreamipo.mainStreamIpoModel!.mainIPO![index].biddingEndDate}") ==
-                                                "Open"
-                                            ? "Apply"
-                                            : "Pre Apply",
-                                        style: textStyle(colors.colorBlue, 13,
-                                            FontWeight.w600),
-                                      )),
+                                      child: ipos.loading
+                                          ? const SizedBox(
+                                              width: 18,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: Color(0xff666666)),
+                                            )
+                                          : Text(
+                                              ipostartdate(
+                                                          "${mainstreamipo.mainStreamIpoModel!.mainIPO![index].biddingStartDate}",
+                                                          "${mainstreamipo.mainStreamIpoModel!.mainIPO![index].biddingEndDate}") ==
+                                                      "Open"
+                                                  ? "Apply"
+                                                  : "Pre Apply",
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorBlack
+                                                      : colors.colorBlue,
+                                                  13,
+                                                  FontWeight.w600),
+                                            )),
                                 )
                               ],
                             );
@@ -285,7 +334,9 @@ class _MainStreamIpoState extends State<MainStreamIpo>
                               mainstreamipo.mainStreamIpoModel!.mainIPO!.length,
                           separatorBuilder: (BuildContext context, int index) {
                             return Container(
-                              color: const Color(0xffF1F3F8),
+                              color: theme.isDarkMode
+                                  ? colors.darkColorDivider
+                                  : const Color(0xffF1F3F8),
                               height: 7,
                             );
                           },
@@ -297,5 +348,11 @@ class _MainStreamIpoState extends State<MainStreamIpo>
     });
   }
 
-   
+  TextStyle textStyle(Color color, double fontSize, fWeight) {
+    return GoogleFonts.inter(
+      fontWeight: fWeight,
+      color: color,
+      fontSize: fontSize,
+    );
+  }
 }

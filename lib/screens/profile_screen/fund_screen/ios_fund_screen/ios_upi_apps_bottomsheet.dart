@@ -107,8 +107,12 @@ class _UpiAppsBottomSheetState extends State<UpiAppsBottomSheet> {
                         Text(
                           widget.upiapps[index]['name'],
                           textAlign: TextAlign.center,
-                          style:
-                              textStyle(colors.colorBlack, 14, FontWeight.w500),
+                          style: textStyle(
+                              widget.theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              14,
+                              FontWeight.w500),
                         ),
                       ],
                     ),

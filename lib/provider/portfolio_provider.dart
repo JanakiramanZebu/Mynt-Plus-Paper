@@ -577,13 +577,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
           // await requestWSPosition(context: context, isSubscribe: true);
         } else {
-          _postionBookModel = [];
-          _openPosition = [];
+          //
+
           if (_postionBookModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _postionBookModel![0].stat == "Not_Ok") {
             ref(authProvider).ifSessionExpired(context);
           }
+          _openPosition = [];
+          _postionBookModel = [];
         }
       }
       notifyListeners();
@@ -996,48 +998,53 @@ class PortfolioProvider extends DefaultChangeNotifier {
   }
 
   getPositionGroupNames() {
-    _groupedBySymbol = {};
-    for (var element in _allPostionList) {
-      if (_groupedBySymbol.containsKey(element.symbol)) {
-        _groupedBySymbol['${element.symbol}']["groupList"]
-            .add(jsonDecode(jsonEncode(element)));
-      } else {
-        _groupedBySymbol.addAll({
-          "${element.symbol}": {
-            "isCustomGrp": false,
-            "totMtm": "0.00",
-            "totPnl": "0.00",
-            "groupList": [jsonDecode(jsonEncode(element))]
-          }
-        });
+    try {
+      _groupedBySymbol = {};
+      for (var element in _allPostionList) {
+        if (_groupedBySymbol.containsKey(element.symbol)) {
+          _groupedBySymbol['${element.symbol}']["groupList"]
+              .add(jsonDecode(jsonEncode(element)));
+        } else {
+          _groupedBySymbol.addAll({
+            "${element.symbol}": {
+              "isCustomGrp": false,
+              "totMtm": "0.00",
+              "totPnl": "0.00",
+              "groupList": [jsonDecode(jsonEncode(element))]
+            }
+          });
+        }
       }
-    }
 
-    for (var element in _getPositionGroupSymbol) {
-      if (_groupedBySymbol.containsKey(element.posname)) {
-        _groupedBySymbol['${element.posname}']["groupList"]
-            .add(jsonDecode(jsonEncode(element.posdata)));
-      } else {
+      for (var element in _getPositionGroupSymbol) {
+        if (_groupedBySymbol.containsKey(element.posname)) {
+          _groupedBySymbol['${element.posname}']["groupList"]
+              .add(jsonDecode(jsonEncode(element.posdata)));
+        } else {
 // log("${jsonDecode(jsonEncode(element.posdata))  }");
 
-        _groupedBySymbol.addAll({
-          "${element.posname}": {
-            "isCustomGrp": true,
-            "totMtm": "0.00",
-            "totPnl": "0.00",
-            "groupList": jsonDecode(jsonEncode(element.posdata))
-          }
-        });
+          _groupedBySymbol.addAll({
+            "${element.posname}": {
+              "isCustomGrp": true,
+              "totMtm": "0.00",
+              "totPnl": "0.00",
+              "groupList": jsonDecode(jsonEncode(element.posdata))
+            }
+          });
+        }
       }
+
+      _groupPositionSym = [];
+
+      if (_groupedBySymbol.keys.isNotEmpty) {
+        for (var element in _groupedBySymbol.keys) {
+          _groupPositionSym.add(element);
+        }
+      }
+    } catch (e) {
+      print(e);
     }
 
-    _groupPositionSym = [];
-
-    if (_groupedBySymbol.keys.isNotEmpty) {
-      for (var element in _groupedBySymbol.keys) {
-        _groupPositionSym.add(element);
-      }
-    }
     notifyListeners();
   }
 
@@ -1280,7 +1287,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 mktProt: '',
                 channel: defaultTargetPlatform == TargetPlatform.android
                     ? '${ref(authProvider).deviceInfo["brand"]}'
-                    : "${ref(authProvider).deviceInfo["model"]}" );
+                    : "${ref(authProvider).deviceInfo["model"]}");
             _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
             if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
@@ -1289,8 +1296,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           }
         }
       }
-   await fetchPositionBook(context, _isDay);
-
+      await fetchPositionBook(context, _isDay);
     }
   }
 
@@ -1564,7 +1570,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 mktProt: '',
                 channel: defaultTargetPlatform == TargetPlatform.android
                     ? '${ref(authProvider).deviceInfo["brand"]}'
-                    : "${ref(authProvider).deviceInfo["model"]}" );
+                    : "${ref(authProvider).deviceInfo["model"]}");
             _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
             if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
@@ -1590,7 +1596,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                   mktProt: '',
                   channel: defaultTargetPlatform == TargetPlatform.android
                       ? '${ref(authProvider).deviceInfo["brand"]}'
-                      : "${ref(authProvider).deviceInfo["model"]}" );
+                      : "${ref(authProvider).deviceInfo["model"]}");
               await fetchExitPosition(context, placeOrderInput, true);
             }
           }
@@ -1622,7 +1628,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           mktProt: '',
           channel: defaultTargetPlatform == TargetPlatform.android
               ? '${ref(authProvider).deviceInfo["brand"]}'
-              : "${ref(authProvider).deviceInfo["model"]}" );
+              : "${ref(authProvider).deviceInfo["model"]}");
       await fetchExitPosition(context, placeOrderInput, false);
     }
   }
@@ -1704,7 +1710,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
       getPositionGroupNames();
 
       notifyListeners();
-    } catch (e) {}
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future fetchGroupName(String name, BuildContext c, bool isCreateGrp) async {

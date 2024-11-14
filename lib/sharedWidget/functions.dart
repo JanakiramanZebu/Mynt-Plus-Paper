@@ -43,6 +43,55 @@ String getFormatedNumValue(
   }
 }
 
+timevalidation(String startTime, String endTime) {
+  final now = DateTime.now();
+  final opentime = DateTime(
+    now.year,
+    now.month,
+    now.day,
+    int.parse(startTime.split(":")[0]),
+    int.parse(startTime.split(":")[1]),
+    int.parse(startTime.split(":")[2]),
+  );
+  final closetime = DateTime(
+    now.year,
+    now.month,
+    now.day,
+    int.parse(endTime.split(":")[0]),
+    int.parse(endTime.split(":")[1]),
+    int.parse(endTime.split(":")[2]),
+  );
+
+  String status = "";
+  if (now.isAfter(opentime) && now.isBefore(closetime)) {
+    status = "OPEN";
+  } else {
+    status = "CLOSE";
+  }
+  return status.toString();
+}
+
+modifyButtonStatus(String startdate, String enddate) {
+  DateFormat dateFormat = DateFormat("yyyy-MM-dd");
+
+  String conEndDate = convertDatestart(enddate);
+  String startcovDate = convertDatestart(startdate);
+  final startDate = dateFormat.parse(startcovDate);
+  final endDate = dateFormat.parse(conEndDate);
+  final now = DateTime.now();
+  final currentDate = DateTime(now.year, now.month, now.day);
+  String status = "";
+  if (currentDate.isBefore(startDate)) {
+    status = "Upcoming";
+  } else if (endDate.isBefore(currentDate)) {
+    status = "Closed";
+  } else {
+    status = "Open";
+  }
+  return status.toString();
+}
+
+
 String formatCurrencyStandard({required String value}) {
   String formatedCurrency = '';
   if (value.isNotEmpty) {
@@ -53,6 +102,14 @@ String formatCurrencyStandard({required String value}) {
     formatedCurrency = numberFormat.format(formatValue);
   }
   return formatedCurrency;
+}
+
+String formatInCrore(int number) {
+  // Convert the number to crores
+  double croreValue = number / 1e7;
+  // Format to show only the first three significant digits
+  String formattedValue = croreValue.toStringAsFixed(2);
+  return '$formattedValue Cr';
 }
 
 String formatDateTime({required String value}) {

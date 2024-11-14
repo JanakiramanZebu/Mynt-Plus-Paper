@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../provider/iop_provider.dart';
+import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
-
 
 class IpoCloseOrder extends ConsumerWidget {
   final IPOProvider close;
@@ -14,6 +14,7 @@ class IpoCloseOrder extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
+    final theme = watch(themeProvider);
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,7 +41,10 @@ class IpoCloseOrder extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(close.closeorder![index].symbol.toString(),
-                                  style: textStyles.scripNameTxtStyle),
+                                  style: textStyles.scripNameTxtStyle.copyWith(
+                                      color: theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack)),
                               const SizedBox(
                                 height: 10,
                               ),
@@ -60,7 +64,11 @@ class IpoCloseOrder extends ConsumerWidget {
                                         ? "Failed"
                                         : "Failed",
                                     style: textStyle(
-                                        colors.colorBlack, 13, FontWeight.w600),
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        13,
+                                        FontWeight.w600),
                                   ),
                                   const SizedBox(
                                     width: 10,
@@ -73,7 +81,11 @@ class IpoCloseOrder extends ConsumerWidget {
                                   Text(
                                     "${close.closeorder![index].bidDetail![0].quantity}",
                                     style: textStyle(
-                                        colors.colorBlack, 13, FontWeight.w600),
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        13,
+                                        FontWeight.w600),
                                   )
                                 ],
                               ),
@@ -83,9 +95,13 @@ class IpoCloseOrder extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Divider(color: Color(0xffECEDEE), thickness: 1.2),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Divider(
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : const Color(0xffECEDEE),
+                          thickness: 1.2),
                     ),
                     const SizedBox(
                       height: 7,
@@ -101,16 +117,25 @@ class IpoCloseOrder extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "₹${getFormatter(
-                                  noDecimal: true,
-                                  v4d: false,
-                                  value: double.parse(close.closeorder![index]
-                                          .bidDetail![0].amount
-                                          .toString())
-                                      .toDouble(),
-                                )}",
+                                close.closeorder![index].bidDetail![0].amount ==
+                                        "null"
+                                    ? "NAN"
+                                    : "₹${getFormatter(
+                                        noDecimal: true,
+                                        v4d: false,
+                                        value: double.parse(close
+                                                .closeorder![index]
+                                                .bidDetail![0]
+                                                .amount
+                                                .toString())
+                                            .toDouble(),
+                                      )}",
                                 style: textStyle(
-                                    colors.colorBlack, 13, FontWeight.w600),
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    13,
+                                    FontWeight.w600),
                               ),
                               const SizedBox(
                                 height: 2,
@@ -134,7 +159,11 @@ class IpoCloseOrder extends ConsumerWidget {
                                         .closeorder![index].responseDatetime
                                         .toString()),
                                 style: textStyle(
-                                    colors.colorBlack, 13, FontWeight.w600),
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    13,
+                                    FontWeight.w600),
                               ),
                               const SizedBox(
                                 height: 2,
@@ -157,7 +186,12 @@ class IpoCloseOrder extends ConsumerWidget {
               );
             },
             separatorBuilder: (BuildContext context, int index) {
-              return Container(color: const Color(0xffF1F3F8), height: 7);
+              return Container(
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : const Color(0xffF1F3F8),
+                height: 7,
+              );
             },
           )
         ],

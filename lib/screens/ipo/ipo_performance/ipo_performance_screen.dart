@@ -1,14 +1,17 @@
+// ignore_for_file: deprecated_member_use
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/iop_provider.dart';
+import '../../../provider/network_state_provider.dart';
+import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_text_btn.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
-
 
 class IPOPerformance extends StatefulWidget {
   const IPOPerformance({super.key});
@@ -37,13 +40,15 @@ class _IPOPerformanceState extends State<IPOPerformance> {
     return SingleChildScrollView(
       child: Consumer(builder: (context, ScopedReader watch, _) {
         final perfomance = watch(ipoProvide);
-
+        final theme = watch(themeProvider);
+        final internet = watch(networkStateProvider);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Divider(
-              color: Color(0xffECEDEE),
-            ),
+            Divider(
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : const Color(0xffECEDEE)),
             const SizedBox(height: 14),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -54,15 +59,11 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      SvgPicture.asset("assets/icon/ipoperformance.svg"),
-                      const SizedBox(
-                        width: 10,
-                      ),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("IPO Performance 2024",
+                            Text("IPO Performance $selectedYear",
                                 style: textStyle(const Color(0xff000000), 18,
                                     FontWeight.w600)),
                             const SizedBox(height: 2),
@@ -83,26 +84,43 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                         child: SizedBox(
                           height: 40,
                           child: TextField(
+                            controller: perfomance.performancesearchcontroller,
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                15,
+                                FontWeight.w500),
                             decoration: InputDecoration(
-                                fillColor: const Color(0xffF1F3F8),
+                                fillColor: theme.isDarkMode
+                                    ? const Color(0xffB5C0CF).withOpacity(.15)
+                                    : const Color(0xffF1F3F8),
                                 filled: true,
-                                labelStyle: GoogleFonts.inter(
-                                    textStyle: textStyle(
-                                        const Color(0xff000000),
-                                        16,
-                                        FontWeight.w600)),
-                                hintStyle: GoogleFonts.inter(
-                                    textStyle: textStyle(
-                                        const Color(0xff69758F),
-                                        15,
-                                        FontWeight.w500)),
+                                hintStyle: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    14,
+                                    FontWeight.w500),
                                 prefixIconColor: const Color(0xff586279),
-                                prefixIcon: SvgPicture.asset(
-                                  assets.appbarbell,
-                                  color: const Color(0xff586279),
-                                  fit: BoxFit.scaleDown,
-                                  width: 14,
-                                  height: 14,
+                                prefixIcon: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20.0),
+                                  child: SvgPicture.asset(assets.searchIcon,
+                                      color: const Color(0xff586279),
+                                      fit: BoxFit.contain,
+                                      width: 15),
+                                ),
+                                suffixIcon: InkWell(
+                                  onTap: () async {
+                                    perfomance.clearPerformanceSearch();
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20.0),
+                                    child: SvgPicture.asset(assets.removeIcon,
+                                        fit: BoxFit.scaleDown, width: 20),
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide.none,
@@ -116,7 +134,16 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                                 border: OutlineInputBorder(
                                     borderSide: BorderSide.none,
                                     borderRadius: BorderRadius.circular(30))),
-                            onChanged: (value) {},
+                            onChanged: (value) {
+                              perfomance.searchperformance(value, context);
+                              if (value.isEmpty) {
+                                perfomance.clearPerformanceSearch();
+                              }
+                              if (internet.connectionStatus !=
+                                  ConnectivityResult.none) {
+                                perfomance.searchperformance(value, context);
+                              }
+                            },
                           ),
                         ),
                       ),
@@ -126,20 +153,29 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                         child: DropdownButtonHideUnderline(
                             child: DropdownButton2(
                           dropdownStyleData: DropdownStyleData(
+                              maxHeight: 240,
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
-                                  color: const Color(0xffFFFFFF))),
-                          buttonStyleData: const ButtonStyleData(
+                                  color: !theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : const Color.fromARGB(255, 16, 16, 16))),
+                          buttonStyleData: ButtonStyleData(
                               height: 40,
                               width: 124,
                               decoration: BoxDecoration(
-                                  color: Color(0xffF1F3F8),
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffB5C0CF).withOpacity(.1)
+                                      : const Color(0xffF1F3F8),
                                   // border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.all(
+                                  borderRadius: const BorderRadius.all(
                                       Radius.circular(32)))),
                           isExpanded: true,
-                          style:
-                              textStyle(colors.colorBlack, 13, FontWeight.w500),
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              13,
+                              FontWeight.w500),
                           items: years.map<DropdownMenuItem<int>>((int value) {
                             return DropdownMenuItem<int>(
                               value: value,
@@ -156,6 +192,7 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                               selectedYear = newValue!;
                               perfomance
                                   .getipoperfomance(selectedYear!.toInt());
+                              FocusScope.of(context).unfocus();
                             });
                           },
                         )),
@@ -168,161 +205,324 @@ class _IPOPerformanceState extends State<IPOPerformance> {
             ),
             perfomance.ipoPerformanceModel!.emsg == "no data"
                 ? const Center(child: NoDataFound())
-                : ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          ListTile(
-                              title: Text(
-                                  "${perfomance.ipoPerformanceModel!.data![index].companyName}",
-                                  style: GoogleFonts.inter(
-                                      textStyle: textStyle(
-                                          const Color(0xff000000),
+                : perfomance.performancesearch!.isEmpty
+                    ? ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return Column(
+                            children: [
+                              ListTile(
+                                  title: Text(
+                                      "${perfomance.ipoPerformanceModel!.data![index].companyName}",
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
                                           15,
-                                          FontWeight.w600))),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 8),
-                                  Text(
-                                      "Listing on : ${perfomance.ipoPerformanceModel!.data![index].listedDate}",
-                                      style: GoogleFonts.inter(
-                                          textStyle: textStyle(
-                                              const Color(0xff666666),
-                                              13,
-                                              FontWeight.w500))),
-                                ],
-                              )),
-                          const Divider(
-                            height: 0,
-                            color: Color(0xffECEDEE),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.fromLTRB(16.0, 12, 16, 14),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                          FontWeight.w600)),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 8),
+                                      Text(
+                                          "Listing on : ${perfomance.ipoPerformanceModel!.data![index].listedDate}",
+                                          style: textStyle(Color(0xff666666),
+                                              13, FontWeight.w500)),
+                                    ],
+                                  )),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : const Color(0xffECEDEE)),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16.0, 12, 16, 14),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("Issue Price",
-                                        style: GoogleFonts.inter(
-                                            textStyle: textStyle(
-                                                const Color(0xff666666),
-                                                13,
-                                                FontWeight.w500))),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                        "₹${perfomance.ipoPerformanceModel!.data![index].priceRange}",
-                                        style: textStyle(
-                                            const Color(0xff000000),
-                                            15,
-                                            FontWeight.w500)),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("Close Price",
-                                        style: GoogleFonts.inter(
-                                            textStyle: textStyle(
-                                                const Color(0xff666666),
-                                                13,
-                                                FontWeight.w500))),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                        "₹ ${perfomance.ipoPerformanceModel!.data![index].clsPric}",
-                                        style: GoogleFonts.inter(
-                                            textStyle: textStyle(
-                                                const Color(0xff000000),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("Issue Price",
+                                            style: GoogleFonts.inter(
+                                                textStyle: textStyle(
+                                                    const Color(0xff666666),
+                                                    13,
+                                                    FontWeight.w500))),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                            "₹${perfomance.ipoPerformanceModel!.data![index].priceRange}",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
                                                 15,
-                                                FontWeight.w500))),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("Gain/Loss",
-                                        style: GoogleFonts.inter(
-                                            textStyle: textStyle(
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("Close Price",
+                                            style: textStyle(
                                                 const Color(0xff666666),
                                                 13,
-                                                FontWeight.w500))),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                        "₹${perfomance.ipoPerformanceModel!.data![index].listingGain}",
-                                        style: textStyle(
-                                            perfomance.ipoPerformanceModel!
-                                                    .data![index].listingGain!
-                                                    .toStringAsFixed(2)
-                                                    .startsWith("-")
-                                                ? const Color(0xffFF1717)
-                                                : const Color(0xff43A833),
-                                            15,
-                                            FontWeight.w500)),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("Lisiting Gain",
-                                        style: GoogleFonts.inter(
-                                            textStyle: textStyle(
+                                                FontWeight.w500)),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                            "₹ ${perfomance.ipoPerformanceModel!.data![index].clsPric}",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                15,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("Gain/Loss",
+                                            style: GoogleFonts.inter(
+                                                textStyle: textStyle(
+                                                    const Color(0xff666666),
+                                                    13,
+                                                    FontWeight.w500))),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                            "₹${perfomance.ipoPerformanceModel!.data![index].listingGain}",
+                                            style: textStyle(
+                                                perfomance
+                                                        .ipoPerformanceModel!
+                                                        .data![index]
+                                                        .listingGain!
+                                                        .toStringAsFixed(2)
+                                                        .startsWith("-")
+                                                    ? colors.darkred
+                                                    : colors.ltpgreen,
+                                                15,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("Lisiting Gain",
+                                            style: textStyle(
                                                 const Color(0xff666666),
                                                 13,
-                                                FontWeight.w500))),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                        "${perfomance.ipoPerformanceModel!.data![index].listingGainPer}%",
-                                        style: textStyle(
-                                            perfomance
-                                                    .ipoPerformanceModel!
-                                                    .data![index]
-                                                    .listingGainPer!
-                                                    .toStringAsFixed(2)
-                                                    .startsWith("-")
-                                                ? const Color(0xffFF1717)
-                                                : const Color(0xff43A833),
-                                            15,
-                                            FontWeight.w500)),
+                                                FontWeight.w500)),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                            "${perfomance.ipoPerformanceModel!.data![index].listingGainPer}%",
+                                            style: textStyle(
+                                                perfomance
+                                                        .ipoPerformanceModel!
+                                                        .data![index]
+                                                        .listingGainPer!
+                                                        .toStringAsFixed(2)
+                                                        .startsWith("-")
+                                                    ? colors.darkred
+                                                    : colors.ltpgreen,
+                                                15,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          )
-                        ],
-                      );
-                    },
-                    separatorBuilder: (context, index) {
-                      return Container(
-                        height: 10,
-                        color: const Color(0xffF1F3F8),
-                      );
-                    },
-                    itemCount: showAll
-                        ? perfomance.ipoPerformanceModel!.data!.length
-                        : 5),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-              child: CustomTextBtn(
-                icon: assets.downArrow,
-                label: showAll ? "See less IPOs" : "See more IPOs",
-                onPress: () {
-                  setState(() {
-                    showAll = !showAll;
-                  });
-                },
-              ),
-            ),
+                              )
+                            ],
+                          );
+                        },
+                        separatorBuilder: (context, index) {
+                          return Container(
+                            height: 10,
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : const Color(0xffF1F3F8),
+                          );
+                        },
+                        itemCount: showAll
+                            ? perfomance.ipoPerformanceModel!.data!.length
+                            : 5)
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return Column(
+                            children: [
+                              ListTile(
+                                  title: Text(
+                                      "${perfomance.performancesearch![index].companyName}",
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          15,
+                                          FontWeight.w600)),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 8),
+                                      Text(
+                                          "Listing on : ${perfomance.performancesearch![index].listedDate}",
+                                          style: textStyle(Color(0xff666666),
+                                              13, FontWeight.w500)),
+                                    ],
+                                  )),
+                              Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : const Color(0xffECEDEE)),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16.0, 12, 16, 14),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("Issue Price",
+                                            style: GoogleFonts.inter(
+                                                textStyle: textStyle(
+                                                    const Color(0xff666666),
+                                                    13,
+                                                    FontWeight.w500))),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                            "₹${perfomance.performancesearch![index].priceRange}",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                15,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("Close Price",
+                                            style: textStyle(
+                                                const Color(0xff666666),
+                                                13,
+                                                FontWeight.w500)),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                            "₹ ${perfomance.performancesearch![index].clsPric}",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                15,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("Gain/Loss",
+                                            style: GoogleFonts.inter(
+                                                textStyle: textStyle(
+                                                    const Color(0xff666666),
+                                                    13,
+                                                    FontWeight.w500))),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                            "₹${perfomance.performancesearch![index].listingGain}",
+                                            style: textStyle(
+                                                perfomance
+                                                        .performancesearch![
+                                                            index]
+                                                        .listingGain!
+                                                        .toStringAsFixed(2)
+                                                        .startsWith("-")
+                                                    ? colors.darkred
+                                                    : colors.ltpgreen,
+                                                15,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("Lisiting Gain",
+                                            style: textStyle(
+                                                const Color(0xff666666),
+                                                13,
+                                                FontWeight.w500)),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                            "${perfomance.performancesearch![index].listingGainPer}%",
+                                            style: textStyle(
+                                                perfomance
+                                                        .performancesearch![
+                                                            index]
+                                                        .listingGainPer!
+                                                        .toStringAsFixed(2)
+                                                        .startsWith("-")
+                                                    ? colors.darkred
+                                                    : colors.ltpgreen,
+                                                15,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          );
+                        },
+                        separatorBuilder: (context, index) {
+                          return Container(
+                            height: 10,
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : const Color(0xffF1F3F8),
+                          );
+                        },
+                        itemCount: perfomance.performancesearch!.length),
+            perfomance.performancesearch!.isEmpty ||
+                    perfomance.ipoPerformanceModel!.emsg == "no data"
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 10),
+                    child: CustomTextBtn(
+                      icon: assets.downArrow,
+                      label: showAll ? "See less IPOs" : "See more IPOs",
+                      onPress: () {
+                        setState(() {
+                          showAll = !showAll;
+                        });
+                      },
+                    ),
+                  )
+                : Container()
           ],
         );
       }),
     );
   }
 
- 
+  TextStyle textStyle(Color color, double fontSize, fWeight) {
+    return GoogleFonts.inter(
+      fontWeight: fWeight,
+      color: color,
+      fontSize: fontSize,
+    );
+  }
 }

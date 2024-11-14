@@ -28,25 +28,25 @@ class SMEIPO {
   List<CategoryDetails>? categoryDetails;
   String? closedatetime;
   String? companyName;
-  num? cutOffPrice;
+  String? cutOffPrice;
   String? dailyEndTime;
   String? dailyStartTime;
   String? discounttype;
   String? discountvalue;
   String? errorcode;
-  num? faceValue;
-  num? id;
-  num? index;
+  String? faceValue;
+  String? id;
+  String? index;
   String? isin;
-  num? issueSize;
+  String? issueSize;
   String? issueType;
-  num? lotSize;
-  num? maxPrice;
+  String? lotSize;
+  String? maxPrice;
   String? maxbidqty;
   String? maxvalue;
   String? message;
-  num? minBidQuantity;
-  num? minPrice;
+  String? minBidQuantity;
+  String? minPrice;
   String? minvalue;
   String? name;
   String? opendatetime;
@@ -59,7 +59,7 @@ class SMEIPO {
   String? t1ModEndTime;
   String? t1ModStartDate;
   String? t1ModStartTime;
-  num? tickSize;
+  String? tickSize;
   String? tplusmodificationfrom;
   String? tplusmodificationto;
   String? type;
@@ -110,58 +110,58 @@ class SMEIPO {
       this.updateIpoDate});
 
   SMEIPO.fromJson(Map<String, dynamic> json) {
-    asbanonasba = json['asbanonasba'];
-    biddingEndDate = json['biddingEndDate'];
-    biddingStartDate = json['biddingStartDate'];
+    asbanonasba = json['asbanonasba'].toString();
+    biddingEndDate = json['biddingEndDate'].toString();
+    biddingStartDate = json['biddingStartDate'].toString();
     if (json['categoryDetails'] != null) {
       categoryDetails = <CategoryDetails>[];
       json['categoryDetails'].forEach((v) {
         categoryDetails!.add(CategoryDetails.fromJson(v));
       });
     }
-    closedatetime = json['closedatetime'];
-    companyName = json['company_name'];
-    cutOffPrice = json['cutOffPrice'];
-    dailyEndTime = json['dailyEndTime'];
-    dailyStartTime = json['dailyStartTime'];
-    discounttype = json['discounttype'];
-    discountvalue = json['discountvalue'];
-    errorcode = json['errorcode'];
-    faceValue = json['faceValue'];
-    id = json['id'];
-    index = json['index'];
-    isin = json['isin'];
-    issueSize = json['issueSize'];
-    issueType = json['issueType'];
-    lotSize = json['lotSize'];
-    maxPrice = json['maxPrice'];
-    maxbidqty = json['maxbidqty'];
-    maxvalue = json['maxvalue'];
-    message = json['message'];
-    minBidQuantity = json['minBidQuantity'];
-    minPrice = json['minPrice'];
-    minvalue = json['minvalue'];
-    name = json['name'];
-    opendatetime = json['opendatetime'];
+    closedatetime = json['closedatetime'].toString();
+    companyName = json['company_name'].toString();
+    cutOffPrice = json['cutOffPrice'].toString();
+    dailyEndTime = json['dailyEndTime'].toString();
+    dailyStartTime = json['dailyStartTime'].toString();
+    discounttype = json['discounttype'].toString();
+    discountvalue = json['discountvalue'].toString();
+    errorcode = json['errorcode'].toString();
+    faceValue = json['faceValue'].toString();
+    id = json['id'].toString();
+    index = json['index'].toString();
+    isin = json['isin'].toString();
+    issueSize = json['issueSize'].toString();
+    issueType = json['issueType'].toString();
+    lotSize = json['lotSize'].toString();
+    maxPrice = json['maxPrice'].toString();
+    maxbidqty = json['maxbidqty'].toString();
+    maxvalue = json['maxvalue'].toString();
+    message = json['message'].toString();
+    minBidQuantity = json['minBidQuantity'].toString();
+    minPrice = json['minPrice'].toString();
+    minvalue = json['minvalue'].toString();
+    name = json['name'].toString();
+    opendatetime = json['opendatetime'].toString();
     registrar = json['registrar'];
-    seriesDetails = json['seriesDetails'];
+    seriesDetails = json['seriesDetails'].toString();
     if (json['subCategorySettings'] != null) {
       subCategorySettings = <SubCategorySettings>[];
       json['subCategorySettings'].forEach((v) {
         subCategorySettings!.add(SubCategorySettings.fromJson(v));
       });
     }
-    subType = json['subType'];
-    symbol = json['symbol'];
-    t1ModEndDate = json['t1ModEndDate'];
-    t1ModEndTime = json['t1ModEndTime'];
-    t1ModStartDate = json['t1ModStartDate'];
-    t1ModStartTime = json['t1ModStartTime'];
-    tickSize = json['tickSize'];
-    tplusmodificationfrom = json['tplusmodificationfrom'];
-    tplusmodificationto = json['tplusmodificationto'];
-    type = json['type'];
-    updateIpoDate = json['update_ipo_date'];
+    subType = json['subType'].toString();
+    symbol = json['symbol'].toString();
+    t1ModEndDate = json['t1ModEndDate'].toString();
+    t1ModEndTime = json['t1ModEndTime'].toString();
+    t1ModStartDate = json['t1ModStartDate'].toString();
+    t1ModStartTime = json['t1ModStartTime'].toString();
+    tickSize = json['tickSize'].toString();
+    tplusmodificationfrom = json['tplusmodificationfrom'].toString();
+    tplusmodificationto = json['tplusmodificationto'].toString();
+    type = json['type'].toString();
+    updateIpoDate = json['update_ipo_date'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -226,9 +226,9 @@ class CategoryDetails {
   CategoryDetails({this.code, this.endTime, this.startTime});
 
   CategoryDetails.fromJson(Map<String, dynamic> json) {
-    code = json['code'];
-    endTime = json['endTime'];
-    startTime = json['startTime'];
+    code = json['code'].toString();
+    endTime = json['endTime'].toString();
+    startTime = json['startTime'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -244,12 +244,12 @@ class SubCategorySettings {
   bool? allowCutOff;
   bool? allowUpi;
   String? caCode;
-  num? discountPrice;
+  String? discountPrice;
   String? discountType;
-  num? maxQuantity;
-  num? maxUpiLimit;
-  num? maxValue;
-  num? minValue;
+  String? maxQuantity;
+  String? maxUpiLimit;
+  String? maxValue;
+  String? minValue;
   String? subCatCode;
 
   SubCategorySettings(
@@ -267,14 +267,14 @@ class SubCategorySettings {
   SubCategorySettings.fromJson(Map<String, dynamic> json) {
     allowCutOff = json['allowCutOff'];
     allowUpi = json['allowUpi'];
-    caCode = json['caCode'];
-    discountPrice = json['discountPrice'] ?? 0.0;
-    discountType = json['discountType'];
-    maxQuantity = json['maxQuantity'] ?? 0.0;
-    maxUpiLimit = json['maxUpiLimit'];
-    maxValue = json['maxValue'];
-    minValue = json['minValue'];
-    subCatCode = json['subCatCode'];
+    caCode = json['caCode'].toString();
+    discountPrice = json['discountPrice'].toString() ;
+    discountType = json['discountType'].toString();
+    maxQuantity = json['maxQuantity'] .toString();
+    maxUpiLimit = json['maxUpiLimit'].toString();
+    maxValue = json['maxValue'].toString();
+    minValue = json['minValue'].toString();
+    subCatCode = json['subCatCode'].toString();
   }
 
   Map<String, dynamic> toJson() {

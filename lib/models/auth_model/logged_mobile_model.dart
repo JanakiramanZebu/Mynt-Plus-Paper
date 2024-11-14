@@ -31,7 +31,7 @@ class LoggedMobile {
         mobile: map['mobile'],
         sesstion: map['sesstion'],
         userName: map['userName'],
-        imei: map['imei']);
+        imei: map['imei']??"");
   }
 
   // Convert the object to a JSON string

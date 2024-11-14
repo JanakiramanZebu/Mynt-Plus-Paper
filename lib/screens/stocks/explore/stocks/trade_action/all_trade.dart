@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart'; 
 import '../../../../../provider/stocks_provider.dart';
 import '../../../../../provider/thems.dart';
 import '../../../../../res/res.dart';
+import '../../../../../sharedWidget/functions.dart';
 import 'sector_themeatic_list.dart';
 
 class AllTrade extends StatefulWidget {
@@ -76,7 +76,7 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
     return WillPopScope(
       onWillPop: () async {
         await context.read(stocksProvide).defaultSectorThemematicData();
-        await context.read(stocksProvide).fetchIndicesAdvdec();
+        // await context.read(stocksProvide).fetchIndicesAdvdec();
         return true;
       },
       child: Scaffold(
@@ -89,7 +89,7 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
                   await context
                       .read(stocksProvide)
                       .defaultSectorThemematicData();
-                  await context.read(stocksProvide).fetchIndicesAdvdec();
+                  // await context.read(stocksProvide).fetchIndicesAdvdec();
                   Navigator.pop(context);
                 },
                 child: Padding(
@@ -99,13 +99,11 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
                             ? colors.colorWhite
                             : colors.colorBlack))),
             elevation: .4,
-            title: Text(
-              "All Data",
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600),
-            )),
+            title: Text("All Data",
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600))),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -138,10 +136,14 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
                     tabs: tabList)),
             Expanded(
               child: TabBarView(controller: tabCtrl, children: [
-                SectorThematicList(data: tradeAcrion.sectorsData,isscollable:true),
-                SectorThematicList(data: tradeAcrion.thematicDat,isscollable:true),
-                SectorThematicList(data: tradeAcrion.strategicData,isscollable:true),
-                SectorThematicList(data: tradeAcrion.niftyData,isscollable:true)
+                SectorThematicList(
+                    data: tradeAcrion.sectorsData, isscollable: true),
+                SectorThematicList(
+                    data: tradeAcrion.thematicDat, isscollable: true),
+                SectorThematicList(
+                    data: tradeAcrion.strategicData, isscollable: true),
+                SectorThematicList(
+                    data: tradeAcrion.niftyData, isscollable: true)
               ]),
             ),
             const SizedBox(height: 20)
@@ -149,11 +151,5 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
         ),
       ),
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+  } 
 }

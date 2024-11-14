@@ -10,7 +10,7 @@ import '../../../../sharedWidget/custom_drag_handler.dart';
 class IosNOUpiAppsSheet extends StatelessWidget {
   final ThemesProvider theme;
 
-  const IosNOUpiAppsSheet({super.key,required this.theme});
+  const IosNOUpiAppsSheet({super.key, required this.theme});
 
   @override
   Widget build(BuildContext context) {
@@ -26,42 +26,59 @@ class IosNOUpiAppsSheet extends StatelessWidget {
                 offset: Offset(2.0, 0.0))
           ]),
       child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 6,),
-            const CustomDragHandler(),
-            const SizedBox(height: 6,),
-            SvgPicture.asset("assets/icon/ipo_cancel_icon.svg"),
-            const SizedBox(height: 10,),
-            Text(
-                  "No suitable app available, kindly choose a different mode of payment",
-                  textAlign: TextAlign.center,
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
-                      15,
-                      FontWeight.w600)),
-                       const SizedBox(height: 10,),
-             SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: colors.colorBlack,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      )),
-                  onPressed: () async {
-                    launch("https://apps.apple.com/app");
-                  },
-                  child: Text("Get UPI Apps",
-                      style: textStyle(colors.colorWhite, 12, FontWeight.w600))),
-            ),
-            const SizedBox(height: 15,)
-          ],
-        ),
-    )
-      ;
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            height: 6,
+          ),
+          const CustomDragHandler(),
+          const SizedBox(
+            height: 6,
+          ),
+          SvgPicture.asset("assets/icon/ipo_cancel_icon.svg"),
+          const SizedBox(
+            height: 10,
+          ),
+          Text(
+              "No suitable app available, kindly choose a different mode of payment",
+              textAlign: TextAlign.center,
+              style: textStyle(
+                  theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
+                  15,
+                  FontWeight.w600)),
+          const SizedBox(
+            height: 10,
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: theme.isDarkMode
+                        ? colors.colorbluegrey
+                        : colors.colorBlack,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    )),
+                onPressed: () async {
+                  launch("https://apps.apple.com/app");
+                },
+                child: Text("Get UPI Apps",
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        12,
+                        FontWeight.w600))),
+          ),
+          const SizedBox(
+            height: 15,
+          )
+        ],
+      ),
+    );
   }
+
   TextStyle textStyle(Color color, double fontSize, fWeight) {
     return GoogleFonts.inter(
         textStyle:

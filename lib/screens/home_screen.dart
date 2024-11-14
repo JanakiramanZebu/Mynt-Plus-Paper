@@ -13,6 +13,7 @@ import '../provider/network_state_provider.dart';
  
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
+import '../provider/stocks_provider.dart';
 import '../provider/thems.dart';
 import '../provider/user_profile_provider.dart';
 import '../provider/websocket_provider.dart';
@@ -32,8 +33,7 @@ import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
 import 'portfolio_screens/positions/group/position_group_bottomsheet.dart';
 import 'profile_screen/logged_user_bottom_sheet.dart';
-import 'profile_screen/profile_main_screen.dart';
-// import 'stocks/explore/explore_screens.dart';
+import 'profile_screen/profile_main_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -217,19 +217,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             ? "Orderbook"
                                             : indexProvide.selectedBtmIndx == 2
                                                 ? "Portfolio"
-                                                : indexProvide
-                                                            .selectedBtmIndx ==
-                                                        5
-                                                    ?
-                                                    // indexProvide.selectedBtmIndx == 0
-                                                    //     ? stockProvide.exploreName
-                                                    //     :
-                                                    "IPO"
-                                                    : indexProvide
-                                                                .selectedBtmIndx ==
-                                                            6
-                                                        ? "Bonds"
-                                                        : "Mutual Fund",
+                                                : watch(stocksProvide).exploreName,
                                         style: textStyles.appBarTitleTxt
                                             .copyWith(
                                                 color: theme.isDarkMode
@@ -665,6 +653,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             //             ConnectivityResult.none
                             //         ? null
                             //         : () async {
+
+                            //           watch(stocksProvide).chngExpName("Stock", 0);
                             //             await context
                             //                 .read(indexListProvider)
                             //                 .checkSession(context);
@@ -682,7 +672,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             //             await context
                             //                 .read(marketWatchProvider)
                             //                 .requestMWScrip(
-                            //                     context: context, isSubscribe: true);
+                            //                     context: context, isSubscribe: false);
 
                             //             indexProvide.bottomMenu(0);
                             //           },

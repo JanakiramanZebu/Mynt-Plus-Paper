@@ -120,7 +120,7 @@ mixin OrderAPI on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
-      // log("Trade BOOK RESPONSE ::: ${res.body}");
+     log("Trade BOOK RESPONSE ::: ${res.body}");
       // log(res.statusCode.toString());
 
       final List<TradeBookModel> data = [];

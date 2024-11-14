@@ -188,12 +188,17 @@ class ApiLinks {
 
   // String get mfSip=> "$dashBoardURL/mf/sip_values";
 
-   String get mainfund => 'https://fundapi.mynt.in/api';
+    String get mainfund => 'https://fundapi.mynt.in/api';
   String get clientcheck => '$mainfund/client_check';
   String get bankcheck => '$mainfund/bank_check';
+
+  ///withdraw
   String get fundUpiIdView => 'https://fundapi.mynt.in/withdraw/upi_id_view';
   String get withdraw => 'https://fundapi.mynt.in/withdraw/payout';
-  
+  String get paymentwithdraw => 'https://fundapi.mynt.in/withdraw/payment';
+  String get withdrawstatus => 'https://fundapi.mynt.in/withdraw/status';
+
+  String fundvalidatetoken = "https://rekycbe.mynt.in/autho/validate_session";
 
   /////
   String get upimainfund => 'https://fundapi.mynt.in';
@@ -208,7 +213,6 @@ class ApiLinks {
 
   //fund urlss///
   String get viewupiid => 'https://fundapi.mynt.in/withdraw/view_upi_id';
-
 // Bonds
   String get bondBaseURL => 'https://besim.zebull.in';
   String get getSGB => "$bondBaseURL/getcurrentSGBdetails";

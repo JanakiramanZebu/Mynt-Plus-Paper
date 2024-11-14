@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 abstract class DefaultChangeNotifier extends ChangeNotifier {
   bool loading = false;
   bool isLoad = true;
+  bool fundisLoad = false;
+
   String? errorMessage;
     bool initLoad = false;
 
@@ -17,6 +19,11 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
   // ignore: avoid_positional_boolean_parameters
   void toggleLoad(bool on) {
     isLoad = on;
+    notifyListeners();
+  }
+
+  void togglefundLoadingOn(bool on) {
+    fundisLoad = on;
     notifyListeners();
   }
 

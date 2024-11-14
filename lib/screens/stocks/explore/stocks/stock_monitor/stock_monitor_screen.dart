@@ -1,7 +1,7 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../../provider/stocks_provider.dart';
 import '../../../../../provider/thems.dart';
@@ -109,63 +109,71 @@ class StockMonitorScreen extends ConsumerWidget {
                   return const SizedBox(width: 8);
                 },
               )),
-         stockMonitor.stockMonitor.isEmpty?const Center(child: NoDataFound()):  ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: stockMonitor.stockMonitor.length,
-              itemBuilder: (BuildContext context, int idx) {
-
-         stockMonitor.stockMonitor[idx].        chng =(double.parse(stockMonitor.stockMonitor[idx].lp??stockMonitor.stockMonitor[idx].c??"0.00")-double.parse( stockMonitor.stockMonitor[idx].c??"0.00")).toStringAsFixed(2);
-                return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                    dense: true,
-                    title: Text("${stockMonitor.stockMonitor[idx].tsym} ",
-                        style: textStyles.scripNameTxtStyle.copyWith(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack)),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 3),
-                        Text("${stockMonitor.stockMonitor[idx].exch}",
-                            style: textStyles.scripNameTxtStyle
-                                .copyWith(color: const Color(0xff666666))),
-                      ],
-                    ),
-                    trailing: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("₹${stockMonitor.stockMonitor[idx].lp}",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  14,
-                                  FontWeight.w600)),
-                          const SizedBox(height: 4),
-                          Text(
-                            "${stockMonitor.stockMonitor[idx].chng} (${stockMonitor.stockMonitor[idx].pc}%)",
-                            style: textStyle(
-                                Color(stockMonitor.stockMonitor[idx].chng
-                                        .toString()
-                                        .startsWith('-')
-                                    ? 0xffFF1717
-                                    : stockMonitor.stockMonitor[idx].pc
-                                                .toString() ==
-                                            "0.00"
-                                        ? 0xff999999
-                                        : 0xff43A833),
-                                12,
-                                FontWeight.w600),
-                          )
-                        ]));
-              },
-              separatorBuilder: (BuildContext context, int index) {
-                return const ListDivider();
-              }),
+          stockMonitor.stockMonitor.isEmpty
+              ? const Center(child: NoDataFound())
+              : ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: stockMonitor.stockMonitor.length,
+                  itemBuilder: (BuildContext context, int idx) {
+                    stockMonitor.stockMonitor[idx].chng = (double.parse(
+                                stockMonitor.stockMonitor[idx].lp ??
+                                    stockMonitor.stockMonitor[idx].c ??
+                                    "0.00") -
+                            double.parse(
+                                stockMonitor.stockMonitor[idx].c ?? "0.00"))
+                        .toStringAsFixed(2);
+                    return ListTile(
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 0),
+                        dense: true,
+                        title: Text("${stockMonitor.stockMonitor[idx].tsym} ",
+                            style: textStyles.scripNameTxtStyle.copyWith(
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack)),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 3),
+                            Text("${stockMonitor.stockMonitor[idx].exch}",
+                                style: textStyles.scripNameTxtStyle
+                                    .copyWith(color: const Color(0xff666666))),
+                          ],
+                        ),
+                        trailing: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("₹${stockMonitor.stockMonitor[idx].lp}",
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
+                                      FontWeight.w600)),
+                              const SizedBox(height: 4),
+                              Text(
+                                "${stockMonitor.stockMonitor[idx].chng} (${stockMonitor.stockMonitor[idx].pc}%)",
+                                style: textStyle(
+                                    Color(stockMonitor.stockMonitor[idx].chng
+                                            .toString()
+                                            .startsWith('-')
+                                        ? 0xffFF1717
+                                        : stockMonitor.stockMonitor[idx].pc
+                                                    .toString() ==
+                                                "0.00"
+                                            ? 0xff999999
+                                            : 0xff43A833),
+                                    12,
+                                    FontWeight.w600),
+                              )
+                            ]));
+                  },
+                  separatorBuilder: (BuildContext context, int index) {
+                    return const ListDivider();
+                  }),
         ],
       ),
     );

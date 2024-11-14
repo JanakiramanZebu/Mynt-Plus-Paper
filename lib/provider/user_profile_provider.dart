@@ -93,43 +93,12 @@ class UserProfileProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _userDetailModel = await api.getUserDetail( );
 
-      if (_userDetailModel!.stat == "Ok") {
-        // await ref(marketWatchProvider).changeWlName("");
-        // if (toRoute == "preLoginDecive") {
-        //   await ref(portfolioProvider).fetchHoldings(context, "");
-
-        //   await ref(marketWatchProvider).fetchMWList(context);
-
-        //   await ref(indexListProvider).getDeafultIndexList(context);
-        //   await ref(portfolioProvider).fetchPositionBook(context, false);
-        //   await ref(orderProvider).fetchOrderBook(context, false);
-        //   await ref(orderProvider).fetchTradeBook(context);
-
-        //   await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
-        //   Navigator.pushNamedAndRemoveUntil(
-        //       context, Routes.homeScreen, (route) => false);
-        // }
-        // if (toRoute == "switchAcc") {
-        //   Navigator.pop(context);
-
-        //   ref(fundProvider).fetchFunds(context);
-        //   await ref(portfolioProvider).fetchHoldings(context, "");
-
-        //   await ref(marketWatchProvider).fetchMWList(context);
-
-        //   await ref(indexListProvider).getDeafultIndexList(context);
-        //   await ref(portfolioProvider).fetchPositionBook(context, false);
-        //   await ref(orderProvider).fetchOrderBook(context, false);
-        //   await ref(orderProvider).fetchTradeBook(context);
-
-        //   await ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
-        // }
-      } else {
+       
         if (_userDetailModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _userDetailModel!.stat == "Not_Ok") {
           ref(authProvider).ifSessionExpired(context);
-        }
+         
       }
 
       notifyListeners();
@@ -184,12 +153,12 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/icon/theme_icon.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
-      // {
-      //   "title": "Log",
-      //   "subTitle": "Log message",
-      //   "leading": "assets/profile/privacy_settings.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg"
-      // },
+      {
+        "title": "Log",
+        "subTitle": "Log message",
+        "leading": "assets/profile/privacy_settings.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
     ];
     notifyListeners();
     return settingmenu;
@@ -309,15 +278,9 @@ class UserProfileProvider extends DefaultChangeNotifier {
       //   "trailing": "assets/profile/greater_arrow.svg",
       //   "key": "",
       //   "case": "Click here to view the Log message."
-      // },
-      // {
-      //   "title": "Ipo Orderbook",
-      //   "subTitle": "Open order, closed order, Modfiy, Cancel",
-      //   "leading": "assets/profileimage/reports.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": "",
-      //   "case": "Click here to view the Log message."
-      // },
+      // }
+       
+      // ,
       // {
       //   "title": "Bonds",
       //   "subTitle": "Bonds",
