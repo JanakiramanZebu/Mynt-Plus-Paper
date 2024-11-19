@@ -19,10 +19,12 @@ import 'core/api_core.dart';
 import 'core/api_link.dart';
 
 mixin OrderAPI on ApiCore {
+  // Get Order placing response from kambala
+
   Future<PlaceOrderModel> getPlaceOrder(PlaceOrderInput placeOrderInput) async {
     try {
-               String ip = await IpAddress().getIp();
- 
+      String ip = await IpAddress().getIp();
+
       final uri = Uri.parse(apiLinks.placeOrder);
       Map payload = {
         "uid": prefs.clientId,
@@ -41,7 +43,7 @@ mixin OrderAPI on ApiCore {
         "usr_agent": "${prefs.deviceName!}   ${prefs.imei}",
         "app_inst_id": "${prefs.imei}",
         "ordersource": ApiLinks.source,
-        "ipaddr":ip
+        "ipaddr": ip
       };
       if (placeOrderInput.amo == "Yes") {
         payload.addAll({"amo": "Yes"});
@@ -75,6 +77,8 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+  // Get order book data from kambala
 
   Future<List<OrderBookModel>> getOrderBook() async {
     try {
@@ -113,6 +117,8 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+// Get Trade book data from kambala
+
   Future<List<TradeBookModel>> getTradeBook() async {
     try {
       final uri = Uri.parse(apiLinks.tradeBook);
@@ -120,7 +126,7 @@ mixin OrderAPI on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
-     log("Trade BOOK RESPONSE ::: ${res.body}");
+      log("Trade BOOK RESPONSE ::: ${res.body}");
       // log(res.statusCode.toString());
 
       final List<TradeBookModel> data = [];
@@ -149,6 +155,8 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+// Get Single scrip order history from kambala
 
   Future<List<OrderHistoryModel>> getOrderHistory(String orderNum) async {
     try {
@@ -186,6 +194,8 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+// get Cancel order response from kambala
+
   Future<CancelOrderModel> getCancelOrder(String orderNo) async {
     try {
       final uri = Uri.parse(apiLinks.cancelOrder);
@@ -202,6 +212,8 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+// get Exit SNOCancel order response from kambala
 
   Future<CancelOrderModel> getExitSNOOrder(String orderNo, String prd) async {
     try {
@@ -220,6 +232,8 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+  // get order margin response from kambala
+
   Future<OrderMarginModel> getOrderMargin(OrderMarginInput input) async {
     try {
       final uri = Uri.parse(apiLinks.orderMargin);
@@ -236,6 +250,8 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+  // get  order brokerage response from kambala
 
   Future<GetBrokerageModel> getBrokerage(BrokerageInput input) async {
     try {
@@ -254,6 +270,8 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+// get Cancel GTT order response from kambala
+
   Future<PlaceGttOrderModel> getCancelGTTorder(String cancelId) async {
     try {
       final uri = Uri.parse(apiLinks.cancelGTTOrder);
@@ -270,6 +288,8 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+// get Modify order response from kambala
 
   Future<ModifyOrderModel> getModifyOrder(ModifyOrderInput input) async {
     try {
@@ -303,6 +323,8 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+// get SIP order place response from kambala
+
   Future<SipPlaceOrderModel> getPlaceSipOrder(
       SipInputField sipInputField) async {
     try {
@@ -321,6 +343,8 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+// // get Modify SIP order response from kambala
 
   Future<ModifySIPModel> getmodifysiporder(
       ModifySipInput modifysipinput) async {
@@ -341,6 +365,8 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+// get SIP order book response from kambala
+
   Future<SipOrderBookModel> getSipOrderBook() async {
     try {
       final uri = Uri.parse(apiLinks.sipOrderBook);
@@ -357,6 +383,8 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+// get SIP Cancel order response from kambala
 
   Future<CancleSipOrder> getSipCancelOrder(String sipOrderno) async {
     try {
@@ -375,6 +403,8 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+// get Place GTT order response from kambala
 
   Future<PlaceGttOrderModel> getPlaceGTTOrder(PlaceGTTOrderInput input) async {
     try {
@@ -414,6 +444,8 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+// get Modify GTT order response from kambala
+
   Future<PlaceGttOrderModel> getModifyGTTOrder(PlaceGTTOrderInput input) async {
     try {
       final uri = Uri.parse(apiLinks.modifyGTTOrder);
@@ -452,6 +484,8 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+  // get One cancels the others order response from kambala
 
   Future<PlaceGttOrderModel> getPlaceOcoOrder(PlaceOcoOrderInput input) async {
     try {
@@ -511,6 +545,8 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+  // get modify once cancels the others order response from kambala
 
   Future<PlaceGttOrderModel> getModifyOcoOrder(PlaceOcoOrderInput input) async {
     try {
@@ -572,6 +608,8 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+// get GTT order book response from kambala
+
   Future<List<GttOrderBookModel>> getGTTOrderBook() async {
     try {
       final uri = Uri.parse(apiLinks.pendingGttorder);
@@ -612,6 +650,8 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+  // get Basket order margin  from kambala
 
   Future<OrderMarginModel> getBasketMargin(
       OrderMarginInput input, List basket) async {

@@ -1,4 +1,3 @@
- 
 import 'dart:developer';
 
 import '../models/portfolio_model/holdings_model.dart';
@@ -11,6 +10,8 @@ import 'core/api_core.dart';
 import 'core/api_link.dart';
 
 mixin PortfolioAPI on ApiCore {
+// get Holdings from kambala
+
   Future<List<HoldingsModel>> getHolding() async {
     try {
       final uri = Uri.parse(apiLinks.getHoldings);
@@ -46,6 +47,8 @@ mixin PortfolioAPI on ApiCore {
       rethrow;
     }
   }
+
+  // get Mutual fund holdings from kambala
 
   Future<List<MFHoldingsModel>> getMFHolding() async {
     try {
@@ -83,6 +86,8 @@ mixin PortfolioAPI on ApiCore {
     }
   }
 
+  // get Mutual fund  scrip info from kambala
+
   Future<MFQuotes> getMFQutoes(String exch, String token) async {
     try {
       final uri = Uri.parse(apiLinks.getQuotesMF);
@@ -92,13 +97,15 @@ mixin PortfolioAPI on ApiCore {
 
       // log("MF Quotes => ${res.body}");
       final json = jsonDecode(res.body);
-
+ 
       return MFQuotes.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
   }
 
+// get Position book from kambala
+  
   Future<List<PositionBookModel>> getPositionBook() async {
     try {
       final uri = Uri.parse(apiLinks.getPosition);
@@ -138,6 +145,8 @@ mixin PortfolioAPI on ApiCore {
     }
   }
 
+  // get Position convertion response from kambala
+
   Future<PositionConvertionModel> getPositionConvertion(
       PositionConvertionInput positionConvertionInput) async {
     try {
@@ -163,13 +172,15 @@ mixin PortfolioAPI on ApiCore {
     }
   }
 
+// get Grouped position datas
+
   Future<List<GetGroupSymbol>> getGroupPosition() async {
     try {
       final uri =
           Uri.parse("${apiLinks.positionGrp}?clientid=${prefs.clientId}");
       final res = await apiClient.get(uri, headers: defaultHeaders);
 
-       log("Position Group List => ${res.body}");
+      log("Position Group List => ${res.body}");
       final json = jsonDecode(res.body);
       final List<GetGroupSymbol> data = [];
 
@@ -181,6 +192,8 @@ mixin PortfolioAPI on ApiCore {
       rethrow;
     }
   }
+
+  // Create custom group Name for position
 
   Future<CreateGroupName> createGroupName(String name) async {
     try {
@@ -197,6 +210,8 @@ mixin PortfolioAPI on ApiCore {
       rethrow;
     }
   }
+
+// Add position scrip to grouped named
 
   Future<CreateGroupName> addGroupNameSymbol(String name, Map data) async {
     try {
@@ -218,6 +233,8 @@ mixin PortfolioAPI on ApiCore {
     }
   }
 
+// Delete position scrip to grouped named
+
   Future<CreateGroupName> deletePositionGrpName(String name) async {
     try {
       final uri = Uri.parse(
@@ -232,6 +249,8 @@ mixin PortfolioAPI on ApiCore {
       rethrow;
     }
   }
+
+// Delete position group name
 
   Future<CreateGroupName> deletePositionGrpSym(
       String grpName, String tsym) async {

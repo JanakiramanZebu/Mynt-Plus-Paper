@@ -8,6 +8,9 @@ import '../../models/json_model/strategy_model.dart';
 import '../core/api_core.dart';
 
 mixin StrategyJson on ApiCore {
+
+// Get json datas from asstes
+
   Future<StrategyJosnModel> getStrategyJson() async {
     try {
       final resp = await rootBundle.loadString("assets/json/strategy.json");

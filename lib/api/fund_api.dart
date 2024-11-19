@@ -5,9 +5,9 @@ import '../models/profile_model/option_z_model.dart';
 import 'core/api_core.dart';
 
 mixin FundApi on ApiCore {
+  // Get  HS Token from kambala
   Future<GetHsTokenModel> getHsToken() async {
     try {
-      
       final uri = Uri.parse(apiLinks.getHsToken);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
@@ -22,6 +22,8 @@ mixin FundApi on ApiCore {
       rethrow;
     }
   }
+
+// Get Client fund details from kambala
 
   Future<FundDetailModel> getFunds() async {
     try {
@@ -39,6 +41,8 @@ mixin FundApi on ApiCore {
       rethrow;
     }
   }
+
+// Get Client UPI verify
 
   Future<VerifyUPIModel> getVerifyUpi(String upiId, String accno) async {
     try {
@@ -59,6 +63,8 @@ mixin FundApi on ApiCore {
     }
   }
 
+// Re-Direct to OptionZ
+
   Future<OptionZmodel> getaOptionZ(String key) async {
     try {
       final uri = Uri.parse(
@@ -70,6 +76,8 @@ mixin FundApi on ApiCore {
       rethrow;
     }
   }
+
+// Get Client bank details
 
   Future<BankDetailsModel> getBankDetail() async {
     try {

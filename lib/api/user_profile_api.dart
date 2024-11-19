@@ -7,6 +7,8 @@ import 'core/api_core.dart';
 import 'package:http/http.dart';
 
 mixin UserProfileAPI on ApiCore {
+// get user details from kambala
+
   Future<UserDetailModel> getUserDetail() async {
     try {
       final uri = Uri.parse(apiLinks.userDetail);
@@ -15,7 +17,7 @@ mixin UserProfileAPI on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
 
-        // log("UserDetails => ${res.body}");
+      // log("UserDetails => ${res.body}");
 
       final json = jsonDecode(res.body);
 
@@ -24,6 +26,8 @@ mixin UserProfileAPI on ApiCore {
       rethrow;
     }
   }
+
+// get client details from kambala
 
   Future<ClientDetailModel> getClientDetail() async {
     try {
@@ -42,7 +46,8 @@ mixin UserProfileAPI on ApiCore {
     }
   }
 
-  Future<QrLoginResponces> getqr(String uniqueid , String loginsrc) async {
+// QR Login to web
+  Future<QrLoginResponces> getqr(String uniqueid, String loginsrc) async {
     try {
       final uri = Uri.parse(apiLinks.getQrScanner);
       final res = await apiClient.post(uri,
@@ -63,6 +68,8 @@ mixin UserProfileAPI on ApiCore {
     }
   }
 
+// get Freez client account from kambala
+
   Future<Response> getaFreezeAc() async {
     try {
       final uri = Uri.parse(apiLinks.freezeAccount);
@@ -76,6 +83,8 @@ mixin UserProfileAPI on ApiCore {
       rethrow;
     }
   }
+
+// get block client account from kambala
 
   Future<Response> getaBlockAc() async {
     try {

@@ -64,17 +64,20 @@ class NetworkStateProvider extends ChangeNotifier {
   //   notifyListeners();
   // }
 
+// Asigning context
   getContext(BuildContext context) {
     _globbcontext = context;
     notifyListeners();
   }
 
+// Listening  Network status
   networkStream() {
     initConnectivity();
     connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
   }
 
+// Initially check internet connection
   initConnectivity() async {
     late ConnectivityResult result;
     // Platform messages may fail, so we use a try/catch PlatformException.

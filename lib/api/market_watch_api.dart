@@ -1,5 +1,3 @@
- 
-
 import 'package:flutter/material.dart';
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
 import '../models/marketwatch_model/alert_model/alert_pending_model.dart';
@@ -20,6 +18,8 @@ import '../models/marketwatch_model/watchlist_rename_model.dart';
 import 'core/api_core.dart';
 
 mixin MarketWatchApi on ApiCore {
+  // Get List of watchlist names form kambala
+
   Future<MarketWatchlist> getMWList() async {
     try {
       final uri = Uri.parse(apiLinks.watchList);
@@ -35,6 +35,27 @@ mixin MarketWatchApi on ApiCore {
       rethrow;
     }
   }
+
+// Edit watchlist name from kambala
+
+  Future<WatchlistRenameModel> getWatchListRename(
+      String oldName, String newName) async {
+    try {
+      final uri = Uri.parse(apiLinks.watchListrename);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}","wlname":"$oldName","newwlname":"$newName"}&jKey=${prefs.clientSession}''');
+
+      final json = jsonDecode(res.body);
+
+      return WatchlistRenameModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+// Get List of Market scrips by watchlist names form kambala
 
   Future<MarketWatchScrip> getMWScrip(String wlname) async {
     try {
@@ -52,21 +73,7 @@ mixin MarketWatchApi on ApiCore {
     }
   }
 
-  // Future<MarketWatchScrip> getPreDefMWScrip(String wlname) async {
-  //   try {
-  //     final uri = Uri.parse(apiLinks.preDefinedMarketWatchScrip);
-  //     final res = await apiClient.post(uri,
-  //         headers: defaultHeaders,
-  //         body:
-  //             '''jData={"uid":"${prefs.clientId}","wlname":"$wlname"}&jKey=${prefs.clientSession}''');
-  //     log("Market WatchScrip => ${res.body}");
-  //     final json = jsonDecode(res.body);
-
-  //     return MarketWatchScrip.fromJson(json as Map<String, dynamic>);
-  //   } catch (e) {
-  //     rethrow;
-  //   }
-  // }
+// Get Predefined MArket scrips (NIFTY,BANK NIFTY,SENSEX)
 
   Future<PreDefinedMWlist> getPreDefMWScrip() async {
     try {
@@ -80,6 +87,8 @@ mixin MarketWatchApi on ApiCore {
       rethrow;
     }
   }
+
+// Get Single Market scrip info from kambala
 
   Future<ScripInfoModel> getScripInfo(String token, String exch) async {
     try {
@@ -98,6 +107,8 @@ mixin MarketWatchApi on ApiCore {
     }
   }
 
+// Get Single Market scrip Details from kambala
+
   Future<GetQuotes> getScripQuote(String token, String exch) async {
     try {
       final uri = Uri.parse(apiLinks.getQuotes);
@@ -114,6 +125,8 @@ mixin MarketWatchApi on ApiCore {
       rethrow;
     }
   }
+
+  // get Add / Delete Scrips to watchlist from kamabal
 
   Future<AddDeleteScripModel> getAddDeleteSciptoMW(
       {required String wlname,
@@ -132,9 +145,11 @@ mixin MarketWatchApi on ApiCore {
 
       return AddDeleteScripModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-        rethrow;
+      rethrow;
     }
   }
+
+// Get Trade symbol wise search from kambala
 
   Future<SearchScripModel> getSearchScrip({required String searchText}) async {
     try {
@@ -153,6 +168,8 @@ mixin MarketWatchApi on ApiCore {
     }
   }
 
+// Get Linked scrip details from kambala
+
   Future<LinkedScrips> getLinkedScrip(String token, String exch) async {
     try {
       final uri = Uri.parse(apiLinks.getLinkedScrip);
@@ -169,6 +186,8 @@ mixin MarketWatchApi on ApiCore {
       rethrow;
     }
   }
+
+// Get Option chain datas from kambala
 
   Future<OptionChainModel?> getOptionChain(
       {required String strPrc,
@@ -195,21 +214,23 @@ mixin MarketWatchApi on ApiCore {
     }
   }
 
-  Future<MarketWatchlist> getPreDefMWList() async {
-    try {
-      final uri = Uri.parse(apiLinks.preDefinedMWList);
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body:
-              '''jData={"uid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
+  // Future<MarketWatchlist> getPreDefMWList() async {
+  //   try {
+  //     final uri = Uri.parse(apiLinks.preDefinedMWList);
+  //     final res = await apiClient.post(uri,
+  //         headers: defaultHeaders,
+  //         body:
+  //             '''jData={"uid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
 
-      final json = jsonDecode(res.body);
+  //     final json = jsonDecode(res.body);
 
-      return MarketWatchlist.fromJson(json as Map<String, dynamic>);
-    } catch (e) {
-      rethrow;
-    }
-  }
+  //     return MarketWatchlist.fromJson(json as Map<String, dynamic>);
+  //   } catch (e) {
+  //     rethrow;
+  //   }
+  // }
+
+  // Get Scrip returns data from kambala
 
   Future<TechnicalData> getTechData(String exch, String tsym) async {
     try {
@@ -228,6 +249,8 @@ mixin MarketWatchApi on ApiCore {
       rethrow;
     }
   }
+
+  // Get Equity and BSE Stocks fundamental data
 
   Future<StockData> getFundamentalData(String tsym) async {
     try {
@@ -331,23 +354,6 @@ mixin MarketWatchApi on ApiCore {
       final json = jsonDecode(res.body);
 
       return ModifyAlertModel.fromJson(json as Map<String, dynamic>);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<WatchlistRenameModel> getWatchListRename(
-      String oldName, String newName) async {
-    try {
-      final uri = Uri.parse(apiLinks.watchListrename);
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body:
-              '''jData={"uid":"${prefs.clientId}","wlname":"$oldName","newwlname":"$newName"}&jKey=${prefs.clientSession}''');
-
-      final json = jsonDecode(res.body);
-
-      return WatchlistRenameModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

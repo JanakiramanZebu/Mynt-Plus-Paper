@@ -131,9 +131,6 @@ class ApiLinks {
   String get delpositiongrpName => '$mainBaseURL/Deletepositiongrp';
   String get delpositiongrpSym => '$mainBaseURL/removesymbolpositiongrp';
 
-  
-
-
   // Scrip Overview
 
   // String get scripOverviewUrl => 'http://192.168.5.142:5000';
@@ -188,7 +185,7 @@ class ApiLinks {
 
   // String get mfSip=> "$dashBoardURL/mf/sip_values";
 
-    String get mainfund => 'https://fundapi.mynt.in/api';
+  String get mainfund => 'https://fundapi.mynt.in/api';
   String get clientcheck => '$mainfund/client_check';
   String get bankcheck => '$mainfund/bank_check';
 

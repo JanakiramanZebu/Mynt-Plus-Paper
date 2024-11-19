@@ -91,15 +91,20 @@ class IndexListProvider extends DefaultChangeNotifier {
 
   List get moreMenu => _moreMunus;
 
-  void checkActiveTsym(bool value) {
-    _isActiveTsym = value;
-    notifyListeners();
-  }
+  // void checkActiveTsym(bool value) {
+  //   _isActiveTsym = value;
+  //   notifyListeners();
+  // }
+
+// Change bottom tab menu
 
   bottomMenu(int value) {
     _selectedBtmIndx = value;
     notifyListeners();
   }
+
+
+// Set height for dropdown list items
 
   List<double> getCustomItemsHeight() {
     List<double> itemsHeights = [];
@@ -114,6 +119,7 @@ class IndexListProvider extends DefaultChangeNotifier {
     return itemsHeights;
   }
 
+// Add Divider for dropdown list items
   List<DropdownMenuItem<String>> addDividersAfterExpDates() {
     List<DropdownMenuItem<String>> menuItems = [];
 
@@ -136,7 +142,7 @@ class IndexListProvider extends DefaultChangeNotifier {
     }
     return menuItems;
   }
-
+// Fetching data from the api and stored in a variable
   Future fetchIndexList(String exch, BuildContext context) async {
     try {
       toggleLoad(true);
@@ -183,6 +189,8 @@ class IndexListProvider extends DefaultChangeNotifier {
     }
   }
 
+
+// Defalut index list
   Future getDeafultIndexList(BuildContext context) async {
     final localstorage = await SharedPreferences.getInstance();
     try {
@@ -270,6 +278,8 @@ class IndexListProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetch All index from kamabala using wrapper API
+
   fetchAllIndex() async {
     try {
       _allIndexModel = await api.getAllIndex();
@@ -356,6 +366,8 @@ class IndexListProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
+// Get Index data by Exchange
+
   getchngIndexData(String exch) {
     _selectedIndExch = exch;
     if (exch == "NSE") {
@@ -367,6 +379,8 @@ class IndexListProvider extends DefaultChangeNotifier {
     }
     notifyListeners();
   }
+
+// Modify Default Index list and store in local
 
   changeIndex(IndexValue addNewIndex, BuildContext context, int index) async {
     final localstorage = await SharedPreferences.getInstance();
@@ -405,6 +419,8 @@ class IndexListProvider extends DefaultChangeNotifier {
         .showSnackBar(successMessage(context, "Index scrip modified"));
   }
 
+// Retrieve from locally stored index data
+
   Future getIndeexListFromLocal(BuildContext context) async {
     final localstorage = await SharedPreferences.getInstance();
     final List<String> indexList =
@@ -429,6 +445,7 @@ class IndexListProvider extends DefaultChangeNotifier {
     //
   }
 
+// websocket Connection Request for default index list
   requestdefaultIndex() {
     _indexToken = "";
     if (_defaultIndexList != null) {
@@ -441,6 +458,8 @@ class IndexListProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+
+// Verifying the client's session each time
   checkSession(BuildContext context) async {
     try {
       _checkSess = await api.getAddDeleteSciptoMW(
@@ -453,6 +472,8 @@ class IndexListProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
+
+// Push Notification call
   fetchNotifyMsg() async {
 
     try {

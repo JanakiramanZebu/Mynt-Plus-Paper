@@ -26,7 +26,7 @@ import '../models/auth_model/login_otp_verify.dart';
 import '../models/auth_model/logout_model.dart';
 import '../models/auth_model/mobile_login_model.dart';
 import '../models/auth_model/mobile_otp_model.dart';
-import '../models/auth_model/validate_seesion_model.dart';
+// import '../models/auth_model/validate_seesion_model.dart';
 import '../models/profile_model/client_detail_model.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
@@ -39,7 +39,7 @@ import 'index_list_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
-import 'stocks_provider.dart';
+// import 'stocks_provider.dart';
 import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
 
@@ -49,6 +49,9 @@ class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final Reader ref;
+
+  //  Text field controller for Login and otp screen
+
   final TextEditingController loginMethCtrl = TextEditingController();
   final TextEditingController passCtrl = TextEditingController();
   final TextEditingController otpCtrl = TextEditingController();
@@ -101,10 +104,11 @@ class AuthProvider extends DefaultChangeNotifier {
   Map<String, dynamic> _deviceData = <String, dynamic>{};
   Map<String, dynamic> get deviceInfo => _deviceData;
 
+// This package for getting device info
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
-  ValidateSession? _validateSession;
-  ValidateSession? get validSession => _validateSession;
+  // ValidateSession? _validateSession;
+  // ValidateSession? get validSession => _validateSession;
 
   bool _addUser = false;
   bool get addUser => _addUser;
@@ -113,6 +117,8 @@ class AuthProvider extends DefaultChangeNotifier {
     _addUser = true;
     notifyListeners();
   }
+
+// Switch login option mobile to client id
 
   loginMethod() {
     _isMobileLogin = !_isMobileLogin;
@@ -130,6 +136,8 @@ class AuthProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// If login validation is successful, activate the login button.
+
   activeBtnLogin() {
     if (validateLogin()) {
       _isDisableBtn = false;
@@ -139,6 +147,7 @@ class AuthProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// If OTP validation is successful, activate the OTP button.
   activeBtnOtp() {
     if (validateOtp()) {
       _isDisableOtpBtn = false;
@@ -147,17 +156,20 @@ class AuthProvider extends DefaultChangeNotifier {
     }
     notifyListeners();
   }
+// Hide / Show password
 
   hiddenPass() {
     _hidePass = !_hidePass;
     notifyListeners();
   }
+// Hide / Show OTP
 
   hiddenOtp() {
     _hideOtp = !_hideOtp;
     notifyListeners();
   }
 
+// Clear login validation error
   void clearError() {
     loginMethError = null;
     passError = null;
@@ -170,6 +182,8 @@ class AuthProvider extends DefaultChangeNotifier {
     passCtrl.clear();
     notifyListeners();
   }
+
+// Get Device information
 
   Future<void> getDeviceDetails() async {
     Map<String, dynamic>? deviceData = <String, dynamic>{};
@@ -216,6 +230,7 @@ class AuthProvider extends DefaultChangeNotifier {
     };
   }
 
+// Validate login
   bool validateLogin() {
     clearError();
     if (loginMethCtrl.text.trim().isEmpty) {
@@ -233,6 +248,7 @@ class AuthProvider extends DefaultChangeNotifier {
     return loginMethError == null && passError == null;
   }
 
+// Validate OTP
   bool validateOtp() {
     if (otpCtrl.text.length <= 3) {
       optError = "Please enter 4 digit OTP";
@@ -242,6 +258,8 @@ class AuthProvider extends DefaultChangeNotifier {
 
     return optError == null;
   }
+
+// Call this method while clicking if the login validation process is successful.
 
   submitLogin(BuildContext context) {
     // if (routeTo == "deviceLogin") {
@@ -253,15 +271,19 @@ class AuthProvider extends DefaultChangeNotifier {
     }
   }
 
+// Call this method while clicking if the OTP validation process is successful.
   submitOtp(BuildContext context) {
     if (validateOtp()) {
       fetchMobileOtp(context, otpCtrl.text);
     }
   }
 
+// Call this method while clicking Resent OTP .
   submitResendOtp(BuildContext context) {
     resendOtp(context, passCtrl.text, loginMethCtrl.text.toUpperCase());
   }
+
+// Fetching data from the api and stored in a variable
 
   fetchMobileLogin(BuildContext context, String password, String mobileRclint,
       String s, String imei) async {
@@ -379,6 +401,7 @@ class AuthProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   resendOtp(BuildContext context, String password, String mobileRclint) async {
     try {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -413,6 +436,7 @@ class AuthProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   fetchMobileOtp(BuildContext context, String otp) async {
     try {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -466,6 +490,7 @@ class AuthProvider extends DefaultChangeNotifier {
     }
   }
 
+// Storing client login information locally
   Future<void> setLocalData(
       List<LoggedMobile> list, List<LoggedMobile> currentUser) async {
     List<LoggedMobile> uniqueList = [];
@@ -500,6 +525,7 @@ class AuthProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   fetchLogout(BuildContext context) async {
     try {
       _logoutModel = await api.getLogout();
@@ -531,6 +557,7 @@ class AuthProvider extends DefaultChangeNotifier {
     }
   }
 
+// if there is a mobile number available automatically obtain from the device
   getCurrentPhone() async {
     if (_isonTapMobile) {
       if (loginMethCtrl.text.toString().isEmpty) {
@@ -557,6 +584,8 @@ class AuthProvider extends DefaultChangeNotifier {
       }
     }
   }
+
+// When device authentication is enabled, a dialogue box appears to provide access to our app.
 
   Future<void> deviceAuth(BuildContext context, String s) async {
     final localAuth = LocalAuthentication();
@@ -693,6 +722,8 @@ class AuthProvider extends DefaultChangeNotifier {
 
   AuthProvider(this.ref);
 
+  // Following a successful login and device authentication, these methods are called first.
+
   initialLoadMethods(BuildContext context, String s) async {
     try {
       initLaod(true);
@@ -774,6 +805,7 @@ class AuthProvider extends DefaultChangeNotifier {
     }
   }
 
+// This method calls and returns to the login screen whenever the client session expires.
   ifSessionExpired(BuildContext context) {
     pref.clearClientSession();
     pref.setLogout(true);

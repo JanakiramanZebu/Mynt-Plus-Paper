@@ -25,6 +25,8 @@ class ApikeyProvider extends DefaultChangeNotifier {
   GenerateApikeyModel? _generateApikey;
   GenerateApikeyModel? get generateApikey => _generateApikey;
 
+// Fetching data from the api and stored in a variable
+
   Future fetchapikey(BuildContext context) async {
     try {
       _apikeyres = await api.getapikey();
@@ -41,6 +43,7 @@ class ApikeyProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchregenerateapikey(BuildContext context, String month) async {
     try {
       _generateApikey = await api.regenerateapikey(month);

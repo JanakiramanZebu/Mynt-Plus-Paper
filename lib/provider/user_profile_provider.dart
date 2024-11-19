@@ -14,8 +14,8 @@ import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
-import 'core/default_change_notifier.dart'; 
-import 'index_list_provider.dart';  
+import 'core/default_change_notifier.dart';
+import 'index_list_provider.dart';
 import 'shocase_provider.dart';
 import '../models/profile_model/qr_login_res.dart';
 
@@ -56,12 +56,15 @@ class UserProfileProvider extends DefaultChangeNotifier {
   final List _accountMenu = [
     {"title": "Personal Info", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Bank", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Demat", "trailing": "assets/profile/greater_arrow.svg"},
     {
-      "title": "Demat",
+      "title": "Trading Preference",
       "trailing": "assets/profile/greater_arrow.svg"
     },
-    {"title": "Trading Preference", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Margin Trading Facility (MTF)", "trailing": "assets/profile/greater_arrow.svg"},
+    {
+      "title": "Margin Trading Facility (MTF)",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
     {"title": "Annual Income", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Nominee", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Family Account", "trailing": "assets/profile/greater_arrow.svg"},
@@ -72,11 +75,20 @@ class UserProfileProvider extends DefaultChangeNotifier {
   final List _reporttMenu = [
     {"title": "Ledger", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Holdings", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Positions - (Beta)", "trailing": "assets/profile/greater_arrow.svg"},
+    {
+      "title": "Positions - (Beta)",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
     {"title": "Profit & Loss", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Calender P&L (Beta)", "trailing": "assets/profile/greater_arrow.svg"},
+    {
+      "title": "Calender P&L (Beta)",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
     {"title": "Tax P&L", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "TradeBook/Contract", "trailing": "assets/profile/greater_arrow.svg"},
+    {
+      "title": "TradeBook/Contract",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
     {"title": "PDF Download", "trailing": "assets/profile/greater_arrow.svg"}
   ];
 
@@ -88,17 +100,16 @@ class UserProfileProvider extends DefaultChangeNotifier {
   ClientDetailModel? get clientDetailModel => _clientDetailModel;
   UserProfileProvider(this.ref);
 
-  Future fetchUserDetail(BuildContext context  ) async {
+// Fetching data from the api and stored in a variable
+
+  Future fetchUserDetail(BuildContext context) async {
     try {
       toggleLoadingOn(true);
-      _userDetailModel = await api.getUserDetail( );
+      _userDetailModel = await api.getUserDetail();
 
-       
-        if (_userDetailModel!.emsg ==
-                "Session Expired :  Invalid Session Key" &&
-            _userDetailModel!.stat == "Not_Ok") {
-          ref(authProvider).ifSessionExpired(context);
-         
+      if (_userDetailModel!.emsg == "Session Expired :  Invalid Session Key" &&
+          _userDetailModel!.stat == "Not_Ok") {
+        ref(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();
@@ -112,6 +123,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       toggleLoadingOn(false);
     }
   }
+// Fetching data from the api and stored in a variable
 
   Future fetchClientDetail(BuildContext context) async {
     try {
@@ -132,6 +144,8 @@ class UserProfileProvider extends DefaultChangeNotifier {
       notifyListeners();
     } finally {}
   }
+
+// Assinging value
 
   fetchsetting() {
     _settingMenu = [
@@ -163,6 +177,8 @@ class UserProfileProvider extends DefaultChangeNotifier {
     notifyListeners();
     return settingmenu;
   }
+
+// Assigning value
 
   fetchprofilemenu() {
     _profileMenu = [
@@ -206,7 +222,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "key": ref(showcaseProvide).corporateactioncase,
         "case": "Click here to view the Corporate Action page."
       },
-       {
+      {
         "title": "CA Events",
         "subTitle": "CA Event",
         "leading": "assets/profileimage/caevent.svg",
@@ -279,7 +295,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       //   "key": "",
       //   "case": "Click here to view the Log message."
       // }
-       
+
       // ,
       // {
       //   "title": "Bonds",
@@ -301,10 +317,12 @@ class UserProfileProvider extends DefaultChangeNotifier {
     return profileMenu;
   }
 
+// Fetching data from the api and stored in a variable
+
   Future fetchQR(BuildContext context, String unquiid, String loginfsrc,
       MobileScannerController camera) async {
     try {
-      _qrLoginesponces = await api.getqr(unquiid,loginfsrc);
+      _qrLoginesponces = await api.getqr(unquiid, loginfsrc);
       if (_qrLoginesponces!.msg == "logged in") {
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, "${_qrLoginesponces!.msg}"));
@@ -322,6 +340,8 @@ class UserProfileProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
+// Fetching data from the api and stored in a variable
+
   Future fetchFreezeAc(BuildContext context) async {
     try {
       final res = await api.getaFreezeAc();
@@ -337,6 +357,8 @@ class UserProfileProvider extends DefaultChangeNotifier {
       notifyListeners();
     } finally {}
   }
+
+// Fetching data from the api and stored in a variable
 
   Future fetchBlockAc(BuildContext context) async {
     try {

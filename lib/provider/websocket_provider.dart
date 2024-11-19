@@ -49,6 +49,8 @@ class WebSocketProvider extends ChangeNotifier {
 
   final Preferences pref = locator<Preferences>();
 
+// Close websocket
+
   void closeSocket() {
     conectionClosed = true;
     _wsConnected = false;
@@ -56,6 +58,9 @@ class WebSocketProvider extends ChangeNotifier {
     channel.sink.close();
   }
 
+
+
+// Websocket Recpnnection(Heart beat)
   reconnectWS() {
     if (ref(networkStateProvider).connectionStatus != ConnectivityResult.none &&
         _wsConnected) {

@@ -7,11 +7,12 @@ import '../models/auth_model/forgot_pass_model.dart';
 import '../models/auth_model/logout_model.dart';
 import '../models/auth_model/mobile_login_model.dart';
 import '../models/auth_model/mobile_otp_model.dart';
-import '../models/auth_model/validate_seesion_model.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'core/api_core.dart';
 
 mixin AuthApi on ApiCore {
+// Login and get OTP
+
   Future<MobileLoginModel> getMobileLogin(
       {required String uniqueId,
       required String mobileRclient,
@@ -59,10 +60,12 @@ mixin AuthApi on ApiCore {
     }
   }
 
+// Verify OTP
+
   Future<MobileOtpModel> getMobileOtp(
       {required String uniqueId,
       required String mobileRclient,
-   required   String imei,
+      required String imei,
       required String otp,
       required BuildContext context}) async {
     try {
@@ -73,7 +76,7 @@ mixin AuthApi on ApiCore {
               "mobile_unique": uniqueId,
               "clientid": mobileRclient,
               "otp": otp,
-                  "imei": imei,
+              "imei": imei,
               "source": ApiLinks.source
             }
           : {
@@ -81,7 +84,7 @@ mixin AuthApi on ApiCore {
               "mobile": mobileRclient,
               "otp": otp,
               "source": ApiLinks.source,
-                  "imei": imei
+              "imei": imei
             };
       final res = await apiClient.post(uri,
           headers: defaultHeaders, body: jsonEncode(data));
@@ -101,6 +104,8 @@ mixin AuthApi on ApiCore {
     }
   }
 
+// Logout
+
   Future<LogoutModel> getLogout() async {
     try {
       final uri = Uri.parse(apiLinks.logout);
@@ -119,6 +124,8 @@ mixin AuthApi on ApiCore {
     }
   }
 
+// Forgot password
+
   Future<ForgetPasswordModel> getForgetPassword(
       String field, String value) async {
     try {
@@ -136,21 +143,21 @@ mixin AuthApi on ApiCore {
     }
   }
 
-  Future<ValidateSession> getValidateSession(
-      {required String deviceInfo}) async {
-    try {
-      final uri = Uri.parse(apiLinks.validateSession);
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body: jsonEncode(
-              {"mobile_unique": deviceInfo, "clientid": prefs.clientId}));
+  // Future<ValidateSession> getValidateSession(
+  //     {required String deviceInfo}) async {
+  //   try {
+  //     final uri = Uri.parse(apiLinks.validateSession);
+  //     final res = await apiClient.post(uri,
+  //         headers: defaultHeaders,
+  //         body: jsonEncode(
+  //             {"mobile_unique": deviceInfo, "clientid": prefs.clientId}));
 
-      // log("forgetPassword Res => ${res.body}");
-      final json = jsonDecode(res.body);
+  //     // log("forgetPassword Res => ${res.body}");
+  //     final json = jsonDecode(res.body);
 
-      return ValidateSession.fromJson(json as Map<String, dynamic>);
-    } catch (e) {
-      rethrow;
-    }
-  }
+  //     return ValidateSession.fromJson(json as Map<String, dynamic>);
+  //   } catch (e) {
+  //     rethrow;
+  //   }
+  // }
 }

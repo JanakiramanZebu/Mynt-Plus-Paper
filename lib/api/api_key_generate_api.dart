@@ -3,6 +3,8 @@ import '../models/profile_model/generateapikey_model.dart';
 import 'core/api_core.dart';
 
 mixin GenerateApiKey on ApiCore {
+// Get API key from kambala
+
   Future<Apikeymodel> getapikey() async {
     try {
       final uri = Uri.parse(apiLinks.apiKey);
@@ -19,6 +21,7 @@ mixin GenerateApiKey on ApiCore {
     }
   }
 
+// Get REgenerate API key from kambala
   Future<GenerateApikeyModel> regenerateapikey(String month) async {
     try {
       final uri = Uri.parse(apiLinks.generateapiKey);

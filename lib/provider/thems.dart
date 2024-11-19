@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import 'core/default_change_notifier.dart';
-import 'user_profile_provider.dart'; 
+import 'user_profile_provider.dart';
 
 final themeProvider = ChangeNotifierProvider((ref) => ThemesProvider(ref.read));
 
@@ -24,7 +24,7 @@ class ThemesProvider extends DefaultChangeNotifier {
       themeMode = ThemeMode.dark;
       pref.setAppTheme("Dark");
       return themeMode == ThemeMode.dark;
-    } 
+    }
     //else if (pref.userAppTheme == "System Default") {
     //   final brightness = SchedulerBinding.instance.window.platformBrightness;
     //   themeMode =
@@ -32,29 +32,30 @@ class ThemesProvider extends DefaultChangeNotifier {
     //   pref.setTheme(themeMode == Brightness.dark ? true : false);
     //   pref.setAppTheme("System Default");
     //   return brightness == Brightness.dark;
-    // } 
+    // }
     else {
       pref.setAppTheme("Light");
       return themeMode == ThemeMode.dark;
     }
 
-   // return false;
+    // return false;
   }
 
-  void getThemeData() async { 
+// Getting a default app theme
+
+  void getThemeData() async {
     print("THEME :::  ${pref.userAppTheme} $themeMode");
     _deviceTheme = pref.userAppTheme!;
     if (pref.userAppTheme == "Dark") {
-      
       themeMode = ThemeMode.dark;
-       pref.setTheme(themeMode == ThemeMode.dark);
+      pref.setTheme(themeMode == ThemeMode.dark);
       log('themeMode   ::: $themeMode');
       pref.setAppTheme("Dark");
-       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
           statusBarIconBrightness: Brightness.light, // For Android (dark icons)
           statusBarBrightness: Brightness.dark,
           statusBarColor: Colors.black));
-    } 
+    }
     // else if (pref.userAppTheme == "System Default") {
     //   final brightness = SchedulerBinding.instance.window.platformBrightness;
     //   themeMode =
@@ -62,9 +63,9 @@ class ThemesProvider extends DefaultChangeNotifier {
     //   log('themeMode System ::: $themeMode');
     //   pref.setAppTheme("System Default");
     //    pref.setTheme(themeMode == ThemeMode.dark);
-    // } 
+    // }
     else if (pref.userAppTheme == "Light") {
-       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
           statusBarIconBrightness: Brightness.dark, // For Android (light icons)
           statusBarBrightness: Brightness.light,
           statusBarColor: Colors.white));
@@ -74,19 +75,18 @@ class ThemesProvider extends DefaultChangeNotifier {
     }
   }
 
+// Set app theme mode
+
   set isDarkMode(bool value) {
     themeMode = value ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
   }
 
-  void toggleTheme({ required String themeMod}) {
-
-     pref.setAppTheme(themeMod);
+  void toggleTheme({required String themeMod}) {
+    pref.setAppTheme(themeMod);
     final brightness = SchedulerBinding.instance.window.platformBrightness;
-    themeMode = brightness == Brightness.dark
-        ? ThemeMode.dark
-         
-            : ThemeMode.light;
+    themeMode =
+        brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
 
     if (pref.userAppTheme == "Dark") {
       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -94,7 +94,7 @@ class ThemesProvider extends DefaultChangeNotifier {
           statusBarBrightness: Brightness.dark,
           statusBarColor: Colors.black));
       _deviceTheme = "Dark";
-            themeMode = ThemeMode.dark;
+      themeMode = ThemeMode.dark;
       pref.setTheme(true);
     } else if (pref.userAppTheme == "Light") {
       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -102,9 +102,9 @@ class ThemesProvider extends DefaultChangeNotifier {
           statusBarBrightness: Brightness.light,
           statusBarColor: Colors.white));
       _deviceTheme = "Light";
-       themeMode = ThemeMode.light;
-         pref.setTheme(false);
-    } 
+      themeMode = ThemeMode.light;
+      pref.setTheme(false);
+    }
     // else {
     //   _deviceTheme = "System Default";
     //   final brightness = SchedulerBinding.instance.window.platformBrightness;
@@ -114,7 +114,7 @@ class ThemesProvider extends DefaultChangeNotifier {
 
     //          pref.setTheme(brightness == Brightness.dark);
     // }
-     ref(userProfileProvider).fetchsetting();
+    ref(userProfileProvider).fetchsetting();
     notifyListeners();
   }
 

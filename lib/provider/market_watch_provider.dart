@@ -91,12 +91,16 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   // MarketWatchlist? _preDefMWlist;
   // MarketWatchlist? get preDefMWlist => _preDefMWlist;
 
+//  Pre-defined market watchlist
+
   final List<String> _preDefWL = [
     "My Stocks",
     "Nifty50",
     "Niftybank",
     "Sensex"
   ];
+
+// Search scrip Filter by Instument name
 
   final List<Tab> _searchTabList = const [
     Tab(text: "All"),
@@ -361,6 +365,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Set height for dropdown list items
+
   List<double> getCustomItemsHeight(List<String> numofList) {
     List<double> itemsHeights = [];
     for (var i = 0; i < (numofList.length * 2) - 1; i++) {
@@ -394,6 +400,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Add Divider for dropdown list items
   List<DropdownMenuItem<String>> addDividersAfterExpDates(
       List<String> numofList) {
     List<DropdownMenuItem<String>> menuItems = [];
@@ -458,6 +465,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
     return menuItems;
   }
+
+// Option chain options
 
   void selecexpDate(String value) {
     _selectedExpDate = value;
@@ -530,6 +539,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Search scrip by tarde symbol
+
   scripSearch(String value, BuildContext context) async {
     if (value.length > 1) {
       await fetchSearchScrip(searchText: value, context: context);
@@ -544,11 +555,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Change watchlist name
   changeWlName(String name, String isWList) {
     _wlName = name;
     _isPreDefWLs = isWList;
     notifyListeners();
   }
+
+// clear search filter values
 
   searchClear() {
     _searchErrorText = "Enter more than TWO letters";
@@ -563,6 +577,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Watchlist scrip delete selection
+
   isActiveAddBtn(bool val, int index) {
     _isAdded![index] = val;
 
@@ -574,6 +590,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   List _scrips = [];
   List get scrips => _scrips;
+
+// Fetching data from the api and stored in a variable
 
   Future fetchMWList(BuildContext context) async {
     try {
@@ -620,6 +638,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
+// Fetching data from the api and stored in a variable
+
   Future fetchMWScrip(String wlname, context) async {
     try {
       toggleLoadingOn(true);
@@ -633,6 +653,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         if (_watchListValues.isNotEmpty) {
           for (var element in _watchListValues) {
+// Seperating Trade symbol(symbol,exp date, Option)
+
             if (element.exch == "BFO" && element.dname != null) {
               List<String> splitVal = element.dname!.split(" ");
 
@@ -648,6 +670,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               element.expDate = "${spilitSymbol["expDate"]}";
               element.option = "${spilitSymbol["option"]}";
             }
+
+            // Holdings Qty add to market watch scrip
             if (ref(portfolioProvider).holdingsModel!.isNotEmpty) {
               for (var holding in ref(portfolioProvider).holdingsModel!) {
                 if (holding.exchTsym![0].exch == "NSE" ||
@@ -685,6 +709,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchPreDefMWScrip(BuildContext context) async {
     try {
       // requestWSMarketWatchScrip(context: context, isSubscribe: false);
@@ -701,6 +726,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               return a.tsym!.compareTo(b.tsym!);
             });
             for (var element in _preDefinedMWlist!.nIFTY50NSE!) {
+              // Seperating Trade symbol(symbol,exp date, Option)
               if (element.exch == "BFO" && element.dname != null) {
                 List<String> splitVal = element.dname!.split(" ");
 
@@ -733,6 +759,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               return a.tsym!.compareTo(b.tsym!);
             });
             for (var element in _preDefinedMWlist!.nIFTYBANKNSE!) {
+// Seperating Trade symbol(symbol,exp date, Option)
+
               if (element.exch == "BFO" && element.dname != null) {
                 List<String> splitVal = element.dname!.split(" ");
 
@@ -765,6 +793,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               return a.tsym!.compareTo(b.tsym!);
             });
             for (var element in _preDefinedMWlist!.sENSEXBSE!) {
+              // Seperating Trade symbol(symbol,exp date, Option)
               if (element.exch == "BFO" && element.dname != null) {
                 List<String> splitVal = element.dname!.split(" ");
 
@@ -792,7 +821,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               }
             }
           }
-
+// Pre-define market scrip adding to watchlist
           _marketWatchScripData
               .addAll({"Nifty50": jsonEncode(_preDefinedMWlist!.nIFTY50NSE!)});
           _marketWatchScripData.addAll(
@@ -822,11 +851,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchScripInfo(String token, String exch, BuildContext context) async {
     try {
       _scripInfoModel = await api.getScripInfo(token, exch);
 
       if (_scripInfoModel!.stat == "Ok") {
+        // Seperating Trade symbol(symbol,exp date, Option)
         ConstantName.sessCheck = true;
         if (_scripInfoModel!.exch == "BFO" && _scripInfoModel!.dname != null) {
           List<String> splitVal = _scripInfoModel!.dname!.split(" ");
@@ -861,6 +892,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchScripQuote(
       String token, String exch, BuildContext context) async {
     try {
@@ -868,7 +900,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_getQuotes!.stat == "Ok") {
         ConstantName.sessCheck = true;
-
+// Seperating Trade symbol(symbol,exp date, Option)
         if (_getQuotes!.exch == "BFO" && _getQuotes!.cname != null) {
           List<String> splitVal = _getQuotes!.cname!.split(" ");
 
@@ -885,6 +917,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
         _optionStrPrc = "${_getQuotes!.lp}";
 
+// Scrip market depth calc
         scripQtyCal();
       }
       if (_getQuotes!.emsg == "Session Expired :  Invalid Session Key" &&
@@ -900,6 +933,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       notifyListeners();
     } finally {}
   }
+
+  // Fetching stike price for  option chain
 
   Future fetchStikePrc(String token, String exch, BuildContext context) async {
     try {
@@ -930,6 +965,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+// Scrip market depth calc
   void scripQtyCal() {
     if (_getQuotes!.instname != "UNDIND" && _getQuotes!.instname != "COM") {
       if (_getQuotes!.tbq != null || _getQuotes!.tsq != null) {
@@ -967,6 +1003,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchSearchScrip(
       {required String searchText, required BuildContext context}) async {
     try {
@@ -984,6 +1021,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _isAdded = List<bool>.filled(_searchScripModel!.values!.length, false);
         if (_searchScripModel!.values!.isNotEmpty) {
           for (var i = 0; i < _searchScripModel!.values!.length; i++) {
+// Seperating Trade symbol(symbol,exp date, Option)
+
             if (_searchScripModel!.values![i].exch == "BFO" &&
                 _searchScripModel!.values![i].dname != null) {
               List<String> splitVal =
@@ -1084,6 +1123,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+  // Fetching data from the api and stored in a variable
+
   Future fetchLinkeScrip(
       String token, String exch, BuildContext context) async {
     try {
@@ -1113,6 +1154,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             "imgPath": assets.optChainIcon,
             "case": "Click here to view the Option chain details."
           });
+
+// Option expiry Date wise sorting
 
           List<DateTime> dates = _optExp!.map((dateString) {
             List<String> parts = dateString.exd!.split('-');
@@ -1182,6 +1225,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           __futExch = "${_fut![0].exch}";
 
           // print("Future $_futToken  $__futExch ");
+
+          // Seperating Trade symbol(symbol,exp date, Option)
           for (var element in _fut!) {
             Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
@@ -1204,6 +1249,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchOPtionChain(
       {required String strPrc,
       required String tradeSym,
@@ -1225,6 +1271,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           numofStrike: numofStrike);
       if (_optionChainModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
+
+        // Seprating option chain scrips (Call / Put)
         await splitOptionChain(context);
       } else {
         _optChainCall = [];
@@ -1248,6 +1296,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchTechData(
       {required String exch,
       required String tradeSym,
@@ -1278,6 +1327,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching fundametal datas
   Future fetchFundamentalData({required String tradeSym}) async {
     try {
       _fundamentalData = await api.getFundamentalData(tradeSym);
@@ -1518,6 +1568,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
+// Scrip returns data(Year/Month/Week/Day)
   techDataCalc(String lastPrc) {
     _returnsGridview = [];
     double ltp = double.parse(lastPrc);
@@ -1588,10 +1639,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+  // Seprating option chain scrips (Call / Put)
   splitOptionChain(BuildContext context) {
     _optChainCall = [];
     _optChainPut = [];
-
+// Seperating Trade symbol(symbol,exp date, Option)
     for (var element in _optionChainModel!.optValue!) {
       Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
@@ -1617,6 +1669,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     requestWSOptChain(context: context, isSubscribe: true);
   }
 
+// websocket Connection Request for Option chain list
+
   requestWSOptChain(
       {required bool isSubscribe, required BuildContext context}) {
     String input = "";
@@ -1637,6 +1691,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+// websocket Connection Request for Future list
   requestWSFut({required bool isSubscribe, required BuildContext context}) {
     String input = "";
 
@@ -1673,6 +1728,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 //  REWORK TO CHANGE FLOW =========
 
+// Swipe or Change to watchlist
+
   changeWLScrip(String wName, BuildContext context) async {
     try {
       _scrips = wName == "My Stocks"
@@ -1692,6 +1749,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Delete market scrips by watchlist name
   deleteWatchList(String wlName, BuildContext context) async {
     String input = "";
 
@@ -1708,6 +1766,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+// Add market scrips by watchlist name
   addWatchList(String wlName, BuildContext context) async {
     _addDeleteScripModel = await api.getAddDeleteSciptoMW(
         isAdd: true, scripToken: "", wlname: wlName);
@@ -1758,6 +1817,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+// websocket Connection Request for Market watch scrip
   requestMWScrip(
       {required bool isSubscribe, required BuildContext context}) async {
     String input = "";
@@ -1784,6 +1844,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _sortByWL = val;
     notifyListeners();
   }
+
+// Sorting market watch scrip by trade symbol(LTP,symbol,)
 
   filterPendingAlert(String sorting) {
     if (sorting == "ASC") {
@@ -1814,6 +1876,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Sorting market watch scrip by trade symbol(LTP,symbol,)
   filterMWScrip(
       {required String sorting,
       required String wlName,
@@ -1938,11 +2001,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Assing Del Qty =0
   delQty() {
     _delScripQty = 0;
     notifyListeners();
   }
 
+// Selection for scrip selcetion
   void selectDeleteScrip(int index) {
     if (_scrips[index]['isSelected']) {
       _scrips[index]['isSelected'] = false;
@@ -1971,6 +2036,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Market watch scrip re-order
   void reOrderList(
       {required int oldIndex,
       required int newIndex,

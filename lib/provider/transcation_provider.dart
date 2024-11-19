@@ -7,7 +7,7 @@ import 'package:number_to_words/number_to_words.dart';
 import 'package:public_ip_address/public_ip_address.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_export.dart';
-import '../locator/locator.dart'; 
+import '../locator/locator.dart';
 import '../models/fund_model_testing_copy/fund_direct_payment_model.dart';
 import '../models/fund_model_testing_copy/fund_pay.model.dart';
 import '../models/fund_model_testing_copy/fund_payment_status_model.dart';
@@ -47,7 +47,7 @@ class TranctionProvider extends DefaultChangeNotifier {
   int _intValue = 0;
   int get intValue => _intValue;
 
-  int _indexss = 0;
+  final int _indexss = 0;
   int get indexss => _indexss;
 
   String _ifsc = '';
@@ -129,13 +129,13 @@ class TranctionProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  FocusNode _focusNode = FocusNode();
+  final FocusNode _focusNode = FocusNode();
   FocusNode get focusNode => _focusNode;
 
   List<String> _companycode = [];
   List<String> get companycodes => _companycode;
 
-  RegExp _upiPattern = RegExp(r'^[\w.-]+@[\w.-]+$');
+  final RegExp _upiPattern = RegExp(r'^[\w.-]+@[\w.-]+$');
   RegExp get upiPattern => _upiPattern;
 
   bool _isBottomSheetShown = true;

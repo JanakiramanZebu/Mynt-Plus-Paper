@@ -163,6 +163,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
   CreateGroupName? _groupName;
   CreateGroupName? get groupName => _groupName;
 
+// change selected portfolio tab name
+
   changeTabIndex(int index) {
     _selectedTab = index;
   }
@@ -171,6 +173,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
     _posSelection = val;
     notifyListeners();
   }
+
+//  Assinging and portfolio name length set
 
   tabSize() {
     _portTabName = [
@@ -208,6 +212,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Holding search enable & hide
+
   showHoldSearch(bool value) {
     _showSearchHold = value;
     if (!_showSearchHold) {
@@ -215,6 +221,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
     notifyListeners();
   }
+
+//  Position search enable & hide
 
   showPositionSearch(bool value) {
     _showSearchPosition = value;
@@ -225,6 +233,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Holding search text field clear and search list item clear
+
   clearHoldSearch() {
     holdingSearchCtrl.clear();
     _holdingSearchItem = [];
@@ -232,12 +242,16 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Position search text field clear and search list item clear
+
   clearPositionSearch() {
     positionSearchCtrl.clear();
     _positionSearchItem = [];
 
     notifyListeners();
   }
+
+// Show position PNL / MTM value
 
   chngPositionPnl(bool value) {
     _isNetPnl = value;
@@ -276,6 +290,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
   List<MFHoldingsModel>? get mfHoldingsModel => _mfHoldingsModel;
   List<MFHoldingsModel>? _mfHoldingSearchItem = [];
   List<MFHoldingsModel>? get mfHoldingSearchItem => _mfHoldingSearchItem;
+
+  // Mutual fund Holding search text field clear and search list item clear
+
   showHoldMFSearch(bool value) {
     _showSearchHoldMF = value;
     if (!_showSearchHoldMF) {
@@ -283,6 +300,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
     notifyListeners();
   }
+// MF Holdings search text field clear and search list item clear
 
   clearHoldMFSearch() {
     holdingMFSearchCtrl.clear();
@@ -294,12 +312,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
   MFQuotes? _mfQuotes;
   MFQuotes? get mfQuotes => _mfQuotes;
 
-  String _totPnlHoldings = "0.00";
-  String get totPnlHoldings => _totPnlHoldings;
+  // String _totPnlHoldings = "0.00";
+  // String get totPnlHoldings => _totPnlHoldings;
 
-  setPnlHoldings(String val) {
-    _totPnlHoldings = val;
-  }
+  // setPnlHoldings(String val) {
+  //   _totPnlHoldings = val;
+  // }
+
+// Fetching data from the api and stored in a variable
 
   Future fetchHoldings(context, String initail) async {
     double invest = 0.0;
@@ -329,11 +349,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
         if (_holdingsModel![0].stat != "Not_Ok") {
           ConstantName.sessCheck = true;
 
+// Sorting Holdings data Trade symbol wise A to Z
+
           _holdingsModel!.sort(
               (a, b) => a.exchTsym![0].tsym!.compareTo(b.exchTsym![0].tsym!));
 
           for (var element in _holdingsModel!) {
             element.isExitHoldings = false;
+
+// Seperating Trade symbol(symbol,exp date, Option)
 
             Map spilitSymbol =
                 spilitTsym(value: "${element.exchTsym![0].tsym}");
@@ -403,6 +427,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
+
   Future fetchMFHoldings(context) async {
     try {
       // _mfHoldingsModel = [];
@@ -420,6 +446,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       if (_mfHoldingsModel!.isNotEmpty) {
         if (_mfHoldingsModel![0].stat != "Not_Ok") {
           ConstantName.sessCheck = true;
+
+// PNL Calculation
 
           for (var element in _mfHoldingsModel!) {
             element.invested = (double.parse("${element.uploadPrc ?? 0.00}") *
@@ -861,6 +889,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
+// Position Calculation
   positionCal(bool isDay) {
     double totalMtm = 0.00;
     double totalPnl = 0.00;
@@ -997,6 +1026,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     _totBookedPnL = bookPnl.toStringAsFixed(2);
   }
 
+// Fetch Group Names and Grouped scrips
   getPositionGroupNames() {
     try {
       _groupedBySymbol = {};
@@ -1048,6 +1078,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Position group by Group names
   positionGroupCal(
       bool isDay, List groupData, String groupName, bool iscusGrop) {
     // double totalMtm = 0.00;
@@ -1222,6 +1253,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// websocket Connection Request for Position scrip
   requestWSPosition(
       {required bool isSubscribe, required BuildContext context}) {
     String input = "";
@@ -1242,6 +1274,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     // notifyListeners();
   }
 
+// websocket Connection Request for Holdings scrip
   requestWSHoldings(
       {required bool isSubscribe, required BuildContext context}) {
     String input = "";
@@ -1299,6 +1332,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       await fetchPositionBook(context, _isDay);
     }
   }
+// Sort Holding data (LTP,Symbol,Change,Per Change)
 
   filterHoldings(
       {required String sorting, required BuildContext context}) async {
@@ -1392,6 +1426,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
     notifyListeners();
   }
+// Sort MF Holding data (LTP,Symbol,Change,Per Change)
 
   filterMfHoldings(
       {required String sorting, required BuildContext context}) async {
@@ -1486,6 +1521,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Sort position data (LTP,Symbol,Change,Per Change)
   sortPositions({required String sorting}) async {
     if (sorting == "ASC") {
       _allPostionList.sort((a, b) => a.tsym!.compareTo(b.tsym!));

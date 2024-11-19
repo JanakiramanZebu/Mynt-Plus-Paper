@@ -1,11 +1,11 @@
- 
 import '../models/notification_model/broker_message_model.dart';
 import '../models/notification_model/exchange_message_model.dart';
 import '../models/notification_model/exchange_status_model.dart';
-import 'core/api_core.dart'; 
-
+import 'core/api_core.dart';
 
 mixin NotificationApi on ApiCore {
+  //  Get exch message from kambala
+
   Future<List<ExchangeMessageModel>> getexchmsg() async {
     try {
       final uri = Uri.parse(apiLinks.exchMsg);
@@ -13,7 +13,6 @@ mixin NotificationApi on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
-
 
       //log("Exchange message=>${res.body} ");
       final List<ExchangeMessageModel> data = [];
@@ -45,6 +44,7 @@ mixin NotificationApi on ApiCore {
     }
   }
 
+// Get exch status  from kambala
 
   Future<List<ExchangeStatusModel>> getexchstatus() async {
     try {
@@ -53,7 +53,6 @@ mixin NotificationApi on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
-
 
       final List<ExchangeStatusModel> data = [];
       //log("Exchange Status=>${res.body} ");
@@ -85,6 +84,7 @@ mixin NotificationApi on ApiCore {
     }
   }
 
+// Get Broker Message from kambala
 
   Future<List<BrokerMessage>> getbrokermsg() async {
     try {
@@ -94,9 +94,8 @@ mixin NotificationApi on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
 
-
       final List<BrokerMessage> data = [];
-     // log("broker msg=>${res.body} ");
+      // log("broker msg=>${res.body} ");
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         try {
@@ -123,8 +122,3 @@ mixin NotificationApi on ApiCore {
     }
   }
 }
-
-
-
-
-

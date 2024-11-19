@@ -1,13 +1,14 @@
 import 'package:http/http.dart';
 
-import '../locator/constant.dart'; 
+import '../locator/constant.dart';
 import '../models/indices/all_index_model.dart';
 import '../models/indices/index_list_model.dart';
-import 'core/api_core.dart'; 
+import 'core/api_core.dart';
 
 mixin IndexApi on ApiCore {
+// Push notification
 
- Future<Response> getNotifyMsg() async {
+  Future<Response> getNotifyMsg() async {
     try {
       final uri = Uri.parse("https://besim.zebull.in/nlog/addtoken");
       final res = await apiClient.post(uri,
@@ -24,6 +25,8 @@ mixin IndexApi on ApiCore {
       rethrow;
     }
   }
+
+// Get Index lists exchange wise from kambala
 
   Future<IndexListModel?> getIndexList(String exch) async {
     try {
@@ -49,28 +52,27 @@ mixin IndexApi on ApiCore {
     return null;
   }
 
+// get group of scrip LTP and more info
+
   Future<Response> getLTP(List ltpArgs) async {
     try {
       final uri = Uri.parse("https://asvr.mynt.in/bcast/GetLtp");
       final response = await apiClient.post(uri,
           headers: {'Content-Type': 'application/json'},
-          body:  jsonEncode({
-            "data": ltpArgs
-          }  ));
+          body: jsonEncode({"data": ltpArgs}));
 
-          //  print("Top Indices Data ${response.body}");
+      //  print("Top Indices Data ${response.body}");
 
       return response;
     } catch (e) {
       rethrow;
     }
   }
-Future<AllIndexModel> getAllIndex( ) async {
+
+  Future<AllIndexModel> getAllIndex() async {
     try {
       final uri = Uri.parse(apiLinks.getAllIndx);
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders
-        );
+      final res = await apiClient.post(uri, headers: defaultHeaders);
       // print("All Indices Data ${res.body}");
       final json = jsonDecode(res.body);
 
@@ -79,6 +81,4 @@ Future<AllIndexModel> getAllIndex( ) async {
       rethrow;
     }
   }
-
-  
 }

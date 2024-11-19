@@ -9,9 +9,14 @@ import 'api_link.dart';
 export 'dart:convert';
 
 mixin ApiCore {
+  
+  // http request
   final apiClient = Client();
+  // get local storage data
   final prefs = locator<Preferences>();
+  // get local variable datas from class
   final apiLinks = locator<ApiLinks>();
+
   Map<String, String> get defaultHeaders {
     return {
       'Content-Type': 'application/json',

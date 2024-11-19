@@ -19,6 +19,9 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
   final Reader ref;
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
+
+  //  Text field controller for Change password
+
   final TextEditingController oldPassword = TextEditingController();
   final TextEditingController newPassword = TextEditingController();
   final TextEditingController forGetloginMethCtrl = TextEditingController();
@@ -48,6 +51,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
   MyntChangePasswordModel? _changepasswordmodel;
   MyntChangePasswordModel? get changepasswordmodel => _changepasswordmodel;
 
+// Clear all text field values form change password screen
   void clearTextField() {
     oldPassword.clear();
     newPassword.clear();
@@ -56,6 +60,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Clear change pass validation error
   void clearError() {
     userIdChangepassError = null;
     oldPasswordError = null;
@@ -81,6 +86,8 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Validating Forgot password
+
   bool validateForgetpassWord() {
     clearError();
     if (forGetloginMethCtrl.text.trim().isEmpty) {
@@ -94,6 +101,8 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
     return forgetpassError == null;
   }
 
+// If Forgot pass validation is successful, activate the  button.
+
   activateFrogetbtn() {
     if (validateForgetpassWord()) {
       _isDisableforgetbtn = false;
@@ -103,12 +112,15 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Call this method while clicking if the Forgot pass validation process is successful.
   submitForgetPassword(BuildContext context) {
     if (validateForgetpassWord()) {
       fetchForgetPassword(_isMobileForgetpass ? "clientid" : "mobile",
           forGetloginMethCtrl.text.toUpperCase(), context);
     }
   }
+
+// If Change pass validation is successful, activate the button.
 
   activateChangePass() {
     if (validateChangePassword()) {
@@ -121,6 +133,8 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Show / Hide password text values
+
   hiddeoldpasswords() {
     _hideoldpassword = !_hideoldpassword;
     notifyListeners();
@@ -131,6 +145,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Validating Change Pass
   bool validateChangePassword() {
     clearError();
     if (userIdController.text.trim().isEmpty) {
@@ -153,6 +168,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
         newPasswordError == null;
   }
 
+// Fetching data from the api and stored in a variable
   fetchForgetPassword(String field, String value, BuildContext context) async {
     try {
       toggleLoadingOn(true);
@@ -185,6 +201,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
       toggleLoadingOn(false);
     }
   }
+// Call this method while clicking if the Change pass validation process is successful.
 
   submitChangePass(BuildContext context) {
     if (validateChangePassword()) {
@@ -193,6 +210,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   fetchChangePassword(String userId, String oldpassword, String password,
       BuildContext context) async {
     try {
