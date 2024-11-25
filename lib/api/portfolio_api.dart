@@ -1,4 +1,4 @@
-import 'dart:developer';
+ 
 
 import '../models/portfolio_model/holdings_model.dart';
 import '../models/portfolio_model/mf_holdings_model.dart';
@@ -180,7 +180,7 @@ mixin PortfolioAPI on ApiCore {
           Uri.parse("${apiLinks.positionGrp}?clientid=${prefs.clientId}");
       final res = await apiClient.get(uri, headers: defaultHeaders);
 
-      log("Position Group List => ${res.body}");
+      // log("Position Group List => ${res.body}");
       final json = jsonDecode(res.body);
       final List<GetGroupSymbol> data = [];
 

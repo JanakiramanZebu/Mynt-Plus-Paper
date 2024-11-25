@@ -598,7 +598,7 @@ class AuthProvider extends DefaultChangeNotifier {
               useErrorDialogs: false, stickyAuth: true, biometricOnly: false));
 
       if (authenticated) {
-        print('bioAuth - User authenticated successfully');
+        // print('bioAuth - User authenticated successfully');
 
         initialLoadMethods(context, s);
       } else {

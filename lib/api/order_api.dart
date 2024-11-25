@@ -1,4 +1,6 @@
+ 
 import 'dart:developer';
+
 import 'package:public_ip_address/public_ip_address.dart';
 
 import '../models/order_book_model/cancel_order_model.dart';
@@ -69,7 +71,7 @@ mixin OrderAPI on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
-      log("PlaceOrder => ${res.body}");
+      // log("PlaceOrder => ${res.body}");
       final json = jsonDecode(res.body);
 
       return PlaceOrderModel.fromJson(json as Map<String, dynamic>);
@@ -126,7 +128,7 @@ mixin OrderAPI on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
-      log("Trade BOOK RESPONSE ::: ${res.body}");
+      // log("Trade BOOK RESPONSE ::: ${res.body}");
       // log(res.statusCode.toString());
 
       final List<TradeBookModel> data = [];
@@ -314,7 +316,7 @@ mixin OrderAPI on ApiCore {
           headers: defaultHeaders,
           body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
 
-      log("Modify order=> ${res.body}");
+      // log("Modify order=> ${res.body}");
       final json = jsonDecode(res.body);
 
       return ModifyOrderModel.fromJson(json as Map<String, dynamic>);
@@ -355,7 +357,7 @@ mixin OrderAPI on ApiCore {
           body:
               '''jData={"reg_date":"${modifysipinput.regdate}","start_date":"${modifysipinput.startdate}","frequency":"${modifysipinput.frequency}","end_period":"${modifysipinput.endperiod}","sip_name":"${modifysipinput.sipname}","internal":{"PrevExecDate":"${modifysipinput.prevExecutedate}","DueDate":"${modifysipinput.duedate}","ExecDate":"${modifysipinput.exedate}","period":"${modifysipinput.period}","active":"${modifysipinput.active}","SipId":"${modifysipinput.sipId}"},"Scrips":[{"exch":"${modifysipinput.exch}","tsym":"${modifysipinput.tysm}","prd":"${modifysipinput.prd}","token":"${modifysipinput.token}","qty":"${modifysipinput.qty}"}]}&jKey=${prefs.clientSession}''');
 
-      log("ModifysipOrder => ${res.body}");
+      // log("ModifysipOrder => ${res.body}");
       final json = jsonDecode(res.body);
 
       return ModifySIPModel.fromJson(json as Map<String, dynamic>);
@@ -472,7 +474,7 @@ mixin OrderAPI on ApiCore {
       if (input.remarks.isNotEmpty) {
         payload.addAll({"remarks": input.remarks});
       }
-      log("Modify GTT Order => $payload");
+      // log("Modify GTT Order => $payload");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
@@ -679,7 +681,7 @@ mixin OrderAPI on ApiCore {
           headers: defaultHeaders,
           body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
 
-      log("Basket Order Margin => ${res.body}");
+      // log("Basket Order Margin => ${res.body}");
       final json = jsonDecode(res.body);
 
       return OrderMarginModel.fromJson(json as Map<String, dynamic>);
