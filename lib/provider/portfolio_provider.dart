@@ -916,9 +916,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
         if (qty != 0) {
           pnl = element.netqty == "0"
-              ? (double.parse("${element.totsellamt ?? 0.00}") -
-                      double.parse("${element.totbuyamt ?? 0.00}"))
-                  .toStringAsFixed(2)
+              ? qty > 0
+                  ? ((qty * lastPrice) -
+                          (qty * double.parse(element.daybuyavgprc ?? "0.00")))
+                      .toStringAsFixed(2)
+                  : ((qty * lastPrice) -
+                          (qty * double.parse(element.daysellavgprc ?? "0.00")))
+                      .toStringAsFixed(2)
               : (element.exch == "MCX" || element.exch == "CDS")
                   ? ((lastPrice - avgPrc) *
                           (int.parse("${element.mult ?? 0}") * qty))
@@ -928,6 +932,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
           element.profitNloss = pnl;
 
           unRealMtm += double.parse(element.profitNloss!);
+
+          bookPnl += ((qty * double.parse(element.daybuyavgprc ?? "0.00")) -
+              (qty * double.parse(element.daysellavgprc ?? "0.00")));
         } else {
           bookPnl += double.parse(element.rpnl!);
         }
@@ -984,16 +991,20 @@ class PortfolioProvider extends DefaultChangeNotifier {
           if (qty == 0) {
             if (element.cfbuyqty != "0") {
               element.profitNloss =
-                  (double.parse("${element.daysellavgprc ?? 0.00}") *
-                              int.parse("${element.daysellqty ?? 0}") -
-                          int.parse("${element.cfbuyqty ?? 0}") *
-                              double.parse("${element.upldprc ?? 0.00}"))
+                  ((double.parse("${element.daysellavgprc ?? 0.00}") *
+                              int.parse("${element.daysellqty ?? 0}")) -
+                          (int.parse("${element.cfbuyqty ?? 0}") *
+                              double.parse("${element.upldprc ?? 0.00}")) -
+                          (int.parse("${element.daybuyqty ?? 0}") *
+                              double.parse("${element.daybuyavgprc ?? 0.00}")))
                       .toStringAsFixed(2);
             } else if (element.cfsellqty != "0") {
-              element.profitNloss = (int.parse("${element.cfsellqty ?? 0}") *
-                          double.parse("${element.upldprc ?? 0.00}") -
-                      double.parse("${element.daybuyavgprc ?? 0.00}") *
-                          int.parse("${element.daybuyqty ?? 0}"))
+              element.profitNloss = ((int.parse("${element.cfsellqty ?? 0}") *
+                          double.parse("${element.upldprc ?? 0.00}")) -
+                      (double.parse("${element.daybuyavgprc ?? 0.00}") *
+                          int.parse("${element.daybuyqty ?? 0}")) -
+                      (int.parse("${element.daysellqty ?? 0}") *
+                          double.parse("${element.daysellavgprc ?? 0.00}")))
                   .toStringAsFixed(2);
             } else {
               element.profitNloss = element.rpnl;
@@ -1111,9 +1122,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
           if (qty != 0) {
             pnl = element["netqty"] == "0"
-                ? (double.parse("${element["totsellamt"] ?? 0.00}") -
-                        double.parse("${element["totbuyamt"] ?? 0.00}"))
-                    .toStringAsFixed(2)
+                ? qty > 0
+                    ? ((qty * lastPrice) -
+                            (qty *
+                                double.parse(
+                                    element['daybuyavgprc'] ?? "0.00")))
+                        .toStringAsFixed(2)
+                    : ((qty * lastPrice) -
+                            (qty *
+                                double.parse(
+                                    element['daysellavgprc'] ?? "0.00")))
+                        .toStringAsFixed(2)
                 : (element["exch"] == "MCX" || element["exch"] == "CDS")
                     ? ((lastPrice - avgPrc) *
                             (int.parse("${element['mult'] ?? 0}") * qty))
@@ -1123,6 +1142,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
             element["profitNloss"] = pnl;
 
             unRealMtm += double.parse(pnl);
+
+            bookPnl +=
+                ((qty * double.parse(element['daybuyavgprc'] ?? "0.00")) -
+                    (qty * double.parse(element['daysellavgprc'] ?? "0.00")));
             _groupedBySymbol[groupName]['totPnl'] =
                 unRealMtm.toStringAsFixed(2);
           } else {
@@ -1154,19 +1177,24 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
             if (qty == 0) {
               if (element["cfbuyqty"] != "0") {
-                element['profitNloss'] =
-                    (double.parse("${element['daysellavgprc'] ?? 0.00}") *
-                                int.parse("${element['daysellqty'] ?? 0}") -
-                            int.parse("${element['cfbuyqty'] ?? 0}") *
-                                double.parse("${element['upldprc'] ?? 0.00}"))
-                        .toStringAsFixed(2);
+                element['profitNloss'] = ((double.parse(
+                                "${element['daysellavgprc'] ?? 0.00}") *
+                            int.parse("${element['daysellqty'] ?? 0}")) -
+                        (int.parse("${element['cfbuyqty'] ?? 0}") *
+                            double.parse("${element['upldprc'] ?? 0.00}")) -
+                        (int.parse("${element['daybuyqty'] ?? 0}") *
+                            double.parse("${element['daybuyavgprc'] ?? 0.00}")))
+                    .toStringAsFixed(2);
               } else if (element['cfsellqty'] != "0") {
-                element['profitNloss'] =
-                    (int.parse("${element['cfsellqty'] ?? 0}") *
-                                double.parse("${element['upldprc'] ?? 0.00}") -
-                            double.parse("${element['daybuyavgprc'] ?? 0.00}") *
-                                int.parse("${element['daybuyqty'] ?? 0}"))
-                        .toStringAsFixed(2);
+                element['profitNloss'] = ((int.parse(
+                                "${element['cfsellqty'] ?? 0}") *
+                            double.parse("${element['upldprc'] ?? 0.00}")) -
+                        (double.parse("${element['daybuyavgprc'] ?? 0.00}") *
+                            int.parse("${element['daybuyqty'] ?? 0}")) -
+                        (int.parse("${element['daysellqty'] ?? 0}") *
+                            double.parse(
+                                "${element['daysellavgprc'] ?? 0.00}")))
+                    .toStringAsFixed(2);
               }
             } else {
               element['profitNloss'] = ((lastPrice -
@@ -1669,6 +1697,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
+// Holding search by Trade symbol
   holdingSearch(String value, BuildContext context) {
     if (value.length > 1) {
       _holdingSearchItem = [];
@@ -1690,6 +1719,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// MF Holding search by Trade symbol
   mfHoldingSearch(String value, BuildContext context) {
     if (value.length > 1) {
       _mfHoldingSearchItem = [];
@@ -1711,6 +1741,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Fetching data from the api and stored in a variable
   positionSearch(String value, BuildContext context) {
     if (value.length > 1) {
       _positionSearchItem = [];
@@ -1731,6 +1762,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchPosGroupSymbol(String name, bool isCreateGrp) async {
     try {
       _getPositionGroupSymbol = await api.getGroupPosition();
@@ -1751,6 +1783,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchGroupName(String name, BuildContext c, bool isCreateGrp) async {
     try {
       toggleLoadingOn(true);
@@ -1774,6 +1807,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchAddGroupSymbol(String name, BuildContext c, Map data) async {
     try {
       _groupName = await api.addGroupNameSymbol(name, data);
@@ -1798,6 +1832,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     } catch (e) {}
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchDeleteGroupName(String name, BuildContext c) async {
     try {
       toggleLoadingOn(true);
@@ -1820,6 +1855,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchDeleteGroupSymbol(
       String name, BuildContext c, String tsym) async {
     try {
@@ -1846,6 +1882,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     } catch (e) {}
   }
 
+// updating Holings data from websocket
   void updateHoldingValues(String token, Map<String, dynamic> socketData) {
     var index = _holdingsModel!
         .indexWhere((holding) => holding.exchTsym![0].token == token);

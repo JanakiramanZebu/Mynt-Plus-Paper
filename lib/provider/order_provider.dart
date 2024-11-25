@@ -138,6 +138,8 @@ class OrderProvider extends DefaultChangeNotifier {
   String _selectedBsktName = "";
   String get selectedBsktName => _selectedBsktName;
 
+// Change tab orderbook tab index
+
   changeTabIndex(int index, BuildContext context) {
     _selectedTab = index;
     tabSize();
@@ -159,6 +161,8 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
+
+// Change Basket name
   chngBsktName(String val, BuildContext context) async {
     _selectedBsktName = val;
 
@@ -246,7 +250,7 @@ class OrderProvider extends DefaultChangeNotifier {
     orderSearchCtrl.clear();
     _orderSearchItem = [];
     notifyListeners();
-  }
+  } 
 
   clearSipSearch() {
     orderSipSearchCtrl.clear();

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../res/res.dart';
 
+//It serves to display information to the user.
+
 SnackBar error(BuildContext context, String error) => SnackBar(
     content: ListTile(
         minLeadingWidth: 10,

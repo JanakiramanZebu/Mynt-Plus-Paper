@@ -123,6 +123,10 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
       final scripInfo = watch(marketWatchProvider);
       final socketDatas = watch(websocketProvider).socketDatas;
       final theme = context.read(themeProvider);
+
+
+        // This scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the scrip details.
+                      
       if (socketDatas.containsKey(depthData.token)) {
         depthData.lp = "${socketDatas["${depthData.token}"]['lp']}";
         depthData.pc = "${socketDatas["${depthData.token}"]['pc']}";

@@ -1,13 +1,12 @@
- 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/notification_model/broker_message_model.dart';
 import '../models/notification_model/exchange_message_model.dart';
-import '../models/notification_model/exchange_status_model.dart'; 
+import '../models/notification_model/exchange_status_model.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -16,7 +15,7 @@ final notificationprovider =
     ChangeNotifierProvider((ref) => NotificationProvider(ref.read));
 
 class NotificationProvider extends DefaultChangeNotifier {
-    final Preferences pref = locator<Preferences>();
+  final Preferences pref = locator<Preferences>();
   final api = locator<ApiExporter>();
   final Reader ref;
   NotificationProvider(this.ref);
@@ -44,6 +43,7 @@ class NotificationProvider extends DefaultChangeNotifier {
     _selectedTab = index;
   }
 
+// Assigning Tab for Notification screen
   tabSize() {
     _notifyTabName = [
       Tab(
@@ -58,13 +58,13 @@ class NotificationProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchexchagemsg(BuildContext context) async {
-    
     try {
       _exchangemessage = await api.getexchmsg();
       if (_exchangemessage![0].emsg ==
           "Session Expired :  Invalid Session Key") {
-         ref(authProvider). ifSessionExpired(  context);
+        ref(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
       }
@@ -103,15 +103,14 @@ class NotificationProvider extends DefaultChangeNotifier {
   //     notifyListeners();
   //   } finally {}
   // }
-
+// Fetching data from the api and stored in a variable
   Future fetchbrokermsg(BuildContext context) async {
-    
     try {
       _brokermsg = await api.getbrokermsg();
       // print("------------------------------------> ${_brokermsg!.length}");
       // print("------------------------------------> ${_brokermsg![0].emsg}");
       if (_brokermsg![0].emsg == "Session Expired :  Invalid Session Key") {
-         ref(authProvider). ifSessionExpired(  context);
+        ref(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
       }

@@ -115,6 +115,7 @@ class FundProvider extends DefaultChangeNotifier {
     var enCodePass = utf8.encode(
         'sLoginId=${pref.clientId}&sAccountId=${pref.clientId}&token=${fundHstoken!.hstk}&sBrokerId=ZEBU');
     var base64Pass = base64Url.encode(enCodePass);
+    // Redirecting OptionZ by using HS token encryption
     await fetchOptionZ(base64Pass, context);
   }
 
@@ -133,6 +134,7 @@ class FundProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchHstoken(BuildContext context) async {
     try {
       toggleLoadingOn(true);
@@ -155,6 +157,7 @@ class FundProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchFunds(BuildContext context) async {
     try {
       _listOfCredits = [];
@@ -164,6 +167,8 @@ class FundProvider extends DefaultChangeNotifier {
       if (_fundDetailModel!.emsg == "Session Expired :  Invalid Session Key") {
         ref(authProvider).ifSessionExpired(context);
       } else {
+// Calculating funds
+
         ConstantName.sessCheck = true;
         double cash = double.parse(_fundDetailModel!.cash ?? "0.00");
         double payin = double.parse(_fundDetailModel!.payin ?? "0.00");
@@ -304,6 +309,7 @@ class FundProvider extends DefaultChangeNotifier {
   //   }
   // }
 
+// Fetching data from the api and stored in a variable
   Future fetchUpiDetail() async {
     try {
       _paymentMethod = [];
@@ -318,6 +324,7 @@ class FundProvider extends DefaultChangeNotifier {
     }
   }
 
+// Fetching data from the api and stored in a variable
   Future fetchBankDetail() async {
     try {
       _bankDetailsModel = await api.getBankDetail();
@@ -383,6 +390,8 @@ class FundProvider extends DefaultChangeNotifier {
     return itemsHeights;
   }
 
+  // Adding  dropdown items divider
+
   List<DropdownMenuItem<String>> addBankDividers() {
     List<DropdownMenuItem<String>> menuItems = [];
 
@@ -420,6 +429,7 @@ class FundProvider extends DefaultChangeNotifier {
     return menuItems;
   }
 
+// set Dropdown item height
   List<double> getBankCustItemsHeight() {
     List<double> itemsHeights = [];
     for (var i = 0; i < (_bankData!.length * 2) - 1; i++) {
@@ -433,6 +443,7 @@ class FundProvider extends DefaultChangeNotifier {
     return itemsHeights;
   }
 
+// Validate UPI Id
   bool isValidUpiId() {
     final RegExp upiRegex =
         RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);

@@ -8,9 +8,11 @@ class ListDivider extends StatelessWidget {
   const ListDivider({super.key});
 
   @override
-  Widget build(BuildContext context) {       final theme = context.read(themeProvider);
+  Widget build(BuildContext context) {
+    final theme = context.read(themeProvider);
     return Divider(
-                          thickness: 0,
-                            color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider, height: 0);
+        thickness: 0,
+        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        height: 0);
   }
 }

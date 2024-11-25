@@ -24,11 +24,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_)  {
-      initializeResources(context: context);  initialRoute();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      initializeResources(context: context);
+      initialRoute();
       context.read(networkStateProvider).networkStream();
       context.read(networkStateProvider).getContext(context);
-    
     });
   }
 
@@ -53,12 +53,13 @@ class _SplashScreenState extends State<SplashScreen> {
     ]));
   }
 
+//When an application is opened, it is called and operates according to a condition.
   initialRoute() async {
     final Preferences pref = locator<Preferences>();
     try {
       print(
           "Device  Name  ${pref.deviceName!} - ${pref.clientSession} ----  ${context.read(networkStateProvider).connectionStatus} ");
-      context.read(authProvider).loginMethCtrl.text =  pref.clientId!;
+      context.read(authProvider).loginMethCtrl.text = pref.clientId!;
       context
           .read(authProvider)
           .switchMobToClinent(pref.clientId!.isEmpty ? false : true);
@@ -66,7 +67,7 @@ class _SplashScreenState extends State<SplashScreen> {
         await context.read(authProvider).getDeviceDetails();
       }
       if (pref.clientSession!.isEmpty && pref.clientId!.isNotEmpty) {
-         pref.setMobileLogin(false);
+        pref.setMobileLogin(false);
         pref.setHideLoginOptBtn(false);
       } else {
         pref.setHideLoginOptBtn(true);
@@ -79,12 +80,11 @@ class _SplashScreenState extends State<SplashScreen> {
         pref.setMobileLogin(true);
         await context
             .read(authProvider)
-            .fetchMobileLogin(context, "", pref.clientId!, "",pref.imei!);
+            .fetchMobileLogin(context, "", pref.clientId!, "", pref.imei!);
       }
     } catch (e) {
-
-       ScaffoldMessenger.of(context)
-            .showSnackBar(error(context, "Something Wrong !!!"));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(error(context, "Something Wrong !!!"));
       log("faild to build --- $e");
     }
   }

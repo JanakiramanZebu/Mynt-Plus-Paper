@@ -21,7 +21,7 @@ class SipProvider extends DefaultChangeNotifier {
   final TextEditingController datefield = TextEditingController();
   final TextEditingController numberofSips = TextEditingController();
   final TextEditingController modifysipdate = TextEditingController();
-
+// set sip order start date
   startdatemethod(String value) {
     DateTime now = DateTime.now();
     selectedDateTime = now;
@@ -31,6 +31,8 @@ class SipProvider extends DefaultChangeNotifier {
   }
 
   DateTime? selectedDateTime;
+// Date picket dialogue
+
   Future providedate(
       BuildContext context, ThemesProvider theme, String value) async {
     DateTime now = DateTime.now();

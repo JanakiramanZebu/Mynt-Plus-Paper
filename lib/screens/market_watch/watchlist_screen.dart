@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
+import 'package:flutter_svg/svg.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../provider/market_watch_provider.dart';
 
@@ -31,6 +31,9 @@ class WatchListScreen extends ConsumerWidget {
       scrollDirection: Axis.horizontal,
       controller: _controller,
       onPageChanged: (int d) async {
+        // Swipe to change wathclist
+
+        // Un-subscribe previous market watch scrip datas
         await marketWatch.requestMWScrip(context: context, isSubscribe: false);
         for (var i = 0; i < marketWatch.marketWatchlist!.values!.length; i++) {
           if (i == d) {
@@ -80,7 +83,7 @@ class WatchListScreen extends ConsumerWidget {
                                 label: 'Add symbol',
                                 onPress: () {
                                   marketWatch.requestMWScrip(
-                                          context: context, isSubscribe: false);
+                                      context: context, isSubscribe: false);
                                   Navigator.pushNamed(
                                       context, Routes.searchScrip,
                                       arguments: marketWatch.wlName);
@@ -92,6 +95,7 @@ class WatchListScreen extends ConsumerWidget {
                       itemCount: marketWatch.scrips.length,
                       // itemCount: marketWatch.marketWatchScripData[marketWatch.marketWatchlist!.values![index]],
                       itemBuilder: (BuildContext context, int idx) {
+                        // The market watch scrip data item list is provided here. These scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the market watch list.
                         if (socketDatas
                             .containsKey(marketWatch.scrips[idx]['token'])) {
                           marketWatch.scrips[idx]['ltp'] =
@@ -218,7 +222,7 @@ class WatchListScreen extends ConsumerWidget {
                                               .bottom,
                                         ),
                                         child: ScripDepthInfo(
-                                            wlValue: depthArgs, isBasket: '' )));
+                                            wlValue: depthArgs, isBasket: '')));
                               }
                             },
                             contentPadding:
@@ -227,7 +231,8 @@ class WatchListScreen extends ConsumerWidget {
                             title: Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text( "${marketWatch.scrips[idx]["symbol"].toString().toUpperCase()} ",
+                                Text(
+                                    "${marketWatch.scrips[idx]["symbol"].toString().toUpperCase()} ",
                                     style: textStyles.scripNameTxtStyle
                                         .copyWith(
                                             color: theme.isDarkMode
@@ -335,6 +340,4 @@ class WatchListScreen extends ConsumerWidget {
       },
     );
   }
-
-   
 }

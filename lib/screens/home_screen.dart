@@ -10,7 +10,7 @@ import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
 import '../provider/network_state_provider.dart';
- 
+
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
 import '../provider/stocks_provider.dart';
@@ -33,7 +33,7 @@ import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
 import 'portfolio_screens/positions/group/position_group_bottomsheet.dart';
 import 'profile_screen/logged_user_bottom_sheet.dart';
-import 'profile_screen/profile_main_screen.dart'; 
+import 'profile_screen/profile_main_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,10 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void initState() {
     WidgetsBinding.instance.addObserver(this);
 
-    // context
-    //     .read(marketWatchProvider)
-    //     .requestMWScrip(isSubscribe: true, context: context);
-
+// This is a websockt heartbeat connection that reconnects every two seconds only.
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
         context.read(websocketProvider).reconnectWS();
@@ -68,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
+// Determining the app's state, such as inactive, stopped, resumed, and so forth
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
@@ -121,6 +119,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+     // It displays a dialogue to update our Application if the version has changed from the previous version.
+            
     var upgrader = Upgrader(
       messages: MyUpgraderMessages(),
     );
@@ -136,7 +136,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           final theme = context.read(themeProvider);
           return GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
-              child: UpgradeAlert(
+
+               child: UpgradeAlert(
                   upgrader: upgrader,
                   showIgnore: false,
                   showLater: false,
@@ -217,7 +218,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             ? "Orderbook"
                                             : indexProvide.selectedBtmIndx == 2
                                                 ? "Portfolio"
-                                                : watch(stocksProvide).exploreName,
+                                                : watch(stocksProvide)
+                                                    .exploreName,
                                         style: textStyles.appBarTitleTxt
                                             .copyWith(
                                                 color: theme.isDarkMode
@@ -234,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       marketWatchList.isPreDefWLs != "Yes") ...[
 //                                     InkWell(
 //                                       onTap: () async {
-                                         
+
 //                                         watch(optStrategyProvider)
 //                                             .fetchStrategyJson();
 //                                         await watch(optStrategyProvider)
@@ -280,8 +282,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             },
                                             child: Container(
                                                 padding: EdgeInsets.only(
-                                                    left: 8,
-                                                    right:   10),
+                                                    left: 8, right: 10),
                                                 child: SvgPicture.asset(
                                                     assets.filterLines,
                                                     width: 19,
@@ -642,6 +643,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             : colors.colorBlack)
                                                   ]))))
                                   : null),
+
+                      // Here is the Bottom menu items
                       bottomNavigationBar: BottomAppBar(
                           height: 58,
                           shadowColor: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
@@ -1152,6 +1155,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         }));
   }
 
+// The screen will change depending on the condition when you click on the bottom menu items.
   _onItemTapped(index) {
     switch (index) {
       // case 0:
@@ -1174,6 +1178,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+// If an application asks for user confirmation before you can exit it, do so.
   Future<bool> showExitPopup() async {
     return await showDialog(
             context: context,

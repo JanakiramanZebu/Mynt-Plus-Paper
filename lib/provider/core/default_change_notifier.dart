@@ -6,11 +6,13 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
   bool fundisLoad = false;
 
   String? errorMessage;
-    bool initLoad = false;
+  bool initLoad = false;
 
   // ignore: avoid_positional_boolean_parameters
 
- 
+  // On/off loader mode If it takes longer than expected to retrieve data from the API,
+  //we only activate loader on mode during that period.
+
   void toggleLoadingOn(bool on) {
     loading = on;
     notifyListeners();
@@ -32,10 +34,8 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void initLaod(bool on){
-  initLoad = on;
+  void initLaod(bool on) {
+    initLoad = on;
     notifyListeners();
   }
-
-   
 }

@@ -140,7 +140,7 @@ class TranctionProvider extends DefaultChangeNotifier {
 
   bool _isBottomSheetShown = true;
   bool get isBottomSheetShown => _isBottomSheetShown;
-
+// Money trasfer options
   final List _defaultUpiapps = [
     {
       'name': 'UPI APPS',
@@ -165,6 +165,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// get device IP address
   Ip() async {
     try {
       toggleLoadingOn(true);
@@ -211,6 +212,8 @@ class TranctionProvider extends DefaultChangeNotifier {
     amounterror == null;
     notifyListeners();
   }
+
+// Validating UPI Id
 
   validateUPI(String value) {
     upiid.text = value;
@@ -368,7 +371,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       fetchPaymentWithDrawStatus(context);
       double marg = 0;
       double reqs = 0;
-
+// checking if withdraw amt is greate than available amt
       if (double.tryParse(_payoutdetails!.totalLedger.toString())! > 0) {
         if (double.tryParse(_payoutdetails!.brkcollamt.toString())! > 0) {
           marg = double.tryParse(_payoutdetails!.brkcollamt.toString())! -
@@ -434,7 +437,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       toggleLoadingOn(false);
     }
   }
-
+// Fetching data from the api and stored in a variable
   Future fetcUPIIDPayment(
       BuildContext context, String upiId, String clientId, String accno) async {
     try {
@@ -489,6 +492,8 @@ class TranctionProvider extends DefaultChangeNotifier {
           await api.getUPIAppsPayment(amt, bankaccno, clientid, name);
       if (defaultTargetPlatform == TargetPlatform.iOS) {
       } else {
+
+        // Redirect to Web browser
         launch("${_hdfcdirectpayment!.data!.upilink}");
       }
     } catch (e) {
@@ -499,7 +504,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       togglefundLoadingOn(false);
     }
   }
-
+// Fetching data from the api and stored in a variable
   Future fetchHdfcpaymetstatus(
       BuildContext context, String ordno, String upiTransid) async {
     try {
@@ -511,6 +516,8 @@ class TranctionProvider extends DefaultChangeNotifier {
           hdfcpaymentstatus?.upiId?.status == "REJECTED" ||
           hdfcpaymentstatus?.upiId?.status == "SUCCESS") {
         _isBottomSheetShown = false;
+
+// The Botttomsheet displays the payment status according to the condition.
         showModalBottomSheet(
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
@@ -539,7 +546,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       togglefundLoadingOn(false);
     }
   }
-
+// Fetching data from the api and stored in a variable
   Future fetchrazorpay(BuildContext context, String amt, String accno,
       String name, String ifsc) async {
     try {
@@ -554,7 +561,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       togglefundLoadingOn(false);
     }
   }
-
+// Fetching data from the api and stored in a variable
   Future fetchrazorpayStatus(String paymentid) async {
     try {
       togglefundLoadingOn(true);
@@ -568,7 +575,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       togglefundLoadingOn(false);
     }
   }
-
+// Fetching data from the api and stored in a variable
   Future fetchupiIdView(String bankname, String accountnumber) async {
     try {
       toggleLoadingOn(true);
@@ -588,7 +595,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       toggleLoadingOn(false);
     }
   }
-
+// Fetching data from the api and stored in a variable
   Future fetchPaymentWithDraw(
       String ip, String amount, String segment, BuildContext context) async {
     try {
@@ -607,9 +614,10 @@ class TranctionProvider extends DefaultChangeNotifier {
       togglefundLoadingOn(false);
     }
   }
-
+// Fetching data from the api and stored in a variable
   Future fetchPaymentWithDrawStatus(BuildContext context) async {
     try {
+      
       togglefundLoadingOn(true);
 
       _withdrawstatus = await api.getWithDrawStatus();

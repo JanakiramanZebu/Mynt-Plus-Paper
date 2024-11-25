@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/order_book_model/gtt_order_book.dart';
 import '../models/order_book_model/order_book_model.dart';
 import '../sharedWidget/enums.dart';
@@ -45,15 +45,19 @@ class OrderInputProvider extends DefaultChangeNotifier {
 
   String priceVal = "0.00";
 
+  // Change order Validaity(Day/Ioc)
   chngeValidity(String val) {
     _validityName = val;
     notifyListeners();
   }
 
+  // Change order type
   chngOrderName(String val) {
     _orderName = val;
     notifyListeners();
   }
+
+  // Change order Price type
 
   chngPriceName(String val) {
     _priceName = val;
@@ -74,6 +78,7 @@ class OrderInputProvider extends DefaultChangeNotifier {
 
   OrderInputProvider(this.ref);
 
+// Change investment type based on condition
   chngInvesType(InvestType val, String orderType) {
     if (orderType == "PlcOrder" || orderType == "GTT") {
       _investType = val;
@@ -102,18 +107,17 @@ class OrderInputProvider extends DefaultChangeNotifier {
   chngOrderType(String val) {
     if (val == "Cover") {
       _ordType = "H";
-    } else if(val == "Bracket"){
+    } else if (val == "Bracket") {
       _ordType = "B";
-    }else{
-        _ordType = "F";
+    } else {
+      _ordType = "F";
     }
     notifyListeners();
     log("val $_ordType");
   }
 
+// This method for retrieving information from the order book to place orders again
   getOrderData(OrderBookModel data) {
-
-  
     qtyCrl.text = "${data.qty}";
     prcCtrl.text = "${data.prc}";
     triggerPriceCtrl.text = data.trgprc ?? "";
@@ -189,6 +193,7 @@ class OrderInputProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Change price type Based on condition
   chngPriceType(String val, String exch) {
     if (val == "Limit") {
       _prcType = "LMT";
@@ -361,6 +366,7 @@ class OrderInputProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+// Clear all text field value on Gtt order
   clearTextField() {
     _reMarksCtrl.clear();
     _ocoTrgPrcCtrl.clear();
@@ -378,6 +384,7 @@ class OrderInputProvider extends DefaultChangeNotifier {
     _disableGTTCond = val;
     notifyListeners();
   }
+// This method for retrieving information from the GTT order book to Modify the order
 
   getModifyData(GttOrderBookModel gttOrderBook) {
     _reMarksCtrl.text = "${gttOrderBook.remarks}";
@@ -431,7 +438,7 @@ class OrderInputProvider extends DefaultChangeNotifier {
       _ocoPriceCtrl.text = "${gttOrderBook.placeOrderParamsLeg2!.prc}";
       _ocoQtyCtrl.text = "${gttOrderBook.placeOrderParamsLeg2!.qty}";
       _ocoTrgPrcCtrl.text = "${gttOrderBook.placeOrderParamsLeg2!.trgprc}";
-    }else{
+    } else {
       disableCondGTT(false);
     }
 

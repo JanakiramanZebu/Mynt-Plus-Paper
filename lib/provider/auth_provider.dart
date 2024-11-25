@@ -455,6 +455,7 @@ class AuthProvider extends DefaultChangeNotifier {
         clearError();
         clearTextField();
 
+// set values to save device
         pref.setClientId("${_mobileOtp!.clientid}");
         pref.setClientMob("${_mobileOtp!.mobile}");
         pref.setClientSession("${_mobileOtp!.apitoken}");

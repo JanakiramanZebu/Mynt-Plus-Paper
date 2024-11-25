@@ -9,6 +9,9 @@ import '../models/marketwatch_model/get_quotes.dart';
 import '../provider/market_watch_provider.dart';
 import '../screens/market_watch/scrip_depth_info.dart'; 
 
+
+// Common methods for visible scrip information buttons, such as overview, chart, option chain, and others, are covered in this class.
+
 class ScripInfoBtns extends ConsumerWidget {
   final String token;
   final String exch;

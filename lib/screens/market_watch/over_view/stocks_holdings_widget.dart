@@ -174,7 +174,7 @@ class StocksHoldingsWidget extends ConsumerWidget {
                             : const Color.fromARGB(255, 18, 18, 18))),
                 menuItemStyleData: MenuItemStyleData(
                     customHeights: shareHoldings
-                        .getCustomItemsHeight(shareHoldings.finnceYears)),
+                        .getCustomItemsHeight(shareHoldings.shareHoldType)),
                 buttonStyleData: ButtonStyleData(
                     height: 36,
                     width: MediaQuery.of(context).size.width,

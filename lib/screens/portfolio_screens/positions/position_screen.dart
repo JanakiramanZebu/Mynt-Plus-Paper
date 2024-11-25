@@ -353,6 +353,10 @@ class PositionScreen extends ConsumerWidget {
                               physics: const NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
+
+
+                                  // The Position  data item list is provided here. These scrips are subscribed to Websocket, and we verify that the conditions fit the Position scrip before adding the data to the Position list.
+                      
                                 if (socketDatas
                                     .containsKey(listofPosition[index].token)) {
                                   listofPosition[index].lp =

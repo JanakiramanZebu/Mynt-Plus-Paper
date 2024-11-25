@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 final NumberFormat numberFormat = NumberFormat("##,##,##,##,##0.00", "hi");
-
+// Coverting Number format
 String getFormatter(
     {required double value, required bool v4d, required bool noDecimal}) {
   const String formatWith2 = "##,##,##,##,##0.00";
@@ -17,6 +17,7 @@ String getFormatter(
       .format(value);
 }
 
+// Making a positive value become a negative one
 bool isNumberNegative(String num) {
   return num.startsWith('-');
 }
@@ -43,6 +44,7 @@ String getFormatedNumValue(
   }
 }
 
+// Time Validation based condition
 timevalidation(String startTime, String endTime) {
   final now = DateTime.now();
   final opentime = DateTime(
@@ -72,6 +74,7 @@ timevalidation(String startTime, String endTime) {
 }
 
 modifyButtonStatus(String startdate, String enddate) {
+  // Format the datetime in the desired format
   DateFormat dateFormat = DateFormat("yyyy-MM-dd");
 
   String conEndDate = convertDatestart(enddate);
@@ -91,7 +94,7 @@ modifyButtonStatus(String startdate, String enddate) {
   return status.toString();
 }
 
-
+// Converting value to currency format
 String formatCurrencyStandard({required String value}) {
   String formatedCurrency = '';
   if (value.isNotEmpty) {
@@ -104,8 +107,8 @@ String formatCurrencyStandard({required String value}) {
   return formatedCurrency;
 }
 
+// Convert the number to crores
 String formatInCrore(int number) {
-  // Convert the number to crores
   double croreValue = number / 1e7;
   // Format to show only the first three significant digits
   String formattedValue = croreValue.toStringAsFixed(2);
@@ -146,7 +149,7 @@ Map spilitTsym({required String value}) {
   String symbol = "";
   String expDate = "";
   String option = "";
-
+  // Format the date in the desired format
   RegExp datePattern = RegExp(r'\d{2}[A-Z]{3}\d{2,4}');
 
   String? dateMatch = datePattern.firstMatch(value)?.group(0);
@@ -193,7 +196,7 @@ String sipformatDateTime({required String value}) {
     int year = int.parse(inputDateString.substring(4));
 
     DateTime inputDate = DateTime(year, month, day);
-
+    // Format the datetime in the desired format
     final formattedDateString = DateFormat("dd-MMM-yyyy").format(inputDate);
 
     formatedDate = formattedDateString;
@@ -220,7 +223,7 @@ String duedateformate({required String value}) {
 
 String readTimestamp(int timestamp) {
   DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-
+  // Format the datetime in the desired format
   final dateFormatter = DateFormat('dd-MM-yyyy');
 
   final formattedDate = dateFormatter.format(dateTime);
@@ -262,7 +265,8 @@ ipostartdate(String startdate, String enddate) {
 }
 
 String convertDatestart(String dateString) {
-  DateFormat inputFormat = DateFormat("dd-MM-yyyy");
+  DateFormat inputFormat =
+      DateFormat("dd-MM-yyyy"); // Format the datetime in the desired format
   DateFormat outputFormat = DateFormat("yyyy-MM-dd");
   DateTime dateTime = inputFormat.parseUTC(dateString);
   String formattedDate = outputFormat.format(dateTime);
@@ -270,7 +274,8 @@ String convertDatestart(String dateString) {
 }
 
 String convertDateend(String dateString) {
-  DateFormat inputFormat = DateFormat("EEE, dd MMM yyyy HH:mm:ss");
+  DateFormat inputFormat = DateFormat(
+      "EEE, dd MMM yyyy HH:mm:ss"); // Format the datetime in the desired format
   DateFormat outputFormat = DateFormat("yyyy-MM-dd");
   DateTime dateTime = inputFormat.parseUTC(dateString);
   String formattedDate = outputFormat.format(dateTime);
@@ -278,7 +283,8 @@ String convertDateend(String dateString) {
 }
 
 String ipodateres(String dt1) {
-  DateTime dateTime = DateTime.parse(dt1);
+  DateTime dateTime =
+      DateTime.parse(dt1); // Format the datetime in the desired format
   String formattedDate = DateFormat('yyyy-MM-dd hh:mm a').format(dateTime);
   return formattedDate;
 }
@@ -305,7 +311,7 @@ String convDateWithTime() {
 
   final inputFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
   final inputDatetime = inputFormat.parse("$now");
-
+  // Format the datetime in the desired format
   final outputFormat = DateFormat("dd MMM yyyy, hh:mm a");
   final formattedDatetime = outputFormat.format(inputDatetime);
   return formattedDatetime.toString();

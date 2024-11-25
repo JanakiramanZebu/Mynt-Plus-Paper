@@ -2,8 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart'; 
 
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../provider/market_watch_provider.dart';
@@ -11,6 +10,7 @@ import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
+import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/snack_bar.dart';
 import 'edit_scrip.dart';
 import 'scrip_depth_info.dart';
@@ -253,9 +253,5 @@ log("dfgdf ${context.read(websocketProvider).socketDatas["${watchListData['token
                                         FontWeight.w600),
                                   )
                                 ]));
-  } TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+  }  
 }

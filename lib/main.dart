@@ -33,24 +33,24 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     print('Message notification: ${message.notification?.title}');
     print('Message notification: ${message.notification?.body}');
 
-    message.data["imageUrl"] != "" ? NotificationService.showNotification(
-        title: message.notification!.title,
-        body: message.notification!.body,
-        summary: "Mynt+",
-        notificationLayout: NotificationLayout.BigPicture,
-        bigPicture: message.data["imageUrl"],
-        payload: {"navigate": "true", "url": message.data["url"]})
-        :
-        NotificationService.showNotification(
-        title: message.notification!.title,
-        body: message.notification!.body,
-        summary: "Mynt+",
-        notificationLayout: NotificationLayout.Default,)
-        ;
+    message.data["imageUrl"] != ""
+        ? NotificationService.showNotification(
+            title: message.notification!.title,
+            body: message.notification!.body,
+            summary: "Mynt+",
+            notificationLayout: NotificationLayout.BigPicture,
+            bigPicture: message.data["imageUrl"],
+            payload: {"navigate": "true", "url": message.data["url"]})
+        : NotificationService.showNotification(
+            title: message.notification!.title,
+            body: message.notification!.body,
+            summary: "Mynt+",
+            notificationLayout: NotificationLayout.Default,
+          );
   }
 }
 
-
+// This method represents the project's entry level.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
@@ -60,9 +60,7 @@ void main() async {
   // NotificationService().initNotification();
   WidgetsFlutterBinding.ensureInitialized();
   await Upgrader.clearSavedSettings();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await Upgrader.clearSavedSettings();
   final Preferences pref = locator<Preferences>();
@@ -80,10 +78,9 @@ void main() async {
     sound: true,
   );
 // It requests a registration token for sending messages to users from your App server or other trusted server environment.
-     ConstantName.msgToken = await messaging.getToken();
+  ConstantName.msgToken = await messaging.getToken();
 
-
-    log("Token ${ConstantName.msgToken}");
+  log("Token ${ConstantName.msgToken}");
   if (kDebugMode) {
     print('Permission granted: ${settings.authorizationStatus}');
   }
@@ -108,20 +105,19 @@ void main() async {
       print('Message notification: ${message.data["imageUrl"]}');
     }
 
-    message.data["imageUrl"] != "" ? NotificationService.showNotification(
-        title: message.notification!.title,
-        body: message.notification!.body,
-        summary: "Mynt+",
-        notificationLayout: NotificationLayout.BigPicture,
-        bigPicture: message.data["imageUrl"],
-        payload: {"navigate": "true", "url": message.data["url"]})
-        :
-        NotificationService.showNotification(
-        title: message.notification!.title,
-        body: message.notification!.body,
-        summary: "Mynt+",
-        notificationLayout: NotificationLayout.Default)
-        ;
+    message.data["imageUrl"] != ""
+        ? NotificationService.showNotification(
+            title: message.notification!.title,
+            body: message.notification!.body,
+            summary: "Mynt+",
+            notificationLayout: NotificationLayout.BigPicture,
+            bigPicture: message.data["imageUrl"],
+            payload: {"navigate": "true", "url": message.data["url"]})
+        : NotificationService.showNotification(
+            title: message.notification!.title,
+            body: message.notification!.body,
+            summary: "Mynt+",
+            notificationLayout: NotificationLayout.Default);
 
     // NotificationService().showNotification(
     //     title: message.notification?.title, body: message.notification?.body);

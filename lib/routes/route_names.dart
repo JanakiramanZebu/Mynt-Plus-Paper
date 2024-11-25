@@ -1,4 +1,6 @@
 class Routes {
+// It is used to route one page to another and all of its names are route names.
+
   static const String loginScreen = 'loginScreen';
   static const String loginOtpVerify = 'loginOtpVerify';
   static const String forgotPass = 'forgotPass';

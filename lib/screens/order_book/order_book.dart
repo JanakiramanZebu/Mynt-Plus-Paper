@@ -164,6 +164,9 @@ class OrderBook extends ConsumerWidget {
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         itemBuilder: (context, index) {
+  // The order book scrip data item list is provided here. These scrips are subscribed to Websocket, and we verify that the conditions fit the order book scrip before adding the data to the order book list.
+                      
+
                           if (socketDatas.containsKey(orderBook[index].token)) {
                             orderBook[index].ltp =
                                 "${socketDatas["${orderBook[index].token}"]['lp']}";

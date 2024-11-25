@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+// It regulates the scroll's behaviour.
 class ScrollBehaviors extends ScrollBehavior {
   @override
   Widget buildOverscrollIndicator(
