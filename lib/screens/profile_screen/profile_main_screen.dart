@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 //import 'package:url_launcher/url_launcher.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
@@ -14,7 +15,7 @@ import '../../provider/mf_provider.dart';
 import '../../provider/notification_provider.dart';
 
 import '../../provider/thems.dart';
-import '../../provider/transcation_provider.dart';
+// import '../../provider/transcation_provider.dart';
 import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
@@ -29,7 +30,7 @@ class UserAccountScreen extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final userProfile = watch(userProfileProvider);
     final theme = watch(themeProvider);
-    final trancation = watch(transcationProvider);
+    // final trancation = watch(transcationProvider);
     int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
     final Preferences pref = locator<Preferences>();
@@ -163,35 +164,33 @@ class UserAccountScreen extends ConsumerWidget {
                                             borderRadius:
                                                 BorderRadius.circular(50))),
                                     onPressed: () async {
-                                     Future.delayed(Duration(milliseconds: 100),
-                                        () async {
-                                      await context
-                                          .read(transcationProvider)
-                                          .Ip();
-                                      await context
-                                          .read(transcationProvider)
-                                          .fetchupiIdView(
-                                              trancation.bankdetails!
-                                                  .dATA![trancation.indexss][1],
-                                              trancation.bankdetails!
-                                                      .dATA![trancation.indexss]
-                                                  [2]);
+                                      //  Future.delayed(Duration(milliseconds: 100),
+                                      //     () async {
+                                      //   await context
+                                      //       .read(transcationProvider)
+                                      //       .Ip();
+                                      //   await context
+                                      //       .read(transcationProvider)
+                                      //       .fetchupiIdView(
+                                      //           trancation.bankdetails!
+                                      //               .dATA![trancation.indexss][1],
+                                      //           trancation.bankdetails!
+                                      //                   .dATA![trancation.indexss]
+                                      //               [2]);
 
-                                      await context
-                                          .read(transcationProvider)
-                                          .fetchcwithdraw(context);
-                                    });
-                                    trancation.changebool(true);
-                                    Navigator.pushNamed(
-                                        context, Routes.fundscreen,
-                                        arguments: trancation);
-                                      
+                                      //   await context
+                                      //       .read(transcationProvider)
+                                      //       .fetchcwithdraw(context);
+                                      // });
+                                      // trancation.changebool(true);
+                                      // Navigator.pushNamed(
+                                      //     context, Routes.fundscreen,
+                                      //     arguments: trancation);
 
-                                      // await funds.fetchHstoken(context);
+                                      await funds.fetchHstoken(context);
 
-                                      // launch(
-                                      //     'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
-                                     
+                                      launch(
+                                          'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
                                     },
                                     child: Text("Deposit Money",
                                         textAlign: TextAlign.center,
