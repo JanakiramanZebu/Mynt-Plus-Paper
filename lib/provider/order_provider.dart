@@ -161,7 +161,6 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
-
 // Change Basket name
   chngBsktName(String val, BuildContext context) async {
     _selectedBsktName = val;
@@ -250,7 +249,7 @@ class OrderProvider extends DefaultChangeNotifier {
     orderSearchCtrl.clear();
     _orderSearchItem = [];
     notifyListeners();
-  } 
+  }
 
   clearSipSearch() {
     orderSipSearchCtrl.clear();
@@ -354,7 +353,6 @@ class OrderProvider extends DefaultChangeNotifier {
       placeOrderInput.channel = defaultTargetPlatform == TargetPlatform.android
           ? '${ref(authProvider).deviceInfo["brand"]}'
           : "${ref(authProvider).deviceInfo["model"]}";
-       
 
       _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
@@ -414,7 +412,7 @@ class OrderProvider extends DefaultChangeNotifier {
     try {
       placeOrderInput.channel = defaultTargetPlatform == TargetPlatform.android
           ? '${ref(authProvider).deviceInfo["brand"]}'
-          : "${ref(authProvider).deviceInfo["model"]}"; 
+          : "${ref(authProvider).deviceInfo["model"]}";
 
       _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
@@ -1446,7 +1444,7 @@ class OrderProvider extends DefaultChangeNotifier {
             mktProt: element['mktProt'],
             channel: defaultTargetPlatform == TargetPlatform.android
                 ? '${ref(authProvider).deviceInfo["brand"]}'
-                : "${ref(authProvider).deviceInfo["model"]}"  );
+                : "${ref(authProvider).deviceInfo["model"]}");
 
         _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 

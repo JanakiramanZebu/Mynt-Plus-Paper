@@ -11,6 +11,7 @@ import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
 import '../provider/network_state_provider.dart';
 
+import '../provider/option_strategy.dart';
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
 import '../provider/stocks_provider.dart';
@@ -119,8 +120,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-     // It displays a dialogue to update our Application if the version has changed from the previous version.
-            
+    // It displays a dialogue to update our Application if the version has changed from the previous version.
+
     var upgrader = Upgrader(
       messages: MyUpgraderMessages(),
     );
@@ -136,8 +137,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           final theme = context.read(themeProvider);
           return GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
-
-               child: UpgradeAlert(
+              child: UpgradeAlert(
                   upgrader: upgrader,
                   showIgnore: false,
                   showLater: false,
@@ -234,31 +234,34 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               : [
                                   if (indexProvide.selectedBtmIndx == 1 &&
                                       marketWatchList.isPreDefWLs != "Yes") ...[
-//                                     InkWell(
-//                                       onTap: () async {
-
-//                                         watch(optStrategyProvider)
-//                                             .fetchStrategyJson();
-//                                         await watch(optStrategyProvider)
-//                                             .chngeOptionName("NIFTY", context);
-//  watch(optStrategyProvider).strgStikeSelection(   watch(optStrategyProvider).stratagyName
-//                              ,    watch(optStrategyProvider).strgOptName );
-//                                         Navigator.pushNamed(
-//                                             context, Routes.optionStrategy);
-//                                       },
-//                                       child: Container(
-//                                           padding: EdgeInsets.only(
-//                                               left: 8,
-//                                               right: marketWatchList
-//                                                           .scrips.length >=
-//                                                       50
-//                                                   ? 0
-//                                                   : 8),
-//                                           child: SvgPicture.asset(
-//                                               assets.optChainIcon,
-//                                               width: 19,
-//                                               color: colors.colorGrey)),
-//                                     ),
+                                    // InkWell(
+                                    //   onTap: () async {
+                                    //     watch(optStrategyProvider)
+                                    //         .fetchStrategyJson();
+                                    //     await watch(optStrategyProvider)
+                                    //         .chngeOptionName("NIFTY", context);
+                                    //     watch(optStrategyProvider)
+                                    //         .strgStikeSelection(
+                                    //             watch(optStrategyProvider)
+                                    //                 .stratagyName,
+                                    //             watch(optStrategyProvider)
+                                    //                 .strgOptName);
+                                    //     Navigator.pushNamed(
+                                    //         context, Routes.optionStrategy);
+                                    //   },
+                                    //   child: Container(
+                                    //       padding: EdgeInsets.only(
+                                    //           left: 8,
+                                    //           right: marketWatchList
+                                    //                       .scrips.length >=
+                                    //                   50
+                                    //               ? 0
+                                    //               : 8),
+                                    //       child: SvgPicture.asset(
+                                    //           assets.optChainIcon,
+                                    //           width: 19,
+                                    //           color: colors.colorGrey)),
+                                    // ),
                                     marketWatchList.scrips.length > 1
                                         ? InkWell(
                                             onTap: () {
@@ -406,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                     .all(Radius
                                                                         .circular(
                                                                             14))),
-                                                        scrollable: true,
+                                                       scrollable: true,
                                                         contentPadding:
                                                             const EdgeInsets
                                                                 .symmetric(

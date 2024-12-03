@@ -1,7 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/provider/index_list_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 
 import '../api/core/api_export.dart';
@@ -11,9 +13,12 @@ import '../models/indices/index_list_model.dart';
 import '../models/json_model/strategy_model.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../models/marketwatch_model/opt_chain_model.dart';
+import '../models/order_book_model/order_book_model.dart';
+import '../models/order_book_model/place_order_model.dart';
 import '../res/res.dart';
 import 'core/default_change_notifier.dart';
 import 'market_watch_provider.dart';
+import 'order_provider.dart';
 
 final optStrategyProvider =
     ChangeNotifierProvider((ref) => OptionStrategyProvider(ref.read));
@@ -275,5 +280,42 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
     }
     notifyListeners();
     print("Stategy ${_optStrgyStrike.length}");
+  }
+
+  optionStrategyOrderPlace(BuildContext context) async {
+    if (_optStrgyStrike.isNotEmpty) {
+      for (var element in _optStrgyStrike) {
+        PlaceOrderInput placeOrderInput = PlaceOrderInput(
+            amo: "",
+            blprc: '',
+            bpprc: '',
+            dscqty: "0",
+            exch: element.exch!,
+            prc: element.lp!,
+            prctype: "MKT",
+            prd: "M",
+            qty: element.ls!,
+            ret: "DAY",
+            trailprc: '',
+            trantype: element.transType!,
+            trgprc: "",
+            tsym: element.tsym!,
+            mktProt: '',
+            channel: '');
+        await ref(orderProvider).slicePlaceOrder(context, placeOrderInput);
+      }
+
+      List<OrderBookModel> _orderBookModel =
+          await ref(orderProvider).fetchOrderBook(context, true);
+      if (_orderBookModel!.isNotEmpty) {
+        if (_orderBookModel![0].stat != "Not_Ok") {
+          ref(indexListProvider).bottomMenu(3);
+          HapticFeedback.heavyImpact();
+          SystemSound.play(SystemSoundType.click);
+
+          Navigator.pop(context);
+        }
+      }
+    }
   }
 }
