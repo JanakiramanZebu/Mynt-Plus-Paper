@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+import 'allholdings/allholdings_screen.dart';
 import 'holdings/holding_screen.dart';
 import 'mfHoldings/mf_holding_screen.dart';
 import 'positions/position_screen.dart';
@@ -57,6 +58,8 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       }
     });
 
+    context.read(portfolioProvider).fetchBrokerDetails(context);
+
     super.initState();
   }
 
@@ -100,7 +103,8 @@ class _PortfolioScreenState extends State<PortfolioScreen>
             if (portfolio.mfHoldingsModel![0].stat != "Not_Ok") ...[
               const MFHoldingScreen()
             ]
-          ]
+          ],
+          const Allholdings()
         ]))
       ]);
     });

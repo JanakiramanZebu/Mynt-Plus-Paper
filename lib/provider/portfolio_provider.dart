@@ -9,6 +9,7 @@ import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
+import '../models/camsres_model.dart';
 import '../models/order_book_model/place_order_model.dart';
 import '../models/portfolio_model/holdings_model.dart';
 import '../models/portfolio_model/mf_holdings_model.dart';
@@ -18,6 +19,7 @@ import '../models/portfolio_model/position_convertion_model.dart';
 
 import '../models/portfolio_model/position_group_model.dart';
 import '../res/res.dart';
+import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
@@ -118,6 +120,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
   bool _isNetPnl = true;
   bool get isNetPnl => _isNetPnl;
 
+  Map<String, dynamic> _allholds = {};
+  Map<String, dynamic> get allholds => _allholds;
+
+  Camsmodel? _camsrespons;
+  Camsmodel? get camsrespons => _camsrespons;
+
+  String _ldate = "";
+  String get ldate => _ldate;
+
   PortfolioProvider(this.ref);
 
   bool _showSearchHold = false;
@@ -175,6 +186,52 @@ class PortfolioProvider extends DefaultChangeNotifier {
   }
 
 //  Assinging and portfolio name length set
+  fetchBrokerDetails(BuildContext raw) async {
+    try {
+      // toggleLoadingOn(true);
+      var res = await api.getallHolding();
+      if (res.equities.isNotEmpty) {
+        var one = res.equities;
+        String subscr = "";
+
+        one.forEach((key, value) {
+          for (var two in value['summary']) {
+            subscr += "${two['exch']}|${two['token']}#";
+            two['totinv'] = (double.tryParse(two['lastTradedPrice']) ?? 0.0) *
+                (double.tryParse("${two['units']}") ?? 0.0);
+          }
+        });
+        // res['subscr'] = subscr;
+        if (subscr.isNotEmpty) {
+          ref(websocketProvider).establishConnection(
+              channelInput: subscr, task: 't', context: raw);
+        }
+        _allholds = res.equities;
+        _ldate = res.syncDatetime;
+      } else {
+        _allholds = {};
+      }
+      notifyListeners();
+    } catch (e) {
+      print('Error: $e');
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+
+  Future fetchCamRedirct(BuildContext context) async {
+    try {
+      toggleLoad(true);
+      _camsrespons = await api.getcamsapi();
+      Navigator.pushNamed(context, Routes.camsWebView,
+          arguments: _camsrespons!.redirectionurl);
+    } catch (e) {
+      ref(indexListProvider).logError.add({"type": "Fetch API", "Error": "$e"});
+      notifyListeners();
+    } finally {
+      toggleLoad(false);
+    }
+  }
 
   tabSize() {
     _portTabName = [
@@ -206,7 +263,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
             ),
           ),
         ]
-      ]
+      ],
+      const Tab(
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+            Text("Total Portfolio"),
+          ])),
     ];
 
     notifyListeners();

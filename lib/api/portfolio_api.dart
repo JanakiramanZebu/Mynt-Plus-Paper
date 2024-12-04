@@ -1,5 +1,5 @@
- 
-
+import '../models/camsres_model.dart';
+import '../models/portfolio_model/allholdings_model.dart';
 import '../models/portfolio_model/holdings_model.dart';
 import '../models/portfolio_model/mf_holdings_model.dart';
 import '../models/portfolio_model/mf_quotes.dart';
@@ -86,6 +86,53 @@ mixin PortfolioAPI on ApiCore {
     }
   }
 
+  Future<AllholdModel> getallHolding() async {
+    try {
+      final uri = Uri.parse(apiLinks.getCames);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({
+            "mobileNo": prefs.clientMob,
+            // "mobileNo": '9444856459',
+            // "mobileNo": '9962573900',
+          }));
+      final json = jsonDecode(res.body);
+
+      late AllholdModel allholds;
+      if (json['msg'] is Map<String, dynamic> &&
+          json['msg']['equities'] != null) {
+        allholds = AllholdModel.fromJson(json['msg']);
+        print('MB data ex');
+      } else {
+        allholds = AllholdModel(
+          equities: {},
+          mutualfunds: {},
+          syncDatetime: '',
+        );
+        print('MB data nil');
+      }
+      return allholds;
+    } catch (e) {
+      print("ERROR TOTALBROKER ::: $e");
+      rethrow;
+    }
+  }
+
+  Future<Camsmodel> getcamsapi() async {
+    try {
+      final uri = Uri.parse(apiLinks.getCamesauth);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({"mobile": prefs.clientMob}));
+          // body: jsonEncode({"mobile": '9444856459'}));
+      final json = jsonDecode(res.body);
+
+      return Camsmodel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+  
   // get Mutual fund  scrip info from kambala
 
   Future<MFQuotes> getMFQutoes(String exch, String token) async {
@@ -97,7 +144,7 @@ mixin PortfolioAPI on ApiCore {
 
       // log("MF Quotes => ${res.body}");
       final json = jsonDecode(res.body);
- 
+
       return MFQuotes.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -105,7 +152,7 @@ mixin PortfolioAPI on ApiCore {
   }
 
 // get Position book from kambala
-  
+
   Future<List<PositionBookModel>> getPositionBook() async {
     try {
       final uri = Uri.parse(apiLinks.getPosition);

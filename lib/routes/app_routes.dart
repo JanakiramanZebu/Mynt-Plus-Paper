@@ -37,10 +37,11 @@ import '../screens/portfolio_screens/holdings/holding_detail_screen.dart';
 import '../screens/portfolio_screens/positions/exit_position_screen.dart';
 import '../screens/portfolio_screens/positions/group/position_group_detail.dart';
 import '../screens/portfolio_screens/positions/position_detail_screen.dart';
+import '../screens/profile_screen/app_webview/cams_web_view.dart';
 import '../screens/profile_screen/app_webview/fund_transaction.dart';
 import '../screens/profile_screen/app_webview/option_z.dart';
 import '../screens/profile_screen/app_webview/profile_web_view.dart';
-import '../screens/profile_screen/app_webview/report_web_view.dart'; 
+import '../screens/profile_screen/app_webview/report_web_view.dart';
 import '../screens/profile_screen/fund_screen/fund_screen.dart';
 import '../screens/profile_screen/fund_screen/secure_fund.dart';
 import '../screens/profile_screen/log_message.dart';
@@ -352,7 +353,24 @@ class AppRoutes {
             );
           },
         );
+      case Routes.camsWebView:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              CamsWebView(argument: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0.0, 1.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
 
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
       case Routes.orderDetail:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
@@ -1025,7 +1043,6 @@ class AppRoutes {
                   position: animation.drive(tween), child: child);
             });
 
-     
       case Routes.optionStrategy:
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>

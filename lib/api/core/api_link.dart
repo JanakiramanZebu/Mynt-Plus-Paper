@@ -45,6 +45,12 @@ class ApiLinks {
   String get searchScrip => '$goMyntURL/SearchScrip';
   String get technicalData => '$goMyntURL/GetTechnicals';
   String get watchListrename => '$goMyntURL/RenameMW';
+  
+  // Cams
+  String get goCamsURL => "https://rekycbe.mynt.in/portfolio";
+  String get getCames => '$goCamsURL/broker_dateils_get';
+  String get getCamesauth => '$goCamsURL/login/auth';
+
 
 // Market Index
 
