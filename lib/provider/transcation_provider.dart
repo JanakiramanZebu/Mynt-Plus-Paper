@@ -3,8 +3,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/provider/iop_provider.dart';
 import 'package:number_to_words/number_to_words.dart';
 import 'package:public_ip_address/public_ip_address.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
@@ -22,6 +24,8 @@ import '../models/fund_model_testing_copy/fund_withdraw_status_model.dart';
 import '../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
 import '../models/fund_model_testing_copy/secured_client_data_model.dart';
 import '../models/fund_model_testing_copy/view_upi_id.dart';
+import '../screens/profile_screen/fund_screen/upi_apps_screens/cancel_request_alert_box.dart';
+import '../screens/profile_screen/fund_screen/upi_apps_screens/no_upi_apps_alert.dart';
 import '../screens/profile_screen/fund_screen/upi_apps_screens/upi_apps_payment_failed.dart';
 import '../screens/profile_screen/fund_screen/upi_id_screens/upi_id_payment_fail_or_success.dart';
 import '../sharedWidget/functions.dart';
@@ -30,6 +34,7 @@ import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
+// import 'package:http/http.dart' as http;
 
 final transcationProvider =
     ChangeNotifierProvider((ref) => TranctionProvider(ref.read));
@@ -41,13 +46,16 @@ class TranctionProvider extends DefaultChangeNotifier {
   TextEditingController upiid = TextEditingController();
   TextEditingController withdrawamount = TextEditingController();
 
+  // TranctionHistoryModel? _tranctionHistoryModel;
+  // TranctionHistoryModel? get tranctionHistoryModel => _tranctionHistoryModel;
+
   int _selectedIndex = -1;
   int get selectedindex => _selectedIndex;
 
   int _intValue = 0;
   int get intValue => _intValue;
 
-  final int _indexss = 0;
+  int _indexss = 0;
   int get indexss => _indexss;
 
   String _ifsc = '';
@@ -82,6 +90,12 @@ class TranctionProvider extends DefaultChangeNotifier {
 
   bool _upiIdbutton = true;
   bool get upiIdbutton => _upiIdbutton;
+
+  List<String>? _urls = [];
+  List<String>? get url => _urls;
+
+  Map<String, dynamic>? _dsds = {};
+  Map<String, dynamic>? get dsds => _dsds;
 
   bankselection(int index) {
     _initbank =
@@ -129,18 +143,18 @@ class TranctionProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  final FocusNode _focusNode = FocusNode();
+  FocusNode _focusNode = FocusNode();
   FocusNode get focusNode => _focusNode;
 
   List<String> _companycode = [];
   List<String> get companycodes => _companycode;
 
-  final RegExp _upiPattern = RegExp(r'^[\w.-]+@[\w.-]+$');
+  RegExp _upiPattern = RegExp(r'^[\w.-]+@[\w.-]+$');
   RegExp get upiPattern => _upiPattern;
 
   bool _isBottomSheetShown = true;
   bool get isBottomSheetShown => _isBottomSheetShown;
-// Money trasfer options
+
   final List _defaultUpiapps = [
     {
       'name': 'UPI APPS',
@@ -165,12 +179,11 @@ class TranctionProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-// get device IP address
-  Ip() async {
+  ip() async {
     try {
       toggleLoadingOn(true);
-      final getIp = await IpAddress().getAllData();
-      _ipAddress = getIp['ip'];
+      String ip = await IpAddress().getIp();
+      _ipAddress = ip;
       return _ipAddress;
     } finally {
       toggleLoadingOn(false);
@@ -212,8 +225,6 @@ class TranctionProvider extends DefaultChangeNotifier {
     amounterror == null;
     notifyListeners();
   }
-
-// Validating UPI Id
 
   validateUPI(String value) {
     upiid.text = value;
@@ -264,8 +275,8 @@ class TranctionProvider extends DefaultChangeNotifier {
   BankDetails? _bankdetails;
   BankDetails? get bankdetails => _bankdetails;
 
-  Razorpay? _razorpay;
-  Razorpay? get razorpay => _razorpay;
+  Razorpays? _razorpay;
+  Razorpays? get razorpay => _razorpay;
 
   RazorpayTranstationRes? _razorpayTranstationRes;
   RazorpayTranstationRes? get razorpayTranstationRes => _razorpayTranstationRes;
@@ -293,12 +304,15 @@ class TranctionProvider extends DefaultChangeNotifier {
       _fundTokenValidation = await api.getFundvalidateSession();
       if (_fundTokenValidation!.emsg == "invalid token") {
         ref(authProvider).ifSessionExpired(context);
+        notifyListeners();
       }
-
+      notifyListeners();
       //  print("------------ ${_fundTokenValidation!.msg}}");
     } catch (e) {
       //  log("validate session:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchValidateToken", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoadingOn(false);
@@ -338,7 +352,9 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       // log("Failed to fetch bank Data:: ${e.toString()}");
-      //  ref(TranctionProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchUpiPaymentstatus", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoadingOn(false);
@@ -351,11 +367,14 @@ class TranctionProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
 
       _decryptclientcheck = await api.getClientDetails();
-      // print("------------ ${ApiLinks.token}");
+
+      // print("client emsg ${_decryptclientcheck!.emsg}");
       //print("------------ ${_decryptclientcheck!.clientCheck!.dATA![0]}");
     } catch (e) {
       //log("Failed to fetch Profile Data:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchclient", "Error": "$e"});
       notifyListeners();
     } finally {
       toggleLoadingOn(false);
@@ -368,10 +387,11 @@ class TranctionProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
 
       _payoutdetails = await api.getWithdrawPayout(context);
+
       fetchPaymentWithDrawStatus(context);
       double marg = 0;
       double reqs = 0;
-// checking if withdraw amt is greate than available amt
+
       if (double.tryParse(_payoutdetails!.totalLedger.toString())! > 0) {
         if (double.tryParse(_payoutdetails!.brkcollamt.toString())! > 0) {
           marg = double.tryParse(_payoutdetails!.brkcollamt.toString())! -
@@ -411,12 +431,14 @@ class TranctionProvider extends DefaultChangeNotifier {
                   .toStringAsFixed(2);
 
       //  print("------------ ${ApiLinks.token}");
-      // print("WITHDRAW PAYOUT ${_payoutdetails!.emsg}.");
+
       // print("WITHDRAW PAYOUT ${_payoutdetails!.withdrawAmount}.");
       // print("WITHDRAW PAYOUT ${_payoutdetails!.cash}.");
     } catch (e) {
       // log("Failed to Get Payout Detial:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchcwithdraw", "Error": "$e"});
       notifyListeners();
     } finally {
       toggleLoadingOn(false);
@@ -431,13 +453,15 @@ class TranctionProvider extends DefaultChangeNotifier {
       // print("------------ ${_bankdetails!}");
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchfundbank", "Error": "$e"});
       notifyListeners();
     } finally {
       toggleLoadingOn(false);
     }
   }
-// Fetching data from the api and stored in a variable
+
   Future fetcUPIIDPayment(
       BuildContext context, String upiId, String clientId, String accno) async {
     try {
@@ -452,7 +476,9 @@ class TranctionProvider extends DefaultChangeNotifier {
       //log("HDFC BANK $hdfcpaymentdata");
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetcUPIIDPayment", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoadingOn(false);
@@ -476,7 +502,9 @@ class TranctionProvider extends DefaultChangeNotifier {
       //print("HDFC BANK ${hdfcpaymentdata!.data!.clientVPA![0]}");
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchHdfctranction", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoadingOn(false);
@@ -492,19 +520,55 @@ class TranctionProvider extends DefaultChangeNotifier {
           await api.getUPIAppsPayment(amt, bankaccno, clientid, name);
       if (defaultTargetPlatform == TargetPlatform.iOS) {
       } else {
-
-        // Redirect to Web browser
-        launch("${_hdfcdirectpayment!.data!.upilink}");
+        if (_fundTokenValidation?.emsg == "invalid token") {
+        } else {
+          checkAndLaunchUrl("${_hdfcdirectpayment!.data!.upilink}", context);
+        }
       }
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchUPIPaymet", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoadingOn(false);
     }
   }
-// Fetching data from the api and stored in a variable
+
+  Future<void> checkAndLaunchUrl(String url, BuildContext context) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      showModalBottomSheet(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          backgroundColor: const Color(0xffffffff),
+          isDismissible: false,
+          enableDrag: false,
+          showDragHandle: false,
+          useSafeArea: false,
+          isScrollControlled: true,
+          context: context,
+          builder: (BuildContext context) {
+            return WillPopScope(
+                onWillPop: () async {
+                  return false;
+                },
+                child: const PaymentCancelAlert());
+          });
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      showModalBottomSheet(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          backgroundColor: const Color(0xffffffff),
+          context: context,
+          builder: (BuildContext context) {
+            return const NoUPIAppsAlert();
+          });
+    }
+  }
+
   Future fetchHdfcpaymetstatus(
       BuildContext context, String ordno, String upiTransid) async {
     try {
@@ -516,8 +580,6 @@ class TranctionProvider extends DefaultChangeNotifier {
           hdfcpaymentstatus?.upiId?.status == "REJECTED" ||
           hdfcpaymentstatus?.upiId?.status == "SUCCESS") {
         _isBottomSheetShown = false;
-
-// The Botttomsheet displays the payment status according to the condition.
         showModalBottomSheet(
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
@@ -540,28 +602,73 @@ class TranctionProvider extends DefaultChangeNotifier {
       //print("HDFC PAYMENTSTATUS ${_hdfcpaymentstatus!.upiId!.clientVPA}");
     } catch (e) {
       // log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchHdfcpaymetstatus", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoadingOn(false);
     }
   }
-// Fetching data from the api and stored in a variable
-  Future fetchrazorpay(BuildContext context, String amt, String accno,
-      String name, String ifsc) async {
+
+  Future fetchrazorpay(
+    BuildContext context,
+    String amt,
+    String accno,
+    String name,
+    String ifsc,
+    Razorpay razorpay,
+  ) async {
     try {
       togglefundLoadingOn(true);
 
       _razorpay = await api.getrazorpay(amt, accno, name, ifsc);
+      if (_razorpay!.status == "created") {
+        var options = {
+          'key': 'rzp_live_M3tazzVCcFf8Iq',
+          'amount': int.parse("${_razorpay!.amount}").toString(),
+          'name': 'Zebu Fund',
+          'currency': 'INR',
+          'order_id': _razorpay!.id,
+          'image': "https://zebuetrade.com/wp-content/uploads/2020/07/logo.png",
+          'description':
+              "Fund add to ${_decryptclientcheck!.clientCheck!.dATA![_indexss][0]}",
+          'send_sms_hash': true,
+          'prefill': {
+            'name': _decryptclientcheck!.clientCheck!.dATA![_indexss][2],
+            'email': _decryptclientcheck!.clientCheck!.dATA![_indexss][4],
+            'contact': _decryptclientcheck!.clientCheck!.dATA![_indexss][5],
+            'method': 'netbanking',
+            'bank': _bankname,
+          },
+          'notes': {
+            'clientcode':
+                "${_decryptclientcheck!.clientCheck!.dATA![_indexss][0]}",
+            'acc_no': _accno,
+            'ifsc': _ifsc,
+            'bankname': _bankname,
+            'company_code': _textValue,
+          },
+          'theme': {
+            'color': "#3399cc",
+          },
+          'retry': {
+            'enabled': false,
+            'max_count': 0,
+          },
+        };
+
+        razorpay.open(options);
+      }
     } catch (e) {
       //  log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider).logError.add({"type": "RAZORPAY", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoadingOn(false);
     }
   }
-// Fetching data from the api and stored in a variable
+
   Future fetchrazorpayStatus(String paymentid) async {
     try {
       togglefundLoadingOn(true);
@@ -569,13 +676,15 @@ class TranctionProvider extends DefaultChangeNotifier {
       // log("PAYMENT ID${_razorpayTranstationRes?.id} $paymentid");
     } catch (e) {
       // log("Failed to Razorpay Status:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchrazorpayStatus", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoadingOn(false);
     }
   }
-// Fetching data from the api and stored in a variable
+
   Future fetchupiIdView(String bankname, String accountnumber) async {
     try {
       toggleLoadingOn(true);
@@ -584,18 +693,21 @@ class TranctionProvider extends DefaultChangeNotifier {
       amount.clear();
       if (_viewUpiIdModel!.isNotEmpty) {
         upiid.text = "${_viewUpiIdModel![0].upiId}";
+        ref(ipoProvide).viewupiid.text = "${_viewUpiIdModel![0].upiId}";
       } else {
         upiid.clear();
       }
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchupiIdView", "Error": "$e"});
       notifyListeners();
     } finally {
       toggleLoadingOn(false);
     }
   }
-// Fetching data from the api and stored in a variable
+
   Future fetchPaymentWithDraw(
       String ip, String amount, String segment, BuildContext context) async {
     try {
@@ -608,16 +720,17 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       //log("Failed to Payment withdraw:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchPaymentWithDraw", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoadingOn(false);
     }
   }
-// Fetching data from the api and stored in a variable
+
   Future fetchPaymentWithDrawStatus(BuildContext context) async {
     try {
-      
       togglefundLoadingOn(true);
 
       _withdrawstatus = await api.getWithDrawStatus();
@@ -625,7 +738,9 @@ class TranctionProvider extends DefaultChangeNotifier {
       // print("${_withdrawstatus?[0].msg}");
     } catch (e) {
       //log("Failed to Payment withdraw:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref(indexListProvider)
+          .logError
+          .add({"type": "fetchPaymentWithDrawStatus", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoadingOn(false);

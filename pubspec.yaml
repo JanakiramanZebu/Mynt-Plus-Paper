@@ -75,7 +75,6 @@ dependencies:
   number_to_words: ^1.0.0
   uuid: ^4.5.1
   public_ip_address: ^1.2.0
-  installed_apps: ^1.5.2
   
   
 

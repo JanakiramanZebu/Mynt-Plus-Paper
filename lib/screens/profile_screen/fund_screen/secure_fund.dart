@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../../../locator/locator.dart';
-import '../../../locator/preference.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/thems.dart';
-
+import '../../../provider/transcation_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
@@ -20,8 +17,7 @@ class SecureFund extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final funds = watch(fundProvider);
     final theme = watch(themeProvider);
-    //final trancation = watch(transcationProvider);
-    final Preferences pref = locator<Preferences>();
+    final trancation = watch(transcationProvider);
     final List<ChartData> donutChart = [
       if (funds.fundDetailModel?.margincurper != null)
         ChartData(
@@ -46,6 +42,7 @@ class SecureFund extends ConsumerWidget {
                   theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   14,
                   FontWeight.w600)),
+                  
         ),
         body: ListView(
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -152,7 +149,7 @@ class SecureFund extends ConsumerWidget {
                                                     arguments: "pledge");
                                               },
                                               widget: Row(children: [
-                                                Text("   Breakup",
+                                                Text("Breakup",
                                                     style: theme.isDarkMode
                                                         ? textStyles.darktextBtn
                                                             .copyWith(
@@ -410,32 +407,23 @@ class SecureFund extends ConsumerWidget {
                                         borderRadius: BorderRadius.circular(50),
                                       )),
                                   onPressed: () async {
-                                    // Future.delayed(Duration(milliseconds: 100),
-                                    //     () async {
-                                    //   await context
-                                    //       .read(transcationProvider)
-                                    //       .Ip();
-                                    //   await context
-                                    //       .read(transcationProvider)
-                                    //       .fetchupiIdView(
-                                    //           trancation.bankdetails!
-                                    //               .dATA![trancation.indexss][1],
-                                    //           trancation.bankdetails!
-                                    //                   .dATA![trancation.indexss]
-                                    //               [2]);
+                                    await trancation.fetchValidateToken(context);
+                                    Future.delayed(const Duration(milliseconds: 100),
+                                        () async {
+                                      await trancation.ip();
+                                      await trancation.fetchupiIdView(
+                                              trancation.bankdetails!
+                                                  .dATA![trancation.indexss][1],
+                                              trancation.bankdetails!
+                                                      .dATA![trancation.indexss]
+                                                  [2]);
 
-                                    //   await context
-                                    //       .read(transcationProvider)
-                                    //       .fetchcwithdraw(context);
-                                    // });
-                                    // trancation.changebool(true);
-                                    // Navigator.pushNamed(
-                                    //     context, Routes.fundscreen,
-                                    //     arguments: trancation);
-                                    await funds.fetchHstoken(context);
-
-                                    launch(
-                                        'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
+                                      await trancation.fetchcwithdraw(context);
+                                    });
+                                    trancation.changebool(true);
+                                    Navigator.pushNamed(
+                                        context, Routes.fundscreen,
+                                        arguments: trancation);
                                   },
                                   child: Text("Deposit Money",
                                       textAlign: TextAlign.center,
@@ -460,32 +448,23 @@ class SecureFund extends ConsumerWidget {
                                         borderRadius: BorderRadius.circular(50),
                                       )),
                                   onPressed: () async {
-                                    // Future.delayed(Duration(milliseconds: 100),
-                                    //     () async {
-                                    //   await context
-                                    //       .read(transcationProvider)
-                                    //       .Ip();
-                                    //   await context
-                                    //       .read(transcationProvider)
-                                    //       .fetchupiIdView(
-                                    //           trancation.bankdetails!
-                                    //               .dATA![trancation.indexss][1],
-                                    //           trancation.bankdetails!
-                                    //                   .dATA![trancation.indexss]
-                                    //               [2]);
+                                    await trancation.fetchValidateToken(context);
+                                    Future.delayed(const Duration(milliseconds: 100),
+                                        () async {
+                                      await trancation.ip();
+                                      await trancation.fetchupiIdView(
+                                              trancation.bankdetails!
+                                                  .dATA![trancation.indexss][1],
+                                              trancation.bankdetails!
+                                                      .dATA![trancation.indexss]
+                                                  [2]);
 
-                                    //   await context
-                                    //       .read(transcationProvider)
-                                    //       .fetchcwithdraw(context);
-                                    // });
-                                    // trancation.changebool(false);
-                                    // Navigator.pushNamed(
-                                    //     context, Routes.fundscreen,
-                                    //     arguments: trancation);
-                                    await funds.fetchHstoken(context);
-
-                                    launch(
-                                        'https://fund.mynt.in/withdrawal/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
+                                      await trancation.fetchcwithdraw(context);
+                                    });
+                                    trancation.changebool(false);
+                                    Navigator.pushNamed(
+                                        context, Routes.fundscreen,
+                                        arguments: trancation);
                                   },
                                   child: Text("Withdraw Money",
                                       textAlign: TextAlign.center,

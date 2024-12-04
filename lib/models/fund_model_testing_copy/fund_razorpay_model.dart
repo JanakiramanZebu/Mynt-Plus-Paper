@@ -1,4 +1,4 @@
-class Razorpay {
+class Razorpays {
   int? amount;
   int? amountDue;
   int? amountPaid;
@@ -12,7 +12,7 @@ class Razorpay {
   String? receipt;
   String? status;
 
-  Razorpay(
+  Razorpays(
       {this.amount,
       this.amountDue,
       this.amountPaid,
@@ -26,7 +26,7 @@ class Razorpay {
       this.receipt,
       this.status});
 
-  Razorpay.fromJson(Map<String, dynamic> json) {
+  Razorpays.fromJson(Map<String, dynamic> json) {
     amount = json['amount'];
     amountDue = json['amount_due'];
     amountPaid = json['amount_paid'];

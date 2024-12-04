@@ -63,59 +63,88 @@ class _UpiAppsBottomSheetState extends State<UpiAppsBottomSheet> {
                     offset: Offset(2.0, 0.0))
               ]),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               const CustomDragHandler(),
-              GridView.builder(
+              Text(
+                "Open with",
+                style: textStyle(colors.colorGrey, 14, FontWeight.w500),
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              ListView.builder(
+                // padding: EdgeInsets.symmetric(vertical: 15),
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 itemCount: widget.upiapps.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 5,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 0.9,
-                ),
                 itemBuilder: (context, index) {
-                  return InkWell(
-                    onTap: () {
-                      String upiLink =
-                          "${fund.hdfcdirectpayment!.data!.upilink}";
-                      String gpayLink =
-                          upiLink.replaceFirst('upi://', 'gpay://upi/');
-                      String paytmUrl =
-                          upiLink.replaceFirst('upi://', 'paytm://upi/');
+                  return Column(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          String upiLink =
+                              "${fund.hdfcdirectpayment!.data!.upilink}";
+                          String gpayLink =
+                              upiLink.replaceFirst('upi://', 'gpay://upi/');
+                          String paytmUrl =
+                              upiLink.replaceFirst('upi://', 'paytm://upi/');
 
-                      if (widget.upiapps[index]['name'] == "Google Pay") {
-                        launch(gpayLink);
-                      } else if (widget.upiapps[index]['name'] == "PhonePe") {
-                        launch(
-                            "phonepe://${fund.hdfcdirectpayment!.data!.upilink}");
-                      } else {
-                        launch(paytmUrl);
-                      }
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          widget.upiapps[index]['icon'],
+                          if (widget.upiapps[index]['name'] == "Google Pay") {
+                            launch(gpayLink);
+                          } else if (widget.upiapps[index]['name'] ==
+                              "PhonePe") {
+                            launch(
+                                "phonepe://${fund.hdfcdirectpayment!.data!.upilink}");
+                          } else {
+                            launch(paytmUrl);
+                          }
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            ClipOval(
+                              child: Container(
+                                color: colors.colorDivider
+                                    .withOpacity(.3), // Background color
+                                width: 50, // Size of the circular clip
+                                height: 50,
+                                child: Container(
+                                  padding: EdgeInsets.all(widget.upiapps[index]
+                                              ['icon'] ==
+                                          "assets/icon/paymentIcon/paytm.svg"
+                                      ? 12
+                                      : 10),
+                                  child: SvgPicture.asset(
+                                    widget.upiapps[index]['icon'],
+
+                                    // fit: BoxFit
+                                    //     .contain, // Ensure the SVG fits within the padding
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 15,
+                            ),
+                            Text(
+                              widget.upiapps[index]['name'],
+                              textAlign: TextAlign.center,
+                              style: textStyle(
+                                  widget.theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  14,
+                                  FontWeight.w500),
+                            ),
+                          ],
                         ),
-                        const SizedBox(
-                          height: 6,
-                        ),
-                        Text(
-                          widget.upiapps[index]['name'],
-                          textAlign: TextAlign.center,
-                          style: textStyle(
-                              widget.theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500),
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(
+                        height: 15,
+                      ),
+                    ],
                   );
                 },
               ),

@@ -227,7 +227,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                             strokeWidth: 2, color: Color(0xff666666)),
                       )
                     : Text(
-                        'WITHDRAW',
+                        'Withdraw',
                         style: textStyle(
                             widget.withdarw.withdrawamount.text.isEmpty ||
                                     widget.withdarw.payoutdetails!
@@ -256,7 +256,10 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                 children: [
                   Text(
                     "Open Request",
-                    style: textStyle(colors.colorBlack, 15, FontWeight.w600),
+                    style: textStyle(
+                      widget.theme.isDarkMode
+                      ?colors.colorWhite
+                      :colors.colorBlack, 15, FontWeight.w600),
                   ),
                   const SizedBox(
                     height: 12,

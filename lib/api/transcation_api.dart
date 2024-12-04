@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import '../models/fund_model_testing_copy/fund_direct_payment_model.dart';
 import '../models/fund_model_testing_copy/fund_pay.model.dart';
@@ -14,7 +16,6 @@ import '../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
 import '../models/fund_model_testing_copy/secured_client_data_model.dart';
 import '../models/fund_model_testing_copy/view_upi_id.dart';
 import '../sharedWidget/fund_function.dart';
-import '../sharedWidget/snack_bar.dart';
 import 'core/api_core.dart';
 
 mixin TranscationApi on ApiCore {
@@ -26,7 +27,7 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode(
               {"clientid": "${prefs.clientId}", "token": "${prefs.token}"}));
       final json = jsonDecode(res.body);
-    //  log("validate session => ${res.body}");
+      //  log("validate session => ${res.body}");
       final fundValidateToken = FundTokenValidation.fromJson(json);
       return fundValidateToken;
     } catch (e) {
@@ -43,7 +44,7 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode(
               {"VPA": upiId, "clientID": clientId, "bank_acc": accno}));
       final json = jsonDecode(res.body);
-     // log("getUPIIDPayment => ${res.body}");
+      // log("getUPIIDPayment => ${res.body}");
       final hdfcbankpayment = HdfcPaymentModel.fromJson(json);
       return hdfcbankpayment;
     } catch (e) {
@@ -63,7 +64,7 @@ mixin TranscationApi on ApiCore {
             "clientID": prefs.clientId
           }));
       final json = jsonDecode(res.body);
-     // log("getHdfcUPIStatus => ${res.body}");
+      // log("getHdfcUPIStatus => ${res.body}");
       final hdfcupistatus = HdfcUPIStatus.fromJson(json);
       return hdfcupistatus;
     } catch (e) {
@@ -84,7 +85,7 @@ mixin TranscationApi on ApiCore {
             "Name": name
           }));
       final json = jsonDecode(res.body);
-    //  log("getUPIAppsPayment => ${res.body}");
+      log("getUPIAppsPayment => ${res.body}");
       final hdfcdirectbankpayment = HdfcDirectPayment.fromJson(json);
       return hdfcdirectbankpayment;
     } catch (e) {
@@ -92,7 +93,7 @@ mixin TranscationApi on ApiCore {
     }
   }
 
-  Future<Razorpay> getrazorpay(
+  Future<Razorpays> getrazorpay(
       String amt, String accno, String name, String ifsc) async {
     String url =
         "https://fundapi.mynt.in/razorpay/razorpay?amount=$amt&method=netbanking&account_number=$accno&name=$name&ifsc=$ifsc&ccode=${prefs.clientId}";
@@ -112,8 +113,8 @@ mixin TranscationApi on ApiCore {
       );
 
       final json = jsonDecode(res.body);
-     // log("getrazorpay ${res.body} ");
-      final razorpay = Razorpay.fromJson(json);
+      // log("getrazorpay ${res.body} ");
+      final razorpay = Razorpays.fromJson(json);
       return razorpay;
     } catch (e) {
       rethrow;
@@ -131,7 +132,7 @@ mixin TranscationApi on ApiCore {
       );
 
       final json = jsonDecode(res.body);
-    //  log("getrazorpayStatus ${res.body} ");
+      //  log("getrazorpayStatus ${res.body} ");
       final razorpay = RazorpayTranstationRes.fromJson(json);
       return razorpay;
     } catch (e) {
@@ -151,7 +152,7 @@ mixin TranscationApi on ApiCore {
             "clientID": prefs.clientId
           }));
       final json = jsonDecode(res.body);
-     // log("getHdfcPaymentstatus=> ${res.body}");
+      log("getHdfcPaymentstatus=> ${res.body}");
       final hdfcbankpaymentstatus = HdfcPaymentStatus.fromJson(json);
       return hdfcbankpaymentstatus;
     } catch (e) {
@@ -176,7 +177,7 @@ mixin TranscationApi on ApiCore {
             "clientID": clientId
           }));
       final json = jsonDecode(res.body);
-    //  log("getHdfcTranction => ${res.body}");
+      //  log("getHdfcTranction => ${res.body}");
       final hdfctranction = HdfcTranctionModel.fromJson(json);
       return hdfctranction;
     } catch (e) {
@@ -192,13 +193,17 @@ mixin TranscationApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           body: jsonEncode({"code": encryptedPayload}));
-      final json = jsonDecode(res.body);
-
-      final decryptedData = decryptionFunction(json["str"]);
-     // log("getClientDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
-
-      return DecryptClientCheck.fromJson(jsonDecode(decryptedData));
+      Map<String, dynamic> json = jsonDecode(res.body);
+      if (json.containsKey('emsg')) {
+       
+        return DecryptClientCheck.fromJson(json);
+      } else {
+        final decryptedData = decryptionFunction(json["str"]);
+        //log("client Data------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+        return DecryptClientCheck.fromJson(jsonDecode(decryptedData));
+      }
     } catch (e) {
+     // print("object :: $e");
       rethrow;
     }
   }
@@ -211,18 +216,17 @@ mixin TranscationApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           body: jsonEncode({"string": encryptedPayload}));
-      final json = jsonDecode(res.body);
-      final decryptedData = decryptionFunction(json["str"]);
-     // log("getWithdrawPayout------------ ${jsonDecode(jsonEncode(decryptedData))}}");
-      if (json['emsg'] == 'invalid token') {
-        ScaffoldMessenger.of(context).showSnackBar(
-            error(context, "${res.statusCode} ${res.reasonPhrase}"));
-        return PayoutDetails.fromJson(jsonDecode(decryptedData));
+      Map<String, dynamic> json = jsonDecode(res.body);
+
+      if (json.containsKey('emsg')) {
+        return PayoutDetails.fromJson(json);
       } else {
+        final decryptedData = decryptionFunction(json["str"]);
+       // log("getWithdrawPayout------------ ${jsonDecode(jsonEncode(decryptedData))}}");
         return PayoutDetails.fromJson(jsonDecode(decryptedData));
       }
     } catch (e) {
-      debugPrint("asd $e");
+      debugPrint("PAYOUT ERROR $e");
       rethrow;
     }
   }
@@ -237,7 +241,7 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode({"code": encryptedPayload}));
       final json = jsonDecode(res.body);
       final decryptedData = decryptionFunction(json["str"]);
-     // log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+      // log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
       return BankDetails.fromJson(jsonDecode(decryptedData));
     } catch (e) {
       rethrow;
@@ -265,7 +269,7 @@ mixin TranscationApi on ApiCore {
       for (var element in myList) {
         data.add(ViewUpiIdModel.fromJson(element as Map<String, dynamic>));
       }
-    //  log("getUpiId ---> $myList");
+      //  log("getUpiId ---> $myList");
 
       return data;
     } catch (e) {
@@ -289,7 +293,7 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode({"string": encryptedPayload}));
       final json = jsonDecode(res.body);
       final decryptedData = decryptionFunction(json["str"]);
-    //  log("getpayemntwithdraw------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+      //  log("getpayemntwithdraw------------ ${jsonDecode(jsonEncode(decryptedData))}}");
       return PaymentWithdraw.fromJson(jsonDecode(decryptedData));
     } catch (e) {
       rethrow;
@@ -313,7 +317,7 @@ mixin TranscationApi on ApiCore {
           for (var element in decodedJson) {
             data.add(WithdrawStatus.fromJson(element as Map<String, dynamic>));
           }
-        //  log("getWithDrawStatus ---> ${data[0].iPADDRESS}");
+          //  log("getWithDrawStatus ---> ${data[0].iPADDRESS}");
         } else if (decodedJson is Map<String, dynamic>) {
           final WithdrawStatus msg = WithdrawStatus.fromJson(decodedJson);
           return [msg];

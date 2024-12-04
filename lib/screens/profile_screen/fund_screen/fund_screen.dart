@@ -6,8 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:installed_apps/app_info.dart';
-import 'package:installed_apps/installed_apps.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
@@ -22,10 +20,8 @@ import '../../../../sharedWidget/fund_function.dart';
 import '../../../sharedWidget/payment_loader.dart';
 import 'ios_fund_screen/ios_no_upi_apps_ui.dart';
 import 'ios_fund_screen/ios_upi_apps_bottomsheet.dart';
-import 'upi_apps_screens/no_upi_apps_alert.dart';
 import 'razorpay/razorpay_failed_ui.dart';
 import 'razorpay/razorpay_success_ui.dart';
-import 'upi_apps_screens/cancel_request_alert_box.dart';
 import 'upi_id_screens/upi_id_cancel_alert.dart';
 import 'withdraw/withdraw_screen.dart';
 
@@ -44,19 +40,13 @@ class _FundScreenState extends State<FundScreen> {
     super.initState();
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       checkIosAvailableApps();
-    } else {
-      checkForUpiApps();
     }
   }
 
-  bool _isDisposed = false;
   bool _isDisposedIos = false;
-   Razorpay razorpay = Razorpay();
 
   @override
   void dispose() {
-    razorpay .clear();
-    _isDisposed = true;
     _isDisposedIos = true;
     super.dispose();
   }
@@ -95,27 +85,6 @@ class _FundScreenState extends State<FundScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        fund.enable == true
-                            ? Container(
-                                width: MediaQuery.of(context).size.width,
-                                color: const Color(0xfffcefd4),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 10),
-                                child: Text(
-                                  "Fund adding to ${fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][2]} ${fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0]}",
-                                  style: textStyle(
-                                      colors.colorBlack, 14, FontWeight.w500),
-                                ))
-                            : Container(
-                                width: MediaQuery.of(context).size.width,
-                                color: const Color(0xfffcefd4),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 10),
-                                child: Text(
-                                  "Fund withdraw to ${fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][2]} ${fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0]}",
-                                  style: textStyle(
-                                      colors.colorBlack, 14, FontWeight.w500),
-                                )),
                         Padding(
                           padding: const EdgeInsets.only(left: 16, top: 10),
                           child: headerTitleText(
@@ -375,7 +344,7 @@ class _FundScreenState extends State<FundScreen> {
                                     itemBuilder: (context, index) {
                                       bool shouldDisable =
                                           fund.intValue > 100000;
-    
+
                                       bool isDisabled = shouldDisable &&
                                           (index == 0 || index == 1);
                                       return InkWell(
@@ -617,60 +586,25 @@ class _FundScreenState extends State<FundScreen> {
                                                                       TargetPlatform
                                                                           .android
                                                                   ? () async {
-                                                                      if (_isUpiAppAvailable ==
-                                                                          false) {
-                                                                        fund.focusNode
-                                                                            .unfocus();
-                                                                        showModalBottomSheet(
-                                                                            shape:
-                                                                                const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-                                                                            backgroundColor: const Color(0xffffffff),
-                                                                            context: context,
-                                                                            builder: (BuildContext context) {
-                                                                              return const NoUPIAppsAlert();
-                                                                            });
-                                                                      } else if (_isUpiAppAvailable ==
-                                                                          true) {
-                                                                        await fund
-                                                                            .fetchValidateToken(context);
-                                                                        fund.focusNode
-                                                                            .unfocus();
-                                                                        await context
-                                                                            .read(transcationProvider)
-                                                                            .fetchUPIPaymet(
-                                                                              context,
-                                                                              "${fund.amount.text}.00",
-                                                                              fund.accno,
-                                                                              fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0],
-                                                                              fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][2],
-                                                                            );
-    
-                                                                        await context
-                                                                            .read(transcationProvider)
-                                                                            .fetchUpiPaymentstatus(
-                                                                              context,
-                                                                              "${fund.hdfcdirectpayment?.data?.orderNumber}",
-                                                                              "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
-                                                                            );
-    
-                                                                        showModalBottomSheet(
-                                                                            shape:
-                                                                                const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-                                                                            backgroundColor: const Color(0xffffffff),
-                                                                            isDismissible: false,
-                                                                            enableDrag: false,
-                                                                            showDragHandle: false,
-                                                                            useSafeArea: false,
-                                                                            isScrollControlled: true,
-                                                                            context: context,
-                                                                            builder: (BuildContext context) {
-                                                                              return WillPopScope(
-                                                                                  onWillPop: () async {
-                                                                                    return false;
-                                                                                  },
-                                                                                  child: const PaymentCancelAlert());
-                                                                            });
-                                                                      }
+                                                                      
+                                                                      await fund
+                                                                          .fetchValidateToken(
+                                                                              context);
+                                                                      fund.focusNode
+                                                                          .unfocus();
+                                                                      await fund.fetchUPIPaymet(
+                                                                            context,
+                                                                            "${fund.amount.text}.00",
+                                                                            fund.accno,
+                                                                            fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0],
+                                                                            fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][2],
+                                                                          );
+
+                                                                      await fund.fetchUpiPaymentstatus(
+                                                                            context,
+                                                                            "${fund.hdfcdirectpayment?.data?.orderNumber}",
+                                                                            "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
+                                                                          );
                                                                     }
                                                                   : () async {
                                                                       if (availableApps
@@ -692,20 +626,16 @@ class _FundScreenState extends State<FundScreen> {
                                                                       } else {
                                                                         fund.focusNode
                                                                             .unfocus();
-    
-                                                                        await context
-                                                                            .read(transcationProvider)
-                                                                            .fetchUPIPaymet(
+
+                                                                        await fund.fetchUPIPaymet(
                                                                               context,
                                                                               "${fund.amount.text}.00",
                                                                               fund.accno,
                                                                               fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0],
                                                                               fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][2],
                                                                             );
-    
-                                                                        await context
-                                                                            .read(transcationProvider)
-                                                                            .fetchUpiPaymentstatus(
+
+                                                                        await fund.fetchUpiPaymentstatus(
                                                                               context,
                                                                               "${fund.hdfcdirectpayment?.data?.orderNumber}",
                                                                               "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
@@ -929,7 +859,7 @@ class _FundScreenState extends State<FundScreen> {
                                                                           "Min amount ₹50"));
                                                                 }
                                                               : () async {
-                                                                  await context.read(transcationProvider).fetcUPIIDPayment(
+                                                                  await fund.fetcUPIIDPayment(
                                                                       context,
                                                                       fund.upiid
                                                                           .text,
@@ -939,10 +869,7 @@ class _FundScreenState extends State<FundScreen> {
                                                                       fund.bankdetails!
                                                                               .dATA![
                                                                           fund.indexss][2]);
-                                                                  await context
-                                                                      .read(
-                                                                          transcationProvider)
-                                                                      .fetchHdfctranction(
+                                                                  await fund.fetchHdfctranction(
                                                                         context,
                                                                         fund.upiid
                                                                             .text,
@@ -990,11 +917,8 @@ class _FundScreenState extends State<FundScreen> {
                                                                               },
                                                                               child: const UPIIDPaymentCancelAlert());
                                                                         });
-    
-                                                                    context
-                                                                        .read(
-                                                                            transcationProvider)
-                                                                        .fetchHdfcpaymetstatus(
+
+                                                                   await fund.fetchHdfcpaymetstatus(
                                                                             context,
                                                                             '${fund.hdfctranction!.data!.orderNumber}',
                                                                             '${fund.hdfctranction!.data!.upiTransactionNo}');
@@ -1103,101 +1027,29 @@ class _FundScreenState extends State<FundScreen> {
                                                                   }
                                                                 }
                                                               : () async {
-                                                                  context.read(transcationProvider).fetchrazorpay(
-                                                                      context,
-                                                                      int.parse(fund
-                                                                              .amount
-                                                                              .text)
-                                                                          .toString(),
-                                                                      fund
-                                                                          .accno,
-                                                                      fund
-                                                                          .decryptclientcheck!
-                                                                          .clientCheck!
-                                                                          .dATA![fund.indexss][2],
-                                                                      fund.ifsc);
-                                                                 
-    
-                                                                  Future.delayed(
-                                                                      const Duration(
-                                                                          seconds:
-                                                                              2),
-                                                                      () {
-                                                                    var options =
-                                                                        {
-                                                                      'key':
-                                                                          'rzp_live_M3tazzVCcFf8Iq',
-                                                                      'amount': "${fund.razorpay!.amount}" ,
-                                                                      'name':
-                                                                          'Zebu Fund',
-                                                                      'currency':
-                                                                          'INR',
-                                                                      'order_id': fund
-                                                                          .razorpay!
-                                                                          .id,
-                                                                      'image':
-                                                                          "https://zebuetrade.com/wp-content/uploads/2020/07/logo.png",
-                                                                      'description':
-                                                                          "Fund add to ${fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0]}",
-                                                                      'retry': {
-                                                                        'enabled':
-                                                                            true,
-                                                                        'max_count':
-                                                                            1
-                                                                      },
-                                                                      'send_sms_hash':
-                                                                          true,
-                                                                      'prefill':
-                                                                          {
-                                                                        'name': fund
+                                                                  Razorpay
+                                                                      razorpay =
+                                                                      Razorpay();
+                                                                 await fund.fetchrazorpay(
+                                                                        context,
+                                                                        int.parse(fund.amount.text)
+                                                                            .toString(),
+                                                                        fund.accno,
+                                                                        fund
                                                                             .decryptclientcheck!
                                                                             .clientCheck!
                                                                             .dATA![fund.indexss][2],
-                                                                        'email': fund
-                                                                            .decryptclientcheck!
-                                                                            .clientCheck!
-                                                                            .dATA![fund.indexss][4],
-                                                                        'contact': fund
-                                                                            .decryptclientcheck!
-                                                                            .clientCheck!
-                                                                            .dATA![fund.indexss][5],
-                                                                        'method':
-                                                                            'netbanking',
-                                                                        'bank':
-                                                                            fund.bankname,
-                                                                      },
-                                                                      'notes': {
-                                                                        'clientcode':
-                                                                            "${fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0]}",
-                                                                        'acc_no':
-                                                                            fund.accno,
-                                                                        'ifsc':
-                                                                            fund.ifsc,
-                                                                        'bankname':
-                                                                            fund.bankname,
-                                                                        'company_code':
-                                                                            fund.textValue,
-                                                                      },
-                                                                      'theme': {
-                                                                        'color':
-                                                                            "#3399cc",
-                                                                      }, "ondismiss":  true
-                                                                    };
-      
-                                                                    razorpay.on(
-                                                                        Razorpay
-                                                                            .EVENT_PAYMENT_ERROR,
-                                                                        handlePaymentErrorResponse);
-                                                                    razorpay.on(
-                                                                        Razorpay
-                                                                            .EVENT_PAYMENT_SUCCESS,
-                                                                        handlePaymentSuccessResponse);
-       razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
-                                                                    razorpay.open(
-                                                                        options);
-    
-                                                                 });
-    
+                                                                        fund.ifsc,
+                                                                        razorpay,
+                                                                      );
+                                                                  razorpay.on(
+                                                                      Razorpay
+                                                                          .EVENT_PAYMENT_ERROR,
+                                                                      handlePaymentErrorResponse);
+                                                                  razorpay.on(
+                                                                      Razorpay
+                                                                          .EVENT_PAYMENT_SUCCESS,
+                                                                      handlePaymentSuccessResponse);
                                                                 },
                                                           child: fund.fundisLoad
                                                               ? const SizedBox(
@@ -1304,39 +1156,6 @@ class _FundScreenState extends State<FundScreen> {
     });
   }
 
-  bool _isUpiAppAvailable = false;
-
-  final List<String> _upiAppPackageNames = [
-    'com.google.android.apps.nbu.paisa.user',
-    'net.one97.paytm',
-    'com.phonepe.app',
-    'in.org.npci.upiapp',
-    'in.amazon.mShop.android.shopping',
-    'com.mobikwik_new',
-    'com.myairtelapp',
-    'com.freecharge.android',
-  ];
-
-  Future checkForUpiApps() async {
-    List<AppInfo> installedApps = await InstalledApps.getInstalledApps();
-
-    bool isUpiAppFound = installedApps.any((app) {
-      return _upiAppPackageNames.contains(app.packageName);
-    });
-    if (!_isDisposed) {
-      setState(() {
-        _isUpiAppAvailable = isUpiAppFound;
-      });
-    }
-  }
-   void _handleExternalWallet(ExternalWalletResponse response) {
-    // External wallet callback
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("External Wallet Selected: ${response.walletName}")),
-    );
-    Navigator.pop(context); // Close the screen
-  }
-
   _showBottomSheet(TranctionProvider fund, ThemesProvider theme) {
     showModalBottomSheet(
       enableDrag: false,
@@ -1348,7 +1167,6 @@ class _FundScreenState extends State<FundScreen> {
       context: context,
       builder: (BuildContext context) {
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
@@ -1364,7 +1182,10 @@ class _FundScreenState extends State<FundScreen> {
             children: [
               const CustomDragHandler(),
               const SizedBox(height: 10),
-              headerTitleText('Choose an Segment:'),
+              Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child: headerTitleText('Choose an Segment:'),
+              ),
               const SizedBox(height: 10),
               ListView.builder(
                 shrinkWrap: true,
@@ -1373,25 +1194,37 @@ class _FundScreenState extends State<FundScreen> {
                   return InkWell(
                     onTap: () {
                       fund.segmentselection(index);
-
                       Navigator.pop(context);
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 15),
-                      child: Text(
-                        fund.decryptclientcheck!.companyCode![index],
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            15,
-                            FontWeight.w600),
+                    child: Container(
+                      color: fund.decryptclientcheck!.companyCode![index] ==
+                              fund.textValue
+                          ? const Color(0xff999999).withOpacity(0.2)
+                          : Colors.transparent,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 15),
+                        child: Row(
+                          children: [
+                            Text(
+                              fund.decryptclientcheck!.companyCode![index],
+                              style: textStyle(
+                                  theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  15,
+                                  FontWeight.w600),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
                 },
               ),
+              const SizedBox(
+                height: 10,
+              )
             ],
           ),
         );
@@ -1410,7 +1243,6 @@ class _FundScreenState extends State<FundScreen> {
       context: context,
       builder: (BuildContext context) {
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
@@ -1426,9 +1258,11 @@ class _FundScreenState extends State<FundScreen> {
             children: [
               const CustomDragHandler(),
               const SizedBox(height: 10),
-              headerTitleText('Choose an bank:'),
+              Padding(
+                padding: const EdgeInsets.only(left: 16, bottom: 10),
+                child: headerTitleText('Choose an bank:'),
+              ),
               ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 10),
                 shrinkWrap: true,
                 itemCount: fund.bankdetails!.dATA!.length,
                 itemBuilder: (BuildContext context, int index) {
@@ -1437,8 +1271,12 @@ class _FundScreenState extends State<FundScreen> {
                       fund.bankselection(index);
                       Navigator.pop(context);
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 15),
+                      color: fund.bankdetails!.dATA![index][1] == fund.bankname
+                          ? const Color(0xff999999).withOpacity(0.2)
+                          : Colors.transparent,
                       child: Text(
                         '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
                         style: textStyle(
@@ -1453,7 +1291,7 @@ class _FundScreenState extends State<FundScreen> {
                 },
               ),
               const SizedBox(
-                height: 5,
+                height: 10,
               )
             ],
           ),
