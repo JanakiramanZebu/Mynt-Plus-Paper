@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../locator/preference.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
@@ -18,6 +20,7 @@ class SecureFund extends ConsumerWidget {
     final funds = watch(fundProvider);
     final theme = watch(themeProvider);
     final trancation = watch(transcationProvider);
+    Preferences pref = Preferences();
     final List<ChartData> donutChart = [
       if (funds.fundDetailModel?.margincurper != null)
         ChartData(
@@ -42,7 +45,24 @@ class SecureFund extends ConsumerWidget {
                   theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   14,
                   FontWeight.w600)),
-                  
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(top: 22, right: 16),
+              child: InkWell(
+                onTap: () async {
+                  await funds.fetchHstoken(context);
+                  Future.delayed(Duration(microseconds: 10), () {
+                    launch(
+                        'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
+                  });
+                },
+                child: Text(
+                  "Web",
+                  style: textStyle(colors.colorBlue, 14, FontWeight.w600),
+                ),
+              ),
+            )
+          ],
         ),
         body: ListView(
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -407,16 +427,17 @@ class SecureFund extends ConsumerWidget {
                                         borderRadius: BorderRadius.circular(50),
                                       )),
                                   onPressed: () async {
-                                    await trancation.fetchValidateToken(context);
-                                    Future.delayed(const Duration(milliseconds: 100),
+                                    await trancation
+                                        .fetchValidateToken(context);
+                                    Future.delayed(
+                                        const Duration(milliseconds: 100),
                                         () async {
                                       await trancation.ip();
                                       await trancation.fetchupiIdView(
-                                              trancation.bankdetails!
-                                                  .dATA![trancation.indexss][1],
-                                              trancation.bankdetails!
-                                                      .dATA![trancation.indexss]
-                                                  [2]);
+                                          trancation.bankdetails!
+                                              .dATA![trancation.indexss][1],
+                                          trancation.bankdetails!
+                                              .dATA![trancation.indexss][2]);
 
                                       await trancation.fetchcwithdraw(context);
                                     });
@@ -448,16 +469,17 @@ class SecureFund extends ConsumerWidget {
                                         borderRadius: BorderRadius.circular(50),
                                       )),
                                   onPressed: () async {
-                                    await trancation.fetchValidateToken(context);
-                                    Future.delayed(const Duration(milliseconds: 100),
+                                    await trancation
+                                        .fetchValidateToken(context);
+                                    Future.delayed(
+                                        const Duration(milliseconds: 100),
                                         () async {
                                       await trancation.ip();
                                       await trancation.fetchupiIdView(
-                                              trancation.bankdetails!
-                                                  .dATA![trancation.indexss][1],
-                                              trancation.bankdetails!
-                                                      .dATA![trancation.indexss]
-                                                  [2]);
+                                          trancation.bankdetails!
+                                              .dATA![trancation.indexss][1],
+                                          trancation.bankdetails!
+                                              .dATA![trancation.indexss][2]);
 
                                       await trancation.fetchcwithdraw(context);
                                     });
