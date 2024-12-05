@@ -129,6 +129,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
   String _ldate = "";
   String get ldate => _ldate;
 
+  String _subscr = "";
+  String get subscr => _subscr;
+
   PortfolioProvider(this.ref);
 
   bool _showSearchHold = false;
@@ -186,26 +189,21 @@ class PortfolioProvider extends DefaultChangeNotifier {
   }
 
 //  Assinging and portfolio name length set
-  fetchBrokerDetails(BuildContext raw) async {
+
+  fetchBrokerDetails(BuildContext context, bool isSubscribe) async {
     try {
       // toggleLoadingOn(true);
       var res = await api.getallHolding();
       if (res.equities.isNotEmpty) {
         var one = res.equities;
-        String subscr = "";
-
         one.forEach((key, value) {
           for (var two in value['summary']) {
-            subscr += "${two['exch']}|${two['token']}#";
+            _subscr += "${two['exch']}|${two['token']}#";
             two['totinv'] = (double.tryParse(two['lastTradedPrice']) ?? 0.0) *
                 (double.tryParse("${two['units']}") ?? 0.0);
           }
         });
-        // res['subscr'] = subscr;
-        if (subscr.isNotEmpty) {
-          ref(websocketProvider).establishConnection(
-              channelInput: subscr, task: 't', context: raw);
-        }
+       requestallHoldings(isSubscribe: isSubscribe, context: context);
         _allholds = res.equities;
         _ldate = res.syncDatetime;
       } else {
@@ -264,12 +262,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
           ),
         ]
       ],
-      const Tab(
+      Tab(
           child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-            Text("Total Portfolio"),
+                      Text(
+                "Total Portfolio${_allholds!.isNotEmpty ? "s (${_allholds!.length})" : ""}")
           ])),
     ];
 
@@ -1385,6 +1384,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
       ref(websocketProvider).establishConnection(
           channelInput: input, task: isSubscribe ? "t" : "u", context: context);
     }
+  }
+
+   requestallHoldings(
+      {required bool isSubscribe, required BuildContext context}) {
+     if (_subscr.isNotEmpty) {
+          ref(websocketProvider).establishConnection(
+              channelInput: _subscr, task: 't', context: context);
+        }
   }
 
   exitGroupedPosition(BuildContext context, List positionData) async {

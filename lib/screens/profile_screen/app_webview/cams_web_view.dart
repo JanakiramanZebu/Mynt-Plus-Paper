@@ -1,14 +1,10 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/provider/order_provider.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
-import '../../../provider/index_list_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../res/res.dart';
 
@@ -79,7 +75,7 @@ class CamsWebViewState extends State<CamsWebView> {
                         Navigator.of(context).pop();
                         context
                             .read(portfolioProvider)
-                            .fetchBrokerDetails(context);
+                            .fetchBrokerDetails(context, true);
                       });
                     }
                   }
