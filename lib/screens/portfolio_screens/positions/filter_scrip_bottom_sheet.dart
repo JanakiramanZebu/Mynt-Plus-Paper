@@ -104,21 +104,21 @@ class _PositionScripBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isPosScripname == true
-                              ? "Scrip - A to Z"
-                              : "Scrip - Z to A",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isPosScripname == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Scrip Name",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -126,7 +126,6 @@ class _PositionScripBottomSheetState
                 ],
               ),
             ),
-           
             InkWell(
               onTap: () {
                 setState(() {
@@ -151,21 +150,21 @@ class _PositionScripBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isPosPrice == true
-                              ? "Price - High to Low"
-                              : "Price - Low to High",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isPosPrice == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "LTP",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -173,7 +172,6 @@ class _PositionScripBottomSheetState
                 ],
               ),
             ),
-            
             InkWell(
               onTap: () {
                 setState(() {
@@ -198,21 +196,21 @@ class _PositionScripBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isPosQuantity == true
-                              ? "Qty - High to Low"
-                              : "Qty - Low to High",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isPosQuantity == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Qty",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -220,7 +218,6 @@ class _PositionScripBottomSheetState
                 ],
               ),
             ),
-            
             InkWell(
               onTap: () {
                 setState(() {
@@ -245,21 +242,23 @@ class _PositionScripBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    
                       children: [
-                        Text(
-                          pref.isPosPerchang == true
-                              ? "Per.chng - High to Low"
-                              : "Per.chng - Low to High ",
-                          style: textStyles.prdText,
-                        ),
+                       
                         Icon(
                           pref.isPosPerchang == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                       const SizedBox(
+                          width: 15,
+                        ),
+                         Text(
+                          "Perc.Change",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -291,21 +290,24 @@ class _PositionScripBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isPostion == true
-                              ? "Open Position"
-                              : "Close Position",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isPostion == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                      const  SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          pref.isPostion == true
+                              ? "Open Position"
+                              : "Close Position",
+                          style: textStyles.prdText,
+                        ),
+                        
                       ],
                     ),
                   ),

@@ -104,21 +104,21 @@ class _MFHoldingsScripFilterBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isMfScripname == true
-                              ? "Scrip - A to Z"
-                              : "Scrip - Z to A",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isMfScripname == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Scrip Name",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -150,21 +150,21 @@ class _MFHoldingsScripFilterBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isMfPrice == true
-                              ? "Price - High to Low"
-                              : "Price - Low to High",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isMfPrice == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "LTP",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -196,21 +196,21 @@ class _MFHoldingsScripFilterBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isMfQuantity == true
-                              ? "Qty - High to Low"
-                              : "Qty - Low to High",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isMfQuantity == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Qty",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -242,21 +242,21 @@ class _MFHoldingsScripFilterBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isMfPerchang == true
-                              ? "Per.chng - High to Low"
-                              : "Per.chng - Low to High ",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isMfPerchang == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Perc.Change",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -288,21 +288,21 @@ class _MFHoldingsScripFilterBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isMfInvestby == true
-                              ? "Inv.by - High to Low"
-                              : "Inv.by - Low to High",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isMfInvestby == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Invested Price",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),

@@ -103,21 +103,22 @@ class _WatchlistsBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isScripname == true
-                              ? "Scrip - A to Z"
-                              : "Scrip - Z to A",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isScripname == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Scrip Name",
+                          style: textStyles.prdText,
+                        ),
+                      
                       ],
                     ),
                   ),
@@ -149,21 +150,21 @@ class _WatchlistsBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isPrice == true
-                              ? "Price - High to Low"
-                              : "Price - Low to High",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isPrice == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "LTP",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -195,21 +196,21 @@ class _WatchlistsBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isQuantity == true
-                              ? "Qty - High to Low"
-                              : "Qty - Low to High",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isQuantity == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Qty",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -241,21 +242,21 @@ class _WatchlistsBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isPerchang == true
-                              ? "Per.chng - High to Low"
-                              : "Per.chng - Low to High ",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isPerchang == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Perc.Change",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -287,21 +288,21 @@ class _WatchlistsBottomSheetState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isInvestby == true
-                              ? "Inv.by - High to Low"
-                              : "Inv.by - Low to High",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isInvestby == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Invested Price",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),

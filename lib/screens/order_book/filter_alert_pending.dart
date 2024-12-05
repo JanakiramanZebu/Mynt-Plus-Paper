@@ -88,21 +88,21 @@ class _OrderbookPendingAlertkFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        pref.isPAScripname == true
-                            ? "Scrip - A to Z"
-                            : "Scrip - Z to A",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isPAScripname == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Scrip Name",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),
@@ -134,21 +134,21 @@ class _OrderbookPendingAlertkFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        pref.isPAPrice == true
-                            ? "Price - High to Low"
-                            : "Price - Low to High",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isPAPrice == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "LTP",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),
@@ -180,21 +180,21 @@ class _OrderbookPendingAlertkFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        pref.isPAPricealert == true
-                            ? "Alert price High to Low"
-                            : "Alert price Low to High",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isPAPricealert == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Alert Price",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),

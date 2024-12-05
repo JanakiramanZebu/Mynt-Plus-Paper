@@ -92,21 +92,21 @@ class _OrderbookFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        pref.isObScripname == true
-                            ? "Scrip - A to Z"
-                            : "Scrip - Z to A",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isObScripname == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Scrip Name",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),
@@ -138,19 +138,21 @@ class _OrderbookFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Product",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isObProduct == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Product",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),
@@ -178,21 +180,21 @@ class _OrderbookFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        pref.isObqty == true
-                            ? "Qty - High to Low"
-                            : "Qty - Low to High",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isObqty == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Qty",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),
@@ -220,21 +222,21 @@ class _OrderbookFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        pref.isObPrice == true
-                            ? "Price - High to Low"
-                            : "Price - Low to High",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isObPrice == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "LTP",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),
@@ -262,19 +264,21 @@ class _OrderbookFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Time",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isObtime == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Time",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),

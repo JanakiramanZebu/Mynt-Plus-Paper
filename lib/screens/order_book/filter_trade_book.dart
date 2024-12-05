@@ -90,21 +90,21 @@ class _OrderbookTradeBookFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        pref.isTBScripname == true
-                            ? "Scrip - A to Z"
-                            : "Scrip - Z to A",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isTBScripname == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Scrip Name",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),
@@ -132,21 +132,21 @@ class _OrderbookTradeBookFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        pref.isTBPrice == true
-                            ? "Price - High to Low"
-                            : "Price - Low to High",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isTBPrice == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "LTP",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),
@@ -174,19 +174,21 @@ class _OrderbookTradeBookFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        pref.isTBBuyorSell == true ? "Buy" : "Sell",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isTBBuyorSell == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        pref.isTBBuyorSell == true ? "Buy" : "Sell",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),
@@ -214,19 +216,21 @@ class _OrderbookTradeBookFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Time",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isTBTime == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Time",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),

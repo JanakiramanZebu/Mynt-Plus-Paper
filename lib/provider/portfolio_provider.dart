@@ -268,7 +268,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                       Text(
-                "Total Portfolio${_allholds!.isNotEmpty ? "s (${_allholds!.length})" : ""}")
+                "Total Portfolio${_allholds.isNotEmpty ? "s (${_allholds.length})" : ""}")
           ])),
     ];
 

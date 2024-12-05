@@ -90,21 +90,21 @@ class _OrderbookSipkFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        pref.isSipScripname == true
-                            ? "Scrip - A to Z"
-                            : "Scrip - Z to A",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isSipScripname == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Scrip Name",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),
@@ -132,21 +132,21 @@ class _OrderbookSipkFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        pref.isSipPrice == true
-                            ? "Price - High to Low"
-                            : "Price - Low to High",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isSipPrice == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "LTP",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),
@@ -217,19 +217,21 @@ class _OrderbookSipkFilterBottomSheetState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Start Date",
-                        style: textStyles.prdText,
-                      ),
                       Icon(
                         pref.isSipDate == true
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
                         color: colors.colorGrey,
-                      )
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Start Date",
+                        style: textStyles.prdText,
+                      ),
                     ],
                   ),
                 ),

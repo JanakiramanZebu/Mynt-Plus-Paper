@@ -98,21 +98,21 @@ class _WatchlistsBottomSheetState extends State<ScripFilterBottomSheet> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isMWScripname == true
-                              ? "Scrip - A to Z"
-                              : "Scrip - Z to A",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isMWScripname == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Scrip Name",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -146,21 +146,21 @@ class _WatchlistsBottomSheetState extends State<ScripFilterBottomSheet> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isMWPrice == true
-                              ? "Price - High to Low"
-                              : "Price - Low to High",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isMWPrice == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "LTP",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
@@ -194,21 +194,21 @@ class _WatchlistsBottomSheetState extends State<ScripFilterBottomSheet> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          pref.isMWPerchang == true
-                              ? "Per.Chng - High to Low"
-                              : "Per.Chng - Low to High",
-                          style: textStyles.prdText,
-                        ),
                         Icon(
                           pref.isMWPerchang == true
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
                           color: colors.colorGrey,
-                        )
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Perc.Change",
+                          style: textStyles.prdText,
+                        ),
                       ],
                     ),
                   ),
