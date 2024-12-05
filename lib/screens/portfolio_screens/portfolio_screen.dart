@@ -29,6 +29,8 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       context
           .read(portfolioProvider)
           .changeTabIndex(context.read(portfolioProvider).portTab.index);
+    context.read(portfolioProvider).fetchBrokerDetails(context, false);
+
       context.read(portfolioProvider).tabSize();
       if (context.read(portfolioProvider).selectedTab == 0) {
         context.read(portfolioProvider).cancelTimer();
@@ -38,6 +40,9 @@ class _PortfolioScreenState extends State<PortfolioScreen>
         context
             .read(portfolioProvider)
             .requestWSPosition(context: context, isSubscribe: true);
+        context
+            .read(portfolioProvider)
+            .requestallHoldings(context: context, isSubscribe: false);
       } else if (context.read(portfolioProvider).selectedTab == 1) {
         context
             .read(portfolioProvider)
@@ -45,8 +50,25 @@ class _PortfolioScreenState extends State<PortfolioScreen>
         context
             .read(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: true);
+        context
+            .read(portfolioProvider)
+            .requestallHoldings(context: context, isSubscribe: false);
 
         context.read(portfolioProvider).timerfunc();
+      } else if (context.read(portfolioProvider).mfHoldingsModel!.isNotEmpty
+          ? context.read(portfolioProvider).selectedTab == 3
+          : context.read(portfolioProvider).selectedTab == 2) {
+        context.read(portfolioProvider).cancelTimer();
+
+        context
+            .read(portfolioProvider)
+            .requestWSPosition(context: context, isSubscribe: false);
+        context
+            .read(portfolioProvider)
+            .requestWSHoldings(context: context, isSubscribe: false);
+        context
+            .read(portfolioProvider)
+            .requestallHoldings(context: context, isSubscribe: true);
       } else {
         context.read(portfolioProvider).cancelTimer();
         context
@@ -55,11 +77,11 @@ class _PortfolioScreenState extends State<PortfolioScreen>
         context
             .read(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: false);
+        context
+            .read(portfolioProvider)
+            .requestallHoldings(context: context, isSubscribe: false);
       }
     });
-
-    context.read(portfolioProvider).fetchBrokerDetails(context);
-
     super.initState();
   }
 
