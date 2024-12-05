@@ -93,9 +93,9 @@ class WebSocketProvider extends ChangeNotifier {
 
       channel.stream.listen(
         (data) {
-          //  log("Socket Data ===> $data");
+         // log("Socket Data ===> $data");
           final res = jsonDecode(data.toString());
-
+ 
           if (res['s'].toString().toLowerCase() == "ok" &&
               res['t'].toString() == "ck") {
             _wsConnected = true;
@@ -247,7 +247,7 @@ class WebSocketProvider extends ChangeNotifier {
                 _socketDatas["${res['tk']}"]["ltt"] = res["ltt"];
               }
 
-              // log("Soxket data  --  ${_socketDatas["${res['tk']}"]["chng"]}");
+             //  log("Soxket data  --  ${_socketDatas["${res['d']}"]["chng"]}");
             }
 
             if (ref(indexListProvider).selectedBtmIndx == 1 &&

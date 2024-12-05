@@ -30,7 +30,7 @@ class SearchScripList extends ConsumerWidget {
                 onTap: () async {
                   await watch(websocketProvider).establishConnection(
                       channelInput:
-                          "${searchValue[index].exch}}|${searchValue[index].token}",
+                          "${searchValue[index].exch}|${searchValue[index].token}",
                       task: "d",
                       context: context);
                   searchScrip.chngDephBtn("Overview");

@@ -369,7 +369,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       _decryptclientcheck = await api.getClientDetails();
 
       // print("client emsg ${_decryptclientcheck!.emsg}");
-      //print("------------ ${_decryptclientcheck!.clientCheck!.dATA![0]}");
+   //   print("------------ ${_decryptclientcheck!.companyCode!}");
     } catch (e) {
       //log("Failed to fetch Profile Data:: ${e.toString()}");
       ref(indexListProvider)

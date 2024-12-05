@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
+import 'package:flutter_svg/svg.dart';
 
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../provider/market_watch_provider.dart';
@@ -16,242 +16,189 @@ import 'edit_scrip.dart';
 import 'scrip_depth_info.dart';
 
 class WatchlistCard extends ConsumerWidget {
- final dynamic  watchListData;
-  const WatchlistCard({super.key, required this. watchListData});
+  final dynamic watchListData;
+  const WatchlistCard({super.key, required this.watchListData});
 
   @override
-  Widget build(BuildContext context,ScopedReader watch) {
-        final marketWatch = watch(marketWatchProvider);
+  Widget build(BuildContext context, ScopedReader watch) {
+    final marketWatch = watch(marketWatchProvider);
     // final socketDatas = watch(websocketProvider).socketDatas;
- final theme = context.read(themeProvider);
+    final theme = context.read(themeProvider);
 
-      if (context.read(websocketProvider).socketDatas
-                            .containsKey(watchListData['token'])) {
-                      watchListData['ltp'] =
-                              "${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['lp'] ?? 0.00}";
-                          watchListData['change'] =
-                              "${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['chng'] ?? 0.00}";
-                          watchListData['perChange'] =
-                              "${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['pc'] ?? 0.00}";
-                          watchListData['close'] =
-                              "${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['c'] ?? 0.00}";
+    if (context
+        .read(websocketProvider)
+        .socketDatas
+        .containsKey(watchListData['token'])) {
+      watchListData['ltp'] =
+          "${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['lp'] ?? 0.00}";
+      watchListData['change'] =
+          "${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['chng'] ?? 0.00}";
+      watchListData['perChange'] =
+          "${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['pc'] ?? 0.00}";
+      watchListData['close'] =
+          "${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['c'] ?? 0.00}";
 
+      //  log("dfgdf ${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['holdQty']}");
 
-log("dfgdf ${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['holdQty']}");
+      watchListData["holdingQty"] =
+          "${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['holdQty']}";
+    }
+    return ListTile(
+        onLongPress: () {
+          if (marketWatch.isPreDefWLs == "Yes") {
+            ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+                "This is a pre-defined watchlist that cannot be edited!"));
+          } else {
+            context
+                .read(marketWatchProvider)
+                .requestMWScrip(context: context, isSubscribe: false);
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        EditScrip(wlName: marketWatch.wlName)));
+          }
+        },
+        onTap: () async {
+          marketWatch.chngDephBtn("Overview");
+          await marketWatch.fetchScripQuote(
+              "${watchListData['token']}", "${watchListData['exch']}", context);
 
-                              watchListData["holdingQty"]="${context.read(websocketProvider).socketDatas["${watchListData['token']}"]['holdQty']}";
-                        }
-    return  ListTile(
-                            onLongPress: () {
-                              if (marketWatch.isPreDefWLs == "Yes") {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    warningMessage(context,
-                                        "This is a pre-defined watchlist that cannot be edited!"));
-                              } else {
-                                context
-                                    .read(marketWatchProvider)
-                                    .requestMWScrip(
-                                        context: context, isSubscribe: false);
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => EditScrip(
-                                            wlName: marketWatch.wlName)));
-                              }
-                            },
-                            onTap: () async {
-                              marketWatch.chngDephBtn("Overview");
-                              await marketWatch.fetchScripQuote(
-                                  "${watchListData['token']}",
-                                  "${watchListData['exch']}",
-                                  context);
+          await watch(websocketProvider).establishConnection(
+              channelInput:
+                  "${watchListData['exch']}|${watchListData['token']}",
+              task: "d",
+              context: context);
 
-                              await watch(websocketProvider).establishConnection(
-                                  channelInput:
-                                      "${watchListData['exch']}|${watchListData['token']}",
-                                  task: "d",
-                                  context: context);
+          if (marketWatch.getQuotes!.stat == "Ok") {
+            await context.read(marketWatchProvider).fetchLinkeScrip(
+                "${watchListData['token']}",
+                "${watchListData['exch']}",
+                context);
+            if ((watchListData['exch'] == "NSE" ||
+                    watchListData['exch'] == "BSE") &&
+                (watchListData['instname'].toString() != "UNDIND")) {
+              context.read(marketWatchProvider).depthBtns.add({
+                "btnName": "Fundamental",
+                "imgPath": assets.dInfo,
+                "case": "Click here to view fundamental data."
+              });
+              await context.read(marketWatchProvider).fetchTechData(
+                  context: context,
+                  exch: "${context.read(marketWatchProvider).getQuotes!.exch}",
+                  tradeSym:
+                      "${context.read(marketWatchProvider).getQuotes!.tsym}",
+                  lastPrc:
+                      "${context.read(marketWatchProvider).getQuotes!.lp ?? context.read(marketWatchProvider).getQuotes!.c ?? 0.00}");
+            }
 
-                              if (marketWatch.getQuotes!.stat == "Ok") {
-                                await context
-                                    .read(marketWatchProvider)
-                                    .fetchLinkeScrip(
-                                        "${watchListData['token']}",
-                                        "${watchListData['exch']}",context);
-                                if ((watchListData['exch'] == "NSE" ||
-                                        watchListData['exch'] ==
-                                            "BSE") &&
-                                    (watchListData['instname']
-                                            .toString() !=
-                                        "UNDIND")) {
-                                  context
-                                      .read(marketWatchProvider)
-                                      .depthBtns
-                                      .add({
-                                    "btnName": "Fundamental",
-                                    "imgPath": assets.dInfo,
-                                    "case":
-                                        "Click here to view fundamental data."
-                                  });
-                                  await context.read(marketWatchProvider).fetchTechData(
-                                      context: context,
-                                      exch:
-                                          "${context.read(marketWatchProvider).getQuotes!.exch}",
-                                      tradeSym:
-                                          "${context.read(marketWatchProvider).getQuotes!.tsym}",
-                                      lastPrc:
-                                          "${context.read(marketWatchProvider).getQuotes!.lp ?? context.read(marketWatchProvider).getQuotes!.c ?? 0.00}");
-                                }
+            context.read(marketWatchProvider).depthBtns.add({
+              "btnName": "Set Alert",
+              "imgPath": "assets/icon/calendar.svg",
+              "case": "Click here to view the trading view chart."
+            });
 
-                                context
-                                    .read(marketWatchProvider)
-                                    .depthBtns
-                                    .add({
-                                  "btnName": "Set Alert",
-                                  "imgPath": "assets/icon/calendar.svg",
-                                  "case":
-                                      "Click here to view the trading view chart."
-                                });
+            DepthInputArgs depthArgs = DepthInputArgs(
+                exch: '${watchListData['exch']}',
+                token: '${watchListData['token']}',
+                tsym: '${watchListData['tsym']}',
+                instname: watchListData['instname'] ?? "",
+                symbol: '${watchListData['symbol']}',
+                expDate: '${watchListData['expDate']}',
+                option: '${watchListData['option']}');
 
-                                DepthInputArgs depthArgs = DepthInputArgs(
-                                    exch: '${watchListData['exch']}',
-                                    token:
-                                        '${watchListData['token']}',
-                                    tsym: '${watchListData['tsym']}',
-                                    instname: watchListData
-                                            ['instname'] ??
-                                        "",
-                                    symbol:
-                                        '${watchListData['symbol']}',
-                                    expDate:
-                                        '${watchListData['expDate']}',
-                                    option:
-                                        '${watchListData['option']}');
-
-                                showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    useSafeArea: true,
-                                    isDismissible: true,
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(16))),
-                                    context: context,
-                                    builder: (context) => Container(
-                                        padding: EdgeInsets.only(
-                                          bottom: MediaQuery.of(context)
-                                              .viewInsets
-                                              .bottom,
-                                        ),
-                                        child: ScripDepthInfo(
-                                            wlValue: depthArgs, isBasket: '' )));
-                              }
-                            },
-                            contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 16),
-                            dense: true,
-                            title: Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                    "${watchListData["symbol"].toString().toUpperCase()} ",
-                                    style: textStyles.scripNameTxtStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)),
-                                if (watchListData["option"]
-                                    .toString()
-                                    .isNotEmpty)
-                                  Text("${watchListData["option"]}",
-                                      style: textStyles.scripNameTxtStyle
-                                          .copyWith(
-                                              color: const Color(0xff666666))),
-                              ],
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 3),
-                                Row(
-                                  children: [
-                                    CustomExchBadge(
-                                        exch:
-                                            '${watchListData["exch"]}'),
-                                    if (watchListData['expDate']
-                                        .toString()
-                                        .isNotEmpty)
-                                      Text(
-                                          " ${watchListData['expDate']}  ",
-                                          style: textStyles.scripExchTxtStyle
-                                              .copyWith(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack)),
-                                    if (watchListData['holdingQty'] !=
-                                       "") ...[
-                                      SvgPicture.asset(assets.suitcase,
-                                          height: 12,
-                                          width: 16,
-                                          color: theme.isDarkMode
-                                              ? colors.colorLightBlue
-                                              : colors.colorBlue),
-                                      Text(
-                                          " ${watchListData['holdingQty']}",
-                                          style: textStyles.scripExchTxtStyle
-                                              .copyWith(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorLightBlue
-                                                      : colors.colorBlue,
-                                                  fontWeight: FontWeight.w600))
-                                    ]
-                                  ],
-                                ),
-                              ],
-                            ),
-                            trailing: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                      "₹${watchListData['ltp'] ?? 0.00}",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600)),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "${watchListData["change"] == "null" ? 0.00 : watchListData['change']} (${watchListData['perChange'] == "null" ? 0.00 : watchListData["perChange"]}%)",
-                                    style: textStyle(
-                                          
-                                          watchListData['change']
-                                                    .toString()
-                                                    .startsWith("-") ||
-                                                watchListData['perChange']
-                                                    .toString()
-                                                    .startsWith('-')
-                                            ? colors.darkred
-                                            : (watchListData['change'].toString() ==
-                                                            "null" ||
-                                                        watchListData['perChange']
-                                                                .toString() ==
-                                                            "null") ||
-                                                    (watchListData['change']
-                                                                .toString() ==
-                                                            "0.00" ||
-                                                        watchListData
-                                                                    ['perChange']
-                                                                .toString() ==
-                                                            "0.00")
-                                                ? colors.ltpgrey
-                                                :colors.ltpgreen,
-
-                                        
-                                        12,
-                                        FontWeight.w600),
-                                  )
-                                ]));
-  }  
+            showModalBottomSheet(
+                isScrollControlled: true,
+                useSafeArea: true,
+                isDismissible: true,
+                shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(16))),
+                context: context,
+                builder: (context) => Container(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
+          }
+        },
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        dense: true,
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text("${watchListData["symbol"].toString().toUpperCase()} ",
+                style: textStyles.scripNameTxtStyle.copyWith(
+                    color: theme.isDarkMode
+                        ? colors.colorWhite
+                        : colors.colorBlack)),
+            if (watchListData["option"].toString().isNotEmpty)
+              Text("${watchListData["option"]}",
+                  style: textStyles.scripNameTxtStyle
+                      .copyWith(color: const Color(0xff666666))),
+          ],
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(height: 3),
+            Row(
+              children: [
+                CustomExchBadge(exch: '${watchListData["exch"]}'),
+                if (watchListData['expDate'].toString().isNotEmpty)
+                  Text(" ${watchListData['expDate']}  ",
+                      style: textStyles.scripExchTxtStyle.copyWith(
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack)),
+                if (watchListData['holdingQty'] != "") ...[
+                  SvgPicture.asset(assets.suitcase,
+                      height: 12,
+                      width: 16,
+                      color: theme.isDarkMode
+                          ? colors.colorLightBlue
+                          : colors.colorBlue),
+                  Text(" ${watchListData['holdingQty']}",
+                      style: textStyles.scripExchTxtStyle.copyWith(
+                          color: theme.isDarkMode
+                              ? colors.colorLightBlue
+                              : colors.colorBlue,
+                          fontWeight: FontWeight.w600))
+                ]
+              ],
+            ),
+          ],
+        ),
+        trailing: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("₹${watchListData['ltp'] ?? 0.00}",
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      14,
+                      FontWeight.w600)),
+              const SizedBox(height: 4),
+              Text(
+                "${watchListData["change"] == "null" ? 0.00 : watchListData['change']} (${watchListData['perChange'] == "null" ? 0.00 : watchListData["perChange"]}%)",
+                style: textStyle(
+                    watchListData['change'].toString().startsWith("-") ||
+                            watchListData['perChange']
+                                .toString()
+                                .startsWith('-')
+                        ? colors.darkred
+                        : (watchListData['change'].toString() == "null" ||
+                                    watchListData['perChange'].toString() ==
+                                        "null") ||
+                                (watchListData['change'].toString() == "0.00" ||
+                                    watchListData['perChange'].toString() ==
+                                        "0.00")
+                            ? colors.ltpgrey
+                            : colors.ltpgreen,
+                    12,
+                    FontWeight.w600),
+              )
+            ]));
+  }
 }
