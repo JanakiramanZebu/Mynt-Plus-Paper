@@ -20,6 +20,8 @@ class _PortfolioScreenState extends State<PortfolioScreen>
     with TickerProviderStateMixin {
   @override
   void initState() {
+    context.read(portfolioProvider).fetchBrokerDetails(context, false);
+
     context.read(portfolioProvider).portTab = TabController(
         length: context.read(portfolioProvider).portTabName.length,
         vsync: this,
@@ -29,7 +31,6 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       context
           .read(portfolioProvider)
           .changeTabIndex(context.read(portfolioProvider).portTab.index);
-    context.read(portfolioProvider).fetchBrokerDetails(context, false);
 
       context.read(portfolioProvider).tabSize();
       if (context.read(portfolioProvider).selectedTab == 0) {
@@ -96,12 +97,12 @@ class _PortfolioScreenState extends State<PortfolioScreen>
             height: 46,
             child: TabBar(
                 tabAlignment: portfolio.mfHoldingsModel!.isNotEmpty &&
-                        portfolio.mfHoldingsModel![0].stat != "Not_Ok"
+                        portfolio.mfHoldingsModel![0].stat != "Not_Ok" || portfolio.allholds.isNotEmpty
                     ? TabAlignment.start
                     : TabAlignment.fill,
                 indicatorSize: TabBarIndicatorSize.tab,
                 isScrollable: portfolio.mfHoldingsModel!.isNotEmpty &&
-                    portfolio.mfHoldingsModel![0].stat != "Not_Ok",
+                    portfolio.mfHoldingsModel![0].stat != "Not_Ok" || portfolio.allholds.isNotEmpty,
                 indicatorColor:
                     theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
                 unselectedLabelColor: const Color(0XFF777777),
