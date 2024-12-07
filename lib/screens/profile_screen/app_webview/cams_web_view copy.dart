@@ -7,6 +7,7 @@ import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../res/res.dart';
+import '../../../sharedWidget/snack_bar.dart';
 
 class CamsWebView extends StatefulWidget {
   final String argument;
@@ -62,20 +63,26 @@ class CamsWebViewState extends State<CamsWebView> {
                 onLoadStart: (InAppWebViewController controller, Uri? uri) {
                   String redirUrl = uri.toString();
                   print(redirUrl);
-                Uri url = Uri.parse(redirUrl);
-    Map<String, String> queryParams = url.queryParameters;
-    String? query = queryParams['response'];
+                  Uri url = Uri.parse(redirUrl);
+                  Map<String, String> queryParams = url.queryParameters;
+                  String? query = queryParams['response'];
 
-                  if (redirUrl.contains('profile.mynt.in') && query == 'update success') {
-                    //  if (query == 'update success') { }
+                  if (redirUrl.contains('profile.mynt.in')) {
                     print('web is');
                     if (mounted) {
-                      // Future.microtask(() {
+                      if (query == 'update success') {
                         context
                             .read(portfolioProvider)
                             .fetchBrokerDetails(context, true);
+                      } else if (query != null && query.isNotEmpty) {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(warningMessage(context, query));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            warningMessage(context, 'Unknown response'));
+                      }
+                      // Future.microtask(() {
                       // });
-
                       Navigator.of(context).pop();
                     }
                   }
