@@ -14,8 +14,10 @@ import '../models/ipo_model/ipo_place_order_model.dart';
 import '../models/ipo_model/ipo_sme_model.dart';
 import '../models/mf_model/mf_bank_detail_model.dart';
 import '../res/res.dart';
+import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'core/default_change_notifier.dart';
+import 'package:intl/intl.dart';
 
 final ipoProvide = ChangeNotifierProvider((ref) => IPOProvider(ref.read));
 
@@ -57,6 +59,8 @@ class IPOProvider extends DefaultChangeNotifier {
       TextEditingController();
   final TextEditingController openOrderController = TextEditingController();
 
+  late TabController tabCtrl;
+
   VerifyUPIModel? _upiIdValidationModel;
   VerifyUPIModel? get upiIdValidationModel => _upiIdValidationModel;
 
@@ -71,6 +75,9 @@ class IPOProvider extends DefaultChangeNotifier {
 
   List<IpoScrip>? _performancesearch = [];
   List<IpoScrip>? get performancesearch => _performancesearch;
+
+  List<IpoScrip>? _filterperformance = [];
+  List<IpoScrip>? get filterperformance => _filterperformance;
 
   IpoOrderResponcesModel? _ipoOrderResponcesModel;
   IpoOrderResponcesModel? get ipoOrderResponcesModel => _ipoOrderResponcesModel;
@@ -101,6 +108,27 @@ class IPOProvider extends DefaultChangeNotifier {
 
   bool _showSearch = false;
   bool get showSearch => _showSearch;
+
+  String? _numbers = "";
+  String? get numbers => _numbers;
+
+  String? _maxValue = "";
+  String? get maxValue => _maxValue;
+
+  List<String> _stringList = [];
+  List<String> get stringList => _stringList;
+
+  List<Tab> _orderTabName = [];
+  List<Tab> get orderTabName => _orderTabName;
+
+  tabSize() {
+    _orderTabName = [
+      Tab(text: "Current & Upcoming"),
+      Tab(text: "Closed IPO’s"),
+    ];
+
+    notifyListeners();
+  }
 
   showOpenSearch(bool value) {
     _showSearch = value;
@@ -170,7 +198,38 @@ class IPOProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  changeTabIndex(int index) {
+  smedatesort(List<SMEIPO> data) {
+    try {
+      data.sort((a, b) {
+        final DateFormat dateFormat = DateFormat("MMMM d, yyyy");
+        DateTime dateA = dateFormat.parse(a.biddingStartDate.toString());
+        DateTime dateB = dateFormat.parse(b.biddingStartDate.toString());
+        return dateB.compareTo(dateA);
+      }); // Sort by date
+    } catch (e) {
+    } 
+  }
+
+  sortIPOListByDate(List<IpoScrip> data) {
+    try {
+      data.sort((a, b) {
+        final DateFormat dateFormat = DateFormat("MMMM d, yyyy");
+        DateTime dateA = dateFormat.parse(a.listedDate.toString());
+        DateTime dateB = dateFormat.parse(b.listedDate.toString());
+        return dateB.compareTo(dateA);
+      }); // Sort by date
+    } catch (e) {
+    } 
+  }
+
+  changeTabIndex(
+    int index,
+  ) {
+    _selectedTab = index;
+    notifyListeners();
+  }
+
+  changeIpoIndex(int index, BuildContext context) {
     _selectedTab = index;
     notifyListeners();
   }
@@ -531,49 +590,54 @@ class IPOProvider extends DefaultChangeNotifier {
 
   smeipocategory() {
     ipoCategory = [];
-
-    for (var element in smeIpoModel!.sMEIPO!) {
-      for (var i = 0; i < element.subCategorySettings!.length; i++) {
-        if (element.subCategorySettings![i].allowUpi!) {
-          if (element.subCategorySettings![i].subCatCode == "IND" &&
-              element.subCategorySettings![i].caCode == "RETAIL") {
-            ipoCategory.add({
-              "subCatCode": "Individual",
-              "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
-            });
-          } else if (element.subCategorySettings![i].subCatCode == "EMP") {
-            ipoCategory.add({
-              "subCatCode": "Employee",
-              "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
-            });
-          } else if (element.subCategorySettings![i].subCatCode == "SHA") {
-            ipoCategory.add({
-              "subCatCode": "Shareholder",
-              "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
-            });
-          } else if (element.subCategorySettings![i].subCatCode == "POL") {
-            ipoCategory.add({
-              "subCatCode": "Policyholder",
-              "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
-            });
+    try {
+      toggleLoadingOn(true);
+      for (var element in smeIpoModel!.sMEIPO!) {
+        for (var i = 0; i < element.subCategorySettings!.length; i++) {
+          if (element.subCategorySettings![i].allowUpi!) {
+            if (element.subCategorySettings![i].subCatCode == "IND" &&
+                element.subCategorySettings![i].caCode == "RETAIL") {
+              ipoCategory.add({
+                "subCatCode": "Individual",
+                "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
+              });
+            } else if (element.subCategorySettings![i].subCatCode == "EMP") {
+              ipoCategory.add({
+                "subCatCode": "Employee",
+                "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
+              });
+            } else if (element.subCategorySettings![i].subCatCode == "SHA") {
+              ipoCategory.add({
+                "subCatCode": "Shareholder",
+                "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
+              });
+            } else if (element.subCategorySettings![i].subCatCode == "POL") {
+              ipoCategory.add({
+                "subCatCode": "Policyholder",
+                "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
+              });
+            }
           }
         }
       }
+      final seen = <String>{};
+      ipoCategory = ipoCategory.where((map) {
+        // Create a unique key string for each map
+        final key = map.entries.map((e) => '${e.key}:${e.value}').join(',');
+        if (seen.contains(key)) {
+          return false;
+        } else {
+          seen.add(key);
+          return true;
+        }
+      }).toList();
+      ipoCategoryvalue = ipoCategory[0]["subCatCode"];
+      _maxUPIAmt = double.parse(ipoCategory[0]["upiLimit"]);
+      notifyListeners();
+    } catch (e) {
+    } finally {
+      toggleLoadingOn(false);
     }
-    final seen = <String>{};
-    ipoCategory = ipoCategory.where((map) {
-      // Create a unique key string for each map
-      final key = map.entries.map((e) => '${e.key}:${e.value}').join(',');
-      if (seen.contains(key)) {
-        return false;
-      } else {
-        seen.add(key);
-        return true;
-      }
-    }).toList();
-    ipoCategoryvalue = ipoCategory[0]["subCatCode"];
-    _maxUPIAmt = double.parse(ipoCategory[0]["upiLimit"]);
-    notifyListeners();
   }
 
   mainipocategory(String type) async {
@@ -812,27 +876,42 @@ class IPOProvider extends DefaultChangeNotifier {
   ordersplit() {
     _openorder = [];
     _closeorder = [];
-    for (var element in _ipoOrderBookModel!) {
-      if (element.reponseStatus == 'new success' ||
-          element.reponseStatus == 'pending') {
-        _openorder!.add(element);
-        _openorder!.sort((a, b) => a.companyName!.compareTo(b.companyName!));
-      } else {
-        _closeorder!.add(element);
-        _closeorder!.sort((a, b) => a.companyName!.compareTo(b.companyName!));
+    _maxValue = "";
+    _stringList = [];
+    try {
+      togglefundLoadingOn(true);
+
+      for (var element in _ipoOrderBookModel!) {
+        if (element.reponseStatus == 'new success' ||
+            element.reponseStatus == 'pending') {
+          _openorder!.add(element);
+          _openorder!.sort((a, b) => a.companyName!.compareTo(b.companyName!));
+        } else {
+          _closeorder!.add(element);
+          _closeorder!.sort((a, b) => a.companyName!.compareTo(b.companyName!));
+        }
       }
+    } catch (e) {
+    } finally {
+      togglefundLoadingOn(false);
     }
+
     notifyListeners();
   }
 
 //// API CALLS
-  Future getipoorderbookmodel() async {
+  Future getipoorderbookmodel(bool isTrue) async {
     try {
+      togglefundLoadingOn(isTrue ? true : false);
       _ipoOrderBookModel = await api.fetchipoorderbook();
       ordersplit();
+      //  print("IPO RES ORDERBOOK ::: ${_ipoOrderBookModel![0].bidDetail![0].amount}");
+      notifyListeners();
       return _ipoOrderBookModel;
     } catch (e) {
       print("IPOs ORDERBOOK error:: $e");
+    } finally {
+      togglefundLoadingOn(false);
     }
   }
 
@@ -844,11 +923,9 @@ class IPOProvider extends DefaultChangeNotifier {
       if (_upiIdValidationModel!.data!.verifiedVPAStatus1 == "Available" ||
           _upiIdValidationModel!.data!.verifiedVPAStatus2 == "Available") {
         getipoplaceorder(context, menudata, iposbids, iposupiid);
-        getipoorderbookmodel();
+        getipoorderbookmodel(true);
         ipotab();
-        //Navigator.pushNamed(context, Routes.ipoorderbook);
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, '${_ipoOrderResponcesModel!.msg}'));
+        Navigator.pushNamed(context, Routes.ipoorderbook);
       } else {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'Invalid UPI ID'));
@@ -871,7 +948,7 @@ class IPOProvider extends DefaultChangeNotifier {
 
       _ipoOrderResponcesModel =
           await api.fetchipoplaceorder(menudata, iposbids, iposupiid);
-      getipoorderbookmodel();
+      getipoorderbookmodel(true);
       ipotab();
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -888,11 +965,14 @@ class IPOProvider extends DefaultChangeNotifier {
 
   Future getipoperfomance(int year) async {
     try {
+      toggleLoadingOn(true);
       _ipoPerformanceModel = await api.fetchipoperfomance(year);
       notifyListeners();
       return _ipoPerformanceModel;
     } catch (e) {
       print("IPOs Perfomance error:: $e");
+    } finally {
+      toggleLoadingOn(false);
     }
   }
 
@@ -900,8 +980,9 @@ class IPOProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       _mainStreamIpoModel = await api.fetchmainstreamoipo();
+      getipoorderbookmodel(true);
       notifyListeners();
-      // print(_mainStreamIpoModel!.msg);
+
       return _mainStreamIpoModel;
     } catch (e) {
       //print("MainStream IPOs error:: $e");
@@ -912,11 +993,16 @@ class IPOProvider extends DefaultChangeNotifier {
 
   Future getSmeIpo() async {
     try {
+      toggleLoadingOn(true);
       _smeIpoModel = await api.fetchsmeipo();
+      
+      tabSize();
       notifyListeners();
       return _smeIpoModel;
     } catch (e) {
       print("SME IPOs error:: $e");
+    } finally {
+      toggleLoadingOn(false);
     }
   }
 }

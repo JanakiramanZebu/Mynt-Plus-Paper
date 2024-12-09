@@ -5,9 +5,9 @@ import 'package:flutter_svg/svg.dart';
 import '../../../../models/ipo_model/ipo_details_model.dart';
 import '../../../../models/ipo_model/ipo_mainstream_model.dart';
 import '../../../../models/ipo_model/ipo_place_order_model.dart';
-import '../../../../provider/fund_provider.dart';
 import '../../../../provider/iop_provider.dart';
 import '../../../../provider/thems.dart';
+import '../../../../provider/transcation_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/ipo_error_widget.dart';
@@ -29,11 +29,17 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
   String upierrortext = "Please enter the UPI Id";
   int required = 0;
 
+  List<int> stringList = [];
+  int? maxValue;
+
   List<IpoDetails> addIpo = [];
   @override
   void initState() {
     setState(() {
       addNewItem();
+      maxValue = mininv(double.parse(widget.mainstream.minPrice!).toDouble(),
+              int.parse(widget.mainstream.minBidQuantity!).toInt())
+          .toInt();
     });
     super.initState();
   }
@@ -64,9 +70,9 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Consumer(
         builder: (context, watch, child) {
-          final upiid = watch(fundProvider);
           final ipo = watch(ipoProvide);
           final theme = watch(themeProvider);
+          final upiid = watch(transcationProvider);
           return Scaffold(
               appBar: AppBar(
                 elevation: .2,
@@ -213,18 +219,6 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                       ],
                     ),
                   ),
-                  ipo.timemessage == "Time"
-                      ? Container()
-                      : Container(
-                          width: MediaQuery.of(context).size.width,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 4),
-                          color: const Color(0xffFCEFD4),
-                          child: Text(ipo.timemessage,
-                              textAlign: TextAlign.start,
-                              style: textStyle(const Color(0xff666666), 11,
-                                  FontWeight.w500)),
-                        ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
@@ -291,6 +285,16 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: addIpo.length,
                     itemBuilder: (context, index) {
+                      for (var i = 0; i < addIpo.length; i++) {
+                        stringList.add(addIpo[index].requriedprice);
+                      }
+
+                      maxValue = stringList.reduce((curr, next) =>
+                          int.parse(curr.toString()) >
+                                  double.parse(next.toString())
+                              ? curr
+                              : next);
+
                       return Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -414,16 +418,14 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                               widget
                                                                   .mainstream);
                                                           setState(() {
-                                                            addIpo[index]
-                                                                    .requriedprice =
-                                                                addIpo
-                                                                    .map((map) => map
-                                                                        .requriedprice)
-                                                                    .reduce((a,
-                                                                            b) =>
-                                                                        a > b
-                                                                            ? a
-                                                                            : b);
+                                                            maxValue = addIpo
+                                                                .map((map) => map
+                                                                    .requriedprice)
+                                                                .reduce((a,
+                                                                        b) =>
+                                                                    a > b
+                                                                        ? a
+                                                                        : b);
                                                           });
                                                         },
                                                   child: SvgPicture.asset(
@@ -448,6 +450,16 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                                   ipo,
                                                                   widget
                                                                       .mainstream);
+                                                              setState(() {
+                                                                maxValue = addIpo
+                                                                    .map((map) => map
+                                                                        .requriedprice)
+                                                                    .reduce((a,
+                                                                            b) =>
+                                                                        a > b
+                                                                            ? a
+                                                                            : b);
+                                                              });
                                                             },
                                                   child: SvgPicture.asset(
                                                       theme.isDarkMode
@@ -485,13 +497,12 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                       "Minimum Bid quantity is ${widget.mainstream.minBidQuantity.toString()} only ";
                                                   ischecked = false;
                                                 }
-                                                addIpo[index]
-                                                        .requriedprice =
-                                                    addIpo
-                                                        .map((map) =>
-                                                            map.requriedprice)
-                                                        .reduce((a, b) =>
-                                                            a > b ? a : b);
+
+                                                maxValue = addIpo
+                                                    .map((map) =>
+                                                        map.requriedprice)
+                                                    .reduce((a, b) =>
+                                                        a > b ? a : b);
                                               });
                                             },
                                           ),
@@ -613,13 +624,11 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                             .toInt()) {
                                                   ischecked = false;
                                                 }
-                                                addIpo[index]
-                                                        .requriedprice =
-                                                    addIpo
-                                                        .map((map) =>
-                                                            map.requriedprice)
-                                                        .reduce((a, b) =>
-                                                            a > b ? a : b);
+                                                maxValue = addIpo
+                                                    .map((map) =>
+                                                        map.requriedprice)
+                                                    .reduce((a, b) =>
+                                                        a > b ? a : b);
                                               });
                                             },
                                           ),
@@ -659,6 +668,11 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                   addIpo[index],
                                                   widget.mainstream);
                                               FocusScope.of(context).unfocus();
+                                              maxValue = addIpo
+                                                  .map((map) =>
+                                                      map.requriedprice)
+                                                  .reduce(
+                                                      (a, b) => a > b ? a : b);
                                             },
                                       icon: SvgPicture.asset(theme.isDarkMode
                                           ? addIpo[index].isChecked
@@ -728,7 +742,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                     height: 44,
                     child: TextFormField(
                       readOnly: ipo.loading ? true : false,
-                      controller: upiid.viewupiid,
+                      controller: upiid.upiid,
                       style: textStyle(
                           theme.isDarkMode
                               ? colors.colorWhite
@@ -754,12 +768,12 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                       ),
                       onChanged: (value) {
                         setState(() {
-                          upiid.viewupiid.text = value;
-                          if (upiid.viewupiid.text.isEmpty) {
+                          upiid.upiid.text = value;
+                          if (upiid.upiid.text.isEmpty) {
                             upierrortext = "* UPI ID cannot be empty";
                             ischecked = false;
                           } else if (!RegExp(r'^[\w.-]+@[\w]+$')
-                              .hasMatch(upiid.viewupiid.text = value)) {
+                              .hasMatch(upiid.upiid.text = value)) {
                             upierrortext = 'Invalid UPI ID format';
                             ischecked = false;
                           } else {
@@ -769,9 +783,9 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                       },
                     ),
                   ),
-                  if (upiid.viewupiid.text.isEmpty ||
+                  if (upiid.upiid.text.isEmpty ||
                       !RegExp(r'^[\w.-]+@[\w]+$')
-                          .hasMatch(upiid.viewupiid.text)) ...[
+                          .hasMatch(upiid.upiid.text)) ...[
                     const SizedBox(
                       height: 6,
                     ),
@@ -856,14 +870,14 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                 context,
                                                 "Minimum Bid quantity is ${widget.mainstream.minBidQuantity.toString()} only "));
                                         ischecked = false;
-                                      } else if (upiid.viewupiid.text.isEmpty) {
+                                      } else if (upiid.upiid.text.isEmpty) {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(warningMessage(
                                                 context,
                                                 "UPI ID cannot be empty"));
                                         ischecked = false;
                                       } else if (!RegExp(r'^[\w.-]+@[\w]+$')
-                                          .hasMatch(upiid.viewupiid.text)) {
+                                          .hasMatch(upiid.upiid.text)) {
                                         ischecked = false;
                                       }
                                     });
@@ -899,144 +913,138 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
               ),
               bottomSheet: BottomAppBar(
                   elevation: .14,
-                  child: timevalidation(
-                              widget.mainstream.dailyStartTime.toString(),
-                              widget.mainstream.dailyEndTime.toString()) ==
-                          "OPEN"
-                      ? Container(
-                          decoration: BoxDecoration(
-                              border: Border(
-                                  top: BorderSide(
-                                      color: colors.darkColorDivider))),
-                          child: ListTile(
-                            title: Text(
-                                "₹${addIpo[addIpo.length - 1].requriedprice = addIpo.map((map) => map.requriedprice).reduce((a, b) => a > b ? a : b)}",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    16,
-                                    FontWeight.w600)),
-                            subtitle: Text("Total Investment",
-                                style: textStyle(const Color(0xff666666), 13,
-                                    FontWeight.w500)),
-                            trailing: ElevatedButton(
-                              onPressed: ischecked == true
-                                  ? () {
-                                      if (addIpo[addIpo.length - 1]
-                                              .requriedprice >
-                                          ipo.maxUPIAmt) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context,
-                                                "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
+                  child: Container(
+                    decoration: BoxDecoration(
+                        border: Border(
+                            top: BorderSide(color: colors.darkColorDivider))),
+                    child: ListTile(
+                      title: Text("₹$maxValue",
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              16,
+                              FontWeight.w600)),
+                      subtitle: Text("Total Investment",
+                          style: textStyle(
+                              const Color(0xff666666), 13, FontWeight.w500)),
+                      trailing: SizedBox(
+                        width: 120,
+                        child: ElevatedButton(
+                          onPressed: ischecked == true
+                              ? () {
+                                  if (addIpo[addIpo.length - 1].requriedprice >
+                                      ipo.maxUPIAmt) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        warningMessage(context,
+                                            "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
 
-                                        ischecked = false;
-                                      } else if (addIpo[addIpo.length - 1]
+                                    ischecked = false;
+                                  } else if (addIpo[addIpo.length - 1]
+                                          .bidpricecontroller
+                                          .text
+                                          .isEmpty ||
+                                      addIpo[addIpo.length - 1]
                                               .bidpricecontroller
-                                              .text
-                                              .isEmpty ||
-                                          addIpo[addIpo.length - 1]
-                                                  .bidpricecontroller
-                                                  .text ==
-                                              "0") {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context,
-                                                addIpo[addIpo.length - 1]
-                                                            .bidpricecontroller
-                                                            .text ==
-                                                        "0"
-                                                    ? "Bid Price Value cannot be 0"
-                                                    : "*Bid Price Value is required"));
-                                      } else if (addIpo[addIpo.length - 1]
+                                              .text ==
+                                          "0") {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        warningMessage(
+                                            context,
+                                            addIpo[addIpo.length - 1]
+                                                        .bidpricecontroller
+                                                        .text ==
+                                                    "0"
+                                                ? "Bid Price Value cannot be 0"
+                                                : "*Bid Price Value is required"));
+                                  } else if (addIpo[addIpo.length - 1]
+                                          .qualityController
+                                          .text
+                                          .isEmpty ||
+                                      addIpo[addIpo.length - 1]
                                               .qualityController
-                                              .text
-                                              .isEmpty ||
-                                          addIpo[addIpo.length - 1]
-                                                  .qualityController
-                                                  .text ==
-                                              "0") {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context,
-                                                addIpo[addIpo.length - 1]
-                                                            .qualityController
-                                                            .text ==
-                                                        "0"
-                                                    ? '* Quantity cannot be 0'
-                                                    : '* Quantity cannot be empty'));
-                                      } else if (upiid.viewupiid.text.isEmpty) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context,
-                                                '* UPI ID cannot be empty'));
-                                      } else if (!RegExp(r'^[\w.-]+@[\w]+$')
-                                          .hasMatch(upiid.viewupiid.text)) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context,
-                                                'Invalid UPI ID format'));
-                                      } else {
-                                        ipoplaceorder(upiid, ipo);
-                                      }
-                                    }
-                                  : () {},
-                              style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                backgroundColor: !theme.isDarkMode
-                                    ? ischecked == false
-                                        ? const Color(0xfff5f5f5)
-                                        : colors.colorBlack
-                                    : ischecked == false
-                                        ? colors.darkGrey
-                                        : colors.colorbluegrey,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(32),
-                                ),
-                              ),
-                              child: ipo.loading
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Color(0xff666666)),
-                                    )
-                                  : Text("Continue",
-                                      style: textStyle(
-                                          !theme.isDarkMode
-                                              ? ischecked == false
-                                                  ? const Color(0xff999999)
-                                                  : colors.colorWhite
-                                              : ischecked == false
-                                                  ? colors.darkGrey
-                                                  : colors.colorBlack,
-                                          14,
-                                          FontWeight.w500)),
+                                              .text ==
+                                          "0") {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        warningMessage(
+                                            context,
+                                            addIpo[addIpo.length - 1]
+                                                        .qualityController
+                                                        .text ==
+                                                    "0"
+                                                ? '* Quantity cannot be 0'
+                                                : '* Quantity cannot be empty'));
+                                  } else if (upiid.upiid.text.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        warningMessage(context,
+                                            '* UPI ID cannot be empty'));
+                                  } else if (!RegExp(r'^[\w.-]+@[\w]+$')
+                                      .hasMatch(upiid.upiid.text)) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        warningMessage(
+                                            context, 'Invalid UPI ID format'));
+                                  } else {
+                                    ipoplaceorder(upiid, ipo);
+                                  }
+                                }
+                              : () {},
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: !theme.isDarkMode
+                                ? ischecked == false
+                                    ? const Color(0xfff5f5f5)
+                                    : colors.colorBlack
+                                : ischecked == false
+                                    ? colors.darkGrey
+                                    : colors.colorbluegrey,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(32),
                             ),
                           ),
-                        )
-                      : Container(
-                          width: MediaQuery.of(context).size.width,
-                          height: 55,
-                          decoration: BoxDecoration(
-                              color: colors.colorWhite,
-                              border: Border(
-                                  top: BorderSide(color: colors.colorDivider))),
-                          child: Center(
-                              child: Text(
-                            "! MARKET IS CLOSED",
-                            style: textStyle(
-                                colors.colorBlack, 16, FontWeight.w600),
-                          )),
-                        )));
+                          child: ipo.loading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Color(0xff666666)),
+                                )
+                              : Text("Continue",
+                                  style: textStyle(
+                                      !theme.isDarkMode
+                                          ? ischecked == false
+                                              ? const Color(0xff999999)
+                                              : colors.colorWhite
+                                          : ischecked == false
+                                              ? colors.darkGrey
+                                              : colors.colorBlack,
+                                      14,
+                                      FontWeight.w500)),
+                        ),
+                      ),
+                    ),
+                  )
+
+                  // Container(
+                  //     width: MediaQuery.of(context).size.width,
+                  //     height: 55,
+                  //     decoration: BoxDecoration(
+                  //         color: colors.colorWhite,
+                  //         border: Border(
+                  //             top: BorderSide(color: colors.colorDivider))),
+                  //     child: Center(
+                  //         child: Text(
+                  //       "! MARKET IS CLOSED",
+                  //       style: textStyle(
+                  //           colors.colorBlack, 16, FontWeight.w600),
+                  //     )),
+                  //   )
+                  ));
         },
       ),
     );
   }
 
-  ipoplaceorder(FundProvider upiid, IPOProvider ipo) async {
+  ipoplaceorder(TranctionProvider upiid, IPOProvider ipo) async {
     MenuData menudata = MenuData(
       flow: "now",
       type: widget.mainstream.type.toString(),
@@ -1054,7 +1062,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
       applicationNumber: '',
       respBid: [BidReference(bidReferenceNumber: '')],
     );
-    final String iposupiid = upiid.viewupiid.text;
+    final String iposupiid = upiid.upiid.text;
     List<IposBid> iposbids = [];
     for (int i = 0; i < addIpo.length; i++) {
       iposbids.add(IposBid(
@@ -1065,8 +1073,12 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
           total: addIpo[i].requriedprice.toDouble()));
     }
 
+    // for (int i = 0; i < iposbids.length; i++) {
+    //   print(
+    //       "Text: ${iposbids[i].bitis} Checkbox: ${iposbids[i].qty}, requried:${iposbids[i].cutoff},bidprice:${iposbids[i].price} value Total: ${iposbids[i].total}");
+    // }
     await context.read(ipoProvide).fetchupiidvalidation(
-        context, upiid.viewupiid.text, "343245", menudata, iposbids, iposupiid);
+        context, upiid.upiid.text, "343245", menudata, iposbids, iposupiid);
   }
 }
 

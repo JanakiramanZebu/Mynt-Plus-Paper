@@ -107,16 +107,20 @@ class UserAccountScreen extends ConsumerWidget {
                                 return const NeedHelpScreen();
                               });
                         } else if (index == 12) {
-                          await context.read(ipoProvide).getSmeIpo();
-                          await context.read(ipoProvide).getmainstreamipo();
-                          await context
-                              .read(ipoProvide)
-                              .getipoperfomance(currentYear);
+                          await context.read(ipoProvide).tabSize();
+                          Future.delayed(const Duration(microseconds: 10),
+                              () async {
+                            await context.read(ipoProvide).getSmeIpo();
+                            await context.read(ipoProvide).getmainstreamipo();
+                            await context
+                                .read(ipoProvide)
+                                .getipoperfomance(currentYear);
+                          });
                           Navigator.pushNamed(context, Routes.ipo);
                         } else if (index == 13) {
-                          await context.read(ipoProvide).getipoorderbookmodel();
-                          await context.read(ipoProvide).ipotab();
-                          Navigator.pushNamed(context, Routes.ipoorderbook);
+                          // await context.read(ipoProvide).getipoorderbookmodel();
+                          // await context.read(ipoProvide).ipotab();
+                          // Navigator.pushNamed(context, Routes.ipoorderbook);
                         } else if (index == 14) {
                           await context.read(bondProvider).fetchGovtBonds();
                           Navigator.pushNamed(context, Routes.bonds);
@@ -163,17 +167,20 @@ class UserAccountScreen extends ConsumerWidget {
                                             borderRadius:
                                                 BorderRadius.circular(50))),
                                     onPressed: () async {
-                                      context.read(transcationProvider).fetchValidateToken(context);
+                                      context
+                                          .read(transcationProvider)
+                                          .fetchValidateToken(context);
                                       Future.delayed(
                                           const Duration(milliseconds: 100),
                                           () async {
                                         await trancation.ip();
                                         await trancation.fetchupiIdView(
-                                                trancation.bankdetails!
-                                                    .dATA![trancation. indexss][1],
-                                                trancation.bankdetails!
-                                                    .dATA![trancation.indexss][2]);
-                                        await trancation.fetchcwithdraw(context);
+                                            trancation.bankdetails!
+                                                .dATA![trancation.indexss][1],
+                                            trancation.bankdetails!
+                                                .dATA![trancation.indexss][2]);
+                                        await trancation
+                                            .fetchcwithdraw(context);
                                       });
 
                                       trancation.changebool(true);

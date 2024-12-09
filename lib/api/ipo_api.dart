@@ -1,6 +1,5 @@
- 
+import 'dart:developer';
 
- 
 import '../models/ipo_model/ipo_mainstream_model.dart';
 import '../models/ipo_model/ipo_order_book_model.dart';
 import '../models/ipo_model/ipo_order_res_model.dart';
@@ -10,20 +9,20 @@ import '../models/ipo_model/ipo_sme_model.dart';
 import 'core/api_core.dart';
 
 mixin IPOApi on ApiCore {
- 
-
   Future<List<IpoOrderBookModel>> fetchipoorderbook() async {
     try {
       final uri = Uri.parse(apiLinks.ipoorderbook);
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           body: (jsonEncode({"client_id": "${prefs.clientId}"})));
-      //final json = jsonDecode(res.body);
-      final List body = json.decode(res.body);
-
-      ///log("++++++++++++ $body");
-      return body.map((e) => IpoOrderBookModel.fromJson(e)).toList();
+      final List body = jsonDecode(res.body);
+     // log("++++++++++++ $body");
+      return body.map((e) {
+      //  print("MAP ERROR $e");
+        return IpoOrderBookModel.fromJson(e);
+      }).toList();
     } catch (e) {
+    //  log("SDSDSDSD $e");
       rethrow;
     }
   }
@@ -86,13 +85,13 @@ mixin IPOApi on ApiCore {
       data.remove('UPI');
       data.remove('company_name');
     }
-    // log("IPO PLACEORDER $data");
+    log("IPO PLACEORDER $data");
     try {
       final uri = Uri.parse(apiLinks.placeipoorder);
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders, body: (jsonEncode(data)));
       final json = jsonDecode(res.body);
-      // log("ORDER PLACE IPO=>${res.body} ");
+      log("ORDER PLACE IPO=>${res.body} ");
       return IpoOrderResponcesModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -107,7 +106,7 @@ mixin IPOApi on ApiCore {
         headers: defaultHeaders,
       );
       final json = jsonDecode(res.body);
-      // log("Ipo Perfomance res=>${res.body} ");
+       //log("Ipo Perfomance res=>${res.body} ");
       return IpoPerformanceModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       print("GETIPOPERFORMANCE $e");

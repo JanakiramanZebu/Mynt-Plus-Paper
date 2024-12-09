@@ -35,18 +35,25 @@ class IpoScrip {
   String? listedDate;
   num? listingGain;
   num? listingGainPer;
+  String? symbol;
+  String? token;
+  String? exchange;
 
-  IpoScrip(
-      {this.clsPric,
-      this.companyName,
-      this.iSIN,
-      this.priceRange,
-      this.stockExchanges,
-      this.covertdate,
-      this.imageLink,
-      this.listedDate,
-      this.listingGain,
-      this.listingGainPer});
+  IpoScrip({
+    this.clsPric,
+    this.companyName,
+    this.iSIN,
+    this.priceRange,
+    this.stockExchanges,
+    this.covertdate,
+    this.imageLink,
+    this.listedDate,
+    this.listingGain,
+    this.listingGainPer,
+    this.symbol,
+    this.token,
+    this.exchange,
+  });
 
   IpoScrip.fromJson(Map<String, dynamic> json) {
     clsPric = json['ClsPric'];
@@ -59,6 +66,9 @@ class IpoScrip {
     listedDate = json['listed_date'];
     listingGain = json['listing_gain'];
     listingGainPer = json['listing_gain_per'];
+    symbol = json['symbol'];
+    token = json['token'];
+    exchange = json['exchange'];
   }
 
   Map<String, dynamic> toJson() {
@@ -73,6 +83,9 @@ class IpoScrip {
     data['listed_date'] = listedDate;
     data['listing_gain'] = listingGain;
     data['listing_gain_per'] = listingGainPer;
+    data['symbol'] = symbol;
+    data['token'] = token;
+    data['exchange'] = exchange;
     return data;
   }
 }

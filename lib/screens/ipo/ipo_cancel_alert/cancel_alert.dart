@@ -87,6 +87,7 @@ class IpoCancelAlert extends ConsumerWidget {
                         .read(ipoProvide)
                         .getipoplaceorder(context, menudata, iposbids, "");
                     Navigator.pop(context);
+                    Navigator.pop(context);
                   },
                   child: Text("Yes",
                       style: textStyle(

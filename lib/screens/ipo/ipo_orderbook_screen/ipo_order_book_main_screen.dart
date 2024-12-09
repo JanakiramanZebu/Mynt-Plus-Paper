@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../res/res.dart';
+import '../../../sharedWidget/functions.dart';
+import '../../../sharedWidget/payment_loader.dart';
 import 'ipo_order_book_tab/close_ipo_tab.dart';
 import 'ipo_order_book_tab/open_ipo_tab.dart';
 
@@ -66,44 +68,54 @@ class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
                       ? colors.colorWhite
                       : colors.colorBlack)),
         ),
-        body: Column(
-          children: [
-            Container(
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                    color: theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                    border: Border(
-                        bottom: BorderSide(
-                            color: theme.isDarkMode
-                                ? colors.darkGrey
-                                : const Color(0xffF1F3F8),
-                            width: 0))),
-                height: 46,
-                child: TabBar(
-                    dividerColor: Colors.transparent,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    indicatorColor: const Color(0xff0037B7),
-                    unselectedLabelColor: const Color(0XFF777777),
-                    unselectedLabelStyle: GoogleFonts.inter(
-                        textStyle: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: -0.28)),
-                    labelColor: const Color(0XFF0037B7),
-                    labelStyle: GoogleFonts.inter(
-                        textStyle: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600)),
+        body: ipo.fundisLoad
+            ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const ProgressiveDotsLoader(),
+                const SizedBox(height: 3),
+                Text('This will take a few seconds.',
+                    style: textStyle(colors.colorGrey, 13, FontWeight.w500)),
+              ])
+            : Column(
+                children: [
+                  Container(
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
+                          border: Border(
+                              bottom: BorderSide(
+                                  color: theme.isDarkMode
+                                      ? colors.darkGrey
+                                      : const Color(0xffF1F3F8),
+                                  width: 0))),
+                      height: 46,
+                      child: TabBar(
+                          dividerColor: Colors.transparent,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          indicatorColor: const Color(0xff0037B7),
+                          unselectedLabelColor: const Color(0XFF777777),
+                          unselectedLabelStyle: GoogleFonts.inter(
+                              textStyle: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: -0.28)),
+                          labelColor: const Color(0XFF0037B7),
+                          labelStyle: GoogleFonts.inter(
+                              textStyle: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          controller: ipo.ipoTab,
+                          tabs: ipo.ipotabs)),
+                  Expanded(
+                      child: TabBarView(
                     controller: ipo.ipoTab,
-                    tabs: ipo.ipotabs)),
-            Expanded(
-                child: TabBarView(
-              controller: ipo.ipoTab,
-              children: [IpoOpenOrder(open: ipo), IpoCloseOrder(close: ipo)],
-            ))
-          ],
-        ),
+                    children: [
+                      IpoOpenOrder(open: ipo),
+                      IpoCloseOrder(close: ipo)
+                    ],
+                  ))
+                ],
+              ),
       );
     });
   }

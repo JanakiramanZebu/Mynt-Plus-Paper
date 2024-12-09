@@ -1,9 +1,11 @@
 class SmeIpoModel {
+  String? msg;
   List<SMEIPO>? sMEIPO;
 
   SmeIpoModel({this.sMEIPO});
 
   SmeIpoModel.fromJson(Map<String, dynamic> json) {
+    msg = json['msg'];
     if (json['SMEIPO'] != null) {
       sMEIPO = <SMEIPO>[];
       json['SMEIPO'].forEach((v) {
@@ -14,6 +16,7 @@ class SmeIpoModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    data['msg'] = msg;
     if (sMEIPO != null) {
       data['SMEIPO'] = sMEIPO!.map((v) => v.toJson()).toList();
     }
@@ -268,9 +271,9 @@ class SubCategorySettings {
     allowCutOff = json['allowCutOff'];
     allowUpi = json['allowUpi'];
     caCode = json['caCode'].toString();
-    discountPrice = json['discountPrice'].toString() ;
+    discountPrice = json['discountPrice'].toString();
     discountType = json['discountType'].toString();
-    maxQuantity = json['maxQuantity'] .toString();
+    maxQuantity = json['maxQuantity'].toString();
     maxUpiLimit = json['maxUpiLimit'].toString();
     maxValue = json['maxValue'].toString();
     minValue = json['minValue'].toString();

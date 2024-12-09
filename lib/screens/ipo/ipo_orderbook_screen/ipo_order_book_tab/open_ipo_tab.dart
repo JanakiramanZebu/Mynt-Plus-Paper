@@ -16,6 +16,7 @@ class IpoOpenOrder extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = watch(themeProvider);
     final ipo = watch(ipoProvide);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,7 +117,7 @@ class IpoOpenOrder extends ConsumerWidget {
                   TextButton(
                       onPressed: () {
                         ipo.showOpenSearch(false);
-                        ipo.getipoorderbookmodel();
+                        ipo.getipoorderbookmodel(false);
                       },
                       child: Text("Close",
                           style: textStyles.textBtn.copyWith(
@@ -132,6 +133,20 @@ class IpoOpenOrder extends ConsumerWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: open.openorder!.length,
                   itemBuilder: (context, index) {
+                    List<String> stringList = [];
+                    List<String> bidqty = [];
+                    for (var i = 0;
+                        i < open.openorder![index].bidDetail!.length;
+                        i++) {
+                      stringList.add(open.openorder![index].bidDetail![i].amount
+                          .toString());
+                      bidqty.add(open.openorder![index].bidDetail![i].quantity
+                          .toString());
+                    }
+                    String maxValue = stringList.reduce((curr, next) =>
+                        double.parse(curr) > double.parse(next) ? curr : next).toString();
+                    String bidmaxvalue = bidqty.reduce((curr, next) =>
+                        double.parse(curr) > double.parse(next) ? curr : next).toString();
                     return InkWell(
                       onTap: () {
                         Navigator.pushNamed(
@@ -192,7 +207,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                               FontWeight.w500),
                                         ),
                                         Text(
-                                          "${open.openorder![index].bidDetail![0].quantity}",
+                                          bidmaxvalue,
                                           style: textStyle(
                                               theme.isDarkMode
                                                   ? colors.colorWhite
@@ -234,7 +249,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                                   .amount ==
                                               "null"
                                           ? "NAN"
-                                          : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(open.openorder![index].bidDetail![0].amount.toString()))}",
+                                          : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}",
                                       style: textStyle(
                                           theme.isDarkMode
                                               ? colors.colorWhite

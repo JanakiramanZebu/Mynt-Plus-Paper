@@ -5,10 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
-
 import '../../../../models/ipo_model/ipo_order_book_model.dart';
-import '../../../../provider/fund_provider.dart';
 import '../../../../provider/iop_provider.dart';
+import '../../../../provider/transcation_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
@@ -24,6 +23,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = watch(themeProvider);
+    final upi = watch(transcationProvider);
     return Scaffold(
       appBar: AppBar(
           elevation: .2,
@@ -297,12 +297,9 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                       : Expanded(
                           child: OutlinedButton(
                               onPressed: () async {
-                                await context
-                                    .read(ipoProvide)
-                                    .validateCurrentTime();
-                                await context
-                                    .read(fundProvider)
-                                    .fetchUpiDetail();
+                                await upi.fetchupiIdView(
+                                  upi.bankdetails!.dATA![upi.indexss][1],
+                                  upi.bankdetails!.dATA![upi.indexss][2]);
                                 await context
                                     .read(ipoProvide)
                                     .modifyipocategory();

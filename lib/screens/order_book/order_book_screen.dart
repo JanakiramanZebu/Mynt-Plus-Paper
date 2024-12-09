@@ -84,6 +84,7 @@ class _OrderBookScreenState extends State<OrderBookScreen>
                                   fontSize: 14, fontWeight: FontWeight.w600)),
                           controller: orderBook.tabCtrl,
                           tabs: orderBook.orderTabName)),
+                  
                   Expanded(
                       child:
                           TabBarView(controller: orderBook.tabCtrl, children: [

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 class InvestIPO extends ConsumerWidget {
   const InvestIPO({super.key});
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-   
     return Column(
       children: [
         Container(
           decoration: BoxDecoration(
               color: const Color(0xff834EDA),
               borderRadius: BorderRadius.circular(5)),
-          margin: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(left: 16,right: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -34,19 +34,20 @@ class InvestIPO extends ConsumerWidget {
                   ],
                 ),
               ),
-              Container(
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                decoration: BoxDecoration(
-                    color: const Color(0xff000000),
-                    borderRadius: BorderRadius.circular(32)),
-                child: Text("Apply for an IPO",
-                    style: GoogleFonts.inter(
-                        textStyle: textStyle(
-                            const Color(0xffFFFFFF), 14, FontWeight.w600))),
-              )
+              const SizedBox(height: 8),
+              // Container(
+              //   margin:
+              //       const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              //   padding:
+              //       const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              //   decoration: BoxDecoration(
+              //       color: const Color(0xff000000),
+              //       borderRadius: BorderRadius.circular(32)),
+              //   child: Text("Apply for an IPO",
+              //       style: GoogleFonts.inter(
+              //           textStyle: textStyle(
+              //               const Color(0xffFFFFFF), 14, FontWeight.w600))),
+              // )
             ],
           ),
         ),

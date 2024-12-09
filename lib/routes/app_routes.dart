@@ -1030,18 +1030,22 @@ class AppRoutes {
       /////
       case Routes.fundscreen:
         return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                FundScreen(dd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              FundScreen(dd: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            return SlideTransition(
+                position: animation.drive(tween), child: child);
+          },
+          // settings: RouteSettings(),
+          // maintainState: true,
+          // fullscreenDialog: false,
+          // opaque: true,
+        );
 
       case Routes.optionStrategy:
         return PageRouteBuilder(

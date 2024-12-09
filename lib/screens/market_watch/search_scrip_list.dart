@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
+import 'package:flutter_svg/svg.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../res/res.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
@@ -76,9 +76,10 @@ class SearchScripList extends ConsumerWidget {
                         token: '${searchValue[index].token}',
                         tsym: '${searchValue[index].tsym}',
                         instname: searchValue[index].instname ?? "",
-                        symbol: "${searchValue[index].symbol != null ? searchValue[index].symbol!.isEmpty ? searchValue[index].tsym : searchValue[index].symbol! : searchValue[index].tsym!}",
-                        expDate: searchValue[index].expDate??"",
-                        option: searchValue[index].option??"");
+                        symbol:
+                            "${searchValue[index].symbol != null ? searchValue[index].symbol!.isEmpty ? searchValue[index].tsym : searchValue[index].symbol! : searchValue[index].tsym!}",
+                        expDate: searchValue[index].expDate ?? "",
+                        option: searchValue[index].option ?? "");
 
                     showModalBottomSheet(
                         isScrollControlled: true,
@@ -121,10 +122,11 @@ class SearchScripList extends ConsumerWidget {
                           style: textStyles.scripExchTxtStyle.copyWith(
                               color: theme.isDarkMode
                                   ? colors.colorWhite
-                                  : colors.colorBlack)),if (searchValue[index].cname != null)
+                                  : colors.colorBlack)),
+                    if (searchValue[index].cname != null)
                       Expanded(
                         child: Text("${searchValue[index].cname}",
-                        overflow: TextOverflow.ellipsis,
+                            overflow: TextOverflow.ellipsis,
                             style: textStyles.scripExchTxtStyle.copyWith(
                                 color: theme.isDarkMode
                                     ? colors.colorWhite
@@ -146,7 +148,8 @@ class SearchScripList extends ConsumerWidget {
                                 context,
                                 false,
                                 false,
-                                false,false);
+                                false,
+                                false);
                           } else {
                             await searchScrip.isActiveAddBtn(true, index);
                             await searchScrip.addDelMarketScrip(
@@ -155,7 +158,8 @@ class SearchScripList extends ConsumerWidget {
                                 context,
                                 true,
                                 false,
-                                false,false);
+                                false,
+                                false);
                           }
                           // await context
                           //     .read(marketWatchProvider)
@@ -187,6 +191,4 @@ class SearchScripList extends ConsumerWidget {
           )
         : const NoDataFound();
   }
-
-   
 }

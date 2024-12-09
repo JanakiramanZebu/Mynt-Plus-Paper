@@ -2,7 +2,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:readmore/readmore.dart'; 
+import 'package:readmore/readmore.dart';
 import '../../../provider/market_watch_provider.dart';
 
 import '../../../provider/thems.dart';
@@ -37,7 +37,7 @@ class StocksHoldingsWidget extends ConsumerWidget {
                     alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                      color: theme.isDarkMode
+                        color: theme.isDarkMode
                             ? shareHoldings.selectedMfHolddate ==
                                     shareHoldings.mfHoldingDate[index]
                                 ? const Color(0xffB0BEC5)
@@ -54,7 +54,7 @@ class StocksHoldingsWidget extends ConsumerWidget {
                         },
                         child: Text(shareHoldings.mfHoldingDate[index],
                             style: textStyle(
-                                 theme.isDarkMode
+                                theme.isDarkMode
                                     ? shareHoldings.selectedMfHolddate ==
                                             shareHoldings.mfHoldingDate[index]
                                         ? colors.colorBlack
@@ -79,19 +79,25 @@ class StocksHoldingsWidget extends ConsumerWidget {
               16,
               FontWeight.w600)),
       const SizedBox(height: 8),
-      Row(children: [
-        colorBar("${stockHold[shareHoldings.selectedMfHoldindex].promoters}",
-            const Color(0xff2e8564)),
-        colorBar("${stockHold[shareHoldings.selectedMfHoldindex].fiiFpi}",
-            const Color(0xff7cd36f)),
-        colorBar("${stockHold[shareHoldings.selectedMfHoldindex].dii}",
-            const Color(0xfff7cd6c)),
-        colorBar(
-            "${stockHold[shareHoldings.selectedMfHoldindex].retailAndOthers}",
-            const Color(0XFFfbebc4)),
-        colorBar("${stockHold[shareHoldings.selectedMfHoldindex].mutualFunds}",
-            const Color(0XFFdedede))
-      ]),
+      stockHold.isEmpty
+          ? Container(
+              color: Color(0xff666666),
+            )
+          : Row(children: [
+              colorBar(
+                  "${stockHold[shareHoldings.selectedMfHoldindex].promoters}",
+                  const Color(0xff2e8564)),
+              colorBar("${stockHold[shareHoldings.selectedMfHoldindex].fiiFpi}",
+                  const Color(0xff7cd36f)),
+              colorBar("${stockHold[shareHoldings.selectedMfHoldindex].dii}",
+                  const Color(0xfff7cd6c)),
+              colorBar(
+                  "${stockHold[shareHoldings.selectedMfHoldindex].retailAndOthers}",
+                  const Color(0XFFfbebc4)),
+              colorBar(
+                  "${stockHold[shareHoldings.selectedMfHoldindex].mutualFunds}",
+                  const Color(0XFFdedede))
+            ]),
       const SizedBox(height: 2),
       Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -105,47 +111,71 @@ class StocksHoldingsWidget extends ConsumerWidget {
             Text("Holding %",
                 style: textStyle(const Color(0xff666666), 14, FontWeight.w500))
           ])),
-      holdData(
-          "Promoter Holding",
-          "${stockHold[shareHoldings.selectedMfHoldindex].promoters}",
-          const Color(0xff2e8564),
-          theme),
+      stockHold.isEmpty
+          ? Container(
+              color: Color(0xff666666),
+            )
+          : holdData(
+              "Promoter Holding",
+              "${stockHold[shareHoldings.selectedMfHoldindex].promoters}",
+              const Color(0xff2e8564),
+              theme),
       Divider(
-        thickness: 0,
-        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-        height: 0),
-      holdData(
-          "Foriegin Institution",
-          "${stockHold[shareHoldings.selectedMfHoldindex].fiiFpi}",
-          const Color(0xff7cd36f),
-          theme),
-     Divider(
-        thickness: 0,
-        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-        height: 0),
-      holdData(
-          "Other Domestic Institution",
-          "${stockHold[shareHoldings.selectedMfHoldindex].dii}",
-          const Color(0xfff7cd6c),
-          theme),
+          thickness: 0,
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          height: 0),
+      stockHold.isEmpty
+          ? Container(
+              color: Color(0xff666666),
+            )
+          : holdData(
+              "Foriegin Institution",
+              "${stockHold[shareHoldings.selectedMfHoldindex].fiiFpi}",
+              const Color(0xff7cd36f),
+              theme),
       Divider(
-        thickness: 0,
-        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-        height: 0),
-      holdData(
-          "Retail and Others",
-          "${stockHold[shareHoldings.selectedMfHoldindex].retailAndOthers}",
-          const Color(0XFFfbebc4),
-          theme),
+          thickness: 0,
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          height: 0),
+      stockHold.isEmpty
+          ? Container(
+              color: Color(0xff666666),
+            )
+          : holdData(
+              "Other Domestic Institution",
+              "${stockHold[shareHoldings.selectedMfHoldindex].dii}",
+              const Color(0xfff7cd6c),
+              theme),
       Divider(
-        thickness: 0,
-        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-        height: 0),
-      holdData(
-          "Mutual Funds",
-          "${stockHold[shareHoldings.selectedMfHoldindex].mutualFunds}",
-          const Color(0XFFdedede),
-          theme),
+          thickness: 0,
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          height: 0),
+      stockHold.isEmpty
+          ? Container(
+              color: Color(0xff666666),
+            )
+          : holdData(
+              "Retail and Others",
+              "${stockHold[shareHoldings.selectedMfHoldindex].retailAndOthers}",
+              const Color(0XFFfbebc4),
+              theme),
+      Divider(
+          thickness: 0,
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          height: 0),
+      stockHold.isEmpty
+          ? Container(
+              color: Color(0xff666666),
+            )
+          : holdData(
+              "Mutual Funds",
+              "${stockHold[shareHoldings.selectedMfHoldindex].mutualFunds}",
+              const Color(0XFFdedede),
+              theme),
       Container(
         padding: const EdgeInsets.all(10),
         margin: const EdgeInsets.symmetric(vertical: 14),
@@ -183,7 +213,8 @@ class StocksHoldingsWidget extends ConsumerWidget {
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
                         // border: Border.all(color: Colors.grey),
-                        borderRadius: const BorderRadius.all(Radius.circular(32)))),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(32)))),
                 // buttonDecoration: const BoxDecoration(
                 //     color: Color(0xffF1F3F8),
                 //     // border: Border.all(color: Colors.grey),

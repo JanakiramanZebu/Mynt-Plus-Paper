@@ -196,7 +196,7 @@ class IpoOrderBookModel {
 class BidDetail {
   String? actioncode;
   String? bidid;
-  bool? cuttoffflag;
+  String? cuttoffflag;
   String? orderno;
   String? activityType;
   String? amount;
@@ -220,7 +220,7 @@ class BidDetail {
   BidDetail.fromJson(Map<String, dynamic> json) {
     actioncode = json['actioncode'].toString();
     bidid = json['bidid'].toString();
-    cuttoffflag = json['cuttoffflag'];
+    cuttoffflag = json['cuttoffflag'].toString();
     orderno = json['orderno'].toString();
     activityType = json['activityType'].toString();
     amount = json['amount'].toString();
