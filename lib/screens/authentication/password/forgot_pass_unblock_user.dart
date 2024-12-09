@@ -4,11 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
- 
+
 import '../../../provider/change_password_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/custom_text_form_field.dart'; 
+import '../../../routes/route_names.dart';
+import '../../../sharedWidget/custom_text_form_field.dart';
 
 class ForgotPassUnblockUser extends StatefulWidget {
   const ForgotPassUnblockUser({super.key});
@@ -164,16 +165,41 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 7, vertical: 10),
-                                  child: Text(
-                                      authForgetpassword.isMobileForgetpass
-                                          ? "Switch to Mobile"
-                                          : "Switch to Client ID",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorLightBlue
-                                              : colors.colorBlue,
-                                          12,
-                                          FontWeight.w500)),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                          authForgetpassword.isMobileForgetpass
+                                              ? "Switch to Mobile"
+                                              : "Switch to Client ID",
+                                          style: textStyle(
+                                              theme.isDarkMode
+                                                  ? colors.colorLightBlue
+                                                  : colors.colorBlue,
+                                              12,
+                                              FontWeight.w500)),
+                                      InkWell(
+                                          onTap: () {
+                                            Navigator.pushNamedAndRemoveUntil(
+                                                context,
+                                                Routes.loginScreen,
+                                                arguments: "login",
+                                                (route) => false);
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8.0, horizontal: 4),
+                                            child: Text("Back to login",
+                                                style: textStyle(
+                                                    theme.isDarkMode
+                                                        ? colors.colorLightBlue
+                                                        : colors.colorBlue,
+                                                    12,
+                                                    FontWeight.w500)),
+                                          )),
+                                    ],
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 10),
