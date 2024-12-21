@@ -74,6 +74,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
           final theme = watch(themeProvider);
           final upiid = watch(transcationProvider);
           return Scaffold(
+           
               appBar: AppBar(
                 elevation: .2,
                 centerTitle: false,

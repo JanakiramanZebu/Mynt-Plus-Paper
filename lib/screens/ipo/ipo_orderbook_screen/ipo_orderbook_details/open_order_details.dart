@@ -25,6 +25,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
     final theme = watch(themeProvider);
     final upi = watch(transcationProvider);
     return Scaffold(
+       
       appBar: AppBar(
           elevation: .2,
           centerTitle: false,

@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/res.dart'; 
+import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import 'financial.dart';
 import 'price_comparision.dart';
@@ -14,7 +14,8 @@ class FundamentalDataWidget extends ConsumerWidget {
   const FundamentalDataWidget({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) { final theme = context.read(themeProvider);
+  Widget build(BuildContext context, ScopedReader watch) {
+    final theme = context.read(themeProvider);
     final funData =
         watch(marketWatchProvider).fundamentalData!.fundamental!.isEmpty
             ? null
@@ -30,16 +31,30 @@ class FundamentalDataWidget extends ConsumerWidget {
                 const SizedBox(height: 6),
                 Text("Fundamental Ratios",
                     style: textStyle(
-                      theme.isDarkMode?colors.colorWhite:colors.colorBlack, 20, FontWeight.w600)),
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        20,
+                        FontWeight.w600)),
                 const SizedBox(height: 5),
 
                 Text(
                     "Fundamental breakdown of ${watch(marketWatchProvider).getQuotes!.tsym!.replaceAll("-EQ", "")} information",
                     style: textStyle(
-                     theme.isDarkMode?colors.colorWhite:colors.colorBlack, 12, FontWeight.w500)),
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        12,
+                        FontWeight.w500)),
                 const SizedBox(height: 16),
-                rowOfInfoData("PE RATIO", "${funData!.pe}", "SECTOR PE",
-                    "${funData.sectorPe}", "EVEBITDA", "${funData.evEbitda}",theme),
+                rowOfInfoData(
+                    "PE RATIO",
+                    "${funData!.pe}",
+                    "SECTOR PE",
+                    "${funData.sectorPe}",
+                    "EVEBITDA",
+                    "${funData.evEbitda}",
+                    theme),
                 const SizedBox(height: 14),
                 rowOfInfoData(
                     "PB RATIO",
@@ -47,7 +62,8 @@ class FundamentalDataWidget extends ConsumerWidget {
                     "EPS",
                     "${funData.eps}",
                     "DIVIDEND YIELD",
-                    "${funData.dividendYieldPercent}",theme),
+                    "${funData.dividendYieldPercent}",
+                    theme),
                 const SizedBox(height: 14),
                 rowOfInfoData(
                     "ROCE",
@@ -55,7 +71,8 @@ class FundamentalDataWidget extends ConsumerWidget {
                     "ROE",
                     "${funData.roePercent}",
                     "DEBT TO EQUITY",
-                    "${funData.debtToEquity}",theme),
+                    "${funData.debtToEquity}",
+                    theme),
                 const SizedBox(height: 14),
                 // if (watch(stocksProvide).moreFunRatio) ...[
                 rowOfInfoData(
@@ -64,7 +81,8 @@ class FundamentalDataWidget extends ConsumerWidget {
                     "BOOK VALUE",
                     "${funData.bookValue}",
                     "FACE VALUE",
-                    "${funData.fv}",theme),
+                    "${funData.fv}",
+                    theme),
                 // ],
                 const SizedBox(height: 20),
                 // Center(
@@ -103,12 +121,16 @@ class FundamentalDataWidget extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(value1,
                     style: textStyle(
-                        theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w600)),
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        14,
+                        FontWeight.w600)),
                 const SizedBox(height: 2),
-                Divider(color: 
-                theme.isDarkMode
-                ?colors.darkColorDivider
-                :colors.colorDivider)
+                Divider(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider)
               ])),
           const SizedBox(width: 18),
           Expanded(
@@ -121,13 +143,16 @@ class FundamentalDataWidget extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   value2,
-                  style:
-                      textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w600),
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      14,
+                      FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
-                Divider(color:  theme.isDarkMode
-                ?colors.darkColorDivider
-                :colors.colorDivider)
+                Divider(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider)
               ])),
           const SizedBox(width: 18),
           Expanded(
@@ -140,11 +165,16 @@ class FundamentalDataWidget extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(value3,
                     style: textStyle(
-                     theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w600)),
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        14,
+                        FontWeight.w600)),
                 const SizedBox(height: 2),
-                Divider(color:  theme.isDarkMode
-                ?colors.darkColorDivider
-                :colors.colorDivider)
+                Divider(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider)
               ]))
         ]);
   }

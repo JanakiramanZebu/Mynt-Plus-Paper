@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';  
+import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/change_password_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/cus_list_widget.dart';
-import '../../../sharedWidget/custom_text_form_field.dart'; 
+import '../../../sharedWidget/custom_text_form_field.dart';
 
 class ChangePass extends ConsumerWidget {
   final String isChangePass;
@@ -19,6 +19,7 @@ class ChangePass extends ConsumerWidget {
     // final loginAuth = watch(authProvider);
     final theme = watch(themeProvider);
     return Scaffold(
+     
       appBar: AppBar(
           elevation: .2,
           centerTitle: false,
@@ -59,7 +60,7 @@ class ChangePass extends ConsumerWidget {
                             FontWeight.w600)),
                     const SizedBox(height: 8),
                     TextFormField(
-                      readOnly:   true,
+                      readOnly: true,
                       textCapitalization: TextCapitalization.characters,
                       inputFormatters: [UpperCaseTextFormatter()],
                       style: textStyles.textFieldLabelStyle.copyWith(
@@ -235,59 +236,53 @@ class ChangePass extends ConsumerWidget {
                       },
                     ),
                     const SizedBox(height: 30),
-
-
-                     SizedBox(
-                                        width: screenWidth,
-                                        height: 44,
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                              elevation: 0,
-                                              backgroundColor: !theme.isDarkMode
-                                ? changepassword.isDisableChangepassbtn
-                                    ? const Color(0xfff5f5f5)
-                                    : colors.colorBlack
-                                : changepassword.isDisableChangepassbtn
-                                    ? colors.darkGrey
-                                    : colors.colorbluegrey,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 13),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
-                                              )),
-                                          onPressed: changepassword.userIdController.text.isEmpty ||
+                    SizedBox(
+                        width: screenWidth,
+                        height: 44,
+                        child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: !theme.isDarkMode
+                                    ? changepassword.isDisableChangepassbtn
+                                        ? const Color(0xfff5f5f5)
+                                        : colors.colorBlack
+                                    : changepassword.isDisableChangepassbtn
+                                        ? colors.darkGrey
+                                        : colors.colorbluegrey,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 13),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                )),
+                            onPressed: changepassword
+                                        .userIdController.text.isEmpty ||
                                     changepassword.oldPassword.text.isEmpty ||
                                     changepassword.newPassword.text.isEmpty
-                                              ? () {}
-                                              : () {
-                                                  changepassword.submitChangePass(context);
-                                                },
-                                          child:  changepassword.loading
-                                              ? const SizedBox(
-                                                  width: 18,
-                                                  height: 20,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                          strokeWidth: 2,
-                                                          color: Color(
-                                                              0xff666666)),
-                                                )
-                                              : Text("Continue",
-                                                  style: textStyle(
-                                                       !theme.isDarkMode
-                                          ? changepassword.isDisableChangepassbtn
-                                              ? const Color(0xff999999)
-                                              : colors.colorWhite
-                                          : changepassword.isDisableChangepassbtn
-                                              ? colors.darkGrey
-                                              : colors.colorBlack,
-                                                      14,
-                                                      FontWeight.w500))
-                                        )
-                                      ),
-                   
+                                ? () {}
+                                : () {
+                                    changepassword.submitChangePass(context);
+                                  },
+                            child: changepassword.loading
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Color(0xff666666)),
+                                  )
+                                : Text("Continue",
+                                    style: textStyle(
+                                        !theme.isDarkMode
+                                            ? changepassword
+                                                    .isDisableChangepassbtn
+                                                ? const Color(0xff999999)
+                                                : colors.colorWhite
+                                            : changepassword
+                                                    .isDisableChangepassbtn
+                                                ? colors.darkGrey
+                                                : colors.colorBlack,
+                                        14,
+                                        FontWeight.w500)))),
                     const SizedBox(height: 50),
                     Container(
                       padding: const EdgeInsets.all(12),

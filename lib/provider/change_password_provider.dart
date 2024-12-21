@@ -91,12 +91,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
   bool validateForgetpassWord() {
     clearError();
     if (forGetloginMethCtrl.text.trim().isEmpty) {
-      forgetpassError = _isMobileForgetpass
-          ? "Please enter client Id"
-          : "Please enter mobile";
-    } else if (!RegExp(r'^[6-9][0-9]{9}$').hasMatch(forGetloginMethCtrl.text)) {
-      forgetpassError =
-          _isMobileForgetpass ? null : "Please enter a valid mobile";
+      forgetpassError = "Your client id / mobile is required";
     }
     return forgetpassError == null;
   }
@@ -115,8 +110,11 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
 // Call this method while clicking if the Forgot pass validation process is successful.
   submitForgetPassword(BuildContext context) {
     if (validateForgetpassWord()) {
-      fetchForgetPassword(_isMobileForgetpass ? "clientid" : "mobile",
-          forGetloginMethCtrl.text.toUpperCase(), context);
+      fetchForgetPassword(
+          // _isMobileForgetpass ? "clientid" : "mobile",
+          forGetloginMethCtrl.text,
+          forGetloginMethCtrl.text.toUpperCase(),
+          context);
     }
   }
 

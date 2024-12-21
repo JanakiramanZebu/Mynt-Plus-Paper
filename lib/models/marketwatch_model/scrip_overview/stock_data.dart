@@ -1,6 +1,7 @@
 class StockData {
   List<MFholdings>? mFholdings;
   List<Fundamental>? fundamental;
+  Map? peerComparisonChart;
   PeersComparison? peersComparison;
   List<Returns>? returns;
   List<Shareholdings>? shareholdings;
@@ -10,9 +11,6 @@ class StockData {
   StockFinancialsConsolidated? stockFinancialsStandalone;
   String? msg;
   String? emsg;
- 
-
-  Map? peerComparisonChart;
 
   StockData(
       {this.mFholdings,
@@ -25,7 +23,8 @@ class StockData {
       this.stockFinancialsConsolidated,
       this.stockFinancialsStandalone,
       this.msg,
-      this.peerComparisonChart,this.emsg});
+      this.peerComparisonChart,
+      this.emsg});
 
   StockData.fromJson(Map<String, dynamic> json) {
     peerComparisonChart = json['peerComparisonChart'] ?? {};
@@ -70,7 +69,7 @@ class StockData {
             json['stockFinancialsStandalone'])
         : null;
     msg = json['msg'];
-    emsg=json['emsg'];
+    emsg = json['emsg'];
   }
 
   Map<String, dynamic> toJson() {
@@ -106,7 +105,7 @@ class StockData {
       data['peerComparisonChart'] = peerComparisonChart;
     }
     data['msg'] = msg;
-    data[ "emsg"]=emsg;
+    data["emsg"] = emsg;
     return data;
   }
 }

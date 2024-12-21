@@ -2,6 +2,7 @@ class Routes {
 // It is used to route one page to another and all of its names are route names.
 
   static const String loginScreen = 'loginScreen';
+  static const String loginScreenBanner = 'loginScreenBanner';
   static const String loginOtpVerify = 'loginOtpVerify';
   static const String forgotPass = 'forgotPass';
   static const String changePass = 'changePass';
@@ -9,6 +10,7 @@ class Routes {
   static const String splash = 'splash';
   static const String homeScreen = 'homeScreen';
   static const String fontSize = 'fontSize';
+  static const String nointernet = 'nointernet';
 
   static const String watchlistScreen = 'WatchlistScreen';
   static const String searchScrip = 'searchScrip';
@@ -49,7 +51,7 @@ class Routes {
   static const String ipoDetail = 'ipoDetail';
   static const String closedIpoDetail = 'closedIpoDetail';
   static const String orderBook = 'orderBook';
-    static const String bsktScripList = 'bsktScripList';
+  static const String bsktScripList = 'bsktScripList';
 
   static const String bondsdetails = "Bondsdetails";
 
@@ -84,7 +86,7 @@ class Routes {
 
   static const String positionDetail = 'PositionDetail';
   static const String positionGroupDetail = 'positionGroupDetail';
-  
+
   static const String positionExit = 'PositionExit';
   static const String holdingDetail = 'HoldingDetail';
   static const String holdingExit = 'HoldingExit';
@@ -149,6 +151,5 @@ class Routes {
   static const String upiIDpaymentstatus = 'UpiIDpaymentstatus';
   static const String iosfundscreen = "iosfundscreen";
 
-
-    static const String optionStrategy = "optionStrategy";
+  static const String optionStrategy = "optionStrategy";
 }

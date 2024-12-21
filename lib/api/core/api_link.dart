@@ -175,6 +175,8 @@ class ApiLinks {
   String get ipoperformance => "$dashBoardURL/ipo/ipo_performer?year=2024";
   String get placeipoorder => "$dashBoardURL/ipo/addIPOtoPortfolio";
   String get ipoorderbook => "$dashBoardURL/ipo/orderbookIPODetails";
+  String get iposinglepage => "$dashBoardURL/ipo/get_single_ipo_data";
+
 
 // Mutual Fund
   String get bestMf => "$dashBoardURL/mf/z_data";

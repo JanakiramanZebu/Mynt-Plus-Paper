@@ -241,6 +241,7 @@ class FIncomeChartState extends State<FIncomeChart> {
                       12,
                       FontWeight.w500),
                   majorGridLines: const MajorGridLines(width: 0)),
+              
               tooltipBehavior: _tooltip,
               series: <CartesianSeries<IncomeSheet, String>>[
                 ColumnSeries(
@@ -458,7 +459,7 @@ class PriceComChartState extends State<PriceComChart> {
                     legendIconType: LegendIconType.image,
                     dataSource: priceCompare.prcComChrtData1,
                     xValueMapper: (PrcComparisionChartData data, _) =>
-                        data.yValue,
+                      data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
                     name:
@@ -486,7 +487,7 @@ class PriceComChartState extends State<PriceComChart> {
                     legendIconType: LegendIconType.image,
                     dataSource: priceCompare.prcComChrtData2,
                     xValueMapper: (PrcComparisionChartData data, _) =>
-                        data.yValue,
+                       data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
                     name:
@@ -541,7 +542,7 @@ class PriceComChartState extends State<PriceComChart> {
                     legendIconType: LegendIconType.image,
                     dataSource: priceCompare.prcComChrtData4,
                     xValueMapper: (PrcComparisionChartData data, _) =>
-                        data.yValue,
+                       data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
                     name:

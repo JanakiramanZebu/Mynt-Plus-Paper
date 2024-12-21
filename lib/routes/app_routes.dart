@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import '../screens/authentication/login/login_banner_screen.dart';
 import '../screens/authentication/login/login_screen.dart';
 import '../screens/authentication/login/otp_screen.dart';
 import '../screens/authentication/password/change_pass.dart';
 import '../screens/authentication/password/forgot_pass_unblock_user.dart';
 import '../screens/bonds/bond_screen.dart';
+//import '../screens/home_screen copy.dart';
+// import '../screens/home_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/ipo/ipo_main_screen.dart';
 import '../screens/ipo/ipo_orderbook_screen/ipo_modify_order/modify_order_screen.dart';
@@ -63,6 +66,7 @@ import '../screens/stocks/explore/stocks/news/news_listdata.dart';
 import '../screens/stocks/explore/stocks/stock_screens.dart';
 import '../screens/stocks/explore/stocks/trade_action/all_trade.dart';
 import '../screens/stocks/explore/stocks/trade_action/sector_themeatic_details.dart';
+import '../sharedWidget/internet_widget.dart';
 import 'route_names.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -75,15 +79,67 @@ class AppRoutes {
       case Routes.homeScreen:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       case Routes.loginScreen:
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const LoginScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0); // Start from the right
+            const end = Offset.zero; // End at the original position
+            const curve = Curves.easeInOut; // Smooth transition curve
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            final offsetAnimation = animation.drive(tween);
+
+            return SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            );
+          },
+        );
+
+      case Routes.loginScreenBanner:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const LoginBannerScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+
       case Routes.loginOtpVerify:
         return MaterialPageRoute(builder: (_) => const OtpScreen());
       case Routes.forgotPass:
-        return MaterialPageRoute(builder: (_) => const ForgotPassUnblockUser());
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const ForgotPassUnblockUser(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0); // Start from the right
+            const end = Offset.zero; // End at the original position
+            const curve = Curves.easeInOut; // Smooth transition curve
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            final offsetAnimation = animation.drive(tween);
+
+            return SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            );
+          },
+        );
+
       case Routes.changePass:
         return MaterialPageRoute(
             builder: (_) => ChangePass(isChangePass: args));
-
+      case Routes.nointernet:
+        return MaterialPageRoute(builder: (_) => const NoInternetScreen());
       case Routes.logError:
         return MaterialPageRoute(builder: (_) => const LogMessage());
       case Routes.stock:

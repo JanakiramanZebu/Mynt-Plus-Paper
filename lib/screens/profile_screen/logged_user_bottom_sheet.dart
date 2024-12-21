@@ -132,7 +132,11 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                               pref.setHideLoginOptBtn(true);
                               watch(websocketProvider).closeSocket();
                               loggedUser.addClient(true);
+                              loggedUser.clearError();
+                              loggedUser.clearTextField();
                               Navigator.pop(context);
+                              // Navigator.pushNamed(
+                              //     context, Routes.loginScreenBanner);
                               Navigator.pushNamed(context, Routes.loginScreen);
                             },
                             style: OutlinedButton.styleFrom(

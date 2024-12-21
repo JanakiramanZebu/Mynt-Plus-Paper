@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY"/> 
 
     <application
-        android:label="Mynt +"
+        android:label="Mynt"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"

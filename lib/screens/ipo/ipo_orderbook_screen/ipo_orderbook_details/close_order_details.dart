@@ -23,6 +23,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
     int currentYear = DateTime.now().year;
     final theme = watch(themeProvider);
     return Scaffold(
+       
       appBar: AppBar(
           elevation: .2,
           centerTitle: false,

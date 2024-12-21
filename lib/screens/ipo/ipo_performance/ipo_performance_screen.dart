@@ -82,127 +82,74 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                 //   ],
                 // ),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 40,
-                        child: TextField(
-                          controller: perfomance.performancesearchcontroller,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              15,
-                              FontWeight.w500),
-                          decoration: InputDecoration(
-                              fillColor: theme.isDarkMode
-                                  ? const Color(0xffB5C0CF).withOpacity(.15)
-                                  : const Color(0xffF1F3F8),
-                              filled: true,
-                              hintStyle: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  14,
-                                  FontWeight.w500),
-                              prefixIconColor: const Color(0xff586279),
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0),
-                                child: SvgPicture.asset(assets.searchIcon,
-                                    color: const Color(0xff586279),
-                                    fit: BoxFit.contain,
-                                    width: 15),
-                              ),
-                              suffixIcon: InkWell(
-                                onTap: () async {
-                                  perfomance.clearPerformanceSearch();
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20.0),
-                                  child: SvgPicture.asset(assets.removeIcon,
-                                      fit: BoxFit.scaleDown, width: 20),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(30)),
-                              disabledBorder: InputBorder.none,
-                              focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(30)),
-                              hintText: "Search company",
-                              contentPadding: const EdgeInsets.all(14),
-                              border: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(30))),
-                          onChanged: (value) {
-                            perfomance.searchperformance(value, context);
-                            if (value.isEmpty) {
-                              perfomance.clearPerformanceSearch();
-                            }
-                            if (internet.connectionStatus !=
-                                ConnectivityResult.none) {
-                              perfomance.searchperformance(value, context);
-                            }
-                          },
+                SizedBox(
+                  height: 40,
+                  child: TextField(
+                    controller: perfomance.performancesearchcontroller,
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        15,
+                        FontWeight.w500),
+                    decoration: InputDecoration(
+                        fillColor: theme.isDarkMode
+                            ? const Color(0xffB5C0CF).withOpacity(.15)
+                            : const Color(0xffF1F3F8),
+                        filled: true,
+                        hintStyle: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w500),
+                        prefixIconColor: const Color(0xff586279),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: SvgPicture.asset(assets.searchIcon,
+                              color: const Color(0xff586279),
+                              fit: BoxFit.contain,
+                              width: 15),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    // SizedBox(
-                    //   width: 80,
-                    //   child: DropdownButtonHideUnderline(
-                    //       child: DropdownButton2(
-                    //     dropdownStyleData: DropdownStyleData(
-                    //         maxHeight: 240,
-                    //         decoration: BoxDecoration(
-                    //             borderRadius: BorderRadius.circular(10),
-                    //             color: !theme.isDarkMode
-                    //                 ? colors.colorWhite
-                    //                 : const Color.fromARGB(255, 16, 16, 16))),
-                    //     buttonStyleData: ButtonStyleData(
-                    //         height: 40,
-                    //         width: 124,
-                    //         decoration: BoxDecoration(
-                    //             color: theme.isDarkMode
-                    //                 ? const Color(0xffB5C0CF).withOpacity(.1)
-                    //                 : const Color(0xffF1F3F8),
-                    //             // border: Border.all(color: Colors.grey),
-                    //             borderRadius: const BorderRadius.all(
-                    //                 Radius.circular(32)))),
-                    //     isExpanded: true,
-                    //     style: textStyle(
-                    //         theme.isDarkMode
-                    //             ? colors.colorWhite
-                    //             : colors.colorBlack,
-                    //         13,
-                    //         FontWeight.w500),
-                    //     items: years.map<DropdownMenuItem<int>>((int value) {
-                    //       return DropdownMenuItem<int>(
-                    //         value: value,
-                    //         child: Padding(
-                    //           padding:
-                    //               const EdgeInsets.symmetric(horizontal: 6),
-                    //           child: Text(value.toString()),
-                    //         ),
-                    //       );
-                    //     }).toList(),
-                    //     value: selectedYear,
-                    //     onChanged: (int? newValue) {
-                    //       setState(() {
-                    //         selectedYear = newValue!;
-                    //         perfomance
-                    //             .getipoperfomance(selectedYear!.toInt());
-                    //         FocusScope.of(context).unfocus();
-                    //       });
-                    //     },
-                    //   )),
-                    // ),
-                  ],
+                        suffixIcon: InkWell(
+                          onTap: () async {
+                            perfomance.clearPerformanceSearch();
+                          },
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: perfomance
+                                    .performancesearchcontroller.text.isEmpty
+                                ? null
+                                : SvgPicture.asset(assets.removeIcon,
+                                    fit: BoxFit.scaleDown, width: 20),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(30)),
+                        disabledBorder: InputBorder.none,
+                        focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(30)),
+                        hintText: "Search company",
+                        contentPadding: const EdgeInsets.all(14),
+                        border: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(30))),
+                    onChanged: (value) {
+                      perfomance.searchperformance(value, context);
+                      if (value.isEmpty) {
+                        perfomance.clearPerformanceSearch();
+                      }
+                      if (internet.connectionStatus !=
+                          ConnectivityResult.none) {
+                        perfomance.searchperformance(value, context);
+                      }
+                    },
+                  ),
                 ),
+                const SizedBox(width: 10),
               ],
             ),
           ),
@@ -219,7 +166,7 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                           onTap: () async {
                             await market.fetchFundamentalData(
                                 tradeSym: "${ipo.symbol}");
-                            // print("object ${ipo.token} ${ipo.exchange}");
+
                             market.chngshareHold("Promoter Holding");
 
                             await market.fetchScripQuote(

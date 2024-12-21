@@ -130,6 +130,16 @@ String formatDateTime({required String value}) {
   return formatedDate;
 }
 
+String formatDate(String inputDate) {
+  // Parse the input string to a DateTime object
+  DateTime dateTime = DateTime.parse(inputDate);
+
+  // Format the date into "MMM dd" format
+  String formattedDate = DateFormat('MMM dd').format(dateTime);
+
+  return formattedDate;
+}
+
 String formatToDateTime(String timestamp) {
   List<String> parts = timestamp.split(' ');
   String time = parts[0];
@@ -231,6 +241,19 @@ String readTimestamp(int timestamp) {
   return formattedDate;
 }
 
+String getInputType(String value) {
+  final numberOnly = RegExp(r'^[0-9]+$'); // Matches only numbers
+  final alphanumeric = RegExp(
+      r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$'); // Matches both alphabets and numbers
+
+  if (numberOnly.hasMatch(value)) {
+    return "mobile";
+  } else if (alphanumeric.hasMatch(value)) {
+    return "clientid";
+  }
+  return "Invalid"; // Fallback if it doesn't match any
+}
+
 String convertToISOFormat(String dateTimeString) {
   List<String> parts = dateTimeString.split(' ');
   List<String> timeParts = parts[0].split(':');
@@ -238,10 +261,28 @@ String convertToISOFormat(String dateTimeString) {
   return '${dateParts[2]}-${dateParts[1]}-${dateParts[0]}T${timeParts[0]}:${timeParts[1]}:${timeParts[2]}';
 }
 
+TextStyle textStylebanner(Color color, double fontSize, fWeight) {
+  return GoogleFonts.inter(
+      textStyle: TextStyle(
+          fontWeight: fWeight,
+          color: color,
+          fontSize: fontSize,
+          decoration: TextDecoration.none));
+}
+
 TextStyle textStyle(Color color, double fontSize, fWeight) {
   return GoogleFonts.inter(
       textStyle:
           TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+}
+
+TextStyle textStylewithls(Color color, double fontSize, fWeight, ls) {
+  return GoogleFonts.inter(
+      textStyle: TextStyle(
+          fontWeight: fWeight,
+          color: color,
+          fontSize: fontSize,
+          letterSpacing: ls));
 }
 
 ipostartdate(String startdate, String enddate) {

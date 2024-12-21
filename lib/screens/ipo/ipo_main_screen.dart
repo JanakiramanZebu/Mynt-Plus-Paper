@@ -10,8 +10,7 @@ import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/payment_loader.dart';
 import 'invest_ipo_banner/invest_banner_ui.dart';
 import 'ipo_performance/ipo_performance_screen.dart';
-import 'mainstream_ipo/main_stream_ipo_main_screen.dart';
-import 'sme_ipo/sme_ipo_screen.dart';
+import 'main_sme_list/main_sme_list.dart';
 
 class IPOScreen extends StatefulWidget {
   const IPOScreen({super.key});
@@ -46,7 +45,9 @@ class _IPOScreenState extends State<IPOScreen> with TickerProviderStateMixin {
       return GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
+        
           appBar: AppBar(
+            automaticallyImplyLeading: false,
             elevation: .2,
             centerTitle: false,
             leadingWidth: 41,
@@ -156,8 +157,17 @@ class _IPOScreenState extends State<IPOScreen> with TickerProviderStateMixin {
                       style: textStyle(colors.colorGrey, 13, FontWeight.w500)),
                 ])
               : TabBarView(controller: ipo.tabCtrl, children: const [
-                  Column(
-                    children: [MainStreamIpo(), SMEIPO()],
+                  SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        // MainStreamIpo(),
+                        // SMEIPO(),
+                        // SizedBox(
+                        //   height: 10,
+                        // )
+                        MainSmeListCard()
+                      ],
+                    ),
                   ),
                   SingleChildScrollView(
                     child: Column(

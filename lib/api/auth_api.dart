@@ -7,6 +7,7 @@ import '../models/auth_model/forgot_pass_model.dart';
 import '../models/auth_model/logout_model.dart';
 import '../models/auth_model/mobile_login_model.dart';
 import '../models/auth_model/mobile_otp_model.dart';
+import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'core/api_core.dart';
 
@@ -22,25 +23,18 @@ mixin AuthApi on ApiCore {
     try {
       final uri = Uri.parse(apiLinks.mobileLogin);
 
-      Map data = !prefs.isMobileLogin!
+      Map data = password.isEmpty
           ? {
               "mobile_unique": uniqueId,
-              "clientid": mobileRclient,
-              "imei": imei,
-              "password": password
+              getInputType(mobileRclient): mobileRclient,
+              "imei": imei
             }
-          : password.isEmpty
-              ? {
-                  "mobile_unique": uniqueId,
-                  "clientid": mobileRclient,
-                  "imei": imei
-                }
-              : {
-                  "mobile_unique": uniqueId,
-                  "mobile": mobileRclient,
-                  "password": password,
-                  "imei": imei
-                };
+          : {
+              "mobile_unique": uniqueId,
+              getInputType(mobileRclient): mobileRclient,
+              "password": password,
+              "imei": imei
+            };
 
       final res = await apiClient.post(uri,
           headers: defaultHeaders, body: jsonEncode(data));
@@ -71,21 +65,13 @@ mixin AuthApi on ApiCore {
     try {
       final uri = Uri.parse(apiLinks.mobileOtp);
 
-      Map data = !prefs.isMobileLogin!
-          ? {
-              "mobile_unique": uniqueId,
-              "clientid": mobileRclient,
-              "otp": otp,
-              "imei": imei,
-              "source": ApiLinks.source
-            }
-          : {
-              "mobile_unique": uniqueId,
-              "mobile": mobileRclient,
-              "otp": otp,
-              "source": ApiLinks.source,
-              "imei": imei
-            };
+      Map data = {
+        "mobile_unique": uniqueId,
+        getInputType(mobileRclient): mobileRclient,
+        "otp": otp,
+        "source": ApiLinks.source,
+        "imei": imei
+      };
       final res = await apiClient.post(uri,
           headers: defaultHeaders, body: jsonEncode(data));
 
@@ -132,7 +118,7 @@ mixin AuthApi on ApiCore {
       final uri = Uri.parse(apiLinks.forgetPassword);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body: jsonEncode({"field": field, "value": value}));
+          body: jsonEncode({"field": getInputType(field), "value": value}));
 
       // log("forgetPassword Res => ${res.body}");
       final json = jsonDecode(res.body);

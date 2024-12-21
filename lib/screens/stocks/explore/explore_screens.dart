@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:page_view_dot_indicator/page_view_dot_indicator.dart';
 
 import '../../../provider/stocks_provider.dart';
+import '../../bonds/bond_screen.dart';
+import '../../ipo/ipo_main_screen.dart';
+import '../../mutual_fund/mutual_fund_screen.dart';
 import 'stocks/stock_screens.dart';
 
  
@@ -38,9 +41,9 @@ class ExploreScreens extends ConsumerWidget {
           // },
           children: const [
             StockScreen(),
-            Center(child: Text("Mutual Fund")),
-            Center(child: Text("IPOs")),
-            Center(child: Text("Bonds"))
+            MutualFundScreen(),
+            IPOScreen(),
+            BondScreen()
           ],
         ),
         Align(

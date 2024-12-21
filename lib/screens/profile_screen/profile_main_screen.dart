@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -29,7 +31,7 @@ class UserAccountScreen extends ConsumerWidget {
     final userProfile = watch(userProfileProvider);
     final theme = watch(themeProvider);
     final trancation = watch(transcationProvider);
-    int currentYear = DateTime.now().year;
+    //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
     final Preferences pref = locator<Preferences>();
     final String reflink = "https://oa.mynt.in/?ref=${pref.clientId}";
@@ -108,19 +110,44 @@ class UserAccountScreen extends ConsumerWidget {
                               });
                         } else if (index == 12) {
                           await context.read(ipoProvide).tabSize();
-                          Future.delayed(const Duration(microseconds: 10),
-                              () async {
-                            await context.read(ipoProvide).getSmeIpo();
-                            await context.read(ipoProvide).getmainstreamipo();
-                            await context
-                                .read(ipoProvide)
-                                .getipoperfomance(currentYear);
-                          });
-                          Navigator.pushNamed(context, Routes.ipo);
+                          // Future.delayed(const Duration(microseconds: 10),
+                          //     () async {
+                          //   await context.read(ipoProvide).getSmeIpo();
+                          //   await context.read(ipoProvide).getmainstreamipo();
+                          //   await context
+                          //       .read(ipoProvide)
+                          //       .getipoperfomance(currentYear);
+                          //   await context.read(ipoProvide).mergemainsme();
+                          //   // List<MainIPO>? ipos = context
+                          //   //     .read(ipoProvide)
+                          //   //     .mainStreamIpoModel!
+                          //   //     .mainIPO!;
+                          //   // List<SMEIPO>? iposme =
+                          //   //     context.read(ipoProvide).smeIpoModel!.sMEIPO!;
+
+                          //   // mai.addAll(
+                          //   //   ipos,
+                          //   // );
+                          //   // mai.addAll(iposme);
+                          //   // for (int i = 0; i < mai.length; i++) {
+                          //   //   if (mai[i] is MainIPO) {
+                          //   //     mai[i].key = "MAIN";
+                          //   //     print(
+                          //   //         "MAIN IPO : ${mai[i].biddingStartDate} ${mai[i].name} ${mai[i].key}");
+                          //   //   } else if (mai[i] is SMEIPO) {
+                          //   //     mai[i].key = "SME";
+                          //   //     print(
+                          //   //         "SME IPO : ${mai[i].biddingStartDate} ${mai[i].name} ${mai[i].key}");
+                          //   //   }
+                          //   // }
+                          // });
+                         
+                          Navigator.pushNamed(
+                            context,
+                            Routes.ipo,
+                          );
                         } else if (index == 13) {
-                          // await context.read(ipoProvide).getipoorderbookmodel();
-                          // await context.read(ipoProvide).ipotab();
-                          // Navigator.pushNamed(context, Routes.ipoorderbook);
+                          
                         } else if (index == 14) {
                           await context.read(bondProvider).fetchGovtBonds();
                           Navigator.pushNamed(context, Routes.bonds);

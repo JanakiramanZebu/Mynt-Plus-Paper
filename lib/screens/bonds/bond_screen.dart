@@ -93,10 +93,10 @@ class _BondScreenState extends State<BondScreen> {
                                       colors.colorWhite, 14, FontWeight.w600)))
                         ]),
                     Positioned(
-                        bottom: 12,
-                        right: 0,
+                        bottom: 7,
+                        right: 5,
                         child: SvgPicture.asset("${item['image']}",
-                            height: 72, width: 120)),
+                            height: 60, width: 120)),
                   ])))
               .toList(),
         ),

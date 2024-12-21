@@ -286,15 +286,14 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "key": "",
         "case": "Click here to view the Log message."
       },
-      // {
-      //   "title": "Ipo",
-      //   "subTitle": "Mainstream,SmeIPO",
-      //   "leading": "assets/profileimage/reports.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": "",
-      //   "case": "Click here to view the Log message."
-      // }
-
+      {
+        "title": "Ipo",
+        "subTitle": "Mainstream,SmeIPO",
+        "leading": "assets/profileimage/reports.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": "",
+        "case": "Click here to view the Log message."
+      }
       // ,
       // {
       //   "title": "Bonds",

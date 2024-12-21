@@ -11,6 +11,7 @@ import '../models/ipo_model/ipo_order_book_model.dart';
 import '../models/ipo_model/ipo_order_res_model.dart';
 import '../models/ipo_model/ipo_performance_model.dart';
 import '../models/ipo_model/ipo_place_order_model.dart';
+import '../models/ipo_model/ipo_single_page_model.dart';
 import '../models/ipo_model/ipo_sme_model.dart';
 import '../models/mf_model/mf_bank_detail_model.dart';
 import '../res/res.dart';
@@ -97,6 +98,51 @@ class IPOProvider extends DefaultChangeNotifier {
   List<IpoOrderBookModel>? _closeorder = [];
   List<IpoOrderBookModel>? get closeorder => _closeorder;
 
+  List<dynamic> _mainsme = [];
+  List<dynamic> get mainsme => _mainsme;
+
+  List<MainIPO>? _main = [];
+  List<MainIPO>? get main => _main;
+
+  List<SMEIPO>? _sme = [];
+  List<SMEIPO>? get sme => _sme;
+
+  mergemainsme() {
+    _mainsme = [];
+    try {
+      _mainsme.addAll(mainStreamIpoModel!.mainIPO ?? []);
+      _mainsme.addAll(smeIpoModel!.sMEIPO ?? []);
+
+      for (int i = 0; i < _mainsme.length; i++) {
+        if (_mainsme[i] is MainIPO) {
+          _mainsme[i].key = "MAIN";
+          // print(
+          //     "MAIN IPO : ${_mainsme[i].biddingStartDate} ${_mainsme[i].name} ${_mainsme[i].key}");
+        } else if (_mainsme[i] is SMEIPO) {
+          _mainsme[i].key = "SME";
+          // print(
+          //     "SME IPO : ${_mainsme[i].biddingStartDate} ${_mainsme[i].name} ${_mainsme[i].key}");
+        }
+      }
+      print("ODDDDD :: ${_mainsme[0].biddingStartDate} ${_mainsme[0].key}");
+
+      _mainsme.sort((a, b) {
+        final DateFormat dateFormat = DateFormat("dd-MM-yyyy");
+        DateTime dateA = dateFormat.parse(a.biddingStartDate.toString());
+        DateTime dateB = dateFormat.parse(b.biddingStartDate.toString());
+        return dateA.compareTo(dateB);
+      });
+
+      return _mainsme = mainsme;
+      //return _mainsme;
+    } catch (e) {
+      print("Error in mergemainsme: $e");
+    }
+  }
+
+  IpoSinglePage? _ipoSinglePage;
+  IpoSinglePage? get iposinglepage => _ipoSinglePage;
+
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
 
@@ -124,7 +170,7 @@ class IPOProvider extends DefaultChangeNotifier {
   tabSize() {
     _orderTabName = [
       Tab(text: "Current & Upcoming"),
-      Tab(text: "Closed IPO’s"),
+      Tab(text: "Listed IPO’s"),
     ];
 
     notifyListeners();
@@ -159,8 +205,6 @@ class IPOProvider extends DefaultChangeNotifier {
         final companyname = element.companyName!.toUpperCase();
         final status = element.reponseStatus!.toUpperCase();
         final investedvalue = element.bidDetail![0].amount!.toUpperCase();
-        // final date =
-        //     ipodateres(element.responseDatetime.toString()).toUpperCase();
         return companyname.contains(value.toUpperCase()) ||
             status.contains(value.toUpperCase()) ||
             investedvalue.contains(value.toUpperCase()) ||
@@ -206,8 +250,7 @@ class IPOProvider extends DefaultChangeNotifier {
         DateTime dateB = dateFormat.parse(b.biddingStartDate.toString());
         return dateB.compareTo(dateA);
       }); // Sort by date
-    } catch (e) {
-    } 
+    } catch (e) {}
   }
 
   sortIPOListByDate(List<IpoScrip> data) {
@@ -218,8 +261,7 @@ class IPOProvider extends DefaultChangeNotifier {
         DateTime dateB = dateFormat.parse(b.listedDate.toString());
         return dateB.compareTo(dateA);
       }); // Sort by date
-    } catch (e) {
-    } 
+    } catch (e) {}
   }
 
   changeTabIndex(
@@ -640,7 +682,7 @@ class IPOProvider extends DefaultChangeNotifier {
     }
   }
 
-  mainipocategory(String type) async {
+  mainipocategory() async {
     try {
       toggleLoadingOn(true);
       ipoCategory = [];
@@ -995,7 +1037,7 @@ class IPOProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       _smeIpoModel = await api.fetchsmeipo();
-      
+
       tabSize();
       notifyListeners();
       return _smeIpoModel;
@@ -1003,6 +1045,24 @@ class IPOProvider extends DefaultChangeNotifier {
       print("SME IPOs error:: $e");
     } finally {
       toggleLoadingOn(false);
+    }
+  }
+
+  Future getIpoSinglePage({required String ipoName}) async {
+    try {
+      togglefundLoadingOn(true);
+      _ipoSinglePage = await api.fetchiposinglepage(ipoName);
+      if (iposinglepage!.scripdata != null) {
+        iposinglepage!.scripdata!["IPO_Timeline"].removeLast();
+      }
+
+      print("object :::: ${_ipoSinglePage!.data}");
+      notifyListeners();
+      return _ipoSinglePage;
+    } catch (e) {
+      print("SINGLE PAGE error:: $e");
+    } finally {
+      togglefundLoadingOn(false);
     }
   }
 }

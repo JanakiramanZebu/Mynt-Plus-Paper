@@ -42,6 +42,7 @@ class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
       final ipo = watch(ipoProvide);
       final theme = watch(themeProvider);
       return Scaffold(
+         
         appBar: AppBar(
           elevation: .2,
           centerTitle: false,

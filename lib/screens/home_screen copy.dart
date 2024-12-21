@@ -12,6 +12,7 @@
 // import '../provider/auth_provider.dart';
 // import '../provider/fund_provider.dart';
 // import '../provider/index_list_provider.dart';
+// import '../provider/iop_provider.dart';
 // import '../provider/market_watch_provider.dart';
 // import '../provider/network_state_provider.dart';
 // import '../provider/order_provider.dart';
@@ -34,26 +35,26 @@
 // import 'profile_screen/profile_main_screen.dart';
 // import 'stocks/explore/explore_screens.dart';
 
-// class HomeScreen extends StatefulWidget {
-//   const HomeScreen({super.key});
+// class HomeScreenExplore extends StatefulWidget {
+//   const HomeScreenExplore({super.key});
 
 //   @override
-//   State<HomeScreen> createState() => _HomeScreenState();
+//   State<HomeScreenExplore> createState() => _HomeScreenExploreState();
 // }
 
-// class _HomeScreenState extends State<HomeScreen> {
+// class _HomeScreenExploreState extends State<HomeScreenExplore> {
 //   final Preferences pref = locator<Preferences>();
 //   @override
 //   void initState() {
 //     context.read(networkStateProvider).networkStream();
-//     if (  context.read(indexListProvider).selectedBtmIndx!=0 ) {
+//     if (context.read(indexListProvider).selectedBtmIndx != 0) {
 //       ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
-//        if (mounted) {
-//         context.read(websocketProvider).reconnectWS();}
-      
-//     });
+//         if (mounted) {
+//           context.read(websocketProvider).reconnectWS();
+//         }
+//       });
 //     }
-    
+
 //     context.read(marketWatchProvider).fToast.init(context);
 //     super.initState();
 //   }
@@ -100,6 +101,7 @@
 //           final userProfile = watch(userProfileProvider);
 //           final stockProvide = watch(stocksProvide);
 //           final theme = context.read(themeProvider);
+//           final ipo = watch(ipoProvide);
 //           return GestureDetector(
 //               onTap: () => FocusScope.of(context).unfocus(),
 //               child: UpgradeAlert(
@@ -201,7 +203,56 @@
 //                                                         : colors.colorBlack))
 //                                       ])),
 //                           actions: indexProvide.selectedBtmIndx == 0
-//                               ? null
+//                               ? [
+//                                   if (stockProvide.exploreName == "IPOs") ...[
+//                                     Padding(
+//                                       padding: const EdgeInsets.only(
+//                                           right: 16, top: 14),
+//                                       child: InkWell(
+//                                           onTap: () async {
+//                                             Future.delayed(
+//                                                 const Duration(
+//                                                     microseconds: 100),
+//                                                 () async {
+//                                               await context
+//                                                   .read(ipoProvide)
+//                                                   .getipoorderbookmodel(true);
+//                                               await context
+//                                                   .read(ipoProvide)
+//                                                   .ipotab();
+//                                             });
+
+//                                             Navigator.pushNamed(
+//                                                 context, Routes.ipoorderbook);
+//                                           },
+//                                           child: Stack(
+//                                               clipBehavior: Clip.none,
+//                                               children: [
+//                                                 const Icon(Icons
+//                                                     .shopping_bag_outlined),
+//                                                 Positioned(
+//                                                   top: -6,
+//                                                   right: -5,
+//                                                   child: Container(
+//                                                     padding:
+//                                                         const EdgeInsets.all(5),
+//                                                     decoration: BoxDecoration(
+//                                                       color: colors.colorBlue,
+//                                                       shape: BoxShape.circle,
+//                                                     ),
+//                                                     child: Text(
+//                                                       '${ipo.openorder?.length ?? 0}',
+//                                                       style: textStyle(
+//                                                           colors.colorWhite,
+//                                                           9,
+//                                                           FontWeight.w500),
+//                                                     ),
+//                                                   ),
+//                                                 ),
+//                                               ])),
+//                                     )
+//                                   ]
+//                                 ]
 //                               : [
 //                                   if (indexProvide.selectedBtmIndx == 1 &&
 //                                       marketWatchList.isPreDefWLs != "Yes") ...[
@@ -452,8 +503,7 @@
 //                                             crossAxisAlignment:
 //                                                 CrossAxisAlignment.center,
 //                                             children: [
-//                                               SvgPicture.asset(
-//                                                   assets.bookmarkedIcon,
+//                                               Icon(Icons.explore_outlined,
 //                                                   color: theme.isDarkMode &&
 //                                                           indexProvide
 //                                                                   .selectedBtmIndx ==
@@ -464,6 +514,18 @@
 //                                                               0
 //                                                           ? colors.colorBlue
 //                                                           : colors.colorGrey),
+//                                               // SvgPicture.asset(
+//                                               //     assets.bookmarkedIcon,
+//                                               //     color: theme.isDarkMode &&
+//                                               //             indexProvide
+//                                               //                     .selectedBtmIndx ==
+//                                               //                 0
+//                                               //         ? colors.colorLightBlue
+//                                               //         : indexProvide
+//                                               //                     .selectedBtmIndx ==
+//                                               //                 0
+//                                               //             ? colors.colorBlue
+//                                               //             : colors.colorGrey),
 //                                               const SizedBox(height: 4),
 //                                               Text("Explore",
 //                                                   style: textStyle(
@@ -491,7 +553,7 @@
 //                                             ConnectivityResult.none
 //                                         ? null
 //                                         : () async {
-//                                             if (!pref.islogIn!) {
+//                                             if (!pref.isMobileLogin!) {
 //                                               showLoginDialog();
 //                                             } else {
 //                                               await indexProvide
@@ -578,7 +640,7 @@
 //                                             ConnectivityResult.none
 //                                         ? null
 //                                         : () async {
-//                                             if (!pref.islogIn!) {
+//                                             if (!pref.isMobileLogin!) {
 //                                               showLoginDialog();
 //                                             } else {
 //                                               await context
@@ -674,7 +736,7 @@
 //                                             ConnectivityResult.none
 //                                         ? null
 //                                         : () async {
-//                                             if (!pref.islogIn!) {
+//                                             if (!pref.isMobileLogin!) {
 //                                               showLoginDialog();
 //                                             } else {
 //                                               await context
@@ -763,7 +825,7 @@
 //                                             ConnectivityResult.none
 //                                         ? null
 //                                         : () async {
-//                                             if (!pref.islogIn!) {
+//                                             if (!pref.isMobileLogin!) {
 //                                               showLoginDialog();
 //                                             } else {
 //                                               await context

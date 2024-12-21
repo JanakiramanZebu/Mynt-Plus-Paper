@@ -77,6 +77,7 @@ class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
         final upiid = watch(transcationProvider);
         final theme = watch(themeProvider);
         return Scaffold(
+         
             appBar: AppBar(
               elevation: .2,
               centerTitle: false,

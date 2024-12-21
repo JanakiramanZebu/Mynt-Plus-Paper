@@ -142,9 +142,9 @@ class MyApp extends ConsumerWidget {
     //     statusBarColor: themeProvide.isDarkMode ? Colors.black :Colors.white));
     return MaterialApp(
         themeMode: themeProvide.themeMode,
-        theme: MyThemes.lightTheme,
+        theme: themeProvide.currentTheme,
         darkTheme: MyThemes.darkTheme,
-        title: 'MYNT +',
+        title: 'MYNT',
         debugShowCheckedModeBanner: false,
         initialRoute: Routes.splash,
         onGenerateRoute: AppRoutes.router);

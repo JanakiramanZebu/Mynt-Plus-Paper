@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
 import '../models/marketwatch_model/alert_model/alert_pending_model.dart';
@@ -260,7 +261,7 @@ mixin MarketWatchApi on ApiCore {
 
       final json = jsonDecode(res.body);
 
-      //  log(" Fundamental Data   => ${res.body}");
+    //  log(" Fundamental Data   => ${res.body}");
 
       return StockData.fromJson(json as Map<String, dynamic>);
     } catch (e) {

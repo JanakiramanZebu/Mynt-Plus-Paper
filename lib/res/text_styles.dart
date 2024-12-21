@@ -13,7 +13,7 @@ class AppTextStyles {
   final textFieldLabelStyle = GoogleFonts.inter(
       textStyle: TextStyle(
     fontWeight: FontWeight.w600,
-    fontSize: 14,
+    fontSize: 15,
     color: AppColors().colorBlack,
   ));
    final notificationtextstyle = GoogleFonts.inter(

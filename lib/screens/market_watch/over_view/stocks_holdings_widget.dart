@@ -2,6 +2,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:readmore/readmore.dart';
 import '../../../provider/market_watch_provider.dart';
 
@@ -29,49 +30,57 @@ class StocksHoldingsWidget extends ConsumerWidget {
       const SizedBox(height: 16),
       SizedBox(
           height: 36,
-          child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: shareHoldings.mfHoldingDate.length,
-              itemBuilder: (BuildContext context, int index) {
-                return Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? shareHoldings.selectedMfHolddate ==
-                                    shareHoldings.mfHoldingDate[index]
-                                ? const Color(0xffB0BEC5)
-                                : const Color(0xffB5C0CF).withOpacity(.15)
-                            : shareHoldings.selectedMfHolddate ==
-                                    shareHoldings.mfHoldingDate[index]
-                                ? const Color(0xff000000)
-                                : const Color(0xffF1F3F8),
-                        borderRadius: BorderRadius.circular(98)),
-                    child: InkWell(
-                        onTap: () async {
-                          shareHoldings.chngMfHoldDate(
-                              shareHoldings.mfHoldingDate[index], index);
-                        },
-                        child: Text(shareHoldings.mfHoldingDate[index],
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? shareHoldings.selectedMfHolddate ==
-                                            shareHoldings.mfHoldingDate[index]
-                                        ? colors.colorBlack
-                                        : colors.colorWhite
-                                    : shareHoldings.selectedMfHolddate ==
-                                            shareHoldings.mfHoldingDate[index]
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                14,
-                                shareHoldings.selectedMfHolddate ==
+          child: shareHoldings.fundamentalData!.shareholdings!.isEmpty
+              ? Center(
+                  child: Text(
+                    "No Holdings",
+                  ),
+                )
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: shareHoldings.mfHoldingDate.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                            color: theme.isDarkMode
+                                ? shareHoldings.selectedMfHolddate ==
                                         shareHoldings.mfHoldingDate[index]
-                                    ? FontWeight.w500
-                                    : FontWeight.w400))));
-              },
-              separatorBuilder: (BuildContext context, int index) {
-                return const SizedBox(width: 10);
-              })),
+                                    ? const Color(0xffB0BEC5)
+                                    : const Color(0xffB5C0CF).withOpacity(.15)
+                                : shareHoldings.selectedMfHolddate ==
+                                        shareHoldings.mfHoldingDate[index]
+                                    ? const Color(0xff000000)
+                                    : const Color(0xffF1F3F8),
+                            borderRadius: BorderRadius.circular(98)),
+                        child: InkWell(
+                            onTap: () async {
+                              shareHoldings.chngMfHoldDate(
+                                  shareHoldings.mfHoldingDate[index], index);
+                            },
+                            child: Text(shareHoldings.mfHoldingDate[index],
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? shareHoldings.selectedMfHolddate ==
+                                                shareHoldings
+                                                    .mfHoldingDate[index]
+                                            ? colors.colorBlack
+                                            : colors.colorWhite
+                                        : shareHoldings.selectedMfHolddate ==
+                                                shareHoldings
+                                                    .mfHoldingDate[index]
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                    14,
+                                    shareHoldings.selectedMfHolddate ==
+                                            shareHoldings.mfHoldingDate[index]
+                                        ? FontWeight.w500
+                                        : FontWeight.w400))));
+                  },
+                  separatorBuilder: (BuildContext context, int index) {
+                    return const SizedBox(width: 10);
+                  })),
       const SizedBox(height: 16),
       Text("Shareholding Breakdown",
           style: textStyle(
@@ -176,81 +185,92 @@ class StocksHoldingsWidget extends ConsumerWidget {
               "${stockHold[shareHoldings.selectedMfHoldindex].mutualFunds}",
               const Color(0XFFdedede),
               theme),
-      Container(
-        padding: const EdgeInsets.all(10),
-        margin: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xff999999))),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Shareholding History",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w600)),
-            const SizedBox(height: 3),
-            Text("Select a segment from the breakdowns to see its pattern here",
-                style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
-            const SizedBox(height: 8),
-            DropdownButtonHideUnderline(
-              child: DropdownButton2(
-                dropdownStyleData: DropdownStyleData(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: !theme.isDarkMode
-                            ? colors.colorWhite
-                            : const Color.fromARGB(255, 18, 18, 18))),
-                menuItemStyleData: MenuItemStyleData(
-                    customHeights: shareHoldings
-                        .getCustomItemsHeight(shareHoldings.shareHoldType)),
-                buttonStyleData: ButtonStyleData(
-                    height: 36,
-                    width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? const Color(0xffB5C0CF).withOpacity(.15)
-                            : const Color(0xffF1F3F8),
-                        // border: Border.all(color: Colors.grey),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(32)))),
-                // buttonDecoration: const BoxDecoration(
-                //     color: Color(0xffF1F3F8),
-                //     // border: Border.all(color: Colors.grey),
-                //     borderRadius: BorderRadius.all(Radius.circular(32))),
-                // buttonSplashColor: Colors.transparent,
-                isExpanded: true,
+      stockHold.isEmpty
+          ? Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Center(child: NoDataFound()),
+            )
+          : Container(
+              padding: const EdgeInsets.all(10),
+              margin: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xff999999))),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Shareholding History",
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          16,
+                          FontWeight.w600)),
+                  const SizedBox(height: 3),
+                  Text(
+                      "Select a segment from the breakdowns to see its pattern here",
+                      style: textStyle(
+                          const Color(0xff666666), 12, FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton2(
+                      dropdownStyleData: DropdownStyleData(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: !theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : const Color.fromARGB(255, 18, 18, 18))),
+                      menuItemStyleData: MenuItemStyleData(
+                          customHeights: shareHoldings.getCustomItemsHeight(
+                              shareHoldings.shareHoldType)),
+                      buttonStyleData: ButtonStyleData(
+                          height: 36,
+                          width: MediaQuery.of(context).size.width,
+                          decoration: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? const Color(0xffB5C0CF).withOpacity(.15)
+                                  : const Color(0xffF1F3F8),
+                              // border: Border.all(color: Colors.grey),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(32)))),
+                      // buttonDecoration: const BoxDecoration(
+                      //     color: Color(0xffF1F3F8),
+                      //     // border: Border.all(color: Colors.grey),
+                      //     borderRadius: BorderRadius.all(Radius.circular(32))),
+                      // buttonSplashColor: Colors.transparent,
+                      isExpanded: true,
 
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    13,
-                    FontWeight.w500),
-                hint: Text(shareHoldings.selctedShareHold,
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorBlack,
-                        13,
-                        FontWeight.w500)),
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          13,
+                          FontWeight.w500),
+                      hint: Text(shareHoldings.selctedShareHold,
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? colors.colorBlack
+                                  : colors.colorBlack,
+                              13,
+                              FontWeight.w500)),
 
-                items: shareHoldings
-                    .addDividersAfterExpDates(shareHoldings.shareHoldType),
-                // customItemsHeights: shareHoldings
-                //     .getCustomItemsHeight(shareHoldings.shareHoldType),
-                value: shareHoldings.selctedShareHold,
-                onChanged: (value) async {
-                  shareHoldings.chngshareHold("$value");
-                },
-                // buttonHeight: 42,
-                // buttonWidth: MediaQuery.of(context).size.width,
+                      items: shareHoldings.addDividersAfterExpDates(
+                          shareHoldings.shareHoldType),
+                      // customItemsHeights: shareHoldings
+                      //     .getCustomItemsHeight(shareHoldings.shareHoldType),
+                      value: shareHoldings.selctedShareHold,
+                      onChanged: (value) async {
+                        shareHoldings.chngshareHold("$value");
+                      },
+                      // buttonHeight: 42,
+                      // buttonWidth: MediaQuery.of(context).size.width,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const ShareHoldChart()
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            const ShareHoldChart()
-          ],
-        ),
-      ),
       const SizedBox(height: 8),
       Divider(color: colors.colorDivider),
       const SizedBox(height: 4),
@@ -262,11 +282,13 @@ class StocksHoldingsWidget extends ConsumerWidget {
       const SizedBox(height: 8),
       Divider(color: colors.colorDivider),
       const SizedBox(height: 8),
-      Text("Stock overview",
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              20,
-              FontWeight.w600)),
+      shareHoldings.fundamentalData!.stockDescription!.isEmpty
+          ? Container()
+          : Text("Stock overview",
+              style: textStyle(
+                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  20,
+                  FontWeight.w600)),
       const SizedBox(height: 8),
       ReadMoreText("${shareHoldings.fundamentalData!.stockDescription}",
           style: textStyle(const Color(0xff666666), 13, FontWeight.w500),

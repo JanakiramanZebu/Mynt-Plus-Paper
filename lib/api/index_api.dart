@@ -61,10 +61,11 @@ mixin IndexApi on ApiCore {
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({"data": ltpArgs}));
 
-      //  print("Top Indices Data ${response.body}");
+     //   print("Top Indices Data ${response.body}");
 
       return response;
     } catch (e) {
+     // print("Error LTP: " + e.toString());
       rethrow;
     }
   }

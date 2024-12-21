@@ -1332,41 +1332,52 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       _fundamentalData = await api.getFundamentalData(tradeSym);
 
+      List ltpArgs = [];
+
       if (_fundamentalData!.msg != "no data found") {
+
+        _peersChartKeys = _fundamentalData!.peerComparisonChart!.keys.toList();
+
+        // print("getltpmmmm   in $ltpArgs");
         // _firstGetData="1";
         // _depthBtns.add({
         //   "btnName": "Fundamental",
         //   "imgPath": assets.charticon,
         //   "case": "Click here to view the trading view chart."
         // });
+
         DateFormat format = DateFormat("yyyy-MM-dd");
         _mfHoldingDate = [];
         _fundamentalData!.shareholdings!.sort((a, b) {
           return format.parse(b.date!).compareTo(format.parse(a.date!));
         });
-        for (var element in _fundamentalData!.shareholdings!) {
-          String formattedDate =
-              DateFormat.yMMMMd().format(format.parse(element.date!));
 
-          List<String> date = [];
+        if (_fundamentalData!.shareholdings!.isNotEmpty) {
+          for (var element in _fundamentalData!.shareholdings!) {
+            String formattedDate =
+                DateFormat.yMMMMd().format(format.parse(element.date!));
 
-          date = formattedDate.split(" ");
+            List<String> date = [];
 
-          element.convDate =
-              "${date[0].substring(0, 3)} ${date[2].substring(2)}";
+            date = formattedDate.split(" ");
 
-          _mfHoldingDate.add(element.convDate!);
+            element.convDate =
+                "${date[0].substring(0, 3)} ${date[2].substring(2)}";
+
+            _mfHoldingDate.add(element.convDate!);
+          }
+
+          _selectedMfHolddate = _mfHoldingDate[0];
+          _selectedMfHoldindex = 0;
+
+          _fundamentalData!.stockFinancialsConsolidated!.balanceSheet!
+              .sort((a, b) {
+            return format
+                .parse(b.yearEndDate!)
+                .compareTo(format.parse(a.yearEndDate!));
+          });
         }
-
-        _selectedMfHolddate = _mfHoldingDate[0];
-        _selectedMfHoldindex = 0;
-
-        _fundamentalData!.stockFinancialsConsolidated!.balanceSheet!
-            .sort((a, b) {
-          return format
-              .parse(b.yearEndDate!)
-              .compareTo(format.parse(a.yearEndDate!));
-        });
+        print("getltpmmmm   f2 $ltpArgs");
 
         for (var element
             in _fundamentalData!.stockFinancialsConsolidated!.balanceSheet!) {
@@ -1446,6 +1457,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               .compareTo(format.parse(a.yearEndDate!));
         });
         _finnceYears = [];
+
         for (var element
             in _fundamentalData!.stockFinancialsStandalone!.incomeSheet!) {
           String formattedDate =
@@ -1466,6 +1478,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               .compareTo(format.parse(a.yearEndDate!));
         });
         _finnceYears = [];
+
         for (var element
             in _fundamentalData!.stockFinancialsStandalone!.cashflowSheet!) {
           String formattedDate =
@@ -1480,35 +1493,48 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _finnceYears.add("${element.convDate}");
         }
 
-        List ltpArgs = [];
-
-        for (var element in _fundamentalData!.peersComparison!.stock!) {
-          ltpArgs.add({
-            "exch": element.sYMBOL!.substring(0, 3),
-            "token": "${element.zebuToken}"
-          });
+        for (var i = 0;
+            i < _fundamentalData!.peersComparison!.peers!.length;
+            i++) {
+          String ltp = _fundamentalData!.peersComparison!.peers![i].sYMBOL!
+              .substring(0, 3);
+          String tok = _fundamentalData!.peersComparison!.peers![i].zebuToken!;
+          if (tok.isNotEmpty && ltp.isNotEmpty) {
+            ltpArgs.add({"exch": ltp, "token": tok});
+          }
         }
-        for (var element in _fundamentalData!.peersComparison!.peers!) {
-          ltpArgs.add({
-            "exch": element.sYMBOL!.substring(0, 3),
-            "token": "${element.zebuToken}"
-          });
+        for (var i = 0;
+            i < _fundamentalData!.peersComparison!.stock!.length;
+            i++) {
+          String ltp = _fundamentalData!.peersComparison!.stock![i].sYMBOL!
+              .substring(0, 3);
+          String tok = _fundamentalData!.peersComparison!.stock![i].zebuToken!;
+          if (tok.isNotEmpty && ltp.isNotEmpty) {
+            ltpArgs.add({"exch": ltp, "token": tok});
+          }
         }
+      
 
         final response = await api.getLTP(ltpArgs);
-
+        // print("getltpmmmm  o$response");
         Map res = jsonDecode(response.body);
-
+      
         for (var element in _fundamentalData!.peersComparison!.stock!) {
-          if (element.zebuToken.toString() ==
-              "${res["data"]["${element.zebuToken}"]['token']}") {
-            element.ltp = "${res["data"]["${element.zebuToken}"]["lp"]}";
+          String tok = element.zebuToken.toString();
+          if (tok.isNotEmpty) {
+            if (element.zebuToken.toString() ==
+                "${res["data"]["${element.zebuToken}"]['token']}") {
+              element.ltp = "${res["data"]["${element.zebuToken}"]["lp"]}";
+            }
           }
         }
         for (var element in _fundamentalData!.peersComparison!.peers!) {
-          if (element.zebuToken.toString() ==
-              "${res["data"]["${element.zebuToken}"]['token']}") {
-            element.ltp = "${res["data"]["${element.zebuToken}"]["lp"]}";
+          String tok = element.zebuToken.toString();
+          if (tok.isNotEmpty) {
+            if (element.zebuToken.toString() ==
+                "${res["data"]["${element.zebuToken}"]['token']}") {
+              element.ltp = "${res["data"]["${element.zebuToken}"]["lp"]}";
+            }
           }
         }
         _peersChartKeys = _fundamentalData!.peerComparisonChart!.keys.toList();
@@ -1526,45 +1552,35 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               .peerComparisonChart![_peersChartKeys[i]]['date'];
 
           for (var j = 0; j < dates.length; j++) {
-            String formattedDate =
-                DateFormat.yMMMMd().format(format.parse("${dates[j]}"));
+            String inputDate = "${dates[j]}";
+            DateTime parsedDate = DateTime.parse(inputDate);
+            String formattedDate = DateFormat('MMM dd').format(parsedDate);
 
             List<String> date = [];
 
             date = formattedDate.split(" ");
 
             if (i == 0) {
-              _prcComChrtData1.add(PrcComparisionChartData(
-                  "${date[0].toString().substring(0, 3)} ${date[2].substring(2)}",
-                  close[j]));
+              _prcComChrtData1.add(PrcComparisionChartData(date[0], close[j]));
             } else if (i == 1) {
-              _prcComChrtData2.add(PrcComparisionChartData(
-                  "${date[0].toString().substring(0, 3)} ${date[2].substring(2)}",
-                  close[j]));
+              _prcComChrtData2.add(PrcComparisionChartData(date[0], close[j]));
             } else if (i == 2) {
-              _prcComChrtData3.add(PrcComparisionChartData(
-                  "${date[0].toString().substring(0, 3)} ${date[2].substring(2)}",
-                  close[j]));
+              _prcComChrtData3.add(PrcComparisionChartData(date[0], close[j]));
             } else if (i == 3) {
-              _prcComChrtData4.add(PrcComparisionChartData(
-                  "${date[0].toString().substring(0, 3)} ${date[2].substring(2)}",
-                  close[j]));
+              _prcComChrtData4.add(PrcComparisionChartData(date[0], close[j]));
             } else {
-              _prcComChrtData5.add(PrcComparisionChartData(
-                  "${date[0].toString().substring(0, 3)} ${date[2].substring(2)}",
-                  close[j]));
+              _prcComChrtData5.add(PrcComparisionChartData(date[0], close[j]));
             }
           }
         }
       }
-
       notifyListeners();
     } catch (e) {
       ref(indexListProvider)
           .logError
           .add({"type": "API Fundamental ", "Error": "$e"});
       notifyListeners();
-      debugPrint(e.toString());
+      debugPrint(" FUNDAMENTAL ERROR ::: ${e.toString()}");
     } finally {}
   }
 

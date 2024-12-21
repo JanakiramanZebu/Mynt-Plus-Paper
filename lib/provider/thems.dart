@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
+import '../themes/theme.dart';
 import 'core/default_change_notifier.dart';
 import 'user_profile_provider.dart';
 
@@ -14,6 +15,20 @@ final themeProvider = ChangeNotifierProvider((ref) => ThemesProvider(ref.read));
 class ThemesProvider extends DefaultChangeNotifier {
   final pref = locator<Preferences>();
   ThemeMode themeMode = ThemeMode.light;
+  ThemeData _currentTheme = MyThemes.lightThemebanner;
+  ThemeData get currentTheme => _currentTheme;
+
+  navigateToNewPage(BuildContext context) {
+    _currentTheme = MyThemes.lightTheme;
+    notifyListeners();
+  }
+
+    removeUsermatrial(BuildContext context) {
+    _currentTheme = MyThemes.lightThemebanner;
+    notifyListeners();
+  }
+
+
   List<String> themeTypes = ["Light", "Dark"];
   String _deviceTheme = "Light";
 

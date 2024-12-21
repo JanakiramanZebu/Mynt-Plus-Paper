@@ -5,6 +5,7 @@ import '../models/ipo_model/ipo_order_book_model.dart';
 import '../models/ipo_model/ipo_order_res_model.dart';
 import '../models/ipo_model/ipo_performance_model.dart';
 import '../models/ipo_model/ipo_place_order_model.dart';
+import '../models/ipo_model/ipo_single_page_model.dart';
 import '../models/ipo_model/ipo_sme_model.dart';
 import 'core/api_core.dart';
 
@@ -16,13 +17,13 @@ mixin IPOApi on ApiCore {
           headers: funddefaultHeaders,
           body: (jsonEncode({"client_id": "${prefs.clientId}"})));
       final List body = jsonDecode(res.body);
-     // log("++++++++++++ $body");
+      // log("++++++++++++ $body");
       return body.map((e) {
-      //  print("MAP ERROR $e");
+        //  print("MAP ERROR $e");
         return IpoOrderBookModel.fromJson(e);
       }).toList();
     } catch (e) {
-    //  log("SDSDSDSD $e");
+      //  log("SDSDSDSD $e");
       rethrow;
     }
   }
@@ -106,7 +107,7 @@ mixin IPOApi on ApiCore {
         headers: defaultHeaders,
       );
       final json = jsonDecode(res.body);
-       //log("Ipo Perfomance res=>${res.body} ");
+      //log("Ipo Perfomance res=>${res.body} ");
       return IpoPerformanceModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       print("GETIPOPERFORMANCE $e");
@@ -140,6 +141,28 @@ mixin IPOApi on ApiCore {
       // log("sme ipo res=>${res.body} ");
       return SmeIpoModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<IpoSinglePage> fetchiposinglepage(String iponame) async {
+    try {
+      final uri = Uri.parse(apiLinks.iposinglepage);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: (jsonEncode({"company_name": iponame})));
+      final json = jsonDecode(res.body);
+      log(res.body);
+      if (json['data'] != "no data") {
+        IpoSinglePage ipoModel = IpoSinglePage.fromJson(json);
+        return ipoModel;
+      } else {
+        IpoSinglePage ipoModels = IpoSinglePage.fromJson(json);
+
+        return ipoModels;
+      }
+    } catch (e) {
+      print("object $e");
       rethrow;
     }
   }

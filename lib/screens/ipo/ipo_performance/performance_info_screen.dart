@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_performance_model.dart';
 import 'package:mynt_plus/provider/market_watch_provider.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
@@ -37,8 +38,14 @@ class _PerformanceInfoScreenState extends State<PerformanceInfoScreen> {
           expand: false,
           builder: (context, scrollController) {
             return widget.market.fundamentalData?.msg == "no data found"
-                ? Container(
-                    child: Text("${widget.market.fundamentalData?.msg}"),
+                ? Column(
+                    children: [
+                      const CustomDragHandler(),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 260),
+                        child: NoDataFound(),
+                      )
+                    ],
                   )
                 : Container(
                     decoration: BoxDecoration(
@@ -58,88 +65,64 @@ class _PerformanceInfoScreenState extends State<PerformanceInfoScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const CustomDragHandler(),
-                        Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                            "${widget.market.fundamentalData!.fundamental![0].companyName!.toUpperCase()} ",
-                                            style: textStyle(
-                                                !theme.isDarkMode
-                                                    ? colors.colorBlack
-                                                    : colors.colorWhite,
-                                                16,
-                                                FontWeight.w600)),
-                                        // Text(widget.wlValue.option,
-                                        //     style: textStyle(
-                                        //         !theme.isDarkMode
-                                        //             ? colors.colorBlack
-                                        //             : colors.colorWhite,
-                                        //         16,
-                                        //         FontWeight.w600)),
-                                        // InkWell(
-                                        //     onTap: () async {
-                                        //       await scripInfo
-                                        //           .fetchScripInfo(
-                                        //               depthData.token!,
-                                        //               depthData.exch!,
-                                        //               ctx);
-                                        //       if (scripInfo
-                                        //               .scripInfoModel!
-                                        //               .stat ==
-                                        //           "Ok") {
-                                        //         showModalBottomSheet(
-                                        //             backgroundColor:
-                                        //                 const Color(
-                                        //                     0xff000000),
-                                        //             isScrollControlled:
-                                        //                 true,
-                                        //             useSafeArea: true,
-                                        //             isDismissible: true,
-                                        //             shape: const RoundedRectangleBorder(
-                                        //                 borderRadius: BorderRadius.vertical(
-                                        //                     top: Radius
-                                        //                         .circular(
-                                        //                             16))),
-                                        //             context: context,
-                                        //             builder:
-                                        //                 (BuildContext
-                                        //                     context) {
-                                        //               return const ScripDetailDialogue();
-                                        //             });
-                                        //       }
-                                        //     },
-                                        //     child: Container(
-                                        //         padding:
-                                        //             const EdgeInsets
-                                        //                 .only(
-                                        //                 left: 8,
-                                        //                 right: 8,
-                                        //                 bottom: 4,
-                                        //                 top: 4),
-                                        //         child: SvgPicture.asset(
-                                        //             assets.dInfo,
-                                        //             width: 18,
-                                        //             height: 15,
-                                        //             color: const Color(
-                                        //                 0xff666666))))
-                                      ]),
-                                  // Text(
-                                  //     "₹${widget.market.fundamentalData!.fundamental![0].lp ?? depthData.c ?? 0.00}",
-                                  //     style: textStyle(
-                                  //         !theme.isDarkMode
-                                  //             ? colors.colorBlack
-                                  //             : colors.colorWhite,
-                                  //         16,
-                                  //         FontWeight.w600)),
-                                ])),
+                        Container(
+                          decoration: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? colors.darkGrey
+                                  : Color(0xfffafbff)),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: ListTile(
+                            leading: ClipOval(
+                              child: Container(
+                                color: colors.colorDivider.withOpacity(.3),
+                                width: 50,
+                                height: 50,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Center(
+                                    child: Text(
+                                      widget.ipoFundamental.companyName!
+                                          .toUpperCase()
+                                          .substring(0, 1),
+                                      style: textStyle(colors.colorBlack, 24,
+                                          FontWeight.w500),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                    "${widget.ipoFundamental.companyName!.toUpperCase()} ",
+                                    style: textStyle(
+                                        !theme.isDarkMode
+                                            ? colors.colorBlack
+                                            : colors.colorWhite,
+                                        15,
+                                        FontWeight.w600)),
+                                const SizedBox(height: 5),
+                                Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                        color: theme.isDarkMode
+                                            ? colors.colorGrey.withOpacity(.1)
+                                            : const Color(0xffF1F3F8),
+                                        // border: Border.all(
+                                        //     color: const Color(0xffC1E7BA)),
+                                        borderRadius: BorderRadius.circular(4)),
+                                    child: Text(
+                                        widget.ipoFundamental.symbol.toString(),
+                                        style: textStyle(
+                                            const Color(0xff666666),
+                                            9,
+                                            FontWeight.w500))),
+                              ],
+                            ),
+                          ),
+                        ),
                         Expanded(
                           child: ListView(
                             shrinkWrap: true,

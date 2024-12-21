@@ -1,6 +1,7 @@
 class MainStreamIpoModel {
   String? msg;
   List<MainIPO>? mainIPO;
+  
 
   MainStreamIpoModel({this.mainIPO});
 
@@ -67,6 +68,7 @@ class MainIPO {
   String? tplusmodificationto;
   String? type;
   String? updateIpoDate;
+  String? key;
 
   MainIPO(
       {this.asbanonasba,
@@ -110,7 +112,9 @@ class MainIPO {
       this.tplusmodificationfrom,
       this.tplusmodificationto,
       this.type,
-      this.updateIpoDate});
+      this.updateIpoDate,
+      this.key
+      });
 
   MainIPO.fromJson(Map<String, dynamic> json) {
     asbanonasba = json['asbanonasba'].toString();
@@ -217,6 +221,7 @@ class MainIPO {
     data['tplusmodificationto'] = tplusmodificationto;
     data['type'] = type;
     data['update_ipo_date'] = updateIpoDate;
+    data['key'] = key;
     return data;
   }
 }

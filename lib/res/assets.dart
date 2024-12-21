@@ -1,6 +1,7 @@
 class Assets {
   // Icon
-  final String appLogoIcon = "assets/icon/zebulogo.svg";
+  final String appLogoIcon = "assets/icon/Mynt New logo.svg";
+  final String appLogoIconOld = "assets/icon/zebulogo.svg";
   final String bellIcon = "assets/icon/appbarIcon/bell.svg";
   final String searchIcon = "assets/icon/appbarIcon/search.svg";
   final String walletIcon = "assets/icon/appbarIcon/wallet.svg";

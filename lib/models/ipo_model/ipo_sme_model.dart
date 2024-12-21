@@ -67,6 +67,7 @@ class SMEIPO {
   String? tplusmodificationto;
   String? type;
   String? updateIpoDate;
+  String? key;
 
   SMEIPO(
       {this.asbanonasba,
@@ -110,7 +111,9 @@ class SMEIPO {
       this.tplusmodificationfrom,
       this.tplusmodificationto,
       this.type,
-      this.updateIpoDate});
+      this.updateIpoDate,
+      this.key
+      });
 
   SMEIPO.fromJson(Map<String, dynamic> json) {
     asbanonasba = json['asbanonasba'].toString();
@@ -165,6 +168,7 @@ class SMEIPO {
     tplusmodificationto = json['tplusmodificationto'].toString();
     type = json['type'].toString();
     updateIpoDate = json['update_ipo_date'].toString();
+    key = json['key'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -217,6 +221,7 @@ class SMEIPO {
     data['tplusmodificationto'] = tplusmodificationto;
     data['type'] = type;
     data['update_ipo_date'] = updateIpoDate;
+    data['key'] = key;
     return data;
   }
 }

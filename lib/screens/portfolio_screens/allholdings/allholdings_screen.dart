@@ -166,7 +166,11 @@ class _Allholdings extends State<Allholdings> {
                               ],
                             ),
                           )),
-                      ListView.builder(
+                      ListView.separated(
+                        separatorBuilder: (context, index) => Divider(
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : colors.colorDivider),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: asa.allholds.keys.length,
@@ -195,7 +199,7 @@ class _Allholdings extends State<Allholdings> {
                             //               ? const Color(0xffB5C0CF)
                             //                   .withOpacity(.15)
                             //               : const Color(0xffF1F3F8),
-                            // elevation: 0,
+                            elevation: 0,
                             expandIconColor: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
@@ -475,14 +479,11 @@ class _Allholdings extends State<Allholdings> {
                                                                 .colorDivider),
                                                   ]));
                                         })
-                                  
-                     
                                   ],
                                 ),
                                 isExpanded: _expandedPanels[key]!,
                                 canTapOnHeader: true,
                               ),
-                           
                             ],
                           );
                         },

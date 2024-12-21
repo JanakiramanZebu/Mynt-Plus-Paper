@@ -455,7 +455,7 @@ class IndexListProvider extends DefaultChangeNotifier {
         }
       }
     } 
-    notifyListeners();
+   // notifyListeners();
   }
 
 

@@ -30,16 +30,21 @@ import '../models/auth_model/mobile_otp_model.dart';
 import '../models/profile_model/client_detail_model.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
+import '../screens/authentication/login/bottom_otp_screen.dart';
 import '../sharedWidget/risk_disclosure_bottom_sheet.dart';
 import '../sharedWidget/snack_bar.dart';
+//import 'bond_provider.dart';
 import 'change_password_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'fund_provider.dart';
 import 'index_list_provider.dart';
+import 'iop_provider.dart';
 import 'market_watch_provider.dart';
+//import 'mf_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
 // import 'stocks_provider.dart';
+//import 'stocks_provider.dart';
 import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
 
@@ -65,6 +70,8 @@ class AuthProvider extends DefaultChangeNotifier {
   bool _isDisableOtpBtn = true;
   bool _hideOtp = true;
 
+  bool _bannervisble = false;
+
   String _logoutMsg = "";
   String get logoutMsg => _logoutMsg;
 
@@ -76,6 +83,7 @@ class AuthProvider extends DefaultChangeNotifier {
   bool get hidePass => _hidePass;
   bool get hideOtp => _hideOtp;
   bool get isDisableOtpBtn => _isDisableOtpBtn;
+  bool get bannervisble => _bannervisble;
 
   LoginOtp? _loginOtp;
   LoginOtp? get loginOtp => _loginOtp;
@@ -106,6 +114,8 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // This package for getting device info
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+
+  int currentYear = DateTime.now().year;
 
   // ValidateSession? _validateSession;
   // ValidateSession? get validSession => _validateSession;
@@ -148,8 +158,8 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
 // If OTP validation is successful, activate the OTP button.
-  activeBtnOtp() {
-    if (validateOtp()) {
+  activeBtnOtp(String otp) {
+    if (otp.length <= 3 || otp.isEmpty) {
       _isDisableOtpBtn = false;
     } else {
       _isDisableOtpBtn = true;
@@ -234,23 +244,19 @@ class AuthProvider extends DefaultChangeNotifier {
   bool validateLogin() {
     clearError();
     if (loginMethCtrl.text.trim().isEmpty) {
-      loginMethError = !pref.isMobileLogin!
-          ? "Please enter client Id"
-          : "Please enter mobile";
-    } else if (!RegExp(r'^[6-9][0-9]{9}$').hasMatch(loginMethCtrl.text)) {
-      loginMethError =
-          !pref.isMobileLogin! ? null : "Please enter a valid mobile";
+      loginMethError = "Your mobile / client id is required";
     }
+
     if (passCtrl.text.trim().isEmpty) {
-      passError = "Please enter the Password";
+      passError = "Please enter the password";
     }
     notifyListeners();
     return loginMethError == null && passError == null;
   }
 
 // Validate OTP
-  bool validateOtp() {
-    if (otpCtrl.text.length <= 3) {
+  bool validateOtp(String otp) {
+    if (otp.length <= 3 || otp.isEmpty) {
       optError = "Please enter 4 digit OTP";
     } else {
       optError = null;
@@ -272,9 +278,9 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
 // Call this method while clicking if the OTP validation process is successful.
-  submitOtp(BuildContext context) {
-    if (validateOtp()) {
-      fetchMobileOtp(context, otpCtrl.text);
+  submitOtp(BuildContext context, String otp) {
+    if (validateOtp(otp)) {
+      fetchMobileOtp(context, otp);
     }
   }
 
@@ -313,8 +319,17 @@ class AuthProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, 'The OTP is sent via email and SMS'));
         _isDisableBtn = true;
-
-        Navigator.pushNamed(context, Routes.loginOtpVerify);
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true, // Adjusts for the keyboard
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(16),
+            ),
+          ),
+          builder: (context) => BottomSheetContent(),
+        );
+        // Navigator.pushNamed(context, Routes.loginOtpVerify);
       } else if (_mobileLogin!.emsg ==
           "Invalid Input : User Blocked due to multiple wrong attempts") {
         ref(changePasswordProvider).userIdController.text =
@@ -470,16 +485,19 @@ class AuthProvider extends DefaultChangeNotifier {
               userName: pref.clientName!,
               imei: pref.imei!)
         ];
-        _loggedMobile = await getLocalData();
-
-        await setLocalData(_loggedMobile, currentUser);
-
-        _loggedMobile = await getLocalData();
-
-        log("loggued Useer -- ${pref.loggedClient}");
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, 'OTP Verified'));
         await deviceAuth(context, "");
+        Future.delayed(const Duration(seconds: 3), () async {
+          // Navigator.pushNamed(context, Routes.forgotPass);
+          _loggedMobile = await getLocalData();
+
+          await setLocalData(_loggedMobile, currentUser);
+
+          _loggedMobile = await getLocalData();
+
+          log("loggued Useer -- ${pref.loggedClient}");
+          // ScaffoldMessenger.of(context)
+          //     .showSnackBar(successMessage(context, 'OTP Verified'));
+        });
 
         notifyListeners();
       } else {
@@ -748,7 +766,7 @@ class AuthProvider extends DefaultChangeNotifier {
       if (ref(indexListProvider).checkSess!.stat == "Ok") {
         ref(indexListProvider).fetchNotifyMsg();
         ref(portfolioProvider).changeTabIndex(0);
-
+        await ref(themeProvider).navigateToNewPage(context);
         await ref(portfolioProvider).fetchHoldings(context, "");
 
         await ref(indexListProvider).getDeafultIndexList(context);
@@ -765,13 +783,26 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(transcationProvider).fetchfundbank(context);
         ref(transcationProvider).fetchc(context);
 
-// Explore
-        // ref(stocksProvide).fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
-        // await ref(indexListProvider).fetchStockTopIndex();
-        // ref(stocksProvide).fetchCorporateAction();
-        // ref(stocksProvide).defaultSectorThemematicData();
-        // ref(stocksProvide).getNews();
-        // ref(stocksProvide).chngTradeAct("Equity");
+        await ref(ipoProvide).getSmeIpo();
+        await ref(ipoProvide).getmainstreamipo();
+        await ref(ipoProvide).getipoperfomance(currentYear);
+        await ref(ipoProvide).mergemainsme();
+
+// // Explore
+//         await ref(stocksProvide)
+//             .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
+//         await ref(indexListProvider).fetchStockTopIndex();
+//         await ref(stocksProvide).fetchCorporateAction();
+//         await ref(stocksProvide).defaultSectorThemematicData();
+//         await ref(stocksProvide).getNews();
+//         await ref(stocksProvide).chngTradeAct("Equity");
+//         await ref(ipoProvide).getSmeIpo();
+//         await ref(ipoProvide).getmainstreamipo();
+//         await ref(ipoProvide).getipoperfomance(currentYear);
+//         await ref(ipoProvide).mergemainsme();
+//         await ref(mfProvider).fetchMFWatchlist(null, "", context, false);
+//         await ref(mfProvider).fetchMasterMF();
+//         await ref(bondProvider).fetchGovtBonds();
 
 // End Explore
         if (s.isEmpty) {
