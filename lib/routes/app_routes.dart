@@ -7,6 +7,7 @@ import '../screens/authentication/password/forgot_pass_unblock_user.dart';
 import '../screens/bonds/bond_screen.dart';
 //import '../screens/home_screen copy.dart';
 // import '../screens/home_screen.dart';
+import '../screens/home_screen copy.dart';
 import '../screens/home_screen.dart';
 import '../screens/ipo/ipo_main_screen.dart';
 import '../screens/ipo/ipo_orderbook_screen/ipo_modify_order/modify_order_screen.dart';
@@ -76,8 +77,10 @@ class AppRoutes {
     switch (settings.name) {
       case Routes.splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
+      // case Routes.homeScreen:
+      //   return MaterialPageRoute(builder: (_) => const HomeScreen());
       case Routes.homeScreen:
-        return MaterialPageRoute(builder: (_) => const HomeScreen());
+        return MaterialPageRoute(builder: (_) => const HomeScreenDashBoard());
       case Routes.loginScreen:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>

@@ -79,7 +79,7 @@ mixin TranscationApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           body: jsonEncode({
-            "amount": amt,
+            "amount": "amt",
             "bank_acc": bankaccno,
             "clientID": clientid,
             "Name": name
@@ -241,7 +241,7 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode({"code": encryptedPayload}));
       final json = jsonDecode(res.body);
       final decryptedData = decryptionFunction(json["str"]);
-      // log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+      log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
       return BankDetails.fromJson(jsonDecode(decryptedData));
     } catch (e) {
       rethrow;

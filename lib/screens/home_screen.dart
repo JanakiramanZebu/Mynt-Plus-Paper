@@ -12,7 +12,6 @@ import '../provider/market_watch_provider.dart';
 import '../provider/network_state_provider.dart';
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
-import '../provider/stocks_provider.dart';
 import '../provider/thems.dart';
 import '../provider/user_profile_provider.dart';
 import '../provider/websocket_provider.dart';
@@ -128,6 +127,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         onWillPop: showExitPopup,
         child: Consumer(builder: (context, ScopedReader watch, _) {
           final marketWatchList = watch(marketWatchProvider);
+          // final explore = watch(authProvider);
           final indexProvide = watch(indexListProvider);
           final internet = watch(networkStateProvider);
           final portfolio = watch(portfolioProvider);
@@ -140,454 +140,485 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   showIgnore: false,
                   showLater: false,
                   child: Scaffold(
-                      appBar: AppBar(
-                          shadowColor: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          leadingWidth: 205,
-                          elevation: .3,
-                          leading: indexProvide.selectedBtmIndx == 1
-                              ? InkWell(
-                                  onTap: () {
-                                    FocusScope.of(context).unfocus();
+                      appBar: indexProvide.selectedBtmIndx == 0
+                          ? null
+                          : AppBar(
+                              shadowColor: theme.isDarkMode
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider,
+                              leadingWidth: 205,
+                              elevation: .3,
+                              leading: indexProvide.selectedBtmIndx == 1
+                                  ? InkWell(
+                                      onTap: () {
+                                        FocusScope.of(context).unfocus();
 
-                                    showModalBottomSheet(
-                                        useSafeArea: true,
-                                        isScrollControlled: true,
-                                        shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.vertical(
-                                                top: Radius.circular(16))),
-                                        context: context,
-                                        builder: (context) {
-                                          return WatchlistsBottomSheet(
-                                              currentWLName:
-                                                  marketWatchList.wlName);
-                                        });
-                                  },
-                                  child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 10, horizontal: 16),
-                                      child: Row(children: [
-                                        Expanded(
-                                          child: Text(
-                                            marketWatchList.wlName.isEmpty
-                                                ? marketWatchList.wlName
-                                                : marketWatchList.isPreDefWLs ==
-                                                        "Yes"
-                                                    ? marketWatchList.wlName ==
-                                                            "My Stocks"
-                                                        ? marketWatchList.wlName
-                                                        : marketWatchList.wlName
-                                                    : "${marketWatchList.wlName[0].toUpperCase()}${marketWatchList.wlName.substring(1)}'s Watchlist",
-                                            style: textStyle(
-                                                theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                14,
-                                                FontWeight.w600),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        Text(
-                                            marketWatchList.wlName ==
-                                                    "My Stocks"
-                                                ? "(${portfolio.holdingsModel!.length})"
-                                                : "(${marketWatchList.scrips.length})",
-                                            style: textStyle(
-                                                theme.isDarkMode
+                                        showModalBottomSheet(
+                                            useSafeArea: true,
+                                            isScrollControlled: true,
+                                            shape: const RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.vertical(
+                                                        top: Radius.circular(
+                                                            16))),
+                                            context: context,
+                                            builder: (context) {
+                                              return WatchlistsBottomSheet(
+                                                  currentWLName:
+                                                      marketWatchList.wlName);
+                                            });
+                                      },
+                                      child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10, horizontal: 16),
+                                          child: Row(children: [
+                                            Expanded(
+                                              child: Text(
+                                                marketWatchList.wlName.isEmpty
+                                                    ? marketWatchList.wlName
+                                                    : marketWatchList
+                                                                .isPreDefWLs ==
+                                                            "Yes"
+                                                        ? marketWatchList
+                                                                    .wlName ==
+                                                                "My Stocks"
+                                                            ? marketWatchList
+                                                                .wlName
+                                                            : marketWatchList
+                                                                .wlName
+                                                        : "${marketWatchList.wlName[0].toUpperCase()}${marketWatchList.wlName.substring(1)}'s Watchlist",
+                                                style: textStyle(
+                                                    theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    14,
+                                                    FontWeight.w600),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Text(
+                                                marketWatchList.wlName ==
+                                                        "My Stocks"
+                                                    ? "(${portfolio.holdingsModel!.length})"
+                                                    : "(${marketWatchList.scrips.length})",
+                                                style: textStyle(
+                                                    theme.isDarkMode
+                                                        ? colors.colorLightBlue
+                                                        : colors.colorBlue,
+                                                    15,
+                                                    FontWeight.w600)),
+                                            const SizedBox(width: 3),
+                                            SvgPicture.asset(assets.downArrow,
+                                                color: theme.isDarkMode
                                                     ? colors.colorLightBlue
                                                     : colors.colorBlue,
-                                                15,
-                                                FontWeight.w600)),
-                                        const SizedBox(width: 3),
-                                        SvgPicture.asset(assets.downArrow,
-                                            color: theme.isDarkMode
-                                                ? colors.colorLightBlue
-                                                : colors.colorBlue,
-                                            width: 14)
-                                      ])))
-                              : Padding(
-                                  padding: const EdgeInsets.all(18),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                          indexProvide.selectedBtmIndx == 3
-                                              ? "Orderbook"
-                                              : indexProvide.selectedBtmIndx ==
-                                                      2
-                                                  ? "Portfolio"
-                                                  : watch(stocksProvide)
-                                                      .exploreName,
-                                          style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              17,
-                                              FontWeight.w600)),
-                                    ],
-                                  ),
-                                ),
-                          actions: indexProvide.selectedBtmIndx == 0
-                              ? null
-                              : [
-                                  if (indexProvide.selectedBtmIndx == 1 &&
-                                      marketWatchList.isPreDefWLs != "Yes") ...[
-                                    marketWatchList.scrips.length > 1
-                                        ? InkWell(
-                                            onTap: () {
-                                              FocusScope.of(context).unfocus();
-                                              showModalBottomSheet(
-                                                  useSafeArea: true,
-                                                  isScrollControlled: true,
-                                                  shape: const RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.vertical(
-                                                              top: Radius
-                                                                  .circular(
-                                                                      16))),
-                                                  context: context,
-                                                  builder: (context) {
-                                                    return const ScripFilterBottomSheet();
-                                                  });
-                                            },
-                                            child: Container(
-                                                padding: EdgeInsets.only(
-                                                    left: 8, right: 10),
-                                                child: SvgPicture.asset(
-                                                    assets.filterLines,
-                                                    width: 19,
-                                                    color: colors.colorGrey)),
-                                          )
-                                        : Container(),
-                                    marketWatchList.scrips.length >= 50
-                                        ? const SizedBox()
-                                        : InkWell(
-                                            onTap: () {
-                                              context
-                                                  .read(marketWatchProvider)
-                                                  .requestMWScrip(
-                                                      context: context,
-                                                      isSubscribe: false);
-                                              Navigator.pushNamed(
-                                                  context, Routes.searchScrip,
-                                                  arguments:
-                                                      marketWatchList.wlName);
-                                            },
-                                            child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 16, left: 8),
-                                                child: SvgPicture.asset(
-                                                    assets.searchIcon,
-                                                    width: 19,
-                                                    color: colors.colorGrey)),
-                                          ),
-                                  ] else if ((indexProvide.selectedBtmIndx ==
-                                              2 &&
-                                          portfolio
-                                              .allPostionList.isNotEmpty) &&
-                                      portfolio.selectedTab == 0) ...[
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 15.0),
-                                      child: Row(children: [
-                                        Container(
-                                          height: 27,
-                                          padding:
-                                              const EdgeInsets.only(right: 10),
-                                          child: OutlinedButton(
-                                              onPressed: () {
-                                                showModalBottomSheet(
-                                                    useSafeArea: true,
-                                                    isScrollControlled: true,
-                                                    shape: const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.vertical(
-                                                                top: Radius
-                                                                    .circular(
-                                                                        16))),
-                                                    context: context,
-                                                    builder: (context) {
-                                                      return const PositionGroupBottomSheet();
-                                                    });
-                                              },
-                                              style: OutlinedButton.styleFrom(
-                                                  side: BorderSide(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorGrey
-                                                          : colors.colorBlack),
-                                                  shape:
-                                                      const RoundedRectangleBorder(
+                                                width: 14)
+                                          ])))
+                                  : Padding(
+                                      padding: const EdgeInsets.all(18),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                              indexProvide.selectedBtmIndx == 3
+                                                  ? "Orderbook"
+                                                  : indexProvide
+                                                              .selectedBtmIndx ==
+                                                          2
+                                                      ? "Portfolio"
+                                                      : "Dashboard",
+                                              // watch(stocksProvide)
+                                              //     .exploreName,
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  17,
+                                                  FontWeight.w600)),
+                                        ],
+                                      ),
+                                    ),
+                              actions: indexProvide.selectedBtmIndx == 0
+                                  ? []
+                                  : [
+                                      if (indexProvide.selectedBtmIndx == 1 &&
+                                          marketWatchList.isPreDefWLs !=
+                                              "Yes") ...[
+                                        marketWatchList.scrips.length > 1
+                                            ? InkWell(
+                                                onTap: () {
+                                                  FocusScope.of(context)
+                                                      .unfocus();
+                                                  showModalBottomSheet(
+                                                      useSafeArea: true,
+                                                      isScrollControlled: true,
+                                                      shape: const RoundedRectangleBorder(
                                                           borderRadius:
-                                                              BorderRadius.all(
-                                                                  Radius
+                                                              BorderRadius.vertical(
+                                                                  top: Radius
                                                                       .circular(
-                                                                          32)))),
-                                              child: Text("Group by",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      12,
-                                                      FontWeight.w600))),
-                                        ),
-                                        if (portfolio.exitAll &&
-                                            portfolio.posSelection ==
-                                                "All position" &&
-                                            portfolio.openPosition!.length > 1)
-                                          SizedBox(
-                                            height: 27,
-                                            child: OutlinedButton(
-                                                onPressed: () {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return AlertDialog(
-                                                        backgroundColor: theme
-                                                                .isDarkMode
-                                                            ? const Color
-                                                                .fromARGB(
-                                                                255, 18, 18, 18)
-                                                            : colors.colorWhite,
-                                                        titleTextStyle: textStyles
-                                                            .appBarTitleTxt
-                                                            .copyWith(
-                                                                color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .colorWhite
-                                                                    : colors
-                                                                        .colorBlack),
-                                                        contentTextStyle: textStyles
-                                                            .menuTxt
-                                                            .copyWith(
-                                                                color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .colorWhite
-                                                                    : colors
-                                                                        .colorBlack),
-                                                        titlePadding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 14,
-                                                                vertical: 12),
+                                                                          16))),
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return const ScripFilterBottomSheet();
+                                                      });
+                                                },
+                                                child: Container(
+                                                    padding: EdgeInsets.only(
+                                                        left: 8, right: 10),
+                                                    child: SvgPicture.asset(
+                                                        assets.filterLines,
+                                                        width: 19,
+                                                        color:
+                                                            colors.colorGrey)),
+                                              )
+                                            : Container(),
+                                        marketWatchList.scrips.length >= 50
+                                            ? const SizedBox()
+                                            : InkWell(
+                                                onTap: () {
+                                                  context
+                                                      .read(marketWatchProvider)
+                                                      .requestMWScrip(
+                                                          context: context,
+                                                          isSubscribe: false);
+                                                  Navigator.pushNamed(context,
+                                                      Routes.searchScrip,
+                                                      arguments: marketWatchList
+                                                          .wlName);
+                                                },
+                                                child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            right: 16, left: 8),
+                                                    child: SvgPicture.asset(
+                                                        assets.searchIcon,
+                                                        width: 19,
+                                                        color:
+                                                            colors.colorGrey)),
+                                              ),
+                                      ] else if ((indexProvide
+                                                      .selectedBtmIndx ==
+                                                  2 &&
+                                              portfolio
+                                                  .allPostionList.isNotEmpty) &&
+                                          portfolio.selectedTab == 0) ...[
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              right: 15.0),
+                                          child: Row(children: [
+                                            Container(
+                                              height: 27,
+                                              padding: const EdgeInsets.only(
+                                                  right: 10),
+                                              child: OutlinedButton(
+                                                  onPressed: () {
+                                                    showModalBottomSheet(
+                                                        useSafeArea: true,
+                                                        isScrollControlled:
+                                                            true,
                                                         shape: const RoundedRectangleBorder(
                                                             borderRadius:
-                                                                BorderRadius
-                                                                    .all(Radius
+                                                                BorderRadius.vertical(
+                                                                    top: Radius
                                                                         .circular(
-                                                                            14))),
-                                                        scrollable: true,
-                                                        contentPadding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                          horizontal: 14,
-                                                        ),
-                                                        insetPadding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 20),
-                                                        title: const Text(
-                                                            "Exit Position"),
-                                                        content: SizedBox(
-                                                          width: MediaQuery.of(
-                                                                  context)
-                                                              .size
-                                                              .width,
-                                                          child: const Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Text(
-                                                                  "Are you sure you want to exit all positions?")
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        actions: [
-                                                          TextButton(
-                                                              onPressed: () =>
-                                                                  Navigator.of(
-                                                                          context)
-                                                                      .pop(),
-                                                              child: Text("No",
-                                                                  style: textStyles
-                                                                      .textBtn
-                                                                      .copyWith(
-                                                                          color: theme.isDarkMode
-                                                                              ? colors.colorLightBlue
-                                                                              : colors.colorBlue))),
-                                                          ElevatedButton(
-                                                            onPressed:
-                                                                () async {
-                                                              await portfolio
-                                                                  .exitPosition(
-                                                                      context,
-                                                                      true);
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop(true);
-                                                            },
-                                                            style: ElevatedButton
-                                                                .styleFrom(
-                                                                    elevation:
-                                                                        0,
-                                                                    backgroundColor: theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorbluegrey
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                    shape:
-                                                                        RoundedRectangleBorder(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              50),
-                                                                    )),
-                                                            child: Text("Yes",
-                                                                style: textStyle(
-                                                                    !theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorWhite
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                    14,
-                                                                    FontWeight
-                                                                        .w500)),
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                                style: OutlinedButton.styleFrom(
-                                                    side: BorderSide(
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorGrey
-                                                            : colors
-                                                                .colorBlack),
-                                                    shape: const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.all(
-                                                                Radius.circular(
-                                                                    32)))),
-                                                child: Text("Exit All",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        12,
-                                                        FontWeight.w600))),
-                                          ),
-                                      ]),
-                                    )
-                                  ] else if (indexProvide.selectedBtmIndx ==
-                                          3 &&
-                                      watch(orderProvider).selectedTab ==
-                                          4) ...[
-                                    Row(children: [
-                                      Container(
-                                          margin: const EdgeInsets.only(
-                                              right: 8),
-                                          height: 30,
-                                          child: OutlinedButton(
-                                              onPressed: () {
-                                                showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return const CreateBasket();
-                                                    });
-                                              },
-                                              style: OutlinedButton.styleFrom(
-                                                  side: BorderSide(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorGrey
-                                                          : colors.colorBlack),
-                                                  shape:
-                                                      const RoundedRectangleBorder(
+                                                                            16))),
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return const PositionGroupBottomSheet();
+                                                        });
+                                                  },
+                                                  style: OutlinedButton.styleFrom(
+                                                      side: BorderSide(
+                                                          color: theme.isDarkMode
+                                                              ? colors.colorGrey
+                                                              : colors
+                                                                  .colorBlack),
+                                                      shape: const RoundedRectangleBorder(
                                                           borderRadius:
                                                               BorderRadius.all(
                                                                   Radius.circular(
                                                                       32)))),
-                                              child: Text("Create Basket",
+                                                  child: Text("Group by",
+                                                      style: textStyle(
+                                                          theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
+                                                          12,
+                                                          FontWeight.w600))),
+                                            ),
+                                            if (portfolio.exitAll &&
+                                                portfolio.posSelection ==
+                                                    "All position" &&
+                                                portfolio.openPosition!.length >
+                                                    1)
+                                              SizedBox(
+                                                height: 27,
+                                                child: OutlinedButton(
+                                                    onPressed: () {
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext
+                                                            context) {
+                                                          return AlertDialog(
+                                                            backgroundColor: theme
+                                                                    .isDarkMode
+                                                                ? const Color
+                                                                    .fromARGB(
+                                                                    255,
+                                                                    18,
+                                                                    18,
+                                                                    18)
+                                                                : colors
+                                                                    .colorWhite,
+                                                            titleTextStyle: textStyles
+                                                                .appBarTitleTxt
+                                                                .copyWith(
+                                                                    color: theme.isDarkMode
+                                                                        ? colors
+                                                                            .colorWhite
+                                                                        : colors
+                                                                            .colorBlack),
+                                                            contentTextStyle: textStyles
+                                                                .menuTxt
+                                                                .copyWith(
+                                                                    color: theme.isDarkMode
+                                                                        ? colors
+                                                                            .colorWhite
+                                                                        : colors
+                                                                            .colorBlack),
+                                                            titlePadding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        14,
+                                                                    vertical:
+                                                                        12),
+                                                            shape: const RoundedRectangleBorder(
+                                                                borderRadius: BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            14))),
+                                                            scrollable: true,
+                                                            contentPadding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                              horizontal: 14,
+                                                            ),
+                                                            insetPadding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        20),
+                                                            title: const Text(
+                                                                "Exit Position"),
+                                                            content: SizedBox(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              child:
+                                                                  const Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Text(
+                                                                      "Are you sure you want to exit all positions?")
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            actions: [
+                                                              TextButton(
+                                                                  onPressed: () =>
+                                                                      Navigator.of(
+                                                                              context)
+                                                                          .pop(),
+                                                                  child: Text(
+                                                                      "No",
+                                                                      style: textStyles
+                                                                          .textBtn
+                                                                          .copyWith(
+                                                                              color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue))),
+                                                              ElevatedButton(
+                                                                onPressed:
+                                                                    () async {
+                                                                  await portfolio
+                                                                      .exitPosition(
+                                                                          context,
+                                                                          true);
+                                                                  Navigator.of(
+                                                                          context)
+                                                                      .pop(
+                                                                          true);
+                                                                },
+                                                                style: ElevatedButton
+                                                                    .styleFrom(
+                                                                        elevation:
+                                                                            0,
+                                                                        backgroundColor: theme.isDarkMode
+                                                                            ? colors
+                                                                                .colorbluegrey
+                                                                            : colors
+                                                                                .colorBlack,
+                                                                        shape:
+                                                                            RoundedRectangleBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(50),
+                                                                        )),
+                                                                child: Text(
+                                                                    "Yes",
+                                                                    style: textStyle(
+                                                                        !theme.isDarkMode
+                                                                            ? colors
+                                                                                .colorWhite
+                                                                            : colors
+                                                                                .colorBlack,
+                                                                        14,
+                                                                        FontWeight
+                                                                            .w500)),
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
+                                                      );
+                                                    },
+                                                    style: OutlinedButton.styleFrom(
+                                                        side: BorderSide(
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .colorGrey
+                                                                : colors
+                                                                    .colorBlack),
+                                                        shape: const RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius.all(
+                                                                    Radius.circular(
+                                                                        32)))),
+                                                    child: Text("Exit All",
+                                                        style: textStyle(
+                                                            theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            12,
+                                                            FontWeight.w600))),
+                                              ),
+                                          ]),
+                                        )
+                                      ] else if (indexProvide.selectedBtmIndx ==
+                                              3 &&
+                                          watch(orderProvider).selectedTab ==
+                                              4) ...[
+                                        Row(children: [
+                                          Container(
+                                              margin: const EdgeInsets.only(
+                                                  right: 8),
+                                              height: 30,
+                                              child: OutlinedButton(
+                                                  onPressed: () {
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext
+                                                            context) {
+                                                          return const CreateBasket();
+                                                        });
+                                                  },
+                                                  style: OutlinedButton.styleFrom(
+                                                      side: BorderSide(
+                                                          color: theme.isDarkMode
+                                                              ? colors.colorGrey
+                                                              : colors
+                                                                  .colorBlack),
+                                                      shape: const RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.all(
+                                                                  Radius.circular(
+                                                                      32)))),
+                                                  child: Text("Create Basket",
+                                                      style: textStyle(
+                                                          theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors.colorBlack,
+                                                          12,
+                                                          FontWeight.w600))))
+                                        ])
+                                      ]
+                                    ],
+                              bottom: indexProvide.selectedBtmIndx == 1
+                                  ? const PreferredSize(
+                                      preferredSize: Size(20, 44),
+                                      child: DefaultIndexList())
+                                  : indexProvide.selectedBtmIndx == 4
+                                      ? PreferredSize(
+                                          preferredSize: const Size(20, 20),
+                                          child: ListTile(
+                                              onTap: () {
+                                                showModalBottomSheet(
+                                                    context: context,
+                                                    isScrollControlled: true,
+                                                    isDismissible: true,
+                                                    shape:
+                                                        const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(10),
+                                                        topRight:
+                                                            Radius.circular(10),
+                                                      ),
+                                                    ),
+                                                    builder: (_) =>
+                                                        const LoggedUserBottomSheet(
+                                                            initRoute:
+                                                                'switchAcc'));
+                                              },
+                                              dense: true,
+                                              contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              leading: CircleAvatar(
+                                                backgroundColor:
+                                                    const Color(0xffF1F3F8),
+                                                child: Text(
+                                                    userProfile.userDetailModel!
+                                                                .uname !=
+                                                            null
+                                                        ? userProfile
+                                                            .userDetailModel!
+                                                            .uname![0]
+                                                        : "",
+                                                    style: textStyle(
+                                                        const Color(0xff000000),
+                                                        18,
+                                                        FontWeight.w600)),
+                                              ),
+                                              title: Text(
+                                                  "${userProfile.userDetailModel!.uname}",
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
+                                                      Color(theme.isDarkMode
+                                                          ? 0xffffffff
+                                                          : 0xff000000),
+                                                      16,
+                                                      FontWeight.w600)),
+                                              subtitle: Text(
+                                                  "Client ID ${userProfile.userDetailModel!.uid}",
+                                                  style: textStyle(
+                                                      const Color(0xff666666),
                                                       12,
-                                                      FontWeight.w600))))
-                                    ])
-                                  ]
-                                ],
-                          bottom: indexProvide.selectedBtmIndx == 1
-                              ? const PreferredSize(
-                                  preferredSize: Size(20, 44),
-                                  child: DefaultIndexList())
-                              : indexProvide.selectedBtmIndx == 4
-                                  ? PreferredSize(
-                                      preferredSize: const Size(20, 20),
-                                      child: ListTile(
-                                          onTap: () {
-                                            showModalBottomSheet(
-                                                context: context,
-                                                isScrollControlled: true,
-                                                isDismissible: true,
-                                                shape:
-                                                    const RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                    topLeft:
-                                                        Radius.circular(10),
-                                                    topRight:
-                                                        Radius.circular(10),
-                                                  ),
-                                                ),
-                                                builder: (_) =>
-                                                    const LoggedUserBottomSheet(
-                                                        initRoute:
-                                                            'switchAcc'));
-                                          },
-                                          dense: true,
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 16),
-                                          leading: CircleAvatar(
-                                            backgroundColor:
-                                                const Color(0xffF1F3F8),
-                                            child: Text(
-                                                userProfile.userDetailModel!
-                                                            .uname !=
-                                                        null
-                                                    ? userProfile
-                                                        .userDetailModel!
-                                                        .uname![0]
-                                                    : "",
-                                                style: textStyle(
-                                                    const Color(0xff000000),
-                                                    18,
-                                                    FontWeight.w600)),
-                                          ),
-                                          title: Text(
-                                              "${userProfile.userDetailModel!.uname}",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyle(
-                                                  Color(theme.isDarkMode
-                                                      ? 0xffffffff
-                                                      : 0xff000000),
-                                                  16,
-                                                  FontWeight.w600)),
-                                          subtitle: Text(
-                                              "Client ID ${userProfile.userDetailModel!.uid}",
-                                              style: textStyle(
-                                                  const Color(0xff666666),
-                                                  12,
-                                                  FontWeight.w500)),
-                                          trailing: SizedBox(
-                                              width: 100,
-                                              child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.end,
-                                                  children: [
+                                                      FontWeight.w500)),
+                                              trailing: SizedBox(
+                                                  width: 100,
+                                                  child:
+                                                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                                                     IconButton(
                                                       splashRadius: 26,
                                                       onPressed: () {
@@ -613,7 +644,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             ? colors.colorWhite
                                                             : colors.colorBlack)
                                                   ]))))
-                                  : null),
+                                      : null),
 
                       // Here is the Bottom menu items
                       bottomNavigationBar: BottomAppBar(
@@ -627,13 +658,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             //             ConnectivityResult.none
                             //         ? null
                             //         : () async {
-
-                            //           watch(stocksProvide).chngExpName("Stock", 0);
+                            //             watch(stocksProvide)
+                            //                 .chngExpName("Stock", 0);
                             //             await context
                             //                 .read(indexListProvider)
                             //                 .checkSession(context);
                             //             await portfolio.requestWSHoldings(
-                            //                 context: context, isSubscribe: false);
+                            //                 context: context,
+                            //                 isSubscribe: false);
 
                             //             // await context
                             //             //     .read(orderProvider)
@@ -641,17 +673,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             //             //         context: context,
                             //             //         isSubscribe: false);
                             //             await portfolio.requestWSPosition(
-                            //                 context: context, isSubscribe: false);
+                            //                 context: context,
+                            //                 isSubscribe: false);
 
                             //             await context
                             //                 .read(marketWatchProvider)
                             //                 .requestMWScrip(
-                            //                     context: context, isSubscribe: false);
-
+                            //                     context: context,
+                            //                     isSubscribe: false);
+                            //             await explore.exploretabSize();
                             //             indexProvide.bottomMenu(0);
                             //           },
                             //     child: Container(
-                            //       margin: const EdgeInsets.symmetric(horizontal: 7),
+                            //       margin:
+                            //           const EdgeInsets.symmetric(horizontal: 7),
                             //       decoration: BoxDecoration(
                             //           border: indexProvide.selectedBtmIndx == 0
                             //               ? Border(
@@ -663,23 +698,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             //               : null),
                             //       child: Column(
                             //         mainAxisAlignment: MainAxisAlignment.center,
-                            //         crossAxisAlignment: CrossAxisAlignment.center,
+                            //         crossAxisAlignment:
+                            //             CrossAxisAlignment.center,
                             //         children: [
                             //           SvgPicture.asset(assets.bookmarkedIcon,
                             //               color: theme.isDarkMode &&
-                            //                       indexProvide.selectedBtmIndx == 0
+                            //                       indexProvide
+                            //                               .selectedBtmIndx ==
+                            //                           0
                             //                   ? colors.colorLightBlue
-                            //                   : indexProvide.selectedBtmIndx == 0
+                            //                   : indexProvide.selectedBtmIndx ==
+                            //                           0
                             //                       ? colors.colorBlue
                             //                       : colors.colorGrey),
                             //           const SizedBox(height: 4),
                             //           Text("Explore",
                             //               style: textStyle(
                             //                   theme.isDarkMode &&
-                            //                           indexProvide.selectedBtmIndx ==
+                            //                           indexProvide
+                            //                                   .selectedBtmIndx ==
                             //                               0
                             //                       ? colors.colorLightBlue
-                            //                       : indexProvide.selectedBtmIndx == 0
+                            //                       : indexProvide
+                            //                                   .selectedBtmIndx ==
+                            //                               0
                             //                           ? colors.colorBlue
                             //                           : colors.colorGrey,
                             //                   12,
@@ -691,6 +733,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             //     ),
                             //   ),
                             // ),
+
                             Expanded(
                                 child: InkWell(
                                     onTap: internet.connectionStatus ==
@@ -1116,7 +1159,73 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             //                               : FontWeight.w500))
                             //                 ]))))
                           ])),
-                      body: Stack(children: [
+                      body:
+                          // indexProvide.selectedBtmIndx == 0
+                          //     ? SafeArea(
+                          //         child: NestedScrollView(
+                          //             headerSliverBuilder: (BuildContext context,
+                          //                 bool innerBoxIsScrolled) {
+                          //               return [
+                          //                 SliverAppBar(
+                          //                   expandedHeight: 222.0,
+                          //                   floating: false,
+                          //                   pinned: false,
+                          //                   flexibleSpace: FlexibleSpaceBar(
+                          //                       background: Container(
+                          //                     margin: EdgeInsets.all(15),
+                          //                     padding: const EdgeInsets.fromLTRB(
+                          //                         10, 10, 10, 0),
+                          //                     decoration: BoxDecoration(
+                          //                         color: explore.selectedTab == 1
+                          //                             ? Color(0xff834EDA)
+                          //                             : explore.selectedTab == 2
+                          //                                 ? Color(0xff148564)
+                          //                                 : explore.selectedTab == 3
+                          //                                     ? Color(0xff000000)
+                          //                                     : Color(0xff51ffb6),
+                          //                         borderRadius:
+                          //                             BorderRadius.circular(6)),
+                          //                     child: Padding(
+                          //                       padding:
+                          //                           const EdgeInsets.only(left: 10),
+                          //                       child: Column(
+                          //                         crossAxisAlignment:
+                          //                             CrossAxisAlignment.start,
+                          //                         mainAxisAlignment:
+                          //                             MainAxisAlignment.center,
+                          //                         children: [
+                          //                           Text(
+                          //                             "Simple.",
+                          //                             style: textStyle(
+                          //                                 const Color(0xff000000),
+                          //                                 30,
+                          //                                 FontWeight.w500),
+                          //                           ),
+                          //                           Text(
+                          //                             "Insightful.",
+                          //                             style: textStyle(
+                          //                                 const Color(0xff000000),
+                          //                                 30,
+                          //                                 FontWeight.w500),
+                          //                           ),
+                          //                           Text(
+                          //                             "Incremental.",
+                          //                             style: textStyle(
+                          //                                 const Color(0xff000000),
+                          //                                 30,
+                          //                                 FontWeight.w500),
+                          //                           )
+                          //                         ],
+                          //                       ),
+                          //                     ),
+                          //                   )),
+                          //                 ),
+                          //               ];
+                          //             },
+                          //             body: ExploreScreens(theme: theme)),
+                          //       )
+                          //     :
+                          Stack(children: [
                         _onItemTapped(indexProvide.selectedBtmIndx),
                         if (internet.connectionStatus ==
                             ConnectivityResult.none) ...[

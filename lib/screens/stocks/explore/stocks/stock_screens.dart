@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'indices/top_indices.dart';
-import 'news/news_screen.dart';
-import 'stock_monitor/stock_monitor_screen.dart';
-import 'trade_action/corporate_action.dart';
-import 'trade_action/trade_action_widget.dart';
+// import 'news/news_screen.dart';
+// import 'stock_monitor/stock_monitor_screen.dart';
+// import 'trade_action/corporate_action.dart';
+// import 'trade_action/trade_action_widget.dart';
 
 class StockScreen extends StatelessWidget {
   const StockScreen({super.key});
@@ -15,14 +15,14 @@ class StockScreen extends StatelessWidget {
     return ListView(children: const [
       // ExploreWidget(),
       TopIndices(),
-      SizedBox(height: 16),
-      TradeAction(),
-      StockMonitorScreen(),
-      // TradeScreen(),
-      // GridViewScreen(),
-      SizedBox(height: 16),
-      CorporateAction(),
-      NewsScreen(),
+      // SizedBox(height: 16),
+      // TradeAction(),
+      // StockMonitorScreen(),
+      // // TradeScreen(),
+      // // GridViewScreen(),
+      // SizedBox(height: 16),
+      // CorporateAction(),
+      // NewsScreen(),
     ]);
   }
 

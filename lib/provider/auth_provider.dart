@@ -34,6 +34,7 @@ import '../screens/authentication/login/bottom_otp_screen.dart';
 import '../sharedWidget/risk_disclosure_bottom_sheet.dart';
 import '../sharedWidget/snack_bar.dart';
 //import 'bond_provider.dart';
+//import 'bond_provider.dart';
 import 'change_password_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'fund_provider.dart';
@@ -41,9 +42,10 @@ import 'index_list_provider.dart';
 import 'iop_provider.dart';
 import 'market_watch_provider.dart';
 //import 'mf_provider.dart';
+//import 'mf_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
-// import 'stocks_provider.dart';
+
 //import 'stocks_provider.dart';
 import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
@@ -60,6 +62,71 @@ class AuthProvider extends DefaultChangeNotifier {
   final TextEditingController loginMethCtrl = TextEditingController();
   final TextEditingController passCtrl = TextEditingController();
   final TextEditingController otpCtrl = TextEditingController();
+
+  late TabController exploreTab;
+
+  int _selectedTab = 0;
+  int get selectedTab => _selectedTab;
+
+  changeTabIndex(int index) {
+    _selectedTab = index;
+  }
+
+  List<Tab> _exploreTabName = [];
+  List<Tab> get exploreTabName => _exploreTabName;
+  exploretabSize() {
+    _exploreTabName = [
+      const Tab(
+        icon: Row(
+          children: [
+            Icon(Icons.show_chart, size: 18),
+            SizedBox(
+              width: 5,
+            ),
+            Text('Stocks')
+          ],
+        ),
+      ),
+      const Tab(
+        icon: Row(
+          children: [
+            Icon(Icons.bar_chart, size: 18),
+            SizedBox(
+              width: 5,
+            ),
+            Text('Mutual Funds')
+          ],
+        ),
+      ),
+      const Tab(
+        icon: Row(
+          children: [
+            Icon(Icons.trending_up, size: 18),
+            SizedBox(
+              width: 5,
+            ),
+            Text('IPOs')
+          ],
+        ),
+      ),
+      const Tab(
+        icon: Row(
+          children: [
+            Icon(
+              Icons.monetization_on,
+              size: 18,
+            ),
+            SizedBox(
+              width: 5,
+            ),
+            Text('Bonds')
+          ],
+        ),
+      ),
+    ];
+
+    notifyListeners();
+  }
 
   String? loginMethError, passError, optError;
 
@@ -117,6 +184,9 @@ class AuthProvider extends DefaultChangeNotifier {
 
   int currentYear = DateTime.now().year;
 
+  String _imeiLocal = "";
+  String get imeilocal => _imeiLocal;
+
   // ValidateSession? _validateSession;
   // ValidateSession? get validSession => _validateSession;
 
@@ -129,6 +199,22 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
 // Switch login option mobile to client id
+
+  imieJson(String value_client) {
+    String checkimei = "";
+    for (var element in _loggedMobile) {
+      if (element.clientId == value_client) {
+        checkimei = element.imei;
+      } else if (element.mobile == value_client) {
+        checkimei = element.imei;
+      }
+    }
+    if (checkimei.isEmpty || checkimei == "") {
+      return uuid.v4().toString();
+    } else {
+      return checkimei;
+    }
+  }
 
   loginMethod() {
     _isMobileLogin = !_isMobileLogin;
@@ -256,8 +342,13 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // Validate OTP
   bool validateOtp(String otp) {
-    if (otp.length <= 3 || otp.isEmpty) {
+    if (otp == 'wrong') {
+      print(" otp is not a valid $otp");
+      optError = "Invalid / wrong OTP";
+    } else if (otp.length <= 3 || otp.isEmpty) {
       optError = "Please enter 4 digit OTP";
+    } else if (otp == 'success') {
+      optError = "OTP Verified";
     } else {
       optError = null;
     }
@@ -271,9 +362,10 @@ class AuthProvider extends DefaultChangeNotifier {
     // if (routeTo == "deviceLogin") {
     //   _isMobileLogin = true;
     // }
+
     if (validateLogin()) {
       fetchMobileLogin(context, passCtrl.text, loginMethCtrl.text.toUpperCase(),
-          "", uuid.v4());
+          "", imieJson(loginMethCtrl.text.toUpperCase()));
     }
   }
 
@@ -299,7 +391,7 @@ class AuthProvider extends DefaultChangeNotifier {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
       _mobileLogin = await api.getMobileLogin(
-          uniqueId: "${pref.deviceName!}   ${pref.imei}",
+          uniqueId: "${pref.deviceName!} ${pref.imei}", //
           mobileRclient: mobileRclint,
           password: password,
           context: context,
@@ -321,13 +413,19 @@ class AuthProvider extends DefaultChangeNotifier {
         _isDisableBtn = true;
         showModalBottomSheet(
           context: context,
-          isScrollControlled: true, // Adjusts for the keyboard
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(16),
-            ),
-          ),
-          builder: (context) => BottomSheetContent(),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          backgroundColor: const Color(0xffffffff),
+          isDismissible: false,
+          enableDrag: false,
+          showDragHandle: false,
+          useSafeArea: false,
+          isScrollControlled: true,
+          builder: (context) => WillPopScope(
+              onWillPop: () async {
+                return false;
+              },
+              child: BottomSheetContent()),
         );
         // Navigator.pushNamed(context, Routes.loginOtpVerify);
       } else if (_mobileLogin!.emsg ==
@@ -422,7 +520,7 @@ class AuthProvider extends DefaultChangeNotifier {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
       _mobileLogin = await api.getMobileLogin(
-          uniqueId: "${pref.deviceName!}   ${pref.imei}",
+          uniqueId: "${pref.deviceName!} ${pref.imei}",
           mobileRclient: mobileRclint,
           password: password,
           context: context,
@@ -457,7 +555,7 @@ class AuthProvider extends DefaultChangeNotifier {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
       _mobileOtp = await api.getMobileOtp(
-          uniqueId: "${pref.deviceName!}   ${pref.imei}",
+          uniqueId: "${pref.deviceName!} ${pref.imei}",
           mobileRclient: mobile_client,
           otp: otp,
           context: context,
@@ -469,7 +567,7 @@ class AuthProvider extends DefaultChangeNotifier {
         _isDisableBtn = true;
         clearError();
         clearTextField();
-
+        validateOtp('success');
 // set values to save device
         pref.setClientId("${_mobileOtp!.clientid}");
         pref.setClientMob("${_mobileOtp!.mobile}");
@@ -500,9 +598,9 @@ class AuthProvider extends DefaultChangeNotifier {
         });
 
         notifyListeners();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, _mobileOtp!.emsg!.replaceAll("Invalid Input :", "* ")));
+      }
+      if (_mobileOtp?.emsg == "otp not valid") {
+        validateOtp('wrong');
       }
     } finally {
       toggleLoadingOn(false);
@@ -617,7 +715,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
       if (authenticated) {
         // print('bioAuth - User authenticated successfully');
-
+        ref(themeProvider).navigateToNewPage(context);
         initialLoadMethods(context, s);
       } else {
         showDialog(
@@ -789,20 +887,20 @@ class AuthProvider extends DefaultChangeNotifier {
         await ref(ipoProvide).mergemainsme();
 
 // // Explore
-//         await ref(stocksProvide)
-//             .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
-//         await ref(indexListProvider).fetchStockTopIndex();
-//         await ref(stocksProvide).fetchCorporateAction();
-//         await ref(stocksProvide).defaultSectorThemematicData();
-//         await ref(stocksProvide).getNews();
-//         await ref(stocksProvide).chngTradeAct("Equity");
-//         await ref(ipoProvide).getSmeIpo();
-//         await ref(ipoProvide).getmainstreamipo();
-//         await ref(ipoProvide).getipoperfomance(currentYear);
-//         await ref(ipoProvide).mergemainsme();
-//         await ref(mfProvider).fetchMFWatchlist(null, "", context, false);
-//         await ref(mfProvider).fetchMasterMF();
-//         await ref(bondProvider).fetchGovtBonds();
+        // await ref(stocksProvide)
+        //     .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
+        // await ref(indexListProvider).fetchStockTopIndex();
+        // await ref(stocksProvide).fetchCorporateAction();
+        // await ref(stocksProvide).defaultSectorThemematicData();
+        // await ref(stocksProvide).getNews();
+        // await ref(stocksProvide).chngTradeAct("Equity");
+        //await ref(ipoProvide).getSmeIpo();
+        //await ref(ipoProvide).getmainstreamipo();
+        //await ref(ipoProvide).getipoperfomance(currentYear);
+        //await ref(ipoProvide).mergemainsme();
+        //await ref(mfProvider).fetchMFWatchlist(null, "", context, false);
+        //await ref(mfProvider).fetchMasterMF();
+        //await ref(bondProvider).fetchGovtBonds();
 
 // End Explore
         if (s.isEmpty) {

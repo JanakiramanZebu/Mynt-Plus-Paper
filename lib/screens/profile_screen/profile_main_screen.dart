@@ -22,6 +22,7 @@ import '../../routes/route_names.dart';
 import '../../sharedWidget/functions.dart';
 
 import 'need_help_screen.dart';
+import '../../sharedWidget/splash_loader.dart';
 
 class UserAccountScreen extends ConsumerWidget {
   const UserAccountScreen({super.key});
@@ -141,11 +142,11 @@ class UserAccountScreen extends ConsumerWidget {
                           //   //   }
                           //   // }
                           // });
-                         
-                          Navigator.pushNamed(
-                            context,
-                            Routes.ipo,
-                          );
+                         Navigator.push(context, MaterialPageRoute(builder: (context)=>CircularLoaderImage()));
+                          // Navigator.pushNamed(
+                          //   context,
+                          //   Routes.ipo,
+                          // );
                         } else if (index == 13) {
                           
                         } else if (index == 14) {

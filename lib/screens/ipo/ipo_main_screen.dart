@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../provider/iop_provider.dart';
 import '../../provider/thems.dart';
@@ -52,26 +51,26 @@ class _IPOScreenState extends State<IPOScreen> with TickerProviderStateMixin {
             centerTitle: false,
             leadingWidth: 41,
             titleSpacing: 6,
-            leading: InkWell(
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 9),
-                child: SvgPicture.asset(assets.backArrow,
-                    color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack),
-              ),
-            ),
+            // leading: InkWell(
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //   },
+            //   child: Padding(
+            //     padding: const EdgeInsets.symmetric(horizontal: 9),
+            //     child: SvgPicture.asset(assets.backArrow,
+            //         color: theme.isDarkMode
+            //             ? colors.colorWhite
+            //             : colors.colorBlack),
+            //   ),
+            // ),
             backgroundColor:
                 theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
             shadowColor: const Color(0xffECEFF3),
-            title: Text("IPOs",
-                style: textStyles.appBarTitleTxt.copyWith(
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                )),
+            // title: Text("IPOs",
+            //     style: textStyles.appBarTitleTxt.copyWith(
+            //       color:
+            //           theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            //     )),
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 16, top: 14),
@@ -149,6 +148,7 @@ class _IPOScreenState extends State<IPOScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
+          
           body: ipo.loading
               ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   const ProgressiveDotsLoader(),

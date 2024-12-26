@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
- 
 import '../../../models/indices/index_list_model.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
@@ -12,15 +11,17 @@ class IndexListCard extends ConsumerWidget {
   const IndexListCard({super.key, required this.indicesData});
 
   @override
-  Widget build(BuildContext context,ScopedReader watch) {      final theme = context.read(themeProvider);
+  Widget build(BuildContext context, ScopedReader watch) {
+    final theme = context.read(themeProvider);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       dense: true,
-      title:
-          Text("${indicesData.idxname!.toUpperCase()} ", style: textStyles.scripNameTxtStyle.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack)),
+      title: Text("${indicesData.idxname!.toUpperCase()} ",
+          style: textStyles.scripNameTxtStyle.copyWith(
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack)),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,    
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const SizedBox(height: 3),
           Container(
@@ -39,7 +40,8 @@ class IndexListCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("₹${indicesData.ltp=="0"?   indicesData.close :indicesData.ltp}",
+          Text(
+              "₹${indicesData.ltp == "0" ? indicesData.close : indicesData.ltp}",
               style: textStyle(const Color(0xff000000), 14, FontWeight.w600)),
           const SizedBox(height: 4),
           Text(

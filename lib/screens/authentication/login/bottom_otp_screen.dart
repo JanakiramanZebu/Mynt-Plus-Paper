@@ -3,16 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-
 import '../../../locator/preference.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/functions.dart';
+import '../../../sharedWidget/splash_loader.dart';
 
 class BottomSheetContent extends StatefulWidget {
+  const BottomSheetContent({super.key});
+
   @override
   State<BottomSheetContent> createState() => _BottomSheetContentState();
 }
@@ -72,25 +73,23 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, watch, child) {
-      // final Preferences pref = locator<Preferences>();
       double screenWidth = MediaQuery.of(context).size.width;
-      final screenhight = MediaQuery.of(context).size.height;
       final auth = watch(authProvider);
       final otp = _controllers.map((controller) => controller.text).join();
       final theme = watch(themeProvider);
       return auth.initLoad
-          ? Container(
-              height: screenhight,
-              color: Color(0xffE5EBEC),
-              child: Center(
-                child: SvgPicture.asset(assets.appLogoIcon,
-                    // color: theme.isDarkMode
-                    //     ? colors.colorWhite
-                    //     : colors.logoColor,
-                    height: 60,
-                    fit: BoxFit.contain),
-              ),
-            )
+          ? WillPopScope(
+              onWillPop: () async {
+                return false;
+              },
+              child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: theme.isDarkMode
+                        ? colors.colorBlack
+                        : colors.colorWhite,
+                  ),
+                  child: CircularLoaderImage()))
           : Container(
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
@@ -201,18 +200,28 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                       ),
                       if (auth.optError != null) ...[
                         Padding(
-                          padding: EdgeInsets.only(
-                              left: otp.length <= 3 ? 16 : 0,
-                              top: otp.length <= 3 ? 10 : 0),
+                          padding: const EdgeInsets.only(left: 16, top: 10),
                           child: Text(
-                            otp.length <= 3 ? "${auth.optError}" : "",
+                            otp.length <= 3 ||
+                                    auth.optError == "Invalid / wrong OTP" ||
+                                    auth.optError == "OTP Verified"
+                                ? "${auth.optError}"
+                                : "",
                             style: textStyle(
-                                colors.kColorRedText, 10, FontWeight.w500),
+                                auth.optError == "OTP Verified"
+                                    ? colors.ltpgreen
+                                    : colors.kColorRedText,
+                                10,
+                                FontWeight.w500),
                           ),
                         )
+                      ] else ...[
+                        const SizedBox(
+                          height: 24,
+                        )
                       ],
-                      SizedBox(
-                        height: 10,
+                      const SizedBox(
+                        height: 8,
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(

@@ -230,6 +230,7 @@ class IndexListProvider extends DefaultChangeNotifier {
 
   Future fetchStockTopIndex() async {
     try {
+      toggleLoadingOn(true);
       Map data = {
         "values": [
           {"idxname": "Nifty 50", "token": "26000", "exch": "NSE"},
@@ -275,6 +276,8 @@ class IndexListProvider extends DefaultChangeNotifier {
     } catch (e) {
       log("$e");
       notifyListeners();
+    }finally{
+      toggleLoadingOn(false);
     }
   }
 

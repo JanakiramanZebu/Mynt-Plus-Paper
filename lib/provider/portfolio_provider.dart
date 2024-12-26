@@ -203,7 +203,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 (double.tryParse("${two['units']}") ?? 0.0);
           }
         });
-       requestallHoldings(isSubscribe: isSubscribe, context: context);
+        requestallHoldings(isSubscribe: isSubscribe, context: context);
         _allholds = res.equities;
         _ldate = res.syncDatetime;
       } else {
@@ -267,7 +267,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                      Text(
+            Text(
                 "Total Portfolio${_allholds.isNotEmpty ? "s (${_allholds.length})" : ""}")
           ])),
     ];
@@ -959,7 +959,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     double unRealMtm = 0.00;
     double bookPnl = 0.00;
 
-    int qty = 0;
+    var qty = 0;
 
     double avgPrc = 0.00;
 
@@ -972,8 +972,16 @@ class PortfolioProvider extends DefaultChangeNotifier {
         element.avgPrc = element.netqty == "0" ? "0.00" : element.dayavgprc;
 
         avgPrc = double.parse(element.avgPrc ?? "0.00");
-        qty = (int.parse("${element.daybuyqty ?? 0}") -
-            int.parse("${element.daysellqty ?? 0}"));
+
+        if (element.exch == "MCX") {
+          double? lotSize = double.tryParse(element.ls ?? "0");
+          qty = (qty / lotSize!).toInt(); // Assuming you want an integer result
+        }
+        // qty = element.exch == "MCX"
+        // ?((int.parse("${element.daybuyqty ?? 0}") -
+        //     int.parse("${element.daysellqty ?? 0}")) / int.parse(element.ls))
+        // :(int.parse("${element.daybuyqty ?? 0}") -
+        //     int.parse("${element.daysellqty ?? 0}"));
 
         element.qty = "$qty";
 
@@ -1005,7 +1013,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
         element.qty = "${element.netqty}";
 
         qty = int.parse(element.qty ?? "0");
-
+        if (element.exch == "MCX") {
+          double? lotSize = double.tryParse(element.ls ?? "0");
+          qty = (qty / lotSize!).toInt(); // Assuming you want an integer result
+        }
         element.avgPrc = qty == 0
             ? "0.00"
             : _isNetPnl
@@ -1386,12 +1397,12 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
-   requestallHoldings(
+  requestallHoldings(
       {required bool isSubscribe, required BuildContext context}) {
-     if (_subscr.isNotEmpty) {
-          ref(websocketProvider).establishConnection(
-              channelInput: _subscr, task: 't', context: context);
-        }
+    if (_subscr.isNotEmpty) {
+      ref(websocketProvider).establishConnection(
+          channelInput: _subscr, task: 't', context: context);
+    }
   }
 
   exitGroupedPosition(BuildContext context, List positionData) async {

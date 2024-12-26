@@ -223,11 +223,13 @@ class _OtpScreenState extends State<OtpScreen> {
                                   ),
                                   if (auth.optError != null) ...[
                                     Padding(
-                                      padding: EdgeInsets.only(
-                                          left: otp.length <= 3 ? 16 : 0,
-                                          top: otp.length <= 3 ? 10 : 0),
+                                      padding: const EdgeInsets.only(
+                                          left: 16, top: 10),
                                       child: Text(
-                                        otp.length <= 3
+                                        otp.length <= 3 ||
+                                                auth.optError ==
+                                                    "Invalid / wrong OTP" ||
+                                                auth.optError == "OTP Verified"
                                             ? "${auth.optError}"
                                             : "",
                                         style: textStyle(colors.kColorRedText,
@@ -306,7 +308,6 @@ class _OtpScreenState extends State<OtpScreen> {
                                     : () {
                                         HapticFeedback.heavyImpact();
                                         SystemSound.play(SystemSoundType.click);
-
                                         auth.submitOtp(context, otp);
                                       },
                                 child: auth.loading

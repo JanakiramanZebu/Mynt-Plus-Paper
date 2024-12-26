@@ -100,6 +100,7 @@ class _BondScreenState extends State<BondScreen> {
                   ])))
               .toList(),
         ),
+        
         const SizedBox(height: 16),
         const BondsList()
       ]

@@ -10,19 +10,25 @@ class AppTextStyles {
     fontSize: 15,
     color: AppColors().colorBlack,
   ));
+  final textFieldLabelStyleInterV = TextStyle(
+    fontFamily: 'InterVariable',
+    fontWeight: FontWeight.w600,
+    fontSize: 15,
+    color: AppColors().colorBlack,
+  );
   final textFieldLabelStyle = GoogleFonts.inter(
       textStyle: TextStyle(
     fontWeight: FontWeight.w600,
     fontSize: 15,
     color: AppColors().colorBlack,
   ));
-   final notificationtextstyle = GoogleFonts.inter(
+  final notificationtextstyle = GoogleFonts.inter(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 14,
     color: AppColors().colorBlack,
   ));
-   final darkmorestyle = GoogleFonts.inter(
+  final darkmorestyle = GoogleFonts.inter(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 13,
@@ -66,7 +72,7 @@ class AppTextStyles {
     color: AppColors().colorBlue,
   ));
 
- final darktextBtn = GoogleFonts.inter(
+  final darktextBtn = GoogleFonts.inter(
       textStyle: TextStyle(
     fontWeight: FontWeight.w500,
     fontSize: 13,

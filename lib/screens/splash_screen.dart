@@ -3,8 +3,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:mynt_plus/provider/thems.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../provider/auth_provider.dart';
@@ -13,6 +11,7 @@ import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/internet_widget.dart';
 import '../sharedWidget/snack_bar.dart';
+import '../sharedWidget/splash_loader.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -27,7 +26,6 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      context.read(themeProvider).removeUsermatrial(context);
       initializeResources(context: context);
       initialRoute();
       context.read(networkStateProvider).networkStream();
@@ -45,11 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
         backgroundColor: Color(0xffE5EBEC),
         body: Stack(children: [
-          Center(
-              child: SvgPicture.asset("assets/icon/Mynt New logo.svg",
-                
-                  height: 60,
-                  fit: BoxFit.contain)),
+          CircularLoaderImage(),
           if (context.read(networkStateProvider).connectionStatus ==
               ConnectivityResult.none)
             const NoInternetScreen()
@@ -77,11 +71,15 @@ class _SplashScreenState extends State<SplashScreen> {
       }
       if (pref.clientSession!.isEmpty) {
         pref.setLogout(true);
+
         pref.clientId!.isNotEmpty
             ? Navigator.pushNamedAndRemoveUntil(
                 context, Routes.loginScreen, (route) => false)
             : Navigator.pushNamedAndRemoveUntil(
                 context, Routes.loginScreenBanner, (route) => false);
+        // pref.clientId!.isNotEmpty
+        //     ? await context.read(themeProvider).navigateToNewPage(context)
+        //     : await context.read(themeProvider).removeUsermatrial(context);
       } else {
         pref.setMobileLogin(true);
         await context
