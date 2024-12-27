@@ -5,6 +5,7 @@ import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
 import '../../../res/res.dart';
+import '../../../sharedWidget/loader_ui.dart';
 
 class OptionZWebView extends StatefulWidget {
   final String argument;
@@ -36,25 +37,28 @@ class _OptionZWebViewState extends State<OptionZWebView> {
                 child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 9),
                     child: SvgPicture.asset(assets.backArrow)))),
-        body: SafeArea(
-            child: SizedBox(
-                height: MediaQuery.of(context).size.height,
-                child: InAppWebView(
-                    // windowId: 0,
-                    initialUrlRequest:
-                        URLRequest(url: Uri.parse(widget.argument)),
-                    initialOptions: InAppWebViewGroupOptions(
-                        crossPlatform: InAppWebViewOptions()),
-                    onWebViewCreated: (InAppWebViewController controller) {
-                      setState(() {
-                        ConstantName.webViewController = controller;
-                      });
-                    },
-                    onProgressChanged:
-                        (InAppWebViewController controller, int progress) {
-                      setState(() {
-                        this.progress = progress / 100;
-                      });
-                    }))));
+        body: TransparentLoaderScreen(
+          isLoading: progress < 1.0,
+          child: SafeArea(
+              child: SizedBox(
+                  height: MediaQuery.of(context).size.height,
+                  child: InAppWebView(
+                      // windowId: 0,
+                      initialUrlRequest:
+                          URLRequest(url: Uri.parse(widget.argument)),
+                      initialOptions: InAppWebViewGroupOptions(
+                          crossPlatform: InAppWebViewOptions()),
+                      onWebViewCreated: (InAppWebViewController controller) {
+                        setState(() {
+                          ConstantName.webViewController = controller;
+                        });
+                      },
+                      onProgressChanged:
+                          (InAppWebViewController controller, int progress) {
+                        setState(() {
+                          this.progress = progress / 100;
+                        });
+                      }))),
+        ));
   }
 }

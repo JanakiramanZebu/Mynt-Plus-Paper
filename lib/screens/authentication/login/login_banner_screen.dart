@@ -188,11 +188,17 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 60),
-                                Text(
-                                    "Zebu Share and Wealth Managements Pvt. Ltd.",
-                                    style: textStylebanner(colors.colorWhite,
-                                        12, FontWeight.w700)),
+                                const SizedBox(height: 40),
+                                SvgPicture.asset(
+                                  'assets/icon/zebu.svg',
+                                  width: 45,
+                                  height: 45,
+                                  color: colors.colorWhite,
+                                ),
+                                // Text(
+                                //     "Zebu Share and Wealth Managements Pvt. Ltd.",
+                                //     style: textStylebanner(colors.colorWhite,
+                                //         12, FontWeight.w700)),
                                 const SizedBox(
                                   height: 8,
                                 ),
@@ -206,9 +212,16 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                             )),
                       ],
                     ),
-                    const SizedBox(
-                      height: 20,
-                    )
+                    Container(
+                        margin: const EdgeInsets.only(bottom: 10, top: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text("Version 3.0.2",
+                            textAlign: TextAlign.center,
+                            style: textStyle(
+                                colors.colorWhite, 10, FontWeight.w300))),
+                    // const SizedBox(
+                    //   height: 20,
+                    // )
                   ],
                 ),
               ),

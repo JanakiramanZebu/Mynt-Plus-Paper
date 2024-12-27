@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
-import 'package:share_plus/share_plus.dart'; 
+import 'package:share_plus/share_plus.dart';
 import '../../../provider/change_password_provider.dart';
 import '../../../provider/user_profile_provider.dart';
 import '../../../res/res.dart';
@@ -14,7 +14,7 @@ import '../../locator/preference.dart';
 import '../../provider/api_key_provider.dart';
 import '../../provider/thems.dart';
 import '../../sharedWidget/custom_back_btn.dart';
-import '../../sharedWidget/functions.dart'; 
+import '../../sharedWidget/functions.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -25,7 +25,7 @@ class SettingsScreen extends ConsumerWidget {
     final apikeys = context.read(apikeyprovider);
     final theme = context.read(themeProvider);
 
-     final Preferences pref = locator<Preferences>();
+    final Preferences pref = locator<Preferences>();
     return Scaffold(
       appBar: AppBar(
           elevation: .2,
@@ -50,14 +50,16 @@ class SettingsScreen extends ConsumerWidget {
                         apikeys.apikeyres!.apistatus, context);
                   } else if (index == 1) {
                     context.read(changePasswordProvider).userIdController.text =
-                    "${pref.clientId}";
+                        "${pref.clientId}";
                     Navigator.pushNamed(context, Routes.changePass,
                         arguments: "Yes");
                   } else if (index == 3) {
-                    Navigator.pushNamed(context, Routes.logError);
-                  }
-                  else if (index == 2) {
-                     showDialog(
+                    apikeys.fetchTotp();
+                    String pwd = apikeys.totpkey!.pwd;
+                    _showAlertDialog(context, pwd, theme);
+                    // Navigator.pushNamed(context, Routes.logError);
+                  } else if (index == 2) {
+                    showDialog(
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
@@ -96,8 +98,6 @@ class SettingsScreen extends ConsumerWidget {
                                       ? const Color(0xffBDBDBD)
                                       : colors.colorGrey,
                                 )
-
-                                
                               ],
                             ),
                             content: SizedBox(
@@ -165,7 +165,6 @@ class SettingsScreen extends ConsumerWidget {
                                     ])),
                           );
                         });
-                  
                   }
                 },
                 dense: true,
@@ -266,17 +265,21 @@ class SettingsScreen extends ConsumerWidget {
                                 Text(
                                   "Expire on",
                                   style: textStyle(
-                                    theme.isDarkMode
-                                    ?colors.colorGrey
-                                      :colors.colorBlack, 13, FontWeight.w500),
+                                      theme.isDarkMode
+                                          ? colors.colorGrey
+                                          : colors.colorBlack,
+                                      13,
+                                      FontWeight.w500),
                                 ),
                                 Text(
                                   readTimestamp(int.parse(
                                       "${apikeys.apikeyres!.exd}000")),
                                   style: textStyle(
-                                     theme.isDarkMode
-                                    ?colors.colorWhite
-                                    :colors.colorBlack, 13, FontWeight.w500),
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      13,
+                                      FontWeight.w500),
                                 ),
                               ],
                             )
@@ -305,7 +308,7 @@ class SettingsScreen extends ConsumerWidget {
                               ),
                             ),
                     ],
-                    index !=0
+                    index != 0
                         ? SvgPicture.asset(
                             usersettings.settingmenu[index]['trailing'])
                         : Container()
@@ -316,11 +319,99 @@ class SettingsScreen extends ConsumerWidget {
             shrinkWrap: true,
             itemCount: usersettings.settingmenu.length,
             separatorBuilder: (BuildContext context, int index) {
-              return  const ListDivider();
+              return const ListDivider();
             },
           ),
         ],
       ),
+    );
+  }
+
+  void _showAlertDialog(
+      BuildContext context, String pwd, ThemesProvider theme) {
+    bool isHidden = true; // Local variable to track visibility
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              titleTextStyle: textStyles.appBarTitleTxt,
+              contentTextStyle: textStyles.menuTxt,
+              titlePadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(14))),
+              scrollable: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+              title: Text("Sensitive Information"),
+              content: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Display sensitive text
+                  Expanded(
+                    child: Text(
+                      isHidden ? "••••••••••••••••••••••••••••••••" : "$pwd",
+                      style: TextStyle(fontSize: 16),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Toggle button
+                  IconButton(
+                    icon: Icon(
+                      isHidden ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        isHidden = !isHidden; // Toggle visibility
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                Row(
+                  children: [
+                    SizedBox(
+                      child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: theme.isDarkMode
+                                  ? colors.colorbluegrey
+                                  : colors.colorBlack,
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              )),
+                          child: Text("Proceed", style: textStyles.btnText)),
+                    ),
+                    SizedBox(
+                      child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: theme.isDarkMode
+                                  ? colors.colorbluegrey
+                                  : colors.colorBlack,
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              )),
+                          child: Text("Proceed", style: textStyles.btnText)),
+                    ),
+                  ],
+                )
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

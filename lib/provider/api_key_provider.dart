@@ -4,6 +4,7 @@ import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
+import '../models/auth_model/totp_model.dart';
 import '../models/profile_model/apikeymodel.dart';
 import '../models/profile_model/generateapikey_model.dart';
 import 'auth_provider.dart';
@@ -24,6 +25,18 @@ class ApikeyProvider extends DefaultChangeNotifier {
 
   GenerateApikeyModel? _generateApikey;
   GenerateApikeyModel? get generateApikey => _generateApikey;
+
+  TotpKey? _totpKey;
+  TotpKey? get totpkey => _totpKey;
+
+  bool _hidePass = true;
+  bool get hidePass => _hidePass; 
+
+   hiddenPass() {
+    _hidePass = !_hidePass;
+    print("object ::: $_hidePass");
+    notifyListeners();
+  }
 
 // Fetching data from the api and stored in a variable
 
@@ -62,5 +75,10 @@ class ApikeyProvider extends DefaultChangeNotifier {
     } finally {
       //_
     }
+  }
+
+  fetchTotp() async {
+    _totpKey = await api.getTotp();
+    print("object :: ${_totpKey!.pwd}");
   }
 }

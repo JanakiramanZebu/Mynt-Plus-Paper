@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 //import 'package:url_launcher/url_launcher.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
@@ -11,7 +12,6 @@ import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/bond_provider.dart';
 import '../../provider/fund_provider.dart';
-import '../../provider/iop_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/notification_provider.dart';
 import '../../provider/thems.dart';
@@ -22,7 +22,6 @@ import '../../routes/route_names.dart';
 import '../../sharedWidget/functions.dart';
 
 import 'need_help_screen.dart';
-import '../../sharedWidget/splash_loader.dart';
 
 class UserAccountScreen extends ConsumerWidget {
   const UserAccountScreen({super.key});
@@ -52,7 +51,7 @@ class UserAccountScreen extends ConsumerWidget {
                             index == 4 ||
                             index == 5 ||
                             index == 6 ||
-                            index == 7) {
+                            index == 9) {
                           await funds.fetchHstoken(context);
                         }
                         if (index == 0) {
@@ -75,12 +74,20 @@ class UserAccountScreen extends ConsumerWidget {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "pledge");
                         } else if (index == 7) {
-                          funds.optionZ(context);
+                          launch("https://app.mynt.in/ipo");
+                          // Navigator.pushNamed(context, Routes.ipowebview,
+                          //     arguments: "https://app.mynt.in/ipo");
                         } else if (index == 8) {
+                          // Navigator.pushNamed(context, Routes.ipowebview,
+                          //     arguments: "https://app.mynt.in/mutualfund");
+                          launch("https://app.mynt.in/mutualfund");
+                        } else if (index == 9) {
+                          funds.optionZ(context);
+                        } else if (index == 10) {
                           await Share.share(
                             "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
                           );
-                        } else if (index == 9) {
+                        } else if (index == 11) {
                           await context
                               .read(userProfileProvider)
                               .fetchsetting();
@@ -89,7 +96,7 @@ class UserAccountScreen extends ConsumerWidget {
                               .fetchapikey(context);
                           Navigator.pushNamed(
                               context, Routes.profilesettingscreen);
-                        } else if (index == 10) {
+                        } else if (index == 12) {
                           await context
                               .read(notificationprovider)
                               .fetchexchagemsg(context);
@@ -98,7 +105,7 @@ class UserAccountScreen extends ConsumerWidget {
                               .read(notificationprovider)
                               .fetchbrokermsg(context);
                           Navigator.pushNamed(context, Routes.notificationpage);
-                        } else if (index == 11) {
+                        } else if (index == 13) {
                           showModalBottomSheet(
                               useSafeArea: true,
                               isScrollControlled: true,
@@ -109,46 +116,8 @@ class UserAccountScreen extends ConsumerWidget {
                               builder: (context) {
                                 return const NeedHelpScreen();
                               });
-                        } else if (index == 12) {
-                          await context.read(ipoProvide).tabSize();
-                          // Future.delayed(const Duration(microseconds: 10),
-                          //     () async {
-                          //   await context.read(ipoProvide).getSmeIpo();
-                          //   await context.read(ipoProvide).getmainstreamipo();
-                          //   await context
-                          //       .read(ipoProvide)
-                          //       .getipoperfomance(currentYear);
-                          //   await context.read(ipoProvide).mergemainsme();
-                          //   // List<MainIPO>? ipos = context
-                          //   //     .read(ipoProvide)
-                          //   //     .mainStreamIpoModel!
-                          //   //     .mainIPO!;
-                          //   // List<SMEIPO>? iposme =
-                          //   //     context.read(ipoProvide).smeIpoModel!.sMEIPO!;
-
-                          //   // mai.addAll(
-                          //   //   ipos,
-                          //   // );
-                          //   // mai.addAll(iposme);
-                          //   // for (int i = 0; i < mai.length; i++) {
-                          //   //   if (mai[i] is MainIPO) {
-                          //   //     mai[i].key = "MAIN";
-                          //   //     print(
-                          //   //         "MAIN IPO : ${mai[i].biddingStartDate} ${mai[i].name} ${mai[i].key}");
-                          //   //   } else if (mai[i] is SMEIPO) {
-                          //   //     mai[i].key = "SME";
-                          //   //     print(
-                          //   //         "SME IPO : ${mai[i].biddingStartDate} ${mai[i].name} ${mai[i].key}");
-                          //   //   }
-                          //   // }
-                          // });
-                         Navigator.push(context, MaterialPageRoute(builder: (context)=>CircularLoaderImage()));
-                          // Navigator.pushNamed(
-                          //   context,
-                          //   Routes.ipo,
-                          // );
+                        } else if (index == 14) {
                         } else if (index == 13) {
-                          
                         } else if (index == 14) {
                           await context.read(bondProvider).fetchGovtBonds();
                           Navigator.pushNamed(context, Routes.bonds);
@@ -162,10 +131,13 @@ class UserAccountScreen extends ConsumerWidget {
                       },
                       dense: true,
                       minLeadingWidth: 20,
-                      leading: SvgPicture.asset(
-                          userProfile.profileMenu[index]['leading'],
-                          width: 19,
-                          color: const Color(0xff666666)),
+                      leading: index == 7
+                          ? Icon(Icons.flag_outlined,
+                              size: 20, color: colors.colorGrey)
+                          : SvgPicture.asset(
+                              userProfile.profileMenu[index]['leading'],
+                              width: 19,
+                              color: const Color(0xff666666)),
                       title: Text(
                           "${index == 0 ? "₹${getFormatter(value: double.parse(funds.fundDetailModel!.avlMrg ?? "0.00"), v4d: false, noDecimal: false)}" : userProfile.profileMenu[index]['title']}",
                           style: textStyle(
@@ -225,7 +197,7 @@ class UserAccountScreen extends ConsumerWidget {
                                             12,
                                             FontWeight.w500))))
                           ],
-                          if (index == 8) ...[
+                          if (index == 10) ...[
                             TextButton(
                                 onPressed: () async {
                                   await Share.share(
@@ -236,7 +208,7 @@ class UserAccountScreen extends ConsumerWidget {
                                     style: theme.isDarkMode
                                         ? textStyles.darktextBtn
                                         : textStyles.textBtn))
-                          ] else if (index == 9) ...[
+                          ] else if (index == 11) ...[
                             TextButton(
                                 onPressed: () async {
                                   showDialog(
@@ -386,7 +358,7 @@ class UserAccountScreen extends ConsumerWidget {
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 14),
                             insetPadding:
-                                const EdgeInsets.symmetric(horizontal: 20),
+                                const EdgeInsets.symmetric(horizontal: 40),
                             title: const Text("Confirmation"),
                             content: SizedBox(
                                 width: MediaQuery.of(context).size.width,

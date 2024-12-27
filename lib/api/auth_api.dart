@@ -110,6 +110,8 @@ mixin AuthApi on ApiCore {
     }
   }
 
+ 
+
 // Forgot password
 
   Future<ForgetPasswordModel> getForgetPassword(

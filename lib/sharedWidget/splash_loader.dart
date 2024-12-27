@@ -14,16 +14,16 @@ class CircularLoaderImage extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: SvgPicture.asset(
               'assets/icon/MYNT App Logo_v2.svg',
-              width: 150,
-              height: 150,
+              width: 80,
+              height: 80,
             ),
           ),
           const Positioned.fill(
             child: Align(
               alignment: Alignment.center,
               child: SizedBox(
-                width: 170,
-                height: 170,
+                width: 90,
+                height: 90,
                 child: CircularProgressIndicator(
                   strokeWidth: 5,
                 ),

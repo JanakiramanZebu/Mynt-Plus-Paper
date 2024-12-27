@@ -28,7 +28,7 @@ class LoginScreen extends ConsumerWidget {
     Preferences pref = Preferences();
     return GestureDetector(
       onTap: () {
-        theme.removeUsermatrial(context);
+        //theme.removeUsermatrial(context);
         FocusScope.of(context).unfocus();
       },
       child: auth.initLoad
@@ -367,37 +367,36 @@ class LoginScreen extends ConsumerWidget {
                                         mainAxisAlignment:
                                             MainAxisAlignment.end,
                                         children: [
-                                          if (pref.hideLoginOptBtn!)
-                                            InkWell(
-                                                onTap: () {
-                                                  forpass.clearError();
-                                                  forpass.clearTextField();
-                                                  Navigator.pushNamed(context,
-                                                      Routes.forgotPass);
-                                                },
-                                                child: Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      vertical: 8.0,
-                                                      horizontal: 4),
-                                                  child: Text(
-                                                      "Forgot password?",
-                                                      style:
-                                                          //  TextStyle(
-                                                          //   color: colors.colorBlue,
-                                                          //   fontFamily: 'InterVariable',
-                                                          //   fontSize: 12,
-                                                          //   fontWeight: FontWeight.w500,
-                                                          // )
-                                                          textStyle(
-                                                              theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorLightBlue
-                                                                  : colors
-                                                                      .colorBlue,
-                                                              12,
-                                                              FontWeight.w500)),
-                                                )),
+                                          // if (pref.hideLoginOptBtn!)
+                                          InkWell(
+                                              onTap: () {
+                                                forpass.clearError();
+                                                forpass.clearTextField();
+                                                Navigator.pushNamed(
+                                                    context, Routes.forgotPass);
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8.0,
+                                                        horizontal: 4),
+                                                child: Text("Forgot password?",
+                                                    style:
+                                                        //  TextStyle(
+                                                        //   color: colors.colorBlue,
+                                                        //   fontFamily: 'InterVariable',
+                                                        //   fontSize: 12,
+                                                        //   fontWeight: FontWeight.w500,
+                                                        // )
+                                                        textStyle(
+                                                            theme.isDarkMode
+                                                                ? colors
+                                                                    .colorLightBlue
+                                                                : colors
+                                                                    .colorBlue,
+                                                            12,
+                                                            FontWeight.w500)),
+                                              )),
                                         ],
                                       ),
                                     ]),
@@ -473,7 +472,14 @@ class LoginScreen extends ConsumerWidget {
                                       FontWeight.w500)),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  Container(
+                      margin: const EdgeInsets.only(bottom: 10,top: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text("Version 3.0.2",
+                          textAlign: TextAlign.center,
+                          style: textStyle(
+                              const Color(0xff666666), 10, FontWeight.w300))),
+                  //const SizedBox(height: 10),
                 ],
               ),
             ),

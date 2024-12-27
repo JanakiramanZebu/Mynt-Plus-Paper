@@ -167,12 +167,18 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/icon/theme_icon.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
-      {
-        "title": "Log",
-        "subTitle": "Log message",
-        "leading": "assets/profile/privacy_settings.svg",
-        "trailing": "assets/profile/greater_arrow.svg"
-      },
+      // {
+      //   "title": "TOTP",
+      //   "subTitle": "TOTP",
+      //   "leading": "assets/icon/key-01.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg"
+      // },
+      // {
+      //   "title": "Log",
+      //   "subTitle": "Log message",
+      //   "leading": "assets/profile/privacy_settings.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg"
+      // },
     ];
     notifyListeners();
     return settingmenu;
@@ -239,6 +245,22 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "case": "Click here to view the Pledge & Unpledge page."
       },
       {
+        "title": "IPO",
+        "subTitle": "A company's first public stock offering",
+        "leading": "assets/profileimage/reports.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": "",
+        "case": "Click here to view the Log message."
+      },
+      {
+        "title": "Mutual Fund",
+        "subTitle": "Invest in diversified assets managed by professionals",
+        "leading": "assets/icon/mf_icon.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": "",
+        "case": "Click here to view the Log message."
+      },
+      {
         "title": "OptionZ",
         "subTitle": "OptionZ",
         "leading": "assets/profileimage/pledge.svg",
@@ -286,15 +308,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "key": "",
         "case": "Click here to view the Log message."
       },
-      // {
-      //   "title": "Ipo",
-      //   "subTitle": "Mainstream,SmeIPO",
-      //   "leading": "assets/profileimage/reports.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": "",
-      //   "case": "Click here to view the Log message."
-      // }
-      // ,
+      /////
       // {
       //   "title": "Bonds",
       //   "subTitle": "Bonds",
@@ -303,14 +317,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
       //   "key": "",
       //   "case": "Click here to view the Log message."
       // },
-      // {
-      //   "title": "Mutual Fund",
-      //   "subTitle": "Funds",
-      //   "leading": "assets/profileimage/reports.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": "",
-      //   "case": "Click here to view the Log message."
-      // }
     ];
     return profileMenu;
   }

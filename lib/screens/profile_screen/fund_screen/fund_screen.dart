@@ -352,6 +352,7 @@ class _FundScreenState extends State<FundScreen> {
                                         : () {
                                             setState(() {
                                               fund.changeIndex(index);
+
                                               fund.focusNode.unfocus();
                                             });
                                           },
@@ -608,7 +609,7 @@ class _FundScreenState extends State<FundScreen> {
                                                                       .fetchUPIPaymet(
                                                                     context,
                                                                     "${fund.amount.text}.00",
-                                                                    fund.accno,
+                                                                    fund.multipleAccno,
                                                                     fund
                                                                         .decryptclientcheck!
                                                                         .clientCheck!
@@ -658,7 +659,7 @@ class _FundScreenState extends State<FundScreen> {
                                                                         .fetchUPIPaymet(
                                                                       context,
                                                                       "${fund.amount.text}.00",
-                                                                      fund.accno,
+                                                                      fund.multipleAccno,
                                                                       fund
                                                                           .decryptclientcheck!
                                                                           .clientCheck!
@@ -1351,6 +1352,7 @@ class _FundScreenState extends State<FundScreen> {
                   return InkWell(
                     onTap: () {
                       fund.bankselection(index);
+
                       Navigator.pop(context);
                     },
                     child: Container(

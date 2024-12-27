@@ -70,6 +70,9 @@ class TranctionProvider extends DefaultChangeNotifier {
   String _accno = '';
   String get accno => _accno;
 
+  String _multipleAccno = '';
+  String get multipleAccno => _multipleAccno;
+
   String _initbank = '';
   String get initbank => _initbank;
 
@@ -97,12 +100,32 @@ class TranctionProvider extends DefaultChangeNotifier {
   Map<String, dynamic>? _dsds = {};
   Map<String, dynamic>? get dsds => _dsds;
 
+  upiAppsAccnoFormat(String accono) {
+    List y = [accono];
+
+    for (var i in bankdetails!.dATA!) {
+      if (y.length == 4) {
+        break;
+      }
+      if (!y.contains(i[2])) {
+        y.add(i[2]);
+      }
+    }
+
+    String number = y.join("!");
+    _multipleAccno = number;
+    print("DDDDDDDDDDD $number");
+  }
+
   bankselection(int index) {
     _initbank =
         '${bankdetails!.dATA![index][1]}-${hideAccountNumber(bankdetails!.dATA![index][2])}';
+
     _accno = bankdetails!.dATA![index][2];
+    upiAppsAccnoFormat(_accno);
     _ifsc = bankdetails!.dATA![index][3];
     _bankname = bankdetails!.dATA![index][1];
+
     notifyListeners();
   }
 
@@ -191,11 +214,11 @@ class TranctionProvider extends DefaultChangeNotifier {
   }
 
   initialdata(BuildContext contex) {
-    // get initial data from api
     _intValue = 0;
-    _accno = bankdetails!.dATA![indexss][2];
+    _multipleAccno = _accno = bankdetails!.dATA![index][2];
     _ifsc = bankdetails!.dATA![indexss][3];
     _bankname = bankdetails!.dATA![indexss][1];
+    upiAppsAccnoFormat(bankdetails!.dATA![indexss][2]);
     _initbank =
         '${bankdetails!.dATA![indexss][1]} - ${hideAccountNumber(accno)}';
     _textValue = decryptclientcheck!.companyCode![0];
@@ -369,7 +392,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       _decryptclientcheck = await api.getClientDetails();
 
       // print("client emsg ${_decryptclientcheck!.emsg}");
-   //   print("------------ ${_decryptclientcheck!.companyCode!}");
+      //   print("------------ ${_decryptclientcheck!.companyCode!}");
     } catch (e) {
       //log("Failed to fetch Profile Data:: ${e.toString()}");
       ref(indexListProvider)

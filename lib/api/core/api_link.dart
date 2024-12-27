@@ -18,6 +18,7 @@ class ApiLinks {
   ///generate api key
   String get apiKey => '$goMyntURL/RequestApiKey';
   String get generateapiKey => '$goMyntURL/UserApiKeyRenReq';
+  String get totp => "$goMyntURL/GetSecretKey";
 
   // Notification service
   String get exchStatus => '$goMyntURL/ExchStatus';
@@ -45,12 +46,11 @@ class ApiLinks {
   String get searchScrip => '$goMyntURL/SearchScrip';
   String get technicalData => '$goMyntURL/GetTechnicals';
   String get watchListrename => '$goMyntURL/RenameMW';
-  
+
   // Cams
   String get goCamsURL => "https://rekycbe.mynt.in/portfolio";
   String get getCames => '$goCamsURL/broker_dateils_get';
   String get getCamesauth => '$goCamsURL/login/auth';
-
 
 // Market Index
 
@@ -176,7 +176,6 @@ class ApiLinks {
   String get placeipoorder => "$dashBoardURL/ipo/addIPOtoPortfolio";
   String get ipoorderbook => "$dashBoardURL/ipo/orderbookIPODetails";
   String get iposinglepage => "$dashBoardURL/ipo/get_single_ipo_data";
-
 
 // Mutual Fund
   String get bestMf => "$dashBoardURL/mf/z_data";

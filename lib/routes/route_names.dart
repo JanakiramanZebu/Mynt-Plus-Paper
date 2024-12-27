@@ -108,6 +108,7 @@ class Routes {
   static const String profileWebViewApp = "profileWebViewApp";
   static const String optionZWebView = 'optionZWebView';
   static const String camsWebView = 'camsWebView';
+  static const String ipowebview = "Ipowebview";
 
   static const String logError = 'logerror';
 

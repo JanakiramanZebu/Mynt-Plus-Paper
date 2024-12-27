@@ -79,7 +79,7 @@ mixin TranscationApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           body: jsonEncode({
-            "amount": "amt",
+            "amount": amt,
             "bank_acc": bankaccno,
             "clientID": clientid,
             "Name": name
@@ -195,15 +195,14 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode({"code": encryptedPayload}));
       Map<String, dynamic> json = jsonDecode(res.body);
       if (json.containsKey('emsg')) {
-       
         return DecryptClientCheck.fromJson(json);
       } else {
         final decryptedData = decryptionFunction(json["str"]);
-        //log("client Data------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+       // log("client Data------------ ${jsonDecode(jsonEncode(decryptedData))}}");
         return DecryptClientCheck.fromJson(jsonDecode(decryptedData));
       }
     } catch (e) {
-     // print("object :: $e");
+      // print("object :: $e");
       rethrow;
     }
   }
@@ -222,7 +221,7 @@ mixin TranscationApi on ApiCore {
         return PayoutDetails.fromJson(json);
       } else {
         final decryptedData = decryptionFunction(json["str"]);
-       // log("getWithdrawPayout------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+        // log("getWithdrawPayout------------ ${jsonDecode(jsonEncode(decryptedData))}}");
         return PayoutDetails.fromJson(jsonDecode(decryptedData));
       }
     } catch (e) {
@@ -241,7 +240,7 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode({"code": encryptedPayload}));
       final json = jsonDecode(res.body);
       final decryptedData = decryptionFunction(json["str"]);
-      log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+     // log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
       return BankDetails.fromJson(jsonDecode(decryptedData));
     } catch (e) {
       rethrow;

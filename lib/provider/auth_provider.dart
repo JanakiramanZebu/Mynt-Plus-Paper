@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:developer';
-
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
-
 import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
@@ -16,7 +13,6 @@ import 'package:uuid/uuid.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
-
 import '../locator/preference.dart';
 import '../models/auth_model/change_pass_model.dart';
 import '../models/auth_model/forgot_pass_model.dart';
@@ -26,27 +22,19 @@ import '../models/auth_model/login_otp_verify.dart';
 import '../models/auth_model/logout_model.dart';
 import '../models/auth_model/mobile_login_model.dart';
 import '../models/auth_model/mobile_otp_model.dart';
-// import '../models/auth_model/validate_seesion_model.dart';
 import '../models/profile_model/client_detail_model.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../screens/authentication/login/bottom_otp_screen.dart';
 import '../sharedWidget/risk_disclosure_bottom_sheet.dart';
 import '../sharedWidget/snack_bar.dart';
-//import 'bond_provider.dart';
-//import 'bond_provider.dart';
 import 'change_password_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'fund_provider.dart';
 import 'index_list_provider.dart';
-import 'iop_provider.dart';
 import 'market_watch_provider.dart';
-//import 'mf_provider.dart';
-//import 'mf_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
-
-//import 'stocks_provider.dart';
 import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
 
@@ -592,7 +580,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
           _loggedMobile = await getLocalData();
 
-          log("loggued Useer -- ${pref.loggedClient}");
+          //log("loggued Useer -- ${pref.loggedClient}");
           // ScaffoldMessenger.of(context)
           //     .showSnackBar(successMessage(context, 'OTP Verified'));
         });
@@ -673,6 +661,8 @@ class AuthProvider extends DefaultChangeNotifier {
       notifyListeners();
     }
   }
+
+  
 
 // if there is a mobile number available automatically obtain from the device
   getCurrentPhone() async {
@@ -881,10 +871,10 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(transcationProvider).fetchfundbank(context);
         ref(transcationProvider).fetchc(context);
 
-        await ref(ipoProvide).getSmeIpo();
-        await ref(ipoProvide).getmainstreamipo();
-        await ref(ipoProvide).getipoperfomance(currentYear);
-        await ref(ipoProvide).mergemainsme();
+        // await ref(ipoProvide).getSmeIpo();
+        // await ref(ipoProvide).getmainstreamipo();
+        // await ref(ipoProvide).getipoperfomance(currentYear);
+        // await ref(ipoProvide).mergemainsme();
 
 // // Explore
         // await ref(stocksProvide)
