@@ -473,7 +473,7 @@ class LoginScreen extends ConsumerWidget {
                     ),
                   ),
                   Container(
-                      margin: const EdgeInsets.only(bottom: 10,top: 10),
+                      margin: const EdgeInsets.only(bottom: 23,top: 10),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text("Version 3.0.2",
                           textAlign: TextAlign.center,

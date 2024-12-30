@@ -213,15 +213,15 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                       ],
                     ),
                     Container(
-                        margin: const EdgeInsets.only(bottom: 10, top: 10),
+                        margin: const EdgeInsets.only(bottom: 10),
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text("Version 3.0.2",
                             textAlign: TextAlign.center,
                             style: textStyle(
                                 colors.colorWhite, 10, FontWeight.w300))),
-                    // const SizedBox(
-                    //   height: 20,
-                    // )
+                    const SizedBox(
+                      height: 20,
+                    )
                   ],
                 ),
               ),
