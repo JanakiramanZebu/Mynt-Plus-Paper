@@ -716,8 +716,8 @@ class AppRoutes {
               return SlideTransition(
                   position: animation.drive(tween), child: child);
             });
-      
-       case Routes.ipowebview:
+
+      case Routes.ipowebview:
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 IpoWebview(argument: args),

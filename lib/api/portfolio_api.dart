@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 import '../models/camsres_model.dart';
 import '../models/portfolio_model/allholdings_model.dart';
 import '../models/portfolio_model/holdings_model.dart';
@@ -125,7 +127,7 @@ mixin PortfolioAPI on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({"mobile": prefs.clientMob}));
-          // body: jsonEncode({"mobile": '9444856459'}));
+      // body: jsonEncode({"mobile": '9444856459'}));
       final json = jsonDecode(res.body);
 
       return Camsmodel.fromJson(json as Map<String, dynamic>);
@@ -133,7 +135,7 @@ mixin PortfolioAPI on ApiCore {
       rethrow;
     }
   }
-  
+
   // get Mutual fund  scrip info from kambala
 
   Future<MFQuotes> getMFQutoes(String exch, String token) async {
@@ -153,6 +155,23 @@ mixin PortfolioAPI on ApiCore {
   }
 
 // get Position book from kambala
+
+  // Future<List<PositionBookModel>> getPostionJson() async {
+  //   try {
+  //     final resp = await rootBundle.loadString("assets/json/postion_Book.json");
+
+  //     final json = jsonDecode(resp);
+  //     final List<PositionBookModel> data = [];
+  //     for (final item in json) {
+  //       data.add(PositionBookModel.fromJson(item as Map<String, dynamic>));
+  //     }
+
+  //     // log("Strategy model =>  $json");
+  //     return data;
+  //   } catch (e) {
+  //     rethrow;
+  //   }
+  // }
 
   Future<List<PositionBookModel>> getPositionBook() async {
     try {

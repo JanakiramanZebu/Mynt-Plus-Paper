@@ -54,6 +54,8 @@ mixin IndexApi on ApiCore {
 
 // get group of scrip LTP and more info
 
+
+
   Future<Response> getLTP(List ltpArgs) async {
     try {
       final uri = Uri.parse("https://asvr.mynt.in/bcast/GetLtp");

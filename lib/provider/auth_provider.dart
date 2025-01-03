@@ -662,8 +662,6 @@ class AuthProvider extends DefaultChangeNotifier {
     }
   }
 
-  
-
 // if there is a mobile number available automatically obtain from the device
   getCurrentPhone() async {
     if (_isonTapMobile) {

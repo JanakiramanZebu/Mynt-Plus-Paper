@@ -138,119 +138,120 @@ class PositionGroupSymbol extends ConsumerWidget {
                               if (positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]
                                       ['isexit'] ==
                                   "true")
-                                Container(
-                                    decoration: BoxDecoration(
-                                        border: Border(
-                                            bottom: BorderSide(
-                                                color: theme.isDarkMode
-                                                    ? colors.darkGrey
-                                                    : const Color(0xffF1F3F8),
-                                                width: 6))),
-                                    child: SizedBox(
-                                        height: 27,
-                                        child: OutlinedButton(
-                                            onPressed: () {
-                                              showDialog(
-                                                  context: context,
-                                                  builder:
-                                                      (BuildContext context) {
-                                                    return AlertDialog(
-                                                        backgroundColor: theme.isDarkMode
-                                                            ? const Color.fromARGB(
-                                                                255, 18, 18, 18)
-                                                            : colors.colorWhite,
-                                                        titleTextStyle: textStyles
-                                                            .appBarTitleTxt
-                                                            .copyWith(
-                                                                color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .colorWhite
-                                                                    : colors
-                                                                        .colorBlack),
-                                                        contentTextStyle: textStyles
-                                                            .menuTxt
-                                                            .copyWith(
-                                                                color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .colorWhite
-                                                                    : colors
-                                                                        .colorBlack),
-                                                        titlePadding:
-                                                            const EdgeInsets.symmetric(
-                                                                horizontal: 14,
-                                                                vertical: 12),
-                                                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14))),
-                                                        scrollable: true,
-                                                        contentPadding: const EdgeInsets.symmetric(
-                                                          horizontal: 14,
-                                                        ),
-                                                        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-                                                        title: const Text("Exit Position"),
-                                                        content: SizedBox(width: MediaQuery.of(context).size.width, child: Text("Are you sure you want to exit all positions in the ${positionBook.groupPositionSym[index]} group?")),
-                                                        actions: [
-                                                          TextButton(
-                                                              onPressed: () =>
-                                                                  Navigator.of(
-                                                                          context)
-                                                                      .pop(),
-                                                              child: Text("No",
-                                                                  style: textStyles
-                                                                      .textBtn
-                                                                      .copyWith(
-                                                                          color: theme.isDarkMode
-                                                                              ? colors.colorLightBlue
-                                                                              : colors.colorBlue))),
-                                                          ElevatedButton(
-                                                              onPressed:
-                                                                  () async {
-                                                                await positionBook.exitGroupedPosition(
-                                                                    context,
-                                                                    positionBook
-                                                                        .groupedBySymbol[positionBook
-                                                                            .groupPositionSym[
-                                                                        index]]['groupList']);
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop(true);
-                                                              },
-                                                              style: ElevatedButton
-                                                                  .styleFrom(
-                                                                      elevation:
-                                                                          0,
-                                                                      backgroundColor: theme.isDarkMode
-                                                                          ? colors
-                                                                              .colorbluegrey
-                                                                          : colors
-                                                                              .colorBlack,
-                                                                      shape:
-                                                                          RoundedRectangleBorder(
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(50),
-                                                                      )),
-                                                              child: Text("Yes",
-                                                                  style: textStyle(
-                                                                      !theme.isDarkMode
-                                                                          ? colors
-                                                                              .colorWhite
-                                                                          : colors
-                                                                              .colorBlack,
-                                                                      14,
-                                                                      FontWeight
-                                                                          .w500)))
-                                                        ]);
-                                                  });
-                                            },
-                                            style: OutlinedButton.styleFrom(
-                                                side: BorderSide(
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorGrey
-                                                        : colors.colorBlack),
-                                                shape: const RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.all(
-                                                        Radius.circular(32)))),
-                                            child: Text("Exit",
-                                                style: textStyle(
-                                                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 12, FontWeight.w600))))),
+                                // Container(
+                                //     decoration: BoxDecoration(
+                                //         border: Border(
+                                //             bottom: BorderSide(
+                                //                 color: theme.isDarkMode
+                                //                     ? colors.darkGrey
+                                //                     : const Color(0xffF1F3F8),
+                                //                 width: 6))),
+                                //     child: SizedBox(
+                                //         height: 27,
+                                //         child: OutlinedButton(
+                                //             onPressed: () {
+                                //               showDialog(
+                                //                   context: context,
+                                //                   builder:
+                                //                       (BuildContext context) {
+                                //                     return AlertDialog(
+                                //                         backgroundColor: theme.isDarkMode
+                                //                             ? const Color.fromARGB(
+                                //                                 255, 18, 18, 18)
+                                //                             : colors.colorWhite,
+                                //                         titleTextStyle: textStyles
+                                //                             .appBarTitleTxt
+                                //                             .copyWith(
+                                //                                 color: theme.isDarkMode
+                                //                                     ? colors
+                                //                                         .colorWhite
+                                //                                     : colors
+                                //                                         .colorBlack),
+                                //                         contentTextStyle: textStyles
+                                //                             .menuTxt
+                                //                             .copyWith(
+                                //                                 color: theme.isDarkMode
+                                //                                     ? colors
+                                //                                         .colorWhite
+                                //                                     : colors
+                                //                                         .colorBlack),
+                                //                         titlePadding:
+                                //                             const EdgeInsets.symmetric(
+                                //                                 horizontal: 14,
+                                //                                 vertical: 12),
+                                //                         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14))),
+                                //                         scrollable: true,
+                                //                         contentPadding: const EdgeInsets.symmetric(
+                                //                           horizontal: 14,
+                                //                         ),
+                                //                         insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                                //                         title: const Text("Exit Position"),
+                                //                         content: SizedBox(width: MediaQuery.of(context).size.width, child: Text("Are you sure you want to exit all positions in the ${positionBook.groupPositionSym[index]} group?")),
+                                //                         actions: [
+                                //                           TextButton(
+                                //                               onPressed: () =>
+                                //                                   Navigator.of(
+                                //                                           context)
+                                //                                       .pop(),
+                                //                               child: Text("No",
+                                //                                   style: textStyles
+                                //                                       .textBtn
+                                //                                       .copyWith(
+                                //                                           color: theme.isDarkMode
+                                //                                               ? colors.colorLightBlue
+                                //                                               : colors.colorBlue))),
+                                //                           ElevatedButton(
+                                //                               onPressed:
+                                //                                   () async {
+                                //                                 await positionBook.exitGroupedPosition(
+                                //                                     context,
+                                //                                     positionBook
+                                //                                         .groupedBySymbol[positionBook
+                                //                                             .groupPositionSym[
+                                //                                         index]]['groupList']);
+                                //                                 Navigator.of(
+                                //                                         context)
+                                //                                     .pop(true);
+                                //                               },
+                                //                               style: ElevatedButton
+                                //                                   .styleFrom(
+                                //                                       elevation:
+                                //                                           0,
+                                //                                       backgroundColor: theme.isDarkMode
+                                //                                           ? colors
+                                //                                               .colorbluegrey
+                                //                                           : colors
+                                //                                               .colorBlack,
+                                //                                       shape:
+                                //                                           RoundedRectangleBorder(
+                                //                                         borderRadius:
+                                //                                             BorderRadius.circular(50),
+                                //                                       )),
+                                //                               child: Text("Yes",
+                                //                                   style: textStyle(
+                                //                                       !theme.isDarkMode
+                                //                                           ? colors
+                                //                                               .colorWhite
+                                //                                           : colors
+                                //                                               .colorBlack,
+                                //                                       14,
+                                //                                       FontWeight
+                                //                                           .w500)))
+                                //                         ]);
+                                //                   });
+                                //             },
+                                //             style: OutlinedButton.styleFrom(
+                                //                 side: BorderSide(
+                                //                     color: theme.isDarkMode
+                                //                         ? colors.colorGrey
+                                //                         : colors.colorBlack),
+                                //                 shape: const RoundedRectangleBorder(
+                                //                     borderRadius: BorderRadius.all(
+                                //                         Radius.circular(32)))),
+                                //             child: Text("Exit",
+                                //                 style: textStyle(
+                                //                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 12, FontWeight.w600))))),
+                              
                               if (positionBook.groupedBySymbol[positionBook
                                   .groupPositionSym[index]]["isCustomGrp"])
                                 Row(children: [

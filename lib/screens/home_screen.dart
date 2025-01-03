@@ -18,7 +18,7 @@ import '../provider/websocket_provider.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
-import '../sharedWidget/no_internet_widget.dart';
+import '../sharedWidget/internet_widget.dart';
 import 'bonds/bond_screen.dart';
 import 'ipo/ipo_main_screen.dart';
 import 'market_watch/index/index_screen.dart';
@@ -49,8 +49,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
         context.read(websocketProvider).reconnectWS();
+        // context.read(websocketProvider).startPingCheck(context);
       }
     });
+
     context.read(networkStateProvider).networkStream();
     context.read(marketWatchProvider).fToast.init(context);
     super.initState();
@@ -139,671 +141,687 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   upgrader: upgrader,
                   showIgnore: false,
                   showLater: false,
-                  child: Scaffold(
-                      appBar: indexProvide.selectedBtmIndx == 0
-                          ? null
-                          : AppBar(
-                              shadowColor: theme.isDarkMode
-                                  ? colors.darkColorDivider
-                                  : colors.colorDivider,
-                              leadingWidth: 205,
-                              elevation: .3,
-                              leading: indexProvide.selectedBtmIndx == 1
-                                  ? InkWell(
-                                      onTap: () {
-                                        FocusScope.of(context).unfocus();
+                  child: internet.connectionStatus == ConnectivityResult.none
+                      ? Scaffold(
+                          appBar: AppBar(
+                            elevation: 0,
+                            backgroundColor: Color(0xffFFFFFF),
+                          ),
+                          body: NoInternetScreen(),
+                        )
+                      : Scaffold(
+                          appBar: indexProvide.selectedBtmIndx == 0
+                              ? null
+                              : AppBar(
+                                  shadowColor: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider,
+                                  leadingWidth: 205,
+                                  elevation: .3,
+                                  leading: indexProvide.selectedBtmIndx == 1
+                                      ? InkWell(
+                                          onTap: () {
+                                            FocusScope.of(context).unfocus();
 
-                                        showModalBottomSheet(
-                                            useSafeArea: true,
-                                            isScrollControlled: true,
-                                            shape: const RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.vertical(
-                                                        top: Radius.circular(
-                                                            16))),
-                                            context: context,
-                                            builder: (context) {
-                                              return WatchlistsBottomSheet(
-                                                  currentWLName:
-                                                      marketWatchList.wlName);
-                                            });
-                                      },
-                                      child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 10, horizontal: 16),
-                                          child: Row(children: [
-                                            Expanded(
-                                              child: Text(
-                                                marketWatchList.wlName.isEmpty
-                                                    ? marketWatchList.wlName
-                                                    : marketWatchList
-                                                                .isPreDefWLs ==
-                                                            "Yes"
-                                                        ? marketWatchList
-                                                                    .wlName ==
-                                                                "My Stocks"
-                                                            ? marketWatchList
-                                                                .wlName
-                                                            : marketWatchList
-                                                                .wlName
-                                                        : "${marketWatchList.wlName[0].toUpperCase()}${marketWatchList.wlName.substring(1)}'s Watchlist",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    14,
-                                                    FontWeight.w600),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            Text(
-                                                marketWatchList.wlName ==
-                                                        "My Stocks"
-                                                    ? "(${portfolio.holdingsModel!.length})"
-                                                    : "(${marketWatchList.scrips.length})",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorLightBlue
-                                                        : colors.colorBlue,
-                                                    15,
-                                                    FontWeight.w600)),
-                                            const SizedBox(width: 3),
-                                            SvgPicture.asset(assets.downArrow,
-                                                color: theme.isDarkMode
-                                                    ? colors.colorLightBlue
-                                                    : colors.colorBlue,
-                                                width: 14)
-                                          ])))
-                                  : Padding(
-                                      padding: const EdgeInsets.all(18),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                              indexProvide.selectedBtmIndx == 3
-                                                  ? "Orderbook"
-                                                  : indexProvide
-                                                              .selectedBtmIndx ==
-                                                          2
-                                                      ? "Portfolio"
-                                                      : "Dashboard",
-                                              // watch(stocksProvide)
-                                              //     .exploreName,
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  17,
-                                                  FontWeight.w600)),
-                                        ],
-                                      ),
-                                    ),
-                              actions: indexProvide.selectedBtmIndx == 0
-                                  ? []
-                                  : [
-                                      if (indexProvide.selectedBtmIndx == 1 &&
-                                          marketWatchList.isPreDefWLs !=
-                                              "Yes") ...[
-                                        marketWatchList.scrips.length > 1
-                                            ? InkWell(
-                                                onTap: () {
-                                                  FocusScope.of(context)
-                                                      .unfocus();
-                                                  showModalBottomSheet(
-                                                      useSafeArea: true,
-                                                      isScrollControlled: true,
-                                                      shape: const RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius.vertical(
-                                                                  top: Radius
-                                                                      .circular(
-                                                                          16))),
-                                                      context: context,
-                                                      builder: (context) {
-                                                        return const ScripFilterBottomSheet();
-                                                      });
-                                                },
-                                                child: Container(
-                                                    padding: EdgeInsets.only(
-                                                        left: 8, right: 10),
-                                                    child: SvgPicture.asset(
-                                                        assets.filterLines,
-                                                        width: 19,
-                                                        color:
-                                                            colors.colorGrey)),
-                                              )
-                                            : Container(),
-                                        marketWatchList.scrips.length >= 50
-                                            ? const SizedBox()
-                                            : InkWell(
-                                                onTap: () {
-                                                  context
-                                                      .read(marketWatchProvider)
-                                                      .requestMWScrip(
-                                                          context: context,
-                                                          isSubscribe: false);
-                                                  Navigator.pushNamed(context,
-                                                      Routes.searchScrip,
-                                                      arguments: marketWatchList
-                                                          .wlName);
-                                                },
-                                                child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            right: 16, left: 8),
-                                                    child: SvgPicture.asset(
-                                                        assets.searchIcon,
-                                                        width: 19,
-                                                        color:
-                                                            colors.colorGrey)),
-                                              ),
-                                      ] else if ((indexProvide
-                                                      .selectedBtmIndx ==
-                                                  2 &&
-                                              portfolio
-                                                  .allPostionList.isNotEmpty) &&
-                                          portfolio.selectedTab == 0) ...[
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              right: 15.0),
-                                          child: Row(children: [
-                                            Container(
-                                              height: 27,
-                                              padding: const EdgeInsets.only(
-                                                  right: 10),
-                                              child: OutlinedButton(
-                                                  onPressed: () {
-                                                    showModalBottomSheet(
-                                                        useSafeArea: true,
-                                                        isScrollControlled:
-                                                            true,
-                                                        shape: const RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius.vertical(
-                                                                    top: Radius
-                                                                        .circular(
-                                                                            16))),
-                                                        context: context,
-                                                        builder: (context) {
-                                                          return const PositionGroupBottomSheet();
-                                                        });
-                                                  },
-                                                  style: OutlinedButton.styleFrom(
-                                                      side: BorderSide(
-                                                          color: theme.isDarkMode
-                                                              ? colors.colorGrey
-                                                              : colors
-                                                                  .colorBlack),
-                                                      shape: const RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius.all(
-                                                                  Radius.circular(
-                                                                      32)))),
-                                                  child: Text("Group by",
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          12,
-                                                          FontWeight.w600))),
-                                            ),
-                                            if (portfolio.exitAll &&
-                                                portfolio.posSelection ==
-                                                    "All position" &&
-                                                portfolio.openPosition!.length >
-                                                    1)
-                                              SizedBox(
-                                                height: 27,
-                                                child: OutlinedButton(
-                                                    onPressed: () {
-                                                      showDialog(
-                                                        context: context,
-                                                        builder: (BuildContext
-                                                            context) {
-                                                          return AlertDialog(
-                                                            backgroundColor: theme
-                                                                    .isDarkMode
-                                                                ? const Color
-                                                                    .fromARGB(
-                                                                    255,
-                                                                    18,
-                                                                    18,
-                                                                    18)
-                                                                : colors
-                                                                    .colorWhite,
-                                                            titleTextStyle: textStyles
-                                                                .appBarTitleTxt
-                                                                .copyWith(
-                                                                    color: theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorWhite
-                                                                        : colors
-                                                                            .colorBlack),
-                                                            contentTextStyle: textStyles
-                                                                .menuTxt
-                                                                .copyWith(
-                                                                    color: theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorWhite
-                                                                        : colors
-                                                                            .colorBlack),
-                                                            titlePadding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        14,
-                                                                    vertical:
-                                                                        12),
-                                                            shape: const RoundedRectangleBorder(
-                                                                borderRadius: BorderRadius
-                                                                    .all(Radius
-                                                                        .circular(
-                                                                            14))),
-                                                            scrollable: true,
-                                                            contentPadding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                              horizontal: 14,
-                                                            ),
-                                                            insetPadding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        20),
-                                                            title: const Text(
-                                                                "Exit Position"),
-                                                            content: SizedBox(
-                                                              width:
-                                                                  MediaQuery.of(
-                                                                          context)
-                                                                      .size
-                                                                      .width,
-                                                              child:
-                                                                  const Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Text(
-                                                                      "Are you sure you want to exit all positions?")
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            actions: [
-                                                              TextButton(
-                                                                  onPressed: () =>
-                                                                      Navigator.of(
-                                                                              context)
-                                                                          .pop(),
-                                                                  child: Text(
-                                                                      "No",
-                                                                      style: textStyles
-                                                                          .textBtn
-                                                                          .copyWith(
-                                                                              color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue))),
-                                                              ElevatedButton(
-                                                                onPressed:
-                                                                    () async {
-                                                                  await portfolio
-                                                                      .exitPosition(
-                                                                          context,
-                                                                          true);
-                                                                  Navigator.of(
-                                                                          context)
-                                                                      .pop(
-                                                                          true);
-                                                                },
-                                                                style: ElevatedButton
-                                                                    .styleFrom(
-                                                                        elevation:
-                                                                            0,
-                                                                        backgroundColor: theme.isDarkMode
-                                                                            ? colors
-                                                                                .colorbluegrey
-                                                                            : colors
-                                                                                .colorBlack,
-                                                                        shape:
-                                                                            RoundedRectangleBorder(
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(50),
-                                                                        )),
-                                                                child: Text(
-                                                                    "Yes",
-                                                                    style: textStyle(
-                                                                        !theme.isDarkMode
-                                                                            ? colors
-                                                                                .colorWhite
-                                                                            : colors
-                                                                                .colorBlack,
-                                                                        14,
-                                                                        FontWeight
-                                                                            .w500)),
-                                                              ),
-                                                            ],
-                                                          );
-                                                        },
-                                                      );
-                                                    },
-                                                    style: OutlinedButton.styleFrom(
-                                                        side: BorderSide(
-                                                            color: theme.isDarkMode
-                                                                ? colors
-                                                                    .colorGrey
-                                                                : colors
-                                                                    .colorBlack),
-                                                        shape: const RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius.all(
-                                                                    Radius.circular(
-                                                                        32)))),
-                                                    child: Text("Exit All",
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            12,
-                                                            FontWeight.w600))),
-                                              ),
-                                          ]),
-                                        )
-                                      ] else if (indexProvide.selectedBtmIndx ==
-                                              3 &&
-                                          watch(orderProvider).selectedTab ==
-                                              4) ...[
-                                        Row(children: [
-                                          Container(
-                                              margin: const EdgeInsets.only(
-                                                  right: 8),
-                                              height: 30,
-                                              child: OutlinedButton(
-                                                  onPressed: () {
-                                                    showDialog(
-                                                        context: context,
-                                                        builder: (BuildContext
-                                                            context) {
-                                                          return const CreateBasket();
-                                                        });
-                                                  },
-                                                  style: OutlinedButton.styleFrom(
-                                                      side: BorderSide(
-                                                          color: theme.isDarkMode
-                                                              ? colors.colorGrey
-                                                              : colors
-                                                                  .colorBlack),
-                                                      shape: const RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius.all(
-                                                                  Radius.circular(
-                                                                      32)))),
-                                                  child: Text("Create Basket",
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors.colorBlack,
-                                                          12,
-                                                          FontWeight.w600))))
-                                        ])
-                                      ]
-                                    ],
-                              bottom: indexProvide.selectedBtmIndx == 1
-                                  ? const PreferredSize(
-                                      preferredSize: Size(20, 44),
-                                      child: DefaultIndexList())
-                                  : indexProvide.selectedBtmIndx == 4
-                                      ? PreferredSize(
-                                          preferredSize: const Size(20, 20),
-                                          child: ListTile(
-                                              onTap: () {
-                                                showModalBottomSheet(
-                                                    context: context,
-                                                    isScrollControlled: true,
-                                                    isDismissible: true,
-                                                    shape:
-                                                        const RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                        topLeft:
-                                                            Radius.circular(10),
-                                                        topRight:
-                                                            Radius.circular(10),
-                                                      ),
-                                                    ),
-                                                    builder: (_) =>
-                                                        const LoggedUserBottomSheet(
-                                                            initRoute:
-                                                                'switchAcc'));
-                                              },
-                                              dense: true,
-                                              contentPadding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16),
-                                              leading: CircleAvatar(
-                                                backgroundColor:
-                                                    const Color(0xffF1F3F8),
-                                                child: Text(
-                                                    userProfile.userDetailModel!
-                                                                .uname !=
-                                                            null
-                                                        ? userProfile
-                                                            .userDetailModel!
-                                                            .uname![0]
-                                                        : "",
-                                                    style: textStyle(
-                                                        const Color(0xff000000),
-                                                        18,
-                                                        FontWeight.w600)),
-                                              ),
-                                              title: Text(
-                                                  "${userProfile.userDetailModel!.uname}",
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: textStyle(
-                                                      Color(theme.isDarkMode
-                                                          ? 0xffffffff
-                                                          : 0xff000000),
-                                                      16,
-                                                      FontWeight.w600)),
-                                              subtitle: Text(
-                                                  "Client ID ${userProfile.userDetailModel!.uid}",
-                                                  style: textStyle(
-                                                      const Color(0xff666666),
-                                                      12,
-                                                      FontWeight.w500)),
-                                              trailing: SizedBox(
-                                                  width: 100,
-                                                  child:
-                                                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                                                    IconButton(
-                                                      splashRadius: 26,
-                                                      onPressed: () {
-                                                        Navigator.pushNamed(
-                                                            context,
-                                                            Routes.qrscanner);
-                                                      },
-                                                      icon: SvgPicture.asset(
-                                                          "assets/profile/qr_code.svg",
-                                                          width: 20,
-                                                          height: 24,
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack),
-                                                    ),
-                                                    const SizedBox(width: 4),
-                                                    Icon(
-                                                        Icons
-                                                            .arrow_drop_down_circle_outlined,
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack)
-                                                  ]))))
-                                      : null),
-
-                      // Here is the Bottom menu items
-                      bottomNavigationBar: BottomAppBar(
-                          height: 58,
-                          shadowColor: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-                          padding: EdgeInsets.zero,
-                          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
-                            // Expanded(
-                            //   child: InkWell(
-                            //     onTap: internet.connectionStatus ==
-                            //             ConnectivityResult.none
-                            //         ? null
-                            //         : () async {
-                            //             watch(stocksProvide)
-                            //                 .chngExpName("Stock", 0);
-                            //             await context
-                            //                 .read(indexListProvider)
-                            //                 .checkSession(context);
-                            //             await portfolio.requestWSHoldings(
-                            //                 context: context,
-                            //                 isSubscribe: false);
-
-                            //             // await context
-                            //             //     .read(orderProvider)
-                            //             //     .requestWSOrderBook(
-                            //             //         context: context,
-                            //             //         isSubscribe: false);
-                            //             await portfolio.requestWSPosition(
-                            //                 context: context,
-                            //                 isSubscribe: false);
-
-                            //             await context
-                            //                 .read(marketWatchProvider)
-                            //                 .requestMWScrip(
-                            //                     context: context,
-                            //                     isSubscribe: false);
-                            //             await explore.exploretabSize();
-                            //             indexProvide.bottomMenu(0);
-                            //           },
-                            //     child: Container(
-                            //       margin:
-                            //           const EdgeInsets.symmetric(horizontal: 7),
-                            //       decoration: BoxDecoration(
-                            //           border: indexProvide.selectedBtmIndx == 0
-                            //               ? Border(
-                            //                   top: BorderSide(
-                            //                       color: theme.isDarkMode
-                            //                           ? colors.colorLightBlue
-                            //                           : colors.colorBlue,
-                            //                       width: 2))
-                            //               : null),
-                            //       child: Column(
-                            //         mainAxisAlignment: MainAxisAlignment.center,
-                            //         crossAxisAlignment:
-                            //             CrossAxisAlignment.center,
-                            //         children: [
-                            //           SvgPicture.asset(assets.bookmarkedIcon,
-                            //               color: theme.isDarkMode &&
-                            //                       indexProvide
-                            //                               .selectedBtmIndx ==
-                            //                           0
-                            //                   ? colors.colorLightBlue
-                            //                   : indexProvide.selectedBtmIndx ==
-                            //                           0
-                            //                       ? colors.colorBlue
-                            //                       : colors.colorGrey),
-                            //           const SizedBox(height: 4),
-                            //           Text("Explore",
-                            //               style: textStyle(
-                            //                   theme.isDarkMode &&
-                            //                           indexProvide
-                            //                                   .selectedBtmIndx ==
-                            //                               0
-                            //                       ? colors.colorLightBlue
-                            //                       : indexProvide
-                            //                                   .selectedBtmIndx ==
-                            //                               0
-                            //                           ? colors.colorBlue
-                            //                           : colors.colorGrey,
-                            //                   12,
-                            //                   indexProvide.selectedBtmIndx == 0
-                            //                       ? FontWeight.w600
-                            //                       : FontWeight.w500)),
-                            //         ],
-                            //       ),
-                            //     ),
-                            //   ),
-                            // ),
-
-                            Expanded(
-                                child: InkWell(
-                                    onTap: internet.connectionStatus ==
-                                            ConnectivityResult.none
-                                        ? null
-                                        : () async {
-                                            portfolio.cancelTimer();
-                                            indexProvide.bottomMenu(1);
-                                            await context
-                                                .read(indexListProvider)
-                                                .checkSession(context);
-                                            if (indexProvide.checkSess!.stat ==
-                                                "Ok") {
-                                              await portfolio.requestWSHoldings(
-                                                  context: context,
-                                                  isSubscribe: false);
-
-                                              await context
-                                                  .read(orderProvider)
-                                                  .requestWSOrderBook(
-                                                      context: context,
-                                                      isSubscribe: false);
-                                              await portfolio.requestWSPosition(
-                                                  context: context,
-                                                  isSubscribe: false);
-                                              await context
-                                                  .read(marketWatchProvider)
-                                                  .requestMWScrip(
-                                                      context: context,
-                                                      isSubscribe: true);
-                                            }
+                                            showModalBottomSheet(
+                                                useSafeArea: true,
+                                                isScrollControlled: true,
+                                                shape:
+                                                    const RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.vertical(
+                                                                top: Radius
+                                                                    .circular(
+                                                                        16))),
+                                                context: context,
+                                                builder: (context) {
+                                                  return WatchlistsBottomSheet(
+                                                      currentWLName:
+                                                          marketWatchList
+                                                              .wlName);
+                                                });
                                           },
-                                    child: Container(
-                                        margin:
-                                            const EdgeInsets
-                                                .symmetric(horizontal: 7),
-                                        decoration: BoxDecoration(
-                                            border: indexProvide
-                                                        .selectedBtmIndx ==
-                                                    1
-                                                ? Border(
-                                                    top: BorderSide(
-                                                        color: theme.isDarkMode
+                                          child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 10,
+                                                      horizontal: 16),
+                                              child: Row(children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    marketWatchList
+                                                            .wlName.isEmpty
+                                                        ? marketWatchList.wlName
+                                                        : marketWatchList
+                                                                    .isPreDefWLs ==
+                                                                "Yes"
+                                                            ? marketWatchList
+                                                                        .wlName ==
+                                                                    "My Stocks"
+                                                                ? marketWatchList
+                                                                    .wlName
+                                                                : marketWatchList
+                                                                    .wlName
+                                                            : "${marketWatchList.wlName[0].toUpperCase()}${marketWatchList.wlName.substring(1)}'s Watchlist",
+                                                    style: textStyle(
+                                                        theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                                                        14,
+                                                        FontWeight.w600),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                Text(
+                                                    marketWatchList.wlName ==
+                                                            "My Stocks"
+                                                        ? "(${portfolio.holdingsModel!.length})"
+                                                        : "(${marketWatchList.scrips.length})",
+                                                    style: textStyle(
+                                                        theme.isDarkMode
                                                             ? colors
                                                                 .colorLightBlue
                                                             : colors.colorBlue,
-                                                        width: 2))
-                                                : null),
-                                        child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                                        15,
+                                                        FontWeight.w600)),
+                                                const SizedBox(width: 3),
+                                                SvgPicture.asset(
+                                                    assets.downArrow,
+                                                    color: theme.isDarkMode
+                                                        ? colors.colorLightBlue
+                                                        : colors.colorBlue,
+                                                    width: 14)
+                                              ])))
+                                      : Padding(
+                                          padding: const EdgeInsets.all(18),
+                                          child: Row(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.center,
+                                                CrossAxisAlignment.end,
                                             children: [
-                                              SvgPicture.asset(
-                                                  assets.bookmarkedIcon,
-                                                  color: theme.isDarkMode &&
-                                                          indexProvide
-                                                                  .selectedBtmIndx ==
-                                                              1
-                                                      ? colors.colorLightBlue
+                                              Text(
+                                                  indexProvide.selectedBtmIndx ==
+                                                          3
+                                                      ? "Orderbook"
                                                       : indexProvide
                                                                   .selectedBtmIndx ==
-                                                              1
-                                                          ? colors.colorBlue
-                                                          : colors.colorGrey),
-                                              const SizedBox(height: 4),
-                                              Text("Watchlist",
+                                                              2
+                                                          ? "Portfolio"
+                                                          : "Dashboard",
+                                                  // watch(stocksProvide)
+                                                  //     .exploreName,
                                                   style: textStyle(
-                                                      theme.isDarkMode &&
+                                                      theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
+                                                      17,
+                                                      FontWeight.w600)),
+                                            ],
+                                          ),
+                                        ),
+                                  actions: indexProvide.selectedBtmIndx == 0
+                                      ? []
+                                      : [
+                                          if (indexProvide.selectedBtmIndx ==
+                                                  1 &&
+                                              marketWatchList.isPreDefWLs !=
+                                                  "Yes") ...[
+                                            marketWatchList.scrips.length > 1
+                                                ? InkWell(
+                                                    onTap: () {
+                                                      FocusScope.of(context)
+                                                          .unfocus();
+                                                      showModalBottomSheet(
+                                                          useSafeArea: true,
+                                                          isScrollControlled:
+                                                              true,
+                                                          shape: const RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius.vertical(
+                                                                      top: Radius
+                                                                          .circular(
+                                                                              16))),
+                                                          context: context,
+                                                          builder: (context) {
+                                                            return const ScripFilterBottomSheet();
+                                                          });
+                                                    },
+                                                    child: Container(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 8,
+                                                                right: 10),
+                                                        child: SvgPicture.asset(
+                                                            assets.filterLines,
+                                                            width: 19,
+                                                            color: colors
+                                                                .colorGrey)),
+                                                  )
+                                                : Container(),
+                                            marketWatchList.scrips.length >= 50
+                                                ? const SizedBox()
+                                                : InkWell(
+                                                    onTap: () {
+                                                      context
+                                                          .read(
+                                                              marketWatchProvider)
+                                                          .requestMWScrip(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  false);
+                                                      Navigator.pushNamed(
+                                                          context,
+                                                          Routes.searchScrip,
+                                                          arguments:
+                                                              marketWatchList
+                                                                  .wlName);
+                                                    },
+                                                    child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                right: 16,
+                                                                left: 8),
+                                                        child: SvgPicture.asset(
+                                                            assets.searchIcon,
+                                                            width: 19,
+                                                            color: colors
+                                                                .colorGrey)),
+                                                  ),
+                                          ] else if ((indexProvide
+                                                          .selectedBtmIndx ==
+                                                      2 &&
+                                                  portfolio.allPostionList
+                                                      .isNotEmpty) &&
+                                              portfolio.selectedTab == 0) ...[
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  right: 15.0),
+                                              child: Row(children: [
+                                                Container(
+                                                  height: 27,
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 10),
+                                                  child: OutlinedButton(
+                                                      onPressed: () {
+                                                        showModalBottomSheet(
+                                                            useSafeArea: true,
+                                                            isScrollControlled:
+                                                                true,
+                                                            shape: const RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .vertical(
+                                                                            top:
+                                                                                Radius.circular(16))),
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return const PositionGroupBottomSheet();
+                                                            });
+                                                      },
+                                                      style: OutlinedButton.styleFrom(
+                                                          side: BorderSide(
+                                                              color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorGrey
+                                                                  : colors
+                                                                      .colorBlack),
+                                                          shape: const RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius.all(
+                                                                      Radius.circular(
+                                                                          32)))),
+                                                      child: Text("Group by",
+                                                          style: textStyle(
+                                                              theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors.colorBlack,
+                                                              12,
+                                                              FontWeight.w600))),
+                                                ),
+                                                if (portfolio.exitAll &&
+                                                    portfolio.posSelection ==
+                                                        "All position" &&
+                                                    portfolio.openPosition!
+                                                            .length >
+                                                        1)
+                                                  SizedBox(
+                                                    height: 27,
+                                                    child: OutlinedButton(
+                                                        onPressed: () {
+                                                          showDialog(
+                                                            context: context,
+                                                            builder:
+                                                                (BuildContext
+                                                                    context) {
+                                                              return AlertDialog(
+                                                                backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color
+                                                                        .fromARGB(
+                                                                        255,
+                                                                        18,
+                                                                        18,
+                                                                        18)
+                                                                    : colors
+                                                                        .colorWhite,
+                                                                titleTextStyle: textStyles
+                                                                    .appBarTitleTxt
+                                                                    .copyWith(
+                                                                        color: theme.isDarkMode
+                                                                            ? colors.colorWhite
+                                                                            : colors.colorBlack),
+                                                                contentTextStyle: textStyles.menuTxt.copyWith(
+                                                                    color: theme.isDarkMode
+                                                                        ? colors
+                                                                            .colorWhite
+                                                                        : colors
+                                                                            .colorBlack),
+                                                                titlePadding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            14,
+                                                                        vertical:
+                                                                            12),
+                                                                shape: const RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.all(
+                                                                            Radius.circular(14))),
+                                                                scrollable:
+                                                                    true,
+                                                                contentPadding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                  horizontal:
+                                                                      14,
+                                                                ),
+                                                                insetPadding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            20),
+                                                                title: const Text(
+                                                                    "Exit Position"),
+                                                                content:
+                                                                    SizedBox(
+                                                                  width: MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                                  child:
+                                                                      const Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Text(
+                                                                          "Are you sure you want to exit all positions?")
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                actions: [
+                                                                  TextButton(
+                                                                      onPressed: () =>
+                                                                          Navigator.of(context)
+                                                                              .pop(),
+                                                                      child: Text(
+                                                                          "No",
+                                                                          style: textStyles
+                                                                              .textBtn
+                                                                              .copyWith(color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue))),
+                                                                  ElevatedButton(
+                                                                    onPressed:
+                                                                        () async {
+                                                                      await portfolio.exitPosition(
+                                                                          context,
+                                                                          true);
+                                                                      Navigator.of(
+                                                                              context)
+                                                                          .pop(
+                                                                              true);
+                                                                    },
+                                                                    style: ElevatedButton.styleFrom(
+                                                                        elevation: 0,
+                                                                        backgroundColor: theme.isDarkMode ? colors.colorbluegrey : colors.colorBlack,
+                                                                        shape: RoundedRectangleBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(50),
+                                                                        )),
+                                                                    child: Text(
+                                                                        "Yes",
+                                                                        style: textStyle(
+                                                                            !theme.isDarkMode
+                                                                                ? colors.colorWhite
+                                                                                : colors.colorBlack,
+                                                                            14,
+                                                                            FontWeight.w500)),
+                                                                  ),
+                                                                ],
+                                                              );
+                                                            },
+                                                          );
+                                                        },
+                                                        style: OutlinedButton.styleFrom(
+                                                            side: BorderSide(
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorGrey
+                                                                    : colors
+                                                                        .colorBlack),
+                                                            shape: const RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius.all(
+                                                                        Radius.circular(
+                                                                            32)))),
+                                                        child: Text("Exit All",
+                                                            style: textStyle(
+                                                                theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorBlack,
+                                                                12,
+                                                                FontWeight.w600))),
+                                                  ),
+                                              ]),
+                                            )
+                                          ] else if (indexProvide
+                                                      .selectedBtmIndx ==
+                                                  3 &&
+                                              watch(orderProvider)
+                                                      .selectedTab ==
+                                                  4) ...[
+                                            Row(children: [
+                                              Container(
+                                                  margin: const EdgeInsets.only(
+                                                      right: 8),
+                                                  height: 30,
+                                                  child: OutlinedButton(
+                                                      onPressed: () {
+                                                        showDialog(
+                                                            context: context,
+                                                            builder:
+                                                                (BuildContext
+                                                                    context) {
+                                                              return const CreateBasket();
+                                                            });
+                                                      },
+                                                      style: OutlinedButton.styleFrom(
+                                                          side: BorderSide(
+                                                              color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorGrey
+                                                                  : colors
+                                                                      .colorBlack),
+                                                          shape: const RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius.all(
+                                                                      Radius.circular(
+                                                                          32)))),
+                                                      child: Text("Create Basket",
+                                                          style: textStyle(
+                                                              theme.isDarkMode
+                                                                  ? colors.colorWhite
+                                                                  : colors.colorBlack,
+                                                              12,
+                                                              FontWeight.w600))))
+                                            ])
+                                          ]
+                                        ],
+                                  bottom: indexProvide.selectedBtmIndx == 1
+                                      ? const PreferredSize(
+                                          preferredSize: Size(20, 44),
+                                          child: DefaultIndexList())
+                                      : indexProvide.selectedBtmIndx == 4
+                                          ? PreferredSize(
+                                              preferredSize: const Size(20, 20),
+                                              child: ListTile(
+                                                  onTap: () {
+                                                    showModalBottomSheet(
+                                                        context: context,
+                                                        isScrollControlled:
+                                                            true,
+                                                        isDismissible: true,
+                                                        shape:
+                                                            const RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.only(
+                                                            topLeft:
+                                                                Radius.circular(
+                                                                    10),
+                                                            topRight:
+                                                                Radius.circular(
+                                                                    10),
+                                                          ),
+                                                        ),
+                                                        builder: (_) =>
+                                                            const LoggedUserBottomSheet(
+                                                                initRoute:
+                                                                    'switchAcc'));
+                                                  },
+                                                  dense: true,
+                                                  contentPadding:
+                                                      const EdgeInsets.symmetric(
+                                                          horizontal: 16),
+                                                  leading: CircleAvatar(
+                                                    backgroundColor:
+                                                        const Color(0xffF1F3F8),
+                                                    child: Text(
+                                                        userProfile.userDetailModel!
+                                                                    .uname !=
+                                                                null
+                                                            ? userProfile
+                                                                .userDetailModel!
+                                                                .uname![0]
+                                                            : "",
+                                                        style: textStyle(
+                                                            const Color(
+                                                                0xff000000),
+                                                            18,
+                                                            FontWeight.w600)),
+                                                  ),
+                                                  title: Text(
+                                                      "${userProfile.userDetailModel!.uname}",
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: textStyle(
+                                                          Color(theme.isDarkMode
+                                                              ? 0xffffffff
+                                                              : 0xff000000),
+                                                          16,
+                                                          FontWeight.w600)),
+                                                  subtitle: Text(
+                                                      "Client ID ${userProfile.userDetailModel!.uid}",
+                                                      style: textStyle(
+                                                          const Color(0xff666666),
+                                                          12,
+                                                          FontWeight.w500)),
+                                                  trailing: SizedBox(
+                                                      width: 100,
+                                                      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                                                        IconButton(
+                                                          splashRadius: 26,
+                                                          onPressed: () {
+                                                            Navigator.pushNamed(
+                                                                context,
+                                                                Routes
+                                                                    .qrscanner);
+                                                          },
+                                                          icon: SvgPicture.asset(
+                                                              "assets/profile/qr_code.svg",
+                                                              width: 20,
+                                                              height: 24,
+                                                              color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack),
+                                                        ),
+                                                        const SizedBox(
+                                                            width: 4),
+                                                        Icon(
+                                                            Icons
+                                                                .arrow_drop_down_circle_outlined,
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack)
+                                                      ]))))
+                                          : null),
+
+                          // Here is the Bottom menu items
+                          bottomNavigationBar: BottomAppBar(
+                              height: 58,
+                              shadowColor: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                              padding: EdgeInsets.zero,
+                              child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
+                                // Expanded(
+                                //   child: InkWell(
+                                //     onTap: internet.connectionStatus ==
+                                //             ConnectivityResult.none
+                                //         ? null
+                                //         : () async {
+                                //             watch(stocksProvide)
+                                //                 .chngExpName("Stock", 0);
+                                //             await context
+                                //                 .read(indexListProvider)
+                                //                 .checkSession(context);
+                                //             await portfolio.requestWSHoldings(
+                                //                 context: context,
+                                //                 isSubscribe: false);
+
+                                //             // await context
+                                //             //     .read(orderProvider)
+                                //             //     .requestWSOrderBook(
+                                //             //         context: context,
+                                //             //         isSubscribe: false);
+                                //             await portfolio.requestWSPosition(
+                                //                 context: context,
+                                //                 isSubscribe: false);
+
+                                //             await context
+                                //                 .read(marketWatchProvider)
+                                //                 .requestMWScrip(
+                                //                     context: context,
+                                //                     isSubscribe: false);
+                                //             await explore.exploretabSize();
+                                //             indexProvide.bottomMenu(0);
+                                //           },
+                                //     child: Container(
+                                //       margin:
+                                //           const EdgeInsets.symmetric(horizontal: 7),
+                                //       decoration: BoxDecoration(
+                                //           border: indexProvide.selectedBtmIndx == 0
+                                //               ? Border(
+                                //                   top: BorderSide(
+                                //                       color: theme.isDarkMode
+                                //                           ? colors.colorLightBlue
+                                //                           : colors.colorBlue,
+                                //                       width: 2))
+                                //               : null),
+                                //       child: Column(
+                                //         mainAxisAlignment: MainAxisAlignment.center,
+                                //         crossAxisAlignment:
+                                //             CrossAxisAlignment.center,
+                                //         children: [
+                                //           SvgPicture.asset(assets.bookmarkedIcon,
+                                //               color: theme.isDarkMode &&
+                                //                       indexProvide
+                                //                               .selectedBtmIndx ==
+                                //                           0
+                                //                   ? colors.colorLightBlue
+                                //                   : indexProvide.selectedBtmIndx ==
+                                //                           0
+                                //                       ? colors.colorBlue
+                                //                       : colors.colorGrey),
+                                //           const SizedBox(height: 4),
+                                //           Text("Explore",
+                                //               style: textStyle(
+                                //                   theme.isDarkMode &&
+                                //                           indexProvide
+                                //                                   .selectedBtmIndx ==
+                                //                               0
+                                //                       ? colors.colorLightBlue
+                                //                       : indexProvide
+                                //                                   .selectedBtmIndx ==
+                                //                               0
+                                //                           ? colors.colorBlue
+                                //                           : colors.colorGrey,
+                                //                   12,
+                                //                   indexProvide.selectedBtmIndx == 0
+                                //                       ? FontWeight.w600
+                                //                       : FontWeight.w500)),
+                                //         ],
+                                //       ),
+                                //     ),
+                                //   ),
+                                // ),
+
+                                Expanded(
+                                    child: InkWell(
+                                        onTap: internet.connectionStatus ==
+                                                ConnectivityResult.none
+                                            ? null
+                                            : () async {
+                                                portfolio.cancelTimer();
+                                                indexProvide.bottomMenu(1);
+                                                await context
+                                                    .read(indexListProvider)
+                                                    .checkSession(context);
+                                                if (indexProvide
+                                                        .checkSess!.stat ==
+                                                    "Ok") {
+                                                  await portfolio
+                                                      .requestWSHoldings(
+                                                          context: context,
+                                                          isSubscribe: false);
+
+                                                  await context
+                                                      .read(orderProvider)
+                                                      .requestWSOrderBook(
+                                                          context: context,
+                                                          isSubscribe: false);
+                                                  await portfolio
+                                                      .requestWSPosition(
+                                                          context: context,
+                                                          isSubscribe: false);
+                                                  await context
+                                                      .read(marketWatchProvider)
+                                                      .requestMWScrip(
+                                                          context: context,
+                                                          isSubscribe: true);
+                                                }
+                                              },
+                                        child: Container(
+                                            margin: const EdgeInsets.symmetric(
+                                                horizontal: 7),
+                                            decoration: BoxDecoration(
+                                                border: indexProvide
+                                                            .selectedBtmIndx ==
+                                                        1
+                                                    ? Border(
+                                                        top: BorderSide(
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .colorLightBlue
+                                                                : colors
+                                                                    .colorBlue,
+                                                            width: 2))
+                                                    : null),
+                                            child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  SvgPicture.asset(
+                                                      assets.bookmarkedIcon,
+                                                      color: theme.isDarkMode &&
                                                               indexProvide
                                                                       .selectedBtmIndx ==
                                                                   1
@@ -814,80 +832,90 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                   1
                                                               ? colors.colorBlue
                                                               : colors
-                                                                  .colorGrey,
-                                                      12,
-                                                      indexProvide.selectedBtmIndx ==
-                                                              1
-                                                          ? FontWeight.w600
-                                                          : FontWeight.w500))
-                                            ])))),
-                            Expanded(
-                                child: InkWell(
-                              onTap: internet.connectionStatus ==
-                                      ConnectivityResult.none
-                                  ? null
-                                  : () async {
-                                      await context
-                                          .read(indexListProvider)
-                                          .checkSession(context);
+                                                                  .colorGrey),
+                                                  const SizedBox(height: 4),
+                                                  Text("Watchlist",
+                                                      style: textStyle(
+                                                          theme.isDarkMode &&
+                                                                  indexProvide
+                                                                          .selectedBtmIndx ==
+                                                                      1
+                                                              ? colors
+                                                                  .colorLightBlue
+                                                              : indexProvide
+                                                                          .selectedBtmIndx ==
+                                                                      1
+                                                                  ? colors
+                                                                      .colorBlue
+                                                                  : colors
+                                                                      .colorGrey,
+                                                          12,
+                                                          indexProvide.selectedBtmIndx ==
+                                                                  1
+                                                              ? FontWeight.w600
+                                                              : FontWeight
+                                                                  .w500))
+                                                ])))),
+                                Expanded(
+                                    child: InkWell(
+                                  onTap: internet.connectionStatus ==
+                                          ConnectivityResult.none
+                                      ? null
+                                      : () async {
+                                          await context
+                                              .read(indexListProvider)
+                                              .checkSession(context);
 
-                                      if (indexProvide.checkSess!.stat ==
-                                          "Ok") {
-                                        await portfolio
-                                            .fetchMFHoldings(context);
-                                        indexProvide.bottomMenu(2);
-                                        await marketWatchList.requestMWScrip(
-                                            context: context,
-                                            isSubscribe: false);
+                                          if (indexProvide.checkSess!.stat ==
+                                              "Ok") {
+                                            await portfolio
+                                                .fetchMFHoldings(context);
+                                            indexProvide.bottomMenu(2);
+                                            await marketWatchList
+                                                .requestMWScrip(
+                                                    context: context,
+                                                    isSubscribe: false);
 
-                                        await context
-                                            .read(orderProvider)
-                                            .requestWSOrderBook(
+                                            await context
+                                                .read(orderProvider)
+                                                .requestWSOrderBook(
+                                                    context: context,
+                                                    isSubscribe: false);
+
+                                            await portfolio.requestWSHoldings(
                                                 context: context,
-                                                isSubscribe: false);
+                                                isSubscribe: true);
 
-                                        await portfolio.requestWSHoldings(
-                                            context: context,
-                                            isSubscribe: true);
-
-                                        await portfolio.requestWSPosition(
-                                            context: context,
-                                            isSubscribe: true);
-                                      }
-                                    },
-                              child: Container(
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 7),
-                                  decoration: BoxDecoration(
-                                      border: indexProvide.selectedBtmIndx == 2
-                                          ? Border(
-                                              top: BorderSide(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorLightBlue
-                                                      : colors.colorBlue,
-                                                  width: 2))
-                                          : null),
-                                  child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        SvgPicture.asset(assets.barChart,
-                                            color: theme.isDarkMode &&
-                                                    indexProvide
-                                                            .selectedBtmIndx ==
-                                                        2
-                                                ? colors.colorLightBlue
-                                                : indexProvide
-                                                            .selectedBtmIndx ==
-                                                        2
-                                                    ? colors.colorBlue
-                                                    : colors.colorGrey),
-                                        const SizedBox(height: 4),
-                                        Text("Portfolio",
-                                            style: textStyle(
-                                                theme.isDarkMode &&
+                                            await portfolio.requestWSPosition(
+                                                context: context,
+                                                isSubscribe: true);
+                                          }
+                                        },
+                                  child: Container(
+                                      margin:
+                                          const EdgeInsets
+                                              .symmetric(horizontal: 7),
+                                      decoration: BoxDecoration(
+                                          border: indexProvide
+                                                      .selectedBtmIndx ==
+                                                  2
+                                              ? Border(
+                                                  top: BorderSide(
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .colorLightBlue
+                                                          : colors.colorBlue,
+                                                      width: 2))
+                                              : null),
+                                      child:
+                                          Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                            SvgPicture.asset(assets.barChart,
+                                                color: theme.isDarkMode &&
                                                         indexProvide
                                                                 .selectedBtmIndx ==
                                                             2
@@ -896,89 +924,94 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 .selectedBtmIndx ==
                                                             2
                                                         ? colors.colorBlue
-                                                        : colors.colorGrey,
-                                                12,
-                                                indexProvide.selectedBtmIndx ==
-                                                        2
-                                                    ? FontWeight.w600
-                                                    : FontWeight.w500)),
-                                      ])),
-                            )),
-                            Expanded(
-                                child: InkWell(
-                                    onTap: internet.connectionStatus ==
-                                            ConnectivityResult.none
-                                        ? null
-                                        : () async {
-                                            portfolio.cancelTimer();
-                                            indexProvide.bottomMenu(3);
-                                            await context
-                                                .read(indexListProvider)
-                                                .checkSession(context);
-                                            if (indexProvide.checkSess!.stat ==
-                                                "Ok") {
-                                              await context
-                                                  .read(orderProvider)
-                                                  .fetchSipOrderHistory(
-                                                      context);
-                                              await marketWatchList
-                                                  .fetchPendingAlert(context);
-                                              await marketWatchList
-                                                  .requestMWScrip(
-                                                      context: context,
-                                                      isSubscribe: false);
-                                              await portfolio.requestWSHoldings(
-                                                  context: context,
-                                                  isSubscribe: false);
+                                                        : colors.colorGrey),
+                                            const SizedBox(height: 4),
+                                            Text("Portfolio",
+                                                style: textStyle(
+                                                    theme.isDarkMode &&
+                                                            indexProvide
+                                                                    .selectedBtmIndx ==
+                                                                2
+                                                        ? colors.colorLightBlue
+                                                        : indexProvide
+                                                                    .selectedBtmIndx ==
+                                                                2
+                                                            ? colors.colorBlue
+                                                            : colors.colorGrey,
+                                                    12,
+                                                    indexProvide.selectedBtmIndx ==
+                                                            2
+                                                        ? FontWeight.w600
+                                                        : FontWeight.w500)),
+                                          ])),
+                                )),
+                                Expanded(
+                                    child: InkWell(
+                                        onTap: internet.connectionStatus ==
+                                                ConnectivityResult.none
+                                            ? null
+                                            : () async {
+                                                portfolio.cancelTimer();
+                                                indexProvide.bottomMenu(3);
+                                                await context
+                                                    .read(indexListProvider)
+                                                    .checkSession(context);
+                                                if (indexProvide
+                                                        .checkSess!.stat ==
+                                                    "Ok") {
+                                                  await context
+                                                      .read(orderProvider)
+                                                      .fetchSipOrderHistory(
+                                                          context);
+                                                  await marketWatchList
+                                                      .fetchPendingAlert(
+                                                          context);
+                                                  await marketWatchList
+                                                      .requestMWScrip(
+                                                          context: context,
+                                                          isSubscribe: false);
+                                                  await portfolio
+                                                      .requestWSHoldings(
+                                                          context: context,
+                                                          isSubscribe: false);
 
-                                              await portfolio.requestWSPosition(
-                                                  context: context,
-                                                  isSubscribe: false);
+                                                  await portfolio
+                                                      .requestWSPosition(
+                                                          context: context,
+                                                          isSubscribe: false);
 
-                                              context
-                                                  .read(orderProvider)
-                                                  .requestWSOrderBook(
-                                                      context: context,
-                                                      isSubscribe: true);
-                                            }
-                                          },
-                                    child: Container(
-                                        margin:
-                                            const EdgeInsets
-                                                .symmetric(horizontal: 7),
-                                        decoration: BoxDecoration(
-                                            border: indexProvide
-                                                        .selectedBtmIndx ==
-                                                    3
-                                                ? Border(
-                                                    top: BorderSide(
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .colorLightBlue
-                                                            : colors.colorBlue,
-                                                        width: 2))
-                                                : null),
-                                        child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              SvgPicture.asset(assets.bag,
-                                                  color: theme.isDarkMode &&
-                                                          indexProvide
-                                                                  .selectedBtmIndx ==
-                                                              3
-                                                      ? colors.colorLightBlue
-                                                      : indexProvide
-                                                                  .selectedBtmIndx ==
-                                                              3
-                                                          ? colors.colorBlue
-                                                          : colors.colorGrey),
-                                              const SizedBox(height: 4),
-                                              Text("Orders",
-                                                  style: textStyle(
-                                                      theme.isDarkMode &&
+                                                  context
+                                                      .read(orderProvider)
+                                                      .requestWSOrderBook(
+                                                          context: context,
+                                                          isSubscribe: true);
+                                                }
+                                              },
+                                        child: Container(
+                                            margin: const EdgeInsets.symmetric(
+                                                horizontal: 7),
+                                            decoration: BoxDecoration(
+                                                border: indexProvide
+                                                            .selectedBtmIndx ==
+                                                        3
+                                                    ? Border(
+                                                        top: BorderSide(
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .colorLightBlue
+                                                                : colors
+                                                                    .colorBlue,
+                                                            width: 2))
+                                                    : null),
+                                            child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  SvgPicture.asset(assets.bag,
+                                                      color: theme.isDarkMode &&
                                                               indexProvide
                                                                       .selectedBtmIndx ==
                                                                   3
@@ -989,91 +1022,97 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                   3
                                                               ? colors.colorBlue
                                                               : colors
-                                                                  .colorGrey,
-                                                      12,
-                                                      indexProvide.selectedBtmIndx ==
-                                                              3
-                                                          ? FontWeight.w600
-                                                          : FontWeight.w500))
-                                            ])))),
-                            Expanded(
-                                child: InkWell(
-                                    onTap: internet.connectionStatus ==
-                                            ConnectivityResult.none
-                                        ? null
-                                        : () async {
-                                            portfolio.cancelTimer();
-                                            await context
-                                                .read(fundProvider)
-                                                .fetchFunds(context);
-                                            indexProvide.bottomMenu(4);
-                                            if (context
+                                                                  .colorGrey),
+                                                  const SizedBox(height: 4),
+                                                  Text("Orders",
+                                                      style: textStyle(
+                                                          theme.isDarkMode &&
+                                                                  indexProvide
+                                                                          .selectedBtmIndx ==
+                                                                      3
+                                                              ? colors
+                                                                  .colorLightBlue
+                                                              : indexProvide
+                                                                          .selectedBtmIndx ==
+                                                                      3
+                                                                  ? colors
+                                                                      .colorBlue
+                                                                  : colors
+                                                                      .colorGrey,
+                                                          12,
+                                                          indexProvide.selectedBtmIndx ==
+                                                                  3
+                                                              ? FontWeight.w600
+                                                              : FontWeight
+                                                                  .w500))
+                                                ])))),
+                                Expanded(
+                                    child: InkWell(
+                                        onTap: internet.connectionStatus ==
+                                                ConnectivityResult.none
+                                            ? null
+                                            : () async {
+                                                portfolio.cancelTimer();
+                                                await context
                                                     .read(fundProvider)
-                                                    .fundDetailModel!
-                                                    .stat ==
-                                                "Ok") {
-                                              if (userProfile
-                                                  .profileMenu.isEmpty) {
-                                                await userProfile
-                                                    .fetchprofilemenu();
-                                              }
+                                                    .fetchFunds(context);
+                                                indexProvide.bottomMenu(4);
+                                                if (context
+                                                        .read(fundProvider)
+                                                        .fundDetailModel!
+                                                        .stat ==
+                                                    "Ok") {
+                                                  if (userProfile
+                                                      .profileMenu.isEmpty) {
+                                                    await userProfile
+                                                        .fetchprofilemenu();
+                                                  }
 
-                                              marketWatchList.requestMWScrip(
-                                                  context: context,
-                                                  isSubscribe: false);
-                                              portfolio.requestWSHoldings(
-                                                  context: context,
-                                                  isSubscribe: false);
-
-                                              context
-                                                  .read(orderProvider)
-                                                  .requestWSOrderBook(
+                                                  marketWatchList
+                                                      .requestMWScrip(
+                                                          context: context,
+                                                          isSubscribe: false);
+                                                  portfolio.requestWSHoldings(
                                                       context: context,
                                                       isSubscribe: false);
-                                              portfolio.requestWSPosition(
-                                                  context: context,
-                                                  isSubscribe: false);
-                                            }
-                                          },
-                                    child: Container(
-                                        margin:
-                                            const EdgeInsets
-                                                .symmetric(horizontal: 7),
-                                        decoration: BoxDecoration(
-                                            border: indexProvide
-                                                        .selectedBtmIndx ==
-                                                    4
-                                                ? Border(
-                                                    top: BorderSide(
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .colorLightBlue
-                                                            : colors.colorBlue,
-                                                        width: 2))
-                                                : null),
-                                        child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              SvgPicture.asset(
-                                                  "assets/profile/userlogo.svg",
-                                                  height: 18,
-                                                  color: theme.isDarkMode &&
-                                                          indexProvide
-                                                                  .selectedBtmIndx ==
-                                                              4
-                                                      ? colors.colorLightBlue
-                                                      : indexProvide
-                                                                  .selectedBtmIndx ==
-                                                              4
-                                                          ? colors.colorBlue
-                                                          : colors.colorGrey),
-                                              const SizedBox(height: 5),
-                                              Text("Profile",
-                                                  style: textStyle(
-                                                      theme.isDarkMode &&
+
+                                                  context
+                                                      .read(orderProvider)
+                                                      .requestWSOrderBook(
+                                                          context: context,
+                                                          isSubscribe: false);
+                                                  portfolio.requestWSPosition(
+                                                      context: context,
+                                                      isSubscribe: false);
+                                                }
+                                              },
+                                        child: Container(
+                                            margin: const EdgeInsets.symmetric(
+                                                horizontal: 7),
+                                            decoration: BoxDecoration(
+                                                border: indexProvide
+                                                            .selectedBtmIndx ==
+                                                        4
+                                                    ? Border(
+                                                        top: BorderSide(
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .colorLightBlue
+                                                                : colors
+                                                                    .colorBlue,
+                                                            width: 2))
+                                                    : null),
+                                            child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  SvgPicture.asset(
+                                                      "assets/profile/userlogo.svg",
+                                                      height: 18,
+                                                      color: theme.isDarkMode &&
                                                               indexProvide
                                                                       .selectedBtmIndx ==
                                                                   4
@@ -1084,154 +1123,107 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                   4
                                                               ? colors.colorBlue
                                                               : colors
-                                                                  .colorGrey,
-                                                      12,
-                                                      indexProvide.selectedBtmIndx ==
-                                                              4
-                                                          ? FontWeight.w600
-                                                          : FontWeight.w500))
-                                            ])))),
-                            // Expanded(
-                            //     child: InkWell(
-                            //         onTap: internet.connectionStatus ==
-                            //                 ConnectivityResult.none
-                            //             ? null
-                            //             : () async {
-                            //                 showModalBottomSheet(
-                            //                     useSafeArea: true,
-                            //                     isScrollControlled: true,
-                            //                     shape: const RoundedRectangleBorder(
-                            //                         borderRadius:
-                            //                             BorderRadius.vertical(
-                            //                                 top:
-                            //                                     Radius.circular(16))),
-                            //                     context: context,
-                            //                     builder: (context) {
-                            //                       return const MoreMenuBottomSheet();
-                            //                     });
-                            //               },
-                            //         child: Container(
-                            //             margin:
-                            //                 const EdgeInsets.symmetric(horizontal: 7),
-                            //             decoration: BoxDecoration(
-                            //                 border: indexProvide.selectedBtmIndx > 4
-                            //                     ? Border(
-                            //                         top: BorderSide(
-                            //                             color: theme.isDarkMode
-                            //                                 ? colors.colorLightBlue
-                            //                                 : colors.colorBlue,
-                            //                             width: 2))
-                            //                     : null),
-                            //             child: Column(
-                            //                 mainAxisAlignment:
-                            //                     MainAxisAlignment.center,
-                            //                 crossAxisAlignment:
-                            //                     CrossAxisAlignment.center,
-                            //                 children: [
-                            //                   SvgPicture.asset(
-                            //                       "assets/profile/userlogo.svg",
-                            //                       height: 18,
-                            //                       color: theme.isDarkMode &&
-                            //                               indexProvide
-                            //                                       .selectedBtmIndx >
-                            //                                   4
-                            //                           ? colors.colorLightBlue
-                            //                           : indexProvide.selectedBtmIndx >
-                            //                                   4
-                            //                               ? colors.colorBlue
-                            //                               : colors.colorGrey),
-                            //                   const SizedBox(height: 5),
-                            //                   Text("Menu",
-                            //                       style: textStyle(
-                            //                           theme.isDarkMode &&
-                            //                                   indexProvide
-                            //                                           .selectedBtmIndx >
-                            //                                       4
-                            //                               ? colors.colorLightBlue
-                            //                               : indexProvide
-                            //                                           .selectedBtmIndx >
-                            //                                       4
-                            //                                   ? colors.colorBlue
-                            //                                   : colors.colorGrey,
-                            //                           12,
-                            //                           indexProvide.selectedBtmIndx > 4
-                            //                               ? FontWeight.w600
-                            //                               : FontWeight.w500))
-                            //                 ]))))
-                          ])),
-                      body:
-                          // indexProvide.selectedBtmIndx == 0
-                          //     ? SafeArea(
-                          //         child: NestedScrollView(
-                          //             headerSliverBuilder: (BuildContext context,
-                          //                 bool innerBoxIsScrolled) {
-                          //               return [
-                          //                 SliverAppBar(
-                          //                   expandedHeight: 222.0,
-                          //                   floating: false,
-                          //                   pinned: false,
-                          //                   flexibleSpace: FlexibleSpaceBar(
-                          //                       background: Container(
-                          //                     margin: EdgeInsets.all(15),
-                          //                     padding: const EdgeInsets.fromLTRB(
-                          //                         10, 10, 10, 0),
-                          //                     decoration: BoxDecoration(
-                          //                         color: explore.selectedTab == 1
-                          //                             ? Color(0xff834EDA)
-                          //                             : explore.selectedTab == 2
-                          //                                 ? Color(0xff148564)
-                          //                                 : explore.selectedTab == 3
-                          //                                     ? Color(0xff000000)
-                          //                                     : Color(0xff51ffb6),
-                          //                         borderRadius:
-                          //                             BorderRadius.circular(6)),
-                          //                     child: Padding(
-                          //                       padding:
-                          //                           const EdgeInsets.only(left: 10),
-                          //                       child: Column(
-                          //                         crossAxisAlignment:
-                          //                             CrossAxisAlignment.start,
-                          //                         mainAxisAlignment:
-                          //                             MainAxisAlignment.center,
-                          //                         children: [
-                          //                           Text(
-                          //                             "Simple.",
-                          //                             style: textStyle(
-                          //                                 const Color(0xff000000),
-                          //                                 30,
-                          //                                 FontWeight.w500),
-                          //                           ),
-                          //                           Text(
-                          //                             "Insightful.",
-                          //                             style: textStyle(
-                          //                                 const Color(0xff000000),
-                          //                                 30,
-                          //                                 FontWeight.w500),
-                          //                           ),
-                          //                           Text(
-                          //                             "Incremental.",
-                          //                             style: textStyle(
-                          //                                 const Color(0xff000000),
-                          //                                 30,
-                          //                                 FontWeight.w500),
-                          //                           )
-                          //                         ],
-                          //                       ),
-                          //                     ),
-                          //                   )),
-                          //                 ),
-                          //               ];
-                          //             },
-                          //             body: ExploreScreens(theme: theme)),
-                          //       )
-                          //     :
-                          Stack(children: [
-                        _onItemTapped(indexProvide.selectedBtmIndx),
-                        if (internet.connectionStatus ==
-                            ConnectivityResult.none) ...[
-                          const NoInternetWidget()
-                        ]
-                      ]))));
+                                                                  .colorGrey),
+                                                  const SizedBox(height: 5),
+                                                  Text("Profile",
+                                                      style: textStyle(
+                                                          theme.isDarkMode &&
+                                                                  indexProvide
+                                                                          .selectedBtmIndx ==
+                                                                      4
+                                                              ? colors
+                                                                  .colorLightBlue
+                                                              : indexProvide
+                                                                          .selectedBtmIndx ==
+                                                                      4
+                                                                  ? colors
+                                                                      .colorBlue
+                                                                  : colors
+                                                                      .colorGrey,
+                                                          12,
+                                                          indexProvide.selectedBtmIndx ==
+                                                                  4
+                                                              ? FontWeight.w600
+                                                              : FontWeight
+                                                                  .w500))
+                                                ])))),
+                                // Expanded(
+                                //     child: InkWell(
+                                //         onTap: internet.connectionStatus ==
+                                //                 ConnectivityResult.none
+                                //             ? null
+                                //             : () async {
+                                //                 showModalBottomSheet(
+                                //                     useSafeArea: true,
+                                //                     isScrollControlled: true,
+                                //                     shape: const RoundedRectangleBorder(
+                                //                         borderRadius:
+                                //                             BorderRadius.vertical(
+                                //                                 top:
+                                //                                     Radius.circular(16))),
+                                //                     context: context,
+                                //                     builder: (context) {
+                                //                       return const MoreMenuBottomSheet();
+                                //                     });
+                                //               },
+                                //         child: Container(
+                                //             margin:
+                                //                 const EdgeInsets.symmetric(horizontal: 7),
+                                //             decoration: BoxDecoration(
+                                //                 border: indexProvide.selectedBtmIndx > 4
+                                //                     ? Border(
+                                //                         top: BorderSide(
+                                //                             color: theme.isDarkMode
+                                //                                 ? colors.colorLightBlue
+                                //                                 : colors.colorBlue,
+                                //                             width: 2))
+                                //                     : null),
+                                //             child: Column(
+                                //                 mainAxisAlignment:
+                                //                     MainAxisAlignment.center,
+                                //                 crossAxisAlignment:
+                                //                     CrossAxisAlignment.center,
+                                //                 children: [
+                                //                   SvgPicture.asset(
+                                //                       "assets/profile/userlogo.svg",
+                                //                       height: 18,
+                                //                       color: theme.isDarkMode &&
+                                //                               indexProvide
+                                //                                       .selectedBtmIndx >
+                                //                                   4
+                                //                           ? colors.colorLightBlue
+                                //                           : indexProvide.selectedBtmIndx >
+                                //                                   4
+                                //                               ? colors.colorBlue
+                                //                               : colors.colorGrey),
+                                //                   const SizedBox(height: 5),
+                                //                   Text("Menu",
+                                //                       style: textStyle(
+                                //                           theme.isDarkMode &&
+                                //                                   indexProvide
+                                //                                           .selectedBtmIndx >
+                                //                                       4
+                                //                               ? colors.colorLightBlue
+                                //                               : indexProvide
+                                //                                           .selectedBtmIndx >
+                                //                                       4
+                                //                                   ? colors.colorBlue
+                                //                                   : colors.colorGrey,
+                                //                           12,
+                                //                           indexProvide.selectedBtmIndx > 4
+                                //                               ? FontWeight.w600
+                                //                               : FontWeight.w500))
+                                //                 ]))))
+                              ])),
+                          body: Stack(children: [
+                            // _onItemTapped(indexProvide.selectedBtmIndx),
+                            if (internet.connectionStatus ==
+                                    ConnectivityResult.wifi ||
+                                internet.connectionStatus ==
+                                    ConnectivityResult.mobile) ...[
+                              _onItemTapped(indexProvide.selectedBtmIndx),
+                            ]
+                          ]))));
         }));
   }
 

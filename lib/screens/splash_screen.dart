@@ -77,9 +77,6 @@ class _SplashScreenState extends State<SplashScreen> {
                 context, Routes.loginScreen, (route) => false)
             : Navigator.pushNamedAndRemoveUntil(
                 context, Routes.loginScreenBanner, (route) => false);
-        // pref.clientId!.isNotEmpty
-        //     ? await context.read(themeProvider).navigateToNewPage(context)
-        //     : await context.read(themeProvider).removeUsermatrial(context);
       } else {
         pref.setMobileLogin(true);
         await context

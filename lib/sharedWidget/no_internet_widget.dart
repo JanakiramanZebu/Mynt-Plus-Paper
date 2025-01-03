@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 
+
 //  If there is no internet, it will show on the screen.
 
-class NoInternetWidget extends StatelessWidget {
+class NoInternetWidget extends StatefulWidget {
   const NoInternetWidget({super.key});
 
+  @override
+  State<NoInternetWidget> createState() => _NoInternetWidgetState();
+}
+
+class _NoInternetWidgetState extends State<NoInternetWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Align(
           alignment: Alignment.bottomCenter,
           child: Container(
-              color: Colors.black,
+            height: MediaQuery.of(context).size.height,
+              color: Colors.black.withOpacity(.3),
               child: const ListTile(
                   minLeadingWidth: 10,
                   leading: Padding(

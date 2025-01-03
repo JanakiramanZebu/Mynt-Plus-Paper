@@ -20,7 +20,6 @@ import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/functions.dart';
-
 import 'need_help_screen.dart';
 
 class UserAccountScreen extends ConsumerWidget {

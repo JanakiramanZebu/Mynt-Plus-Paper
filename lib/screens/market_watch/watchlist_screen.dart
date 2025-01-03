@@ -55,11 +55,12 @@ class WatchListScreen extends ConsumerWidget {
       itemBuilder: (BuildContext context, int index) {
         return RefreshIndicator(
           onRefresh: () async {
-            if (marketWatch.wlName == "My Stocks") {
-              // await context.read(portfolioProvider).fetchHoldings(context,"");
-            } else if (marketWatch.isPreDefWLs != "Yes") {
-              await marketWatch.fetchMWScrip(marketWatch.wlName, context);
-            }
+            // if (marketWatch.wlName == "My Stocks") {
+            //   // await context.read(portfolioProvider).fetchHoldings(context,"");
+            // } else if (marketWatch.isPreDefWLs != "Yes") {
+            //   await marketWatch.fetchMWScrip(marketWatch.wlName, context);
+            // }
+            await marketWatch.fetchMWScrip(marketWatch.wlName, context);
           },
           child: marketWatch.wlName == "My Stocks"
               ? const StocksScreen()

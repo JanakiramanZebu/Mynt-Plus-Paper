@@ -3,6 +3,31 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 final NumberFormat numberFormat = NumberFormat("##,##,##,##,##0.00", "hi");
+
+bool checkIsInfOrNullOrNan({String? value}) {
+  if (value == null ||
+      value.isEmpty ||
+      value.toLowerCase().startsWith('infi') ||
+      value.toLowerCase().startsWith('nan') ||
+      value.toLowerCase().startsWith('null') ||
+      value.toLowerCase().startsWith('-infi') ||
+      value.toLowerCase().startsWith('-nan') ||
+      value.toLowerCase().startsWith('-null') ||
+      value.toLowerCase() == '0' ||
+      value.toLowerCase() == '0.00' ||
+      value.toLowerCase() == '0.0' ||
+      value.toLowerCase() == '00.00' ||
+      value.toLowerCase() == '00.0000' ||
+      value.toLowerCase() == '-0' ||
+      value.toLowerCase() == '-0.00' ||
+      value.toLowerCase() == '-0.0' ||
+      value.toLowerCase() == '-00.00' ||
+      value.toLowerCase() == '-00.0000') {
+    return true;
+  }
+  return false;
+}
+
 // Coverting Number format
 String getFormatter(
     {required double value, required bool v4d, required bool noDecimal}) {

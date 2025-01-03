@@ -46,6 +46,7 @@ class PositionBookModel {
   String? upldprc;
   String? urmtom;
   String? profitNloss;
+  String? temppnl;
   String? mTm;
   String? perChange;
   String? symbol;
@@ -108,6 +109,7 @@ class PositionBookModel {
       this.urmtom,
       this.mTm,
       this.profitNloss,
+      this.temppnl,
       this.expDate,
       this.option,
       this.symbol,
@@ -115,7 +117,8 @@ class PositionBookModel {
       this.avgPrc,
       this.qty,
       this.unRealMtm,
-      this.bookedPnL,this.isExitSelection});
+      this.bookedPnL,
+      this.isExitSelection});
 
   PositionBookModel.fromJson(Map<String, dynamic> json) {
     actid = json['actid'];
@@ -129,7 +132,7 @@ class PositionBookModel {
     dayavgprc = json['dayavgprc'];
     daybuyamt = json['daybuyamt'];
     daybuyavgprc = json['daybuyavgprc'];
-    dname=json['dname'];
+    dname = json['dname'];
     daybuyqty = json['daybuyqty'];
     daysellamt = json['daysellamt'];
     daysellavgprc = json['daysellavgprc'];
@@ -166,6 +169,7 @@ class PositionBookModel {
     upldprc = json['upldprc'];
     urmtom = json['urmtom'];
     profitNloss = json['profitNloss'];
+    temppnl = json['temppnl'];
     perChange = json['perChange'];
     mTm = json['mTm'];
     chng = json['chng'];
@@ -174,7 +178,7 @@ class PositionBookModel {
     option = json['option'];
     avgPrc = json['avgPrc'];
     qty = json['qty'];
-    isExitSelection=json['isExitSelection'];
+    isExitSelection = json['isExitSelection'];
     unRealMtm = json['unRealMtm'];
     bookedPnL = json['bookedPnL'];
   }
@@ -203,7 +207,7 @@ class PositionBookModel {
     data['emsg'] = emsg;
     data['mult'] = mult;
     data['netavgprc'] = netavgprc;
-    data['dname']=dname;
+    data['dname'] = dname;
     data['netqty'] = netqty;
     data['netupldprc'] = netupldprc;
     data['openbuyamt'] = openbuyamt;
@@ -229,6 +233,7 @@ class PositionBookModel {
     data['upldprc'] = upldprc;
     data['urmtom'] = urmtom;
     data['profitNloss'] = profitNloss;
+    data['temppnl'] = temppnl;
     data['perChange'] = perChange;
     data['mTm'] = mTm;
     data['option'] = option;
@@ -239,7 +244,7 @@ class PositionBookModel {
     data['qty'] = qty;
     data['unRealMtm'] = unRealMtm;
     data['bookedPnL'] = bookedPnL;
-    data['isExitSelection']=isExitSelection;
+    data['isExitSelection'] = isExitSelection;
     return data;
   }
 }

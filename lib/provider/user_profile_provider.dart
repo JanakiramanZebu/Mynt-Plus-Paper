@@ -173,12 +173,12 @@ class UserProfileProvider extends DefaultChangeNotifier {
       //   "leading": "assets/icon/key-01.svg",
       //   "trailing": "assets/profile/greater_arrow.svg"
       // },
-      // {
-      //   "title": "Log",
-      //   "subTitle": "Log message",
-      //   "leading": "assets/profile/privacy_settings.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg"
-      // },
+      {
+        "title": "Log",
+        "subTitle": "Log message",
+        "leading": "assets/profile/privacy_settings.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
     ];
     notifyListeners();
     return settingmenu;

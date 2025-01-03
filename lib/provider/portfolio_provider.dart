@@ -662,6 +662,24 @@ class PortfolioProvider extends DefaultChangeNotifier {
       // splitPositionBook(isDay);
       if (_postionBookModel!.isNotEmpty) {
         if (_postionBookModel![0].stat != "Not_Ok") {
+          for (var i = 0; i < _postionBookModel!.length; i++) {
+            var element = _postionBookModel?[i];
+            int tempqty = (int.parse(element!.daybuyqty.toString()) +
+                        int.parse(element.cfbuyqty.toString())) <
+                    (int.parse(element.daysellqty.toString()) +
+                        int.parse(element.cfsellqty.toString()))
+                ? int.parse(element.daybuyqty.toString())
+                : int.parse(element.daysellqty.toString());
+            double tempavg = int.parse(element.netqty.toString()) > 0
+                ? double.parse(element.daysellavgprc.toString()) -
+                    double.parse(element.netupldprc.toString())
+                : double.parse(element.netupldprc.toString()) -
+                    double.parse(element.daybuyavgprc.toString());
+
+            _postionBookModel?[i].temppnl =
+                "${double.parse(tempavg.toString()) * int.parse(tempqty.toString())}";
+          }
+
           ConstantName.sessCheck = true;
           _isDay = isDay;
           await splitPositionBook(isDay);
@@ -958,17 +976,16 @@ class PortfolioProvider extends DefaultChangeNotifier {
     double totalPnl = 0.00;
     double unRealMtm = 0.00;
     double bookPnl = 0.00;
-
     var qty = 0;
-
     double avgPrc = 0.00;
-
     String pnl = "0.00";
     for (var element in _allPostionList) {
       double lastPrice = double.parse(element.lp == null || element.lp == "null"
           ? "0.00"
           : "${element.lp}");
+      //  print("object day 1 & ${element.tsym}");
       if (isDay) {
+        //  print("object day 1 & ${element.tsym}");
         element.avgPrc = element.netqty == "0" ? "0.00" : element.dayavgprc;
 
         avgPrc = double.parse(element.avgPrc ?? "0.00");
@@ -1010,92 +1027,84 @@ class PortfolioProvider extends DefaultChangeNotifier {
           bookPnl += double.parse(element.rpnl!);
         }
       } else {
+        //  print("object day 2 & ${element.tsym}");
         element.qty = "${element.netqty}";
 
         qty = int.parse(element.qty ?? "0");
-        if (element.exch == "MCX") {
-          double? lotSize = double.tryParse(element.ls ?? "0");
-          qty = (qty / lotSize!).toInt(); // Assuming you want an integer result
-        }
         element.avgPrc = qty == 0
             ? "0.00"
             : _isNetPnl
-                ? element.upldprc == "0.00"
-                    ? element.dayavgprc
-                    : element.upldprc
+                ? element.netavgprc != "0.00"
+                    ? element.netavgprc
+                    : element.upldprc == "0.00"
+                        ? element.dayavgprc
+                        : element.upldprc
                 : element.netavgprc;
+        // if (element.tsym == 'PERSISTENT30JAN25F') {
+        //   print(element.avgPrc);
+        // }
+        var finmtm = 0.00;
+        var temavg = element.netavgprc != "0.00"
+            ? element.netavgprc
+            : element.netupldprc != "0.00"
+                ? element.netupldprc
+                : element.upldprc != "0.00"
+                    ? element.upldprc
+                    : element.dayavgprc;
 
-        avgPrc = double.parse(element.avgPrc ?? "0.00");
-        if (element.exch == "MCX" || element.exch == "CDS") {
-          double value =
-              (lastPrice - double.parse(element.netavgprc ?? "0.00")) *
-                  (int.parse("${element.mult ?? 0}") * qty);
-
-          element.mTm = qty == 0 ? element.rpnl : value.toStringAsFixed(2);
-
-          if (qty == 0) {
-            if (element.cfbuyqty != "0") {
-              element.profitNloss =
-                  (double.parse("${element.daysellavgprc ?? 0.00}") *
-                              int.parse("${element.daysellqty ?? 0}") -
-                          int.parse("${element.cfbuyqty ?? 0}") *
-                              double.parse("${element.upldprc ?? 0.00}"))
-                      .toStringAsFixed(2);
-            } else if (element.cfsellqty != "0") {
-              element.profitNloss = (int.parse("${element.cfsellqty ?? 0}") *
-                          double.parse("${element.upldprc ?? 0.00}") -
-                      double.parse("${element.daybuyavgprc ?? 0.00}") *
-                          int.parse("${element.daybuyqty ?? 0}"))
-                  .toStringAsFixed(2);
-            }
-          } else {
-            element.profitNloss = ((lastPrice -
-                        double.parse(
-                            "${element.upldprc == "0.00" ? element.avgPrc : element.upldprc}")) *
-                    (int.parse("${element.mult ?? 0}") * qty))
-                .toStringAsFixed(2);
+        if (qty == 0) {
+          if (element.cfbuyqty != "0") {
+            element.profitNloss =
+                "${(double.parse(element.daysellavgprc.toString()) * int.parse(element.daysellqty.toString())) - ((int.parse(element.cfbuyqty.toString()) * double.parse(temavg.toString())) + (double.parse(element.daybuyqty.toString()) * double.parse(element.daybuyavgprc.toString())))}";
+          } else if (element.cfsellqty != "0") {
+            element.profitNloss =
+                "${((double.parse(element.daysellqty.toString()) * double.parse(element.daysellavgprc.toString())) + (int.parse(element.cfsellqty.toString()) * double.parse(temavg.toString()))) - double.parse(element.daybuyavgprc.toString()) * double.parse(element.daybuyqty.toString())}";
           }
+
+          // if (element.cfbuyqty != "0") {
+          //     element.profitNloss =
+          //         (double.parse("${element.daysellavgprc ?? 0.00}") *
+          //                     int.parse("${element.daysellqty ?? 0}") -
+          //                 int.parse("${element.cfbuyqty ?? 0}") *
+          //                     double.parse("${element.upldprc ?? 0.00}"))
+          //             .toStringAsFixed(2);
+          //   } else if (element.cfsellqty != "0") {
+          //     element.profitNloss = (int.parse("${element.cfsellqty ?? 0}") *
+          //                 double.parse("${element.upldprc ?? 0.00}") -
+          //             double.parse("${element.daybuyavgprc ?? 0.00}") *
+          //                 int.parse("${element.daybuyqty ?? 0}"))
+          //         .toStringAsFixed(2);
+          //   }
+
+          else {
+            element.profitNloss = element.rpnl;
+          }
+          //print("${element.tsym} ${element.profitNloss} ${element.rpnl}");
+
+          // element.profitNloss =
+          //     double.parse(element.temppnl.toString()).toStringAsFixed(2);
         } else {
-          double value =
-              (((lastPrice - double.parse(element.netavgprc ?? "0.00")) * qty) +
-                  double.parse("${element.rpnl ?? 0.00}"));
-
-          element.mTm = qty != 0 ? value.toStringAsFixed(2) : "${element.rpnl}";
-
-          if (qty == 0) {
-            if (element.cfbuyqty != "0") {
-              element.profitNloss =
-                  ((double.parse("${element.daysellavgprc ?? 0.00}") *
-                              int.parse("${element.daysellqty ?? 0}")) -
-                          (int.parse("${element.cfbuyqty ?? 0}") *
-                              double.parse("${element.upldprc ?? 0.00}")) -
-                          (int.parse("${element.daybuyqty ?? 0}") *
-                              double.parse("${element.daybuyavgprc ?? 0.00}")))
-                      .toStringAsFixed(2);
-            } else if (element.cfsellqty != "0") {
-              element.profitNloss = ((int.parse("${element.cfsellqty ?? 0}") *
-                          double.parse("${element.upldprc ?? 0.00}")) -
-                      (double.parse("${element.daybuyavgprc ?? 0.00}") *
-                          int.parse("${element.daybuyqty ?? 0}")) -
-                      (int.parse("${element.daysellqty ?? 0}") *
-                          double.parse("${element.daysellavgprc ?? 0.00}")))
-                  .toStringAsFixed(2);
-            } else {
-              element.profitNloss = element.rpnl;
-            }
-
-            // print(" 34 ${element.profitNloss}");
-          } else {
-            element.profitNloss = (((lastPrice -
-                            double.parse(
-                                "${element.upldprc == "0.00" ? element.avgPrc : element.upldprc}")) *
-                        qty) +
-                    double.parse("${element.rpnl ?? 0.00}"))
-                .toStringAsFixed(2);
-
-            // print(  "34   ${element.profitNloss}");
-          }
+          var tempunpnl =
+              lastPrice - double.parse(element.netupldprc.toString());
+          element.profitNloss = (double.parse(tempunpnl.toString()) * qty +
+                  double.parse(element.temppnl.toString()))
+              .toStringAsFixed(2);
         }
+        if (["NFO", "BFO", "NSE", "BSE"].contains(element.exch)) {
+          finmtm = qty == 0
+              ? double.parse(element.rpnl.toString())
+              : (lastPrice - double.parse(element.netavgprc.toString())) * qty +
+                  double.parse(element.rpnl.toString());
+        } else {
+          // element.profitNloss =
+          //     "${(double.parse(element.profitNloss.toString()) / double.parse(element.ls.toString()))}";
+          finmtm = qty == 0
+              ? double.parse(element.rpnl.toString())
+              : (lastPrice - double.parse(element.netavgprc.toString())) *
+                      (double.parse(element.mult.toString()) * qty) +
+                  double.parse(element.rpnl.toString());
+        }
+        element.mTm = double.parse(finmtm.toString()).toStringAsFixed(2);
 
         totalMtm += double.parse(element.mTm!);
         totalPnl +=
@@ -1288,6 +1297,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
             if (qty == 0) {
               if (element['cfbuyqty'] != "0") {
+                print("object 1 & ${element['tysm']}");
                 element['profitNloss'] =
                     (double.parse("${element['daysellavgprc'] ?? 0.00}") *
                                 int.parse("${element['daysellqty'] ?? 0}") -
@@ -1295,6 +1305,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                                 double.parse("${element['upldprc'] ?? 0.00}"))
                         .toStringAsFixed(2);
               } else if (element['cfsellqty'] != "0") {
+                print("object 2 & ${element['tysm']}");
                 element['profitNloss'] =
                     (int.parse("${element['cfsellqty'] ?? 0}") *
                                 double.parse("${element['upldprc'] ?? 0.00}") -
@@ -1302,6 +1313,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                                 int.parse("${element['daybuyqty'] ?? 0}"))
                         .toStringAsFixed(2);
               } else {
+                //  print("object else & ${element['tysm']} ");
                 element['profitNloss'] = element['rpnl'];
               }
 
@@ -1314,7 +1326,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                       double.parse("${element['rpnl'] ?? 0.00}"))
                   .toStringAsFixed(2);
 
-              // print(  "34   ${element.profitNloss}");
+              //print("34   ${element.profitNloss}");
             }
           }
 

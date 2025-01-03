@@ -1228,7 +1228,8 @@
 //                                   body: ExploreScreens(theme: theme)),
 //                             )
 //                           : Stack(children: [
-//                               _onItemTapped(indexProvide.selectedBtmIndx),
+//                               _onItemTapped(
+//                                   indexProvide.selectedBtmIndx, theme),
 //                               if (internet.connectionStatus ==
 //                                   ConnectivityResult.none) ...[
 //                                 const NoInternetWidget()
@@ -1238,10 +1239,12 @@
 //   }
 
 // // The screen will change depending on the condition when you click on the bottom menu items.
-//   _onItemTapped(index) {
+//   _onItemTapped(index, ThemesProvider theme) {
 //     switch (index) {
-//       // case 0:
-//       //   return ExploreScreens();
+//       case 0:
+//         return ExploreScreens(
+//           theme: theme,
+//         );
 //       case 1:
 //         return WatchListScreen();
 //       case 2:

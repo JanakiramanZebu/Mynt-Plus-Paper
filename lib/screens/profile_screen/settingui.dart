@@ -55,9 +55,9 @@ class SettingsScreen extends ConsumerWidget {
                         arguments: "Yes");
                   } else if (index == 3) {
                     apikeys.fetchTotp();
-                    String pwd = apikeys.totpkey!.pwd;
-                    _showAlertDialog(context, pwd, theme);
-                    // Navigator.pushNamed(context, Routes.logError);
+                    // String pwd = apikeys.totpkey!.pwd;
+                    // _showAlertDialog(context, pwd, theme);
+                    Navigator.pushNamed(context, Routes.logError);
                   } else if (index == 2) {
                     showDialog(
                         context: context,

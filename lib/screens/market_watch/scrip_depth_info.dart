@@ -15,7 +15,7 @@ import '../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
-import '../../res/res.dart'; 
+import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -124,9 +124,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
       final socketDatas = watch(websocketProvider).socketDatas;
       final theme = context.read(themeProvider);
 
+      // This scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the scrip details.
 
-        // This scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the scrip details.
-                      
       if (socketDatas.containsKey(depthData.token)) {
         depthData.lp = "${socketDatas["${depthData.token}"]['lp']}";
         depthData.pc = "${socketDatas["${depthData.token}"]['pc']}";
@@ -162,7 +161,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
         depthData.bq4 = "${socketDatas["${depthData.token}"]['bq4']}";
         depthData.bq5 = "${socketDatas["${depthData.token}"]['bq5']}";
         depthData.tbq = "${socketDatas["${depthData.token}"]['tbq']}";
-
+        depthData.tsq = "${socketDatas["${depthData.token}"]['tsq']}";
         depthData.wk52H = "${socketDatas["${depthData.token}"]['52h']}";
         depthData.wk52L = "${socketDatas["${depthData.token}"]['52l']}";
         depthData.lc = "${socketDatas["${depthData.token}"]['lc']}";
@@ -843,27 +842,29 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                         : colors.colorBlack,
                                                     13,
                                                     FontWeight.w500))
-                                          ]))
-                                
-                                
-                                ,
-                                if (scripInfo.isPreDefWLs != "Yes")   Container(
- 
-                      padding: const EdgeInsets.symmetric(vertical: 3),
-                      decoration: BoxDecoration(
-                          color: const Color(0xffe3f2fd),
-                          borderRadius: BorderRadius.circular(6)),
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SvgPicture.asset(assets.dInfo,
-                                color: colors.colorBlue),
-                            Text(
-                                " Long press to add ${scripInfo.wlName}'s Watchlist",
-                                style: textStyle(
-                                    colors.colorBlue, 12, FontWeight.w500))
-                          ]))
-                                 ]
+                                          ])),
+                                  if (scripInfo.isPreDefWLs != "Yes")
+                                    Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 3),
+                                        decoration: BoxDecoration(
+                                            color: const Color(0xffe3f2fd),
+                                            borderRadius:
+                                                BorderRadius.circular(6)),
+                                        child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              SvgPicture.asset(assets.dInfo,
+                                                  color: colors.colorBlue),
+                                              Text(
+                                                  " Long press to add ${scripInfo.wlName}'s Watchlist",
+                                                  style: textStyle(
+                                                      colors.colorBlue,
+                                                      12,
+                                                      FontWeight.w500))
+                                            ]))
+                                ]
                               ])
                         ]),
                     Expanded(
@@ -896,7 +897,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                               FontWeight.w500)),
                                       const SizedBox(height: 4),
                                       lowHighBar(
-                                          "${ depthData.l ?? 0.00}",
+                                          "${depthData.l ?? 0.00}",
                                           "${depthData.h ?? 0.00}",
                                           "${depthData.lp ?? depthData.c ?? 0.00}",
                                           theme),
@@ -915,7 +916,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 FontWeight.w500)),
                                         const SizedBox(height: 4),
                                         lowHighBar(
-                                             "${depthData.wk52L ?? 0.00}",
+                                            "${depthData.wk52L ?? 0.00}",
                                             "${depthData.wk52H ?? 0.00}",
                                             "${depthData.lp ?? depthData.c ?? 0.00}",
                                             theme),
@@ -1224,7 +1225,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                               const NoDataFound()
                             ]
                           ] else if (scripInfo.actDeptBtn == "Chart") ...[
-                            ChartScreenWebView(chartArgs: chartArgs!, cHeight: 1.48)
+                            ChartScreenWebView(
+                                chartArgs: chartArgs!, cHeight: 1.48)
                           ] else if (scripInfo.actDeptBtn == "Option") ...[
                             if (scripInfo.isLoad)
                               const Center(
@@ -1253,7 +1255,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                     )
                                   ])),
                             CurStrkprice(
-                                token: depthData.undTk ?? depthData.token??"0.00"),
+                                token: depthData.undTk ??
+                                    depthData.token ??
+                                    "0.00"),
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 12.0),
@@ -1452,9 +1456,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {
-
-       await context.read(marketWatchProvider)  .fetchScripInfo(
-        widget.wlValue.token, widget.wlValue.exch , context);
+    await context
+        .read(marketWatchProvider)
+        .fetchScripInfo(widget.wlValue.token, widget.wlValue.exch, context);
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: widget.wlValue.exch,
         tSym: widget.wlValue.tsym,
@@ -1479,8 +1483,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
   Row lowHighBar(String low, String high, String value, ThemesProvider theme) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      Text(
-          low,
+      Text(low,
           style: textStyle(
               theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               14,
@@ -1523,13 +1526,12 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
               ? double.parse(high)
               : double.parse(value),
           values: [double.parse(value)],
-          onDragging:null,
+          onDragging: null,
           jump: false,
           disabled: true,
         ),
       ),
-      Text(
-          high,
+      Text(high,
           style: textStyle(
               theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               14,
