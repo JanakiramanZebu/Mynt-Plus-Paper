@@ -1,5 +1,4 @@
 // ignore_for_file: depend_on_referenced_packages
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,9 +31,6 @@ class VersionProvider extends DefaultChangeNotifier {
       final currentVersion = packageInfo.version;
       _version = packageInfo.version;
       _versionModel = await api.getVersionApi();
-     
-     
-
       // Compare versions
       if (_isNewerVersion(
           currentVersion,
@@ -66,7 +62,7 @@ class VersionProvider extends DefaultChangeNotifier {
     int update = int.parse(updatedversion.replaceAll('.', ''));
     int current = int.parse(currentVersion.replaceAll('.', ''));
 
-   // print('completed ${update > current}  ${update} ${current}');
+    print('completed ${update > current}  ${update} ${current}');
     return update > current;
   }
 }

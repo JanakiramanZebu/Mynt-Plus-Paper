@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -52,14 +51,18 @@ class VersionBottomSheet extends ConsumerWidget {
             //     //   width: 130,
             //     // ),
             //     ),
+             Align(
+              alignment: Alignment.centerRight,
+              child: Icon(Icons.cancel_outlined)),
             const SizedBox(
               height: 10,
             ),
+           
             Center(
               child: Text(
-                defaultTargetPlatform == TargetPlatform.iOS
-                ?"${version.versionmodel?.attributes.version.ios}"
-                :"${version.versionmodel?.attributes.version.android}",
+                  defaultTargetPlatform == TargetPlatform.iOS
+                      ? "${version.versionmodel?.attributes.version.ios}"
+                      : "${version.versionmodel?.attributes.version.android}",
                   style: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       30,

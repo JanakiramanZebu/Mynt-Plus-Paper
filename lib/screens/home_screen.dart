@@ -3,9 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:upgrader/upgrader.dart';
 import '../locator/constant.dart';
-import '../models/upgrader_model.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
@@ -160,35 +158,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ? InkWell(
                                       onTap: () {
                                         FocusScope.of(context).unfocus();
-              
+
                                         showModalBottomSheet(
                                             useSafeArea: true,
                                             isScrollControlled: true,
-                                            shape:
-                                                const RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.vertical(
-                                                            top: Radius
-                                                                .circular(
-                                                                    16))),
+                                            shape: const RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.vertical(
+                                                        top: Radius.circular(
+                                                            16))),
                                             context: context,
                                             builder: (context) {
                                               return WatchlistsBottomSheet(
                                                   currentWLName:
-                                                      marketWatchList
-                                                          .wlName);
+                                                      marketWatchList.wlName);
                                             });
                                       },
                                       child: Container(
-                                          padding:
-                                              const EdgeInsets.symmetric(
-                                                  vertical: 10,
-                                                  horizontal: 16),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10, horizontal: 16),
                                           child: Row(children: [
                                             Expanded(
                                               child: Text(
-                                                marketWatchList
-                                                        .wlName.isEmpty
+                                                marketWatchList.wlName.isEmpty
                                                     ? marketWatchList.wlName
                                                     : marketWatchList
                                                                 .isPreDefWLs ==
@@ -207,8 +199,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         : colors.colorBlack,
                                                     14,
                                                     FontWeight.w600),
-                                                overflow:
-                                                    TextOverflow.ellipsis,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                             Text(
@@ -218,14 +209,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     : "(${marketWatchList.scrips.length})",
                                                 style: textStyle(
                                                     theme.isDarkMode
-                                                        ? colors
-                                                            .colorLightBlue
+                                                        ? colors.colorLightBlue
                                                         : colors.colorBlue,
                                                     15,
                                                     FontWeight.w600)),
                                             const SizedBox(width: 3),
-                                            SvgPicture.asset(
-                                                assets.downArrow,
+                                            SvgPicture.asset(assets.downArrow,
                                                 color: theme.isDarkMode
                                                     ? colors.colorLightBlue
                                                     : colors.colorBlue,
@@ -238,8 +227,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             CrossAxisAlignment.end,
                                         children: [
                                           Text(
-                                              indexProvide.selectedBtmIndx ==
-                                                      3
+                                              indexProvide.selectedBtmIndx == 3
                                                   ? "Orderbook"
                                                   : indexProvide
                                                               .selectedBtmIndx ==
@@ -260,8 +248,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               actions: indexProvide.selectedBtmIndx == 0
                                   ? []
                                   : [
-                                      if (indexProvide.selectedBtmIndx ==
-                                              1 &&
+                                      if (indexProvide.selectedBtmIndx == 1 &&
                                           marketWatchList.isPreDefWLs !=
                                               "Yes") ...[
                                         marketWatchList.scrips.length > 1
@@ -271,8 +258,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       .unfocus();
                                                   showModalBottomSheet(
                                                       useSafeArea: true,
-                                                      isScrollControlled:
-                                                          true,
+                                                      isScrollControlled: true,
                                                       shape: const RoundedRectangleBorder(
                                                           borderRadius:
                                                               BorderRadius.vertical(
@@ -285,15 +271,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       });
                                                 },
                                                 child: Container(
-                                                    padding:
-                                                        EdgeInsets.only(
-                                                            left: 8,
-                                                            right: 10),
+                                                    padding: EdgeInsets.only(
+                                                        left: 8, right: 10),
                                                     child: SvgPicture.asset(
                                                         assets.filterLines,
                                                         width: 19,
-                                                        color: colors
-                                                            .colorGrey)),
+                                                        color:
+                                                            colors.colorGrey)),
                                               )
                                             : Container(),
                                         marketWatchList.scrips.length >= 50
@@ -301,36 +285,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             : InkWell(
                                                 onTap: () {
                                                   context
-                                                      .read(
-                                                          marketWatchProvider)
+                                                      .read(marketWatchProvider)
                                                       .requestMWScrip(
                                                           context: context,
-                                                          isSubscribe:
-                                                              false);
-                                                  Navigator.pushNamed(
-                                                      context,
+                                                          isSubscribe: false);
+                                                  Navigator.pushNamed(context,
                                                       Routes.searchScrip,
-                                                      arguments:
-                                                          marketWatchList
-                                                              .wlName);
+                                                      arguments: marketWatchList
+                                                          .wlName);
                                                 },
                                                 child: Padding(
                                                     padding:
-                                                        const EdgeInsets
-                                                            .only(
-                                                            right: 16,
-                                                            left: 8),
+                                                        const EdgeInsets.only(
+                                                            right: 16, left: 8),
                                                     child: SvgPicture.asset(
                                                         assets.searchIcon,
                                                         width: 19,
-                                                        color: colors
-                                                            .colorGrey)),
+                                                        color:
+                                                            colors.colorGrey)),
                                               ),
                                       ] else if ((indexProvide
                                                       .selectedBtmIndx ==
                                                   2 &&
-                                              portfolio.allPostionList
-                                                  .isNotEmpty) &&
+                                              portfolio
+                                                  .allPostionList.isNotEmpty) &&
                                           portfolio.selectedTab == 0) ...[
                                         Padding(
                                           padding: const EdgeInsets.only(
@@ -338,9 +316,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           child: Row(children: [
                                             Container(
                                               height: 27,
-                                              padding:
-                                                  const EdgeInsets.only(
-                                                      right: 10),
+                                              padding: const EdgeInsets.only(
+                                                  right: 10),
                                               child: OutlinedButton(
                                                   onPressed: () {
                                                     showModalBottomSheet(
@@ -349,10 +326,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             true,
                                                         shape: const RoundedRectangleBorder(
                                                             borderRadius:
-                                                                BorderRadius
-                                                                    .vertical(
-                                                                        top:
-                                                                            Radius.circular(16))),
+                                                                BorderRadius.vertical(
+                                                                    top: Radius
+                                                                        .circular(
+                                                                            16))),
                                                         context: context,
                                                         builder: (context) {
                                                           return const PositionGroupBottomSheet();
@@ -361,8 +338,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   style: OutlinedButton.styleFrom(
                                                       side: BorderSide(
                                                           color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorGrey
+                                                              ? colors.colorGrey
                                                               : colors
                                                                   .colorBlack),
                                                       shape: const RoundedRectangleBorder(
@@ -375,15 +351,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           theme.isDarkMode
                                                               ? colors
                                                                   .colorWhite
-                                                              : colors.colorBlack,
+                                                              : colors
+                                                                  .colorBlack,
                                                           12,
                                                           FontWeight.w600))),
                                             ),
                                             if (portfolio.exitAll &&
                                                 portfolio.posSelection ==
                                                     "All position" &&
-                                                portfolio.openPosition!
-                                                        .length >
+                                                portfolio.openPosition!.length >
                                                     1)
                                               SizedBox(
                                                 height: 27,
@@ -391,9 +367,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     onPressed: () {
                                                       showDialog(
                                                         context: context,
-                                                        builder:
-                                                            (BuildContext
-                                                                context) {
+                                                        builder: (BuildContext
+                                                            context) {
                                                           return AlertDialog(
                                                             backgroundColor: theme
                                                                     .isDarkMode
@@ -409,14 +384,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 .appBarTitleTxt
                                                                 .copyWith(
                                                                     color: theme.isDarkMode
-                                                                        ? colors.colorWhite
-                                                                        : colors.colorBlack),
-                                                            contentTextStyle: textStyles.menuTxt.copyWith(
-                                                                color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .colorWhite
-                                                                    : colors
-                                                                        .colorBlack),
+                                                                        ? colors
+                                                                            .colorWhite
+                                                                        : colors
+                                                                            .colorBlack),
+                                                            contentTextStyle: textStyles
+                                                                .menuTxt
+                                                                .copyWith(
+                                                                    color: theme.isDarkMode
+                                                                        ? colors
+                                                                            .colorWhite
+                                                                        : colors
+                                                                            .colorBlack),
                                                             titlePadding:
                                                                 const EdgeInsets
                                                                     .symmetric(
@@ -425,16 +404,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                     vertical:
                                                                         12),
                                                             shape: const RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius.all(
-                                                                        Radius.circular(14))),
-                                                            scrollable:
-                                                                true,
+                                                                borderRadius: BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            14))),
+                                                            scrollable: true,
                                                             contentPadding:
                                                                 const EdgeInsets
                                                                     .symmetric(
-                                                              horizontal:
-                                                                  14,
+                                                              horizontal: 14,
                                                             ),
                                                             insetPadding:
                                                                 const EdgeInsets
@@ -443,12 +421,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                         20),
                                                             title: const Text(
                                                                 "Exit Position"),
-                                                            content:
-                                                                SizedBox(
-                                                              width: MediaQuery.of(
-                                                                      context)
-                                                                  .size
-                                                                  .width,
+                                                            content: SizedBox(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
                                                               child:
                                                                   const Column(
                                                                 crossAxisAlignment:
@@ -463,39 +441,52 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             actions: [
                                                               TextButton(
                                                                   onPressed: () =>
-                                                                      Navigator.of(context)
+                                                                      Navigator.of(
+                                                                              context)
                                                                           .pop(),
                                                                   child: Text(
                                                                       "No",
                                                                       style: textStyles
                                                                           .textBtn
-                                                                          .copyWith(color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue))),
+                                                                          .copyWith(
+                                                                              color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue))),
                                                               ElevatedButton(
                                                                 onPressed:
                                                                     () async {
-                                                                  await portfolio.exitPosition(
-                                                                      context,
-                                                                      true);
+                                                                  await portfolio
+                                                                      .exitPosition(
+                                                                          context,
+                                                                          true);
                                                                   Navigator.of(
                                                                           context)
                                                                       .pop(
                                                                           true);
                                                                 },
-                                                                style: ElevatedButton.styleFrom(
-                                                                    elevation: 0,
-                                                                    backgroundColor: theme.isDarkMode ? colors.colorbluegrey : colors.colorBlack,
-                                                                    shape: RoundedRectangleBorder(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(50),
-                                                                    )),
+                                                                style: ElevatedButton
+                                                                    .styleFrom(
+                                                                        elevation:
+                                                                            0,
+                                                                        backgroundColor: theme.isDarkMode
+                                                                            ? colors
+                                                                                .colorbluegrey
+                                                                            : colors
+                                                                                .colorBlack,
+                                                                        shape:
+                                                                            RoundedRectangleBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(50),
+                                                                        )),
                                                                 child: Text(
                                                                     "Yes",
                                                                     style: textStyle(
                                                                         !theme.isDarkMode
-                                                                            ? colors.colorWhite
-                                                                            : colors.colorBlack,
+                                                                            ? colors
+                                                                                .colorWhite
+                                                                            : colors
+                                                                                .colorBlack,
                                                                         14,
-                                                                        FontWeight.w500)),
+                                                                        FontWeight
+                                                                            .w500)),
                                                               ),
                                                             ],
                                                           );
@@ -526,11 +517,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ),
                                           ]),
                                         )
-                                      ] else if (indexProvide
-                                                  .selectedBtmIndx ==
+                                      ] else if (indexProvide.selectedBtmIndx ==
                                               3 &&
-                                          watch(orderProvider)
-                                                  .selectedTab ==
+                                          watch(orderProvider).selectedTab ==
                                               4) ...[
                                         Row(children: [
                                           Container(
@@ -541,17 +530,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   onPressed: () {
                                                     showDialog(
                                                         context: context,
-                                                        builder:
-                                                            (BuildContext
-                                                                context) {
+                                                        builder: (BuildContext
+                                                            context) {
                                                           return const CreateBasket();
                                                         });
                                                   },
                                                   style: OutlinedButton.styleFrom(
                                                       side: BorderSide(
                                                           color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorGrey
+                                                              ? colors.colorGrey
                                                               : colors
                                                                   .colorBlack),
                                                       shape: const RoundedRectangleBorder(
@@ -562,7 +549,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   child: Text("Create Basket",
                                                       style: textStyle(
                                                           theme.isDarkMode
-                                                              ? colors.colorWhite
+                                                              ? colors
+                                                                  .colorWhite
                                                               : colors.colorBlack,
                                                           12,
                                                           FontWeight.w600))))
@@ -580,19 +568,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               onTap: () {
                                                 showModalBottomSheet(
                                                     context: context,
-                                                    isScrollControlled:
-                                                        true,
+                                                    isScrollControlled: true,
                                                     isDismissible: true,
                                                     shape:
                                                         const RoundedRectangleBorder(
                                                       borderRadius:
                                                           BorderRadius.only(
                                                         topLeft:
-                                                            Radius.circular(
-                                                                10),
+                                                            Radius.circular(10),
                                                         topRight:
-                                                            Radius.circular(
-                                                                10),
+                                                            Radius.circular(10),
                                                       ),
                                                     ),
                                                     builder: (_) =>
@@ -616,8 +601,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             .uname![0]
                                                         : "",
                                                     style: textStyle(
-                                                        const Color(
-                                                            0xff000000),
+                                                        const Color(0xff000000),
                                                         18,
                                                         FontWeight.w600)),
                                               ),
@@ -639,14 +623,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       FontWeight.w500)),
                                               trailing: SizedBox(
                                                   width: 100,
-                                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                                                  child:
+                                                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                                                     IconButton(
                                                       splashRadius: 26,
                                                       onPressed: () {
                                                         Navigator.pushNamed(
                                                             context,
-                                                            Routes
-                                                                .qrscanner);
+                                                            Routes.qrscanner);
                                                       },
                                                       icon: SvgPicture.asset(
                                                           "assets/profile/qr_code.svg",
@@ -658,19 +642,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                               : colors
                                                                   .colorBlack),
                                                     ),
-                                                    const SizedBox(
-                                                        width: 4),
+                                                    const SizedBox(width: 4),
                                                     Icon(
                                                         Icons
                                                             .arrow_drop_down_circle_outlined,
                                                         color: theme.isDarkMode
-                                                            ? colors
-                                                                .colorWhite
-                                                            : colors
-                                                                .colorBlack)
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack)
                                                   ]))))
                                       : null),
-              
+
                       // Here is the Bottom menu items
                       bottomNavigationBar: BottomAppBar(
                           height: 58,
@@ -691,7 +672,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             //             await portfolio.requestWSHoldings(
                             //                 context: context,
                             //                 isSubscribe: false);
-              
+
                             //             // await context
                             //             //     .read(orderProvider)
                             //             //     .requestWSOrderBook(
@@ -700,7 +681,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             //             await portfolio.requestWSPosition(
                             //                 context: context,
                             //                 isSubscribe: false);
-              
+
                             //             await context
                             //                 .read(marketWatchProvider)
                             //                 .requestMWScrip(
@@ -758,7 +739,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             //     ),
                             //   ),
                             // ),
-              
+
                             Expanded(
                                 child: InkWell(
                                     onTap: internet.connectionStatus ==
@@ -770,23 +751,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             await context
                                                 .read(indexListProvider)
                                                 .checkSession(context);
-                                            if (indexProvide
-                                                    .checkSess!.stat ==
+                                            if (indexProvide.checkSess!.stat ==
                                                 "Ok") {
-                                              await portfolio
-                                                  .requestWSHoldings(
-                                                      context: context,
-                                                      isSubscribe: false);
-              
+                                              await portfolio.requestWSHoldings(
+                                                  context: context,
+                                                  isSubscribe: false);
+
                                               await context
                                                   .read(orderProvider)
                                                   .requestWSOrderBook(
                                                       context: context,
                                                       isSubscribe: false);
-                                              await portfolio
-                                                  .requestWSPosition(
-                                                      context: context,
-                                                      isSubscribe: false);
+                                              await portfolio.requestWSPosition(
+                                                  context: context,
+                                                  isSubscribe: false);
                                               await context
                                                   .read(marketWatchProvider)
                                                   .requestMWScrip(
@@ -795,20 +773,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             }
                                           },
                                     child: Container(
-                                        margin: const EdgeInsets.symmetric(
-                                            horizontal: 7),
+                                        margin:
+                                            const EdgeInsets
+                                                .symmetric(horizontal: 7),
                                         decoration: BoxDecoration(
                                             border: indexProvide
                                                         .selectedBtmIndx ==
                                                     1
                                                 ? Border(
                                                     top: BorderSide(
-                                                        color: theme
-                                                                .isDarkMode
+                                                        color: theme.isDarkMode
                                                             ? colors
                                                                 .colorLightBlue
-                                                            : colors
-                                                                .colorBlue,
+                                                            : colors.colorBlue,
                                                         width: 2))
                                                 : null),
                                         child: Column(
@@ -823,14 +800,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           indexProvide
                                                                   .selectedBtmIndx ==
                                                               1
-                                                      ? colors
-                                                          .colorLightBlue
+                                                      ? colors.colorLightBlue
                                                       : indexProvide
                                                                   .selectedBtmIndx ==
                                                               1
                                                           ? colors.colorBlue
-                                                          : colors
-                                                              .colorGrey),
+                                                          : colors.colorGrey),
                                               const SizedBox(height: 4),
                                               Text("Watchlist",
                                                   style: textStyle(
@@ -843,75 +818,58 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           : indexProvide
                                                                       .selectedBtmIndx ==
                                                                   1
-                                                              ? colors
-                                                                  .colorBlue
+                                                              ? colors.colorBlue
                                                               : colors
                                                                   .colorGrey,
                                                       12,
                                                       indexProvide.selectedBtmIndx ==
                                                               1
                                                           ? FontWeight.w600
-                                                          : FontWeight
-                                                              .w500))
+                                                          : FontWeight.w500))
                                             ])))),
                             Expanded(
                                 child: InkWell(
-                              onTap: internet.connectionStatus ==
-                                      ConnectivityResult.none
-                                  ? null
-                                  : () async {
-                                      await context
-                                          .read(indexListProvider)
-                                          .checkSession(context);
-              
-                                      if (indexProvide.checkSess!.stat ==
-                                          "Ok") {
-                                        await portfolio
-                                            .fetchMFHoldings(context);
-                                        indexProvide.bottomMenu(2);
-                                        await marketWatchList
-                                            .requestMWScrip(
-                                                context: context,
-                                                isSubscribe: false);
-              
-                                        await context
-                                            .read(orderProvider)
-                                            .requestWSOrderBook(
-                                                context: context,
-                                                isSubscribe: false);
-              
-                                        await portfolio.requestWSHoldings(
-                                            context: context,
-                                            isSubscribe: true);
-              
-                                        await portfolio.requestWSPosition(
-                                            context: context,
-                                            isSubscribe: true);
-                                      }
-                                    },
+                              onTap: () async {
+                                await context
+                                    .read(indexListProvider)
+                                    .checkSession(context);
+
+                                if (indexProvide.checkSess!.stat == "Ok") {
+                                  await portfolio.fetchMFHoldings(context);
+                                  indexProvide.bottomMenu(2);
+                                  await marketWatchList.requestMWScrip(
+                                      context: context, isSubscribe: false);
+
+                                  await context
+                                      .read(orderProvider)
+                                      .requestWSOrderBook(
+                                          context: context, isSubscribe: false);
+
+                                  await portfolio.requestWSHoldings(
+                                      context: context, isSubscribe: true);
+
+                                  await portfolio.requestWSPosition(
+                                      context: context, isSubscribe: true);
+                                }
+                              },
                               child: Container(
                                   margin:
-                                      const EdgeInsets
-                                          .symmetric(horizontal: 7),
+                                      const EdgeInsets.symmetric(horizontal: 7),
                                   decoration: BoxDecoration(
-                                      border: indexProvide
-                                                  .selectedBtmIndx ==
-                                              2
+                                      border: indexProvide.selectedBtmIndx == 2
                                           ? Border(
                                               top: BorderSide(
                                                   color: theme.isDarkMode
-                                                      ? colors
-                                                          .colorLightBlue
+                                                      ? colors.colorLightBlue
                                                       : colors.colorBlue,
                                                   width: 2))
                                           : null),
-                                  child:
-                                      Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
+                                  child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
                                         SvgPicture.asset(assets.barChart,
                                             color: theme.isDarkMode &&
                                                     indexProvide
@@ -945,61 +903,51 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             )),
                             Expanded(
                                 child: InkWell(
-                                    onTap: internet.connectionStatus ==
-                                            ConnectivityResult.none
-                                        ? null
-                                        : () async {
-                                            portfolio.cancelTimer();
-                                            indexProvide.bottomMenu(3);
-                                            await context
-                                                .read(indexListProvider)
-                                                .checkSession(context);
-                                            if (indexProvide
-                                                    .checkSess!.stat ==
-                                                "Ok") {
-                                              await context
-                                                  .read(orderProvider)
-                                                  .fetchSipOrderHistory(
-                                                      context);
-                                              await marketWatchList
-                                                  .fetchPendingAlert(
-                                                      context);
-                                              await marketWatchList
-                                                  .requestMWScrip(
-                                                      context: context,
-                                                      isSubscribe: false);
-                                              await portfolio
-                                                  .requestWSHoldings(
-                                                      context: context,
-                                                      isSubscribe: false);
-              
-                                              await portfolio
-                                                  .requestWSPosition(
-                                                      context: context,
-                                                      isSubscribe: false);
-              
-                                              context
-                                                  .read(orderProvider)
-                                                  .requestWSOrderBook(
-                                                      context: context,
-                                                      isSubscribe: true);
-                                            }
-                                          },
+                                    onTap: () async {
+                                      portfolio.cancelTimer();
+                                      indexProvide.bottomMenu(3);
+                                      await context
+                                          .read(indexListProvider)
+                                          .checkSession(context);
+                                      if (indexProvide.checkSess!.stat ==
+                                          "Ok") {
+                                        await context
+                                            .read(orderProvider)
+                                            .fetchSipOrderHistory(context);
+                                        await marketWatchList
+                                            .fetchPendingAlert(context);
+                                        await marketWatchList.requestMWScrip(
+                                            context: context,
+                                            isSubscribe: false);
+                                        await portfolio.requestWSHoldings(
+                                            context: context,
+                                            isSubscribe: false);
+
+                                        await portfolio.requestWSPosition(
+                                            context: context,
+                                            isSubscribe: false);
+
+                                        context
+                                            .read(orderProvider)
+                                            .requestWSOrderBook(
+                                                context: context,
+                                                isSubscribe: true);
+                                      }
+                                    },
                                     child: Container(
-                                        margin: const EdgeInsets.symmetric(
-                                            horizontal: 7),
+                                        margin:
+                                            const EdgeInsets
+                                                .symmetric(horizontal: 7),
                                         decoration: BoxDecoration(
                                             border: indexProvide
                                                         .selectedBtmIndx ==
                                                     3
                                                 ? Border(
                                                     top: BorderSide(
-                                                        color: theme
-                                                                .isDarkMode
+                                                        color: theme.isDarkMode
                                                             ? colors
                                                                 .colorLightBlue
-                                                            : colors
-                                                                .colorBlue,
+                                                            : colors.colorBlue,
                                                         width: 2))
                                                 : null),
                                         child: Column(
@@ -1013,14 +961,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           indexProvide
                                                                   .selectedBtmIndx ==
                                                               3
-                                                      ? colors
-                                                          .colorLightBlue
+                                                      ? colors.colorLightBlue
                                                       : indexProvide
                                                                   .selectedBtmIndx ==
                                                               3
                                                           ? colors.colorBlue
-                                                          : colors
-                                                              .colorGrey),
+                                                          : colors.colorGrey),
                                               const SizedBox(height: 4),
                                               Text("Orders",
                                                   style: textStyle(
@@ -1033,16 +979,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           : indexProvide
                                                                       .selectedBtmIndx ==
                                                                   3
-                                                              ? colors
-                                                                  .colorBlue
+                                                              ? colors.colorBlue
                                                               : colors
                                                                   .colorGrey,
                                                       12,
                                                       indexProvide.selectedBtmIndx ==
                                                               3
                                                           ? FontWeight.w600
-                                                          : FontWeight
-                                                              .w500))
+                                                          : FontWeight.w500))
                                             ])))),
                             Expanded(
                                 child: InkWell(
@@ -1065,15 +1009,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 await userProfile
                                                     .fetchprofilemenu();
                                               }
-              
-                                              marketWatchList
-                                                  .requestMWScrip(
-                                                      context: context,
-                                                      isSubscribe: false);
+
+                                              marketWatchList.requestMWScrip(
+                                                  context: context,
+                                                  isSubscribe: false);
                                               portfolio.requestWSHoldings(
                                                   context: context,
                                                   isSubscribe: false);
-              
+
                                               context
                                                   .read(orderProvider)
                                                   .requestWSOrderBook(
@@ -1085,20 +1028,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             }
                                           },
                                     child: Container(
-                                        margin: const EdgeInsets.symmetric(
-                                            horizontal: 7),
+                                        margin:
+                                            const EdgeInsets
+                                                .symmetric(horizontal: 7),
                                         decoration: BoxDecoration(
                                             border: indexProvide
                                                         .selectedBtmIndx ==
                                                     4
                                                 ? Border(
                                                     top: BorderSide(
-                                                        color: theme
-                                                                .isDarkMode
+                                                        color: theme.isDarkMode
                                                             ? colors
                                                                 .colorLightBlue
-                                                            : colors
-                                                                .colorBlue,
+                                                            : colors.colorBlue,
                                                         width: 2))
                                                 : null),
                                         child: Column(
@@ -1114,14 +1056,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           indexProvide
                                                                   .selectedBtmIndx ==
                                                               4
-                                                      ? colors
-                                                          .colorLightBlue
+                                                      ? colors.colorLightBlue
                                                       : indexProvide
                                                                   .selectedBtmIndx ==
                                                               4
                                                           ? colors.colorBlue
-                                                          : colors
-                                                              .colorGrey),
+                                                          : colors.colorGrey),
                                               const SizedBox(height: 5),
                                               Text("Profile",
                                                   style: textStyle(
@@ -1134,16 +1074,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           : indexProvide
                                                                       .selectedBtmIndx ==
                                                                   4
-                                                              ? colors
-                                                                  .colorBlue
+                                                              ? colors.colorBlue
                                                               : colors
                                                                   .colorGrey,
                                                       12,
                                                       indexProvide.selectedBtmIndx ==
                                                               4
                                                           ? FontWeight.w600
-                                                          : FontWeight
-                                                              .w500))
+                                                          : FontWeight.w500))
                                             ])))),
                             // Expanded(
                             //     child: InkWell(
