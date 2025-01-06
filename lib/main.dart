@@ -12,7 +12,6 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:mynt_plus/notification/notification_service.dart';
-import 'package:upgrader/upgrader.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'locator/locator.dart';
 import 'locator/preference.dart';
@@ -58,10 +57,8 @@ void main() async {
   await NotificationService.initializeNotification();
   // NotificationService().initNotification();
   WidgetsFlutterBinding.ensureInitialized();
-  await Upgrader.clearSavedSettings();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  await Upgrader.clearSavedSettings();
+ 
   final Preferences pref = locator<Preferences>();
   await pref.init();
 

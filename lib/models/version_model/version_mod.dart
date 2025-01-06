@@ -43,23 +43,20 @@ class VersionAttributes {
 class VersionDetails {
   final String android;
   final String ios;
+  final String mandate;
 
-  VersionDetails({
-    required this.android,
-    required this.ios,
-  });
+  VersionDetails(
+      {required this.android, required this.ios, required this.mandate});
 
   factory VersionDetails.fromJson(Map<String, dynamic> json) {
     return VersionDetails(
       android: json['and'] ?? '',
       ios: json['ios'] ?? '',
+      mandate: json['mandate'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'and': android,
-      'ios': ios,
-    };
+    return {'and': android, 'ios': ios, 'mandate': mandate};
   }
 }
