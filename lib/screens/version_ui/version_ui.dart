@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -38,26 +39,31 @@ class VersionBottomSheet extends ConsumerWidget {
               height: 3,
             ),
             const CustomDragHandler(),
-            const SizedBox(
-              height: 5,
+            SizedBox(
+              height: version.versionmodel!.attributes.version.mandate == "no"
+                  ? 0
+                  : 5,
             ),
-            // Center(
-            //     child: Icon(
-            //   Icons.upgrade_rounded,
-            //   size: 100,
-            // )
-            //     // SvgPicture.asset(
-            //     //   assets.appLogoIcon,
-            //     //   width: 130,
-            //     // ),
-            //     ),
-             Align(
-              alignment: Alignment.centerRight,
-              child: Icon(Icons.cancel_outlined)),
-            const SizedBox(
-              height: 10,
+            version.versionmodel!.attributes.version.mandate == "yes"
+                ? Container()
+                : Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Align(
+                        alignment: Alignment.centerRight,
+                        child: InkWell(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: SvgPicture.asset(
+                              assets.remove,
+                              width: 25,
+                            ))),
+                  ),
+            SizedBox(
+              height: version.versionmodel!.attributes.version.mandate == "no"
+                  ? 0
+                  : 10,
             ),
-           
             Center(
               child: Text(
                   defaultTargetPlatform == TargetPlatform.iOS
