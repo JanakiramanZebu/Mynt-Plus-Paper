@@ -761,18 +761,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               
                             Expanded(
                                 child: InkWell(
-                                    onTap: internet.connectionStatus ==
-                                            ConnectivityResult.none
-                                        ? null
-                                        : () async {
-                                            portfolio.cancelTimer();
+                                    onTap: () async {
                                             indexProvide.bottomMenu(1);
-                                            await context
-                                                .read(indexListProvider)
-                                                .checkSession(context);
-                                            if (indexProvide
-                                                    .checkSess!.stat ==
-                                                "Ok") {
+                                            portfolio.cancelTimer();
+
+                                            // await context
+                                            //     .read(indexListProvider)
+                                            //     .checkSession(context);
+                                            // if (indexProvide
+                                            //         .checkSess!.stat ==
+                                            //     "Ok") {
                                               await portfolio
                                                   .requestWSHoldings(
                                                       context: context,
@@ -792,7 +790,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   .requestMWScrip(
                                                       context: context,
                                                       isSubscribe: true);
-                                            }
+                                            // }
                                           },
                                     child: Container(
                                         margin: const EdgeInsets.symmetric(
@@ -856,19 +854,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             ])))),
                             Expanded(
                                 child: InkWell(
-                              onTap: internet.connectionStatus ==
-                                      ConnectivityResult.none
-                                  ? null
-                                  : () async {
-                                      await context
-                                          .read(indexListProvider)
-                                          .checkSession(context);
+                              onTap: () async {
+                                      // await context
+                                      //     .read(indexListProvider)
+                                      //     .checkSession(context);
               
-                                      if (indexProvide.checkSess!.stat ==
-                                          "Ok") {
+                                      // if (indexProvide.checkSess!.stat ==
+                                      //     "Ok")
+                                          //  {
+                                        indexProvide.bottomMenu(2);
                                         await portfolio
                                             .fetchMFHoldings(context);
-                                        indexProvide.bottomMenu(2);
                                         await marketWatchList
                                             .requestMWScrip(
                                                 context: context,
@@ -887,8 +883,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         await portfolio.requestWSPosition(
                                             context: context,
                                             isSubscribe: true);
-                                      }
-                                    },
+                                      // }
+                                    }
+                                    ,
                               child: Container(
                                   margin:
                                       const EdgeInsets
@@ -945,18 +942,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             )),
                             Expanded(
                                 child: InkWell(
-                                    onTap: internet.connectionStatus ==
-                                            ConnectivityResult.none
-                                        ? null
-                                        : () async {
-                                            portfolio.cancelTimer();
+                                    onTap: () async {
                                             indexProvide.bottomMenu(3);
-                                            await context
-                                                .read(indexListProvider)
-                                                .checkSession(context);
-                                            if (indexProvide
-                                                    .checkSess!.stat ==
-                                                "Ok") {
+
+                                            portfolio.cancelTimer();
+                                            // await context
+                                            //     .read(indexListProvider)
+                                            //     .checkSession(context);
+                                            // if (indexProvide
+                                            //         .checkSess!.stat ==
+                                            //     "Ok") {
                                               await context
                                                   .read(orderProvider)
                                                   .fetchSipOrderHistory(
@@ -983,7 +978,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   .requestWSOrderBook(
                                                       context: context,
                                                       isSubscribe: true);
-                                            }
+                                            // }
                                           },
                                     child: Container(
                                         margin: const EdgeInsets.symmetric(
@@ -1046,25 +1041,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             ])))),
                             Expanded(
                                 child: InkWell(
-                                    onTap: internet.connectionStatus ==
-                                            ConnectivityResult.none
-                                        ? null
-                                        : () async {
+                                    onTap: () async {
+                                            indexProvide.bottomMenu(4);
                                             portfolio.cancelTimer();
                                             await context
                                                 .read(fundProvider)
                                                 .fetchFunds(context);
-                                            indexProvide.bottomMenu(4);
-                                            if (context
-                                                    .read(fundProvider)
-                                                    .fundDetailModel!
-                                                    .stat ==
-                                                "Ok") {
-                                              if (userProfile
-                                                  .profileMenu.isEmpty) {
+                                            // if (context
+                                            //         .read(fundProvider)
+                                            //         .fundDetailModel!
+                                            //         .stat ==
+                                            //     "Ok") {
+                                            //   if (userProfile
+                                            //       .profileMenu.isEmpty) {
                                                 await userProfile
                                                     .fetchprofilemenu();
-                                              }
+                                              // }
               
                                               marketWatchList
                                                   .requestMWScrip(
@@ -1082,7 +1074,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               portfolio.requestWSPosition(
                                                   context: context,
                                                   isSubscribe: false);
-                                            }
+                                            // }
                                           },
                                     child: Container(
                                         margin: const EdgeInsets.symmetric(

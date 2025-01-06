@@ -39,9 +39,9 @@ class _Allholdings extends State<Allholdings> {
           for (var l in value['summary']) {
             if (socketDatas.isNotEmpty && socketDatas.containsKey(l['token'])) {
               double val =
-                  (double.tryParse(socketDatas[l['token']]['lp']) ?? 0.0) *
+                  (double.tryParse(socketDatas[l['token']]['lp'].toString()) ?? 0.0) *
                       (double.tryParse("${l['units']}") ?? 0.0);
-              socketDatas[l['token']]['keysval'] = val;
+              socketDatas[l['token']]['keysval'] = val.toString();
               value['keysval'] += val;
               totvalcurr += val;
               value['keysinv'] += l['totinv'];
@@ -336,8 +336,8 @@ class _Allholdings extends State<Allholdings> {
                                                     ['pc']
                                                 .toString();
 
-                                            val = socketDatas[raw['token']]
-                                                    ['keysval']
+                                            val = double.parse(socketDatas[raw['token']]
+                                                    ['keysval'])
                                                 .toStringAsFixed(2);
                                           }
                                           return Container(

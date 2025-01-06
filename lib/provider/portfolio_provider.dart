@@ -251,8 +251,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
           ],
         ),
       ),
-      if (_mfHoldingsModel!.isNotEmpty) ...[
-        if (_mfHoldingsModel![0].stat != "Not_Ok") ...[
+      // if (_mfHoldingsModel!.isNotEmpty) ...[
+      //   if (_mfHoldingsModel![0].stat != "Not_Ok") ...[
           Tab(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -260,8 +260,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
               children: [Text("MF Holdings (${_mfHoldingsModel!.length})")],
             ),
           ),
-        ]
-      ],
+      //   ]
+      // ],
       Tab(
           child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

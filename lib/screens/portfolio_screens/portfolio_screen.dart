@@ -97,15 +97,17 @@ class _PortfolioScreenState extends State<PortfolioScreen>
             width: MediaQuery.of(context).size.width,
             height: 46,
             child: TabBar(
-                tabAlignment: portfolio.mfHoldingsModel!.isNotEmpty &&
-                            portfolio.mfHoldingsModel![0].stat != "Not_Ok" ||
-                        portfolio.allholds.isNotEmpty
-                    ? TabAlignment.start
-                    : TabAlignment.fill,
+                // tabAlignment: portfolio.mfHoldingsModel!.isNotEmpty &&
+                //             portfolio.mfHoldingsModel![0].stat != "Not_Ok" ||
+                //         portfolio.allholds.isNotEmpty
+                //     ? TabAlignment.start
+                //     : TabAlignment.fill,
+                    tabAlignment: TabAlignment.start,
                 indicatorSize: TabBarIndicatorSize.tab,
-                isScrollable: portfolio.mfHoldingsModel!.isNotEmpty &&
-                        portfolio.mfHoldingsModel![0].stat != "Not_Ok" ||
-                    portfolio.allholds.isNotEmpty,
+                // isScrollable: portfolio.mfHoldingsModel!.isNotEmpty &&
+                //         portfolio.mfHoldingsModel![0].stat != "Not_Ok" ||
+                //     portfolio.allholds.isNotEmpty,
+                isScrollable: true,
                 indicatorColor:
                     theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
                 unselectedLabelColor: const Color(0XFF777777),
@@ -122,19 +124,20 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                 controller: portfolio.portTab,
                 tabs: portfolio.portTabName)),
         Expanded(
-            child: TransparentLoaderScreen(
-          isLoading: portfolio.loading,
+            // child: TransparentLoaderScreen(
+          // isLoading: portfolio.loading,
           child: TabBarView(controller: portfolio.portTab, children: [
             PositionScreen(listofPosition: portfolio.allPostionList),
             const HoldingScreen(),
-            if (portfolio.mfHoldingsModel!.isNotEmpty) ...[
-              if (portfolio.mfHoldingsModel![0].stat != "Not_Ok") ...[
-                const MFHoldingScreen()
-              ]
-            ],
+            // if (portfolio.mfHoldingsModel!.isNotEmpty) ...[
+            //   if (portfolio.mfHoldingsModel![0].stat != "Not_Ok") ...[
+                const MFHoldingScreen(),
+            //   ]
+            // ],
             const Allholdings()
           ]),
-        )),
+        // )
+        ),
       ]);
     });
   }

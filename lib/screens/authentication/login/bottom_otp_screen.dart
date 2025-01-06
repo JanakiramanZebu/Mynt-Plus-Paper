@@ -196,6 +196,9 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                                 onChanged: (value) {
                                   auth.validateOtp(otpController.text);
                                   auth.activeBtnOtp(otpController.text);
+                                  if(value.isNotEmpty && value.length == 4) {
+                                  auth.submitOtp(context, otpController.text);
+                                  }
                                 },
                               ),
                             ),
