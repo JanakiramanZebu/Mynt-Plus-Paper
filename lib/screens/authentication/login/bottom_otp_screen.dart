@@ -1,8 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pinput/pinput.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../provider/thems.dart';
@@ -19,16 +19,18 @@ class BottomSheetContent extends StatefulWidget {
 }
 
 class _BottomSheetContentState extends State<BottomSheetContent> {
-  late List<TextEditingController> _controllers;
-  //final FocusNode _focusNode = FocusNode();
   final TextEditingController otpController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
   Timer? _timer;
   int _start = 89;
   String resendTime = "01.29";
   @override
   void initState() {
-    _controllers = List.generate(4, (_) => TextEditingController());
     startTimer();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
     super.initState();
   }
 
@@ -62,11 +64,9 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
 
   @override
   void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose(); // Dispose each controller
-    }
     _timer!.cancel();
-
+    _focusNode.dispose();
+    otpController.dispose();
     super.dispose();
   }
 
@@ -75,8 +75,27 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
     return Consumer(builder: (context, watch, child) {
       double screenWidth = MediaQuery.of(context).size.width;
       final auth = watch(authProvider);
-      final otp = _controllers.map((controller) => controller.text).join();
       final theme = watch(themeProvider);
+      final defaultPinThemes = PinTheme(
+        width: 50,
+        height: 55,
+        decoration: BoxDecoration(
+          border: Border.all(color: Color(0xffE5EBEC), width: 2),
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        textStyle: textStyles.textFieldLabelStyle.copyWith(
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+      );
+      final focusedPinTheme = defaultPinThemes.copyBorderWith(
+        border: Border.all(color: colors.ltpgreen, width: 1),
+      );
+      final errorPinTheme = defaultPinThemes.copyBorderWith(
+        border: Border.all(color: colors.darkred, width: 1),
+        //textStyle: defaultPinThemes.textStyle?.copyWith(color: Colors.red),
+      );
+      final submittedPinTheme = defaultPinThemes.copyBorderWith(
+        border: Border.all(color: colors.ltpgreen, width: 2),
+      );
       return auth.initLoad
           ? WillPopScope(
               onWillPop: () async {
@@ -148,61 +167,46 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                       const SizedBox(
                         height: 15,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Row(
-                          children: List.generate(4, (index) {
-                            return Container(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              width: 50,
-                              height: 55,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Color(0xffE5EBEC), width: 2),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: TextField(
-                                controller: _controllers[index],
-                                maxLength: 1,
-                                textAlign: TextAlign.center,
-                                style: textStyles.textFieldLabelStyle.copyWith(
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly
-                                ],
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: false),
-                                //keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  counterText: "",
-                                  border: InputBorder.none,
-                                ),
-                                onChanged: (value) {
-                                  // print("DDD ${auth.otpCtrl.text}");
-                                  if (value.isNotEmpty && index < 3) {
-                                    FocusScope.of(context).nextFocus();
-                                  } else if (value.isEmpty && index > 0) {
-                                    FocusScope.of(context).previousFocus();
-                                  }
-                                  auth.validateOtp(otp);
-                                  auth.activeBtnOtp(otp);
-                                },
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Pinput(
                                 autofocus: true,
+                                focusNode: _focusNode,
+                                separatorBuilder: (index) =>
+                                    const SizedBox(width: 25),
+                                controller: otpController,
+                                defaultPinTheme: defaultPinThemes,
+                                focusedPinTheme: focusedPinTheme,
+                                errorPinTheme:
+                                    auth.optError == "Invalid / wrong OTP"
+                                        ? errorPinTheme
+                                        : null,
+                                submittedPinTheme:
+                                    auth.optError == "Invalid / wrong OTP"
+                                        ? errorPinTheme
+                                        : submittedPinTheme,
+                                pinputAutovalidateMode:
+                                    PinputAutovalidateMode.onSubmit,
+                                onChanged: (value) {
+                                  auth.validateOtp(otpController.text);
+                                  auth.activeBtnOtp(otpController.text);
+                                },
                               ),
-                            );
-                          }),
-                        ),
+                            ),
+                          ),
+                        ],
                       ),
                       if (auth.optError != null) ...[
                         Padding(
                           padding: const EdgeInsets.only(left: 16, top: 10),
                           child: Text(
-                            otp.length <= 3 ||
+                            otpController.length <= 3 ||
                                     auth.optError == "Invalid / wrong OTP" ||
                                     auth.optError == "OTP Verified"
                                 ? "${auth.optError}"
@@ -274,16 +278,19 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                           style: ElevatedButton.styleFrom(
                               elevation: 0,
                               backgroundColor: !theme.isDarkMode
-                                  ? otp.length <= 3 || otp.isEmpty
+                                  ? otpController.length <= 3 ||
+                                          otpController.text.isEmpty
                                       ? const Color(0xfff5f5f5)
                                       : colors.colorBlack
-                                  : otp.length <= 3 || otp.isEmpty
+                                  : otpController.length <= 3 ||
+                                          otpController.text.isEmpty
                                       ? colors.darkGrey
                                       : colors.colorbluegrey,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               )),
-                          onPressed: otp.length <= 3 || otp.isEmpty
+                          onPressed: otpController.length <= 3 ||
+                                  otpController.text.isEmpty
                               //         ||
                               //     internet.connectionStatus ==
                               //         ConnectivityResult.none
@@ -292,7 +299,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                                   HapticFeedback.heavyImpact();
                                   SystemSound.play(SystemSoundType.click);
 
-                                  auth.submitOtp(context, otp);
+                                  auth.submitOtp(context, otpController.text);
                                 },
                           child: auth.loading
                               ? const SizedBox(
@@ -304,17 +311,18 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                               : Text("Verify",
                                   style: textStyle(
                                       !theme.isDarkMode
-                                          ? otp.length <= 3 || otp.isEmpty
+                                          ? otpController.length <= 3 ||
+                                                  otpController.text.isEmpty
                                               ? const Color(0xff999999)
                                               : colors.colorWhite
-                                          : otp.length <= 3 || otp.isEmpty
+                                          : otpController.length <= 3 ||
+                                                  otpController.text.isEmpty
                                               ? colors.darkGrey
                                               : colors.colorBlack,
                                       15,
                                       FontWeight.w500)),
                         ),
                       ),
-                    
                     ],
                   ),
                 ),

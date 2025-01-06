@@ -1335,7 +1335,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       List ltpArgs = [];
 
       if (_fundamentalData!.msg != "no data found") {
-
         _peersChartKeys = _fundamentalData!.peerComparisonChart!.keys.toList();
 
         // print("getltpmmmm   in $ltpArgs");
@@ -1513,12 +1512,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             ltpArgs.add({"exch": ltp, "token": tok});
           }
         }
-      
 
         final response = await api.getLTP(ltpArgs);
         // print("getltpmmmm  o$response");
         Map res = jsonDecode(response.body);
-      
+
         for (var element in _fundamentalData!.peersComparison!.stock!) {
           String tok = element.zebuToken.toString();
           if (tok.isNotEmpty) {
@@ -1836,23 +1834,31 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 // websocket Connection Request for Market watch scrip
   requestMWScrip(
       {required bool isSubscribe, required BuildContext context}) async {
-    String input = "";
-    _delScripQty = 0;
-    await ref(indexListProvider).requestdefaultIndex();
-    if (ref(indexListProvider).indexToken.isNotEmpty) {
-      input = ref(indexListProvider).indexToken;
-    }
-
-    if (_scrips.isNotEmpty) {
-      for (var element in _scrips) {
-        element['isSelected'] = false;
-        input += "${element['exch']}|${element['token']}#";
+    try {
+      toggleLoadingOn(true);
+      String input = "";
+      _delScripQty = 0;
+      await ref(indexListProvider).requestdefaultIndex();
+      if (ref(indexListProvider).indexToken.isNotEmpty) {
+        input = ref(indexListProvider).indexToken;
       }
-    }
 
-    if (input.isNotEmpty) {
-      await ref(websocketProvider).establishConnection(
-          channelInput: input, task: isSubscribe ? "t" : "u", context: context);
+      if (_scrips.isNotEmpty) {
+        for (var element in _scrips) {
+          element['isSelected'] = false;
+          input += "${element['exch']}|${element['token']}#";
+        }
+      }
+
+      if (input.isNotEmpty) {
+        await ref(websocketProvider).establishConnection(
+            channelInput: input,
+            task: isSubscribe ? "t" : "u",
+            context: context);
+      }
+    } catch (e) {
+    } finally {
+      toggleLoadingOn(false);
     }
   }
 

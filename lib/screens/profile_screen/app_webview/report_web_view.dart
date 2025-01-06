@@ -43,7 +43,7 @@ class _ReportWebViewAppState extends State<ReportWebViewApp> {
             child: SafeArea(
                 child: InAppWebView(
                     initialUrlRequest: URLRequest(
-                        url: Uri.parse(
+                        url: WebUri(
                             'https://profile.mynt.in/${widget.argument}/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}')),
                     initialOptions: InAppWebViewGroupOptions(
                         crossPlatform: InAppWebViewOptions()),

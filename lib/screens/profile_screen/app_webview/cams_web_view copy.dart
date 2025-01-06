@@ -48,7 +48,7 @@ class CamsWebViewState extends State<CamsWebView> {
             // InAppWebView
             InAppWebView(
                 // windowId: 0,
-                initialUrlRequest: URLRequest(url: Uri.parse(widget.argument)),
+                initialUrlRequest: URLRequest(url: WebUri(widget.argument)),
                 initialOptions: InAppWebViewGroupOptions(
                     crossPlatform: InAppWebViewOptions()),
                 onWebViewCreated: (InAppWebViewController controller) {

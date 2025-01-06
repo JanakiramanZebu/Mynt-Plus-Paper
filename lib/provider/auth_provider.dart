@@ -572,7 +572,7 @@ class AuthProvider extends DefaultChangeNotifier {
               imei: pref.imei!)
         ];
         await deviceAuth(context, "");
-        Future.delayed(const Duration(seconds: 3), () async {
+       // Future.delayed(const Duration(seconds: 3), () async {
           // Navigator.pushNamed(context, Routes.forgotPass);
           _loggedMobile = await getLocalData();
 
@@ -583,7 +583,7 @@ class AuthProvider extends DefaultChangeNotifier {
           //log("loggued Useer -- ${pref.loggedClient}");
           // ScaffoldMessenger.of(context)
           //     .showSnackBar(successMessage(context, 'OTP Verified'));
-        });
+       // });
 
         notifyListeners();
       }

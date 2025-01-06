@@ -1,0 +1,127 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../provider/version_provider.dart';
+import '../../res/res.dart';
+import '../../sharedWidget/custom_drag_handler.dart';
+
+class VersionBottomSheet extends ConsumerWidget {
+  const VersionBottomSheet({super.key});
+
+  @override
+  Widget build(BuildContext context, ScopedReader watch) {
+    final theme = watch(themeProvider);
+    final version = watch(versionProvider);
+    return WillPopScope(
+      onWillPop: () async {
+        return false;
+      },
+      child: Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            boxShadow: const [
+              BoxShadow(
+                  color: Color(0xff999999),
+                  blurRadius: 4.0,
+                  offset: Offset(2.0, 0.0))
+            ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              height: 3,
+            ),
+            const CustomDragHandler(),
+            const SizedBox(
+              height: 5,
+            ),
+            // Center(
+            //     child: Icon(
+            //   Icons.upgrade_rounded,
+            //   size: 100,
+            // )
+            //     // SvgPicture.asset(
+            //     //   assets.appLogoIcon,
+            //     //   width: 130,
+            //     // ),
+            //     ),
+            const SizedBox(
+              height: 10,
+            ),
+            Center(
+              child: Text("${version.version}",
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      30,
+                      FontWeight.w600)),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Center(
+              child: Text("🚀 A newer App is available!",
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      20,
+                      FontWeight.w600)),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 44),
+              child: Text(
+                  "Enhance your experience with the latest features, improvements, and fixes.",
+                  textAlign: TextAlign.center,
+                  style: textStyle(colors.colorGrey, 15, FontWeight.w400)),
+            ),
+            Center(
+              child: Text("Update now to stay ahead!",
+                  textAlign: TextAlign.center,
+                  style: textStyle(colors.colorGrey, 15, FontWeight.w400)),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              width: MediaQuery.of(context).size.width,
+              height: 46,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: theme.isDarkMode
+                        ? colors.colorbluegrey
+                        : colors.colorBlack,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    )),
+                onPressed: () {
+                  defaultTargetPlatform == TargetPlatform.android
+                      ? launch(
+                          'https://play.google.com/store/apps/details?id=com.mynt.trading_app_zebu&hl=en')
+                      : launch(
+                          'https://apps.apple.com/in/app/mynt-stocks-options-ipo-mf/id6478270319');
+                },
+                child: Text("Update",
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        15,
+                        FontWeight.w500)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

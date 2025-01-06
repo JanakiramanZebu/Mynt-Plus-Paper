@@ -49,7 +49,7 @@ class IpoWebviewState extends State<IpoWebview> {
               InAppWebView(
                   // windowId: 0,
                   initialUrlRequest:
-                      URLRequest(url: Uri.parse(widget.argument)),
+                      URLRequest(url: WebUri(widget.argument)),
                   initialOptions: InAppWebViewGroupOptions(
                       crossPlatform: InAppWebViewOptions()),
                   onWebViewCreated: (InAppWebViewController controller) {

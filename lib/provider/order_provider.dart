@@ -774,26 +774,37 @@ class OrderProvider extends DefaultChangeNotifier {
 
   requestWSOrderBook(
       {required bool isSubscribe, required BuildContext context}) {
-    String input = "";
-    if (_orderBookModel != null) {
-      if (_orderBookModel!.isNotEmpty && _orderBookModel![0].stat != "Not_Ok") {
-        for (var i = 0; i < _orderBookModel!.length; i++) {
-          input += "${_orderBookModel![i].exch}|${_orderBookModel![i].token}#";
+    try {
+      toggleLoadingOn(true);
+      String input = "";
+      if (_orderBookModel != null) {
+        if (_orderBookModel!.isNotEmpty &&
+            _orderBookModel![0].stat != "Not_Ok") {
+          for (var i = 0; i < _orderBookModel!.length; i++) {
+            input +=
+                "${_orderBookModel![i].exch}|${_orderBookModel![i].token}#";
+          }
         }
       }
-    }
 
-    if (_gttOrderBookModel!.isNotEmpty) {
-      for (var element in _gttOrderBookModel!) {
-        input += "${element.exch}|${element.token}#";
+      if (_gttOrderBookModel!.isNotEmpty) {
+        for (var element in _gttOrderBookModel!) {
+          input += "${element.exch}|${element.token}#";
+        }
       }
+
+      if (input.isNotEmpty) {
+        // ConstantName.lastSubscribe = input;
+        ref(websocketProvider).establishConnection(
+            channelInput: input,
+            task: isSubscribe ? "t" : "u",
+            context: context);
+      }
+    } catch (e) {
+    } finally {
+      toggleLoadingOn(false);
     }
 
-    if (input.isNotEmpty) {
-      // ConstantName.lastSubscribe = input;
-      ref(websocketProvider).establishConnection(
-          channelInput: input, task: isSubscribe ? "t" : "u", context: context);
-    }
     // notifyListeners();
   }
 

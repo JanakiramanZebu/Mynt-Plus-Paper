@@ -49,7 +49,7 @@ class _FundTransactionState extends State<FundTransaction> {
                     child: InAppWebView(
                         // windowId: 0,
                         initialUrlRequest: URLRequest(
-                            url: Uri.parse(
+                            url: WebUri(
                                 'https://fund.mynt.in/${widget.argument}/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}')),
                         initialOptions: InAppWebViewGroupOptions(
                             crossPlatform: InAppWebViewOptions()),

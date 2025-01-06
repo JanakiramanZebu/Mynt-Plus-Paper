@@ -494,6 +494,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchMFHoldings(context) async {
     try {
+      toggleLoadingOn(true);
       // _mfHoldingsModel = [];
       _mfHoldingsModel = await api.getMFHolding();
       _mfTotInveest = 0.00;
@@ -563,7 +564,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
           .add({"type": "API MF Holdings", "Error": "$e"});
       notifyListeners();
       print(e);
-    } finally {}
+    } finally {
+      toggleLoadingOn(false);
+    }
   }
 
   setTotPnlHoldings(double val) {
@@ -1370,50 +1373,73 @@ class PortfolioProvider extends DefaultChangeNotifier {
 // websocket Connection Request for Position scrip
   requestWSPosition(
       {required bool isSubscribe, required BuildContext context}) {
-    String input = "";
+    try {
+      toggleLoadingOn(true);
+      String input = "";
 
-    if (_postionBookModel != null) {
-      if (_postionBookModel!.isNotEmpty &&
-          _postionBookModel![0].stat != "Not_Ok") {
-        for (var element in _postionBookModel!) {
-          input += "${element.exch}|${element.token}#";
+      if (_postionBookModel != null) {
+        if (_postionBookModel!.isNotEmpty &&
+            _postionBookModel![0].stat != "Not_Ok") {
+          for (var element in _postionBookModel!) {
+            input += "${element.exch}|${element.token}#";
+          }
         }
       }
+      if (input.isNotEmpty) {
+        // ConstantName.lastSubscribe = input;
+        ref(websocketProvider).establishConnection(
+            channelInput: input,
+            task: isSubscribe ? "t" : "u",
+            context: context);
+      }
+    } catch (e) {
+    } finally {
+      toggleLoadingOn(false);
     }
-    if (input.isNotEmpty) {
-      // ConstantName.lastSubscribe = input;
-      ref(websocketProvider).establishConnection(
-          channelInput: input, task: isSubscribe ? "t" : "u", context: context);
-    }
+
     // notifyListeners();
   }
 
 // websocket Connection Request for Holdings scrip
   requestWSHoldings(
       {required bool isSubscribe, required BuildContext context}) {
-    String input = "";
-    if (_holdingsModel != null) {
-      if (_holdingsModel!.isNotEmpty) {
-        if (_holdingsModel![0].stat != "Not_Ok") {
-          for (var i = 0; i < _holdingsModel!.length; i++) {
-            input +=
-                "${_holdingsModel![i].exchTsym![0].exch}|${_holdingsModel![i].exchTsym![0].token}#";
+    try {
+      toggleLoadingOn(true);
+      String input = "";
+      if (_holdingsModel != null) {
+        if (_holdingsModel!.isNotEmpty) {
+          if (_holdingsModel![0].stat != "Not_Ok") {
+            for (var i = 0; i < _holdingsModel!.length; i++) {
+              input +=
+                  "${_holdingsModel![i].exchTsym![0].exch}|${_holdingsModel![i].exchTsym![0].token}#";
+            }
           }
         }
       }
-    }
-    if (input.isNotEmpty) {
-      // ConstantName.lastSubscribe = input;
-      ref(websocketProvider).establishConnection(
-          channelInput: input, task: isSubscribe ? "t" : "u", context: context);
+      if (input.isNotEmpty) {
+        // ConstantName.lastSubscribe = input;
+        ref(websocketProvider).establishConnection(
+            channelInput: input,
+            task: isSubscribe ? "t" : "u",
+            context: context);
+      }
+    } catch (e) {
+    } finally {
+      toggleLoadingOn(false);
     }
   }
 
   requestallHoldings(
       {required bool isSubscribe, required BuildContext context}) {
-    if (_subscr.isNotEmpty) {
-      ref(websocketProvider).establishConnection(
-          channelInput: _subscr, task: 't', context: context);
+    try {
+      toggleLoadingOn(true);
+      if (_subscr.isNotEmpty) {
+        ref(websocketProvider).establishConnection(
+            channelInput: _subscr, task: 't', context: context);
+      }
+    } catch (e) {
+    } finally {
+      toggleLoadingOn(false);
     }
   }
 

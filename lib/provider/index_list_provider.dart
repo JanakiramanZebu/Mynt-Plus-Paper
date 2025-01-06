@@ -465,6 +465,7 @@ class IndexListProvider extends DefaultChangeNotifier {
 // Verifying the client's session each time
   checkSession(BuildContext context) async {
     try {
+      toggleLoadingOn(true);
       _checkSess = await api.getAddDeleteSciptoMW(
           isAdd: false, scripToken: "", wlname: "");
       if (_checkSess!.emsg == "Session Expired :  Invalid Session Key" &&
@@ -472,7 +473,9 @@ class IndexListProvider extends DefaultChangeNotifier {
         ref(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
-    } finally {}
+    } finally {
+      toggleLoadingOn(false);
+    }
   }
 
 

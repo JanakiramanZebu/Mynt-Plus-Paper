@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+import '../../sharedWidget/loader_ui.dart';
 import 'allholdings/allholdings_screen.dart';
 import 'holdings/holding_screen.dart';
 import 'mfHoldings/mf_holding_screen.dart';
@@ -121,16 +122,19 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                 controller: portfolio.portTab,
                 tabs: portfolio.portTabName)),
         Expanded(
-            child: TabBarView(controller: portfolio.portTab, children: [
-          PositionScreen(listofPosition: portfolio.allPostionList),
-          const HoldingScreen(),
-          if (portfolio.mfHoldingsModel!.isNotEmpty) ...[
-            if (portfolio.mfHoldingsModel![0].stat != "Not_Ok") ...[
-              const MFHoldingScreen()
-            ]
-          ],
-          const Allholdings()
-        ]))
+            child: TransparentLoaderScreen(
+          isLoading: portfolio.loading,
+          child: TabBarView(controller: portfolio.portTab, children: [
+            PositionScreen(listofPosition: portfolio.allPostionList),
+            const HoldingScreen(),
+            if (portfolio.mfHoldingsModel!.isNotEmpty) ...[
+              if (portfolio.mfHoldingsModel![0].stat != "Not_Ok") ...[
+                const MFHoldingScreen()
+              ]
+            ],
+            const Allholdings()
+          ]),
+        )),
       ]);
     });
   }

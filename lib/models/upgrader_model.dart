@@ -8,5 +8,5 @@ class MyUpgraderMessages extends UpgraderMessages {
   @override
   String get body => "A new version of {{appName}} is available!. you have an older version.";
 }
-
+                
 

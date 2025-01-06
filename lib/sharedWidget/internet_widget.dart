@@ -46,7 +46,7 @@ class NoInternetScreen extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       )),
-                  onPressed: null,
+                  onPressed: () {},
                   child: Text("Retry",
                       style: textStyle(
                           theme.isDarkMode

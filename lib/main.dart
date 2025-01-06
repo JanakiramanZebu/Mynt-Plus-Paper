@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'dart:io';
-
 // import 'package:flutter/services.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -37,14 +36,14 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         ? NotificationService.showNotification(
             title: message.notification!.title,
             body: message.notification!.body,
-            summary: "Mynt+",
+            summary: "Mynt",
             notificationLayout: NotificationLayout.BigPicture,
             bigPicture: message.data["imageUrl"],
             payload: {"navigate": "true", "url": message.data["url"]})
         : NotificationService.showNotification(
             title: message.notification!.title,
             body: message.notification!.body,
-            summary: "Mynt+",
+            summary: "Mynt",
             notificationLayout: NotificationLayout.Default,
           );
   }

@@ -14,6 +14,7 @@ import '../portfolio_api.dart';
 import '../stocks_api.dart';
 import '../transcation_api.dart';
 import '../user_profile_api.dart';
+import '../version_api.dart';
 import 'api_core.dart';
 
 class ApiExporter
@@ -34,4 +35,5 @@ class ApiExporter
         IPOApi,
         MutualFundApi,
         TranscationApi,
-        StrategyJson {}
+        StrategyJson,
+        VersionApi {}

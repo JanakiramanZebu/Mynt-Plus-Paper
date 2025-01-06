@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mynt_plus/screens/profile_screen/app_webview/ipo_webview.dart';
 import '../screens/authentication/login/login_banner_screen.dart';
 import '../screens/authentication/login/login_screen.dart';
-import '../screens/authentication/login/otp_screen.dart';
 import '../screens/authentication/password/change_pass.dart';
 import '../screens/authentication/password/forgot_pass_unblock_user.dart';
 import '../screens/bonds/bond_screen.dart';
@@ -113,8 +112,7 @@ class AppRoutes {
                   position: animation.drive(tween), child: child);
             });
 
-      case Routes.loginOtpVerify:
-        return MaterialPageRoute(builder: (_) => const OtpScreen());
+     
       case Routes.forgotPass:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>

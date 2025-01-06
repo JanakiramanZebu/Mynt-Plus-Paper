@@ -54,7 +54,7 @@ class _EdisWebviewState extends State<EdisWebview> {
                   height: MediaQuery.of(context).size.height,
                   child: InAppWebView(
                       initialUrlRequest: URLRequest(
-                          url: Uri.parse(
+                          url: WebUri(
                               'https://go.mynt.in/NorenEdis/NonPoaHoldings/?${widget.params}')),
                       initialOptions: InAppWebViewGroupOptions(
                           crossPlatform: InAppWebViewOptions()),

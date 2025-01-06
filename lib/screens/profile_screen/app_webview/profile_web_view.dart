@@ -46,7 +46,7 @@ class _ProfileWebViewApp extends State<ProfileWebViewApp> {
                     height: MediaQuery.of(context).size.height,
                     child: InAppWebView(
                         initialUrlRequest: URLRequest(
-                            url: Uri.parse(
+                            url: WebUri(
                                 'https://profile.mynt.in/${widget.argument}/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}')),
                         initialOptions: InAppWebViewGroupOptions(
                             crossPlatform: InAppWebViewOptions()),
