@@ -153,6 +153,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
 
+  bool _posloader = false;
+  bool get posloader => _posloader;
+
+  bool _holdloader = false;
+  bool get holdloader => _holdloader;
+
+  bool _mfhloader = false;
+  bool get mfhloader => _mfhloader;
+
+  bool _tphloader = false;
+  bool get tphloader => _tphloader;
+
 // Position Grouping -----------
 
   Map _groupedBySymbol = {};
@@ -192,7 +204,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   fetchBrokerDetails(BuildContext context, bool isSubscribe) async {
     try {
-      // toggleLoadingOn(true);
+      _tphloader = true;
+      toggleLoadingOn(true);
       var res = await api.getallHolding();
       if (res.equities.isNotEmpty) {
         var one = res.equities;
@@ -213,6 +226,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     } catch (e) {
       print('Error: $e');
     } finally {
+      _tphloader = false;
       toggleLoadingOn(false);
     }
   }
@@ -253,13 +267,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
       ),
       // if (_mfHoldingsModel!.isNotEmpty) ...[
       //   if (_mfHoldingsModel![0].stat != "Not_Ok") ...[
-          Tab(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("MF Holdings (${_mfHoldingsModel!.length})")],
-            ),
-          ),
+      Tab(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [Text("MF Holdings (${_mfHoldingsModel!.length})")],
+        ),
+      ),
       //   ]
       // ],
       Tab(
@@ -387,6 +401,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   Future fetchHoldings(context, String initail) async {
     double invest = 0.0;
     try {
+      _holdloader = true;
       toggleLoadingOn(true);
       _oneDayChngPer = 0.00;
       _showSearchHold = false;
@@ -486,6 +501,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       notifyListeners();
       print(e);
     } finally {
+      _holdloader = false;
       toggleLoadingOn(false);
     }
   }
@@ -494,6 +510,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchMFHoldings(context) async {
     try {
+      _mfhloader = true;
       toggleLoadingOn(true);
       // _mfHoldingsModel = [];
       _mfHoldingsModel = await api.getMFHolding();
@@ -565,6 +582,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       notifyListeners();
       print(e);
     } finally {
+      _mfhloader = false;
       toggleLoadingOn(false);
     }
   }
@@ -647,6 +665,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchPositionBook(BuildContext context, bool isDay) async {
     try {
+      _posloader = true;
       toggleLoadingOn(true);
       _postionBookModel = [];
       _allPostionList = [];
@@ -708,6 +727,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           .add({"type": "API Position Book", "Error": "$e"});
       notifyListeners();
     } finally {
+      _posloader = false;
       toggleLoadingOn(false);
     }
   }
@@ -1374,7 +1394,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
   requestWSPosition(
       {required bool isSubscribe, required BuildContext context}) {
     try {
-      toggleLoadingOn(true);
       String input = "";
 
       if (_postionBookModel != null) {
@@ -1392,10 +1411,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             task: isSubscribe ? "t" : "u",
             context: context);
       }
-    } catch (e) {
-    } finally {
-      toggleLoadingOn(false);
-    }
+    } catch (e) {}
 
     // notifyListeners();
   }
@@ -1404,7 +1420,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
   requestWSHoldings(
       {required bool isSubscribe, required BuildContext context}) {
     try {
-      toggleLoadingOn(true);
       String input = "";
       if (_holdingsModel != null) {
         if (_holdingsModel!.isNotEmpty) {
@@ -1423,24 +1438,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
             task: isSubscribe ? "t" : "u",
             context: context);
       }
-    } catch (e) {
-    } finally {
-      toggleLoadingOn(false);
-    }
+    } catch (e) {}
   }
 
   requestallHoldings(
       {required bool isSubscribe, required BuildContext context}) {
     try {
-      toggleLoadingOn(true);
       if (_subscr.isNotEmpty) {
         ref(websocketProvider).establishConnection(
             channelInput: _subscr, task: 't', context: context);
       }
-    } catch (e) {
-    } finally {
-      toggleLoadingOn(false);
-    }
+    } catch (e) {}
   }
 
   exitGroupedPosition(BuildContext context, List positionData) async {
@@ -1906,6 +1914,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
   Future fetchGroupName(String name, BuildContext c, bool isCreateGrp) async {
     try {
+      _posloader = true;
       toggleLoadingOn(true);
       _groupName = await api.createGroupName(name);
 
@@ -1923,6 +1932,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             fontSize: 14.0);
       }
     } finally {
+      _posloader = false;
       toggleLoadingOn(false);
     }
   }
@@ -1955,6 +1965,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
   Future fetchDeleteGroupName(String name, BuildContext c) async {
     try {
+      _posloader = true;
       toggleLoadingOn(true);
       _groupName = await api.deletePositionGrpName(name);
 
@@ -1971,6 +1982,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             fontSize: 14.0);
       }
     } finally {
+      _posloader = false;
       toggleLoadingOn(false);
     }
   }

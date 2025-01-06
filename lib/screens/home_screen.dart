@@ -906,7 +906,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       indexProvide.bottomMenu(3);
 
                                       portfolio.cancelTimer();
-                                      // await context
+                                     // await context
                                       //     .read(indexListProvider)
                                       //     .checkSession(context);
                                       // if (indexProvide

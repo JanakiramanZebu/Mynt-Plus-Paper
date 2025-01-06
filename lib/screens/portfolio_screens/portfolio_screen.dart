@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
-import '../../sharedWidget/loader_ui.dart';
 import 'allholdings/allholdings_screen.dart';
 import 'holdings/holding_screen.dart';
 import 'mfHoldings/mf_holding_screen.dart';
@@ -57,9 +56,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
             .requestallHoldings(context: context, isSubscribe: false);
 
         context.read(portfolioProvider).timerfunc();
-      } else if (context.read(portfolioProvider).mfHoldingsModel!.isNotEmpty
-          ? context.read(portfolioProvider).selectedTab == 3
-          : context.read(portfolioProvider).selectedTab == 2) {
+      } else if (context.read(portfolioProvider).selectedTab == 3) {
         context.read(portfolioProvider).cancelTimer();
 
         context

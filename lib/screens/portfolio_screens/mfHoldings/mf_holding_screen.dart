@@ -19,7 +19,7 @@ class MFHoldingScreen extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final mfHolding = watch(portfolioProvider);
     final theme = context.read(themeProvider);
-    return mfHolding.loading
+    return mfHolding.mfhloader && mfHolding.loading
         ? const Center(child: CircularProgressIndicator())
         : GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),

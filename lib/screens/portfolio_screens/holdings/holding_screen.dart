@@ -26,7 +26,7 @@ class HoldingScreen extends ConsumerWidget {
     final holdingProvide = watch(portfolioProvider);
     final socketDatas = watch(websocketProvider).socketDatas;
     final theme = context.read(themeProvider);
-    return holdingProvide.loading
+    return holdingProvide.holdloader && holdingProvide.loading
         ? const Center(child: CircularProgressIndicator())
         : GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
