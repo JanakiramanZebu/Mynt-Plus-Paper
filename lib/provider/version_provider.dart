@@ -32,8 +32,8 @@ class VersionProvider extends DefaultChangeNotifier {
       final currentVersion = packageInfo.version;
       _version = packageInfo.version;
       _versionModel = await api.getVersionApi();
-      print("object ${versionmodel!.attributes.version.android}");
-      // Get the stored previous version
+     
+     
 
       // Compare versions
       if (_isNewerVersion(
@@ -66,7 +66,7 @@ class VersionProvider extends DefaultChangeNotifier {
     int update = int.parse(updatedversion.replaceAll('.', ''));
     int current = int.parse(currentVersion.replaceAll('.', ''));
 
-    print('completed ${update > current}  ${update} ${current}');
+   // print('completed ${update > current}  ${update} ${current}');
     return update > current;
   }
 }

@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     context.read(networkStateProvider).networkStream();
     context.read(marketWatchProvider).fToast.init(context);
-    // context.read(versionProvider).checkVersion(context);
+    context.read(versionProvider).checkVersion(context);
     super.initState();
   }
 

@@ -56,7 +56,10 @@ class VersionBottomSheet extends ConsumerWidget {
               height: 10,
             ),
             Center(
-              child: Text("${version.version}",
+              child: Text(
+                defaultTargetPlatform == TargetPlatform.iOS
+                ?"${version.versionmodel?.attributes.version.ios}"
+                :"${version.versionmodel?.attributes.version.android}",
                   style: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       30,
