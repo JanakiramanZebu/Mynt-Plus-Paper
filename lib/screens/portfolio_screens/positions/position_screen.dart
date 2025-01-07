@@ -31,7 +31,7 @@ class PositionScreen extends ConsumerWidget {
     final positionBook = watch(portfolioProvider);
     final socketDatas = watch(websocketProvider).socketDatas;
     final theme = context.read(themeProvider);
-    return positionBook.loading
+    return positionBook.posloader
         ? const Center(child: CircularProgressIndicator())
         : Column(children: [
             Container(

@@ -205,7 +205,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
   fetchBrokerDetails(BuildContext context, bool isSubscribe) async {
     try {
       _tphloader = true;
-      toggleLoadingOn(true);
       var res = await api.getallHolding();
       if (res.equities.isNotEmpty) {
         var one = res.equities;
@@ -227,7 +226,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
       print('Error: $e');
     } finally {
       _tphloader = false;
-      toggleLoadingOn(false);
     }
   }
 
@@ -271,7 +269,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [Text("MF Holdings (${_mfHoldingsModel!.length})")],
+          children: [
+             Text(
+                "MF Holding${_mfHoldingsModel!.isNotEmpty ? "s (${_mfHoldingsModel!.length})" : ""}") ]
         ),
       ),
       //   ]
@@ -402,7 +402,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
     double invest = 0.0;
     try {
       _holdloader = true;
-      toggleLoadingOn(true);
       _oneDayChngPer = 0.00;
       _showSearchHold = false;
       _holdingsModel = [];
@@ -502,7 +501,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
       print(e);
     } finally {
       _holdloader = false;
-      toggleLoadingOn(false);
     }
   }
 
@@ -511,7 +509,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
   Future fetchMFHoldings(context) async {
     try {
       _mfhloader = true;
-      toggleLoadingOn(true);
       // _mfHoldingsModel = [];
       _mfHoldingsModel = await api.getMFHolding();
       _mfTotInveest = 0.00;
@@ -583,7 +580,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
       print(e);
     } finally {
       _mfhloader = false;
-      toggleLoadingOn(false);
     }
   }
 
@@ -666,7 +662,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
   Future fetchPositionBook(BuildContext context, bool isDay) async {
     try {
       _posloader = true;
-      toggleLoadingOn(true);
       _postionBookModel = [];
       _allPostionList = [];
       _totPnL = "0.00";
@@ -728,7 +723,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
       notifyListeners();
     } finally {
       _posloader = false;
-      toggleLoadingOn(false);
     }
   }
 
@@ -1915,7 +1909,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
   Future fetchGroupName(String name, BuildContext c, bool isCreateGrp) async {
     try {
       _posloader = true;
-      toggleLoadingOn(true);
       _groupName = await api.createGroupName(name);
 
       if (_groupName!.status == "Data inserted") {
@@ -1933,7 +1926,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
     } finally {
       _posloader = false;
-      toggleLoadingOn(false);
     }
   }
 
@@ -1966,7 +1958,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
   Future fetchDeleteGroupName(String name, BuildContext c) async {
     try {
       _posloader = true;
-      toggleLoadingOn(true);
       _groupName = await api.deletePositionGrpName(name);
 
       if (_groupName!.status == "Data deleted") {
@@ -1983,7 +1974,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
     } finally {
       _posloader = false;
-      toggleLoadingOn(false);
     }
   }
 

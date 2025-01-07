@@ -54,7 +54,7 @@ class _Allholdings extends State<Allholdings> {
         allchp = ((allch / totvalinv) * 100);
       }
 
-      return asa.tphloader && asa.loading
+      return asa.tphloader
           ? const Center(child: CircularProgressIndicator())
           : asa.allholds.isNotEmpty
               ? SingleChildScrollView(
