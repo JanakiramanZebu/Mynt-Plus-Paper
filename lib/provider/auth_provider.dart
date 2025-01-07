@@ -451,7 +451,7 @@ class AuthProvider extends DefaultChangeNotifier {
         clearTextField();
         pref.setMobileLogin(false);
         pref.setLogout(true);
-        ref(indexListProvider).bottomMenu(1);
+        ref(indexListProvider).bottomMenu(1, context);
         loginMethCtrl.text = pref.clientId!;
         Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, (route) => false);
@@ -487,13 +487,17 @@ class AuthProvider extends DefaultChangeNotifier {
         clearTextField();
         Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, arguments: "login", (route) => false);
-      } else if (_mobileLogin!.emsg == "") {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
       } else {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
-      }
+               Navigator.pushNamedAndRemoveUntil(
+            context, Routes.loginScreen, arguments: "login", (route) => false);
+      } 
+      
+      // else {
+      //   ScaffoldMessenger.of(context)
+      //       .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+      // }
       notifyListeners();
     } catch (e) {
       print(e);
@@ -644,7 +648,7 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setLogout(true);
         pref.setHideLoginOptBtn(false);
         pref.setMobileLogin(false);
-        ref(indexListProvider).bottomMenu(1);
+        ref(indexListProvider).bottomMenu(1, context);
         loginMethCtrl.text = pref.clientId!;
         notifyListeners();
         ScaffoldMessenger.of(context)
@@ -835,7 +839,7 @@ class AuthProvider extends DefaultChangeNotifier {
       ConstantName.timer =
           Timer.periodic(const Duration(seconds: 1), (timer) {});
       ConstantName.timer!.cancel();
-      await ref(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4);
+      await ref(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4, context);
 
       if (s.isNotEmpty) {
         ref(websocketProvider).closeSocket();
@@ -927,7 +931,7 @@ class AuthProvider extends DefaultChangeNotifier {
   ifSessionExpired(BuildContext context) {
     pref.clearClientSession();
     pref.setLogout(true);
-    ref(indexListProvider).bottomMenu(1);
+    ref(indexListProvider).bottomMenu(1, context);
 
     pref.setHideLoginOptBtn(false);
     loginMethCtrl.text = pref.clientId!;

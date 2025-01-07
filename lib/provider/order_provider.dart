@@ -384,7 +384,7 @@ class OrderProvider extends DefaultChangeNotifier {
         } else {
           Navigator.pop(context);
         }
-        ref(indexListProvider).bottomMenu(3);
+        ref(indexListProvider).bottomMenu(3, context);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1001,7 +1001,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref(indexListProvider).bottomMenu(3);
+        ref(indexListProvider).bottomMenu(3, context);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1032,7 +1032,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref(indexListProvider).bottomMenu(3);
+        ref(indexListProvider).bottomMenu(3, context);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1087,7 +1087,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref(indexListProvider).bottomMenu(3);
+        ref(indexListProvider).bottomMenu(3, context);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1118,7 +1118,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref(indexListProvider).bottomMenu(3);
+        ref(indexListProvider).bottomMenu(3, context);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1246,7 +1246,7 @@ class OrderProvider extends DefaultChangeNotifier {
       _sipPlaceOrder = await api.getPlaceSipOrder(sipOrderInput);
       if (_sipPlaceOrder!.reqStatus == "OK") {
         changeTabIndex(7, context);
-        ref(indexListProvider).bottomMenu(3);
+        ref(indexListProvider).bottomMenu(3, context);
         fetchSipOrderHistory(context);
         tabSize();
         Navigator.pop(context);
@@ -1468,11 +1468,11 @@ class OrderProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
         }
       }
-      ref(indexListProvider).bottomMenu(2);
+      ref(indexListProvider).bottomMenu(2, context);
 
       await fetchOrderBook(context, false);
       await changeTabIndex(0, context);
-      ref(indexListProvider).bottomMenu(3);
+      ref(indexListProvider).bottomMenu(3, context);
 
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(

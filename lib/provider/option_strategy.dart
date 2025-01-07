@@ -309,7 +309,7 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
           await ref(orderProvider).fetchOrderBook(context, true);
       if (_orderBookModel.isNotEmpty) {
         if (_orderBookModel[0].stat != "Not_Ok") {
-          ref(indexListProvider).bottomMenu(3);
+          ref(indexListProvider).bottomMenu(3, context);
           HapticFeedback.heavyImpact();
           SystemSound.play(SystemSoundType.click);
 

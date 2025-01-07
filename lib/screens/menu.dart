@@ -78,7 +78,7 @@ class _MoreMenuBottomSheetState extends State<MoreMenuBottomSheet> {
                             .fetchMFWatchlist(null, "", context, false);
                         await context.read(mfProvider).fetchMasterMF();
                       }
-                      menus.bottomMenu(5 + index);
+                      menus.bottomMenu(5 + index, context);
                       Navigator.pop(context);
                     },
                     contentPadding:

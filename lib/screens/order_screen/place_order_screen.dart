@@ -3867,7 +3867,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
 
                                 await context
                                     .read(indexListProvider)
-                                    .bottomMenu(2);
+                                    .bottomMenu(2, context);
                                 Navigator.pop(context);
                                 Navigator.pop(context);
                               },

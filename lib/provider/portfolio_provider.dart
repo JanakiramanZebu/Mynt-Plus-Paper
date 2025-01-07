@@ -267,12 +267,12 @@ class PortfolioProvider extends DefaultChangeNotifier {
       //   if (_mfHoldingsModel![0].stat != "Not_Ok") ...[
       Tab(
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-             Text(
-                "MF Holding${_mfHoldingsModel!.isNotEmpty ? "s (${_mfHoldingsModel!.length})" : ""}") ]
-        ),
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                  "MF Holding${_mfHoldingsModel!.isNotEmpty ? "s (${_mfHoldingsModel!.length})" : ""}")
+            ]),
       ),
       //   ]
       // ],
@@ -1061,6 +1061,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         //   print(element.avgPrc);
         // }
         var finmtm = 0.00;
+        String finpnl = "0.00";
         var temavg = element.netavgprc != "0.00"
             ? element.netavgprc
             : element.netupldprc != "0.00"
@@ -1071,10 +1072,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
         if (qty == 0) {
           if (element.cfbuyqty != "0") {
-            element.profitNloss =
+            finpnl =
                 "${(double.parse(element.daysellavgprc.toString()) * int.parse(element.daysellqty.toString())) - ((int.parse(element.cfbuyqty.toString()) * double.parse(temavg.toString())) + (double.parse(element.daybuyqty.toString()) * double.parse(element.daybuyavgprc.toString())))}";
           } else if (element.cfsellqty != "0") {
-            element.profitNloss =
+            finpnl =
                 "${((double.parse(element.daysellqty.toString()) * double.parse(element.daysellavgprc.toString())) + (int.parse(element.cfsellqty.toString()) * double.parse(temavg.toString()))) - double.parse(element.daybuyavgprc.toString()) * double.parse(element.daybuyqty.toString())}";
           }
 
@@ -1094,12 +1095,12 @@ class PortfolioProvider extends DefaultChangeNotifier {
           //   }
 
           else {
-            element.profitNloss = element.rpnl;
+            finpnl = element.rpnl.toString();
           }
+
           //print("${element.tsym} ${element.profitNloss} ${element.rpnl}");
 
-          // element.profitNloss =
-          //     double.parse(element.temppnl.toString()).toStringAsFixed(2);
+          element.profitNloss = double.parse(finpnl).toStringAsFixed(2);
         } else {
           var tempunpnl =
               lastPrice - double.parse(element.netupldprc.toString());

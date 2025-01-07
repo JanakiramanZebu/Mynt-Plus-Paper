@@ -98,10 +98,9 @@ class IndexListProvider extends DefaultChangeNotifier {
 
 // Change bottom tab menu
 
-  bottomMenu(int value) {
+  bottomMenu(int value, BuildContext context) {
     _selectedBtmIndx = value;
-    //ref(indexListProvider).checkSession(context);
-                                      
+    ref(indexListProvider).checkSession(context);
     notifyListeners();
   }
 

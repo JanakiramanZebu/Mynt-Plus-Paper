@@ -34,9 +34,7 @@ class UserAccountScreen extends ConsumerWidget {
     final funds = watch(fundProvider);
     final Preferences pref = locator<Preferences>();
     final String reflink = "https://oa.mynt.in/?ref=${pref.clientId}";
-    return userProfile.loading
-        ? const Center(child: CircularProgressIndicator())
-        : Column(children: [
+    return Column(children: [
             Expanded(
               child: ListView.separated(
                   shrinkWrap: true,

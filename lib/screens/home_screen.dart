@@ -564,92 +564,135 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   : indexProvide.selectedBtmIndx == 4
                                       ? PreferredSize(
                                           preferredSize: const Size(20, 20),
-                                          child: ListTile(
-                                              onTap: () {
-                                                showModalBottomSheet(
-                                                    context: context,
-                                                    isScrollControlled: true,
-                                                    isDismissible: true,
-                                                    shape:
-                                                        const RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                        topLeft:
-                                                            Radius.circular(10),
-                                                        topRight:
-                                                            Radius.circular(10),
-                                                      ),
-                                                    ),
-                                                    builder: (_) =>
-                                                        const LoggedUserBottomSheet(
-                                                            initRoute:
-                                                                'switchAcc'));
-                                              },
-                                              dense: true,
-                                              contentPadding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16),
-                                              leading: CircleAvatar(
-                                                backgroundColor:
-                                                    const Color(0xffF1F3F8),
-                                                child: Text(
-                                                    userProfile.userDetailModel!
-                                                                .uname !=
-                                                            null
-                                                        ? userProfile
-                                                            .userDetailModel!
-                                                            .uname![0]
-                                                        : "",
-                                                    style: textStyle(
-                                                        const Color(0xff000000),
-                                                        18,
-                                                        FontWeight.w600)),
-                                              ),
-                                              title: Text(
-                                                  "${userProfile.userDetailModel!.uname}",
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: textStyle(
-                                                      Color(theme.isDarkMode
-                                                          ? 0xffffffff
-                                                          : 0xff000000),
-                                                      16,
-                                                      FontWeight.w600)),
-                                              subtitle: Text(
-                                                  "Client ID ${userProfile.userDetailModel!.uid}",
-                                                  style: textStyle(
-                                                      const Color(0xff666666),
-                                                      12,
-                                                      FontWeight.w500)),
-                                              trailing: SizedBox(
-                                                  width: 100,
-                                                  child:
-                                                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                                                    IconButton(
-                                                      splashRadius: 26,
-                                                      onPressed: () {
-                                                        Navigator.pushNamed(
-                                                            context,
-                                                            Routes.qrscanner);
-                                                      },
-                                                      icon: SvgPicture.asset(
-                                                          "assets/profile/qr_code.svg",
-                                                          width: 20,
-                                                          height: 24,
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack),
-                                                    ),
-                                                    const SizedBox(width: 4),
-                                                    Icon(
-                                                        Icons
-                                                            .arrow_drop_down_circle_outlined,
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack)
-                                                  ]))))
+                                          child: userProfile.loading
+                                              ? ListTile(
+                                                  dense: true,
+                                                  contentPadding:
+                                                      const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 16),
+                                                  leading: CircleAvatar(
+                                                    backgroundColor:
+                                                        !theme.isDarkMode
+                                                            ? Colors.grey[300]
+                                                            : Color(0xff666666),
+                                                  ),
+                                                  title: Container(
+                                                    height: 16,
+                                                    width: 150,
+                                                    color: !theme.isDarkMode
+                                                        ? Colors.grey[300]
+                                                        : Color(0xff666666),
+                                                  ),
+                                                  subtitle: Container(
+                                                    height: 12,
+                                                    width: 100,
+                                                    color: !theme.isDarkMode
+                                                        ? Colors.grey[300]
+                                                        : Color(0xff666666),
+                                                  ),
+                                                  trailing: Container(
+                                                    height: 24,
+                                                    width: 50,
+                                                    color: !theme.isDarkMode
+                                                        ? Colors.grey[300]
+                                                        : Color(0xff666666),
+                                                  ),
+                                                )
+                                              : ListTile(
+                                                  onTap: () {
+                                                    showModalBottomSheet(
+                                                        context: context,
+                                                        isScrollControlled:
+                                                            true,
+                                                        isDismissible: true,
+                                                        shape:
+                                                            const RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.only(
+                                                            topLeft:
+                                                                Radius.circular(
+                                                                    10),
+                                                            topRight:
+                                                                Radius.circular(
+                                                                    10),
+                                                          ),
+                                                        ),
+                                                        builder: (_) =>
+                                                            const LoggedUserBottomSheet(
+                                                                initRoute:
+                                                                    'switchAcc'));
+                                                  },
+                                                  dense: true,
+                                                  contentPadding:
+                                                      const EdgeInsets.symmetric(
+                                                          horizontal: 16),
+                                                  leading: CircleAvatar(
+                                                    backgroundColor:
+                                                        const Color(0xffF1F3F8),
+                                                    child: Text(
+                                                        userProfile.userDetailModel!
+                                                                    .uname !=
+                                                                null
+                                                            ? userProfile
+                                                                .userDetailModel!
+                                                                .uname![0]
+                                                            : "",
+                                                        style: textStyle(
+                                                            const Color(
+                                                                0xff000000),
+                                                            18,
+                                                            FontWeight.w600)),
+                                                  ),
+                                                  title: Text(
+                                                      "${userProfile.userDetailModel!.uname}",
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: textStyle(
+                                                          Color(theme.isDarkMode
+                                                              ? 0xffffffff
+                                                              : 0xff000000),
+                                                          16,
+                                                          FontWeight.w600)),
+                                                  subtitle: Text(
+                                                      "Client ID ${userProfile.userDetailModel!.uid}",
+                                                      style: textStyle(
+                                                          const Color(
+                                                              0xff666666),
+                                                          12,
+                                                          FontWeight.w500)),
+                                                  trailing: SizedBox(
+                                                      width: 100,
+                                                      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                                                        IconButton(
+                                                          splashRadius: 26,
+                                                          onPressed: () {
+                                                            Navigator.pushNamed(
+                                                                context,
+                                                                Routes
+                                                                    .qrscanner);
+                                                          },
+                                                          icon: SvgPicture.asset(
+                                                              "assets/profile/qr_code.svg",
+                                                              width: 20,
+                                                              height: 24,
+                                                              color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack),
+                                                        ),
+                                                        const SizedBox(
+                                                            width: 4),
+                                                        Icon(
+                                                            Icons
+                                                                .arrow_drop_down_circle_outlined,
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack)
+                                                      ]))))
                                       : null),
 
                       // Here is the Bottom menu items
@@ -743,7 +786,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             Expanded(
                                 child: InkWell(
                                     onTap: () async {
-                                      indexProvide.bottomMenu(1);
+                                      indexProvide.bottomMenu(1, context);
                                       portfolio.cancelTimer();
 
                                       // await context
@@ -834,7 +877,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 // if (indexProvide.checkSess!.stat ==
                                 //     "Ok")
                                 //  {
-                                indexProvide.bottomMenu(2);
+                                indexProvide.bottomMenu(2, context);
                                 await portfolio.fetchMFHoldings(context);
                                 await marketWatchList.requestMWScrip(
                                     context: context, isSubscribe: false);
@@ -903,10 +946,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             Expanded(
                                 child: InkWell(
                                     onTap: () async {
-                                      indexProvide.bottomMenu(3);
+                                      indexProvide.bottomMenu(3, context);
 
                                       portfolio.cancelTimer();
-                                     // await context
+                                      // await context
                                       //     .read(indexListProvider)
                                       //     .checkSession(context);
                                       // if (indexProvide
@@ -989,7 +1032,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             Expanded(
                                 child: InkWell(
                                     onTap: () async {
-                                      indexProvide.bottomMenu(4);
+                                      indexProvide.bottomMenu(4, context);
                                       portfolio.cancelTimer();
                                       await context
                                           .read(fundProvider)

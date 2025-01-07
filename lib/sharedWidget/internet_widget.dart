@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 
+import '../provider/index_list_provider.dart';
 import 'functions.dart';
 
 //  If there is no internet, it will show on the screen.
@@ -46,8 +47,17 @@ class NoInternetScreen extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       )),
-                  onPressed: () {},
-                  child: Text("Retry",
+                  onPressed: () {
+                    context.read(indexListProvider).checkSession(context);
+                  },
+                  child: context.read(indexListProvider).loading ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  ) : Text("Retry",
                       style: textStyle(
                           theme.isDarkMode
                               ? Color(0xff000000)

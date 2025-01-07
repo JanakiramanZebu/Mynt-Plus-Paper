@@ -2137,7 +2137,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_alertPendingModel!.isNotEmpty) {
         if (_alertPendingModel![0].stat != "Not_Ok") {
-          ref(indexListProvider).bottomMenu(3);
+          ref(indexListProvider).bottomMenu(3, context);
           ConstantName.sessCheck = true;
           for (var element in _alertPendingModel!) {
             ltpArgs

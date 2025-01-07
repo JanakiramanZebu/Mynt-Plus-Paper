@@ -2581,7 +2581,7 @@ class _RepeatOrderState extends State<RepeatOrder> {
                                 .read(orderProvider)
                                 .fetchOrderBook(context, true);
 
-                            context.read(indexListProvider).bottomMenu(2);
+                            context.read(indexListProvider).bottomMenu(2, context);
                             Navigator.pop(context);
                             Navigator.pop(context);
                           },

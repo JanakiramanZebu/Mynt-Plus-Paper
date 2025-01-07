@@ -374,7 +374,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
         pref.clearClientSession();
         pref.setLogout(true);
-        ref(indexListProvider).bottomMenu(1);
+        ref(indexListProvider).bottomMenu(1, context);
         ref(authProvider).loginMethCtrl.text =
             pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
         notifyListeners();
