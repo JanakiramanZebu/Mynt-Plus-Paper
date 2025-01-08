@@ -41,6 +41,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
   final TextEditingController holdingSearchCtrl = TextEditingController();
   final TextEditingController holdingMFSearchCtrl = TextEditingController();
   final TextEditingController positionSearchCtrl = TextEditingController();
+
+  List<HoldingsModel>? _tholdingsModel = [];
+
   List<HoldingsModel>? _holdingsModel = [];
   List<HoldingsModel>? get holdingsModel => _holdingsModel;
 
@@ -50,6 +53,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
   List<HoldingsModel> get sealableHoldings => _sealableHoldings;
   List<HoldingsModel> _nonSealableHoldings = [];
   List<HoldingsModel> get nonSealableHoldings => _nonSealableHoldings;
+
+  List<PositionBookModel>? _tpostionBookModel = [];
 
   List<PositionBookModel>? _postionBookModel = [];
   List<PositionBookModel>? get postionBookModel => _postionBookModel;
@@ -401,19 +406,26 @@ class PortfolioProvider extends DefaultChangeNotifier {
   Future fetchHoldings(context, String initail) async {
     double invest = 0.0;
     try {
-      _holdloader = true;
-      _oneDayChngPer = 0.00;
-      _showSearchHold = false;
-      _holdingsModel = [];
-      _totInvesHold = "0.00";
-      _totPnlPercHolding = "0.00";
-      _totalPnlHolding = 0.00;
-      _totalCurrentVal = 0.00;
-      _oneDayChng = 0.00;
-      _showEdis = false;
-      _sealableHoldings = [];
-      _nonSealableHoldings = [];
-      _holdingsModel = await api.getHolding();
+      if (_holdingsModel!.isNotEmpty) {
+        _tholdingsModel = await api.getHolding();
+        if (_tholdingsModel!.isNotEmpty) {
+          _holdingsModel = _tholdingsModel;
+        }
+      } else {
+        _holdloader = true;
+        _oneDayChngPer = 0.00;
+        _showSearchHold = false;
+        _holdingsModel = [];
+        _totInvesHold = "0.00";
+        _totPnlPercHolding = "0.00";
+        _totalPnlHolding = 0.00;
+        _totalCurrentVal = 0.00;
+        _oneDayChng = 0.00;
+        _showEdis = false;
+        _sealableHoldings = [];
+        _nonSealableHoldings = [];
+        _holdingsModel = await api.getHolding();
+      }
 
       pref.setScrip(true);
       pref.setPrice(true);
@@ -661,16 +673,24 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchPositionBook(BuildContext context, bool isDay) async {
     try {
-      _posloader = true;
-      _postionBookModel = [];
-      _allPostionList = [];
-      _totPnL = "0.00";
-      _totMtm = "0.00";
-      _exitAll = false;
-      _totBookedPnL = "0.00";
-      _posSelection = "All position";
-      _totUnRealMtm = '0.00';
-      _postionBookModel = await api.getPositionBook();
+      if (_postionBookModel!.isNotEmpty) {
+        _tpostionBookModel = await api.getPositionBook();
+        if (_tpostionBookModel!.isNotEmpty) {
+          _postionBookModel = _tpostionBookModel;
+        }
+      } else {
+        _posloader = true;
+        _postionBookModel = [];
+        _allPostionList = [];
+        _totPnL = "0.00";
+        _totMtm = "0.00";
+        _exitAll = false;
+        _totBookedPnL = "0.00";
+        _posSelection = "All position";
+        _totUnRealMtm = '0.00';
+        _postionBookModel = await api.getPositionBook();
+      }
+
       pref.setPosScrip(true);
       pref.setPosPrice(true);
       pref.setPosPerchnage(true);

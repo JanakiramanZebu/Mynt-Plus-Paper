@@ -100,7 +100,7 @@ class IndexListProvider extends DefaultChangeNotifier {
 
   bottomMenu(int value, BuildContext context) {
     _selectedBtmIndx = value;
-    ref(indexListProvider).checkSession(context);
+    // ref(indexListProvider).checkSession(context);
     notifyListeners();
   }
 
