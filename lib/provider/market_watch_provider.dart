@@ -971,12 +971,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (_getQuotes!.tbq != null || _getQuotes!.tsq != null) {
         _totBuyQtyPer = (int.parse("${_getQuotes!.tbq ?? 0}") /
                 (int.parse("${_getQuotes!.tbq ?? 0}") +
-                    int.parse("${_getQuotes!.tsq ?? 0}"))) *
+                    int.parse("${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}"))) *
             100;
 
-        _totSellQtyPer = (int.parse("${_getQuotes!.tsq ?? 0}") /
+        _totSellQtyPer = (int.parse("${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}") /
                 (int.parse("${_getQuotes!.tbq ?? 0}") +
-                    int.parse("${_getQuotes!.tsq ?? 0}"))) *
+                    int.parse("${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}"))) *
             100;
         if (_totBuyQtyPer.isNaN) {
           _totBuyQtyPer = 0.00;

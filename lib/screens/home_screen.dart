@@ -47,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 // This is a websockt heartbeat connection that reconnects every two seconds only.
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
+        print("websocket ${context.read(websocketProvider).wsConnected}");
         context.read(websocketProvider).reconnectWS();
         // context.read(websocketProvider).startPingCheck(context);
       }
@@ -80,8 +81,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
         if (context.read(websocketProvider).wsConnected == false ||
             context.read(websocketProvider).wsConnected == true) {
+                if (ConstantName.lastSubscribe.isNotEmpty) {
+          context.read(websocketProvider).establishConnection(
+              channelInput: ConstantName.lastSubscribe,
+              task: "t",
+              context: context);
+        }
+        if (ConstantName.lastSubscribeDepth.isNotEmpty) {
+          context.read(websocketProvider).establishConnection(
+              channelInput: ConstantName.lastSubscribeDepth,
+              task: "d",
+              context: context);
+        }
           if (context.read(networkStateProvider).connectionStatus !=
               ConnectivityResult.none) {
+                context.read(websocketProvider).changeconnectioncount();
             if (context.read(indexListProvider).selectedBtmIndx == 1) {
               context
                   .read(marketWatchProvider)
@@ -91,6 +105,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               context
                   .read(portfolioProvider)
                   .requestWSHoldings(context: context, isSubscribe: true);
+                  context
+                  .read(portfolioProvider)
+                  .timerfunc();
               context
                   .read(portfolioProvider)
                   .requestWSPosition(context: context, isSubscribe: true);
@@ -105,15 +122,35 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         print("app in resumed");
         break;
       case AppLifecycleState.inactive:
+        if (context.read(indexListProvider).selectedBtmIndx == 2) {
+                  context
+                  .read(portfolioProvider)
+                  .cancelTimer();
+            }
         print("app in inactive");
         break;
       case AppLifecycleState.paused:
+        if (context.read(indexListProvider).selectedBtmIndx == 2) {
+                  context
+                  .read(portfolioProvider)
+                  .cancelTimer();
+            }
         print("app in paused");
         break;
       case AppLifecycleState.detached:
+        if (context.read(indexListProvider).selectedBtmIndx == 2) {
+                  context
+                  .read(portfolioProvider)
+                  .cancelTimer();
+            }
         print("app in detached");
         break;
       case AppLifecycleState.hidden:
+        if (context.read(indexListProvider).selectedBtmIndx == 2) {
+                  context
+                  .read(portfolioProvider)
+                  .cancelTimer();
+            }
     }
   }
 
@@ -134,10 +171,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           final internet = watch(networkStateProvider);
           final portfolio = watch(portfolioProvider);
           final userProfile = watch(userProfileProvider);
+          final websocket = watch(websocketProvider);
           final theme = context.read(themeProvider);
           return GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
-              child: internet.connectionStatus == ConnectivityResult.none
+              child: internet.connectionStatus == ConnectivityResult.none || websocket.connectioncount >= 5
                   ? Scaffold(
                       appBar: AppBar(
                         elevation: 0,

@@ -1,21 +1,39 @@
+import 'dart:io';
+
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/provider/websocket_provider.dart';
+import 'package:mynt_plus/provider/websocket_provider.dart';
 
 import '../provider/index_list_provider.dart';
 import 'functions.dart';
 
 //  If there is no internet, it will show on the screen.
 
-class NoInternetScreen extends StatelessWidget {
+class NoInternetScreen extends StatefulWidget {
   const NoInternetScreen({
     super.key,
   });
 
   @override
+  State<NoInternetScreen> createState() => _NoInternetScreenState();
+}
+
+class _NoInternetScreenState extends State<NoInternetScreen> {
+
+@override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, watch, child) {
+      final webSocket = watch(websocketProvider);
       final theme = watch(themeProvider);
       return Scaffold(
         body: SafeArea(
@@ -48,16 +66,20 @@ class NoInternetScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(30),
                       )),
                   onPressed: () {
-                    context.read(indexListProvider).checkSession(context);
+                    // context.read(indexListProvider).checkSession(context);
+                    webSocket.closeSocket();
+                    webSocket.changeretryscreen(true);
+                    webSocket.reconnect(context);
                   },
-                  child: context.read(indexListProvider).loading ? const SizedBox(
+                  child: webSocket.retryscreen == true ? const SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       color: Colors.white,
                     ),
-                  ) : Text("Retry",
+                  ) : 
+                          Text("Retry",
                       style: textStyle(
                           theme.isDarkMode
                               ? Color(0xff000000)

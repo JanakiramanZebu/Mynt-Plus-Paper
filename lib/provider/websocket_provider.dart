@@ -1,117 +1,285 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:mynt_plus/provider/index_list_provider.dart';
+import 'package:mynt_plus/provider/network_state_provider.dart';
+import 'package:mynt_plus/provider/order_provider.dart';
+import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../api/core/api_link.dart';
 import '../locator/constant.dart';
-
 import '../locator/locator.dart';
 import '../locator/preference.dart';
-import 'fund_provider.dart';
-import 'index_list_provider.dart';
-import 'network_state_provider.dart';
-import 'order_provider.dart';
-import 'portfolio_provider.dart';
 
 final websocketProvider =
     ChangeNotifierProvider((ref) => WebSocketProvider(ref.read));
 
 class WebSocketProvider extends ChangeNotifier {
-  bool _wsConnected = false;
-
-  bool get wsConnected => _wsConnected;
-
   final Reader ref;
   WebSocketProvider(this.ref);
+  
 
-  static WebSocketChannel channel =
-      WebSocketChannel.connect(Uri.parse(ApiLinks.wsURL));
+  // Map to track active subscriptions and their timers
+  final Map<String, Timer> _subscriptionTimers = {};
 
-  final FToast _fToast = FToast();
-  FToast get fToast => _fToast;
+  // Timeout duration (e.g., 10 seconds)
+  static const int subscriptionTimeout = 5;
+
+  int _connectioncount = 0;
+
+  int get connectioncount => _connectioncount;
+
+  bool _wsConnected = false;
+  bool _connecting = false;
+
+  WebSocketChannel? channel;
+  Completer<void>? _connectionCompleter;
 
   final Map _socketDatas = {};
 
   Map get socketDatas => _socketDatas;
 
-  // bool _isGetData = false;
+  final Preferences pref = locator<Preferences>();
+
+  bool get wsConnected => _wsConnected;
+
+  bool _retryscreen = false;
+  bool get retryscreen => _retryscreen;
+
+  void changeretryscreen(bol){
+    _retryscreen = bol;
+  }
+
+  void changeconnectioncount(){
+    _connectioncount = 0;
+  }
+
+  void closeSocket() {
+    _wsConnected = false;
+    _connecting = false;
+    channel?.sink.close();
+    // Cancel all subscription timers
+    for (var timer in _subscriptionTimers.values) {
+      timer.cancel();
+    }
+    _subscriptionTimers.clear();
+    notifyListeners();
+  }
+
+    // bool _isGetData = false;
   websockConn(bool value) {
     _wsConnected = value;
     notifyListeners();
   }
 
-  bool conectionClosed = false;
-
-  final Preferences pref = locator<Preferences>();
-
-// Close websocket
-
-  void closeSocket() {
-    conectionClosed = true;
-    _wsConnected = false;
-    notifyListeners();
-    channel.sink.close();
-  }
-
-
-
-// Websocket Recpnnection(Heart beat)
+  // Websocket Recpnnection(Heart beat)
   reconnectWS() {
     if (ref(networkStateProvider).connectionStatus != ConnectivityResult.none &&
         _wsConnected) {
-      if (!conectionClosed) {
-        channel.sink.add(jsonEncode({"t": "h"}));
+      if (!_wsConnected) {
+        channel?.sink.add(jsonEncode({"t": "h"}));
       }
     }
   }
 
-  establishConnection(
-      {required String channelInput,
-      required String task,
-      required BuildContext context}) {
+
+  // void showBottomAlert(BuildContext context) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     shape: RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(
+  //         top: Radius.circular(20),
+  //       ),
+  //     ),
+  //     builder: (BuildContext context) {
+  //       return Container(
+  //         padding: EdgeInsets.all(16),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             Text(
+  //               "Alert Message",
+  //               style: TextStyle(
+  //                 fontSize: 18,
+  //                 fontWeight: FontWeight.bold,
+  //               ),
+  //             ),
+  //             SizedBox(height: 8),
+  //             Text(
+  //               "This is a sample alert message displayed at the bottom of the screen. You can customize it as needed.",
+  //               textAlign: TextAlign.center,
+  //             ),
+  //             SizedBox(height: 16),
+  //             ElevatedButton(
+  //               onPressed: () {
+  //                 // Handle button action here
+  //                 reconnect(context);
+  //                 Navigator.pop(context);
+  //               },
+  //               child: Text("Refresh"),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
+
+  void _startSubscriptionTimer(String key, context) {
+    // Cancel any existing timer for the same subscription
+    _subscriptionTimers[key]?.cancel();
+    log("started timer $key");
+    // Start a new timer
+    _subscriptionTimers[key] = Timer(
+      const Duration(seconds: subscriptionTimeout),
+      () {
+        // Timeout reached without receiving data
+        debugPrint("Subscription timeout for: $key");
+        _subscriptionTimers.remove(key);
+        log("timout error call bottom modal $key");
+        // Attempt reconnection or re-subscription
+        _handleSubscriptionTimeout(context);
+      },
+    );
+  }
+
+
+
+    void _handleSubscriptionTimeout(context) {
+      _connectioncount+=1;
+      debugPrint("WebSocket disconnected. Attempting to reconnect...");
+      // Reconnect logic here
+      ref(indexListProvider)
+              .logError
+              .add({"type": "Timeout error", "Error": "error"});
+      closeSocket();
+      // showBottomAlert(context);
+      if(_connectioncount < 5){
+      establishConnection(
+          channelInput: ConstantName.lastSubscribe,
+          task: "t",
+          context: context,
+        );
+        establishConnection(
+          channelInput: ConstantName.lastSubscribeDepth,
+          task: "d",
+          context: context,
+        );
+      }
+  }
+
+
+  Future<void> establishConnection({
+    required String channelInput,
+    required String task,
+    required BuildContext context,
+  }) async {
+    // Save the channel input for reconnection purposes
     if (task == "t") {
       ConstantName.lastSubscribe = channelInput;
     } else if (task == "d") {
       ConstantName.lastSubscribeDepth = channelInput;
     }
-    // _socketDatas = {};
-    if (!_wsConnected) {
-      final data = {
-        "t": "c",
-        "actid": pref.clientId,
-        "uid": pref.clientId,
-        "source": ApiLinks.source,
-        "susertoken": pref.clientSession
-      };
-      channel = WebSocketChannel.connect(Uri.parse(ApiLinks.wsURL));
-      channel.sink.add(jsonEncode(data));
 
-      channel.stream.listen(
-        (data) {
-         // log("Socket Data ===> $data");
-          final res = jsonDecode(data.toString());
- 
+    // If already connected, use the connection to subscribe
+    if (_wsConnected) {
+      if (channelInput.isNotEmpty) {
+        log("task subscription 1 $channelInput");
+              if(task.toLowerCase() != "u" && task.toLowerCase() != 'ud' && !channelInput.startsWith('|')) {
+                log("subscription function call 1 $task");
+                _startSubscriptionTimer(channelInput,context);
+              }
+        connectTouchLine(input: channelInput, task: task, context: context);
+      }
+      return;
+    }
+
+    // If already connecting, wait for the connection to complete
+    if (_connecting) {
+      try {
+      await _connectionCompleter?.future;
+      if (_wsConnected && channelInput.isNotEmpty) {
+        log("task subscription 2  $channelInput");
+              if(task.toLowerCase() != "u" && task.toLowerCase() != 'ud' && !channelInput.startsWith('|')) {
+                log("subscription function call 2 $task");
+                _startSubscriptionTimer(channelInput,context);
+              }
+        connectTouchLine(input: channelInput, task: task, context: context);
+      }
+      }
+      catch (e) {
+        log("Connection error: $e");
+        if(_connectioncount < 5){
+        reconnect(context); // Handle the failure gracefully
+        }
+      }
+      return;
+    }
+
+    // Start a new connection
+    _connecting = true;
+    _connectionCompleter = Completer<void>();
+
+    final data = {
+      "t": "c",
+      "actid": pref.clientId,
+      "uid": pref.clientId,
+      "source": ApiLinks.source,
+      "susertoken": pref.clientSession,
+    };
+
+    try {
+      channel = WebSocketChannel.connect(Uri.parse(ApiLinks.wsURL));
+      channel!.sink.add(jsonEncode(data));
+
+      channel!.stream.listen(
+        (event) {
+          final res = jsonDecode(event.toString());
+
           if (res['s'].toString().toLowerCase() == "ok" &&
               res['t'].toString() == "ck") {
             _wsConnected = true;
-            conectionClosed = false;
+            _connecting = false;
+            _connectioncount = 0;
+            // Complete the connection future
+            _connectionCompleter?.complete();
             if (task.toLowerCase() == 't' ||
                 task.toLowerCase() == 'u' ||
                 task.toLowerCase() == 'd' ||
                 task.toLowerCase() == 'ud') {
               if (channelInput.isNotEmpty) {
-                connectTouchLine(
-                    input: channelInput, task: task, context: context);
+              connectTouchLine(input: channelInput, task: task, context: context);
+              // Start a timeout timer for this subscription
+              log("task subscription 3  $channelInput");
+              if(task.toLowerCase() != "u" && task.toLowerCase() != 'ud' && !channelInput.startsWith('|')) {
+                log("subscription function call 3  $task");
+                _startSubscriptionTimer(channelInput,context);
+              }
               }
             }
-          }
-
-          if (res['t'].toString().toLowerCase() == "tf" ||
+              }
+              final key = res['tk']?.toString();
+              if (key != null) {
+                // Cancel the timer for this subscription as we received a response
+                // Cancel all timers and clear the map
+                if (_subscriptionTimers != {}) {
+                _subscriptionTimers.forEach((key, timer) {
+                  timer.cancel();
+                });
+                _subscriptionTimers.clear();
+                }
+              }
+              if(res['t'].toString().toLowerCase() == "dk"){
+                _wsConnected = false;
+              }
+            if (res['t'].toString().toLowerCase() == "tf" ||
               res['t'].toString().toLowerCase() == "df") {
             // fToast!.removeQueuedCustomToasts();
             if (_socketDatas.containsKey("${res['tk']}")) {
@@ -257,141 +425,66 @@ class WebSocketProvider extends ChangeNotifier {
           } else if (res['t'].toString().toLowerCase() == "tk" ||
               res['t'].toString().toLowerCase() == "dk") {
             // fToast!.removeQueuedCustomToasts();
-            if (res["pc"] == null) {
-              res["pc"] = "0.00";
+            if(!_socketDatas.containsKey("${res['tk']}")){
+            _socketDatas["${res['tk']}"] = <String, dynamic>{};
             }
+              _socketDatas["${res['tk']}"]["pc"] = res["pc"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["o"] = res["o"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["h"] = res["h"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["l"] = res["l"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["c"] = res["c"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["lp"] = res["lp"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["v"] = res["v"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["oi"] = res["oi"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["toi"] = res["toi"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["poi"] = res["poi"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["sp1"] = res["sp1"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["sp2"] = res["sp2"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["sp3"] = res["sp3"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["sp4"] = res["sp4"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["sp5"] = res["sp5"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["sq1"] = res["sq1"] ?? "0";
+              _socketDatas["${res['tk']}"]["sq2"] = res["sq2"] ?? "0";
+              _socketDatas["${res['tk']}"]["sq3"] = res["sq3"] ?? "0";
+              _socketDatas["${res['tk']}"]["sq4"] = res["sq4"] ?? "0";
+              _socketDatas["${res['tk']}"]["sq5"] = res["sq5"] ?? "0";
+              _socketDatas["${res['tk']}"]["tsq"] = res["tsq"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["bp1"] = res["bp1"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["bp2"] = res["bp2"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["bp3"] = res["bp3"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["bp4"] = res["bp4"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["bp5"] = res["bp5"] ?? "0.00";
+              _socketDatas["${res['tk']}"]["bq1"] = res["bq1"] ?? "0";
+              _socketDatas["${res['tk']}"]["bq2"] = res["bq2"] ?? "0";
+              _socketDatas["${res['tk']}"]["bq3"] = res["bq3"] ?? "0";
+              _socketDatas["${res['tk']}"]["bq4"] = res["bq4"] ?? "0";
+              _socketDatas["${res['tk']}"]["bq5"] = res["bq5"] ?? "0";
+              _socketDatas["${res['tk']}"]["tbq"] = res["tbq"] ?? "0";
+              _socketDatas["${res['tk']}"]["52h"] = res["52h"] ?? "0.0";
+              _socketDatas["${res['tk']}"]["52l"] = res["52l"] ?? "0.0";
+              _socketDatas["${res['tk']}"]["ft"] = res["ft"] ?? "0.0";
+              _socketDatas["${res['tk']}"]["lc"] = res["lc"] ?? "0.0";
+              _socketDatas["${res['tk']}"]["uc"] = res["uc"] ?? "0.0";
+              _socketDatas["${res['tk']}"]["ltq"] = res["ltq"] ?? "0.0";
+              _socketDatas["${res['tk']}"]["ltt"] = res["ltt"] ?? "0.0";
 
-            if (res["o"] == null) {
-              res["o"] = "0.00";
-            }
-            if (res["h"] == null) {
-              res["h"] = "0.00";
-            }
-            if (res["l"] == null) {
-              res["l"] = "0.00";
-            }
-            if (res["c"] == null) {
-              res["c"] = "0.00";
-            }
-
-            res["lp"] = res["lp"] ?? res["c"] ?? "0.00";
-
-            if (res["v"] == null) {
-              res["v"] = "0.00";
-            }
-            if (res["oi"] == null) {
-              res["oi"] = "0.00";
-            }
-            if (res["toi"] == null) {
-              res["toi"] = "0.00";
-            }
-            if (res["poi"] == null) {
-              res["poi"] = "0.00";
-            }
-            if (res["sp1"] == null) {
-              res["sp1"] = "0.00";
-            }
-            if (res["sp2"] == null) {
-              res["sp2"] = "0.00";
-            }
-            if (res["sp3"] == null) {
-              res["sp3"] = "0.00";
-            }
-            if (res["sp4"] == null) {
-              res["sp4"] = "0.00";
-            }
-            if (res["sp5"] == null) {
-              res["sp5"] = "0.00";
-            }
-            if (res["sq1"] == null) {
-              res["sq1"] = "0";
-            }
-            if (res["sq2"] == null) {
-              res["sq2"] = "0";
-            }
-            if (res["sq3"] == null) {
-              res["sq3"] = "0";
-            }
-            if (res["sq4"] == null) {
-              res["sq4"] = "0";
-            }
-            if (res["sq5"] == null) {
-              res["sq5"] = "0";
-            }
-            if (res["tsq"] == null) {
-              res["tsq"] = "0.00";
-            }
-            if (res["bp1"] == null) {
-              res["bp1"] = "0.00";
-            }
-            if (res["bp2"] == null) {
-              res["bp2"] = "0.00";
-            }
-            if (res["bp3"] == null) {
-              res["bp3"] = "0.00";
-            }
-            if (res["bp4"] == null) {
-              res["bp4"] = "0.00";
-            }
-            if (res["bp5"] == null) {
-              res["bp5"] = "0.00";
-            }
-            if (res["bq1"] == null) {
-              res["bq1"] = "0";
-            }
-            if (res["bq2"] == null) {
-              res["bq2"] = "0";
-            }
-            if (res["bq3"] == null) {
-              res["bq3"] = "0";
-            }
-            if (res["bq4"] == null) {
-              res["bq4"] = "0";
-            }
-            if (res["bq5"] == null) {
-              res["bq5"] = "0";
-            }
-            if (res["tbq"] == null) {
-              res["tbq"] = "0";
-            }
-
-            if (res["52h"] == null) {
-              res["52h"] = "0.0";
-            }
-            if (res["52l"] == null) {
-              res["52l"] = "0.0";
-            }
-
-            if (res["ft"] == null) {
-              res["ft"] = "0.0";
-            }
-            if (res["lc"] == null) {
-              res["lc"] = "0.0";
-            }
-            if (res["uc"] == null) {
-              res["uc"] = "0.0";
-            }
-            if (res["ltq"] == null) {
-              res["ltq"] = "0.0";
-            }
-            if (res["ltt"] == null) {
-              res["ltt"] = "0.0";
-            }
-
-            res["chng"] = (double.parse(
-
-                // res["lp"] == "null" || res["lp"] == null
-                //           ? res["c"] == "null" || res["c"] == null
-                //               ? "0.00"
-                //               : res["c"]
-                //           :
-
-                res["lp"]) - double.parse(
-                // res["c"] == "null" || res["c"] == null
-                //   ? "0.00"
-                //   :
-                res["c"])).toStringAsFixed(2);
-            _socketDatas.addAll({"${res['tk']}": res});
+            _socketDatas["${res['tk']}"]["chng"] = ((double.parse(
+                          res["lp"])) -
+                      (double.parse(res["c"])))
+                  .toStringAsFixed(2);
+            // Check if the key exists in _socketDatas
+            // if (_socketDatas.containsKey(key)) {
+            //   // Compare the new value with the existing value
+            //   if (_socketDatas[key] != res) {
+            //     // Update only if data is different
+            //     _socketDatas[key] = res;
+            //     print("Data updated for key: $key");
+            //   }
+            // } else {
+            //   // If key doesn't exist, add it
+            //   _socketDatas[key] = res;
+            //   print("New data added for key: $key");
+            // }
             ref(portfolioProvider).updateHoldingValues(  "${res['tk']}", res);
 
             // log("Soxket data ${jsonEncode(_socketDatas)}");
@@ -411,77 +504,120 @@ class WebSocketProvider extends ChangeNotifier {
                   () =>
                       ref(portfolioProvider).fetchPositionBook(context, false));
             }
-          }
+          
+    }
 
-          // Future.delayed(const Duration(milliseconds: 2000), () {
           notifyListeners();
-          // });
         },
-        onDone: () async {
-          // log("Connection closed ${channel.closeRe
-          //ason} ${channel.closeCode}");
-          if (channel.closeCode != null) {
-            closeSocket();
-            conectionClosed = true;
-            _wsConnected = false;
-            ref(indexListProvider).logError.add({
-              "type": "Websocket ${channel.closeCode} ",
+        onDone: () {
+          if (channel!.closeCode != null) {
+          _handleConnectionClosed(context);
+          ref(indexListProvider).logError.add({
+              "type": "Websocket ${channel!.closeCode} ",
               "Error": "Connection closed "
             });
-            if (ref(networkStateProvider).connectionStatus !=
-                ConnectivityResult.none) {
-              Future.delayed(Duration(
-                      milliseconds: channel.closeCode == 1000 ? 1500 : 700))
-                  .then((value) {
-                establishConnection(
-                    channelInput: ConstantName.lastSubscribe,
-                    task: "t",
-                    context: context);
-                establishConnection(
-                    channelInput: ConstantName.lastSubscribeDepth,
-                    task: "d",
-                    context: context);
-              });
-            }
           }
-          notifyListeners();
+            notifyListeners();
         },
         onError: (error) {
-          closeSocket();
-          conectionClosed = true;
-          _wsConnected = false;
-
+          _handleConnectionError(error,context);
           ref(indexListProvider)
               .logError
               .add({"type": "Websocket Error", "Error": "$error"});
-
-          notifyListeners();
+              notifyListeners();
         },
       );
-    } else {
-      if (task.toLowerCase() == 't' ||
-          task.toLowerCase() == 'u' ||
-          task.toLowerCase() == 'd' ||
-          task.toLowerCase() == 'ud') {
-        if (channelInput.isNotEmpty) {
-          connectTouchLine(input: channelInput, task: task, context: context);
-        }
-      }
+    } catch (error) {
+      _handleConnectionError(error,context);
     }
   }
 
-  void connectTouchLine(
-      {required String task,
-      required String input,
-      required BuildContext context}) {
+  void connectTouchLine({
+    required String task,
+    required String input,
+    required BuildContext context,
+  }) {
     final data = {"t": task, "k": input};
-
     if (input.isNotEmpty && _wsConnected) {
-      channel.sink.add(jsonEncode(data));
+      channel?.sink.add(jsonEncode(data));
+    }
+  }
+
+  void _handleConnectionClosed(context) {
+    _connectioncount+=1;
+    closeSocket();
+     // Check if the Completer is already completed
+    if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
+    _connectionCompleter?.completeError("WebSocket connection closed.");
+    }
+    if(_connectioncount < 5){
+    reconnect(context);
+    }
+  }
+
+  void _handleConnectionError(dynamic error, context) {
+    _connectioncount+=1;
+    closeSocket();
+    _connectionCompleter?.completeError(error);
+    if(_connectioncount < 5){
+     Future.delayed(const Duration(seconds: 5)).then((_) {
+      if(_wsConnected != true){
+      reconnect(context);
+      ref(indexListProvider)
+              .logError
+              .add({"type": "Reconnect try", "Error": "error"});
+      }
+      notifyListeners();
+     });
+    }
+  }
+
+  void reconnect(context) {
+    if(_retryscreen == true){
+      if (ref(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+            ref(portfolioProvider).fetchHoldings(context, "");
+            ref(orderProvider).fetchOrderBook(context, true);
+            ref(orderProvider).fetchTradeBook(context);
+            ref(orderProvider).fetchGTTOrderBook(context, "");
+            ref(fundProvider).fetchFunds(context);
+            ref(portfolioProvider).fetchPositionBook(context, false);
+
+        establishConnection(
+          channelInput: ConstantName.lastSubscribe,
+          task: "t",
+          context: context,
+        );
+        establishConnection(
+          channelInput: ConstantName.lastSubscribeDepth,
+          task: "d",
+          context: context,
+        );
+        _retryscreen = false;
+      }
+    }
+    else{
+    Future.delayed(const Duration(seconds: 2)).then((_) {
+      if (ref(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+            ref(portfolioProvider).fetchHoldings(context, "");
+            ref(orderProvider).fetchOrderBook(context, true);
+            ref(orderProvider).fetchTradeBook(context);
+            ref(orderProvider).fetchGTTOrderBook(context, "");
+            ref(fundProvider).fetchFunds(context);
+            ref(portfolioProvider).fetchPositionBook(context, false);
+
+        establishConnection(
+          channelInput: ConstantName.lastSubscribe,
+          task: "t",
+          context: context,
+        );
+        establishConnection(
+          channelInput: ConstantName.lastSubscribeDepth,
+          task: "d",
+          context: context,
+        );
+        _retryscreen = false;
+      }
+    });
     }
   }
 }
-
-
-
-
