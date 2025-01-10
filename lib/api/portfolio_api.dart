@@ -12,7 +12,8 @@ import 'core/api_link.dart';
 mixin PortfolioAPI on ApiCore {
 // get Holdings from kambala
 
-  Future<List<HoldingsModel>> getHolding() async {
+  Future<Map<String, dynamic>> getHolding() async {
+    String stat = "";
     try {
       final uri = Uri.parse(apiLinks.getHoldings);
       final res = await apiClient.post(uri,
@@ -24,25 +25,42 @@ mixin PortfolioAPI on ApiCore {
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         try {
-          if (json['stat'] == 'Not_Ok') {
+          print(
+              'qwqwqw hold start T ${json.runtimeType} E ${json.isNotEmpty} L ${json.length}');
+          if (json.isNotEmpty && json.length > 0) {
+            stat = 'success';
+            for (final item in json) {
+              data.add(HoldingsModel.fromJson(item as Map<String, dynamic>));
+            }
+          } else if (json.isEmpty && json.toString() == '[]') {
+            stat = 'no data';
+          } else if (json['stat'] == 'Not_Ok') {
+            stat = 'Not_Ok';
             final HoldingsModel ord =
                 HoldingsModel.fromJson(json as Map<String, dynamic>);
-            return [ord];
+            return {"stat": stat, "data": ord};
           } else {
+            stat = 'error';
             for (final item in json) {
               data.add(HoldingsModel.fromJson(item as Map<String, dynamic>));
             }
           }
         } catch (e) {
+          print('qwqwqw hold json catch$e');
+          stat = 'error';
           if (res.statusCode == 200) {
             for (final item in json) {
               data.add(HoldingsModel.fromJson(item as Map<String, dynamic>));
             }
           }
         }
+      } else {
+        final json = jsonDecode(res.body);
+        if (json['emsg'].contains('Session Expired')) {
+          data.add(HoldingsModel.fromJson(json as Map<String, dynamic>));
+        }
       }
-
-      return data;
+      return {"stat": stat, "data": data};
     } catch (e) {
       rethrow;
     }
@@ -62,7 +80,12 @@ mixin PortfolioAPI on ApiCore {
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         try {
-          if (json['stat'] == 'Not_Ok') {
+          var raw = [
+            {"stat": "no data"}
+          ];
+          if (json.toString() == '[]') {
+            data.add(MFHoldingsModel.fromJson(raw as Map<String, dynamic>));
+          } else if (json['stat'] == 'Not_Ok') {
             final MFHoldingsModel ord =
                 MFHoldingsModel.fromJson(json as Map<String, dynamic>);
             return [ord];
@@ -77,6 +100,11 @@ mixin PortfolioAPI on ApiCore {
               data.add(MFHoldingsModel.fromJson(item as Map<String, dynamic>));
             }
           }
+        }
+      } else {
+        final json = jsonDecode(res.body);
+        if (json['emsg'].contains('Session Expired')) {
+          data.add(MFHoldingsModel.fromJson(json as Map<String, dynamic>));
         }
       }
 
@@ -103,14 +131,12 @@ mixin PortfolioAPI on ApiCore {
       if (json['msg'] is Map<String, dynamic> &&
           json['msg']['equities'] != null) {
         allholds = AllholdModel.fromJson(json['msg']);
-        print('MB data ex');
       } else {
         allholds = AllholdModel(
           equities: {},
           mutualfunds: {},
           syncDatetime: '',
         );
-        print('MB data nil');
       }
       return allholds;
     } catch (e) {
@@ -170,8 +196,8 @@ mixin PortfolioAPI on ApiCore {
   //     rethrow;
   //   }
   // }
-
-  Future<List<PositionBookModel>> getPositionBook() async {
+  Future<Map<String, dynamic>> getPositionBook() async {
+    String stat = "";
     try {
       final uri = Uri.parse(apiLinks.getPosition);
       final res = await apiClient.post(uri,
@@ -185,17 +211,31 @@ mixin PortfolioAPI on ApiCore {
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         try {
-          if (json['stat'] == 'Not_Ok') {
+          print(
+              'qwqwqw pos start T ${json.runtimeType} E ${json.isNotEmpty} L ${json.length}');
+          if (json is Map<String, dynamic>) {
+            stat = 'no data';
+          } else if (json.isNotEmpty && json.length > 0) {
+            stat = 'success';
+            for (final item in json) {
+              data.add(
+                  PositionBookModel.fromJson(item as Map<String, dynamic>));
+            }
+          } else if (json['stat'] == 'Not_Ok') {
+            stat = 'Not_Ok';
             final PositionBookModel ord =
                 PositionBookModel.fromJson(json as Map<String, dynamic>);
-            return [ord];
+            return {"stat": stat, "data": ord};
           } else {
+            stat = 'error';
             for (final item in json) {
               data.add(
                   PositionBookModel.fromJson(item as Map<String, dynamic>));
             }
           }
         } catch (e) {
+          print('qwqwqw pos json catch$e');
+          stat = 'error';
           if (res.statusCode == 200) {
             for (final item in json) {
               data.add(
@@ -203,8 +243,13 @@ mixin PortfolioAPI on ApiCore {
             }
           }
         }
+      } else {
+        final json = jsonDecode(res.body);
+        if (json['emsg'].contains('Session Expired')) {
+          data.add(PositionBookModel.fromJson(json as Map<String, dynamic>));
+        }
       }
-      return data;
+      return {"stat": stat, "data": data};
     } catch (e) {
       rethrow;
     }

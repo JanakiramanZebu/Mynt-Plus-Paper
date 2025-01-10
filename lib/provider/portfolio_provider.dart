@@ -403,11 +403,66 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
 
+  Future<void> setPortfolioupdate(String mode) async {
+    var result;
+    if (mode == 'H') {
+      result = await api.getHolding();
+      if (result['stat'] == 'success') {
+        _tholdingsModel = result['data'];
+      } else {
+        if (result['stat'] == 'no data') {
+          _holdingsModel = [];
+        }
+        _tholdingsModel = [];
+      }
+    } else if (mode == 'P') {
+      result = await api.getPositionBook();
+      if (result['stat'] == 'success') {
+        _tpostionBookModel = result['data'];
+      } else {
+        if (result['stat'] == 'no data') {
+          _postionBookModel = [];
+        }
+        _tpostionBookModel = [];
+      }
+    }
+
+    // var result;
+    //   if (mode == 'H') {
+    //     result = await api.getHolding();
+    //   } else if (mode == 'P') {
+    //     result = await api.getPositionBook();
+    //   }
+
+    // if (result['stat'] == 'no data') {
+    //   if (mode == 'H') {
+    //     _holdingsModel = [];
+    //     _tholdingsModel = [];
+    //   } else if (mode == 'P') {
+    //     _postionBookModel = [];
+    //     _tpostionBookModel = [];
+    //   }
+    // } else if (result['stat'] == 'success') {
+    //   if (mode == 'H') {
+    //     _tholdingsModel = result['data'];
+    //   } else if (mode == 'P') {
+    //     _tpostionBookModel = result['data'];
+    //   }
+    // } else if (result['stat'] == 'error') {
+    //   if (mode == 'H') {
+    //     _tholdingsModel = [];
+    //   } else if (mode == 'P') {
+    //     _tpostionBookModel = [];
+    //   }
+    // }
+    print("qwqwqw prov alert btm $mode , ${result['stat']}");
+  }
+
   Future fetchHoldings(context, String initail) async {
     double invest = 0.0;
     try {
+      await setPortfolioupdate('H');
       if (_holdingsModel!.isNotEmpty) {
-        _tholdingsModel = await api.getHolding();
         if (_tholdingsModel!.isNotEmpty) {
           _holdingsModel = _tholdingsModel;
         }
@@ -424,7 +479,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         _showEdis = false;
         _sealableHoldings = [];
         _nonSealableHoldings = [];
-        _holdingsModel = await api.getHolding();
+        _holdingsModel = _tholdingsModel;
       }
 
       pref.setScrip(true);
@@ -501,11 +556,12 @@ class PortfolioProvider extends DefaultChangeNotifier {
               _holdingsModel![0].stat == "Not_Ok") {
             ref(authProvider).ifSessionExpired(context);
           }
-          _holdingsModel = [];
+          // _holdingsModel = [];
         }
       }
       notifyListeners();
     } catch (e) {
+      print("qwqwqw hold sw catch ${e}");
       ref(indexListProvider)
           .logError
           .add({"type": "API Holdings", "Error": "$e"});
@@ -513,6 +569,82 @@ class PortfolioProvider extends DefaultChangeNotifier {
       print(e);
     } finally {
       _holdloader = false;
+    }
+  }
+
+  Future fetchPositionBook(BuildContext context, bool isDay) async {
+    try {
+      await setPortfolioupdate('P');
+      if (_postionBookModel!.isNotEmpty) {
+        if (_tpostionBookModel!.isNotEmpty) {
+          _postionBookModel = _tpostionBookModel;
+        }
+      } else {
+        _posloader = true;
+        _postionBookModel = [];
+        _allPostionList = [];
+        _totPnL = "0.00";
+        _totMtm = "0.00";
+        _exitAll = false;
+        _totBookedPnL = "0.00";
+        _posSelection = "All position";
+        _totUnRealMtm = '0.00';
+        _postionBookModel = _tpostionBookModel;
+      }
+
+      pref.setPosScrip(true);
+      pref.setPosPrice(true);
+      pref.setPosPerchnage(true);
+      pref.setPosqty(true);
+      pref.setPostion(true);
+      // splitPositionBook(isDay);
+      if (_postionBookModel!.isNotEmpty) {
+        if (_postionBookModel![0].stat != "Not_Ok") {
+          for (var i = 0; i < _postionBookModel!.length; i++) {
+            var element = _postionBookModel?[i];
+            int tempqty = (int.parse(element!.daybuyqty.toString()) +
+                        int.parse(element.cfbuyqty.toString())) <
+                    (int.parse(element.daysellqty.toString()) +
+                        int.parse(element.cfsellqty.toString()))
+                ? int.parse(element.daybuyqty.toString())
+                : int.parse(element.daysellqty.toString());
+            double tempavg = int.parse(element.netqty.toString()) > 0
+                ? double.parse(element.daysellavgprc.toString()) -
+                    double.parse(element.netupldprc.toString())
+                : double.parse(element.netupldprc.toString()) -
+                    double.parse(element.daybuyavgprc.toString());
+
+            _postionBookModel?[i].temppnl =
+                "${double.parse(tempavg.toString()) * int.parse(tempqty.toString())}";
+          }
+
+          ConstantName.sessCheck = true;
+          _isDay = isDay;
+          await splitPositionBook(isDay);
+
+          // await requestWSPosition(context: context, isSubscribe: true);
+        } else {
+          //
+
+          if (_postionBookModel![0].emsg ==
+                  "Session Expired :  Invalid Session Key" &&
+              _postionBookModel![0].stat == "Not_Ok") {
+            ref(authProvider).ifSessionExpired(context);
+          }
+          _openPosition = [];
+          // _postionBookModel = [];
+        }
+      }
+      notifyListeners();
+      return _postionBookModel;
+    } catch (e) {
+      print("qwqwqw pos sw catch ${e}");
+      ref(indexListProvider)
+          .logError
+          .add({"type": "API Position Book", "Error": "$e"});
+      notifyListeners();
+    } finally {
+      _posloader = false;
     }
   }
 
@@ -669,81 +801,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
             .toStringAsFixed(2);
 
     notifyListeners();
-  }
-
-  Future fetchPositionBook(BuildContext context, bool isDay) async {
-    try {
-      if (_postionBookModel!.isNotEmpty) {
-        _tpostionBookModel = await api.getPositionBook();
-        if (_tpostionBookModel!.isNotEmpty) {
-          _postionBookModel = _tpostionBookModel;
-        }
-      } else {
-        _posloader = true;
-        _postionBookModel = [];
-        _allPostionList = [];
-        _totPnL = "0.00";
-        _totMtm = "0.00";
-        _exitAll = false;
-        _totBookedPnL = "0.00";
-        _posSelection = "All position";
-        _totUnRealMtm = '0.00';
-        _postionBookModel = await api.getPositionBook();
-      }
-
-      pref.setPosScrip(true);
-      pref.setPosPrice(true);
-      pref.setPosPerchnage(true);
-      pref.setPosqty(true);
-      pref.setPostion(true);
-      // splitPositionBook(isDay);
-      if (_postionBookModel!.isNotEmpty) {
-        if (_postionBookModel![0].stat != "Not_Ok") {
-          for (var i = 0; i < _postionBookModel!.length; i++) {
-            var element = _postionBookModel?[i];
-            int tempqty = (int.parse(element!.daybuyqty.toString()) +
-                        int.parse(element.cfbuyqty.toString())) <
-                    (int.parse(element.daysellqty.toString()) +
-                        int.parse(element.cfsellqty.toString()))
-                ? int.parse(element.daybuyqty.toString())
-                : int.parse(element.daysellqty.toString());
-            double tempavg = int.parse(element.netqty.toString()) > 0
-                ? double.parse(element.daysellavgprc.toString()) -
-                    double.parse(element.netupldprc.toString())
-                : double.parse(element.netupldprc.toString()) -
-                    double.parse(element.daybuyavgprc.toString());
-
-            _postionBookModel?[i].temppnl =
-                "${double.parse(tempavg.toString()) * int.parse(tempqty.toString())}";
-          }
-
-          ConstantName.sessCheck = true;
-          _isDay = isDay;
-          await splitPositionBook(isDay);
-
-          // await requestWSPosition(context: context, isSubscribe: true);
-        } else {
-          //
-
-          if (_postionBookModel![0].emsg ==
-                  "Session Expired :  Invalid Session Key" &&
-              _postionBookModel![0].stat == "Not_Ok") {
-            ref(authProvider).ifSessionExpired(context);
-          }
-          _openPosition = [];
-          _postionBookModel = [];
-        }
-      }
-      notifyListeners();
-      return _postionBookModel;
-    } catch (e) {
-      ref(indexListProvider)
-          .logError
-          .add({"type": "API Position Book", "Error": "$e"});
-      notifyListeners();
-    } finally {
-      _posloader = false;
-    }
   }
 
   Future fetchPositionConverstion(

@@ -48,6 +48,8 @@ class UserAccountScreen extends ConsumerWidget {
                             index == 4 ||
                             index == 5 ||
                             index == 6 ||
+                            index == 7 ||
+                            index == 8 ||
                             index == 9) {
                           await funds.fetchHstoken(context);
                         }
@@ -71,13 +73,16 @@ class UserAccountScreen extends ConsumerWidget {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "pledge");
                         } else if (index == 7) {
-                          launch("https://app.mynt.in/ipo");
+                            // 'https://profile.mynt.in/${widget.argument}/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}')),
+
+                          launch("https://app.mynt.in/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                           // Navigator.pushNamed(context, Routes.ipowebview,
                           //     arguments: "https://app.mynt.in/ipo");
                         } else if (index == 8) {
                           // Navigator.pushNamed(context, Routes.ipowebview,
                           //     arguments: "https://app.mynt.in/mutualfund");
-                          launch("https://app.mynt.in/mutualfund");
+                          launch("https://app.mynt.in/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+
                         } else if (index == 9) {
                           funds.optionZ(context);
                         } else if (index == 10) {
@@ -432,9 +437,10 @@ class UserAccountScreen extends ConsumerWidget {
             Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text("Version 3.0.2 Build 1.0.55(02) Released on 9 Jan",
+                child: Text("Version 3.0.2 Build 1.0.55(03) Released on 10 Jan",
                     style: textStyle(
                         const Color(0xff666666), 11, FontWeight.w500)))
           ]);
   }
 }
+
