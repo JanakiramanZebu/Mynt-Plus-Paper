@@ -196,6 +196,16 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // change selected portfolio tab name
 
+  clearAllportfolio() {
+    _holdingsModel = [];
+    _tholdingsModel = [];
+    _postionBookModel = [];
+    _tpostionBookModel = [];
+    _allholds = {};
+    _mfHoldingsModel = [];
+    notifyListeners();
+  }
+
   changeTabIndex(int index) {
     _selectedTab = index;
   }

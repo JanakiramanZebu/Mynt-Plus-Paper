@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
+import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
@@ -20,6 +21,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final loggedUser = watch(authProvider);
     final theme = watch(themeProvider);
+    final portfolio = watch(portfolioProvider);
     final Preferences pref = locator<Preferences>();
     return DraggableScrollableSheet(
         expand: false,
@@ -71,29 +73,35 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                             itemBuilder: (BuildContext context, int index) {
                               return ListTile(
                                   onTap: () async {
-                                    pref.setClientId(loggedUser
-                                        .loggedMobile[index].clientId);
+                                    if (loggedUser
+                                            .loggedMobile[index].clientId !=
+                                        pref.clientId) {
+                                      pref.setClientId(loggedUser
+                                          .loggedMobile[index].clientId);
 
-                                    pref.setClientMob(
-                                        loggedUser.loggedMobile[index].mobile);
-                                    pref.setClientSession(loggedUser
-                                        .loggedMobile[index].sesstion);
-                                    pref.setClientName(loggedUser
-                                        .loggedMobile[index].userName);
-                                    pref.setImei(
-                                        loggedUser.loggedMobile[index].imei);
-                                    pref.setMobileLogin(true);
+                                      pref.setClientMob(loggedUser
+                                          .loggedMobile[index].mobile);
+                                      pref.setClientSession(loggedUser
+                                          .loggedMobile[index].sesstion);
+                                      pref.setClientName(loggedUser
+                                          .loggedMobile[index].userName);
+                                      pref.setImei(
+                                          loggedUser.loggedMobile[index].imei);
+                                      pref.setMobileLogin(true);
 
-                                    await context
-                                        .read(authProvider)
-                                        .fetchMobileLogin(
-                                            context,
-                                            "",
-                                            loggedUser
-                                                .loggedMobile[index].clientId,
-                                            "switchAc",
-                                            loggedUser
-                                                .loggedMobile[index].imei);
+                                      await context
+                                          .read(authProvider)
+                                          .fetchMobileLogin(
+                                              context,
+                                              "",
+                                              loggedUser
+                                                  .loggedMobile[index].clientId,
+                                              "switchAc",
+                                              loggedUser
+                                                  .loggedMobile[index].imei);
+                                                  portfolio.clearAllportfolio();
+
+                                    }
                                   },
                                   dense: true,
                                   contentPadding: const EdgeInsets.symmetric(
