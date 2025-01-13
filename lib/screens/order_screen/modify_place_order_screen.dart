@@ -4,18 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
-import '../../../res/res.dart'; 
+import 'package:google_fonts/google_fonts.dart';
+import '../../../res/res.dart';
 import '../../models/marketwatch_model/scrip_info.dart';
 import '../../models/order_book_model/modify_order_model.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../models/order_book_model/order_margin_model.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/order_provider.dart';
-import '../../provider/thems.dart'; 
+import '../../provider/thems.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
+import '../../sharedWidget/custom_switch_btn.dart';
 import '../../sharedWidget/custom_widget_button.dart';
 import '../../sharedWidget/no_internet_widget.dart';
 import '../../sharedWidget/snack_bar.dart';
@@ -41,6 +42,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
   bool isAgree = false;
   bool addValidity = false;
   bool isAmo = false;
+  bool isBuy = false;
   TextEditingController priceCtrl = TextEditingController();
   TextEditingController triggerPriceCtrl = TextEditingController();
   TextEditingController mktProtCtrl = TextEditingController();
@@ -50,20 +52,28 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
   TextEditingController targetCtrl = TextEditingController();
   TextEditingController trailingTickCtrl = TextEditingController();
   List<String> priceType = ["Limit", "Market", "SL Limit", "SL MKT"];
-  List<bool> isActivePrice = [true, false, false, false];
+  List<bool> isActivePrice = [];
   List<String> validityType = ["Day", "IOC"];
   List<bool> isActiveValidity = [true, false];
 
-  String prcType = "LMT";
+  String prcType = "";
 
   int lotSize = 0;
   String price = "0.00";
   String validity = "DAY";
   @override
   void initState() {
+    prcType = widget.modifyOrderArgs.prctyp!;
+    isActivePrice = [
+      prcType == 'LMT' ? true : false,
+      prcType == 'MKT' ? true : false,
+      prcType == 'SL-LMT' ? true : false,
+      prcType == 'SL-MKT' ? true : false
+    ];
+
     setState(() {
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
-
+      isBuy = widget.modifyOrderArgs.trantype == "B" ? true : false;
       priceCtrl = TextEditingController(text: widget.modifyOrderArgs.prc);
       qtyCtrl = TextEditingController(text: widget.modifyOrderArgs.qty);
       mktProtCtrl = TextEditingController(
@@ -163,8 +173,26 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                 CustomExchBadge(
                                     exch: "${widget.scripInfo.exch}"),
                               ]),
-                          const SizedBox(height: 4),
-                          OrderScreenHeader(headerData: widget.orderArg),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              OrderScreenHeader(headerData: widget.orderArg),
+                                 Row(children: [
+
+                                    SvgPicture.asset(assets.buyIcon),
+                                const SizedBox(width: 6),
+                                CustomSwitch(
+                                    onChanged: (bool value) {
+                                      
+                                    },
+                                    value: isBuy),
+                                const SizedBox(width: 6),
+                                SvgPicture.asset(assets.sellIcon)
+                              ])
+                           
+                            ],
+                          ),
                         ]),
                   ),
                 ),
@@ -250,7 +278,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                     backgroundColor: !theme
                                                             .isDarkMode
                                                         ? !isActivePrice[index]
-                                                            ? const Color(0xffF1F3F8)
+                                                            ? const Color(
+                                                                0xffF1F3F8)
                                                             : colors.colorBlack
                                                         : !isActivePrice[index]
                                                             ? colors.darkGrey
@@ -349,10 +378,50 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             qtyCtrl.text =
                                                                 "$lotSize";
                                                           }
+                                                           OrderMarginInput input = OrderMarginInput(
+                                                          exch:
+                                                              "${widget.scripInfo.exch}",
+                                                          prc: isActivePrice[
+                                                                      1] ||
+                                                                  isActivePrice[
+                                                                      3]
+                                                              ? price
+                                                              : priceCtrl.text,
+                                                          prctyp: prcType,
+                                                          prd: widget
+                                                              .modifyOrderArgs
+                                                              .prd!,
+                                                          qty: qtyCtrl.text,
+                                                          rorgprc: '0',
+                                                          rorgqty: '0',
+                                                          trantype: widget
+                                                              .modifyOrderArgs
+                                                              .trantype!,
+                                                          tsym:
+                                                              "${widget.scripInfo.tsym}",
+                                                          blprc: '',
+                                                          trgprc: isActivePrice[
+                                                                      2] ||
+                                                                  isActivePrice[
+                                                                      3]
+                                                              ? triggerPriceCtrl
+                                                                  .text
+                                                              : "");
+                                                        context
+                                                          .read(orderProvider)
+                                                          .fetchOrderMargin(
+                                                              input, context);
                                                         });
                                                       },
                                                       child: SvgPicture.asset(
-                                                              theme.isDarkMode?assets.darkCMinus:    theme.isDarkMode?assets.darkCMinus:        assets.minusIcon,
+                                                          theme.isDarkMode
+                                                              ? assets
+                                                                  .darkCMinus
+                                                              : theme.isDarkMode
+                                                                  ? assets
+                                                                      .darkCMinus
+                                                                  : assets
+                                                                      .minusIcon,
                                                           fit:
                                                               BoxFit.scaleDown),
                                                     ),
@@ -370,10 +439,45 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             qtyCtrl.text =
                                                                 "$lotSize";
                                                           }
+                                                           OrderMarginInput input = OrderMarginInput(
+                                                          exch:
+                                                              "${widget.scripInfo.exch}",
+                                                          prc: isActivePrice[
+                                                                      1] ||
+                                                                  isActivePrice[
+                                                                      3]
+                                                              ? price
+                                                              : priceCtrl.text,
+                                                          prctyp: prcType,
+                                                          prd: widget
+                                                              .modifyOrderArgs
+                                                              .prd!,
+                                                          qty: qtyCtrl.text,
+                                                          rorgprc: '0',
+                                                          rorgqty: '0',
+                                                          trantype: widget
+                                                              .modifyOrderArgs
+                                                              .trantype!,
+                                                          tsym:
+                                                              "${widget.scripInfo.tsym}",
+                                                          blprc: '',
+                                                          trgprc: isActivePrice[
+                                                                      2] ||
+                                                                  isActivePrice[
+                                                                      3]
+                                                              ? triggerPriceCtrl
+                                                                  .text
+                                                              : "");
+                                                        context
+                                                          .read(orderProvider)
+                                                          .fetchOrderMargin(
+                                                              input, context);
                                                         });
                                                       },
                                                       child: SvgPicture.asset(
-                                                        theme.isDarkMode?assets.darkAdd:   assets.addIcon,
+                                                          theme.isDarkMode
+                                                              ? assets.darkAdd
+                                                              : assets.addIcon,
                                                           fit:
                                                               BoxFit.scaleDown),
                                                     ),
@@ -390,6 +494,40 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                 warningMessage(
                                                                     context,
                                                                     "Quntity can not be empty"));
+                                                      } else {
+                                                         OrderMarginInput input = OrderMarginInput(
+                                                          exch:
+                                                              "${widget.scripInfo.exch}",
+                                                          prc: isActivePrice[
+                                                                      1] ||
+                                                                  isActivePrice[
+                                                                      3]
+                                                              ? price
+                                                              : priceCtrl.text,
+                                                          prctyp: prcType,
+                                                          prd: widget
+                                                              .modifyOrderArgs
+                                                              .prd!,
+                                                          qty: qtyCtrl.text,
+                                                          rorgprc: '0',
+                                                          rorgqty: '0',
+                                                          trantype: widget
+                                                              .modifyOrderArgs
+                                                              .trantype!,
+                                                          tsym:
+                                                              "${widget.scripInfo.tsym}",
+                                                          blprc: '',
+                                                          trgprc: isActivePrice[
+                                                                      2] ||
+                                                                  isActivePrice[
+                                                                      3]
+                                                              ? triggerPriceCtrl
+                                                                  .text
+                                                              : "");
+                                                      context
+                                                          .read(orderProvider)
+                                                          .fetchOrderMargin(
+                                                              input, context);
                                                       }
                                                     },
                                                   ))
@@ -410,40 +548,71 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           : const Color(
                                                               0xffF1F3F8),
                                                       onChanged: (value) {
-                                                         ScaffoldMessenger.of(
-                                                              context)
-                                                          .removeCurrentSnackBar();
-                                                      if (value.isEmpty) {
                                                         ScaffoldMessenger.of(
                                                                 context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Limit Price can not be empty"));
-                                                      } else {
-                                                        if ((double.parse(
-                                                                    value) <
-                                                                double.parse(
-                                                                    "${widget.scripInfo.lc}")) ||
-                                                            (double.parse(
-                                                                    value) >
-                                                                double.parse(
-                                                                    "${widget.scripInfo.uc}"))) {
+                                                            .removeCurrentSnackBar();
+                                                        if (value.isEmpty) {
                                                           ScaffoldMessenger.of(
                                                                   context)
-                                                              .showSnackBar(warningMessage(
-                                                                  context,
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Limit Price can not be empty"));
+                                                        } else {
+                                                          if ((double.parse(
+                                                                      value) <
                                                                   double.parse(
-                                                                              value) <
-                                                                          double.parse(
-                                                                              "${widget.scripInfo.lc}")
-                                                                      ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
-                                                                      : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}"));
+                                                                      "${widget.scripInfo.lc}")) ||
+                                                              (double.parse(
+                                                                      value) >
+                                                                  double.parse(
+                                                                      "${widget.scripInfo.uc}"))) {
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(warningMessage(
+                                                                    context,
+                                                                    double.parse(value) <
+                                                                            double.parse("${widget.scripInfo.lc}")
+                                                                        ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
+                                                                        : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}"));
+                                                          }
+                                                          setState(() {
+                                                            price = value;
+                                                             OrderMarginInput input = OrderMarginInput(
+                                                          exch:
+                                                              "${widget.scripInfo.exch}",
+                                                          prc: isActivePrice[
+                                                                      1] ||
+                                                                  isActivePrice[
+                                                                      3]
+                                                              ? price
+                                                              : priceCtrl.text,
+                                                          prctyp: prcType,
+                                                          prd: widget
+                                                              .modifyOrderArgs
+                                                              .prd!,
+                                                          qty: qtyCtrl.text,
+                                                          rorgprc: '0',
+                                                          rorgqty: '0',
+                                                          trantype: widget
+                                                              .modifyOrderArgs
+                                                              .trantype!,
+                                                          tsym:
+                                                              "${widget.scripInfo.tsym}",
+                                                          blprc: '',
+                                                          trgprc: isActivePrice[
+                                                                      2] ||
+                                                                  isActivePrice[
+                                                                      3]
+                                                              ? triggerPriceCtrl
+                                                                  .text
+                                                              : "");
+                                                          context
+                                                          .read(orderProvider)
+                                                          .fetchOrderMargin(
+                                                              input, context);
+                                                          });
                                                         }
-                                                        setState(() {
-                                                          price = value;
-                                                        });
-                                                      }
                                                       },
                                                       hintText:
                                                           "${widget.orderArg.ltp}",
@@ -460,21 +629,23 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                               0xff000000),
                                                           16,
                                                           FontWeight.w600),
-                                                      isReadable: isActivePrice[1] ||
-                                                              isActivePrice[3]
+                                                      isReadable: isActivePrice[1] || isActivePrice[3]
                                                           ? true
                                                           : false,
                                                       prefixIcon: Container(
-                                                          margin:
-                                                              const EdgeInsets.all(
-                                                                  12),
+                                                          margin: const EdgeInsets.all(
+                                                              12),
                                                           decoration: BoxDecoration(
                                                               borderRadius:
                                                                   BorderRadius.circular(
                                                                       20),
-                                                          color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,
+                                                              color: theme.isDarkMode
+                                                                  ? const Color(
+                                                                      0xff555555)
+                                                                  : colors
+                                                                      .colorWhite),
+                                                          child: SvgPicture.asset(
+                                                              color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey,
                                                               isActivePrice[1] || isActivePrice[3] ? assets.lock : assets.ruppeIcon,
                                                               fit: BoxFit.scaleDown)),
                                                       textCtrl: priceCtrl,
@@ -589,19 +760,26 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           16,
                                                           FontWeight.w600),
                                                       prefixIcon: Container(
-                                                          margin: const EdgeInsets.all(
-                                                              12),
+                                                          margin:
+                                                              const EdgeInsets.all(
+                                                                  12),
                                                           decoration: BoxDecoration(
                                                               borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          20),
-                                                            color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,
+                                                                  BorderRadius.circular(
+                                                                      20),
+                                                              color: theme.isDarkMode
+                                                                  ? const Color(
+                                                                      0xff555555)
+                                                                  : colors
+                                                                      .colorWhite),
+                                                          child: SvgPicture.asset(
+                                                              color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorGrey,
                                                               assets.ruppeIcon,
-                                                              fit: BoxFit
-                                                                  .scaleDown)),
+                                                              fit: BoxFit.scaleDown)),
                                                       textCtrl: triggerPriceCtrl,
                                                       textAlign: TextAlign.start))
                                             ])),
@@ -661,9 +839,15 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(20),
-                                                        color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,
+                                                        color: theme.isDarkMode
+                                                            ? const Color(
+                                                                0xff555555)
+                                                            : colors
+                                                                .colorWhite),
+                                                    child: SvgPicture.asset(
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorGrey,
                                                         assets.ruppeIcon,
                                                         fit: BoxFit.scaleDown),
                                                   ),
@@ -710,9 +894,15 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(20),
-                                                       color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,
+                                                        color: theme.isDarkMode
+                                                            ? const Color(
+                                                                0xff555555)
+                                                            : colors
+                                                                .colorWhite),
+                                                    child: SvgPicture.asset(
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorGrey,
                                                         assets.ruppeIcon,
                                                         fit: BoxFit.scaleDown),
                                                   ),
@@ -741,13 +931,14 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                 addValidity = !addValidity;
                                               });
                                             },
-                                            icon: SvgPicture.asset(
-                                                 theme.isDarkMode?addValidity 
-                                                ? assets.darkCheckedboxIcon
-                                                : assets.darkCheckboxIcon:
-                                              addValidity
-                                                ? assets.checkedbox
-                                                : assets.checkbox))
+                                            icon: SvgPicture.asset(theme
+                                                    .isDarkMode
+                                                ? addValidity
+                                                    ? assets.darkCheckedboxIcon
+                                                    : assets.darkCheckboxIcon
+                                                : addValidity
+                                                    ? assets.checkedbox
+                                                    : assets.checkbox))
                                       ])),
                               if (addValidity) ...[
                                 Padding(
@@ -916,7 +1107,11 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             });
                                                           },
                                                           child: SvgPicture.asset(
-                                                                  theme.isDarkMode?assets.darkCMinus:    assets.minusIcon,
+                                                              theme.isDarkMode
+                                                                  ? assets
+                                                                      .darkCMinus
+                                                                  : assets
+                                                                      .minusIcon,
                                                               fit: BoxFit
                                                                   .scaleDown),
                                                         ),
@@ -938,7 +1133,11 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             });
                                                           },
                                                           child: SvgPicture.asset(
-                                                           theme.isDarkMode?assets.darkAdd:    assets.addIcon,
+                                                              theme.isDarkMode
+                                                                  ? assets
+                                                                      .darkAdd
+                                                                  : assets
+                                                                      .addIcon,
                                                               fit: BoxFit
                                                                   .scaleDown),
                                                         ),
@@ -969,13 +1168,14 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                 isAmo = !isAmo;
                                               });
                                             },
-                                            icon: SvgPicture.asset(
-                                                 theme.isDarkMode?isAmo
-                                                ? assets.darkCheckedboxIcon
-                                                : assets.darkCheckboxIcon:
-                                              isAmo
-                                                ? assets.checkedbox
-                                                : assets.checkbox))
+                                            icon: SvgPicture.asset(theme
+                                                    .isDarkMode
+                                                ? isAmo
+                                                    ? assets.darkCheckedboxIcon
+                                                    : assets.darkCheckboxIcon
+                                                : isAmo
+                                                    ? assets.checkedbox
+                                                    : assets.checkbox))
                                       ])),
                               const SizedBox(height: 100)
                             ])),
@@ -1362,7 +1562,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   : "Trigger Should be Greater than Last Trade Price"));
                                                     } else if (double.parse(
                                                             triggerPriceCtrl
-                                                                .text) <
+                                                                .text) >
                                                         double.parse(
                                                             "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
                                                       ScaffoldMessenger.of(
@@ -1466,7 +1666,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
 
   modifyOrder() async {
     ModifyOrderInput input = ModifyOrderInput(
-        dscqty: widget.modifyOrderArgs.dscqty??"0",
+        dscqty: widget.modifyOrderArgs.dscqty ?? "0",
         token: widget.modifyOrderArgs.token!,
         exch: widget.modifyOrderArgs.exch!,
         mktProt: widget.modifyOrderArgs.mktProtection ?? "",

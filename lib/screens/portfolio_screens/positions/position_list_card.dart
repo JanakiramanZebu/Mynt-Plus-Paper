@@ -215,7 +215,7 @@ class PositionListCard extends ConsumerWidget {
                   Text("Avg: ",
                       style: textStyle(
                           const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                  Text("${positionList.avgPrc}",
+                  Text( positions.isDay ?  "${positionList.avgPrc}"  : positions.isNetPnl ? "${positionList.netupldprc}" : "${positionList.netavgprc}",
                       style: textStyle(
                           theme.isDarkMode
                               ? colors.colorWhite

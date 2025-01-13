@@ -337,7 +337,6 @@ class HoldingScreen extends ConsumerWidget {
                               ? ListView.separated(
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                   
                                     return InkWell(
                                         onLongPress: () {
                                           Navigator.pushNamed(
@@ -420,11 +419,11 @@ class HoldingScreen extends ConsumerWidget {
                                         height: 6);
                                   })
                               : const Center(
-                                child: SizedBox(
+                                  child: SizedBox(
                                     height: 400,
                                     child: NoDataFound(),
                                   ),
-                              )
+                                )
                           : holdingProvide.holdingSearchItem!.isNotEmpty
                               ? ListView.separated(
                                   itemBuilder:
@@ -433,114 +432,73 @@ class HoldingScreen extends ConsumerWidget {
                                         .holdingSearchItem![index]
                                         .exchTsym![0]
                                         .token)) {
-                                      holdingProvide.holdingSearchItem![index]
-                                              .exchTsym![0].lp =
-                                          "${socketDatas["${holdingProvide.holdingSearchItem![index].exchTsym![0].token}"]['lp'] ?? 0.00}";
+                                          print('hold if');
+                                      var exchTsym = holdingProvide
+                                          .holdingSearchItem![index]
+                                          .exchTsym![0];
+                                      var currentItem = holdingProvide
+                                          .holdingSearchItem![index];
 
-                                      holdingProvide.holdingSearchItem![index]
-                                              .exchTsym![0].perChange =
-                                          "${socketDatas["${holdingProvide.holdingSearchItem![index].exchTsym![0].token}"]['pc'] ?? 0.00}";
+                                      exchTsym.lp =
+                                          "${socketDatas[exchTsym.token]['lp'] ?? 0.00}";
+                                      exchTsym.perChange =
+                                          "${socketDatas[exchTsym.token]['pc'] ?? 0.00}";
+                                      exchTsym.close =
+                                          "${socketDatas[exchTsym.token]['c'] ?? 0.00}";
 
-                                      holdingProvide.holdingSearchItem![index]
-                                              .exchTsym![0].close =
-                                          "${socketDatas["${holdingProvide.holdingSearchItem![index].exchTsym![0].token}"]['c'] ?? 0.00}";
-
-                                      holdingProvide.holdingSearchItem![index]
-                                          .currentValue = (int.parse(
-                                                  "${holdingProvide.holdingSearchItem![index].currentQty ?? 0}") *
+                                      currentItem.currentValue = (int.parse(
+                                                  "${currentItem.currentQty ?? 0}") *
                                               double.parse(
-                                                  "${holdingProvide.holdingSearchItem![index].exchTsym![0].lp ?? 0.0}"))
+                                                  "${exchTsym.lp ?? 0.0}"))
                                           .toStringAsFixed(2);
 
                                       double avgCost = double.parse(
-                                          "${holdingProvide.holdingSearchItem![index].upldprc == "0.00" ? holdingProvide.holdingSearchItem![index].exchTsym![0].close ?? 0.0 : holdingProvide.holdingSearchItem![index].upldprc ?? 0.00}");
+                                          "${currentItem.upldprc == "0.00" ? exchTsym.close ?? 0.0 : currentItem.upldprc ?? 0.00}");
+                                      currentItem.invested =
+                                          (currentItem.currentQty! * avgCost)
+                                              .toStringAsFixed(2);
 
-                                      holdingProvide.holdingSearchItem![index]
-                                          .invested = (holdingProvide
-                                                  .holdingSearchItem![index]
-                                                  .currentQty! *
-                                              avgCost)
-                                          .toStringAsFixed(2);
-
-                                      holdingProvide.holdingSearchItem![index]
-                                          .exchTsym![0].pNlChng = holdingProvide
-                                                  .holdingSearchItem![index]
-                                                  .invested ==
+                                      exchTsym.pNlChng = currentItem.invested ==
                                               "0.00"
                                           ? "0.00"
                                           : ((double.parse(
-                                                          "${holdingProvide.holdingSearchItem![index].exchTsym![0].profitNloss}") /
+                                                          "${exchTsym.profitNloss ?? 0.0}") /
                                                       double.parse(
-                                                          "${holdingProvide.holdingSearchItem![index].invested ?? 0.00}")) *
+                                                          "${currentItem.invested ?? 0.0}")) *
                                                   100)
-                                              .toStringAsFixed(2)
-                                              .toString();
+                                              .toStringAsFixed(2);
 
-                                      holdingProvide
-                                          .holdingSearchItem![index]
-                                          .exchTsym![0]
-                                          .oneDayChg = ((double.parse(
-                                                      holdingProvide
-                                                              .holdingSearchItem![
-                                                                  index]
-                                                              .exchTsym![0]
-                                                              .lp ??
-                                                          "0.00") -
-                                                  (double.parse(holdingProvide
-                                                          .holdingSearchItem![
-                                                              index]
-                                                          .exchTsym![0]
-                                                          .close ??
-                                                      "0.00"))) *
+                                      exchTsym.oneDayChg = ((double.parse(
+                                                      exchTsym.lp ?? "0.00") -
+                                                  double.parse(exchTsym.close ??
+                                                      "0.00")) *
                                               int.parse(
-                                                  "${holdingProvide.holdingSearchItem![index].currentQty ?? 0}"))
+                                                  "${currentItem.currentQty ?? 0}"))
                                           .toStringAsFixed(2);
 
-                                      if (holdingProvide
-                                              .holdingSearchItem![index]
-                                              .currentQty ==
-                                          0) {
+                                      if (currentItem.currentQty == 0) {
                                         double sellAmt = double.parse(
-                                            holdingProvide
-                                                    .holdingSearchItem![index]
-                                                    .sellAmt ??
-                                                "0.00");
-
-                                        int usedQty = int.parse(holdingProvide
-                                                .holdingSearchItem![index]
-                                                .usedqty ??
-                                            "0");
+                                            currentItem.sellAmt ?? "0.00");
+                                        int usedQty = int.parse(
+                                            currentItem.usedqty ?? "0");
                                         double price = (sellAmt / usedQty);
-
                                         double pnl = price -
-                                            double.parse(holdingProvide
-                                                    .holdingSearchItem![index]
-                                                    .upldprc ??
-                                                "0.0");
+                                            double.parse(
+                                                currentItem.upldprc ?? "0.0");
 
-                                        holdingProvide.holdingSearchItem![index]
-                                                .exchTsym![0].profitNloss =
+                                        exchTsym.profitNloss =
                                             (pnl * usedQty).toStringAsFixed(2);
                                       } else {
-                                        holdingProvide.holdingSearchItem![index]
-                                                .exchTsym![0].profitNloss =
-                                            (double.parse(holdingProvide
-                                                            .holdingSearchItem![
-                                                                index]
-                                                            .currentValue ??
+                                        exchTsym.profitNloss = (double.parse(
+                                                    currentItem.currentValue ??
                                                         "0.00") -
-                                                    double.parse(holdingProvide
-                                                            .holdingSearchItem![
-                                                                index]
-                                                            .invested ??
+                                                double.parse(
+                                                    currentItem.invested ??
                                                         "0.00"))
-                                                .toStringAsFixed(2);
+                                            .toStringAsFixed(2);
                                       }
-                                      //  SchedulerBinding.instance
-                                      //                   .addPostFrameCallback((_) async {
-                                      //                 holdingProvide.pnlHoldCal();
-                                      //               });
                                     }
+
                                     return InkWell(
                                         onLongPress: () {
                                           Navigator.pushNamed(

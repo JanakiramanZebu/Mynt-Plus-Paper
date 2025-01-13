@@ -787,29 +787,51 @@ class PortfolioProvider extends DefaultChangeNotifier {
   }
 
   pnlHoldCal() {
-    _totalPnlHolding = 0.00;
-    _oneDayChng = 0.00;
-    double invest = 0.00;
-    _totalCurrentVal = 0.00;
-    _oneDayChngPer == 0.00;
+    // _totalPnlHolding = 0.00;
+    // _oneDayChng = 0.00;
+    // double invest = 0.00;
+    // _totalCurrentVal = 0.00;
+    // _oneDayChngPer == 0.00;
+    // _totPnlPercHolding = "0.00";
+    // for (var holdingJson in holdingsModel!) {
+    //   _totalPnlHolding +=
+    //       double.parse("${holdingJson.exchTsym![0].profitNloss ?? 0.0}");
+    //   _oneDayChng +=
+    //       double.parse("${holdingJson.exchTsym![0].oneDayChg ?? 0.0}");
+    //   invest += double.parse("${holdingJson.invested ?? 0.0}");
+    //   _totInvesHold = invest.toStringAsFixed(2);
+    //   _totalCurrentVal += double.parse("${holdingJson.currentValue ?? 0.0}");
+    // }
+    // _oneDayChngPer = ((_oneDayChng / _totalCurrentVal) * 100);
+
+    // _totPnlPercHolding = _totInvesHold == "0.00"
+    //     ? "0.00"
+    //     : ((double.parse("$_totalPnlHolding") / double.parse(_totInvesHold)) *
+    //             100)
+    //         .toStringAsFixed(2);
+
+    _totalPnlHolding = 0.0;
+    _oneDayChng = 0.0;
+    double invest = 0.0;
+    _totalCurrentVal = 0.0;
+    _oneDayChngPer = 0.0;
     _totPnlPercHolding = "0.00";
+
     for (var holdingJson in holdingsModel!) {
       _totalPnlHolding +=
           double.parse("${holdingJson.exchTsym![0].profitNloss ?? 0.0}");
       _oneDayChng +=
           double.parse("${holdingJson.exchTsym![0].oneDayChg ?? 0.0}");
       invest += double.parse("${holdingJson.invested ?? 0.0}");
-      _totInvesHold = invest.toStringAsFixed(2);
       _totalCurrentVal += double.parse("${holdingJson.currentValue ?? 0.0}");
     }
-    _oneDayChngPer = ((_oneDayChng / _totalCurrentVal) * 100);
 
-    _totPnlPercHolding = _totInvesHold == "0.00"
-        ? "0.00"
-        : ((double.parse("$_totalPnlHolding") / double.parse(_totInvesHold)) *
-                100)
-            .toStringAsFixed(2);
-
+    _totInvesHold = invest.toStringAsFixed(2);
+    _oneDayChngPer =
+        _totalCurrentVal > 0 ? (_oneDayChng / _totalCurrentVal) * 100 : 0.0;
+    _totPnlPercHolding = invest > 0
+        ? ((_totalPnlHolding / invest) * 100).toStringAsFixed(2)
+        : "0.00";
     notifyListeners();
   }
 
@@ -1097,6 +1119,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
         if (element.exch == "MCX") {
           double? lotSize = double.tryParse(element.ls ?? "0");
           qty = (qty / lotSize!).toInt(); // Assuming you want an integer result
+        } else {
+          qty = (int.parse("${element.daybuyqty ?? 0}") -
+              int.parse("${element.daysellqty ?? 0}"));
         }
         // qty = element.exch == "MCX"
         // ?((int.parse("${element.daybuyqty ?? 0}") -

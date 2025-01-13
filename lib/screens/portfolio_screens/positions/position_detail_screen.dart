@@ -552,6 +552,30 @@ class PositionDetailScreen extends ConsumerWidget {
                           14,
                           FontWeight.w500),
                     ),
+                      const SizedBox(height: 2),
+                    Divider(
+                        color: theme.isDarkMode
+                            ? colors.darkColorDivider
+                            : colors.colorDivider),
+                    const SizedBox(height: 4),
+                    Text("Act Avg Price",
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w500)),
+                    const SizedBox(height: 2),
+                    Text(
+                      (double.parse("${positionList.upldprc ?? 0.00}"))
+                          .toStringAsFixed(2),
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w500),
+                    ),
                   ])),
           // ScripInfoBtns(exch: '${positionList.exch}', token: '${positionList.token}', insName: '')
         ]),

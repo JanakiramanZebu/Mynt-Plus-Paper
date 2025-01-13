@@ -170,34 +170,35 @@ class PositionScreen extends ConsumerWidget {
                                 : const Color(0xffF1F3F8),
                             width: 6))),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Row(
-                      children: [
-                        Text("DAY",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                13,
-                                FontWeight.w500)),
-                        const SizedBox(width: 6),
-                        CustomSwitch(
-                            onChanged: (bool value) {
-                              positionBook.chngPositionPnl(true);
-                              positionBook.positionToggle(value, context);
-                            },
-                            value: positionBook.isDay),
-                        const SizedBox(width: 6),
-                        Text("NET",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                13,
-                                FontWeight.w500)),
-                      ],
-                    ),
+                    // temporary hide
+                    // Row(
+                    //   children: [
+                    //     Text("DAY",
+                    //         style: textStyle(
+                    //             theme.isDarkMode
+                    //                 ? colors.colorWhite
+                    //                 : colors.colorBlack,
+                    //             13,
+                    //             FontWeight.w500)),
+                    //     const SizedBox(width: 6),
+                    //     CustomSwitch(
+                    //         onChanged: (bool value) {
+                    //           positionBook.chngPositionPnl(true);
+                    //           positionBook.positionToggle(value, context);
+                    //         },
+                    //         value: positionBook.isDay),
+                    //     const SizedBox(width: 6),
+                    //     Text("NET",
+                    //         style: textStyle(
+                    //             theme.isDarkMode
+                    //                 ? colors.colorWhite
+                    //                 : colors.colorBlack,
+                    //             13,
+                    //             FontWeight.w500)),
+                    //   ],
+                    // ),
                     if (listofPosition.length > 1 &&
                         positionBook.posSelection == "All position") ...[
                       Row(

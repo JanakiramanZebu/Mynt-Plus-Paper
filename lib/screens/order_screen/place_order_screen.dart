@@ -1840,6 +1840,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               qtyCtrl.text =
                                                                   "$lotSize";
                                                             }
+                                                             marginUpdate();
                                                           });
                                                         },
                                                         child: SvgPicture.asset(
@@ -1866,6 +1867,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               qtyCtrl.text =
                                                                   "$lotSize";
                                                             }
+                                                             marginUpdate();
                                                           });
                                                         },
                                                         child: SvgPicture.asset(
@@ -1890,6 +1892,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Quntity can not be empty"));
+                                                        } else {
+                                                           marginUpdate();
                                                         }
                                                       })),
                                               if (widget.scripInfo.frzqty !=
@@ -1948,6 +1952,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         } else {
                                                           setState(() {
                                                             ordPrice = value;
+                                                             marginUpdate();
                                                           });
                                                         }
                                                       },
@@ -3496,6 +3501,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                       onChanged: (value) {
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
                         if (value.isNotEmpty) {
+                           marginUpdate();
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                               warningMessage(

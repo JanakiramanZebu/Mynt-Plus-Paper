@@ -241,57 +241,7 @@ class OrderBookDetail extends ConsumerWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
-                            await context
-                                .read(marketWatchProvider)
-                                .fetchScripInfo("${orderBookData.token}",
-                                    '${orderBookData.exch}', context);
-
-                            OrderScreenArgs orderArgs = OrderScreenArgs(
-                                exchange: '${orderBookData.exch}',
-                                tSym: '${orderBookData.tsym}',
-                                isExit: false,
-                                token: "${orderBookData.token}",
-                                transType: true,
-                                lotSize: orderBookData.ls,
-                                ltp: orderBookData.ltp,
-                                perChange: orderBookData.perChange,
-                                orderTpye: '',
-                                holdQty: '',
-                                isModify: false);
-                            Navigator.pop(context);
-                            Navigator.pushNamed(context, Routes.modifyOrder,
-                                arguments: {
-                                  "modifyOrderArgs": orderBookData,
-                                  "orderArg": orderArgs,
-                                  "scripInfo": context
-                                      .read(marketWatchProvider)
-                                      .scripInfoModel!
-                                });
-                          },
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack),
-                                borderRadius: BorderRadius.circular(108)),
-                            child: Center(
-                              child: Text("Modify Order",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w600)),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
+                      
                       if (orderBookData.sPrdtAli == "BO" ||
                           orderBookData.sPrdtAli == "CO") ...[
                         Expanded(
@@ -542,7 +492,59 @@ class OrderBookDetail extends ConsumerWidget {
                             ),
                           ),
                         ),
-                      ]
+                      ],
+                      const SizedBox(width: 16),
+                       Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            await context
+                                .read(marketWatchProvider)
+                                .fetchScripInfo("${orderBookData.token}",
+                                    '${orderBookData.exch}', context);
+
+                            OrderScreenArgs orderArgs = OrderScreenArgs(
+                                exchange: '${orderBookData.exch}',
+                                tSym: '${orderBookData.tsym}',
+                                isExit: false,
+                                token: "${orderBookData.token}",
+                                transType: true,
+                                lotSize: orderBookData.ls,
+                                ltp: orderBookData.ltp,
+                                perChange: orderBookData.perChange,
+                                orderTpye: '',
+                                holdQty: '',
+                                isModify: false);
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, Routes.modifyOrder,
+                                arguments: {
+                                  "modifyOrderArgs": orderBookData,
+                                  "orderArg": orderArgs,
+                                  "scripInfo": context
+                                      .read(marketWatchProvider)
+                                      .scripInfoModel!
+                                });
+                          },
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack),
+                                borderRadius: BorderRadius.circular(108)),
+                            child: Center(
+                              child: Text("Modify Order",
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
+                                      FontWeight.w600)),
+                            ),
+                          ),
+                        ),
+                      ),
+                     
                     ])))
             : BottomAppBar(
                 shape: const CircularNotchedRectangle(),
