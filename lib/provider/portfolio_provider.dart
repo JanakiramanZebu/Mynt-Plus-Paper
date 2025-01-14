@@ -558,7 +558,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           _totInvesHold = invest.toStringAsFixed(2);
           if (initail == "Refresh") {
             await requestWSHoldings(isSubscribe: true, context: context);
-            timerfunc();
+            // timerfunc();
           }
         } else {
           if (_holdingsModel![0].emsg ==

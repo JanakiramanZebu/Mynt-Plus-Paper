@@ -26,6 +26,30 @@ class HoldingScreen extends ConsumerWidget {
     final holdingProvide = watch(portfolioProvider);
     final socketDatas = watch(websocketProvider).socketDatas;
     final theme = context.read(themeProvider);
+
+    double totalPnlHolding = 0.0;
+    double oneDayChng = 0.0;
+    double invest = 0.0;
+    double totalCurrentVal = 0.0;
+    double oneDayChngPer = 0.0;
+    String totPnlPercHolding = "0.00";
+
+    if (holdingProvide.holdingsModel!.isNotEmpty) {
+       for (var holdingJson in holdingProvide.holdingsModel!) {
+      totalPnlHolding +=
+          double.parse("${holdingJson.exchTsym![0].profitNloss ?? 0.0}");
+      oneDayChng +=
+          double.parse("${holdingJson.exchTsym![0].oneDayChg ?? 0.0}");
+      invest += double.parse("${holdingJson.invested ?? 0.0}");
+      totalCurrentVal += double.parse("${holdingJson.currentValue ?? 0.0}");
+    }
+
+    oneDayChngPer =
+        totalCurrentVal > 0 ? (oneDayChng / totalCurrentVal) * 100 : 0.0;
+    totPnlPercHolding = invest > 0
+        ? ((totalPnlHolding / invest) * 100).toStringAsFixed(2)
+        : "0.00";
+    }
     return holdingProvide.holdloader
         ? const Center(child: CircularProgressIndicator())
         : GestureDetector(
@@ -72,9 +96,9 @@ class HoldingScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                        "₹${getFormatter(value: holdingProvide.totalPnlHolding, v4d: false, noDecimal: false)} ",
+                                        "₹${getFormatter(value: totalPnlHolding, v4d: false, noDecimal: false)} ",
                                         style: textStyle(
-                                            holdingProvide.totalPnlHolding
+                                            totalPnlHolding
                                                     .toString()
                                                     .startsWith("-")
                                                 ? colors.darkred
@@ -82,9 +106,9 @@ class HoldingScreen extends ConsumerWidget {
                                             16,
                                             FontWeight.w500)),
                                     Text(
-                                        "(${holdingProvide.totPnlPercHolding == "NaN" ? 0.00 : holdingProvide.totPnlPercHolding}%)",
+                                        "(${totPnlPercHolding == "NaN" ? 0.00 : totPnlPercHolding}%)",
                                         style: textStyle(
-                                            holdingProvide.totPnlPercHolding
+                                            totPnlPercHolding
                                                     .startsWith("-")
                                                 ? colors.darkred
                                                 : colors.ltpgreen,
@@ -108,7 +132,7 @@ class HoldingScreen extends ConsumerWidget {
                                           12, FontWeight.w500)),
                                   const SizedBox(height: 6),
                                   Text(
-                                      "₹${getFormatter(value: holdingProvide.totalCurrentVal, v4d: false, noDecimal: false)}",
+                                      "₹${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)}",
                                       style: textStyle(
                                           theme.isDarkMode
                                               ? colors.colorWhite
@@ -128,9 +152,9 @@ class HoldingScreen extends ConsumerWidget {
                                     const SizedBox(height: 6),
                                     Row(children: [
                                       Text(
-                                          "₹${getFormatter(value: holdingProvide.oneDayChng, v4d: false, noDecimal: false)}",
+                                          "₹${getFormatter(value: oneDayChng, v4d: false, noDecimal: false)}",
                                           style: textStyle(
-                                              holdingProvide.oneDayChng
+                                              oneDayChng
                                                       .toStringAsFixed(2)
                                                       .startsWith("-")
                                                   ? colors.darkred
@@ -138,9 +162,9 @@ class HoldingScreen extends ConsumerWidget {
                                               16,
                                               FontWeight.w500)),
                                       Text(
-                                          " (${holdingProvide.oneDayChngPer.isNaN ? "0.00" : holdingProvide.oneDayChngPer.toStringAsFixed(2)}%)",
+                                          " (${oneDayChngPer.isNaN ? "0.00" : oneDayChngPer.toStringAsFixed(2)}%)",
                                           style: textStyle(
-                                              holdingProvide.oneDayChngPer
+                                              oneDayChngPer
                                                       .toStringAsFixed(2)
                                                       .startsWith("-")
                                                   ? colors.darkred
@@ -432,7 +456,7 @@ class HoldingScreen extends ConsumerWidget {
                                         .holdingSearchItem![index]
                                         .exchTsym![0]
                                         .token)) {
-                                          print('hold if');
+                                      print('hold if');
                                       var exchTsym = holdingProvide
                                           .holdingSearchItem![index]
                                           .exchTsym![0];
