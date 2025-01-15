@@ -121,7 +121,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
       return true;
     }, child: Consumer(builder: (context, ScopedReader watch, _) {
-      final depthData = watch(marketWatchProvider).getQuotes;
+      final depthData = watch(marketWatchProvider).getQuotes!;
       final scripInfo = watch(marketWatchProvider);
       final socketDatas = watch(websocketProvider).socketDatas;
       final theme = context.read(themeProvider);
@@ -130,7 +130,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
       // This scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the scrip details.
 
       if (socketDatas.containsKey(regtoken)) {
-        depthData!.lp = "${socketDatas[regtoken]['lp']}";
+        depthData.lp = "${socketDatas[regtoken]['lp']}";
         depthData.pc = "${socketDatas[regtoken]['pc']}";
         depthData.o = "${socketDatas[regtoken]['o']}";
         depthData.l = "${socketDatas[regtoken]['l']}";
