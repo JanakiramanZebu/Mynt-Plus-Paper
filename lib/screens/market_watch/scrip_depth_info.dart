@@ -47,11 +47,13 @@ class ScripDepthInfo extends StatefulWidget {
 class _ScripDepthInfoState extends State<ScripDepthInfo> {
   double initSize = 0.88;
   ChartArgs? chartArgs;
+  String regtoken = "";
 
   final ScrollController _controller = ScrollController();
 
   @override
   void initState() {
+    regtoken = widget.wlValue.token;
     setState(() {
       initSize = (widget.wlValue.instname != "UNDIND" &&
               widget.wlValue.instname != "COM")
@@ -119,7 +121,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
       return true;
     }, child: Consumer(builder: (context, ScopedReader watch, _) {
-      final depthData = watch(marketWatchProvider).getQuotes!;
+      final depthData = watch(marketWatchProvider).getQuotes;
       final scripInfo = watch(marketWatchProvider);
       final socketDatas = watch(websocketProvider).socketDatas;
       final theme = context.read(themeProvider);
@@ -127,49 +129,49 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
       // This scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the scrip details.
 
-      if (socketDatas.containsKey(depthData.token)) {
-        depthData.lp = "${socketDatas["${depthData.token}"]['lp']}";
-        depthData.pc = "${socketDatas["${depthData.token}"]['pc']}";
-        depthData.o = "${socketDatas["${depthData.token}"]['o']}";
-        depthData.l = "${socketDatas["${depthData.token}"]['l']}";
-        depthData.c = "${socketDatas["${depthData.token}"]['c']}";
-        depthData.chng = "${socketDatas["${depthData.token}"]['chng']}";
+      if (socketDatas.containsKey(regtoken)) {
+        depthData!.lp = "${socketDatas[regtoken]['lp']}";
+        depthData.pc = "${socketDatas[regtoken]['pc']}";
+        depthData.o = "${socketDatas[regtoken]['o']}";
+        depthData.l = "${socketDatas[regtoken]['l']}";
+        depthData.c = "${socketDatas[regtoken]['c']}";
+        depthData.chng = "${socketDatas[regtoken]['chng']}";
 
-        depthData.h = "${socketDatas["${depthData.token}"]['h']}";
-        depthData.poi = "${socketDatas["${depthData.token}"]['poi']}";
-        depthData.v = "${socketDatas["${depthData.token}"]['v']}";
-        depthData.toi = "${socketDatas["${depthData.token}"]['toi']}";
+        depthData.h = "${socketDatas[regtoken]['h']}";
+        depthData.poi = "${socketDatas[regtoken]['poi']}";
+        depthData.v = "${socketDatas[regtoken]['v']}";
+        depthData.toi = "${socketDatas[regtoken]['toi']}";
 
-        depthData.sp1 = "${socketDatas["${depthData.token}"]['sp1']}";
-        depthData.sp2 = "${socketDatas["${depthData.token}"]['sp2']}";
-        depthData.sp3 = "${socketDatas["${depthData.token}"]['sp3']}";
-        depthData.sp4 = "${socketDatas["${depthData.token}"]['sp4']}";
-        depthData.sp5 = "${socketDatas["${depthData.token}"]['sp5']}";
-        depthData.bp1 = "${socketDatas["${depthData.token}"]['bp1']}";
-        depthData.bp2 = "${socketDatas["${depthData.token}"]['bp2']}";
-        depthData.bp3 = "${socketDatas["${depthData.token}"]['bp3']}";
-        depthData.bp4 = "${socketDatas["${depthData.token}"]['bp4']}";
-        depthData.bp5 = "${socketDatas["${depthData.token}"]['bp5']}";
+        depthData.sp1 = "${socketDatas[regtoken]['sp1']}";
+        depthData.sp2 = "${socketDatas[regtoken]['sp2']}";
+        depthData.sp3 = "${socketDatas[regtoken]['sp3']}";
+        depthData.sp4 = "${socketDatas[regtoken]['sp4']}";
+        depthData.sp5 = "${socketDatas[regtoken]['sp5']}";
+        depthData.bp1 = "${socketDatas[regtoken]['bp1']}";
+        depthData.bp2 = "${socketDatas[regtoken]['bp2']}";
+        depthData.bp3 = "${socketDatas[regtoken]['bp3']}";
+        depthData.bp4 = "${socketDatas[regtoken]['bp4']}";
+        depthData.bp5 = "${socketDatas[regtoken]['bp5']}";
 
-        depthData.sq1 = "${socketDatas["${depthData.token}"]['sq1']}";
-        depthData.sq2 = "${socketDatas["${depthData.token}"]['sq2']}";
-        depthData.sq3 = "${socketDatas["${depthData.token}"]['sq3']}";
-        depthData.sq4 = "${socketDatas["${depthData.token}"]['sq4']}";
-        depthData.sq5 = "${socketDatas["${depthData.token}"]['sq5']}";
-        depthData.bq1 = "${socketDatas["${depthData.token}"]['bq1']}";
-        depthData.bq2 = "${socketDatas["${depthData.token}"]['bq2']}";
-        depthData.bq3 = "${socketDatas["${depthData.token}"]['bq3']}";
-        depthData.bq4 = "${socketDatas["${depthData.token}"]['bq4']}";
-        depthData.bq5 = "${socketDatas["${depthData.token}"]['bq5']}";
-        depthData.tbq = "${socketDatas["${depthData.token}"]['tbq']}";
-        depthData.tsq = "${socketDatas["${depthData.token}"]['tsq']}";
-        depthData.wk52H = "${socketDatas["${depthData.token}"]['52h']}";
-        depthData.wk52L = "${socketDatas["${depthData.token}"]['52l']}";
-        depthData.lc = "${socketDatas["${depthData.token}"]['lc']}";
-        depthData.uc = "${socketDatas["${depthData.token}"]['uc']}";
-        depthData.ltq = "${socketDatas["${depthData.token}"]['ltq']}";
-        depthData.ltt = "${socketDatas["${depthData.token}"]['ltt']}";
-        depthData.ft = "${socketDatas["${depthData.token}"]['ft']}";
+        depthData.sq1 = "${socketDatas[regtoken]['sq1']}";
+        depthData.sq2 = "${socketDatas[regtoken]['sq2']}";
+        depthData.sq3 = "${socketDatas[regtoken]['sq3']}";
+        depthData.sq4 = "${socketDatas[regtoken]['sq4']}";
+        depthData.sq5 = "${socketDatas[regtoken]['sq5']}";
+        depthData.bq1 = "${socketDatas[regtoken]['bq1']}";
+        depthData.bq2 = "${socketDatas[regtoken]['bq2']}";
+        depthData.bq3 = "${socketDatas[regtoken]['bq3']}";
+        depthData.bq4 = "${socketDatas[regtoken]['bq4']}";
+        depthData.bq5 = "${socketDatas[regtoken]['bq5']}";
+        depthData.tbq = "${socketDatas[regtoken]['tbq']}";
+        depthData.tsq = "${socketDatas[regtoken]['tsq']}";
+        depthData.wk52H = "${socketDatas[regtoken]['52h']}";
+        depthData.wk52L = "${socketDatas[regtoken]['52l']}";
+        depthData.lc = "${socketDatas[regtoken]['lc']}";
+        depthData.uc = "${socketDatas[regtoken]['uc']}";
+        depthData.ltq = "${socketDatas[regtoken]['ltq']}";
+        depthData.ltt = "${socketDatas[regtoken]['ltt']}";
+        depthData.ft = "${socketDatas[regtoken]['ft']}";
 
         if (scripInfo.actDeptBtn == "Overview") {
           if ((depthData.exch == "NSE" || depthData.exch == "BSE") &&
@@ -250,7 +252,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                     onTap: () async {
                                                       await scripInfo
                                                           .fetchScripInfo(
-                                                              depthData.token!,
+                                                              depthData!.token!,
                                                               depthData.exch!,
                                                               ctx);
                                                       if (scripInfo
@@ -294,7 +296,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                 0xff666666))))
                                               ]),
                                           Text(
-                                              "₹${depthData.lp ?? depthData.c ?? 0.00}",
+                                              "₹${depthData!.lp ?? depthData.c ?? 0.00}",
                                               style: textStyle(
                                                   !theme.isDarkMode
                                                       ? colors.colorBlack
@@ -412,6 +414,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 //             .scripInfoModel!
                                                 //       });
                                                 // }
+                                                scripInfo
+                                                    .singlePageloader(true);
+
                                                 if (scripInfo.depthBtns[index]
                                                         ['btnName'] ==
                                                     "Option") {
@@ -484,6 +489,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                   scripInfo.chngshareHold(
                                                       "Promoter Holding");
                                                 }
+                                                scripInfo
+                                                    .singlePageloader(false);
                                               },
                                               style: ElevatedButton.styleFrom(
                                                   elevation: 0,
