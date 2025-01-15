@@ -133,7 +133,54 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   int _delScripQty = 0;
   int get delScripQty => _delScripQty;
 
-  GetQuotes? _getQuotes;
+  // GetQuotes? _getQuotes;
+  GetQuotes _getQuotes = GetQuotes(
+      requestTime: '',
+      stat: '',
+      exch: '',
+      tsym: '',
+      cname: '',
+      symname: '',
+      seg: '',
+      instname: '',
+      isin: '',
+      pp: "0.0",
+      ls: "0.0",
+      ti: "0",
+      mult: "0.0",
+      lut: '',
+      uc: "0.0",
+      lc: "0.0",
+      wk52H: "0.0",
+      wk52L: "0.0",
+      toi: "0",
+      issuecap: '',
+      cutofAll: '',
+      prcftrD: "0.0",
+      token: '',
+      lp: "0.0",
+      c: "0.0",
+      h: "0.0",
+      l: "0.0",
+      ap: "0.0",
+      o: "0.0",
+      v: "0",
+      ltq: "0",
+      ltt: '',
+      ltd: '',
+      tbq: "0.0",
+      tsq: "0.0",
+      bp1: "0.0",
+      sp1: "0.0",
+      ordMsg: '',
+      emsg: "",
+      poi: "",
+      chng: "",
+      pc: "" ,
+      expDate: "",
+      option: "",
+      symbol: "",
+    );
   GetQuotes? get getQuotes => _getQuotes;
 
   GetQuotes? _getStikePrc;
