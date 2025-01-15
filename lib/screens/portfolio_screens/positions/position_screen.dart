@@ -12,7 +12,6 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_switch_btn.dart'; 
 import '../../../sharedWidget/custom_text_btn.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/functions.dart';

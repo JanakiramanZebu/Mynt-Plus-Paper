@@ -123,6 +123,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
       final scripInfo = watch(marketWatchProvider);
       final socketDatas = watch(websocketProvider).socketDatas;
       final theme = context.read(themeProvider);
+      // print("single page loader ${scripInfo.scripDepthloader}");
 
       // This scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the scrip details.
 
@@ -342,7 +343,12 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                   12,
                                                   FontWeight.w500))
                                         ])),
-                                const SizedBox(height: 8),
+                                SizedBox(
+                                    height: scripInfo.scripDepthloader ? 4 : 8),
+                                SizedBox(
+                                    child: scripInfo.scripDepthloader
+                                        ? const LinearProgressIndicator()
+                                        : null),
                                 Container(
                                     padding: const EdgeInsets.only(
                                         left: 14, top: 8, bottom: 8),

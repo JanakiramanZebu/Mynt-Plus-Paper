@@ -285,6 +285,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   bool _showAlertSearch = false;
   bool get showAlertSearch => _showAlertSearch;
 
+  bool _scripDepthloader = false;
+  bool get scripDepthloader => _scripDepthloader;
+
+  singlePageloader(bool value) {
+    _scripDepthloader = value;
+    notifyListeners();
+  }
+
   showAlertPendingSearch(bool value) {
     _showAlertSearch = value;
     if (!_showAlertSearch) {
@@ -971,12 +979,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (_getQuotes!.tbq != null || _getQuotes!.tsq != null) {
         _totBuyQtyPer = (int.parse("${_getQuotes!.tbq ?? 0}") /
                 (int.parse("${_getQuotes!.tbq ?? 0}") +
-                    int.parse("${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}"))) *
+                    int.parse(
+                        "${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}"))) *
             100;
 
-        _totSellQtyPer = (int.parse("${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}") /
+        _totSellQtyPer = (int.parse(
+                    "${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}") /
                 (int.parse("${_getQuotes!.tbq ?? 0}") +
-                    int.parse("${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}"))) *
+                    int.parse(
+                        "${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}"))) *
             100;
         if (_totBuyQtyPer.isNaN) {
           _totBuyQtyPer = 0.00;

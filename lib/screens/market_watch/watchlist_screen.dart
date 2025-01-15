@@ -138,16 +138,48 @@ class WatchListScreen extends ConsumerWidget {
                             },
                             onTap: () async {
                               marketWatch.chngDephBtn("Overview");
-                              await marketWatch.fetchScripQuote(
-                                  "${marketWatch.scrips[idx]['token']}",
-                                  "${marketWatch.scrips[idx]['exch']}",
-                                  context);
+                              marketWatch.singlePageloader(true);
+
+                              DepthInputArgs depthArgs = DepthInputArgs(
+                                  exch: '${marketWatch.scrips[idx]['exch']}',
+                                  token: '${marketWatch.scrips[idx]['token']}',
+                                  tsym: '${marketWatch.scrips[idx]['tsym']}',
+                                  instname:
+                                      marketWatch.scrips[idx]['instname'] ?? "",
+                                  symbol:
+                                      '${marketWatch.scrips[idx]['symbol']}',
+                                  expDate:
+                                      '${marketWatch.scrips[idx]['expDate']}',
+                                  option:
+                                      '${marketWatch.scrips[idx]['option']}');
+
+                              showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  useSafeArea: true,
+                                  isDismissible: true,
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(16))),
+                                  context: context,
+                                  builder: (context) => Container(
+                                      padding: EdgeInsets.only(
+                                        bottom: MediaQuery.of(context)
+                                            .viewInsets
+                                            .bottom,
+                                      ),
+                                      child: ScripDepthInfo(
+                                          wlValue: depthArgs, isBasket: '')));
 
                               await watch(websocketProvider).establishConnection(
                                   channelInput:
                                       "${marketWatch.scrips[idx]['exch']}|${marketWatch.scrips[idx]['token']}",
                                   task: "d",
                                   context: context);
+
+                              await marketWatch.fetchScripQuote(
+                                  "${marketWatch.scrips[idx]['token']}",
+                                  "${marketWatch.scrips[idx]['exch']}",
+                                  context);
 
                               if (marketWatch.getQuotes!.stat == "Ok") {
                                 await context
@@ -192,39 +224,8 @@ class WatchListScreen extends ConsumerWidget {
                                   "case":
                                       "Click here to view the trading view chart."
                                 });
-
-                                DepthInputArgs depthArgs = DepthInputArgs(
-                                    exch: '${marketWatch.scrips[idx]['exch']}',
-                                    token:
-                                        '${marketWatch.scrips[idx]['token']}',
-                                    tsym: '${marketWatch.scrips[idx]['tsym']}',
-                                    instname: marketWatch.scrips[idx]
-                                            ['instname'] ??
-                                        "",
-                                    symbol:
-                                        '${marketWatch.scrips[idx]['symbol']}',
-                                    expDate:
-                                        '${marketWatch.scrips[idx]['expDate']}',
-                                    option:
-                                        '${marketWatch.scrips[idx]['option']}');
-
-                                showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    useSafeArea: true,
-                                    isDismissible: true,
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(16))),
-                                    context: context,
-                                    builder: (context) => Container(
-                                        padding: EdgeInsets.only(
-                                          bottom: MediaQuery.of(context)
-                                              .viewInsets
-                                              .bottom,
-                                        ),
-                                        child: ScripDepthInfo(
-                                            wlValue: depthArgs, isBasket: '')));
                               }
+                              marketWatch.singlePageloader(false);
                             },
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 16),

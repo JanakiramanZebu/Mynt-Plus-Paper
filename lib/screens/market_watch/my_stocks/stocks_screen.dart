@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
+import 'package:flutter_svg/svg.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
@@ -64,25 +64,53 @@ class _StocksScreenState extends State<StocksScreen> {
                                           "This is a pre-defined watchlist that cannot be edited!"));
                                 }
                               },
-                              onTap: () async { marketWatch.chngDephBtn("Overview");
-                                await marketWatch.fetchScripQuote(
-                                    "${holdingProvide[index].exchTsym![0].token}",
-                                    "${holdingProvide[index].exchTsym![0].exch}",
-                                    context);
+                              onTap: () async {
+                                marketWatch.chngDephBtn("Overview");
+                                marketWatch.singlePageloader(true);
+
+                                DepthInputArgs depthArgs = DepthInputArgs(
+                                    exch:
+                                        '${holdingProvide[index].exchTsym![0].exch}',
+                                    token:
+                                        '${holdingProvide[index].exchTsym![0].token}',
+                                    tsym:
+                                        '${holdingProvide[index].exchTsym![0].tsym}',
+                                    instname: "",
+                                    symbol:
+                                        '${holdingProvide[index].exchTsym![0].symbol}',
+                                    expDate:
+                                        '${holdingProvide[index].exchTsym![0].expDate}',
+                                    option:
+                                        '${holdingProvide[index].exchTsym![0].option}');
+
+                                showModalBottomSheet(
+                                    isScrollControlled: true,
+                                    useSafeArea: true,
+                                    isDismissible: true,
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(16))),
+                                    backgroundColor: const Color(0xffffffff),
+                                    context: context,
+                                    builder: (context) => ScripDepthInfo(
+                                        wlValue: depthArgs, isBasket: ''));
+
                                 await watch(websocketProvider).establishConnection(
                                     channelInput:
                                         "${holdingProvide[index].exchTsym![0].exch}|${holdingProvide[index].exchTsym![0].token}",
                                     task: "d",
                                     context: context);
 
-                                if (watch(marketWatchProvider)
-                                        .getQuotes!
-                                        .stat ==
-                                    "Ok") {
+                                await marketWatch.fetchScripQuote(
+                                    "${holdingProvide[index].exchTsym![0].token}",
+                                    "${holdingProvide[index].exchTsym![0].exch}",
+                                    context);
+
+                                if (marketWatch.getQuotes!.stat == "Ok") {
                                   await marketWatch.fetchLinkeScrip(
                                       "${holdingProvide[index].exchTsym![0].token}",
-                                      "${holdingProvide[index].exchTsym![0].exch}",context);
- 
+                                      "${holdingProvide[index].exchTsym![0].exch}",
+                                      context);
 
                                   marketWatch.fetchFundamentalData(
                                       tradeSym:
@@ -106,35 +134,10 @@ class _StocksScreenState extends State<StocksScreen> {
                                       lastPrc:
                                           "${context.read(marketWatchProvider).getQuotes!.lp ?? context.read(marketWatchProvider).getQuotes!.c ?? 0.00}");
 
-                                  DepthInputArgs depthArgs = DepthInputArgs(
-                                      exch:
-                                          '${holdingProvide[index].exchTsym![0].exch}',
-                                      token:
-                                          '${holdingProvide[index].exchTsym![0].token}',
-                                      tsym:
-                                          '${holdingProvide[index].exchTsym![0].tsym}',
-                                      instname: "",
-                                      symbol:
-                                          '${holdingProvide[index].exchTsym![0].symbol}',
-                                      expDate:
-                                          '${holdingProvide[index].exchTsym![0].expDate}',
-                                      option:
-                                          '${holdingProvide[index].exchTsym![0].option}');
-                                  showModalBottomSheet(
-                                      isScrollControlled: true,
-                                      useSafeArea: true,
-                                      isDismissible: true,
-                                      shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(16))),
-                                      backgroundColor: const Color(0xffffffff),
-                                      context: context,
-                                      builder: (context) =>
-                                          ScripDepthInfo(wlValue: depthArgs, isBasket: '' ));
-
                                   //  await watch(portfolioProvider).    isOpenScripInfo ("${holdingProvide[index].exchTsym![0].token}");
                                   //  }
                                 }
+                                marketWatch.singlePageloader(false);
                               },
                               child: ListTile(
                                 contentPadding:
@@ -215,7 +218,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                       "${holdingProvide[index].exchTsym![0].change == "null" ? "0.00 " : holdingProvide[index].exchTsym![0].change} "
                                       "${holdingProvide[index].exchTsym![0].perChange == "null" ? "(0.00%)" : "(${holdingProvide[index].exchTsym![0].perChange ?? 0.00}%)"}",
                                       style: textStyle(
-                                        holdingProvide[index]
+                                          holdingProvide[index]
                                                       .exchTsym![0]
                                                       .change!
                                                       .startsWith("-") ||
@@ -260,6 +263,4 @@ class _StocksScreenState extends State<StocksScreen> {
                 );
     });
   }
-
-  
 }

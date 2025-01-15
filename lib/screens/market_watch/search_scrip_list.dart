@@ -28,12 +28,40 @@ class SearchScripList extends ConsumerWidget {
             itemBuilder: (BuildContext context, int index) {
               return ListTile(
                 onTap: () async {
+                  searchScrip.chngDephBtn("Overview");
+                  searchScrip.singlePageloader(true);
+
+                  DepthInputArgs depthArgs = DepthInputArgs(
+                      exch: '${searchValue[index].exch}',
+                      token: '${searchValue[index].token}',
+                      tsym: '${searchValue[index].tsym}',
+                      instname: searchValue[index].instname ?? "",
+                      symbol:
+                          "${searchValue[index].symbol != null ? searchValue[index].symbol!.isEmpty ? searchValue[index].tsym : searchValue[index].symbol! : searchValue[index].tsym!}",
+                      expDate: searchValue[index].expDate ?? "",
+                      option: searchValue[index].option ?? "");
+
+                  showModalBottomSheet(
+                      isScrollControlled: true,
+                      useSafeArea: true,
+                      isDismissible: true,
+                      shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16))),
+                      context: context,
+                      builder: (context) => Container(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                          ),
+                          child: ScripDepthInfo(
+                              wlValue: depthArgs, isBasket: wlName)));
+
                   await watch(websocketProvider).establishConnection(
                       channelInput:
                           "${searchValue[index].exch}|${searchValue[index].token}",
                       task: "d",
                       context: context);
-                  searchScrip.chngDephBtn("Overview");
+                 
                   await searchScrip.fetchScripQuote(
                       "${searchValue[index].token}",
                       "${searchValue[index].exch}",
@@ -70,32 +98,8 @@ class SearchScripList extends ConsumerWidget {
                       "imgPath": "assets/icon/calendar.svg",
                       "case": "Click here to view the trading view chart."
                     });
-
-                    DepthInputArgs depthArgs = DepthInputArgs(
-                        exch: '${searchValue[index].exch}',
-                        token: '${searchValue[index].token}',
-                        tsym: '${searchValue[index].tsym}',
-                        instname: searchValue[index].instname ?? "",
-                        symbol:
-                            "${searchValue[index].symbol != null ? searchValue[index].symbol!.isEmpty ? searchValue[index].tsym : searchValue[index].symbol! : searchValue[index].tsym!}",
-                        expDate: searchValue[index].expDate ?? "",
-                        option: searchValue[index].option ?? "");
-
-                    showModalBottomSheet(
-                        isScrollControlled: true,
-                        useSafeArea: true,
-                        isDismissible: true,
-                        shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(16))),
-                        context: context,
-                        builder: (context) => Container(
-                            padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom,
-                            ),
-                            child: ScripDepthInfo(
-                                wlValue: depthArgs, isBasket: wlName)));
                   }
+                  searchScrip.singlePageloader(false);
                 },
                 dense: true,
                 contentPadding:
