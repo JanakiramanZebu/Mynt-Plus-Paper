@@ -252,7 +252,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                     onTap: () async {
                                                       await scripInfo
                                                           .fetchScripInfo(
-                                                              depthData!.token!,
+                                                              depthData.token!,
                                                               depthData.exch!,
                                                               ctx);
                                                       if (scripInfo
@@ -296,7 +296,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                 0xff666666))))
                                               ]),
                                           Text(
-                                              "₹${depthData!.lp ?? depthData.c ?? 0.00}",
+                                              "₹${depthData.lp ?? depthData.c ?? 0.00}",
                                               style: textStyle(
                                                   !theme.isDarkMode
                                                       ? colors.colorBlack

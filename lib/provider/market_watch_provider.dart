@@ -135,52 +135,52 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   // GetQuotes? _getQuotes;
   GetQuotes _getQuotes = GetQuotes(
-      requestTime: '',
-      stat: '',
-      exch: '',
-      tsym: '',
-      cname: '',
-      symname: '',
-      seg: '',
-      instname: '',
-      isin: '',
-      pp: "0.0",
-      ls: "0.0",
-      ti: "0",
-      mult: "0.0",
-      lut: '',
-      uc: "0.0",
-      lc: "0.0",
-      wk52H: "0.0",
-      wk52L: "0.0",
-      toi: "0",
-      issuecap: '',
-      cutofAll: '',
-      prcftrD: "0.0",
-      token: '',
-      lp: "0.0",
-      c: "0.0",
-      h: "0.0",
-      l: "0.0",
-      ap: "0.0",
-      o: "0.0",
-      v: "0",
-      ltq: "0",
-      ltt: '',
-      ltd: '',
-      tbq: "0.0",
-      tsq: "0.0",
-      bp1: "0.0",
-      sp1: "0.0",
-      ordMsg: '',
-      emsg: "",
-      poi: "",
-      chng: "",
-      pc: "" ,
-      expDate: "",
-      option: "",
-      symbol: "",
-    );
+    requestTime: '',
+    stat: '',
+    exch: '',
+    tsym: '',
+    cname: '',
+    symname: '',
+    seg: '',
+    instname: '',
+    isin: '',
+    pp: "0.0",
+    ls: "0.0",
+    ti: "0",
+    mult: "0.0",
+    lut: '',
+    uc: "0.0",
+    lc: "0.0",
+    wk52H: "0.0",
+    wk52L: "0.0",
+    toi: "0",
+    issuecap: '',
+    cutofAll: '',
+    prcftrD: "0.0",
+    token: '',
+    lp: "0.0",
+    c: "0.0",
+    h: "0.0",
+    l: "0.0",
+    ap: "0.0",
+    o: "0.0",
+    v: "0",
+    ltq: "0",
+    ltt: '',
+    ltd: '',
+    tbq: "0.0",
+    tsq: "0.0",
+    bp1: "0.0",
+    sp1: "0.0",
+    ordMsg: '',
+    emsg: "",
+    poi: "",
+    chng: "",
+    pc: "",
+    expDate: "",
+    option: "",
+    symbol: "",
+  );
   GetQuotes? get getQuotes => _getQuotes;
 
   GetQuotes? _getStikePrc;
@@ -334,6 +334,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   bool _scripDepthloader = false;
   bool get scripDepthloader => _scripDepthloader;
+
+  Map<String, Map<String, dynamic>> storeQuotes = {};
 
   singlePageloader(bool value) {
     _scripDepthloader = value;
@@ -909,31 +911,42 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
   Future fetchScripInfo(String token, String exch, BuildContext context) async {
     try {
-      _scripInfoModel = await api.getScripInfo(token, exch);
-
-      if (_scripInfoModel!.stat == "Ok") {
-        // Seperating Trade symbol(symbol,exp date, Option)
+      if (storeQuotes.isNotEmpty &&
+          storeQuotes.containsKey(token) &&
+          storeQuotes[token]?['s'] &&
+          storeQuotes[token]?['s'].stat == "Ok") {
+        _scripInfoModel = storeQuotes[token]?['s'];
         ConstantName.sessCheck = true;
-        if (_scripInfoModel!.exch == "BFO" && _scripInfoModel!.dname != null) {
-          List<String> splitVal = _scripInfoModel!.dname!.split(" ");
+      } else {
+        _scripInfoModel = await api.getScripInfo(token, exch);
 
-          _scripInfoModel!.symbol = splitVal[0];
-          _scripInfoModel!.expDate = "${splitVal[1]} ${splitVal[2]}";
-          _scripInfoModel!.option = splitVal.length > 4
-              ? "${splitVal[3]} ${splitVal[4]}"
-              : splitVal[3];
-        } else {
-          Map spilitSymbol = spilitTsym(value: "${_scripInfoModel!.tsym}");
+        if (_scripInfoModel!.stat == "Ok") {
+          // Seperating Trade symbol(symbol,exp date, Option)
+          ConstantName.sessCheck = true;
+          if (_scripInfoModel!.exch == "BFO" &&
+              _scripInfoModel!.dname != null) {
+            List<String> splitVal = _scripInfoModel!.dname!.split(" ");
 
-          _scripInfoModel!.symbol = "${spilitSymbol["symbol"]}";
-          _scripInfoModel!.expDate = "${spilitSymbol["expDate"]}";
-          _scripInfoModel!.option = "${spilitSymbol["option"]}";
+            _scripInfoModel!.symbol = splitVal[0];
+            _scripInfoModel!.expDate = "${splitVal[1]} ${splitVal[2]}";
+            _scripInfoModel!.option = splitVal.length > 4
+                ? "${splitVal[3]} ${splitVal[4]}"
+                : splitVal[3];
+          } else {
+            Map spilitSymbol = spilitTsym(value: "${_scripInfoModel!.tsym}");
+
+            _scripInfoModel!.symbol = "${spilitSymbol["symbol"]}";
+            _scripInfoModel!.expDate = "${spilitSymbol["expDate"]}";
+            _scripInfoModel!.option = "${spilitSymbol["option"]}";
+          }
+
+          storeQuotes[token]?['s'] = _scripInfoModel;
         }
-      }
 
-      if (_scripInfoModel!.emsg == "Session Expired :  Invalid Session Key" &&
-          _scripInfoModel!.stat == "Not_Ok") {
-        ref(authProvider).ifSessionExpired(context);
+        if (_scripInfoModel!.emsg == "Session Expired :  Invalid Session Key" &&
+            _scripInfoModel!.stat == "Not_Ok") {
+          ref(authProvider).ifSessionExpired(context);
+        }
       }
 
       notifyListeners();
@@ -951,33 +964,44 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   Future fetchScripQuote(
       String token, String exch, BuildContext context) async {
     try {
-      _getQuotes = await api.getScripQuote(token, exch);
-
-      if (_getQuotes!.stat == "Ok") {
+      if (storeQuotes.isNotEmpty &&
+          storeQuotes.containsKey(token) &&
+          storeQuotes[token]?['q'] &&
+          storeQuotes[token]?['q'].stat == "Ok") {
         ConstantName.sessCheck = true;
-// Seperating Trade symbol(symbol,exp date, Option)
-        if (_getQuotes!.exch == "BFO" && _getQuotes!.cname != null) {
-          List<String> splitVal = _getQuotes!.cname!.split(" ");
+        _getQuotes = storeQuotes[token]?['q'];
+      } else {
+        _getQuotes = await api.getScripQuote(token, exch);
 
-          _getQuotes!.symbol = splitVal[0];
-          _getQuotes!.expDate = "${splitVal[1]} ${splitVal[2]}";
-          _getQuotes!.option = splitVal.length > 4
-              ? "${splitVal[3]} ${splitVal[4]}"
-              : splitVal[3];
-        } else {
-          Map spilitSymbol = spilitTsym(value: "${_getQuotes!.tsym}");
-          _getQuotes!.symbol = "${spilitSymbol["symbol"]}";
-          _getQuotes!.expDate = "${spilitSymbol["expDate"]}";
-          _getQuotes!.option = "${spilitSymbol["option"]}";
-        }
-        _optionStrPrc = "${_getQuotes!.lp}";
+        if (_getQuotes.stat == "Ok") {
+          ConstantName.sessCheck = true;
+// Seperating Trade symbol(symbol,exp date, Option)
+          if (_getQuotes.exch == "BFO" && _getQuotes.cname != null) {
+            List<String> splitVal = _getQuotes.cname!.split(" ");
+
+            _getQuotes.symbol = splitVal[0];
+            _getQuotes.expDate = "${splitVal[1]} ${splitVal[2]}";
+            _getQuotes.option = splitVal.length > 4
+                ? "${splitVal[3]} ${splitVal[4]}"
+                : splitVal[3];
+          } else {
+            Map spilitSymbol = spilitTsym(value: "${_getQuotes.tsym}");
+            _getQuotes.symbol = "${spilitSymbol["symbol"]}";
+            _getQuotes.expDate = "${spilitSymbol["expDate"]}";
+            _getQuotes.option = "${spilitSymbol["option"]}";
+          }
+
+          storeQuotes[token] = {};
+          storeQuotes[token]?['q'] = _getQuotes;
+          _optionStrPrc = "${_getQuotes.lp}";
 
 // Scrip market depth calc
-        scripQtyCal();
-      }
-      if (_getQuotes!.emsg == "Session Expired :  Invalid Session Key" &&
-          _getQuotes!.stat == "Not_Ok") {
-        ref(authProvider).ifSessionExpired(context);
+          scripQtyCal();
+        }
+        if (_getQuotes.emsg == "Session Expired :  Invalid Session Key" &&
+            _getQuotes.stat == "Not_Ok") {
+          ref(authProvider).ifSessionExpired(context);
+        }
       }
       notifyListeners();
       return _getQuotes;
@@ -1022,19 +1046,19 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Scrip market depth calc
   void scripQtyCal() {
-    if (_getQuotes!.instname != "UNDIND" && _getQuotes!.instname != "COM") {
-      if (_getQuotes!.tbq != null || _getQuotes!.tsq != null) {
-        _totBuyQtyPer = (int.parse("${_getQuotes!.tbq ?? 0}") /
-                (int.parse("${_getQuotes!.tbq ?? 0}") +
+    if (_getQuotes.instname != "UNDIND" && _getQuotes.instname != "COM") {
+      if (_getQuotes.tbq != null || _getQuotes.tsq != null) {
+        _totBuyQtyPer = (int.parse("${_getQuotes.tbq ?? 0}") /
+                (int.parse("${_getQuotes.tbq ?? 0}") +
                     int.parse(
-                        "${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}"))) *
+                        "${_getQuotes.tsq!.contains('.') ? _getQuotes.tsq!.split(".")[0] : _getQuotes.tsq ?? 0}"))) *
             100;
 
         _totSellQtyPer = (int.parse(
-                    "${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}") /
-                (int.parse("${_getQuotes!.tbq ?? 0}") +
+                    "${_getQuotes.tsq!.contains('.') ? _getQuotes.tsq!.split(".")[0] : _getQuotes.tsq ?? 0}") /
+                (int.parse("${_getQuotes.tbq ?? 0}") +
                     int.parse(
-                        "${_getQuotes!.tsq!.contains('.') ? _getQuotes!.tsq!.split(".")[0] : _getQuotes!.tsq ?? 0}"))) *
+                        "${_getQuotes.tsq!.contains('.') ? _getQuotes.tsq!.split(".")[0] : _getQuotes.tsq ?? 0}"))) *
             100;
         if (_totBuyQtyPer.isNaN) {
           _totBuyQtyPer = 0.00;
@@ -1044,18 +1068,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
         _totBuyQtyPerChng = _totBuyQtyPer / 100;
         _maxSellQty = [
-          int.parse("${_getQuotes!.sq2 ?? 0}"),
-          int.parse("${_getQuotes!.sq1 ?? 0}"),
-          int.parse("${_getQuotes!.sq3 ?? 0}"),
-          int.parse("${_getQuotes!.sq4 ?? 0}"),
-          int.parse("${_getQuotes!.sq5 ?? 0}")
+          int.parse("${_getQuotes.sq2 ?? 0}"),
+          int.parse("${_getQuotes.sq1 ?? 0}"),
+          int.parse("${_getQuotes.sq3 ?? 0}"),
+          int.parse("${_getQuotes.sq4 ?? 0}"),
+          int.parse("${_getQuotes.sq5 ?? 0}")
         ].reduce(max);
         _maxBuyQty = [
-          int.parse("${_getQuotes!.bq2 ?? 0}"),
-          int.parse("${_getQuotes!.bq1 ?? 0}"),
-          int.parse("${_getQuotes!.bq3 ?? 0}"),
-          int.parse("${_getQuotes!.bq4 ?? 0}"),
-          int.parse("${_getQuotes!.bq5 ?? 0}")
+          int.parse("${_getQuotes.bq2 ?? 0}"),
+          int.parse("${_getQuotes.bq1 ?? 0}"),
+          int.parse("${_getQuotes.bq3 ?? 0}"),
+          int.parse("${_getQuotes.bq4 ?? 0}"),
+          int.parse("${_getQuotes.bq5 ?? 0}")
         ].reduce(max);
       }
     }
@@ -1198,14 +1222,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           "case": "Click here to view the trading view chart."
         }
       ];
-
-      _linkedScrips = await api.getLinkedScrip(token, exch);
-      if (_linkedScrips!.stat == "Ok") {
+      if (storeQuotes.isNotEmpty &&
+          storeQuotes.containsKey(token) &&
+          storeQuotes[token]?['l'] &&
+          storeQuotes[token]?['l'].all.stat == "Ok") {
         ConstantName.sessCheck = true;
-        _equls = _linkedScrips!.equls;
-        _fut = _linkedScrips!.fut;
-        _optExp = _linkedScrips!.optExp;
-
+        _linkedScrips = storeQuotes[token]?['l']['all'];
+        _equls = storeQuotes[token]?['l']['eq'];
+        _fut = storeQuotes[token]?['l']['fu'];
+        _optExp = storeQuotes[token]?['l']['op'];
         if (_optExp!.isNotEmpty) {
           _depthBtns.add({
             "btnName": "Option",
@@ -1213,64 +1238,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             "case": "Click here to view the Option chain details."
           });
 
-// Option expiry Date wise sorting
-
-          List<DateTime> dates = _optExp!.map((dateString) {
-            List<String> parts = dateString.exd!.split('-');
-            int day = int.parse(parts[0]);
-            int year = int.parse(parts[2]);
-
-            Map<String, int> monthMap = {
-              'JAN': 1,
-              'FEB': 2,
-              'MAR': 3,
-              'APR': 4,
-              'MAY': 5,
-              'JUN': 6,
-              'JUL': 7,
-              'AUG': 8,
-              'SEP': 9,
-              'OCT': 10,
-              'NOV': 11,
-              'DEC': 12
-            };
-            int month = monthMap[parts[1].toUpperCase()]!;
-
-            return DateTime(year, month, day);
-          }).toList();
-          dates.sort((a, b) => a.compareTo(b));
-          _sortedDate = dates.map((date) {
-            String day = date.day.toString().padLeft(2, '0');
-            // String month = date.month.toString().padLeft(2, '0');
-            String year = date.year.toString();
-
-            Map<int, String> monthMap = {
-              1: 'JAN',
-              2: 'FEB',
-              3: 'MAR',
-              4: 'APR',
-              5: 'MAY',
-              6: 'JUN',
-              7: 'JUL',
-              8: 'AUG',
-              9: 'SEP',
-              10: 'OCT',
-              11: 'NOV',
-              12: 'DEC'
-            };
-            String monthString = monthMap[date.month]!.toUpperCase();
-
-            return "$day-$monthString-$year";
-          }).toList();
-
-          // print("########### $_sortedDate");
+          _sortedDate = storeQuotes[token]?['l']['sortdate'];
           _selectedExpDate = _sortedDate[0];
-          for (var i = 0; i < _optExp!.length; i++) {
-            if (_selectedExpDate == _optExp![i].exd) {
-              _optionExch = _optExp![i].exch;
-              _selectedTradeSym = _optExp![i].tsym;
-            }
-          }
+
+          _optionExch = storeQuotes[token]?['l']['optionExch'];
+          _selectedTradeSym = storeQuotes[token]?['l']['selectedTradeSym'];
         }
         if (_fut!.isNotEmpty) {
           _depthBtns.add({
@@ -1281,22 +1253,116 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
           _futToken = "${_fut![0].token}";
           __futExch = "${_fut![0].exch}";
-
-          // print("Future $_futToken  $__futExch ");
-
-          // Seperating Trade symbol(symbol,exp date, Option)
-          for (var element in _fut!) {
-            Map spilitSymbol = spilitTsym(value: "${element.tsym}");
-
-            element.symbol = "${spilitSymbol["symbol"]}";
-            element.expDate = "${spilitSymbol["expDate"]}";
-            element.option = "${spilitSymbol["option"]}";
-          }
         }
       } else {
-        ref(authProvider).ifSessionExpired(context);
-      }
+        _linkedScrips = await api.getLinkedScrip(token, exch);
+        if (_linkedScrips!.stat == "Ok") {
+          ConstantName.sessCheck = true;
+          _equls = _linkedScrips!.equls;
+          _fut = _linkedScrips!.fut;
+          _optExp = _linkedScrips!.optExp;
 
+          if (_optExp!.isNotEmpty) {
+            _depthBtns.add({
+              "btnName": "Option",
+              "imgPath": assets.optChainIcon,
+              "case": "Click here to view the Option chain details."
+            });
+
+// Option expiry Date wise sorting
+
+            List<DateTime> dates = _optExp!.map((dateString) {
+              List<String> parts = dateString.exd!.split('-');
+              int day = int.parse(parts[0]);
+              int year = int.parse(parts[2]);
+
+              Map<String, int> monthMap = {
+                'JAN': 1,
+                'FEB': 2,
+                'MAR': 3,
+                'APR': 4,
+                'MAY': 5,
+                'JUN': 6,
+                'JUL': 7,
+                'AUG': 8,
+                'SEP': 9,
+                'OCT': 10,
+                'NOV': 11,
+                'DEC': 12
+              };
+              int month = monthMap[parts[1].toUpperCase()]!;
+
+              return DateTime(year, month, day);
+            }).toList();
+            dates.sort((a, b) => a.compareTo(b));
+            _sortedDate = dates.map((date) {
+              String day = date.day.toString().padLeft(2, '0');
+              // String month = date.month.toString().padLeft(2, '0');
+              String year = date.year.toString();
+
+              Map<int, String> monthMap = {
+                1: 'JAN',
+                2: 'FEB',
+                3: 'MAR',
+                4: 'APR',
+                5: 'MAY',
+                6: 'JUN',
+                7: 'JUL',
+                8: 'AUG',
+                9: 'SEP',
+                10: 'OCT',
+                11: 'NOV',
+                12: 'DEC'
+              };
+              String monthString = monthMap[date.month]!.toUpperCase();
+
+              return "$day-$monthString-$year";
+            }).toList();
+
+            // print("########### $_sortedDate");
+            _selectedExpDate = _sortedDate[0];
+            for (var i = 0; i < _optExp!.length; i++) {
+              if (_selectedExpDate == _optExp![i].exd) {
+                _optionExch = _optExp![i].exch;
+                _selectedTradeSym = _optExp![i].tsym;
+              }
+            }
+          }
+          if (_fut!.isNotEmpty) {
+            _depthBtns.add({
+              "btnName": "Future",
+              "imgPath": assets.optChainIcon,
+              "case": "click here to view the futures of the underline scrpit."
+            });
+
+            _futToken = "${_fut![0].token}";
+            __futExch = "${_fut![0].exch}";
+
+            // print("Future $_futToken  $__futExch ");
+
+            // Seperating Trade symbol(symbol,exp date, Option)
+            for (var element in _fut!) {
+              Map spilitSymbol = spilitTsym(value: "${element.tsym}");
+
+              element.symbol = "${spilitSymbol["symbol"]}";
+              element.expDate = "${spilitSymbol["expDate"]}";
+              element.option = "${spilitSymbol["option"]}";
+            }
+          }
+
+          storeQuotes[token]?['l'] = {
+            'all': _linkedScrips,
+            'eq': _equls,
+            'fu': _equls,
+            'op': _equls,
+            'sortdate': _sortedDate,
+            'optionExch': _optionExch,
+            'selectedTradeSym': _selectedTradeSym,
+          };
+        } else {
+          ref(authProvider).ifSessionExpired(context);
+        }
+      }
       notifyListeners();
       return _linkedScrips;
     } catch (e) {
@@ -1361,16 +1427,27 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       required String lastPrc,
       required BuildContext context}) async {
     try {
-      _techData = await api.getTechData(exch, tradeSym);
-      _returnsGridview = [];
-      if (_techData!.stat == "OK") {
+      String? token = _getQuotes.token;
+      if (storeQuotes.isNotEmpty &&
+          storeQuotes.containsKey(token) &&
+          storeQuotes[token]?['t'] &&
+          storeQuotes[token]?['t'].stat == "OK") {
         ConstantName.sessCheck = true;
+        _techData = storeQuotes[token]?['t'];
         techDataCalc(lastPrc);
-      }
+      } else {
+        _techData = await api.getTechData(exch, tradeSym);
+        _returnsGridview = [];
+        if (_techData!.stat == "OK") {
+          ConstantName.sessCheck = true;
+          techDataCalc(lastPrc);
+          storeQuotes[token]?['t'] = _techData;
+        }
 
-      if (_techData!.emsg == "Session Expired :  Invalid Session Key" &&
-          _techData!.stat == "Not_Ok") {
-        ref(authProvider).ifSessionExpired(context);
+        if (_techData!.emsg == "Session Expired :  Invalid Session Key" &&
+            _techData!.stat == "Not_Ok") {
+          ref(authProvider).ifSessionExpired(context);
+        }
       }
 
       notifyListeners();
@@ -1394,242 +1471,99 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_fundamentalData!.msg != "no data found") {
         _peersChartKeys = _fundamentalData!.peerComparisonChart!.keys.toList();
-
-        // print("getltpmmmm   in $ltpArgs");
-        // _firstGetData="1";
-        // _depthBtns.add({
-        //   "btnName": "Fundamental",
-        //   "imgPath": assets.charticon,
-        //   "case": "Click here to view the trading view chart."
-        // });
-
         DateFormat format = DateFormat("yyyy-MM-dd");
         _mfHoldingDate = [];
-        _fundamentalData!.shareholdings!.sort((a, b) {
-          return format.parse(b.date!).compareTo(format.parse(a.date!));
-        });
 
-        if (_fundamentalData!.shareholdings!.isNotEmpty) {
-          for (var element in _fundamentalData!.shareholdings!) {
+        void sortAndFormatDates(List data, String dateKey, String formatKey) {
+          data.sort((a, b) =>
+              format.parse(b[dateKey]!).compareTo(format.parse(a[dateKey]!)));
+          for (var element in data) {
             String formattedDate =
-                DateFormat.yMMMMd().format(format.parse(element.date!));
-
-            List<String> date = [];
-
-            date = formattedDate.split(" ");
-
-            element.convDate =
+                DateFormat.yMMMMd().format(format.parse(element[dateKey]!));
+            List<String> date = formattedDate.split(" ");
+            element[formatKey] =
                 "${date[0].substring(0, 3)} ${date[2].substring(2)}";
-
-            _mfHoldingDate.add(element.convDate!);
           }
+        }
 
-          _selectedMfHolddate = _mfHoldingDate[0];
+        // Shareholding dates
+        sortAndFormatDates(
+            _fundamentalData!.shareholdings!, 'date', 'convDate');
+        if (_fundamentalData!.shareholdings!.isNotEmpty) {
+          _selectedMfHolddate =
+              _mfHoldingDate[0] = _fundamentalData!.shareholdings![0].convDate!;
           _selectedMfHoldindex = 0;
-
-          _fundamentalData!.stockFinancialsConsolidated!.balanceSheet!
-              .sort((a, b) {
-            return format
-                .parse(b.yearEndDate!)
-                .compareTo(format.parse(a.yearEndDate!));
-          });
-        }
-        print("getltpmmmm   f2 $ltpArgs");
-
-        for (var element
-            in _fundamentalData!.stockFinancialsConsolidated!.balanceSheet!) {
-          String formattedDate =
-              DateFormat.yMMMMd().format(format.parse(element.yearEndDate!));
-
-          List<String> date = [];
-
-          date = formattedDate.split(" ");
-
-          element.convDate =
-              "${date[0].substring(0, 3)} ${date[2].substring(2)}";
-        }
-        _fundamentalData!.stockFinancialsConsolidated!.incomeSheet!
-            .sort((a, b) {
-          return format
-              .parse(b.yearEndDate!)
-              .compareTo(format.parse(a.yearEndDate!));
-        });
-
-        for (var element
-            in _fundamentalData!.stockFinancialsConsolidated!.incomeSheet!) {
-          String formattedDate =
-              DateFormat.yMMMMd().format(format.parse(element.yearEndDate!));
-
-          List<String> date = [];
-
-          date = formattedDate.split(" ");
-
-          element.convDate =
-              "${date[0].substring(0, 3)} ${date[2].substring(2)}";
-        }
-        _fundamentalData!.stockFinancialsConsolidated!.cashflowSheet!
-            .sort((a, b) {
-          return format
-              .parse(b.yearEndDate!)
-              .compareTo(format.parse(a.yearEndDate!));
-        });
-
-        for (var element
-            in _fundamentalData!.stockFinancialsConsolidated!.cashflowSheet!) {
-          String formattedDate =
-              DateFormat.yMMMMd().format(format.parse(element.yearEndDate!));
-
-          List<String> date = [];
-
-          date = formattedDate.split(" ");
-
-          element.convDate =
-              "${date[0].substring(0, 3)} ${date[2].substring(2)}";
         }
 
-        _fundamentalData!.stockFinancialsStandalone!.balanceSheet!.sort((a, b) {
-          return format
-              .parse(b.yearEndDate!)
-              .compareTo(format.parse(a.yearEndDate!));
-        });
+        // Financial statements
+        var consolidated = _fundamentalData!.stockFinancialsConsolidated!;
+        var standalone = _fundamentalData!.stockFinancialsStandalone!;
+        sortAndFormatDates(
+            consolidated.balanceSheet!, 'yearEndDate', 'convDate');
+        sortAndFormatDates(
+            consolidated.incomeSheet!, 'yearEndDate', 'convDate');
+        sortAndFormatDates(
+            consolidated.cashflowSheet!, 'yearEndDate', 'convDate');
+        sortAndFormatDates(standalone.balanceSheet!, 'yearEndDate', 'convDate');
+        sortAndFormatDates(standalone.incomeSheet!, 'yearEndDate', 'convDate');
+        sortAndFormatDates(
+            standalone.cashflowSheet!, 'yearEndDate', 'convDate');
 
-        for (var element
-            in _fundamentalData!.stockFinancialsStandalone!.balanceSheet!) {
-          String formattedDate =
-              DateFormat.yMMMMd().format(format.parse(element.yearEndDate!));
+        _selctedFinYear = standalone.balanceSheet![0].convDate!;
+        _finnceYears = standalone.incomeSheet!.map((e) => e.convDate!).toList();
 
-          List<String> date = [];
-
-          date = formattedDate.split(" ");
-
-          element.convDate =
-              "${date[0].substring(0, 3)} ${date[2].substring(2)}";
-        }
-        _selctedFinYear = _fundamentalData!
-            .stockFinancialsStandalone!.balanceSheet![0].convDate
-            .toString();
-        _fundamentalData!.stockFinancialsStandalone!.incomeSheet!.sort((a, b) {
-          return format
-              .parse(b.yearEndDate!)
-              .compareTo(format.parse(a.yearEndDate!));
-        });
-        _finnceYears = [];
-
-        for (var element
-            in _fundamentalData!.stockFinancialsStandalone!.incomeSheet!) {
-          String formattedDate =
-              DateFormat.yMMMMd().format(format.parse(element.yearEndDate!));
-
-          List<String> date = [];
-
-          date = formattedDate.split(" ");
-
-          element.convDate =
-              "${date[0].substring(0, 3)} ${date[2].substring(2)}";
-          _finnceYears.add("${element.convDate}");
-        }
-        _fundamentalData!.stockFinancialsStandalone!.cashflowSheet!
-            .sort((a, b) {
-          return format
-              .parse(b.yearEndDate!)
-              .compareTo(format.parse(a.yearEndDate!));
-        });
-        _finnceYears = [];
-
-        for (var element
-            in _fundamentalData!.stockFinancialsStandalone!.cashflowSheet!) {
-          String formattedDate =
-              DateFormat.yMMMMd().format(format.parse(element.yearEndDate!));
-
-          List<String> date = [];
-
-          date = formattedDate.split(" ");
-
-          element.convDate =
-              "${date[0].substring(0, 3)} ${date[2].substring(2)}";
-          _finnceYears.add("${element.convDate}");
-        }
-
-        for (var i = 0;
-            i < _fundamentalData!.peersComparison!.peers!.length;
-            i++) {
-          String ltp = _fundamentalData!.peersComparison!.peers![i].sYMBOL!
-              .substring(0, 3);
-          String tok = _fundamentalData!.peersComparison!.peers![i].zebuToken!;
-          if (tok.isNotEmpty && ltp.isNotEmpty) {
-            ltpArgs.add({"exch": ltp, "token": tok});
-          }
-        }
-        for (var i = 0;
-            i < _fundamentalData!.peersComparison!.stock!.length;
-            i++) {
-          String ltp = _fundamentalData!.peersComparison!.stock![i].sYMBOL!
-              .substring(0, 3);
-          String tok = _fundamentalData!.peersComparison!.stock![i].zebuToken!;
-          if (tok.isNotEmpty && ltp.isNotEmpty) {
-            ltpArgs.add({"exch": ltp, "token": tok});
+        // Peer comparisons
+        for (var peers in [
+          _fundamentalData!.peersComparison!.stock!,
+          _fundamentalData!.peersComparison!.peers!
+        ]) {
+          for (var element in peers) {
+            String ltp = element.sYMBOL!.substring(0, 3);
+            String tok = element.zebuToken!;
+            if (ltp.isNotEmpty && tok.isNotEmpty) {
+              ltpArgs.add({"exch": ltp, "token": tok});
+            }
           }
         }
 
         final response = await api.getLTP(ltpArgs);
-        // print("getltpmmmm  o$response");
         Map res = jsonDecode(response.body);
 
-        for (var element in _fundamentalData!.peersComparison!.stock!) {
-          String tok = element.zebuToken.toString();
-          if (tok.isNotEmpty) {
-            if (element.zebuToken.toString() ==
-                "${res["data"]["${element.zebuToken}"]['token']}") {
-              element.ltp = "${res["data"]["${element.zebuToken}"]["lp"]}";
+        void updateLtpData(List data) {
+          for (var element in data) {
+            String tok = element.zebuToken!;
+            if (tok.isNotEmpty && tok == res["data"][tok]?['token']) {
+              element.ltp = res["data"][tok]["lp"];
             }
           }
         }
-        for (var element in _fundamentalData!.peersComparison!.peers!) {
-          String tok = element.zebuToken.toString();
-          if (tok.isNotEmpty) {
-            if (element.zebuToken.toString() ==
-                "${res["data"]["${element.zebuToken}"]['token']}") {
-              element.ltp = "${res["data"]["${element.zebuToken}"]["lp"]}";
-            }
-          }
-        }
-        _peersChartKeys = _fundamentalData!.peerComparisonChart!.keys.toList();
 
-        _prcComChrtData1 = [];
-        _prcComChrtData2 = [];
-        _prcComChrtData3 = [];
-        _prcComChrtData4 = [];
-        _prcComChrtData5 = [];
+        updateLtpData(_fundamentalData!.peersComparison!.stock!);
+        updateLtpData(_fundamentalData!.peersComparison!.peers!);
+
+        // Price comparison chart data
+        List<List<PrcComparisionChartData>> chartDataLists = [
+          _prcComChrtData1,
+          _prcComChrtData2,
+          _prcComChrtData3,
+          _prcComChrtData4,
+          _prcComChrtData5,
+        ];
 
         for (var i = 0; i < _peersChartKeys.length; i++) {
-          List close = _fundamentalData!
-              .peerComparisonChart![_peersChartKeys[i]]['close'];
-          List dates = _fundamentalData!
-              .peerComparisonChart![_peersChartKeys[i]]['date'];
-
+          var close = _fundamentalData!.peerComparisonChart![_peersChartKeys[i]]
+              ['close'];
+          var dates = _fundamentalData!.peerComparisonChart![_peersChartKeys[i]]
+              ['date'];
           for (var j = 0; j < dates.length; j++) {
-            String inputDate = "${dates[j]}";
-            DateTime parsedDate = DateTime.parse(inputDate);
-            String formattedDate = DateFormat('MMM dd').format(parsedDate);
-
-            List<String> date = [];
-
-            date = formattedDate.split(" ");
-
-            if (i == 0) {
-              _prcComChrtData1.add(PrcComparisionChartData(date[0], close[j]));
-            } else if (i == 1) {
-              _prcComChrtData2.add(PrcComparisionChartData(date[0], close[j]));
-            } else if (i == 2) {
-              _prcComChrtData3.add(PrcComparisionChartData(date[0], close[j]));
-            } else if (i == 3) {
-              _prcComChrtData4.add(PrcComparisionChartData(date[0], close[j]));
-            } else {
-              _prcComChrtData5.add(PrcComparisionChartData(date[0], close[j]));
-            }
+            String formattedDate =
+                DateFormat('MMM dd').format(DateTime.parse(dates[j]));
+            String date = formattedDate.split(" ")[0];
+            chartDataLists[i].add(PrcComparisionChartData(date, close[j]));
           }
         }
       }
+
       notifyListeners();
     } catch (e) {
       ref(indexListProvider)
