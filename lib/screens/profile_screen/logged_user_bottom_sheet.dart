@@ -6,6 +6,7 @@ import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
+import '../../provider/user_profile_provider.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
@@ -22,6 +23,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
     final loggedUser = watch(authProvider);
     final theme = watch(themeProvider);
     final portfolio = watch(portfolioProvider);
+    final userProfile = watch(userProfileProvider);
     final Preferences pref = locator<Preferences>();
     return DraggableScrollableSheet(
         expand: false,
@@ -76,6 +78,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                     if (loggedUser
                                             .loggedMobile[index].clientId !=
                                         pref.clientId) {
+                                      userProfile.toggleLoad(true);
                                       pref.setClientId(loggedUser
                                           .loggedMobile[index].clientId);
 
@@ -99,8 +102,8 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                               "switchAc",
                                               loggedUser
                                                   .loggedMobile[index].imei);
-                                                  portfolio.clearAllportfolio();
-
+                                      portfolio.clearAllportfolio();
+                                      userProfile.toggleLoad(false);
                                     }
                                   },
                                   dense: true,
