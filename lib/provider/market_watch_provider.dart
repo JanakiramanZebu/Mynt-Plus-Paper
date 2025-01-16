@@ -911,13 +911,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
   Future fetchScripInfo(String token, String exch, BuildContext context) async {
     try {
-      if (storeQuotes.isNotEmpty &&
-          storeQuotes.containsKey(token) &&
-          storeQuotes[token]?['s'] &&
-          storeQuotes[token]?['s'].stat == "Ok") {
+      if (storeQuotes.containsKey(token) && storeQuotes[token]?['s'] != null) {
         _scripInfoModel = storeQuotes[token]?['s'];
         ConstantName.sessCheck = true;
+        print('qqq if si');
       } else {
+        print('qqq else');
         _scripInfoModel = await api.getScripInfo(token, exch);
 
         if (_scripInfoModel!.stat == "Ok") {
@@ -966,11 +965,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       if (storeQuotes.isNotEmpty &&
           storeQuotes.containsKey(token) &&
-          storeQuotes[token]?['q'] &&
-          storeQuotes[token]?['q'].stat == "Ok") {
+          storeQuotes[token]?['q'] != null) {
+        print('qqq sq if');
         ConstantName.sessCheck = true;
         _getQuotes = storeQuotes[token]?['q'];
       } else {
+        print('qqq qs else');
         _getQuotes = await api.getScripQuote(token, exch);
 
         if (_getQuotes.stat == "Ok") {
@@ -1222,10 +1222,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           "case": "Click here to view the trading view chart."
         }
       ];
-      if (storeQuotes.isNotEmpty &&
-          storeQuotes.containsKey(token) &&
-          storeQuotes[token]?['l'] &&
-          storeQuotes[token]?['l'].all.stat == "Ok") {
+      if (storeQuotes.containsKey(token) && storeQuotes[token]?['l'] != null) {
+        print('qqq ls if ');
         ConstantName.sessCheck = true;
         _linkedScrips = storeQuotes[token]?['l']['all'];
         _equls = storeQuotes[token]?['l']['eq'];
@@ -1255,6 +1253,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           __futExch = "${_fut![0].exch}";
         }
       } else {
+        print('qqq ls else');
         _linkedScrips = await api.getLinkedScrip(token, exch);
         if (_linkedScrips!.stat == "Ok") {
           ConstantName.sessCheck = true;
@@ -1428,14 +1427,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       required BuildContext context}) async {
     try {
       String? token = _getQuotes.token;
-      if (storeQuotes.isNotEmpty &&
-          storeQuotes.containsKey(token) &&
-          storeQuotes[token]?['t'] &&
-          storeQuotes[token]?['t'].stat == "OK") {
+      if (storeQuotes.containsKey(token) && storeQuotes[token]?['t'] != null) {
+        print('qqq td if ');
         ConstantName.sessCheck = true;
         _techData = storeQuotes[token]?['t'];
         techDataCalc(lastPrc);
       } else {
+        print('qqq td else');
         _techData = await api.getTechData(exch, tradeSym);
         _returnsGridview = [];
         if (_techData!.stat == "OK") {
@@ -1465,49 +1463,76 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 // Fetching fundametal datas
   Future fetchFundamentalData({required String tradeSym}) async {
     try {
-      _fundamentalData = await api.getFundamentalData(tradeSym);
+      String? token = _getQuotes.token;
+      if (storeQuotes.containsKey(token) && storeQuotes[token]?['f'] != null) {
+        _fundamentalData = storeQuotes[token]?['f'];
+      } else {
+        _fundamentalData = await api.getFundamentalData(tradeSym);
+      }
 
       List ltpArgs = [];
 
       if (_fundamentalData!.msg != "no data found") {
+        storeQuotes[token]?['f'] = _fundamentalData;
         _peersChartKeys = _fundamentalData!.peerComparisonChart!.keys.toList();
         DateFormat format = DateFormat("yyyy-MM-dd");
         _mfHoldingDate = [];
 
-        void sortAndFormatDates(List data, String dateKey, String formatKey) {
+        void sortAndFormatDates(
+            List<dynamic> data,
+            String Function(dynamic) getDate,
+            void Function(dynamic, String) setConvDate) {
           data.sort((a, b) =>
-              format.parse(b[dateKey]!).compareTo(format.parse(a[dateKey]!)));
+              format.parse(getDate(b)).compareTo(format.parse(getDate(a))));
           for (var element in data) {
             String formattedDate =
-                DateFormat.yMMMMd().format(format.parse(element[dateKey]!));
+                DateFormat.yMMMMd().format(format.parse(getDate(element)));
             List<String> date = formattedDate.split(" ");
-            element[formatKey] =
-                "${date[0].substring(0, 3)} ${date[2].substring(2)}";
+            setConvDate(
+                element, "${date[0].substring(0, 3)} ${date[2].substring(2)}");
           }
         }
 
         // Shareholding dates
         sortAndFormatDates(
-            _fundamentalData!.shareholdings!, 'date', 'convDate');
-        if (_fundamentalData!.shareholdings!.isNotEmpty) {
-          _selectedMfHolddate =
-              _mfHoldingDate[0] = _fundamentalData!.shareholdings![0].convDate!;
-          _selectedMfHoldindex = 0;
-        }
+          _fundamentalData!.stockFinancialsConsolidated!.balanceSheet!,
+          (element) => element.yearEndDate!,
+          (element, value) => element.convDate = value,
+        );
 
         // Financial statements
         var consolidated = _fundamentalData!.stockFinancialsConsolidated!;
         var standalone = _fundamentalData!.stockFinancialsStandalone!;
         sortAndFormatDates(
-            consolidated.balanceSheet!, 'yearEndDate', 'convDate');
+          consolidated.balanceSheet!,
+          (element) => element.yearEndDate!,
+          (element, value) => element.convDate = value,
+        );
         sortAndFormatDates(
-            consolidated.incomeSheet!, 'yearEndDate', 'convDate');
+          consolidated.incomeSheet!,
+          (element) => element.yearEndDate!,
+          (element, value) => element.convDate = value,
+        );
         sortAndFormatDates(
-            consolidated.cashflowSheet!, 'yearEndDate', 'convDate');
-        sortAndFormatDates(standalone.balanceSheet!, 'yearEndDate', 'convDate');
-        sortAndFormatDates(standalone.incomeSheet!, 'yearEndDate', 'convDate');
+          consolidated.cashflowSheet!,
+          (element) => element.yearEndDate!,
+          (element, value) => element.convDate = value,
+        );
         sortAndFormatDates(
-            standalone.cashflowSheet!, 'yearEndDate', 'convDate');
+          standalone.balanceSheet!,
+          (element) => element.yearEndDate!,
+          (element, value) => element.convDate = value,
+        );
+        sortAndFormatDates(
+          standalone.incomeSheet!,
+          (element) => element.yearEndDate!,
+          (element, value) => element.convDate = value,
+        );
+        sortAndFormatDates(
+          standalone.cashflowSheet!,
+          (element) => element.yearEndDate!,
+          (element, value) => element.convDate = value,
+        );
 
         _selctedFinYear = standalone.balanceSheet![0].convDate!;
         _finnceYears = standalone.incomeSheet!.map((e) => e.convDate!).toList();
