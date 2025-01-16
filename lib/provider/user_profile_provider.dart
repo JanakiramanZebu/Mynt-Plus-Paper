@@ -100,6 +100,13 @@ class UserProfileProvider extends DefaultChangeNotifier {
   ClientDetailModel? get clientDetailModel => _clientDetailModel;
   UserProfileProvider(this.ref);
 
+  bool _userloader = false;
+  bool get userloader => _userloader;
+
+  profilePageloader(bool value) {
+    _userloader = value;
+    notifyListeners();
+  }
 // Fetching data from the api and stored in a variable
 
   Future fetchUserDetail(BuildContext context) async {

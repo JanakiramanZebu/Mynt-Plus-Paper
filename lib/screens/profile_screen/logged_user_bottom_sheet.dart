@@ -78,7 +78,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                     if (loggedUser
                                             .loggedMobile[index].clientId !=
                                         pref.clientId) {
-                                      userProfile.toggleLoad(true);
+                                      userProfile.profilePageloader(true);
                                       pref.setClientId(loggedUser
                                           .loggedMobile[index].clientId);
 
@@ -103,7 +103,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                               loggedUser
                                                   .loggedMobile[index].imei);
                                       portfolio.clearAllportfolio();
-                                      userProfile.toggleLoad(false);
+                                      userProfile.profilePageloader(false);
                                     }
                                   },
                                   dense: true,

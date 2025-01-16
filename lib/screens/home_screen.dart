@@ -602,7 +602,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   : indexProvide.selectedBtmIndx == 4
                                       ? PreferredSize(
                                           preferredSize: const Size(20, 20),
-                                          child: userProfile.loading
+                                          child: userProfile.userloader
                                               ? ListTile(
                                                   dense: true,
                                                   contentPadding:
