@@ -103,6 +103,14 @@ class UserProfileProvider extends DefaultChangeNotifier {
   bool _userloader = false;
   bool get userloader => _userloader;
 
+  bool _showchartof = false;
+  bool get showchartof => _showchartof;
+  
+  setChartdialog(bool value) {
+    _showchartof = value;
+    notifyListeners();
+  }
+
   profilePageloader(bool value) {
     _userloader = value;
     notifyListeners();

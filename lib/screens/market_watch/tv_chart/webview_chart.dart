@@ -124,7 +124,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         final theme = watch(themeProvider);
 
         return SizedBox(
-          height: MediaQuery.of(context).size.height / widget.cHeight,
+          height: MediaQuery.of(context).size.height - 120,
           child: Column(
             children: [
               _buildTopBar(tvChart, theme),
@@ -289,6 +289,11 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         onWebViewCreated: (controller) {
           ConstantName.webViewController = controller;
           startChartUpdateTimer(controller);
+
+          print("objec ${
+            "https://tv-chart-new.firebaseapp.com/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
+            "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
+            "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}"}t");
         },
         onProgressChanged: (_, progress) {
           setState(() {

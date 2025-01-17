@@ -15,6 +15,7 @@ import '../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
+import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
@@ -31,7 +32,6 @@ import 'option_chain/strike_price_list_card.dart';
 import 'over_view/funtamental_data_widget.dart';
 import 'scrip_detail_dialogue.dart';
 import 'set_alert_screen.dart';
-import 'tv_chart/webview_chart.dart';
 
 class ScripDepthInfo extends StatefulWidget {
   final DepthInputArgs wlValue;
@@ -125,6 +125,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
       final scripInfo = watch(marketWatchProvider);
       final socketDatas = watch(websocketProvider).socketDatas;
       final theme = context.read(themeProvider);
+      final userProfile = watch(userProfileProvider);
       // print("single page loader ${scripInfo.scripDepthloader}");
 
       // This scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the scrip details.
@@ -425,6 +426,28 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 });
 
                                                 if (scripInfo.depthBtns[index]
+                                                        ['btnName'] ==
+                                                    "Chart") {
+                                                      userProfile
+                                                      .setChartdialog(true);
+                                                  await ConstantName
+                                                      .webViewController!
+                                                      .evaluateJavascript(
+                                                          source:
+                                                              "window.changeScript('${widget.wlValue.exch}:${widget.wlValue.tsym}',${widget.wlValue.token})");
+                                                  // "window.tvWidget.activeChart().setSymbol('${widget.wlValue.exch}:${widget.wlValue.tsym}')");
+                                                  Navigator.pop(context);
+                                                  // userProfile.setChartdialog(true);
+                                                  // Navigator.push(
+                                                  //   context,
+                                                  //   MaterialPageRoute(
+                                                  //       builder: (context) =>
+                                                  //           SecondScreen(
+                                                  //               chartArgs:
+                                                  //                   chartArgs!)),
+                                                  // );
+                                                } else if (scripInfo
+                                                            .depthBtns[index]
                                                         ['btnName'] ==
                                                     "Option") {
                                                   if (depthData.exch == "NFO" ||
@@ -1270,8 +1293,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                     const NoDataFound()
                                   ]
                                 ] else if (scripInfo.actDeptBtn == "Chart") ...[
-                                  ChartScreenWebView(
-                                      chartArgs: chartArgs!, cHeight: 1.48)
+                                  // ChartScreenWebView(
+                                  //     chartArgs: chartArgs!, cHeight: 1.48)
                                 ] else if (scripInfo.actDeptBtn ==
                                     "Option") ...[
                                   if (scripInfo.isLoad)
