@@ -345,8 +345,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                   12,
                                                   FontWeight.w500))
                                         ])),
-                                const SizedBox(
-                                    height: 8),
+                                const SizedBox(height: 8),
                                 // SizedBox(
                                 //     child: scripInfo.scripDepthloader
                                 //         ? const LinearProgressIndicator()
@@ -417,6 +416,14 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 scripInfo
                                                     .singlePageloader(true);
 
+                                                setState(() {
+                                                  initSize = .99;
+
+                                                  scripInfo.chngDephBtn(
+                                                      scripInfo.depthBtns[index]
+                                                          ['btnName']);
+                                                });
+
                                                 if (scripInfo.depthBtns[index]
                                                         ['btnName'] ==
                                                     "Option") {
@@ -465,16 +472,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                   await scripInfo.requestWSFut(
                                                       context: context,
                                                       isSubscribe: true);
-                                                }
-
-                                                setState(() {
-                                                  initSize = .99;
-
-                                                  scripInfo.chngDephBtn(
-                                                      scripInfo.depthBtns[index]
-                                                          ['btnName']);
-                                                });
-                                                if (scripInfo.actDeptBtn ==
+                                                } else if (scripInfo
+                                                        .actDeptBtn ==
                                                     "Overview") {
                                                   await watch(websocketProvider)
                                                       .establishConnection(
@@ -482,13 +481,13 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                               "${depthData.exch}|${depthData.token}",
                                                           task: "d",
                                                           context: context);
-                                                }
-
-                                                if (scripInfo.actDeptBtn ==
+                                                } else if (scripInfo
+                                                        .actDeptBtn ==
                                                     "Fundamental") {
                                                   scripInfo.chngshareHold(
                                                       "Promoter Holding");
                                                 }
+
                                                 scripInfo
                                                     .singlePageloader(false);
                                               },
@@ -881,12 +880,15 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                               ])
                         ]),
 
-                        scripInfo.scripDepthloader ? const Center(child: Padding(
-                          padding: EdgeInsets.only(top: 120),
-                          child: CircularProgressIndicator(),
-                        )) :
-                    // Column(
-                    //   children: [
+                    scripInfo.scripDepthloader
+                        ? const Center(
+                            child: Padding(
+                            padding: EdgeInsets.only(top: 120),
+                            child: CircularProgressIndicator(),
+                          ))
+                        :
+                        // Column(
+                        //   children: [
                         Expanded(
                             child: ListView(
                                 physics: scripInfo.actDeptBtn == "Chart"
@@ -894,421 +896,453 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                     : const AlwaysScrollableScrollPhysics(),
                                 controller: scrollController,
                                 children: [
-                              if (scripInfo.actDeptBtn == "Overview") ...[
-                                Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 8),
-                                    child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(height: 4),
-                                          rowOfInfoData(
-                                              "Open",
-                                              "${depthData.o ?? 0.00}",
-                                              "Close",
-                                              "${depthData.c ?? 0.00}",
-                                              theme),
-                                          const SizedBox(height: 4),
-                                          Text("Low - High",
-                                              style: textStyle(
-                                                  const Color(0xff666666),
-                                                  12,
-                                                  FontWeight.w500)),
-                                          const SizedBox(height: 4),
-                                          lowHighBar(
-                                              "${depthData.l ?? 0.00}",
-                                              "${depthData.h ?? 0.00}",
-                                              "${depthData.lp ?? depthData.c ?? 0.00}",
-                                              theme),
-                                          const SizedBox(height: 2),
-                                          Divider(
-                                              color: theme.isDarkMode
-                                                  ? colors.darkColorDivider
-                                                  : colors.colorDivider),
-                                          if (depthData.wk52L != null &&
-                                              depthData.wk52H != null) ...[
-                                            const SizedBox(height: 6),
-                                            Text("52 Week Low - 52 Week High",
+                                if (scripInfo.actDeptBtn == "Overview") ...[
+                                  Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 8),
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(height: 4),
+                                            rowOfInfoData(
+                                                "Open",
+                                                "${depthData.o ?? 0.00}",
+                                                "Close",
+                                                "${depthData.c ?? 0.00}",
+                                                theme),
+                                            const SizedBox(height: 4),
+                                            Text("Low - High",
                                                 style: textStyle(
                                                     const Color(0xff666666),
                                                     12,
                                                     FontWeight.w500)),
                                             const SizedBox(height: 4),
                                             lowHighBar(
-                                                "${depthData.wk52L ?? 0.00}",
-                                                "${depthData.wk52H ?? 0.00}",
+                                                "${depthData.l ?? 0.00}",
+                                                "${depthData.h ?? 0.00}",
                                                 "${depthData.lp ?? depthData.c ?? 0.00}",
                                                 theme),
+                                            const SizedBox(height: 2),
                                             Divider(
                                                 color: theme.isDarkMode
                                                     ? colors.darkColorDivider
                                                     : colors.colorDivider),
-                                            const SizedBox(height: 6)
-                                          ],
-                                          if (widget.wlValue.instname != "UNDIND" &&
-                                              widget.wlValue.instname != "COM") ...[
-                                            Text("Market Depth",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    14,
-                                                    FontWeight.w600)),
-                                            const SizedBox(height: 6),
-                                            Row(children: [
-                                              Expanded(
-                                                  child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment.start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                    Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text("Qty",
-                                                              style: textStyle(
-                                                                  const Color(
-                                                                      0XFF506D84),
-                                                                  13,
-                                                                  FontWeight.w600)),
-                                                          Text("Bid",
-                                                              style: textStyle(
-                                                                  const Color(
-                                                                      0xff43A833),
-                                                                  13,
-                                                                  FontWeight.w600))
-                                                        ]),
-                                                    const SizedBox(height: 7),
-                                                    depthPercentageBuy(
-                                                        "${depthData.bq1 ?? 0}",
-                                                        "${depthData.bp1 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    depthPercentageBuy(
-                                                        "${depthData.bq2 ?? 0}",
-                                                        "${depthData.bp2 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    depthPercentageBuy(
-                                                        "${depthData.bq3 ?? 0}",
-                                                        "${depthData.bp3 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    depthPercentageBuy(
-                                                        "${depthData.bq4 ?? 0}",
-                                                        "${depthData.bp4 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    depthPercentageBuy(
-                                                        "${depthData.bq5 ?? 0}",
-                                                        "${depthData.bp5 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme)
-                                                  ])),
-                                              const SizedBox(width: 20),
-                                              Expanded(
-                                                  child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment.start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                    Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text("Ask",
-                                                              style: textStyle(
-                                                                  colors.darkred,
-                                                                  13,
-                                                                  FontWeight.w600)),
-                                                          Text("Qty",
-                                                              style: textStyle(
-                                                                  const Color(
-                                                                      0XFF506D84),
-                                                                  13,
-                                                                  FontWeight.w600))
-                                                        ]),
-                                                    const SizedBox(height: 7),
-                                                    depthPercentageSell(
-                                                        "${depthData.sq1 ?? 0}",
-                                                        "${depthData.sp1 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    depthPercentageSell(
-                                                        "${depthData.sq2 ?? 0}",
-                                                        "${depthData.sp2 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    depthPercentageSell(
-                                                        "${depthData.sq3 ?? 0}",
-                                                        "${depthData.sp3 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    depthPercentageSell(
-                                                        "${depthData.sq4 ?? 0}",
-                                                        "${depthData.sp4 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    depthPercentageSell(
-                                                        "${depthData.sq5 ?? 0}",
-                                                        "${depthData.sp5 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme)
-                                                  ]))
-                                            ]),
-                                            const SizedBox(height: 10),
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Text("${depthData.tbq ?? 0}",
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
-                                                          15,
-                                                          FontWeight.w600)),
-                                                  Text("${depthData.tsq ?? 0}",
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
-                                                          15,
-                                                          FontWeight.w600))
-                                                ]),
-                                            const SizedBox(height: 6),
-                                            LinearPercentIndicator(
-                                                leading: Text(
-                                                    "${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
-                                                trailing: Text(
-                                                    "${scripInfo.totSellQtyPer.toStringAsFixed(2)}%",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
-                                                lineHeight: 12.0,
-                                                barRadius: const Radius.circular(4),
-                                                backgroundColor:
-                                                    (scripInfo.totBuyQtyPer.toStringAsFixed(2) ==
-                                                                "0.00" &&
-                                                            scripInfo.totSellQtyPer
-                                                                    .toStringAsFixed(
-                                                                        2) ==
-                                                                "0.00")
-                                                        ? const Color(0xffECEDEE)
-                                                        : const Color(0XFFD34645),
-                                                percent: scripInfo.totBuyQtyPerChng,
-                                                padding: const EdgeInsets.symmetric(
-                                                    horizontal: 14),
-                                                progressColor: const Color(0xff43A833)),
-                                            const SizedBox(height: 5),
-                                            Divider(
-                                                color: theme.isDarkMode
-                                                    ? colors.darkColorDivider
-                                                    : colors.colorDivider)
-                                          ],
-                                          const SizedBox(height: 4),
-                                          if ((widget.wlValue.instname !=
-                                                  "UNDIND" &&
-                                              widget.wlValue.instname !=
-                                                  "COM")) ...[
-                                            rowOfInfoData(
-                                                "Avg Price",
-                                                "${depthData.ap ?? 0.00}",
-                                                "Volume",
-                                                "${depthData.v ?? 0.00}",
-                                                theme),
-                                            const SizedBox(height: 4),
-                                            rowOfInfoData(
-                                                "Lower Circuit",
-                                                "${depthData.lc ?? 0.00}",
-                                                "Upper Circuit",
-                                                "${depthData.uc ?? 0.00}",
-                                                theme),
-                                            const SizedBox(height: 4),
-                                            rowOfInfoData(
-                                                "Last Trade Qty",
-                                                "${depthData.ltq ?? 0}",
-                                                "Last Trade Time",
-                                                depthData.ltt ?? "--",
-                                                theme),
-                                            const SizedBox(height: 4),
-                                            if (depthData.seg != "EQT") ...[
-                                              rowOfInfoData(
-                                                  "Open Intrest",
-                                                  "${depthData.oi ?? 0.00}",
-                                                  "Change in OI",
-                                                  "${depthData.poi ?? 0.00}",
-                                                  theme),
+                                            if (depthData.wk52L != null &&
+                                                depthData.wk52H != null) ...[
+                                              const SizedBox(height: 6),
+                                              Text("52 Week Low - 52 Week High",
+                                                  style: textStyle(
+                                                      const Color(0xff666666),
+                                                      12,
+                                                      FontWeight.w500)),
                                               const SizedBox(height: 4),
+                                              lowHighBar(
+                                                  "${depthData.wk52L ?? 0.00}",
+                                                  "${depthData.wk52H ?? 0.00}",
+                                                  "${depthData.lp ?? depthData.c ?? 0.00}",
+                                                  theme),
+                                              Divider(
+                                                  color: theme.isDarkMode
+                                                      ? colors.darkColorDivider
+                                                      : colors.colorDivider),
+                                              const SizedBox(height: 6)
                                             ],
-                                            if (scripInfo
-                                                .returnsGridview.isNotEmpty) ...[
-                                              Text("Returns",
+                                            if (widget.wlValue.instname !=
+                                                    "UNDIND" &&
+                                                widget.wlValue.instname !=
+                                                    "COM") ...[
+                                              Text("Market Depth",
                                                   style: textStyle(
                                                       theme.isDarkMode
                                                           ? colors.colorWhite
                                                           : colors.colorBlack,
                                                       14,
                                                       FontWeight.w600)),
-                                              const SizedBox(height: 8),
-                                              GridView.count(
-                                                  crossAxisCount: 3,
-                                                  physics:
-                                                      const NeverScrollableScrollPhysics(),
-                                                  shrinkWrap: true,
-                                                  crossAxisSpacing: 12,
-                                                  mainAxisSpacing: 10,
-                                                  childAspectRatio: 1.8,
-                                                  children: List.generate(
-                                                      scripInfo.returnsGridview
-                                                          .length, (index) {
-                                                    return Container(
-                                                        width: 120,
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                vertical: 7,
-                                                                horizontal: 8),
-                                                        decoration: BoxDecoration(
-                                                            color: const Color(
-                                                                    0xffB5C0CF)
-                                                                .withOpacity(.15),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(8)),
-                                                        child: Column(children: [
-                                                          Text(
-                                                              "${scripInfo.returnsGridview[index]['percent']}%",
-                                                              style: textStyle(
-                                                                  Color(scripInfo
-                                                                          .returnsGridview[
-                                                                              index]
-                                                                              [
-                                                                              'percent']
-                                                                          .toString()
-                                                                          .startsWith(
-                                                                              "-")
-                                                                      ? 0xffF44336
-                                                                      : 0xff43A833),
-                                                                  18,
-                                                                  FontWeight.w500)),
-                                                          const SizedBox(height: 4),
-                                                          Text(
-                                                              "${scripInfo.returnsGridview[index]['duration']}",
-                                                              textAlign:
-                                                                  TextAlign.center,
-                                                              style: textStyle(
-                                                                  const Color(
-                                                                      0xff666666),
-                                                                  12,
-                                                                  FontWeight.w500))
-                                                        ]));
-                                                  }))
+                                              const SizedBox(height: 6),
+                                              Row(children: [
+                                                Expanded(
+                                                    child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                      Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Text("Qty",
+                                                                style: textStyle(
+                                                                    const Color(
+                                                                        0XFF506D84),
+                                                                    13,
+                                                                    FontWeight
+                                                                        .w600)),
+                                                            Text("Bid",
+                                                                style: textStyle(
+                                                                    const Color(
+                                                                        0xff43A833),
+                                                                    13,
+                                                                    FontWeight
+                                                                        .w600))
+                                                          ]),
+                                                      const SizedBox(height: 7),
+                                                      depthPercentageBuy(
+                                                          "${depthData.bq1 ?? 0}",
+                                                          "${depthData.bp1 ?? 0.00}",
+                                                          scripInfo,
+                                                          theme),
+                                                      const SizedBox(height: 6),
+                                                      depthPercentageBuy(
+                                                          "${depthData.bq2 ?? 0}",
+                                                          "${depthData.bp2 ?? 0.00}",
+                                                          scripInfo,
+                                                          theme),
+                                                      const SizedBox(height: 6),
+                                                      depthPercentageBuy(
+                                                          "${depthData.bq3 ?? 0}",
+                                                          "${depthData.bp3 ?? 0.00}",
+                                                          scripInfo,
+                                                          theme),
+                                                      const SizedBox(height: 6),
+                                                      depthPercentageBuy(
+                                                          "${depthData.bq4 ?? 0}",
+                                                          "${depthData.bp4 ?? 0.00}",
+                                                          scripInfo,
+                                                          theme),
+                                                      const SizedBox(height: 6),
+                                                      depthPercentageBuy(
+                                                          "${depthData.bq5 ?? 0}",
+                                                          "${depthData.bp5 ?? 0.00}",
+                                                          scripInfo,
+                                                          theme)
+                                                    ])),
+                                                const SizedBox(width: 20),
+                                                Expanded(
+                                                    child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                      Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Text("Ask",
+                                                                style: textStyle(
+                                                                    colors
+                                                                        .darkred,
+                                                                    13,
+                                                                    FontWeight
+                                                                        .w600)),
+                                                            Text("Qty",
+                                                                style: textStyle(
+                                                                    const Color(
+                                                                        0XFF506D84),
+                                                                    13,
+                                                                    FontWeight
+                                                                        .w600))
+                                                          ]),
+                                                      const SizedBox(height: 7),
+                                                      depthPercentageSell(
+                                                          "${depthData.sq1 ?? 0}",
+                                                          "${depthData.sp1 ?? 0.00}",
+                                                          scripInfo,
+                                                          theme),
+                                                      const SizedBox(height: 6),
+                                                      depthPercentageSell(
+                                                          "${depthData.sq2 ?? 0}",
+                                                          "${depthData.sp2 ?? 0.00}",
+                                                          scripInfo,
+                                                          theme),
+                                                      const SizedBox(height: 6),
+                                                      depthPercentageSell(
+                                                          "${depthData.sq3 ?? 0}",
+                                                          "${depthData.sp3 ?? 0.00}",
+                                                          scripInfo,
+                                                          theme),
+                                                      const SizedBox(height: 6),
+                                                      depthPercentageSell(
+                                                          "${depthData.sq4 ?? 0}",
+                                                          "${depthData.sp4 ?? 0.00}",
+                                                          scripInfo,
+                                                          theme),
+                                                      const SizedBox(height: 6),
+                                                      depthPercentageSell(
+                                                          "${depthData.sq5 ?? 0}",
+                                                          "${depthData.sp5 ?? 0.00}",
+                                                          scripInfo,
+                                                          theme)
+                                                    ]))
+                                              ]),
+                                              const SizedBox(height: 10),
+                                              Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                        "${depthData.tbq ?? 0}",
+                                                        style: textStyle(
+                                                            theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            15,
+                                                            FontWeight.w600)),
+                                                    Text(
+                                                        "${depthData.tsq ?? 0}",
+                                                        style: textStyle(
+                                                            theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            15,
+                                                            FontWeight.w600))
+                                                  ]),
+                                              const SizedBox(height: 6),
+                                              LinearPercentIndicator(
+                                                  leading: Text("${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%",
+                                                      style: textStyle(
+                                                          theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
+                                                          14,
+                                                          FontWeight.w500)),
+                                                  trailing: Text(
+                                                      "${scripInfo.totSellQtyPer.toStringAsFixed(2)}%",
+                                                      style: textStyle(
+                                                          theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
+                                                          14,
+                                                          FontWeight.w500)),
+                                                  lineHeight: 12.0,
+                                                  barRadius:
+                                                      const Radius.circular(4),
+                                                  backgroundColor: (scripInfo
+                                                                  .totBuyQtyPer
+                                                                  .toStringAsFixed(
+                                                                      2) ==
+                                                              "0.00" &&
+                                                          scripInfo.totSellQtyPer
+                                                                  .toStringAsFixed(2) ==
+                                                              "0.00")
+                                                      ? const Color(0xffECEDEE)
+                                                      : const Color(0XFFD34645),
+                                                  percent: scripInfo.totBuyQtyPerChng,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                                                  progressColor: const Color(0xff43A833)),
+                                              const SizedBox(height: 5),
+                                              Divider(
+                                                  color: theme.isDarkMode
+                                                      ? colors.darkColorDivider
+                                                      : colors.colorDivider)
+                                            ],
+                                            const SizedBox(height: 4),
+                                            if ((widget.wlValue.instname !=
+                                                    "UNDIND" &&
+                                                widget.wlValue.instname !=
+                                                    "COM")) ...[
+                                              rowOfInfoData(
+                                                  "Avg Price",
+                                                  "${depthData.ap ?? 0.00}",
+                                                  "Volume",
+                                                  "${depthData.v ?? 0.00}",
+                                                  theme),
+                                              const SizedBox(height: 4),
+                                              rowOfInfoData(
+                                                  "Lower Circuit",
+                                                  "${depthData.lc ?? 0.00}",
+                                                  "Upper Circuit",
+                                                  "${depthData.uc ?? 0.00}",
+                                                  theme),
+                                              const SizedBox(height: 4),
+                                              rowOfInfoData(
+                                                  "Last Trade Qty",
+                                                  "${depthData.ltq ?? 0}",
+                                                  "Last Trade Time",
+                                                  depthData.ltt ?? "--",
+                                                  theme),
+                                              const SizedBox(height: 4),
+                                              if (depthData.seg != "EQT") ...[
+                                                rowOfInfoData(
+                                                    "Open Intrest",
+                                                    "${depthData.oi ?? 0.00}",
+                                                    "Change in OI",
+                                                    "${depthData.poi ?? 0.00}",
+                                                    theme),
+                                                const SizedBox(height: 4),
+                                              ],
+                                              if (scripInfo.returnsGridview
+                                                  .isNotEmpty) ...[
+                                                Text("Returns",
+                                                    style: textStyle(
+                                                        theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                                                        14,
+                                                        FontWeight.w600)),
+                                                const SizedBox(height: 8),
+                                                GridView.count(
+                                                    crossAxisCount: 3,
+                                                    physics:
+                                                        const NeverScrollableScrollPhysics(),
+                                                    shrinkWrap: true,
+                                                    crossAxisSpacing: 12,
+                                                    mainAxisSpacing: 10,
+                                                    childAspectRatio: 1.8,
+                                                    children: List.generate(
+                                                        scripInfo
+                                                            .returnsGridview
+                                                            .length, (index) {
+                                                      return Container(
+                                                          width: 120,
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  vertical: 7,
+                                                                  horizontal:
+                                                                      8),
+                                                          decoration: BoxDecoration(
+                                                              color: const Color(
+                                                                      0xffB5C0CF)
+                                                                  .withOpacity(
+                                                                      .15),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8)),
+                                                          child: Column(
+                                                              children: [
+                                                                Text(
+                                                                    "${scripInfo.returnsGridview[index]['percent']}%",
+                                                                    style: textStyle(
+                                                                        Color(scripInfo.returnsGridview[index]['percent'].toString().startsWith("-")
+                                                                            ? 0xffF44336
+                                                                            : 0xff43A833),
+                                                                        18,
+                                                                        FontWeight
+                                                                            .w500)),
+                                                                const SizedBox(
+                                                                    height: 4),
+                                                                Text(
+                                                                    "${scripInfo.returnsGridview[index]['duration']}",
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .center,
+                                                                    style: textStyle(
+                                                                        const Color(
+                                                                            0xff666666),
+                                                                        12,
+                                                                        FontWeight
+                                                                            .w500))
+                                                              ]));
+                                                    }))
+                                              ]
                                             ]
-                                          ]
-                                        ]))
-                              ] else if (scripInfo.actDeptBtn == "Fundamental") ...[
-                                if (context
-                                        .read(marketWatchProvider)
-                                        .fundamentalData!
-                                        .msg
-                                        .toString() !=
-                                    "no data found") ...[
-                                  const SizedBox(height: 10),
-                                  const FundamentalDataWidget(),
-                                ] else ...[
-                                  const NoDataFound()
-                                ]
-                              ] else if (scripInfo.actDeptBtn == "Chart") ...[
-                                ChartScreenWebView(
-                                    chartArgs: chartArgs!, cHeight: 1.48)
-                              ] else if (scripInfo.actDeptBtn == "Option") ...[
-                                if (scripInfo.isLoad)
-                                  const Center(
-                                      child: CircularProgressIndicator(
-                                          color: Color(0xff0037B7)))
-                                else
+                                          ]))
+                                ] else if (scripInfo.actDeptBtn ==
+                                    "Fundamental") ...[
+                                  if (context
+                                          .read(marketWatchProvider)
+                                          .fundamentalData!
+                                          .msg
+                                          .toString() !=
+                                      "no data found") ...[
+                                    const SizedBox(height: 10),
+                                    const FundamentalDataWidget(),
+                                  ] else ...[
+                                    const NoDataFound()
+                                  ]
+                                ] else if (scripInfo.actDeptBtn == "Chart") ...[
+                                  ChartScreenWebView(
+                                      chartArgs: chartArgs!, cHeight: 1.48)
+                                ] else if (scripInfo.actDeptBtn ==
+                                    "Option") ...[
+                                  if (scripInfo.isLoad)
+                                    const Center(
+                                        child: CircularProgressIndicator(
+                                            color: Color(0xff0037B7)))
+                                  else
+                                    Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12.0),
+                                        child: Row(children: <Widget>[
+                                          Flexible(
+                                            child: OptChainCallList(
+                                                callData:
+                                                    scripInfo.optChainCallUP,
+                                                isCallUp: true),
+                                          ),
+                                          SizedBox(
+                                            width: 100,
+                                            child: StrikePriceListCard(
+                                                strike:
+                                                    scripInfo.optChainCallUP,
+                                                isCallUp: true),
+                                          ),
+                                          Flexible(
+                                            child: OptChainPutList(
+                                                putData:
+                                                    scripInfo.optChainPutUp,
+                                                isPutUp: true),
+                                          )
+                                        ])),
+                                  CurStrkprice(
+                                      token: depthData.undTk ??
+                                          depthData.token ??
+                                          "0.00"),
                                   Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12.0),
-                                      child: Row(children: <Widget>[
-                                        Flexible(
-                                          child: OptChainCallList(
-                                              callData: scripInfo.optChainCallUP,
-                                              isCallUp: true),
-                                        ),
-                                        SizedBox(
-                                          width: 100,
-                                          child: StrikePriceListCard(
-                                              strike: scripInfo.optChainCallUP,
-                                              isCallUp: true),
-                                        ),
-                                        Flexible(
-                                          child: OptChainPutList(
-                                              putData: scripInfo.optChainPutUp,
-                                              isPutUp: true),
-                                        )
-                                      ])),
-                                CurStrkprice(
-                                    token: depthData.undTk ??
-                                        depthData.token ??
-                                        "0.00"),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 12.0),
-                                  child: Row(children: [
-                                    Flexible(
-                                      child: OptChainCallList(
-                                          callData: scripInfo.optChainCallDown,
-                                          isCallUp: false),
-                                    ),
-                                    SizedBox(
-                                      width: 100,
-                                      child: StrikePriceListCard(
-                                          strike: scripInfo.optChainCallDown,
-                                          isCallUp: false),
-                                    ),
-                                    Flexible(
-                                      child: OptChainPutList(
-                                          putData: scripInfo.optChainPutDown,
-                                          isPutUp: false),
-                                    )
-                                  ]),
-                                )
-                              ] else if (scripInfo.actDeptBtn == "Future") ...[
-                                const FutureScreen()
-                              ] else if (scripInfo.actDeptBtn == "Set Alert") ...[
-                                SetAlert(
-                                    depthdata: depthData, wlvalue: widget.wlValue)
-                              ]
-                            ])),
-                        
-                    if (!scripInfo.scripDepthloader && widget.wlValue.instname != "UNDIND" &&
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0),
+                                    child: Row(children: [
+                                      Flexible(
+                                        child: OptChainCallList(
+                                            callData:
+                                                scripInfo.optChainCallDown,
+                                            isCallUp: false),
+                                      ),
+                                      SizedBox(
+                                        width: 100,
+                                        child: StrikePriceListCard(
+                                            strike: scripInfo.optChainCallDown,
+                                            isCallUp: false),
+                                      ),
+                                      Flexible(
+                                        child: OptChainPutList(
+                                            putData: scripInfo.optChainPutDown,
+                                            isPutUp: false),
+                                      )
+                                    ]),
+                                  )
+                                ] else if (scripInfo.actDeptBtn ==
+                                    "Future") ...[
+                                  const FutureScreen()
+                                ] else if (scripInfo.actDeptBtn ==
+                                    "Set Alert") ...[
+                                  SetAlert(
+                                      depthdata: depthData,
+                                      wlvalue: widget.wlValue)
+                                ]
+                              ])),
+
+                    if (!scripInfo.scripDepthloader &&
+                        widget.wlValue.instname != "UNDIND" &&
                         widget.wlValue.instname != "COM")
                       scripInfo.actDeptBtn == "Set Alert"
                           ? Container()
@@ -1375,13 +1409,11 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                 0XFFFFFFFF),
                                                             16,
                                                             FontWeight
-                                                                .w600)))))
-                                                                )
+                                                                .w600))))))
                                   ])),
                     const SizedBox(height: 18)
                     //   ],
                     // ),
-                  
                   ]),
             );
           });

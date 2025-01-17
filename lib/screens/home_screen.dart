@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 // This is a websockt heartbeat connection that reconnects every two seconds only.
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
-        print("websocket ${context.read(websocketProvider).wsConnected}");
+        // print("websocket ${context.read(websocketProvider).wsConnected}");
         context.read(websocketProvider).reconnectWS();
         // context.read(websocketProvider).startPingCheck(context);
       }
