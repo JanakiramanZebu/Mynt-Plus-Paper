@@ -1260,9 +1260,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 child: AnimatedContainer(
                                   duration: const Duration(
                                       milliseconds:
-                                          300), // Smooth animation when appearing/disappearing
-
-                                  // padding: EdgeInsets.symmetric(vertical: ),
+                                          300),
                                   decoration: BoxDecoration(
                                     color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                                     borderRadius: const BorderRadius.only(
