@@ -428,15 +428,16 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 if (scripInfo.depthBtns[index]
                                                         ['btnName'] ==
                                                     "Chart") {
-                                                      userProfile
+                                                  Navigator.pop(context);
+
+                                                  userProfile
                                                       .setChartdialog(true);
                                                   await ConstantName
                                                       .webViewController!
                                                       .evaluateJavascript(
                                                           source:
-                                                              "window.changeScript('${widget.wlValue.exch}:${widget.wlValue.tsym}',${widget.wlValue.token})");
+                                                              "window.changeScript('${widget.wlValue.exch}:${widget.wlValue.tsym}',${widget.wlValue.token}, '${theme.isDarkMode ? 'Y' : 'N'}')");
                                                   // "window.tvWidget.activeChart().setSymbol('${widget.wlValue.exch}:${widget.wlValue.tsym}')");
-                                                  Navigator.pop(context);
                                                   // userProfile.setChartdialog(true);
                                                   // Navigator.push(
                                                   //   context,

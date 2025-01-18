@@ -166,9 +166,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           final websocket = watch(websocketProvider);
           final theme = context.read(themeProvider);
 
-          final chartArgs =
-              ChartArgs(exch: 'NSE', tsym: 'IOC-EQ', token: '1624');
-
           return GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               child:
@@ -1260,22 +1257,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     : -200, // Position the bottom sheet off-screen when false
                                 left: 0,
                                 right: 0,
-                                child: Container(
+                                child: AnimatedContainer(
+                                  duration: const Duration(
+                                      milliseconds:
+                                          300), // Smooth animation when appearing/disappearing
+
                                   // padding: EdgeInsets.symmetric(vertical: ),
                                   decoration: BoxDecoration(
-                                      color: theme.isDarkMode
-                                          ? colors.colorBlack
-                                          : colors.colorWhite,
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(24),
-                                        topRight: Radius.circular(24),
-                                      ),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                            color: Color(0xff999999),
-                                            blurRadius: 4.0,
-                                            offset: Offset(2.0, 0.0))
-                                      ]),
+                                    color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(24),
+                                      topRight: Radius.circular(24),
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color:  theme.isDarkMode ? const Color.fromARGB(100, 100, 100, 100) : const Color.fromARGB(100, 0, 0, 0),
+                                          blurRadius: 10,
+                                          spreadRadius: 100,
+                                          offset: const Offset(0, -6)),
+                                    ],
+                                  ),
 
                                   height: userProfile.showchartof
                                       ? MediaQuery.of(context).size.height
@@ -1301,9 +1302,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       : colors.colorWhite,
                                                   size: 32,
                                                 ), // Back icon
-                                                onPressed: () {
+                                                onPressed: () async {
                                                   userProfile.setChartdialog(
                                                       !userProfile.showchartof);
+                                                  await ConstantName
+                                                      .webViewController!
+                                                      .evaluateJavascript(
+                                                          source:
+                                                              "window.changeScript('ABC:ABCD',0123, '${theme.isDarkMode ? 'Y' : 'N'}')");
                                                 },
                                               )
                                             ],
@@ -1311,7 +1317,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ),
                                       ChartScreenWebView(
-                                          chartArgs: chartArgs, cHeight: 1.3),
+                                          chartArgs: ChartArgs(
+                                              exch: 'ABC',
+                                              tsym: 'ABCD',
+                                              token: '0123'),
+                                          cHeight: 1.3),
                                       // ElevatedButton(
                                       //   onPressed: () {
                                       //     userProfile.setChartdialog(

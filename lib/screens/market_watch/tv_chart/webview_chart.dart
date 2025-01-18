@@ -280,7 +280,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
           url: WebUri(
             "https://tv-chart-new.firebaseapp.com/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
             "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
-            "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}",
+            "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}&showseries=Y",
           ),
         ),
         initialOptions: InAppWebViewGroupOptions(
