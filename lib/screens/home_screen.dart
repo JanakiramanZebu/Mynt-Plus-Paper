@@ -1271,10 +1271,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                          color:  theme.isDarkMode ? const Color.fromARGB(100, 100, 100, 100) : const Color.fromARGB(100, 0, 0, 0),
-                                          blurRadius: 10,
-                                          spreadRadius: 100,
-                                          offset: const Offset(0, -6)),
+                                          color:  theme.isDarkMode ? const Color.fromARGB(100, 100,100, 100) : const Color.fromARGB(100, 0, 0, 0),
+                                          blurRadius: theme.isDarkMode ? 5 : 10,
+                                          spreadRadius: theme.isDarkMode ? 1 : 100,
+                                          offset: Offset(0, theme.isDarkMode ? -3 : -6)),
                                     ],
                                   ),
 
