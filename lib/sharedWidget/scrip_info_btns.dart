@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
-import '../../res/res.dart'; 
+import '../../res/res.dart';
+import '../locator/constant.dart';
 import '../models/marketwatch_model/get_quotes.dart';
 import '../provider/market_watch_provider.dart';
-import '../screens/market_watch/scrip_depth_info.dart'; 
-
+import '../provider/user_profile_provider.dart';
+import '../screens/market_watch/scrip_depth_info.dart';
 
 // Common methods for visible scrip information buttons, such as overview, chart, option chain, and others, are covered in this class.
 
@@ -25,12 +26,23 @@ class ScripInfoBtns extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final marketwatch = watch(marketWatchProvider);
-       final theme = context.read(themeProvider);
+    final userProfile = watch(userProfileProvider);
+    final theme = context.read(themeProvider);
     return Container(
         padding: const EdgeInsets.only(left: 14, top: 8, bottom: 8),
         height: 50,
-        decoration:   BoxDecoration( 
-            border: Border(top: BorderSide(color:theme.isDarkMode?colors.darkColorDivider: colors.colorDivider,width: 0),bottom: BorderSide(color:theme.isDarkMode?colors.darkColorDivider: colors.colorDivider,width: 0))),
+        decoration: BoxDecoration(
+            border: Border(
+                top: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider,
+                    width: 0),
+                bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider,
+                    width: 0))),
         child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: marketwatch.depthBtns.length,
@@ -38,14 +50,38 @@ class ScripInfoBtns extends ConsumerWidget {
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                    color: theme.isDarkMode  ?   const Color(
-                                                                  0xffB5C0CF)
-                                                              .withOpacity(.15): const Color( 0xffF1F3F8), 
+                    color: theme.isDarkMode
+                        ? const Color(0xffB5C0CF).withOpacity(.15)
+                        : const Color(0xffF1F3F8),
                     borderRadius: BorderRadius.circular(98)),
                 child: InkWell(
                     onTap: () async {
                       print(marketwatch.depthBtns[index]['btnName']);
+                      marketwatch.singlePageloader(true);
 
+                      if (marketwatch.depthBtns[index]['btnName'] != "Chart") {
+                        DepthInputArgs depthArgs = DepthInputArgs(
+                            exch: exch,
+                            token: token,
+                            tsym: '${marketwatch.getQuotes!.tsym}',
+                            instname: marketwatch.getQuotes!.instname ?? "",
+                            symbol: '${marketwatch.getQuotes!.symbol}',
+                            expDate: '${marketwatch.getQuotes!.expDate}',
+                            option: '${marketwatch.getQuotes!.option}');
+
+                        showModalBottomSheet(
+                            barrierColor: Colors.transparent,
+                            isScrollControlled: true,
+                            useSafeArea: true,
+                            isDismissible: true,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16))),
+                            backgroundColor: const Color(0xffffffff),
+                            context: context,
+                            builder: (context) => ScripDepthInfo(
+                                wlValue: depthArgs, isBasket: ''));
+                      }
                       if (marketwatch.depthBtns[index]['btnName'] == "Option") {
                         // if ((marketwatch.getQuotes!.exch ==
                         //             "NSE" ||
@@ -88,6 +124,13 @@ class ScripInfoBtns extends ConsumerWidget {
                           "Future") {
                         await marketwatch.requestWSFut(
                             context: context, isSubscribe: true);
+                      } else if (marketwatch.depthBtns[index]['btnName'] ==
+                          "Chart") {
+                        Navigator.pop(context);
+                        userProfile.setChartdialog(true);
+                        await ConstantName.webViewController!.evaluateJavascript(
+                            source:
+                                "window.changeScript('$exch:${marketwatch.getQuotes?.tsym}',$token, '${theme.isDarkMode ? 'Y' : 'N'}')");
                       }
 
                       marketwatch
@@ -111,39 +154,24 @@ class ScripInfoBtns extends ConsumerWidget {
                         }
                         marketwatch.chngshareHold("Promoter Holding");
                       }
-
-                      DepthInputArgs depthArgs = DepthInputArgs(
-                          exch: exch,
-                          token: token,
-                          tsym: '${marketwatch.getQuotes!.tsym}',
-                          instname: marketwatch.getQuotes!.instname ?? "",
-                          symbol: '${marketwatch.getQuotes!.symbol}',
-                          expDate: '${marketwatch.getQuotes!.expDate}',
-                          option: '${marketwatch.getQuotes!.option}');
-
-                      showModalBottomSheet(
-                          barrierColor: Colors.transparent,
-                          isScrollControlled: true,
-                          useSafeArea: true,
-                          isDismissible: true,
-                          shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(16))),
-                          backgroundColor: const Color(0xffffffff),
-                          context: context,
-                          builder: (context) =>
-                              ScripDepthInfo(wlValue: depthArgs, isBasket: ''));
+                      marketwatch.singlePageloader(false);
                     },
                     child: Row(
                       children: [
                         SvgPicture.asset(
                           "${marketwatch.depthBtns[index]['imgPath']}",
-                          color:  theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
                         ),
                         const SizedBox(width: 8),
                         Text("${marketwatch.depthBtns[index]['btnName']}",
                             style: textStyle(
-                                theme.isDarkMode?colors.colorWhite:colors.colorBlack, 12.5, FontWeight.w500))
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                12.5,
+                                FontWeight.w500))
                       ],
                     )),
               );

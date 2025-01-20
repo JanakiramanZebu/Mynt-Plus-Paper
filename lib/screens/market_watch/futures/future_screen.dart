@@ -9,7 +9,7 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/list_divider.dart';
-import '../scrip_depth_info.dart'; 
+import '../scrip_depth_info.dart';
 
 class FutureScreen extends ConsumerWidget {
   const FutureScreen({super.key});
@@ -68,40 +68,49 @@ class FutureScreen extends ConsumerWidget {
         }
         return InkWell(
             onTap: () async {
-              await context.read(marketWatchProvider).fetchLinkeScrip(
-                  "${future.fut![index].token}", "${future.fut![index].exch}",context);
+              watch(marketWatchProvider).singlePageloader(true);
+              Navigator.pop(context);
 
-              await watch(marketWatchProvider).fetchScripQuote(
-                  "${future.fut![index].token}",
-                  "${future.fut![index].exch}",
-                  context);
+              DepthInputArgs depthArgs = DepthInputArgs(
+                  exch: '${future.fut![index].exch}',
+                  token: '${future.fut![index].token}',
+                  tsym: '${future.fut![index].tsym}',
+                  instname: "",
+                  symbol: '${future.fut![index].symbol}',
+                  expDate: '${future.fut![index].expDate}',
+                  option: '${future.fut![index].option}');
+              showModalBottomSheet(
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  isDismissible: true,
+                  shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(16))),
+                  backgroundColor: const Color(0xffffffff),
+                  context: context,
+                  builder: (context) => ScripDepthInfo(
+                        wlValue: depthArgs,
+                        isBasket: '',
+                      ));
+
               await watch(websocketProvider).establishConnection(
                   channelInput:
                       "${future.fut![index].exch}|${future.fut![index].token}",
                   task: "d",
                   context: context);
+              await watch(marketWatchProvider).fetchScripQuote(
+                  "${future.fut![index].token}",
+                  "${future.fut![index].exch}",
+                  context);
 
               if (watch(marketWatchProvider).getQuotes!.stat == "Ok") {
-                DepthInputArgs depthArgs = DepthInputArgs(
-                    exch: '${future.fut![index].exch}',
-                    token: '${future.fut![index].token}',
-                    tsym: '${future.fut![index].tsym}',
-                    instname: "",
-                    symbol: '${future.fut![index].symbol}',
-                    expDate: '${future.fut![index].expDate}',
-                    option: '${future.fut![index].option}');
-                Navigator.pop(context);
-                showModalBottomSheet(
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    isDismissible: true,
-                    shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(16))),
-                    backgroundColor: const Color(0xffffffff),
-                    context: context,
-                    builder: (context) => ScripDepthInfo(wlValue: depthArgs, isBasket: '',));
+                await context.read(marketWatchProvider).fetchLinkeScrip(
+                    "${future.fut![index].token}",
+                    "${future.fut![index].exch}",
+                    context);
               }
+              watch(marketWatchProvider).singlePageloader(false);
+
             },
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -144,9 +153,11 @@ class FutureScreen extends ConsumerWidget {
                   Text(
                       "₹${future.fut![index].ltp ?? future.fut![index].close ?? 0.00}",
                       style: textStyle(
-                       theme.isDarkMode
+                          theme.isDarkMode
                               ? colors.colorWhite
-                              : colors.colorBlack, 14, FontWeight.w600)),
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w600)),
                   const SizedBox(height: 4),
                   Text(
                     "${future.fut![index].change == "null" ? "0.00 " : double.parse("${future.fut![index].change}").toStringAsFixed(2)} "

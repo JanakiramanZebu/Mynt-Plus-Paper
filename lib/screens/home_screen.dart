@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import '../locator/constant.dart';
+import '../models/marketwatch_model/get_quotes.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
@@ -22,6 +23,7 @@ import '../sharedWidget/internet_widget.dart';
 import 'bonds/bond_screen.dart';
 import 'ipo/ipo_main_screen.dart';
 import 'market_watch/index/index_screen.dart';
+import 'market_watch/scrip_depth_info.dart';
 import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen.dart';
@@ -1258,24 +1260,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 left: 0,
                                 right: 0,
                                 child: AnimatedContainer(
-                                  duration: const Duration(
-                                      milliseconds:
-                                          300),
+                                  duration: const Duration(milliseconds: 300),
                                   decoration: BoxDecoration(
-                                    color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                                    color: theme.isDarkMode
+                                        ? colors.colorBlack
+                                        : colors.colorWhite,
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(24),
                                       topRight: Radius.circular(24),
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                          color:  theme.isDarkMode ? const Color.fromARGB(100, 100,100, 100) : const Color.fromARGB(100, 0, 0, 0),
+                                          color: theme.isDarkMode
+                                              ? const Color.fromARGB(
+                                                  100, 100, 100, 100)
+                                              : const Color.fromARGB(
+                                                  100, 0, 0, 0),
                                           blurRadius: theme.isDarkMode ? 5 : 10,
-                                          spreadRadius: theme.isDarkMode ? 1 : 100,
-                                          offset: Offset(0, theme.isDarkMode ? -3 : -6)),
+                                          spreadRadius:
+                                              theme.isDarkMode ? 1 : 100,
+                                          offset: Offset(
+                                              0, theme.isDarkMode ? -3 : -6)),
                                     ],
                                   ),
-
                                   height: userProfile.showchartof
                                       ? MediaQuery.of(context).size.height
                                       : 0,
@@ -1301,8 +1308,93 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   size: 32,
                                                 ), // Back icon
                                                 onPressed: () async {
-                                                  userProfile.setChartdialog(
-                                                      !userProfile.showchartof);
+                                                  userProfile.setChartdialog(false);
+                                                  marketWatchList
+                                                      .chngDephBtn("Overview");
+                                                  marketWatchList
+                                                      .singlePageloader(true);
+
+                                                  DepthInputArgs depthArgs = DepthInputArgs(
+                                                      exch:
+                                                          '${marketWatchList.getQuotes?.exch}',
+                                                      token:
+                                                          '${marketWatchList.getQuotes?.token}',
+                                                      tsym:
+                                                          '${marketWatchList.getQuotes?.tsym}',
+                                                      instname: marketWatchList
+                                                              .getQuotes
+                                                              ?.instname ??
+                                                          "",
+                                                      symbol:
+                                                          '${marketWatchList.getQuotes?.symbol}',
+                                                      expDate:
+                                                          '${marketWatchList.getQuotes?.expDate}',
+                                                      option:
+                                                          '${marketWatchList.getQuotes?.option}');
+
+                                                  showModalBottomSheet(
+                                                      isScrollControlled: true,
+                                                      useSafeArea: true,
+                                                      isDismissible: true,
+                                                      shape: const RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.vertical(
+                                                                  top: Radius
+                                                                      .circular(
+                                                                          16))),
+                                                      context: context,
+                                                      builder: (context) =>
+                                                          Container(
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .only(
+                                                                bottom: MediaQuery.of(
+                                                                        context)
+                                                                    .viewInsets
+                                                                    .bottom,
+                                                              ),
+                                                              child: ScripDepthInfo(
+                                                                  wlValue:
+                                                                      depthArgs,
+                                                                  isBasket:
+                                                                      '')));
+
+                                                  if ((marketWatchList.getQuotes
+                                                                  ?.exch ==
+                                                              "NSE" ||
+                                                          marketWatchList
+                                                                  .getQuotes
+                                                                  ?.exch ==
+                                                              "BSE") &&
+                                                      (marketWatchList.getQuotes
+                                                              ?.instname
+                                                              .toString() !=
+                                                          "UNDIND")) {
+                                                    context
+                                                        .read(
+                                                            marketWatchProvider)
+                                                        .depthBtns
+                                                        .add({
+                                                      "btnName": "Fundamental",
+                                                      "imgPath": assets.dInfo,
+                                                      "case":
+                                                          "Click here to view fundamental data."
+                                                    });
+                                                  }
+
+                                                  context
+                                                      .read(marketWatchProvider)
+                                                      .depthBtns
+                                                      .add({
+                                                    "btnName": "Set Alert",
+                                                    "imgPath":
+                                                        "assets/icon/calendar.svg",
+                                                    "case":
+                                                        "Click here to view the trading view chart."
+                                                  });
+                                                  marketWatchList
+                                                      .singlePageloader(false);
+
                                                   await ConstantName
                                                       .webViewController!
                                                       .evaluateJavascript(
