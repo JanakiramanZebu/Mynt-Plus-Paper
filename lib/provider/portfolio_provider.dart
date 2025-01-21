@@ -1215,7 +1215,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           element.profitNloss = double.parse(finpnl).toStringAsFixed(2);
         } else {
           var tempunpnl =
-              lastPrice != 0.0 ? lastPrice : double.parse(element.lp.toString()) - double.parse(element.netupldprc.toString());
+              (lastPrice != 0.0 ? lastPrice : double.parse(element.lp.toString())) - double.parse(element.netupldprc.toString());
           element.profitNloss = (double.parse(tempunpnl.toString()) * qty +
                   double.parse(element.temppnl.toString()))
               .toStringAsFixed(2);

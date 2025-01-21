@@ -88,13 +88,14 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     chartUpdateTimer =
         Timer.periodic(const Duration(milliseconds: 10), (timer) {
       final socketDatas = context.read(websocketProvider).socketDatas;
-      final tokenData = socketDatas[widget.chartArgs.token];
+      final depthData = context.read(marketWatchProvider).getQuotes!;
+      final tokenData = socketDatas[depthData.token];
 
       if (tokenData != null) {
         final json = {
           "t": "df",
-          "e": widget.chartArgs.exch,
-          "tk": widget.chartArgs.token,
+          "e": depthData.exch,
+          "tk": depthData.token,
           "lp": tokenData['lp']?.toString() ?? "0.00",
           "v": tokenData['v']?.toString() ?? "0.00",
         };
@@ -278,7 +279,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         },
         initialUrlRequest: URLRequest(
           url: WebUri(
-            "https://tv-chart-new.firebaseapp.com/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
+            "https://mtv-chart.web.app/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
             "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
             "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}&showseries=Y",
           ),
