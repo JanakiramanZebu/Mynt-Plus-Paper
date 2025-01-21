@@ -56,7 +56,7 @@ class TradeBookDetail extends StatelessWidget {
           ScripInfoBtns(
               exch: '${tradeData.exch}',
               token: '${tradeData.token}',
-              insName: ''),
+              insName: '', tsym: '${tradeData.tsym}'),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(

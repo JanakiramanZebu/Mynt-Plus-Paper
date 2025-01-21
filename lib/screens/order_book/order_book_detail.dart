@@ -102,7 +102,7 @@ class OrderBookDetail extends ConsumerWidget {
             ScripInfoBtns(
                 exch: '${orderBookData.exch}',
                 token: '${orderBookData.token}',
-                insName: ''),
+                insName: '', tsym: '${orderBookData.tsym}'),
             Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
@@ -129,6 +129,13 @@ class OrderBookDetail extends ConsumerWidget {
                           "${orderBookData.prc}",
                           "Avg.Price",
                           "${orderBookData.avgprc ?? 0.00}",
+                          theme),
+                            const SizedBox(height: 4),
+                      rowOfInfoData(
+                          "Trigger Price",
+                          "${orderBookData.trgprc ?? 0.00}",
+                          "",
+                          "",
                           theme),
                       const SizedBox(height: 4),
                       rowOfInfoData(
@@ -242,115 +249,115 @@ class OrderBookDetail extends ConsumerWidget {
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(children: [
                       
-                      if (orderBookData.sPrdtAli == "BO" ||
-                          orderBookData.sPrdtAli == "CO") ...[
-                        Expanded(
-                            child: SizedBox(
-                                height: 40,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      shadowColor: Colors.transparent,
-                                      elevation: 0,
-                                      backgroundColor: const Color(0XFFD34645),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(50),
-                                      )),
-                                  onPressed: () async {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            backgroundColor: theme.isDarkMode
-                                                ? const Color.fromARGB(
-                                                    255, 18, 18, 18)
-                                                : colors.colorWhite,
-                                            titleTextStyle: textStyles
-                                                .appBarTitleTxt
-                                                .copyWith(
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack),
-                                            contentTextStyle:
-                                                textStyles.menuTxt,
-                                            titlePadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 14,
-                                                    vertical: 12),
-                                            shape: const RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(14))),
-                                            scrollable: true,
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                              horizontal: 14,
-                                            ),
-                                            insetPadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 20),
-                                            title: const Text("Exit Position"),
-                                            content: SizedBox(
-                                              width: MediaQuery.of(context)
-                                                  .size
-                                                  .width,
-                                              child: const Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                      "Are you sure you want to exit a position ?")
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context)
-                                                          .pop(),
-                                                  child: Text("No",
-                                                      style: textStyles.textBtn.copyWith(
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .colorLightBlue
-                                                              : colors
-                                                                  .colorBlue))),
-                                              ElevatedButton(
-                                                onPressed: () async {
-                                                  await watch(orderProvider)
-                                                      .fetchExitSNOOrd(
-                                                          "${orderBookData.snonum}",
-                                                          "${orderBookData.prd}",
-                                                          context);
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                    elevation: 0,
-                                                    backgroundColor:
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              50),
-                                                    )),
-                                                child: Text("Yes",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorBlack
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
-                                              ),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  child: Text("Exit",
-                                      style: textStyle(const Color(0XFFFFFFFF),
-                                          14, FontWeight.w600)),
-                                )))
-                      ] else ...[
+                      // if (orderBookData.sPrdtAli == "BO" ||
+                      //     orderBookData.sPrdtAli == "CO") ...[
+                      //   Expanded(
+                      //       child: SizedBox(
+                      //           height: 40,
+                      //           child: ElevatedButton(
+                      //             style: ElevatedButton.styleFrom(
+                      //                 shadowColor: Colors.transparent,
+                      //                 elevation: 0,
+                      //                 backgroundColor: const Color(0XFFD34645),
+                      //                 shape: RoundedRectangleBorder(
+                      //                   borderRadius: BorderRadius.circular(50),
+                      //                 )),
+                      //             onPressed: () async {
+                      //               showDialog(
+                      //                   context: context,
+                      //                   builder: (BuildContext context) {
+                      //                     return AlertDialog(
+                      //                       backgroundColor: theme.isDarkMode
+                      //                           ? const Color.fromARGB(
+                      //                               255, 18, 18, 18)
+                      //                           : colors.colorWhite,
+                      //                       titleTextStyle: textStyles
+                      //                           .appBarTitleTxt
+                      //                           .copyWith(
+                      //                               color: theme.isDarkMode
+                      //                                   ? colors.colorWhite
+                      //                                   : colors.colorBlack),
+                      //                       contentTextStyle:
+                      //                           textStyles.menuTxt,
+                      //                       titlePadding:
+                      //                           const EdgeInsets.symmetric(
+                      //                               horizontal: 14,
+                      //                               vertical: 12),
+                      //                       shape: const RoundedRectangleBorder(
+                      //                           borderRadius: BorderRadius.all(
+                      //                               Radius.circular(14))),
+                      //                       scrollable: true,
+                      //                       contentPadding:
+                      //                           const EdgeInsets.symmetric(
+                      //                         horizontal: 14,
+                      //                       ),
+                      //                       insetPadding:
+                      //                           const EdgeInsets.symmetric(
+                      //                               horizontal: 20),
+                      //                       title: const Text("Exit Position"),
+                      //                       content: SizedBox(
+                      //                         width: MediaQuery.of(context)
+                      //                             .size
+                      //                             .width,
+                      //                         child: const Column(
+                      //                           crossAxisAlignment:
+                      //                               CrossAxisAlignment.start,
+                      //                           children: [
+                      //                             Text(
+                      //                                 "Are you sure you want to exit a position ?")
+                      //                           ],
+                      //                         ),
+                      //                       ),
+                      //                       actions: [
+                      //                         TextButton(
+                      //                             onPressed: () =>
+                      //                                 Navigator.of(context)
+                      //                                     .pop(),
+                      //                             child: Text("No",
+                      //                                 style: textStyles.textBtn.copyWith(
+                      //                                     color: theme
+                      //                                             .isDarkMode
+                      //                                         ? colors
+                      //                                             .colorLightBlue
+                      //                                         : colors
+                      //                                             .colorBlue))),
+                      //                         ElevatedButton(
+                      //                           onPressed: () async {
+                      //                             await watch(orderProvider)
+                      //                                 .fetchExitSNOOrd(
+                      //                                     "${orderBookData.snonum}",
+                      //                                     "${orderBookData.prd}",
+                      //                                     context);
+                      //                           },
+                      //                           style: ElevatedButton.styleFrom(
+                      //                               elevation: 0,
+                      //                               backgroundColor:
+                      //                                   theme.isDarkMode
+                      //                                       ? colors.colorWhite
+                      //                                       : colors.colorBlack,
+                      //                               shape:
+                      //                                   RoundedRectangleBorder(
+                      //                                 borderRadius:
+                      //                                     BorderRadius.circular(
+                      //                                         50),
+                      //                               )),
+                      //                           child: Text("Yes",
+                      //                               style: textStyle(
+                      //                                   theme.isDarkMode
+                      //                                       ? colors.colorBlack
+                      //                                       : colors.colorWhite,
+                      //                                   14,
+                      //                                   FontWeight.w500)),
+                      //                         ),
+                      //                       ],
+                      //                     );
+                      //                   });
+                      //             },
+                      //             child: Text("Exit",
+                      //                 style: textStyle(const Color(0XFFFFFFFF),
+                      //                     14, FontWeight.w600)),
+                      //           )))
+                      // ] else ...[
                         Expanded(
                           child: InkWell(
                             onTap: () async {
@@ -492,7 +499,7 @@ class OrderBookDetail extends ConsumerWidget {
                             ),
                           ),
                         ),
-                      ],
+                      // ],
                       const SizedBox(width: 16),
                        Expanded(
                         child: InkWell(

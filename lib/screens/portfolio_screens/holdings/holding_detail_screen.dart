@@ -140,7 +140,7 @@ class HoldingDetailScreen extends ConsumerWidget {
           ScripInfoBtns(
               exch: '${exchTsym.exch}',
               token: '${exchTsym.token}',
-              insName: ''),
+              insName: '', tsym: '${exchTsym.tsym}'),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(

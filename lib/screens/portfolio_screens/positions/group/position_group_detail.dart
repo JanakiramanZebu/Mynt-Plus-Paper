@@ -165,7 +165,7 @@ class PositionGroupDetail extends ConsumerWidget {
           ScripInfoBtns(
               exch: '${positionData['exch']}',
               token: '${positionData['token']}',
-              insName: ''),
+              insName: '', tsym: '${positionData['tysm']}'),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(

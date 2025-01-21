@@ -32,6 +32,8 @@ class ModifyOrderInput {
   String mktProt;
   String trgprc;
   String prctyp;
+  String blprc;
+  String bpprc;
   String ret;
 
   ModifyOrderInput(
@@ -44,6 +46,8 @@ class ModifyOrderInput {
       required this.prctyp,
       required this.qty,
       required this.ret,
+      required this.blprc,
+      required this.bpprc,
       required this.trgprc,
       required this.tsym});
 }

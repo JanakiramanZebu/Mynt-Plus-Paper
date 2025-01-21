@@ -85,7 +85,7 @@ class GttOrderDetail extends ConsumerWidget {
             ScripInfoBtns(
                 exch: '${gttOrderBook.exch}',
                 token: '${gttOrderBook.token}',
-                insName: ''),
+                insName: '', tsym: '${gttOrderBook.tsym}'),
             const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

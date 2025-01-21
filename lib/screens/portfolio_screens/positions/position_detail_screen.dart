@@ -207,7 +207,7 @@ class PositionDetailScreen extends ConsumerWidget {
           ScripInfoBtns(
               exch: '${positionList.exch}',
               token: '${positionList.token}',
-              insName: ''),
+              insName: '', tsym: '${positionList.tsym}'),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(

@@ -17,11 +17,13 @@ class ScripInfoBtns extends ConsumerWidget {
   final String token;
   final String exch;
   final String insName;
+  final String tsym;
   const ScripInfoBtns(
       {super.key,
       required this.exch,
       required this.token,
-      required this.insName});
+      required this.insName,
+      required this.tsym});
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
@@ -130,7 +132,7 @@ class ScripInfoBtns extends ConsumerWidget {
                         userProfile.setChartdialog(true);
                         await ConstantName.webViewController!.evaluateJavascript(
                             source:
-                                "window.changeScript('$exch:${marketwatch.getQuotes?.tsym}',$token, '${theme.isDarkMode ? 'Y' : 'N'}')");
+                                "window.changeScript('$exch:$tsym',$token, '${theme.isDarkMode ? 'Y' : 'N'}')");
                       }
 
                       marketwatch

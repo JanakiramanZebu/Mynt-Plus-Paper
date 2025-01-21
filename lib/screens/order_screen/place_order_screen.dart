@@ -3930,7 +3930,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
             ? "0"
             : ordPrice,
         prd: context.read(ordInputProvider).orderType,
-        qty: "${widget.scripInfo.ls}",
+        qty: qtyCtrl.text,
         trantype: isBuy! ? "B" : "S",
         tsym: "${widget.scripInfo.tsym}");
     context.read(orderProvider).fetchGetBrokerage(brokerageInput, context);

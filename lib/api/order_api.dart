@@ -36,7 +36,7 @@ mixin OrderAPI on ApiCore {
             ? placeOrderInput.tsym.replaceAll("&", "%26")
             : placeOrderInput.tsym,
         "qty": placeOrderInput.qty.replaceAll("-", ""),
-        "prc": placeOrderInput.prc,
+        "prc": (placeOrderInput.prctype == 'MKT' || placeOrderInput.prctype == 'SL-MKT') ? '0' : placeOrderInput.prc,
         "prd": placeOrderInput.prd,
         "trantype": placeOrderInput.trantype,
         "prctyp": placeOrderInput.prctype,
@@ -304,11 +304,14 @@ mixin OrderAPI on ApiCore {
             ? input.tsym.replaceAll("&", "%26")
             : input.tsym,
         "qty": input.qty.replaceAll("-", ""),
-        "prc": input.prc,
+        "prc": (input.prctyp == 'MKT' || input.prctyp == 'SL-MKT')  ? '0' : input.prc,
         "norenordno": input.orderNum,
         "prctyp": input.prctyp,
         "ret": input.ret,
+        "trgprc": input.trgprc,
         "dscqty": input.dscqty,
+        "blprc": input.blprc,
+        "bpprc": input.bpprc,
         "ordersource": ApiLinks.source
       };
 

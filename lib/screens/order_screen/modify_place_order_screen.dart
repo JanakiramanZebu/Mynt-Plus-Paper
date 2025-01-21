@@ -58,6 +58,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
 
   String prcType = "";
 
+  int frezQty = 0;
   int lotSize = 0;
   String price = "0.00";
   String validity = "DAY";
@@ -70,6 +71,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
       prcType == 'SL-LMT' ? true : false,
       prcType == 'SL-MKT' ? true : false
     ];
+    frezQty = int.parse(widget.scripInfo.frzqty ?? "0");
 
     setState(() {
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
@@ -81,6 +83,10 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
               ? "5"
               : widget.modifyOrderArgs.mktProtection!);
 
+      stopLossCtrl =
+          TextEditingController(text: "${widget.modifyOrderArgs.blprc ?? 0}");
+      targetCtrl =
+          TextEditingController(text: "${widget.modifyOrderArgs.bpprc ?? 0}");
       triggerPriceCtrl =
           TextEditingController(text: "${widget.modifyOrderArgs.trgprc ?? 0}");
       discQtyCtrl = TextEditingController(text: widget.modifyOrderArgs.dscqty);
@@ -175,22 +181,17 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                               ]),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               OrderScreenHeader(headerData: widget.orderArg),
-                                 Row(children: [
-
-                                    SvgPicture.asset(assets.buyIcon),
+                              Row(children: [
+                                SvgPicture.asset(assets.buyIcon),
                                 const SizedBox(width: 6),
                                 CustomSwitch(
-                                    onChanged: (bool value) {
-                                      
-                                    },
-                                    value: isBuy),
+                                    onChanged: (bool value) {}, value: isBuy),
                                 const SizedBox(width: 6),
                                 SvgPicture.asset(assets.sellIcon)
                               ])
-                           
                             ],
                           ),
                         ]),
@@ -378,39 +379,42 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             qtyCtrl.text =
                                                                 "$lotSize";
                                                           }
-                                                           OrderMarginInput input = OrderMarginInput(
-                                                          exch:
-                                                              "${widget.scripInfo.exch}",
-                                                          prc: isActivePrice[
-                                                                      1] ||
-                                                                  isActivePrice[
-                                                                      3]
-                                                              ? price
-                                                              : priceCtrl.text,
-                                                          prctyp: prcType,
-                                                          prd: widget
-                                                              .modifyOrderArgs
-                                                              .prd!,
-                                                          qty: qtyCtrl.text,
-                                                          rorgprc: '0',
-                                                          rorgqty: '0',
-                                                          trantype: widget
-                                                              .modifyOrderArgs
-                                                              .trantype!,
-                                                          tsym:
-                                                              "${widget.scripInfo.tsym}",
-                                                          blprc: '',
-                                                          trgprc: isActivePrice[
-                                                                      2] ||
-                                                                  isActivePrice[
-                                                                      3]
-                                                              ? triggerPriceCtrl
-                                                                  .text
-                                                              : "");
-                                                        context
-                                                          .read(orderProvider)
-                                                          .fetchOrderMargin(
-                                                              input, context);
+                                                          OrderMarginInput input = OrderMarginInput(
+                                                              exch:
+                                                                  "${widget.scripInfo.exch}",
+                                                              prc: isActivePrice[
+                                                                          1] ||
+                                                                      isActivePrice[
+                                                                          3]
+                                                                  ? price
+                                                                  : priceCtrl
+                                                                      .text,
+                                                              prctyp: prcType,
+                                                              prd: widget
+                                                                  .modifyOrderArgs
+                                                                  .prd!,
+                                                              qty: qtyCtrl.text,
+                                                              rorgprc: '0',
+                                                              rorgqty: '0',
+                                                              trantype: widget
+                                                                  .modifyOrderArgs
+                                                                  .trantype!,
+                                                              tsym:
+                                                                  "${widget.scripInfo.tsym}",
+                                                              blprc: '',
+                                                              trgprc: isActivePrice[
+                                                                          2] ||
+                                                                      isActivePrice[
+                                                                          3]
+                                                                  ? triggerPriceCtrl
+                                                                      .text
+                                                                  : "");
+                                                          context
+                                                              .read(
+                                                                  orderProvider)
+                                                              .fetchOrderMargin(
+                                                                  input,
+                                                                  context);
                                                         });
                                                       },
                                                       child: SvgPicture.asset(
@@ -439,39 +443,42 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             qtyCtrl.text =
                                                                 "$lotSize";
                                                           }
-                                                           OrderMarginInput input = OrderMarginInput(
-                                                          exch:
-                                                              "${widget.scripInfo.exch}",
-                                                          prc: isActivePrice[
-                                                                      1] ||
-                                                                  isActivePrice[
-                                                                      3]
-                                                              ? price
-                                                              : priceCtrl.text,
-                                                          prctyp: prcType,
-                                                          prd: widget
-                                                              .modifyOrderArgs
-                                                              .prd!,
-                                                          qty: qtyCtrl.text,
-                                                          rorgprc: '0',
-                                                          rorgqty: '0',
-                                                          trantype: widget
-                                                              .modifyOrderArgs
-                                                              .trantype!,
-                                                          tsym:
-                                                              "${widget.scripInfo.tsym}",
-                                                          blprc: '',
-                                                          trgprc: isActivePrice[
-                                                                      2] ||
-                                                                  isActivePrice[
-                                                                      3]
-                                                              ? triggerPriceCtrl
-                                                                  .text
-                                                              : "");
-                                                        context
-                                                          .read(orderProvider)
-                                                          .fetchOrderMargin(
-                                                              input, context);
+                                                          OrderMarginInput input = OrderMarginInput(
+                                                              exch:
+                                                                  "${widget.scripInfo.exch}",
+                                                              prc: isActivePrice[
+                                                                          1] ||
+                                                                      isActivePrice[
+                                                                          3]
+                                                                  ? price
+                                                                  : priceCtrl
+                                                                      .text,
+                                                              prctyp: prcType,
+                                                              prd: widget
+                                                                  .modifyOrderArgs
+                                                                  .prd!,
+                                                              qty: qtyCtrl.text,
+                                                              rorgprc: '0',
+                                                              rorgqty: '0',
+                                                              trantype: widget
+                                                                  .modifyOrderArgs
+                                                                  .trantype!,
+                                                              tsym:
+                                                                  "${widget.scripInfo.tsym}",
+                                                              blprc: '',
+                                                              trgprc: isActivePrice[
+                                                                          2] ||
+                                                                      isActivePrice[
+                                                                          3]
+                                                                  ? triggerPriceCtrl
+                                                                      .text
+                                                                  : "");
+                                                          context
+                                                              .read(
+                                                                  orderProvider)
+                                                              .fetchOrderMargin(
+                                                                  input,
+                                                                  context);
                                                         });
                                                       },
                                                       child: SvgPicture.asset(
@@ -495,39 +502,40 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                     context,
                                                                     "Quntity can not be empty"));
                                                       } else {
-                                                         OrderMarginInput input = OrderMarginInput(
-                                                          exch:
-                                                              "${widget.scripInfo.exch}",
-                                                          prc: isActivePrice[
-                                                                      1] ||
-                                                                  isActivePrice[
-                                                                      3]
-                                                              ? price
-                                                              : priceCtrl.text,
-                                                          prctyp: prcType,
-                                                          prd: widget
-                                                              .modifyOrderArgs
-                                                              .prd!,
-                                                          qty: qtyCtrl.text,
-                                                          rorgprc: '0',
-                                                          rorgqty: '0',
-                                                          trantype: widget
-                                                              .modifyOrderArgs
-                                                              .trantype!,
-                                                          tsym:
-                                                              "${widget.scripInfo.tsym}",
-                                                          blprc: '',
-                                                          trgprc: isActivePrice[
-                                                                      2] ||
-                                                                  isActivePrice[
-                                                                      3]
-                                                              ? triggerPriceCtrl
-                                                                  .text
-                                                              : "");
-                                                      context
-                                                          .read(orderProvider)
-                                                          .fetchOrderMargin(
-                                                              input, context);
+                                                        OrderMarginInput input = OrderMarginInput(
+                                                            exch:
+                                                                "${widget.scripInfo.exch}",
+                                                            prc: isActivePrice[
+                                                                        1] ||
+                                                                    isActivePrice[
+                                                                        3]
+                                                                ? price
+                                                                : priceCtrl
+                                                                    .text,
+                                                            prctyp: prcType,
+                                                            prd: widget
+                                                                .modifyOrderArgs
+                                                                .prd!,
+                                                            qty: qtyCtrl.text,
+                                                            rorgprc: '0',
+                                                            rorgqty: '0',
+                                                            trantype: widget
+                                                                .modifyOrderArgs
+                                                                .trantype!,
+                                                            tsym:
+                                                                "${widget.scripInfo.tsym}",
+                                                            blprc: '',
+                                                            trgprc: isActivePrice[
+                                                                        2] ||
+                                                                    isActivePrice[
+                                                                        3]
+                                                                ? triggerPriceCtrl
+                                                                    .text
+                                                                : "");
+                                                        context
+                                                            .read(orderProvider)
+                                                            .fetchOrderMargin(
+                                                                input, context);
                                                       }
                                                     },
                                                   ))
@@ -578,39 +586,43 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           }
                                                           setState(() {
                                                             price = value;
-                                                             OrderMarginInput input = OrderMarginInput(
-                                                          exch:
-                                                              "${widget.scripInfo.exch}",
-                                                          prc: isActivePrice[
-                                                                      1] ||
-                                                                  isActivePrice[
-                                                                      3]
-                                                              ? price
-                                                              : priceCtrl.text,
-                                                          prctyp: prcType,
-                                                          prd: widget
-                                                              .modifyOrderArgs
-                                                              .prd!,
-                                                          qty: qtyCtrl.text,
-                                                          rorgprc: '0',
-                                                          rorgqty: '0',
-                                                          trantype: widget
-                                                              .modifyOrderArgs
-                                                              .trantype!,
-                                                          tsym:
-                                                              "${widget.scripInfo.tsym}",
-                                                          blprc: '',
-                                                          trgprc: isActivePrice[
-                                                                      2] ||
-                                                                  isActivePrice[
-                                                                      3]
-                                                              ? triggerPriceCtrl
-                                                                  .text
-                                                              : "");
-                                                          context
-                                                          .read(orderProvider)
-                                                          .fetchOrderMargin(
-                                                              input, context);
+                                                            OrderMarginInput input = OrderMarginInput(
+                                                                exch:
+                                                                    "${widget.scripInfo.exch}",
+                                                                prc: isActivePrice[
+                                                                            1] ||
+                                                                        isActivePrice[
+                                                                            3]
+                                                                    ? price
+                                                                    : priceCtrl
+                                                                        .text,
+                                                                prctyp: prcType,
+                                                                prd: widget
+                                                                    .modifyOrderArgs
+                                                                    .prd!,
+                                                                qty: qtyCtrl
+                                                                    .text,
+                                                                rorgprc: '0',
+                                                                rorgqty: '0',
+                                                                trantype: widget
+                                                                    .modifyOrderArgs
+                                                                    .trantype!,
+                                                                tsym:
+                                                                    "${widget.scripInfo.tsym}",
+                                                                blprc: '',
+                                                                trgprc: isActivePrice[
+                                                                            2] ||
+                                                                        isActivePrice[
+                                                                            3]
+                                                                    ? triggerPriceCtrl
+                                                                        .text
+                                                                    : "");
+                                                            context
+                                                                .read(
+                                                                    orderProvider)
+                                                                .fetchOrderMargin(
+                                                                    input,
+                                                                    context);
                                                           });
                                                         }
                                                       },
@@ -688,60 +700,6 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                 context)
                                                             .hideCurrentSnackBar();
                                                         if (value.isNotEmpty) {
-                                                          if (widget
-                                                                  .modifyOrderArgs
-                                                                  .trantype ==
-                                                              "B") {
-                                                            if (double.parse(
-                                                                    value) <
-                                                                double.parse(
-                                                                    "${isActivePrice[3] ? price : widget.orderArg.ltp ?? 0.00}")) {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      warningMessage(
-                                                                          context,
-                                                                          "Trigger Should be Greater than Last Trade Price"));
-                                                            } else if (double
-                                                                    .parse(
-                                                                        value) <
-                                                                double.parse(
-                                                                    "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      warningMessage(
-                                                                          context,
-                                                                          "Trigger Should be Greater than Price"));
-                                                            }
-                                                          } else {
-                                                            if (double.parse(
-                                                                    value) >
-                                                                double.parse(
-                                                                    "${widget.orderArg.ltp ?? 0.00}")) {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      warningMessage(
-                                                                          context,
-                                                                          "Trigger Should be Lesser than Last Trade Price"));
-                                                            } else if (double
-                                                                    .parse(
-                                                                        value) >
-                                                                double.parse(
-                                                                    "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      warningMessage(
-                                                                          context,
-                                                                          "Trigger Should be Lesser than Price"));
-                                                            }
-                                                          }
                                                         } else {
                                                           ScaffoldMessenger.of(
                                                                   context)
@@ -1545,60 +1503,203 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                               ? "Trigger can not be empty"
                                                               : "Trigger can not be 0"));
                                                 } else {
-                                                  if (widget.modifyOrderArgs
-                                                          .trantype ==
-                                                      "B") {
-                                                    if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) <
-                                                        double.parse(
-                                                            "${isActivePrice[3] ? price : widget.modifyOrderArgs.ltp ?? 0.00}")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(warningMessage(
-                                                              context,
-                                                              isActivePrice[3]
-                                                                  ? "Trigger Should be Greater than Price"
-                                                                  : "Trigger Should be Greater than Last Trade Price"));
-                                                    } else if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) >
-                                                        double.parse(
-                                                            "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger Should be Greater than Price"));
+                                                  if (isBuy) {
+                                                    if (isActivePrice[3]) {
+                                                      if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) <
+                                                          double.parse(widget
+                                                                  .orderArg
+                                                                  .ltp ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger should be greater than LTP"));
+                                                      } else if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) >
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .uc ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                      } else {
+                                                        if ((int.parse(qtyCtrl
+                                                                        .text
+                                                                        .isEmpty
+                                                                    ? "0"
+                                                                    : qtyCtrl
+                                                                        .text) >
+                                                                frezQty &&
+                                                            widget.scripInfo
+                                                                    .frzqty !=
+                                                                null)) {
+                                                          modifyOrder();
+                                                        } else {
+                                                          modifyOrder();
+                                                        }
+                                                      }
                                                     } else {
-                                                      modifyOrder();
+                                                      if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) <
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .lc ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                      } else if (double.parse(
+                                                              price) <
+                                                          double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text)) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger should be less than price"));
+                                                      } else if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) >
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .uc ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                      } else {
+                                                        if ((int.parse(qtyCtrl
+                                                                        .text
+                                                                        .isEmpty
+                                                                    ? "0"
+                                                                    : qtyCtrl
+                                                                        .text) >
+                                                                frezQty &&
+                                                            widget.scripInfo
+                                                                    .frzqty !=
+                                                                null)) {
+                                                          modifyOrder();
+                                                        } else {
+                                                          modifyOrder();
+                                                        }
+                                                      }
                                                     }
                                                   } else {
-                                                    if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) >
-                                                        double.parse(
-                                                            "${isActivePrice[3] ? price : widget.modifyOrderArgs.ltp ?? 0.00}")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger Should be Lesser than Last Trade Price"));
-                                                    } else if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) >
-                                                        double.parse(
-                                                            "${priceCtrl.text.isEmpty ? 0.00 : priceCtrl.text == "Market" ? price : priceCtrl.text}")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger Should be Lesser than Price"));
+                                                    if (isActivePrice[3]) {
+                                                      if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) >
+                                                          double.parse(widget
+                                                                  .orderArg
+                                                                  .ltp ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger should be lesser than LTP"));
+                                                      } else if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) <
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .lc ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                      } else {
+                                                        if ((int.parse(qtyCtrl
+                                                                        .text
+                                                                        .isEmpty
+                                                                    ? "0"
+                                                                    : qtyCtrl
+                                                                        .text) >
+                                                                frezQty &&
+                                                            widget.scripInfo
+                                                                    .frzqty !=
+                                                                null)) {
+                                                          modifyOrder();
+                                                        } else {
+                                                          modifyOrder();
+                                                        }
+                                                      }
                                                     } else {
-                                                      modifyOrder();
+                                                      if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) >
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .uc ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                      } else if (double.parse(
+                                                              price) >
+                                                          double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text)) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger should be greater than price"));
+                                                      } else if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) <
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .lc ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                      } else {
+                                                        if ((int.parse(qtyCtrl
+                                                                        .text
+                                                                        .isEmpty
+                                                                    ? "0"
+                                                                    : qtyCtrl
+                                                                        .text) >
+                                                                frezQty &&
+                                                            widget.scripInfo
+                                                                    .frzqty !=
+                                                                null)) {
+                                                          modifyOrder();
+                                                        } else {
+                                                          modifyOrder();
+                                                        }
+                                                      }
                                                     }
                                                   }
                                                 }
@@ -1673,10 +1774,25 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
         orderNum: widget.modifyOrderArgs.norenordno!,
         prc: priceCtrl.text,
         prctyp: prcType,
+        blprc: stopLossCtrl.text,
+        bpprc: targetCtrl.text,
         qty: qtyCtrl.text,
         ret: widget.modifyOrderArgs.ret!,
         trgprc: triggerPriceCtrl.text,
         tsym: widget.modifyOrderArgs.tsym!);
     await context.read(orderProvider).fetchModifyOrder(input, context);
+
+    BrokerageInput brokerageInput = BrokerageInput(
+        exch: "${widget.scripInfo.exch}",
+        prc: ((widget.scripInfo.exch == "MCX" ||
+                    widget.scripInfo.exch == "BSE") &&
+                (prcType == "MKT" || prcType == "SL-MKT"))
+            ? "0"
+            : priceCtrl.text,
+        prd: widget.modifyOrderArgs.prd!,
+        qty: qtyCtrl.text,
+        trantype: isBuy! ? "B" : "S",
+        tsym: "${widget.scripInfo.tsym}");
+    await context.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
   }
 }
