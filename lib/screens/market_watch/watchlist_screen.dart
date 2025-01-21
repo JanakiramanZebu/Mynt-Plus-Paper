@@ -214,7 +214,6 @@ class WatchListScreen extends ConsumerWidget {
                                       lastPrc:
                                           "${context.read(marketWatchProvider).getQuotes!.lp ?? context.read(marketWatchProvider).getQuotes!.c ?? 0.00}");
                                 }
-
                                 context
                                     .read(marketWatchProvider)
                                     .depthBtns
