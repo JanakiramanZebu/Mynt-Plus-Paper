@@ -938,7 +938,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             _scripInfoModel!.expDate = "${spilitSymbol["expDate"]}";
             _scripInfoModel!.option = "${spilitSymbol["option"]}";
           }
-
+          storeQuotes[token]?['s'] = {};
           storeQuotes[token]?['s'] = _scripInfoModel;
         }
 
@@ -1348,12 +1348,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               element.option = "${spilitSymbol["option"]}";
             }
           }
-
+          storeQuotes[token]?['l'] = {};
           storeQuotes[token]?['l'] = {
             'all': _linkedScrips,
             'eq': _equls,
-            'fu': _equls,
-            'op': _equls,
+            'fu': _fut,
+            'op': _optExp,
             'sortdate': _sortedDate,
             'optionExch': _optionExch,
             'selectedTradeSym': _selectedTradeSym,
@@ -1439,6 +1439,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         if (_techData!.stat == "OK") {
           ConstantName.sessCheck = true;
           techDataCalc(lastPrc);
+          storeQuotes[token]?['t'] = {};
           storeQuotes[token]?['t'] = _techData;
         }
 
@@ -1473,6 +1474,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       List ltpArgs = [];
 
       if (_fundamentalData!.msg != "no data found") {
+        storeQuotes[token]?['f'] = {};
         storeQuotes[token]?['f'] = _fundamentalData;
         _peersChartKeys = _fundamentalData!.peerComparisonChart!.keys.toList();
         DateFormat format = DateFormat("yyyy-MM-dd");
