@@ -34,6 +34,8 @@ class ModifyOrderInput {
   String prctyp;
   String blprc;
   String bpprc;
+  String prd;
+  String trantype;
   String ret;
 
   ModifyOrderInput(
@@ -48,6 +50,8 @@ class ModifyOrderInput {
       required this.ret,
       required this.blprc,
       required this.bpprc,
+      required this.prd,
+      required this.trantype,
       required this.trgprc,
       required this.tsym});
 }

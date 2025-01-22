@@ -123,9 +123,13 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       builder: (context, ScopedReader watch, _) {
         final tvChart = watch(marketWatchProvider);
         final theme = watch(themeProvider);
+        final depthData = context.read(marketWatchProvider).getQuotes!;
 
         return SizedBox(
-          height: MediaQuery.of(context).size.height - 120,
+          height: (MediaQuery.of(context).size.height -
+              (depthData.instname != "UNDIND" && depthData.instname != "COM"
+                  ? 170
+                  : 120)),
           child: Column(
             children: [
               _buildTopBar(tvChart, theme),
@@ -291,10 +295,9 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
           ConstantName.webViewController = controller;
           startChartUpdateTimer(controller);
 
-          print("objec ${
-            "https://tv-chart-new.firebaseapp.com/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
-            "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
-            "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}"}t");
+          // print("objec ${"https://tv-chart-new.firebaseapp.com/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
+          //     "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
+          //     "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}"}t");
         },
         onProgressChanged: (_, progress) {
           setState(() {

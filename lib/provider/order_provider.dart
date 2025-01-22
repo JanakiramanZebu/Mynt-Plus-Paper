@@ -138,6 +138,13 @@ class OrderProvider extends DefaultChangeNotifier {
   String _selectedBsktName = "";
   String get selectedBsktName => _selectedBsktName;
 
+  bool _orderloader = false;
+  bool get orderloader => _orderloader;
+  
+  setOrderloader(bool value) {
+    _orderloader = value;
+    notifyListeners();
+  }
 // Change tab orderbook tab index
 
   changeTabIndex(int index, BuildContext context) {

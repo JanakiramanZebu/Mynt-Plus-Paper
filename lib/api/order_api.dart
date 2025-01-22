@@ -1,4 +1,3 @@
- 
 import 'dart:developer';
 
 import 'package:public_ip_address/public_ip_address.dart';
@@ -36,7 +35,10 @@ mixin OrderAPI on ApiCore {
             ? placeOrderInput.tsym.replaceAll("&", "%26")
             : placeOrderInput.tsym,
         "qty": placeOrderInput.qty.replaceAll("-", ""),
-        "prc": (placeOrderInput.prctype == 'MKT' || placeOrderInput.prctype == 'SL-MKT') ? '0' : placeOrderInput.prc,
+        "prc": (placeOrderInput.prctype == 'MKT' ||
+                placeOrderInput.prctype == 'SL-MKT')
+            ? '0'
+            : placeOrderInput.prc,
         "prd": placeOrderInput.prd,
         "trantype": placeOrderInput.trantype,
         "prctyp": placeOrderInput.prctype,
@@ -295,6 +297,8 @@ mixin OrderAPI on ApiCore {
 
   Future<ModifyOrderModel> getModifyOrder(ModifyOrderInput input) async {
     try {
+      String ip = await IpAddress().getIp();
+
       final uri = Uri.parse(apiLinks.mdifyOrder);
       Map payload = {
         "uid": prefs.clientId,
@@ -304,22 +308,37 @@ mixin OrderAPI on ApiCore {
             ? input.tsym.replaceAll("&", "%26")
             : input.tsym,
         "qty": input.qty.replaceAll("-", ""),
-        "prc": (input.prctyp == 'MKT' || input.prctyp == 'SL-MKT')  ? '0' : input.prc,
+        "prc": (input.prctyp == 'MKT' || input.prctyp == 'SL-MKT')
+            ? '0'
+            : input.prc,
         "norenordno": input.orderNum,
         "prctyp": input.prctyp,
         "ret": input.ret,
         "trgprc": input.trgprc,
         "dscqty": input.dscqty,
-        "blprc": input.blprc,
-        "bpprc": input.bpprc,
-        "ordersource": ApiLinks.source
+        "ordersource": ApiLinks.source,
+        "prd": input.prd,
+        "trantype": input.trantype,
+         "usr_agent": "${prefs.deviceName!}   ${prefs.imei}",
+        "app_inst_id": "${prefs.imei}",
+        "ipaddr": ip
+      
       };
+      if (input.blprc.isNotEmpty || double.parse(input.blprc) != 0.0) {
+        payload.addAll({"blprc": input.blprc});
+      }
+      if (input.bpprc.isNotEmpty || double.parse(input.blprc) != 0.0) {
+        payload.addAll({"bpprc": input.bpprc});
+      }
+      // if (input.trailprc.isNotEmpty) {
+      //   payload.addAll({"trailprc": input.trailprc});
+      // }s
 
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
 
-      // log("Modify order=> ${res.body}");
+      log("Modify order=> ${res.body}");
       final json = jsonDecode(res.body);
 
       return ModifyOrderModel.fromJson(json as Map<String, dynamic>);

@@ -83,7 +83,7 @@ class OrderBookDetail extends ConsumerWidget {
                               FontWeight.w600))
                     ]),
                     Text(
-                        "${double.parse("${orderBookData.change ?? 0.00} ").toStringAsFixed(2)} (${orderBookData.perChange ?? 0.00}%)",
+                        "${double.parse("${orderBookData.change != "null" ? orderBookData.change ?? 0.00 : 0.0} ").toStringAsFixed(2)} (${orderBookData.perChange ?? 0.00}%)",
                         style: textStyle(
                           (orderBookData.change == "null" ||
                                         orderBookData.change == null) ||

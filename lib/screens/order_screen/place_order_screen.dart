@@ -785,8 +785,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                       child: Column(children: [
                                     Text(
                                       "₹${resultsip == 0.0 ? widget.orderArg.ltp : resultsip.toStringAsFixed(2)}",
-                                      style: textStyle(const Color(0xff43A833), 20,
-                                          FontWeight.w600),
+                                      style: textStyle(const Color(0xff43A833),
+                                          20, FontWeight.w600),
                                     ),
                                     Text("Installment Amount",
                                         style: textStyle(
@@ -1840,7 +1840,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               qtyCtrl.text =
                                                                   "$lotSize";
                                                             }
-                                                             marginUpdate();
+                                                            marginUpdate();
                                                           });
                                                         },
                                                         child: SvgPicture.asset(
@@ -1867,7 +1867,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               qtyCtrl.text =
                                                                   "$lotSize";
                                                             }
-                                                             marginUpdate();
+                                                            marginUpdate();
                                                           });
                                                         },
                                                         child: SvgPicture.asset(
@@ -1893,7 +1893,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                       context,
                                                                       "Quntity can not be empty"));
                                                         } else {
-                                                           marginUpdate();
+                                                          marginUpdate();
                                                         }
                                                       })),
                                               if (widget.scripInfo.frzqty !=
@@ -1952,7 +1952,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         } else {
                                                           setState(() {
                                                             ordPrice = value;
-                                                             marginUpdate();
+                                                            marginUpdate();
                                                           });
                                                         }
                                                       },
@@ -2606,209 +2606,468 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                             ConnectivityResult.none
                                         ? null
                                         : () async {
-                                            if (orderType == "SIP") {
-                                              if (sipqtyctrl.text.isEmpty ||
-                                                  sipqtyctrl.text == "0") {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(warningMessage(
-                                                        context,
-                                                        sipqtyctrl.text.isEmpty
-                                                            ? "Quantity can not be empty"
-                                                            : "Quantity can not be 0"));
-                                              } else if (sip.numberofSips.text
-                                                      .isEmpty ||
-                                                  sip.numberofSips.text ==
-                                                      "0") {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(warningMessage(
-                                                        context,
-                                                        sip.numberofSips.text
-                                                                .isEmpty
-                                                            ? "Number of SIP can not be empty"
-                                                            : "Number of SIP can not be 0"));
-                                              } else {
-                                                sipOrder(watch);
-                                              }
-                                            } else if (orderType == "GTT") {
-                                              if (orderInput.disableGTTCond) {
-                                                if ((orderInput.val1Ctrl.text
-                                                            .isNotEmpty &&
-                                                        orderInput.val2Ctrl.text
-                                                            .isNotEmpty &&
-                                                        orderInput.priceCtrl
-                                                            .text.isNotEmpty &&
-                                                        orderInput.ocoPriceCtrl
-                                                            .text.isNotEmpty &&
-                                                        orderInput.ocoQtyCtrl
-                                                            .text.isNotEmpty) &&
-                                                    orderInput.qtyCtrl.text
-                                                        .isNotEmpty) {
-                                                  if (orderInput
-                                                              .actOcoPrcType ==
-                                                          "SL Limit" ||
-                                                      orderInput
-                                                              .actOcoPrcType ==
-                                                          "SL MKT") {
-                                                    if (orderInput.ocoTrgPrcCtrl
-                                                        .text.isEmpty) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger can not be empty"));
-                                                    } else {
-                                                      placeOCOOrder(orderInput);
-                                                    }
-                                                  } else {
-                                                    placeOCOOrder(orderInput);
-                                                  }
-                                                } else {
+                                            if (!orderProvide.orderloader) {
+                                              if (orderType == "SIP") {
+                                                if (sipqtyctrl.text.isEmpty ||
+                                                    sipqtyctrl.text == "0") {
                                                   ScaffoldMessenger.of(context)
                                                       .showSnackBar(warningMessage(
                                                           context,
-                                                          "Enter all Input fields"));
-                                                }
-                                              } else {
-                                                if ((orderInput.val1Ctrl.text
-                                                            .isNotEmpty &&
-                                                        orderInput.priceCtrl
-                                                            .text.isNotEmpty) &&
-                                                    orderInput.qtyCtrl.text
-                                                        .isNotEmpty) {
-                                                  if (orderInput.actPrcType ==
-                                                          "SL Limit" ||
-                                                      orderInput.actPrcType ==
-                                                          "SL MKT") {
-                                                    if (orderInput.trgPrcCtrl
-                                                        .text.isEmpty) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger can not be empty"));
-                                                    } else {
-                                                      placeGttOrder(orderInput);
-                                                    }
-                                                  } else {
-                                                    placeGttOrder(orderInput);
-                                                  }
-                                                } else {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Enter all Input fields"));
-                                                }
-                                              }
-                                            } else {
-                                              setState(() {
-                                                if (frezQty == 0) {
-                                                  quantity = int.parse(
-                                                      qtyCtrl.text.isEmpty
-                                                          ? "0"
-                                                          : qtyCtrl.text);
-                                                  // frezQty;
-                                                } else {
-                                                  quantity = int.parse(
-                                                          qtyCtrl.text.isEmpty
-                                                              ? "0"
-                                                              : qtyCtrl.text) ~/
-                                                      frezQty;
-                                                }
-                                                reminder = int.parse(
-                                                        qtyCtrl.text.isEmpty
-                                                            ? "0"
-                                                            : qtyCtrl.text) -
-                                                    (frezQty * quantity);
-                                                maxQty = frezQty * 28;
-                                                print(
-                                                    "objectobject{$quantity | $reminder | $maxQty}");
-                                              });
-                                              if (qtyCtrl.text.trim().isEmpty ||
-                                                  priceCtrl.text
-                                                      .trim()
-                                                      .isEmpty) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(warningMessage(
-                                                        context,
-                                                        qtyCtrl.text.isEmpty
-                                                            ? "Quantity can not be empty"
-                                                            : "Price can not be empty"));
-                                              } else if (qtyCtrl.text.trim() ==
-                                                      "0" ||
-                                                  priceCtrl.text.trim() ==
-                                                      "0") {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(warningMessage(
-                                                        context,
-                                                        qtyCtrl.text == "0"
-                                                            ? "Quantity can not be 0"
-                                                            : "Price can not be 0"));
-                                              } else if ((double.parse(
-                                                          ordPrice) <
-                                                      double.parse(
-                                                          "${widget.scripInfo.lc ?? 0.00}")) ||
-                                                  (double.parse(ordPrice) >
-                                                      double.parse(
-                                                          "${widget.scripInfo.uc ?? 0.00}"))) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(warningMessage(
-                                                        context,
-                                                        double.parse(ordPrice) <
-                                                                double.parse(
-                                                                    "${widget.scripInfo.lc ?? 0.00}")
-                                                            ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc ?? 0.00}"
-                                                            : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc ?? 0.00}"));
-                                              }
-
-                                              //
-                                              //
-                                              // --------------
-
-                                              else if (orderType == "Regular" &&
-                                                  (priceType == "SL Limit" ||
-                                                      priceType == "SL MKT")) {
-                                                if (triggerPriceCtrl
-                                                        .text.isEmpty ||
-                                                    triggerPriceCtrl.text ==
+                                                          sipqtyctrl
+                                                                  .text.isEmpty
+                                                              ? "Quantity can not be empty"
+                                                              : "Quantity can not be 0"));
+                                                } else if (sip.numberofSips.text
+                                                        .isEmpty ||
+                                                    sip.numberofSips.text ==
                                                         "0") {
                                                   ScaffoldMessenger.of(context)
                                                       .showSnackBar(warningMessage(
                                                           context,
-                                                          triggerPriceCtrl
-                                                                  .text.isEmpty
-                                                              ? "Trigger can not be empty"
-                                                              : "Trigger can not be 0"));
+                                                          sip.numberofSips.text
+                                                                  .isEmpty
+                                                              ? "Number of SIP can not be empty"
+                                                              : "Number of SIP can not be 0"));
                                                 } else {
-                                                  if (isBuy!) {
-                                                    if (priceType == "SL MKT") {
-                                                      if (double.parse(
-                                                              triggerPriceCtrl
-                                                                  .text) <
-                                                          double.parse(widget
-                                                                  .orderArg
-                                                                  .ltp ??
-                                                              "0.00")) {
+                                                  sipOrder(watch);
+                                                }
+                                              } else if (orderType == "GTT") {
+                                                if (orderInput.disableGTTCond) {
+                                                  if ((orderInput.val1Ctrl.text.isNotEmpty &&
+                                                          orderInput
+                                                              .val2Ctrl
+                                                              .text
+                                                              .isNotEmpty &&
+                                                          orderInput
+                                                              .priceCtrl
+                                                              .text
+                                                              .isNotEmpty &&
+                                                          orderInput
+                                                              .ocoPriceCtrl
+                                                              .text
+                                                              .isNotEmpty &&
+                                                          orderInput
+                                                              .ocoQtyCtrl
+                                                              .text
+                                                              .isNotEmpty) &&
+                                                      orderInput.qtyCtrl.text
+                                                          .isNotEmpty) {
+                                                    if (orderInput
+                                                                .actOcoPrcType ==
+                                                            "SL Limit" ||
+                                                        orderInput
+                                                                .actOcoPrcType ==
+                                                            "SL MKT") {
+                                                      if (orderInput
+                                                          .ocoTrgPrcCtrl
+                                                          .text
+                                                          .isEmpty) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger should be greater than LTP"));
-                                                      } else if (double.parse(
-                                                              triggerPriceCtrl
-                                                                  .text) >
+                                                                    "Trigger can not be empty"));
+                                                      } else {
+                                                        placeOCOOrder(
+                                                            orderInput);
+                                                      }
+                                                    } else {
+                                                      placeOCOOrder(orderInput);
+                                                    }
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Enter all Input fields"));
+                                                  }
+                                                } else {
+                                                  if ((orderInput.val1Ctrl.text
+                                                              .isNotEmpty &&
+                                                          orderInput
+                                                              .priceCtrl
+                                                              .text
+                                                              .isNotEmpty) &&
+                                                      orderInput.qtyCtrl.text
+                                                          .isNotEmpty) {
+                                                    if (orderInput.actPrcType ==
+                                                            "SL Limit" ||
+                                                        orderInput.actPrcType ==
+                                                            "SL MKT") {
+                                                      if (orderInput.trgPrcCtrl
+                                                          .text.isEmpty) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger can not be empty"));
+                                                      } else {
+                                                        placeGttOrder(
+                                                            orderInput);
+                                                      }
+                                                    } else {
+                                                      placeGttOrder(orderInput);
+                                                    }
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Enter all Input fields"));
+                                                  }
+                                                }
+                                              } else {
+                                                setState(() {
+                                                  if (frezQty == 0) {
+                                                    quantity = int.parse(
+                                                        qtyCtrl.text.isEmpty
+                                                            ? "0"
+                                                            : qtyCtrl.text);
+                                                    // frezQty;
+                                                  } else {
+                                                    quantity = int.parse(qtyCtrl
+                                                                .text.isEmpty
+                                                            ? "0"
+                                                            : qtyCtrl.text) ~/
+                                                        frezQty;
+                                                  }
+                                                  reminder = int.parse(
+                                                          qtyCtrl.text.isEmpty
+                                                              ? "0"
+                                                              : qtyCtrl.text) -
+                                                      (frezQty * quantity);
+                                                  maxQty = frezQty * 28;
+                                                  print(
+                                                      "objectobject{$quantity | $reminder | $maxQty}");
+                                                });
+                                                if (qtyCtrl.text
+                                                        .trim()
+                                                        .isEmpty ||
+                                                    priceCtrl.text
+                                                        .trim()
+                                                        .isEmpty) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(warningMessage(
+                                                          context,
+                                                          qtyCtrl.text.isEmpty
+                                                              ? "Quantity can not be empty"
+                                                              : "Price can not be empty"));
+                                                } else if (qtyCtrl.text
+                                                            .trim() ==
+                                                        "0" ||
+                                                    priceCtrl.text.trim() ==
+                                                        "0") {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(warningMessage(
+                                                          context,
+                                                          qtyCtrl.text == "0"
+                                                              ? "Quantity can not be 0"
+                                                              : "Price can not be 0"));
+                                                } else if ((double.parse(
+                                                            ordPrice) <
+                                                        double.parse(
+                                                            "${widget.scripInfo.lc ?? 0.00}")) ||
+                                                    (double.parse(ordPrice) >
+                                                        double.parse(
+                                                            "${widget.scripInfo.uc ?? 0.00}"))) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(warningMessage(
+                                                          context,
+                                                          double.parse(
+                                                                      ordPrice) <
+                                                                  double.parse(
+                                                                      "${widget.scripInfo.lc ?? 0.00}")
+                                                              ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc ?? 0.00}"
+                                                              : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc ?? 0.00}"));
+                                                }
+
+                                                //
+                                                //
+                                                // --------------
+
+                                                else if (orderType ==
+                                                        "Regular" &&
+                                                    (priceType == "SL Limit" ||
+                                                        priceType ==
+                                                            "SL MKT")) {
+                                                  if (triggerPriceCtrl
+                                                          .text.isEmpty ||
+                                                      triggerPriceCtrl.text ==
+                                                          "0") {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(warningMessage(
+                                                            context,
+                                                            triggerPriceCtrl
+                                                                    .text
+                                                                    .isEmpty
+                                                                ? "Trigger can not be empty"
+                                                                : "Trigger can not be 0"));
+                                                  } else {
+                                                    if (isBuy!) {
+                                                      if (priceType ==
+                                                          "SL MKT") {
+                                                        if (double.parse(
+                                                                triggerPriceCtrl
+                                                                    .text) <
+                                                            double.parse(widget
+                                                                    .orderArg
+                                                                    .ltp ??
+                                                                "0.00")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger should be greater than LTP"));
+                                                        } else if (double.parse(
+                                                                triggerPriceCtrl
+                                                                    .text) >
+                                                            double.parse(widget
+                                                                    .scripInfo
+                                                                    .uc ??
+                                                                "0.00")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                        } else {
+                                                          if ((int.parse(qtyCtrl
+                                                                          .text
+                                                                          .isEmpty
+                                                                      ? "0"
+                                                                      : qtyCtrl
+                                                                          .text) >
+                                                                  frezQty &&
+                                                              widget.scripInfo
+                                                                      .frzqty !=
+                                                                  null)) {
+                                                            placeOrder(
+                                                                orderInput,
+                                                                true,
+                                                                theme);
+                                                          } else {
+                                                            placeOrder(
+                                                                orderInput,
+                                                                false,
+                                                                theme);
+                                                          }
+                                                        }
+                                                      } else {
+                                                        if (double.parse(
+                                                                triggerPriceCtrl
+                                                                    .text) <
+                                                            double.parse(widget
+                                                                    .scripInfo
+                                                                    .lc ??
+                                                                "0.00")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                        } else if (double.parse(ordPrice) <
+                                                            double.parse(
+                                                                triggerPriceCtrl
+                                                                    .text)) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger should be less than price"));
+                                                        } else if (double.parse(
+                                                                triggerPriceCtrl
+                                                                    .text) >
+                                                            double.parse(widget
+                                                                    .scripInfo
+                                                                    .uc ??
+                                                                "0.00")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                        } else {
+                                                          if ((int.parse(qtyCtrl
+                                                                          .text
+                                                                          .isEmpty
+                                                                      ? "0"
+                                                                      : qtyCtrl
+                                                                          .text) >
+                                                                  frezQty &&
+                                                              widget.scripInfo
+                                                                      .frzqty !=
+                                                                  null)) {
+                                                            placeOrder(
+                                                                orderInput,
+                                                                true,
+                                                                theme);
+                                                          } else {
+                                                            placeOrder(
+                                                                orderInput,
+                                                                false,
+                                                                theme);
+                                                          }
+                                                        }
+                                                      }
+                                                    } else {
+                                                      if (priceType ==
+                                                          "SL MKT") {
+                                                        if (double.parse(
+                                                                triggerPriceCtrl
+                                                                    .text) >
+                                                            double.parse(widget
+                                                                    .orderArg
+                                                                    .ltp ??
+                                                                "0.00")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger should be lesser than LTP"));
+                                                        } else if (double.parse(
+                                                                triggerPriceCtrl
+                                                                    .text) <
+                                                            double.parse(widget
+                                                                    .scripInfo
+                                                                    .lc ??
+                                                                "0.00")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                        } else {
+                                                          if ((int.parse(qtyCtrl
+                                                                          .text
+                                                                          .isEmpty
+                                                                      ? "0"
+                                                                      : qtyCtrl
+                                                                          .text) >
+                                                                  frezQty &&
+                                                              widget.scripInfo
+                                                                      .frzqty !=
+                                                                  null)) {
+                                                            placeOrder(
+                                                                orderInput,
+                                                                true,
+                                                                theme);
+                                                          } else {
+                                                            placeOrder(
+                                                                orderInput,
+                                                                false,
+                                                                theme);
+                                                          }
+                                                        }
+                                                      } else {
+                                                        log('x');
+
+                                                        if (double.parse(
+                                                                triggerPriceCtrl
+                                                                    .text) >
+                                                            double.parse(widget
+                                                                    .scripInfo
+                                                                    .uc ??
+                                                                "0.00")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                        } else if (double.parse(ordPrice) >
+                                                            double.parse(
+                                                                triggerPriceCtrl
+                                                                    .text)) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger should be greater than price"));
+                                                        } else if (double.parse(
+                                                                triggerPriceCtrl
+                                                                    .text) <
+                                                            double.parse(widget
+                                                                    .scripInfo
+                                                                    .lc ??
+                                                                "0.00")) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  warningMessage(
+                                                                      context,
+                                                                      "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                        } else {
+                                                          if ((int.parse(qtyCtrl
+                                                                          .text
+                                                                          .isEmpty
+                                                                      ? "0"
+                                                                      : qtyCtrl
+                                                                          .text) >
+                                                                  frezQty &&
+                                                              widget.scripInfo
+                                                                      .frzqty !=
+                                                                  null)) {
+                                                            placeOrder(
+                                                                orderInput,
+                                                                true,
+                                                                theme);
+                                                          } else {
+                                                            placeOrder(
+                                                                orderInput,
+                                                                false,
+                                                                theme);
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                } else if (orderType ==
+                                                        "Cover" &&
+                                                    (priceType == "Limit" ||
+                                                        priceType ==
+                                                            "Market")) {
+                                                  if (stopLossCtrl
+                                                          .text.isEmpty ||
+                                                      stopLossCtrl.text ==
+                                                          "0") {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(warningMessage(
+                                                            context,
+                                                            stopLossCtrl.text
+                                                                    .isEmpty
+                                                                ? "Stoploss can not be empty"
+                                                                : "Stoploss can not be 0"));
+                                                  } else {
+                                                    if (isBuy!) {
+                                                      if ((double.parse(
+                                                                  ordPrice) -
+                                                              double.parse(
+                                                                  stopLossCtrl
+                                                                      .text)) <
                                                           double.parse(widget
                                                                   .scripInfo
-                                                                  .uc ??
+                                                                  .lc ??
                                                               "0.00")) {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                                    "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text
@@ -2828,6 +3087,97 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         }
                                                       }
                                                     } else {
+                                                      if ((double.parse(
+                                                                  ordPrice) +
+                                                              double.parse(
+                                                                  stopLossCtrl
+                                                                      .text)) >
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .uc ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                      } else {
+                                                        if ((int.parse(qtyCtrl
+                                                                        .text
+                                                                        .isEmpty
+                                                                    ? "0"
+                                                                    : qtyCtrl
+                                                                        .text) >
+                                                                frezQty &&
+                                                            widget.scripInfo
+                                                                    .frzqty !=
+                                                                null)) {
+                                                          placeOrder(orderInput,
+                                                              true, theme);
+                                                        } else {
+                                                          placeOrder(orderInput,
+                                                              false, theme);
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                } else if (orderType ==
+                                                        "Cover" &&
+                                                    (priceType == "SL Limit")) {
+                                                  if (stopLossCtrl.text.isEmpty ||
+                                                      stopLossCtrl.text ==
+                                                          "0") {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(warningMessage(
+                                                            context,
+                                                            stopLossCtrl.text
+                                                                    .isEmpty
+                                                                ? "Stoploss can not be empty"
+                                                                : "Stoploss can not be 0"));
+                                                  } else if (isBuy! &&
+                                                      (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .lc ??
+                                                              "0.00")) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                  } else if (!isBuy! &&
+                                                      (double.parse(ordPrice) +
+                                                              double.parse(
+                                                                  stopLossCtrl
+                                                                      .text)) >
+                                                          double.parse(
+                                                              widget.scripInfo.uc ??
+                                                                  "0.00")) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                  } else if ((triggerPriceCtrl
+                                                              .text.isEmpty ||
+                                                          triggerPriceCtrl.text ==
+                                                              "0") &&
+                                                      priceType == "SL Limit") {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(warningMessage(
+                                                            context,
+                                                            triggerPriceCtrl
+                                                                    .text
+                                                                    .isEmpty
+                                                                ? "Trigger can not be empty"
+                                                                : "Trigger can not be 0"));
+                                                  } else {
+                                                    if (isBuy!) {
                                                       if (double.parse(
                                                               triggerPriceCtrl
                                                                   .text) <
@@ -2883,56 +3233,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               false, theme);
                                                         }
                                                       }
-                                                    }
-                                                  } else {
-                                                    if (priceType == "SL MKT") {
-                                                      if (double.parse(
-                                                              triggerPriceCtrl
-                                                                  .text) >
-                                                          double.parse(widget
-                                                                  .orderArg
-                                                                  .ltp ??
-                                                              "0.00")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger should be lesser than LTP"));
-                                                      } else if (double.parse(
-                                                              triggerPriceCtrl
-                                                                  .text) <
-                                                          double.parse(widget
-                                                                  .scripInfo
-                                                                  .lc ??
-                                                              "0.00")) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                      } else {
-                                                        if ((int.parse(qtyCtrl
-                                                                        .text
-                                                                        .isEmpty
-                                                                    ? "0"
-                                                                    : qtyCtrl
-                                                                        .text) >
-                                                                frezQty &&
-                                                            widget.scripInfo
-                                                                    .frzqty !=
-                                                                null)) {
-                                                          placeOrder(orderInput,
-                                                              true, theme);
-                                                        } else {
-                                                          placeOrder(orderInput,
-                                                              false, theme);
-                                                        }
-                                                      }
                                                     } else {
-                                                      log('x');
-
                                                       if (double.parse(
                                                               triggerPriceCtrl
                                                                   .text) >
@@ -2990,278 +3291,232 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                       }
                                                     }
                                                   }
-                                                }
-                                              } else if (orderType == "Cover" &&
-                                                  (priceType == "Limit" ||
-                                                      priceType == "Market")) {
-                                                if (stopLossCtrl.text.isEmpty ||
-                                                    stopLossCtrl.text == "0") {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          stopLossCtrl
-                                                                  .text.isEmpty
-                                                              ? "Stoploss can not be empty"
-                                                              : "Stoploss can not be 0"));
-                                                } else {
-                                                  if (isBuy!) {
-                                                    if ((double.parse(
-                                                                ordPrice) -
-                                                            double.parse(
-                                                                stopLossCtrl
-                                                                    .text)) <
-                                                        double.parse(widget
-                                                                .scripInfo.lc ??
-                                                            "0.00")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
-                                                    } else {
-                                                      if ((int.parse(qtyCtrl
-                                                                      .text
-                                                                      .isEmpty
-                                                                  ? "0"
-                                                                  : qtyCtrl
-                                                                      .text) >
-                                                              frezQty &&
-                                                          widget.scripInfo
-                                                                  .frzqty !=
-                                                              null)) {
-                                                        placeOrder(orderInput,
-                                                            true, theme);
-                                                      } else {
-                                                        placeOrder(orderInput,
-                                                            false, theme);
-                                                      }
-                                                    }
+                                                } else if (orderType ==
+                                                        "Bracket" &&
+                                                    (priceType == "Limit" ||
+                                                        priceType ==
+                                                            "Market")) {
+                                                  if (stopLossCtrl
+                                                          .text.isEmpty ||
+                                                      targetCtrl.text.isEmpty) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
+                                                  } else if (isBuy! &&
+                                                      (double.parse(ordPrice) -
+                                                              double.parse(
+                                                                  stopLossCtrl
+                                                                      .text)) <
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .lc ??
+                                                              "0.00")) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                  } else if (!isBuy! &&
+                                                      (double.parse(ordPrice) +
+                                                              double.parse(
+                                                                  stopLossCtrl
+                                                                      .text)) >
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .uc ??
+                                                              "0.00")) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
                                                   } else {
-                                                    if ((double.parse(
-                                                                ordPrice) +
-                                                            double.parse(
-                                                                stopLossCtrl
-                                                                    .text)) >
-                                                        double.parse(widget
-                                                                .scripInfo.uc ??
-                                                            "0.00")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                    if ((int.parse(qtyCtrl.text
+                                                                    .isEmpty
+                                                                ? "0"
+                                                                : qtyCtrl
+                                                                    .text) >
+                                                            frezQty &&
+                                                        widget.scripInfo
+                                                                .frzqty !=
+                                                            null)) {
+                                                      placeOrder(orderInput,
+                                                          true, theme);
                                                     } else {
-                                                      if ((int.parse(qtyCtrl
-                                                                      .text
-                                                                      .isEmpty
-                                                                  ? "0"
-                                                                  : qtyCtrl
-                                                                      .text) >
-                                                              frezQty &&
-                                                          widget.scripInfo
-                                                                  .frzqty !=
-                                                              null)) {
-                                                        placeOrder(orderInput,
-                                                            true, theme);
+                                                      placeOrder(orderInput,
+                                                          false, theme);
+                                                    }
+                                                  }
+                                                } else if (orderType ==
+                                                        "Bracket" &&
+                                                    (priceType == "SL Limit")) {
+                                                  if (stopLossCtrl.text.isEmpty ||
+                                                      targetCtrl.text.isEmpty) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
+                                                  } else if (isBuy! &&
+                                                      (double.parse(ordPrice) -
+                                                              double.parse(
+                                                                  stopLossCtrl
+                                                                      .text)) <
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .lc ??
+                                                              "0.00")) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                  } else if (!isBuy! &&
+                                                      (double.parse(ordPrice) +
+                                                              double.parse(
+                                                                  stopLossCtrl
+                                                                      .text)) >
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .uc ??
+                                                              "0.00")) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                  } else if (triggerPriceCtrl
+                                                          .text.isEmpty &&
+                                                      priceType == "SL Limit") {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            warningMessage(
+                                                                context,
+                                                                "Trigger can not be empty"));
+                                                  } else {
+                                                    if (isBuy!) {
+                                                      if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) <
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .lc ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                      } else if (double.parse(
+                                                              ordPrice) <
+                                                          double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text)) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger should be less than price"));
+                                                      } else if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) >
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .uc ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
                                                       } else {
-                                                        placeOrder(orderInput,
-                                                            false, theme);
+                                                        if ((int.parse(qtyCtrl
+                                                                        .text
+                                                                        .isEmpty
+                                                                    ? "0"
+                                                                    : qtyCtrl
+                                                                        .text) >
+                                                                frezQty &&
+                                                            widget.scripInfo
+                                                                    .frzqty !=
+                                                                null)) {
+                                                          placeOrder(orderInput,
+                                                              true, theme);
+                                                        } else {
+                                                          placeOrder(orderInput,
+                                                              false, theme);
+                                                        }
+                                                      }
+                                                    } else {
+                                                      if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) >
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .uc ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                      } else if (double.parse(
+                                                              ordPrice) >
+                                                          double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text)) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger should be greater than price"));
+                                                      } else if (double.parse(
+                                                              triggerPriceCtrl
+                                                                  .text) <
+                                                          double.parse(widget
+                                                                  .scripInfo
+                                                                  .lc ??
+                                                              "0.00")) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                      } else {
+                                                        if ((int.parse(qtyCtrl
+                                                                        .text
+                                                                        .isEmpty
+                                                                    ? "0"
+                                                                    : qtyCtrl
+                                                                        .text) >
+                                                                frezQty &&
+                                                            widget.scripInfo
+                                                                    .frzqty !=
+                                                                null)) {
+                                                          placeOrder(orderInput,
+                                                              true, theme);
+                                                        } else {
+                                                          placeOrder(orderInput,
+                                                              false, theme);
+                                                        }
                                                       }
                                                     }
                                                   }
-                                                }
-                                              } else if (orderType == "Cover" &&
-                                                  (priceType == "SL Limit")) {
-                                                if (stopLossCtrl.text.isEmpty ||
-                                                    stopLossCtrl.text == "0") {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          stopLossCtrl
-                                                                  .text.isEmpty
-                                                              ? "Stoploss can not be empty"
-                                                              : "Stoploss can not be 0"));
-                                                } else if (isBuy! &&
-                                                    (double.parse(ordPrice) -
-                                                            double.parse(stopLossCtrl
-                                                                .text)) <
-                                                        double.parse(
-                                                            widget.scripInfo.lc ??
-                                                                "0.00")) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
-                                                } else if (!isBuy! &&
-                                                    (double.parse(ordPrice) +
-                                                            double.parse(
-                                                                stopLossCtrl
-                                                                    .text)) >
-                                                        double.parse(
-                                                            widget.scripInfo.uc ??
-                                                                "0.00")) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
-                                                } else if ((triggerPriceCtrl
-                                                            .text.isEmpty ||
-                                                        triggerPriceCtrl.text == "0") &&
-                                                    priceType == "SL Limit") {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          triggerPriceCtrl
-                                                                  .text.isEmpty
-                                                              ? "Trigger can not be empty"
-                                                              : "Trigger can not be 0"));
-                                                } else {
-                                                  if (isBuy!) {
-                                                    if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) <
-                                                        double.parse(widget
-                                                                .scripInfo.lc ??
-                                                            "0.00")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                    } else if (double.parse(
-                                                            ordPrice) <
-                                                        double.parse(
-                                                            triggerPriceCtrl
-                                                                .text)) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger should be less than price"));
-                                                    } else if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) >
-                                                        double.parse(widget
-                                                                .scripInfo.uc ??
-                                                            "0.00")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                    } else {
-                                                      if ((int.parse(qtyCtrl
-                                                                      .text
-                                                                      .isEmpty
-                                                                  ? "0"
-                                                                  : qtyCtrl
-                                                                      .text) >
-                                                              frezQty &&
-                                                          widget.scripInfo
-                                                                  .frzqty !=
-                                                              null)) {
-                                                        placeOrder(orderInput,
-                                                            true, theme);
-                                                      } else {
-                                                        placeOrder(orderInput,
-                                                            false, theme);
-                                                      }
-                                                    }
-                                                  } else {
-                                                    if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) >
-                                                        double.parse(widget
-                                                                .scripInfo.uc ??
-                                                            "0.00")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                    } else if (double.parse(
-                                                            ordPrice) >
-                                                        double.parse(
-                                                            triggerPriceCtrl
-                                                                .text)) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger should be greater than price"));
-                                                    } else if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) <
-                                                        double.parse(widget
-                                                                .scripInfo.lc ??
-                                                            "0.00")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                    } else {
-                                                      if ((int.parse(qtyCtrl
-                                                                      .text
-                                                                      .isEmpty
-                                                                  ? "0"
-                                                                  : qtyCtrl
-                                                                      .text) >
-                                                              frezQty &&
-                                                          widget.scripInfo
-                                                                  .frzqty !=
-                                                              null)) {
-                                                        placeOrder(orderInput,
-                                                            true, theme);
-                                                      } else {
-                                                        placeOrder(orderInput,
-                                                            false, theme);
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              } else if (orderType ==
-                                                      "Bracket" &&
-                                                  (priceType == "Limit" ||
-                                                      priceType == "Market")) {
-                                                if (stopLossCtrl.text.isEmpty ||
-                                                    targetCtrl.text.isEmpty) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
-                                                } else if (isBuy! &&
-                                                    (double.parse(ordPrice) -
-                                                            double.parse(
-                                                                stopLossCtrl
-                                                                    .text)) <
-                                                        double.parse(widget
-                                                                .scripInfo.lc ??
-                                                            "0.00")) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
-                                                } else if (!isBuy! &&
-                                                    (double.parse(ordPrice) +
-                                                            double.parse(
-                                                                stopLossCtrl
-                                                                    .text)) >
-                                                        double.parse(widget
-                                                                .scripInfo.uc ??
-                                                            "0.00")) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
                                                 } else {
                                                   if ((int.parse(qtyCtrl
                                                                   .text.isEmpty
@@ -3277,171 +3532,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         false, theme);
                                                   }
                                                 }
-                                              } else if (orderType ==
-                                                      "Bracket" &&
-                                                  (priceType == "SL Limit")) {
-                                                if (stopLossCtrl.text.isEmpty ||
-                                                    targetCtrl.text.isEmpty) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
-                                                } else if (isBuy! &&
-                                                    (double.parse(ordPrice) -
-                                                            double.parse(
-                                                                stopLossCtrl
-                                                                    .text)) <
-                                                        double.parse(widget
-                                                                .scripInfo.lc ??
-                                                            "0.00")) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
-                                                } else if (!isBuy! &&
-                                                    (double.parse(ordPrice) +
-                                                            double.parse(
-                                                                stopLossCtrl
-                                                                    .text)) >
-                                                        double.parse(widget
-                                                                .scripInfo.uc ??
-                                                            "0.00")) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
-                                                } else if (triggerPriceCtrl
-                                                        .text.isEmpty &&
-                                                    priceType == "SL Limit") {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Trigger can not be empty"));
-                                                } else {
-                                                  if (isBuy!) {
-                                                    if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) <
-                                                        double.parse(widget
-                                                                .scripInfo.lc ??
-                                                            "0.00")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                    } else if (double.parse(
-                                                            ordPrice) <
-                                                        double.parse(
-                                                            triggerPriceCtrl
-                                                                .text)) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger should be less than price"));
-                                                    } else if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) >
-                                                        double.parse(widget
-                                                                .scripInfo.uc ??
-                                                            "0.00")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                    } else {
-                                                      if ((int.parse(qtyCtrl
-                                                                      .text
-                                                                      .isEmpty
-                                                                  ? "0"
-                                                                  : qtyCtrl
-                                                                      .text) >
-                                                              frezQty &&
-                                                          widget.scripInfo
-                                                                  .frzqty !=
-                                                              null)) {
-                                                        placeOrder(orderInput,
-                                                            true, theme);
-                                                      } else {
-                                                        placeOrder(orderInput,
-                                                            false, theme);
-                                                      }
-                                                    }
-                                                  } else {
-                                                    if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) >
-                                                        double.parse(widget
-                                                                .scripInfo.uc ??
-                                                            "0.00")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                    } else if (double.parse(
-                                                            ordPrice) >
-                                                        double.parse(
-                                                            triggerPriceCtrl
-                                                                .text)) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger should be greater than price"));
-                                                    } else if (double.parse(
-                                                            triggerPriceCtrl
-                                                                .text) <
-                                                        double.parse(widget
-                                                                .scripInfo.lc ??
-                                                            "0.00")) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                    } else {
-                                                      if ((int.parse(qtyCtrl
-                                                                      .text
-                                                                      .isEmpty
-                                                                  ? "0"
-                                                                  : qtyCtrl
-                                                                      .text) >
-                                                              frezQty &&
-                                                          widget.scripInfo
-                                                                  .frzqty !=
-                                                              null)) {
-                                                        placeOrder(orderInput,
-                                                            true, theme);
-                                                      } else {
-                                                        placeOrder(orderInput,
-                                                            false, theme);
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              } else {
-                                                if ((int.parse(qtyCtrl
-                                                                .text.isEmpty
-                                                            ? "0"
-                                                            : qtyCtrl.text) >
-                                                        frezQty &&
-                                                    widget.scripInfo.frzqty !=
-                                                        null)) {
-                                                  placeOrder(
-                                                      orderInput, true, theme);
-                                                } else {
-                                                  placeOrder(
-                                                      orderInput, false, theme);
-                                                }
                                               }
                                             }
                                           },
@@ -3456,22 +3546,30 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                 ? colors.ltpgreen
                                                 : colors.darkred,
                                         shape: const StadiumBorder()),
-                                    child: Text(
-                                        widget.isBasket == "Basket"
-                                            ? "Add to Basket"
-                                            : orderType == "SIP"
-                                                ? "Create SIP"
-                                                : isBuy!
-                                                    ? 'Buy Now'
-                                                    : "Sell Now",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? orderType == "SIP"
-                                                    ? colors.colorBlack
-                                                    : colors.colorWhite
-                                                : const Color(0xffffffff),
-                                            14,
-                                            FontWeight.w600)))),
+                                    child: orderProvide.orderloader
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Color(0xffffffff)),
+                                          )
+                                        : Text(
+                                            widget.isBasket == "Basket"
+                                                ? "Add to Basket"
+                                                : orderType == "SIP"
+                                                    ? "Create SIP"
+                                                    : isBuy!
+                                                        ? 'Buy Now'
+                                                        : "Sell Now",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? orderType == "SIP"
+                                                        ? colors.colorBlack
+                                                        : colors.colorWhite
+                                                    : const Color(0xffffffff),
+                                                14,
+                                                FontWeight.w600)))),
                             if (defaultTargetPlatform == TargetPlatform.iOS)
                               const SizedBox(height: 18)
                           ]))));
@@ -3501,7 +3599,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                       onChanged: (value) {
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
                         if (value.isNotEmpty) {
-                           marginUpdate();
+                          marginUpdate();
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                               warningMessage(
@@ -3563,6 +3661,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
       addBasketScrip(orderInput, bsktName);
     } else {
       if (!isSliceOrd) {
+        context.read(orderProvider).setOrderloader(true);
         PlaceOrderInput placeOrderInput = PlaceOrderInput(
             amo: isAmo ? "Yes" : "",
             blprc: orderType == "Cover" || orderType == "Bracket"
@@ -3585,10 +3684,11 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
             mktProt: priceType == "Market" || priceType == "SL MKT"
                 ? mktProtCtrl.text
                 : '',
-            channel: '' );
+            channel: '');
         await context
             .read(orderProvider)
             .fetchPlaceOrder(context, placeOrderInput, widget.orderArg.isExit);
+        context.read(orderProvider).setOrderloader(false);
       } else {
         showModalBottomSheet(
             isScrollControlled: true,
@@ -3744,6 +3844,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                           width: MediaQuery.of(context).size.width,
                           child: ElevatedButton(
                               onPressed: () async {
+                                context
+                                    .read(orderProvider)
+                                    .setOrderloader(true);
+
                                 if (quantity >= 28) {
                                   for (var i = 0; i < 28; i++) {
                                     PlaceOrderInput placeOrderInput =
@@ -3774,7 +3878,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                     priceType == "SL MKT"
                                                 ? mktProtCtrl.text
                                                 : '',
-                                            channel: '' );
+                                            channel: '');
                                     await context
                                         .read(orderProvider)
                                         .slicePlaceOrder(
@@ -3810,7 +3914,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                     priceType == "SL MKT"
                                                 ? mktProtCtrl.text
                                                 : '',
-                                            channel: '' );
+                                            channel: '');
                                     await context
                                         .read(orderProvider)
                                         .slicePlaceOrder(
@@ -3861,7 +3965,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                   priceType == "SL MKT"
                                               ? mktProtCtrl.text
                                               : '',
-                                          channel: '' );
+                                          channel: '');
                                   await context
                                       .read(orderProvider)
                                       .slicePlaceOrder(
@@ -3876,6 +3980,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                     .bottomMenu(2, context);
                                 Navigator.pop(context);
                                 Navigator.pop(context);
+                                context
+                                    .read(orderProvider)
+                                    .setOrderloader(false);
                               },
                               style: ElevatedButton.styleFrom(
                                   padding:

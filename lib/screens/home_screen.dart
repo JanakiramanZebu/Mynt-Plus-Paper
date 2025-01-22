@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import '../locator/constant.dart';
 import '../models/marketwatch_model/get_quotes.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart';
+import '../models/order_book_model/order_book_model.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
@@ -1308,7 +1309,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   size: 32,
                                                 ), // Back icon
                                                 onPressed: () async {
-                                                  userProfile.setChartdialog(false);
+                                                  userProfile
+                                                      .setChartdialog(false);
                                                   marketWatchList
                                                       .chngDephBtn("Overview");
                                                   marketWatchList
@@ -1412,6 +1414,89 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               tsym: 'ABCD',
                                               token: '0123'),
                                           cHeight: 1.3),
+                                      if (watch(marketWatchProvider)
+                                                  .getQuotes
+                                                  ?.instname !=
+                                              "UNDIND" &&
+                                          watch(marketWatchProvider)
+                                                  .getQuotes
+                                                  ?.instname !=
+                                              "COM") ...[
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20),
+                                          child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Expanded(
+                                                    child: InkWell(
+                                                  onTap: () async {
+                                                    userProfile
+                                                        .setChartdialog(false);
+                                                    await placeOrderInput(
+                                                        watch(
+                                                            marketWatchProvider),
+                                                        context,
+                                                        watch(marketWatchProvider)
+                                                            .getQuotes!,
+                                                        true);
+                                                  },
+                                                  child: Container(
+                                                      height: 40,
+                                                      decoration: BoxDecoration(
+                                                          color: const Color(
+                                                              0xff43A833),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      108)),
+                                                      child: Center(
+                                                          child: Text("BUY",
+                                                              style: textStyle(
+                                                                  const Color(
+                                                                      0XFFFFFFFF),
+                                                                  16,
+                                                                  FontWeight
+                                                                      .w600)))),
+                                                )),
+                                                const SizedBox(width: 18),
+                                                Expanded(
+                                                    child: InkWell(
+                                                        onTap: () async {
+                                                          userProfile
+                                                              .setChartdialog(
+                                                                  false);
+                                                          await placeOrderInput(
+                                                              watch(
+                                                                  marketWatchProvider),
+                                                              context,
+                                                              watch(marketWatchProvider)
+                                                                  .getQuotes!,
+                                                              false);
+                                                        },
+                                                        child: Container(
+                                                            height: 40,
+                                                            decoration: BoxDecoration(
+                                                                color: colors
+                                                                    .darkred,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            108)),
+                                                            child: Center(
+                                                                child: Text(
+                                                                    "SELL",
+                                                                    style: textStyle(
+                                                                        const Color(
+                                                                            0XFFFFFFFF),
+                                                                        16,
+                                                                        FontWeight
+                                                                            .w600))))))
+                                              ]),
+                                        )
+                                      ]
                                       // ElevatedButton(
                                       //   onPressed: () {
                                       //     userProfile.setChartdialog(
@@ -1508,5 +1593,33 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ]);
             }) ??
         false;
+  }
+
+  Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
+      GetQuotes depthData, bool transType) async {
+    final raw = context.read(marketWatchProvider).getQuotes;
+    await context
+        .read(marketWatchProvider)
+        .fetchScripInfo(raw!.token.toString(), raw.exch.toString(), ctx);
+    OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: raw.exch.toString(),
+        tSym: raw.tsym.toString(),
+        isExit: false,
+        token: raw.token.toString(),
+        transType: transType,
+        lotSize: depthData.ls,
+        ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
+        perChange: depthData.pc ?? "0.00",
+        orderTpye: '',
+        holdQty: '',
+        isModify: false);
+    await scripInfo.fetchScripInfo(
+        raw.token.toString(), raw.token.toString(), ctx);
+    // Navigator.pop(context);
+    Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
+      "orderArg": orderArgs,
+      "scripInfo": ctx.read(marketWatchProvider).scripInfoModel!,
+      "isBskt": ''
+    });
   }
 }
