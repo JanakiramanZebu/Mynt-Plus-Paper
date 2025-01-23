@@ -79,11 +79,11 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
                       color: Colors.white,
                     ),
                   ) : 
-                          Text("Retry",
+                          Text("Connect Again",
                       style: textStyle(
                           theme.isDarkMode
-                              ? Color(0xff000000)
-                              : Color(0xffFFFFFF),
+                              ? const Color(0xff000000)
+                              : const Color(0xffFFFFFF),
                           15,
                           FontWeight.w500)),
                 ),

@@ -307,7 +307,57 @@ class OrderBook extends ConsumerWidget {
                                                                       ? colors
                                                                           .colorWhite
                                                                       : colors
-                                                                          .colorBlack))
+                                                                          .colorBlack)),
+
+                                                                              Container(
+                                                        margin: const EdgeInsets.only(
+                                                            left: 7),
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                                horizontal: 7,
+                                                                vertical: 2),
+                                                        decoration: BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                    4),
+                                                            color: theme.isDarkMode
+                                                                ? const Color(0xff666666)
+                                                                    .withOpacity(
+                                                                        .2)
+                                                                : const Color(0xff999999)
+                                                                    .withOpacity(
+                                                                        .2)),
+                                                        child: Text(
+                                                            "${orderBook[index].sPrdtAli}",
+                                                            style: textStyle(
+                                                                const Color(0xff666666),
+                                                                11,
+                                                                FontWeight.w600))),
+                                                                
+                                                                  Container(
+                                                        margin: const EdgeInsets.only(
+                                                            left: 7),
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                                horizontal: 7,
+                                                                vertical: 2),
+                                                        decoration: BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                    4),
+                                                            color: theme.isDarkMode
+                                                                ? const Color(0xff666666)
+                                                                    .withOpacity(
+                                                                        .2)
+                                                                : const Color(0xff999999)
+                                                                    .withOpacity(
+                                                                        .2)),
+                                                        child: Text(
+                                                            "${orderBook[index].prctyp}",
+                                                            style: textStyle(
+                                                                const Color(0xff666666),
+                                                                11,
+                                                                FontWeight.w600)))
                                                     ],
                                                   ),
                                                   Text(
@@ -368,30 +418,24 @@ class OrderBook extends ConsumerWidget {
                                                                     : colors.ltpgreen,
                                                                 12,
                                                                 FontWeight.w600))),
-                                                    Container(
-                                                        margin: const EdgeInsets.only(
-                                                            left: 7),
-                                                        padding:
-                                                            const EdgeInsets.symmetric(
-                                                                horizontal: 7,
-                                                                vertical: 2),
-                                                        decoration: BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                    4),
-                                                            color: theme.isDarkMode
-                                                                ? const Color(0xff666666)
-                                                                    .withOpacity(
-                                                                        .2)
-                                                                : const Color(0xff999999)
-                                                                    .withOpacity(
-                                                                        .2)),
-                                                        child: Text(
-                                                            "${orderBook[index].sPrdtAli}",
-                                                            style: textStyle(
-                                                                const Color(0xff666666),
-                                                                11,
-                                                                FontWeight.w600)))
+                                                                const SizedBox(width: 8),
+                                                    Text(
+                                                        formatDateTime(
+                                                            value:
+                                                                orderBook[index]
+                                                                    .norentm!).substring(13, 21),
+                                                        style: textStyle(
+                                                            const Color(
+                                                                0xff666666),
+                                                            12,
+                                                            FontWeight.w500))
+
+
+
+
+
+
+
                                                   ]),
                                                   Row(children: [
                                                     Text("Qty: ",
@@ -444,19 +488,9 @@ class OrderBook extends ConsumerWidget {
                                                                     .colorBlack,
                                                             13,
                                                             FontWeight.w500)),
-                                                    Text(
-                                                        formatDateTime(
-                                                            value:
-                                                                orderBook[index]
-                                                                    .norentm!),
-                                                        style: textStyle(
-                                                            const Color(
-                                                                0xff666666),
-                                                            12,
-                                                            FontWeight.w500))
                                                   ]),
                                                   Row(children: [
-                                                    Text("Price: ",
+                                                    Text("Prc: ",
                                                         style: textStyle(
                                                             const Color(
                                                                 0xff5E6B7D),
@@ -471,7 +505,27 @@ class OrderBook extends ConsumerWidget {
                                                                 : colors
                                                                     .colorBlack,
                                                             14,
+                                                            FontWeight.w500)),
+
+                                                            if(orderBook[index].prctyp == "SL-LMT" || orderBook[index].prctyp == "SL-MKT" ) ...[
+                                                              const SizedBox(child: Text(' / ')),
+                                                            Text("TP: ",
+                                                        style: textStyle(
+                                                            const Color(
+                                                                0xff5E6B7D),
+                                                            14,
+                                                            FontWeight.w500)),
+                                                    Text(
+                                                        "${orderBook[index].trgprc ?? 0.00}",
+                                                        style: textStyle(
+                                                            theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            14,
                                                             FontWeight.w500))
+                                                            ]
                                                   ])
                                                 ])
                                           ]))

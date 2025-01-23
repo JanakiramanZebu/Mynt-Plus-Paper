@@ -1603,7 +1603,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         }
                                                       }
                                                     } else {
-                                                      if (isActivePrice[3]) {
+                                                      if (isActivePrice[2]) {
                                                         if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) >

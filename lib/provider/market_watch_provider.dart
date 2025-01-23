@@ -1047,19 +1047,27 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 // Scrip market depth calc
   void scripQtyCal() {
     if (_getQuotes.instname != "UNDIND" && _getQuotes.instname != "COM") {
-      if (_getQuotes.tbq != null || _getQuotes.tsq != null) {
-        _totBuyQtyPer = (int.parse("${_getQuotes.tbq ?? 0}") /
-                (int.parse("${_getQuotes.tbq ?? 0}") +
-                    int.parse(
-                        "${_getQuotes.tsq!.contains('.') ? _getQuotes.tsq!.split(".")[0] : _getQuotes.tsq ?? 0}"))) *
+      if ((_getQuotes.tbq != "null" && _getQuotes.tbq != null) ||
+          _getQuotes.tsq != null) {
+        _totBuyQtyPer = (int.tryParse(_getQuotes.tbq?.toString() ?? "0") ?? 0) /
+            ((int.tryParse(_getQuotes.tbq?.toString() ?? "0") ?? 0) +
+                (int.tryParse(_getQuotes.tsq?.contains('.') == true
+                        ? _getQuotes.tsq!.split(".")[0]
+                        : _getQuotes.tsq ?? "0") ??
+                    0)) *
             100;
 
-        _totSellQtyPer = (int.parse(
-                    "${_getQuotes.tsq!.contains('.') ? _getQuotes.tsq!.split(".")[0] : _getQuotes.tsq ?? 0}") /
-                (int.parse("${_getQuotes.tbq ?? 0}") +
-                    int.parse(
-                        "${_getQuotes.tsq!.contains('.') ? _getQuotes.tsq!.split(".")[0] : _getQuotes.tsq ?? 0}"))) *
-            100;
+        int tbqValue = int.tryParse(_getQuotes.tbq ?? "0") ?? 0;
+        int tsqValue = int.tryParse(
+                _getQuotes.tsq != null && _getQuotes.tsq!.contains('.')
+                    ? _getQuotes.tsq!.split(".")[0]
+                    : _getQuotes.tsq ?? "0") ??
+            0;
+        if ((tbqValue + tsqValue) == 0) {
+          _totSellQtyPer = 0;
+        } else {
+          _totSellQtyPer = (tsqValue / (tbqValue + tsqValue)) * 100;
+        }
         if (_totBuyQtyPer.isNaN) {
           _totBuyQtyPer = 0.00;
         }
@@ -1067,20 +1075,23 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _totSellQtyPer = 0.00;
         }
         _totBuyQtyPerChng = _totBuyQtyPer / 100;
+        // Parse each value safely using int.tryParse
         _maxSellQty = [
-          int.parse("${_getQuotes.sq2 ?? 0}"),
-          int.parse("${_getQuotes.sq1 ?? 0}"),
-          int.parse("${_getQuotes.sq3 ?? 0}"),
-          int.parse("${_getQuotes.sq4 ?? 0}"),
-          int.parse("${_getQuotes.sq5 ?? 0}")
-        ].reduce(max);
+          int.tryParse(_getQuotes.sq2 ?? "0") ?? 0,
+          int.tryParse(_getQuotes.sq1 ?? "0") ?? 0,
+          int.tryParse(_getQuotes.sq3 ?? "0") ?? 0,
+          int.tryParse(_getQuotes.sq4 ?? "0") ?? 0,
+          int.tryParse(_getQuotes.sq5 ?? "0") ?? 0
+        ].reduce((a, b) => a > b ? a : b);
+
+// Parse each value safely for maxBuyQty
         _maxBuyQty = [
-          int.parse("${_getQuotes.bq2 ?? 0}"),
-          int.parse("${_getQuotes.bq1 ?? 0}"),
-          int.parse("${_getQuotes.bq3 ?? 0}"),
-          int.parse("${_getQuotes.bq4 ?? 0}"),
-          int.parse("${_getQuotes.bq5 ?? 0}")
-        ].reduce(max);
+          int.tryParse(_getQuotes.bq2 ?? "0") ?? 0,
+          int.tryParse(_getQuotes.bq1 ?? "0") ?? 0,
+          int.tryParse(_getQuotes.bq3 ?? "0") ?? 0,
+          int.tryParse(_getQuotes.bq4 ?? "0") ?? 0,
+          int.tryParse(_getQuotes.bq5 ?? "0") ?? 0
+        ].reduce((a, b) => a > b ? a : b);
       }
     }
   }
@@ -1604,7 +1615,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 // Scrip returns data(Year/Month/Week/Day)
   techDataCalc(String lastPrc) {
     _returnsGridview = [];
-    double ltp = double.parse(lastPrc);
+    double ltp = lastPrc != "null" ? double.parse(lastPrc) : 0.0;
 
     if (_techData != null) {
       double wk1c =

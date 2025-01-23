@@ -297,7 +297,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                 0xff666666))))
                                               ]),
                                           Text(
-                                              "₹${depthData.lp ?? depthData.c ?? 0.00}",
+                                              "₹${depthData.lp != "null" ? depthData.lp ?? depthData.c ?? 0.00 : '0.00'}",
                                               style: textStyle(
                                                   !theme.isDarkMode
                                                       ? colors.colorBlack
@@ -327,7 +327,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                     FontWeight.w600)),
                                           ]),
                                           Text(
-                                              " ${double.parse("${depthData.chng ?? 0.00} ").toStringAsFixed(2)} (${depthData.pc ?? 0.00}%)",
+                                              "${(double.tryParse(depthData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthData.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
                                               style: textStyle(
                                                   (depthData.chng == "null" ||
                                                               depthData.chng ==
@@ -915,9 +915,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                         //   children: [
                         Expanded(
                             child: ListView(
-                                physics: scripInfo.actDeptBtn == "Chart"
-                                    ? const NeverScrollableScrollPhysics()
-                                    : const AlwaysScrollableScrollPhysics(),
+                                physics: const AlwaysScrollableScrollPhysics(),
                                 controller: scrollController,
                                 children: [
                                 if (scripInfo.actDeptBtn == "Overview") ...[
@@ -931,11 +929,13 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                             const SizedBox(height: 4),
                                             rowOfInfoData(
                                                 "Open",
-                                                "${depthData.o ?? 0.00}",
+                                                "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}",
                                                 "Close",
-                                                "${depthData.c ?? 0.00}",
+                                                "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
                                                 theme),
                                             const SizedBox(height: 4),
+                                             if (depthData.l != "null" &&
+                                                depthData.h != "null") ...[
                                             Text("Low - High",
                                                 style: textStyle(
                                                     const Color(0xff666666),
@@ -952,8 +952,16 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 color: theme.isDarkMode
                                                     ? colors.darkColorDivider
                                                     : colors.colorDivider),
-                                            if (depthData.wk52L != null &&
-                                                depthData.wk52H != null) ...[
+                                                ] else ...[
+                                                     rowOfInfoData(
+                                                "Low",
+                                                "0.00",
+                                                "High",
+                                                "0.00",
+                                                theme),
+                                                ],
+                                            if (depthData.wk52L != "null" &&
+                                                depthData.wk52H != "null") ...[
                                               const SizedBox(height: 6),
                                               Text("52 Week Low - 52 Week High",
                                                   style: textStyle(
@@ -971,7 +979,14 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                       ? colors.darkColorDivider
                                                       : colors.colorDivider),
                                               const SizedBox(height: 6)
-                                            ],
+                                            ] else ...[
+                                                     rowOfInfoData(
+                                                "52 Week Low",
+                                                "0.00",
+                                                "52 Week High",
+                                                "0.00",
+                                                theme),
+                                                ],
                                             if (widget.wlValue.instname !=
                                                     "UNDIND" &&
                                                 widget.wlValue.instname !=
@@ -1114,7 +1129,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                           .spaceBetween,
                                                   children: [
                                                     Text(
-                                                        "${depthData.tbq ?? 0}",
+                                                        "${depthData.tbq != "null" ? depthData.tbq ?? 0 : '0'}",
                                                         style: textStyle(
                                                             theme.isDarkMode
                                                                 ? colors
@@ -1124,7 +1139,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                             15,
                                                             FontWeight.w600)),
                                                     Text(
-                                                        "${depthData.tsq ?? 0}",
+                                                        "${depthData.tsq != "null" ? depthData.tsq ?? 0 : '0'}",
                                                         style: textStyle(
                                                             theme.isDarkMode
                                                                 ? colors
@@ -1186,21 +1201,21 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                   "Avg Price",
                                                   "${depthData.ap ?? 0.00}",
                                                   "Volume",
-                                                  "${depthData.v ?? 0.00}",
+                                                  "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}",
                                                   theme),
                                               const SizedBox(height: 4),
                                               rowOfInfoData(
                                                   "Lower Circuit",
-                                                  "${depthData.lc ?? 0.00}",
+                                                  "${depthData.lc != "null" ? depthData.lc ?? 0.00: '0.00'}",
                                                   "Upper Circuit",
-                                                  "${depthData.uc ?? 0.00}",
+                                                  "${depthData.uc != "null" ? depthData.uc ?? 0.00: '0.00'}",
                                                   theme),
                                               const SizedBox(height: 4),
                                               rowOfInfoData(
                                                   "Last Trade Qty",
-                                                  "${depthData.ltq ?? 0}",
+                                                  "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0' ?? 0}",
                                                   "Last Trade Time",
-                                                  depthData.ltt ?? "--",
+                                                  depthData.ltt != "null" ? depthData.ltt  ?? "--" : "--",
                                                   theme),
                                               const SizedBox(height: 4),
                                               if (depthData.seg != "EQT") ...[
@@ -1435,7 +1450,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                             FontWeight
                                                                 .w600))))))
                                   ])),
-                    const SizedBox(height: 18)
+                    if (!scripInfo.scripDepthloader) ...[
+                      const SizedBox(height: 18)
+                    ]
                     //   ],
                     // ),
                   ]),
@@ -1563,6 +1580,21 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
   }
 
   Row lowHighBar(String low, String high, String value, ThemesProvider theme) {
+    double? lowValue = double.tryParse(low ?? "0.0");
+    double? valueValue = double.tryParse(value ?? "0.0");
+    double? highValue = double.tryParse(high ?? "0.0");
+
+    double minValue = (lowValue != null && valueValue != null)
+        ? (lowValue <= valueValue ? lowValue : valueValue)
+        : 0.0; // Fallback if parsing fails
+
+    double maxValue = (highValue != null && valueValue != null)
+        ? (highValue >= valueValue ? highValue : valueValue)
+        : 0.0; // Fallback if parsing fails
+
+    List<double> valuesList =
+        valueValue != null ? [valueValue] : [0.0]; // Fallback if parsing fails
+
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(low,
           style: textStyle(
@@ -1600,13 +1632,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
             activeTrackBarHeight: 4,
             inactiveTrackBarHeight: 4,
           ),
-          min: double.parse(low) <= double.parse(value)
-              ? double.parse(low)
-              : double.parse(value),
-          max: double.parse(high) >= double.parse(value)
-              ? double.parse(high)
-              : double.parse(value),
-          values: [double.parse(value)],
+          min: minValue,
+          max: maxValue,
+          values: valuesList,
           onDragging: null,
           jump: false,
           disabled: true,
@@ -1665,8 +1693,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
   Stack depthPercentageSell(
       sellQty, sellPrc, MarketWatchProvider scripInfo, ThemesProvider theme) {
-    String val = (((int.parse("$sellQty") / scripInfo.maxSellQty) * 100) / 100)
-        .toStringAsFixed(2);
+    String val =
+        (((int.tryParse("$sellQty") ?? 0) / (scripInfo.maxSellQty)) * 100)
+            .toStringAsFixed(2);
     double barPercentage = double.parse(val);
 
     return Stack(children: [
@@ -1688,16 +1717,17 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                qtyDepthTexts(sellPrc, theme),
-                qtyDepthTexts(sellQty, theme)
+                qtyDepthTexts(sellPrc, theme, false),
+                qtyDepthTexts(sellQty, theme, true)
               ]))
     ]);
   }
 
   Stack depthPercentageBuy(
       buyQty, buyPrc, MarketWatchProvider scripInfo, ThemesProvider theme) {
-    String val = (((int.parse("$buyQty") / scripInfo.maxBuyQty) * 100) / 100)
-        .toStringAsFixed(2);
+    String val =
+        (((int.tryParse("$buyQty") ?? 0) / (scripInfo.maxBuyQty)) * 100)
+            .toStringAsFixed(2);
     double barPercentage = double.parse(val);
     return Stack(children: [
       LinearPercentIndicator(
@@ -1716,14 +1746,14 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                qtyDepthTexts(buyQty, theme),
-                qtyDepthTexts(buyPrc, theme)
+                qtyDepthTexts(buyQty, theme, true),
+                qtyDepthTexts(buyPrc, theme, false)
               ]))
     ]);
   }
 
-  Text qtyDepthTexts(String? text, ThemesProvider theme) {
-    return Text(" ${text ?? 0} ",
+  Text qtyDepthTexts(String? text, ThemesProvider theme, bool type) {
+    return Text(" ${text != "null" ? text ?? 0 : type ?  '0' : '0.00'} ",
         style: textStyle(
             theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
             13,

@@ -324,15 +324,15 @@ mixin OrderAPI on ApiCore {
         "ipaddr": ip
       
       };
-      if (input.blprc.isNotEmpty || double.parse(input.blprc) != 0.0) {
+      if (input.blprc.isNotEmpty && int.parse(input.blprc) != 0) {
         payload.addAll({"blprc": input.blprc});
       }
-      if (input.bpprc.isNotEmpty || double.parse(input.blprc) != 0.0) {
+      if (input.bpprc.isNotEmpty && int.parse(input.blprc) != 0) {
         payload.addAll({"bpprc": input.bpprc});
       }
       // if (input.trailprc.isNotEmpty) {
       //   payload.addAll({"trailprc": input.trailprc});
-      // }s
+      // }
 
       final res = await apiClient.post(uri,
           headers: defaultHeaders,

@@ -10,13 +10,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
+import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/user_profile_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
 import '../../../sharedWidget/functions.dart';
+import '../scrip_depth_info.dart';
 import 'charttype_bottom.dart';
 import 'drwaing_bottom.dart';
 import 'resolution_bottom.dart';
@@ -124,15 +127,15 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         final tvChart = watch(marketWatchProvider);
         final theme = watch(themeProvider);
         final depthData = context.read(marketWatchProvider).getQuotes!;
-
+        final userProfile = watch(userProfileProvider);
         return SizedBox(
           height: (MediaQuery.of(context).size.height -
-              (depthData.instname != "UNDIND" && depthData.instname != "COM"
-                  ? 170
-                  : 120)),
+              (depthData.instname == "UNDIND" || depthData.instname == "COM"
+                  ? 93
+                  : 133)),
           child: Column(
             children: [
-              _buildTopBar(tvChart, theme),
+              _buildTopBar(tvChart, theme, userProfile),
               _buildWebView(tvChart, theme),
             ],
           ),
@@ -141,7 +144,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     );
   }
 
-  Widget _buildTopBar(MarketWatchProvider tvChart, theme) {
+  Widget _buildTopBar(MarketWatchProvider tvChart, theme, userProfile) {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
@@ -152,7 +155,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
           ),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 6),
-        height: 50,
+        height: 40,
         child: Row(
           children: [
             Expanded(
@@ -160,6 +163,86 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
+                    IconButton(
+                      padding: const EdgeInsets.all(0),
+                      icon: Icon(
+                        Icons.chevron_left,
+                        color: !theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        size: 32,
+                      ), // Back icon
+                      onPressed: () async {
+                        userProfile.setChartdialog(false);
+                        tvChart.chngDephBtn("Overview");
+                        tvChart.singlePageloader(true);
+      
+                        DepthInputArgs depthArgs = DepthInputArgs(
+                            exch: '${tvChart.getQuotes?.exch}',
+                            token: '${tvChart.getQuotes?.token}',
+                            tsym: '${tvChart.getQuotes?.tsym}',
+                            instname: tvChart.getQuotes?.instname ?? "",
+                            symbol: '${tvChart.getQuotes?.symbol}',
+                            expDate: '${tvChart.getQuotes?.expDate}',
+                            option: '${tvChart.getQuotes?.option}');
+      
+                        showModalBottomSheet(
+                            isScrollControlled: true,
+                            useSafeArea: true,
+                            isDismissible: true,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16))),
+                            context: context,
+                            builder: (context) => Container(
+                                padding: EdgeInsets.only(
+                                  bottom:
+                                      MediaQuery.of(context).viewInsets.bottom,
+                                ),
+                                child: ScripDepthInfo(
+                                    wlValue: depthArgs, isBasket: '')));
+      
+                        // if ((tvChart.getQuotes
+                        //                 ?.exch ==
+                        //             "NSE" ||
+                        //         tvChart
+                        //                 .getQuotes
+                        //                 ?.exch ==
+                        //             "BSE") &&
+                        //     (tvChart.getQuotes
+                        //             ?.instname
+                        //             .toString() !=
+                        //         "UNDIND")) {
+                        //   context
+                        //       .read(
+                        //           marketWatchProvider)
+                        //       .depthBtns
+                        //       .add({
+                        //     "btnName": "Fundamental",
+                        //     "imgPath": assets.dInfo,
+                        //     "case":
+                        //         "Click here to view fundamental data."
+                        //   });
+                        // }
+      
+                        // context
+                        //     .read(marketWatchProvider)
+                        //     .depthBtns
+                        //     .add({
+                        //   "btnName": "Set Alert",
+                        //   "imgPath":
+                        //       "assets/icon/calendar.svg",
+                        //   "case":
+                        //       "Click here to view the trading view chart."
+                        // });
+                        tvChart.singlePageloader(false);
+      
+                        await ConstantName.webViewController!.evaluateJavascript(
+                            source:
+                                "window.changeScript('ABC:ABCD',0123, '${theme.isDarkMode ? 'Y' : 'N'}')");
+                      },
+                    ),
+                    _buildDivider(),
                     _buildButton(
                       label: tvChart.duration,
                       onPressed: () =>
