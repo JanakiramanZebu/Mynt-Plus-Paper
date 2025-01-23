@@ -179,6 +179,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
   // Map get positionGroup => _positionGroup;
   List<String> _groupPositionSym = [];
   List<String> get groupPositionSym => _groupPositionSym;
+  List _oplists = [];
+  List get oplists => _oplists;
 
   String _posSelection = "All position";
 
@@ -1214,8 +1216,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
           element.profitNloss = double.parse(finpnl).toStringAsFixed(2);
         } else {
-          var tempunpnl =
-              (lastPrice != 0.0 ? lastPrice : double.parse(element.lp.toString())) - double.parse(element.netupldprc.toString());
+          var tempunpnl = (lastPrice != 0.0
+                  ? lastPrice
+                  : double.parse(element.lp.toString())) -
+              double.parse(element.netupldprc.toString());
           element.profitNloss = (double.parse(tempunpnl.toString()) * qty +
                   double.parse(element.temppnl.toString()))
               .toStringAsFixed(2);
@@ -2165,6 +2169,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 .toStringAsFixed(2);
       }
 
+      notifyListeners();
+    }
+  }
+
+  Future fetchOplist(context) async {
+    try {
+      List oplist = await api.getOptionlist();
+      _oplists = oplist;
+    } catch (e) {
+      ref(indexListProvider)
+          .logError
+          .add({"type": "API OPlist", "Error": "$e"});
       notifyListeners();
     }
   }

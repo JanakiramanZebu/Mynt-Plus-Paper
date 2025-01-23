@@ -116,15 +116,6 @@ class _StocksScreenState extends State<StocksScreen> {
                                   marketWatch.fetchFundamentalData(
                                       tradeSym:
                                           "${holdingProvide[index].exchTsym![0].exch}:${holdingProvide[index].exchTsym![0].tsym}");
-                                  context
-                                      .read(marketWatchProvider)
-                                      .depthBtns
-                                      .add({
-                                    "btnName": "Fundamental",
-                                    "imgPath": assets.dInfo,
-                                    "case":
-                                        "Click here to view fundamental data."
-                                  });
 
                                   await marketWatch.fetchTechData(
                                       context: context,

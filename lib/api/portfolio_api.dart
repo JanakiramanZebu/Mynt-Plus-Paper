@@ -11,6 +11,24 @@ import 'core/api_link.dart';
 
 mixin PortfolioAPI on ApiCore {
 // get Holdings from kambala
+  Future<List> getOptionlist() async {
+    try {
+      String u = "https://be.mynt.in/oplist";
+      final uri = Uri.parse(u);
+      final res = await apiClient.post(uri, headers: defaultHeaders, body: '');
+
+      List data = [];
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        if (json.isNotEmpty && json['Tokens'].isNotEmpty) {
+          data = json['Tokens'];
+        }
+      }
+      return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
 
   Future<Map<String, dynamic>> getHolding() async {
     String stat = "";

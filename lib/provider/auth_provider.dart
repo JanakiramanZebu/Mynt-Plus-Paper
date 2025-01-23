@@ -861,6 +861,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
         await ref(indexListProvider).getDeafultIndexList(context);
         await ref(marketWatchProvider).fetchMWList(context);
+        ref(portfolioProvider).fetchOplist(context);
         ref(userProfileProvider).fetchUserDetail(context);
         ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
         ref(portfolioProvider).fetchPositionBook(context, false);

@@ -67,6 +67,7 @@ class Assets {
   final String cancelledIcon = "assets/icon/cancelled.svg";
   final String warningIcon = "assets/icon/warning.svg";
   final String dInfo = "assets/icon/d-info.svg";
+  final String calendar = "assets/icon/calendar.svg";
   final String timeAlaram = "assets/icon/time-alarm.svg";
 
   final String themeIcon = "assets/icon/theme_icon.svg";

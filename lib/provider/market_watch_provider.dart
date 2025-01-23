@@ -964,6 +964,47 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       String token, String exch, BuildContext context) async {
     try {
       _returnsGridview = [];
+      _depthBtns = [
+        {
+          "btnName": "Overview",
+          "imgPath": assets.dInfo,
+          "case": "click here to view the market depth."
+        },
+        {
+          "btnName": "Chart",
+          "imgPath": assets.charticon,
+          "case": "Click here to view the trading view chart."
+        }
+      ];
+
+      final portfolios = ref(portfolioProvider);
+
+      if (portfolios.oplists.isNotEmpty &&
+          portfolios.oplists.contains(int.parse(token))) {
+        _depthBtns.add({
+          "btnName": "Option",
+          "imgPath": assets.optChainIcon,
+          "case": "Click here to view the Option chain details."
+        });
+        _depthBtns.add({
+          "btnName": "Future",
+          "imgPath": assets.optChainIcon,
+          "case": "click here to view the futures of the underline scrpit."
+        });
+      } 
+      if(exch == 'NSE' || exch == 'BSE') {
+            _depthBtns.add({
+          "btnName": "Fundamental",
+          "imgPath": assets.dInfo,
+          "case": "Click here to view fundamental data."
+        });
+        
+      }
+        _depthBtns.add({
+          "btnName": "Set Alert",
+          "imgPath": assets.calendar,
+          "case": "click here to view the futures of the underline scrpit."
+        });
       if (storeQuotes.isNotEmpty &&
           storeQuotes.containsKey(token) &&
           storeQuotes[token]?['q'] != null) {
@@ -1222,18 +1263,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   Future fetchLinkeScrip(
       String token, String exch, BuildContext context) async {
     try {
-      _depthBtns = [
-        {
-          "btnName": "Overview",
-          "imgPath": assets.dInfo,
-          "case": "click here to view the market depth."
-        },
-        {
-          "btnName": "Chart",
-          "imgPath": assets.charticon,
-          "case": "Click here to view the trading view chart."
-        }
-      ];
+      // _depthBtns = [
+      //   {
+      //     "btnName": "Overview",
+      //     "imgPath": assets.dInfo,
+      //     "case": "click here to view the market depth."
+      //   },
+      //   {
+      //     "btnName": "Chart",
+      //     "imgPath": assets.charticon,
+      //     "case": "Click here to view the trading view chart."
+      //   }
+      // ];
       if (storeQuotes.containsKey(token) && storeQuotes[token]?['l'] != null) {
         print('qqq ls if ');
         ConstantName.sessCheck = true;
@@ -1242,11 +1283,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _fut = storeQuotes[token]?['l']['fu'];
         _optExp = storeQuotes[token]?['l']['op'];
         if (_optExp!.isNotEmpty) {
-          _depthBtns.add({
-            "btnName": "Option",
-            "imgPath": assets.optChainIcon,
-            "case": "Click here to view the Option chain details."
-          });
 
           _sortedDate = storeQuotes[token]?['l']['sortdate'];
           _selectedExpDate = _sortedDate[0];
@@ -1255,11 +1291,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _selectedTradeSym = storeQuotes[token]?['l']['selectedTradeSym'];
         }
         if (_fut!.isNotEmpty) {
-          _depthBtns.add({
-            "btnName": "Future",
-            "imgPath": assets.optChainIcon,
-            "case": "click here to view the futures of the underline scrpit."
-          });
 
           _futToken = "${_fut![0].token}";
           __futExch = "${_fut![0].exch}";
@@ -1274,11 +1305,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _optExp = _linkedScrips!.optExp;
 
           if (_optExp!.isNotEmpty) {
-            _depthBtns.add({
-              "btnName": "Option",
-              "imgPath": assets.optChainIcon,
-              "case": "Click here to view the Option chain details."
-            });
 
 // Option expiry Date wise sorting
 
@@ -1340,12 +1366,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             }
           }
           if (_fut!.isNotEmpty) {
-            _depthBtns.add({
-              "btnName": "Future",
-              "imgPath": assets.optChainIcon,
-              "case": "click here to view the futures of the underline scrpit."
-            });
-
             _futToken = "${_fut![0].token}";
             __futExch = "${_fut![0].exch}";
 

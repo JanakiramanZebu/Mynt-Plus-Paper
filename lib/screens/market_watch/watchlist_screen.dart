@@ -197,15 +197,6 @@ class WatchListScreen extends ConsumerWidget {
                                             "${marketWatch.scrips[idx]['exch']}:${marketWatch.scrips[idx]['tsym']}");
                                 if ((marketWatch.scrips[idx]['exch'] == "NSE" ||
                                     marketWatch.scrips[idx]['exch'] == "BSE")) {
-                                  context
-                                      .read(marketWatchProvider)
-                                      .depthBtns
-                                      .add({
-                                    "btnName": "Fundamental",
-                                    "imgPath": assets.dInfo,
-                                    "case":
-                                        "Click here to view fundamental data."
-                                  });
                                   await context.read(marketWatchProvider).fetchTechData(
                                       context: context,
                                       exch:
@@ -215,15 +206,6 @@ class WatchListScreen extends ConsumerWidget {
                                       lastPrc:
                                           "${context.read(marketWatchProvider).getQuotes!.lp ?? context.read(marketWatchProvider).getQuotes!.c ?? 0.00}");
                                 }
-                                context
-                                    .read(marketWatchProvider)
-                                    .depthBtns
-                                    .add({
-                                  "btnName": "Set Alert",
-                                  "imgPath": "assets/icon/calendar.svg",
-                                  "case":
-                                      "Click here to view the trading view chart."
-                                });
                               }
                             },
                             contentPadding:
