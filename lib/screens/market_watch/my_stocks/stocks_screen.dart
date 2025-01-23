@@ -100,6 +100,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                         "${holdingProvide[index].exchTsym![0].exch}|${holdingProvide[index].exchTsym![0].token}",
                                     task: "d",
                                     context: context);
+                                marketWatch.singlePageloader(false);
 
                                 await marketWatch.fetchScripQuote(
                                     "${holdingProvide[index].exchTsym![0].token}",
@@ -137,7 +138,6 @@ class _StocksScreenState extends State<StocksScreen> {
                                   //  await watch(portfolioProvider).    isOpenScripInfo ("${holdingProvide[index].exchTsym![0].token}");
                                   //  }
                                 }
-                                marketWatch.singlePageloader(false);
                               },
                               child: ListTile(
                                 contentPadding:

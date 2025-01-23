@@ -92,6 +92,7 @@ class FutureScreen extends ConsumerWidget {
                         wlValue: depthArgs,
                         isBasket: '',
                       ));
+              watch(marketWatchProvider).singlePageloader(false);
 
               await watch(websocketProvider).establishConnection(
                   channelInput:
@@ -109,7 +110,6 @@ class FutureScreen extends ConsumerWidget {
                     "${future.fut![index].exch}",
                     context);
               }
-              watch(marketWatchProvider).singlePageloader(false);
 
             },
             child: ListTile(

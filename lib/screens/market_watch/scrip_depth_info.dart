@@ -934,32 +934,28 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
                                                 theme),
                                             const SizedBox(height: 4),
-                                             if (depthData.l != "null" &&
+                                            if (depthData.l != "null" &&
                                                 depthData.h != "null") ...[
-                                            Text("Low - High",
-                                                style: textStyle(
-                                                    const Color(0xff666666),
-                                                    12,
-                                                    FontWeight.w500)),
-                                            const SizedBox(height: 4),
-                                            lowHighBar(
-                                                "${depthData.l ?? 0.00}",
-                                                "${depthData.h ?? 0.00}",
-                                                "${depthData.lp ?? depthData.c ?? 0.00}",
-                                                theme),
-                                            const SizedBox(height: 2),
-                                            Divider(
-                                                color: theme.isDarkMode
-                                                    ? colors.darkColorDivider
-                                                    : colors.colorDivider),
-                                                ] else ...[
-                                                     rowOfInfoData(
-                                                "Low",
-                                                "0.00",
-                                                "High",
-                                                "0.00",
-                                                theme),
-                                                ],
+                                              Text("Low - High",
+                                                  style: textStyle(
+                                                      const Color(0xff666666),
+                                                      12,
+                                                      FontWeight.w500)),
+                                              const SizedBox(height: 4),
+                                              lowHighBar(
+                                                  "${depthData.l ?? 0.00}",
+                                                  "${depthData.h ?? 0.00}",
+                                                  "${depthData.lp ?? depthData.c ?? 0.00}",
+                                                  theme),
+                                              const SizedBox(height: 2),
+                                              Divider(
+                                                  color: theme.isDarkMode
+                                                      ? colors.darkColorDivider
+                                                      : colors.colorDivider),
+                                            ] else ...[
+                                              rowOfInfoData("Low", "0.00",
+                                                  "High", "0.00", theme),
+                                            ],
                                             if (depthData.wk52L != "null" &&
                                                 depthData.wk52H != "null") ...[
                                               const SizedBox(height: 6),
@@ -980,13 +976,13 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                       : colors.colorDivider),
                                               const SizedBox(height: 6)
                                             ] else ...[
-                                                     rowOfInfoData(
-                                                "52 Week Low",
-                                                "0.00",
-                                                "52 Week High",
-                                                "0.00",
-                                                theme),
-                                                ],
+                                              rowOfInfoData(
+                                                  "52 Week Low",
+                                                  "0.00",
+                                                  "52 Week High",
+                                                  "0.00",
+                                                  theme),
+                                            ],
                                             if (widget.wlValue.instname !=
                                                     "UNDIND" &&
                                                 widget.wlValue.instname !=
@@ -1206,16 +1202,18 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                               const SizedBox(height: 4),
                                               rowOfInfoData(
                                                   "Lower Circuit",
-                                                  "${depthData.lc != "null" ? depthData.lc ?? 0.00: '0.00'}",
+                                                  "${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
                                                   "Upper Circuit",
-                                                  "${depthData.uc != "null" ? depthData.uc ?? 0.00: '0.00'}",
+                                                  "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'}",
                                                   theme),
                                               const SizedBox(height: 4),
                                               rowOfInfoData(
                                                   "Last Trade Qty",
                                                   "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0' ?? 0}",
                                                   "Last Trade Time",
-                                                  depthData.ltt != "null" ? depthData.ltt  ?? "--" : "--",
+                                                  depthData.ltt != "null"
+                                                      ? depthData.ltt ?? "--"
+                                                      : "--",
                                                   theme),
                                               const SizedBox(height: 4),
                                               if (depthData.seg != "EQT") ...[
@@ -1694,7 +1692,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
   Stack depthPercentageSell(
       sellQty, sellPrc, MarketWatchProvider scripInfo, ThemesProvider theme) {
     String val =
-        (((int.tryParse("$sellQty") ?? 0) / (scripInfo.maxSellQty)) * 100)
+        ((((int.tryParse("$sellQty") ?? 0) / (scripInfo.maxSellQty)) * 100) /
+                100)
             .toStringAsFixed(2);
     double barPercentage = double.parse(val);
 
@@ -1726,7 +1725,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
   Stack depthPercentageBuy(
       buyQty, buyPrc, MarketWatchProvider scripInfo, ThemesProvider theme) {
     String val =
-        (((int.tryParse("$buyQty") ?? 0) / (scripInfo.maxBuyQty)) * 100)
+        ((((int.tryParse("$buyQty") ?? 0) / (scripInfo.maxBuyQty)) * 100) / 100)
             .toStringAsFixed(2);
     double barPercentage = double.parse(val);
     return Stack(children: [
@@ -1753,7 +1752,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
   }
 
   Text qtyDepthTexts(String? text, ThemesProvider theme, bool type) {
-    return Text(" ${text != "null" ? text ?? 0 : type ?  '0' : '0.00'} ",
+    return Text(
+        " ${text != "null" ? text ?? 0 : type ? '0' : '0.00'} ",
         style: textStyle(
             theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
             13,

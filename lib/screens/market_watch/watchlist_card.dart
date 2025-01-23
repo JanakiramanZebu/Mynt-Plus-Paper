@@ -88,6 +88,8 @@ class WatchlistCard extends ConsumerWidget {
                   "${watchListData['exch']}|${watchListData['token']}",
               task: "d",
               context: context);
+          marketWatch.singlePageloader(false);
+
 
           await marketWatch.fetchScripQuote(
               "${watchListData['token']}", "${watchListData['exch']}", context);
@@ -120,7 +122,6 @@ class WatchlistCard extends ConsumerWidget {
               "case": "Click here to view the trading view chart."
             });
           }
-          marketWatch.singlePageloader(false);
         },
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         dense: true,

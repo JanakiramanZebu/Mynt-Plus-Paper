@@ -175,6 +175,7 @@ class WatchListScreen extends ConsumerWidget {
                                       "${marketWatch.scrips[idx]['exch']}|${marketWatch.scrips[idx]['token']}",
                                   task: "d",
                                   context: context);
+                              marketWatch.singlePageloader(false);
 
                               await marketWatch.fetchScripQuote(
                                   "${marketWatch.scrips[idx]['token']}",
@@ -208,9 +209,9 @@ class WatchListScreen extends ConsumerWidget {
                                   await context.read(marketWatchProvider).fetchTechData(
                                       context: context,
                                       exch:
-                                          "${context.read(marketWatchProvider).getQuotes!.exch}",
+                                          "${marketWatch.scrips[idx]['exch']}",
                                       tradeSym:
-                                          "${context.read(marketWatchProvider).getQuotes!.tsym}",
+                                          "${marketWatch.scrips[idx]['tsym']}",
                                       lastPrc:
                                           "${context.read(marketWatchProvider).getQuotes!.lp ?? context.read(marketWatchProvider).getQuotes!.c ?? 0.00}");
                                 }
@@ -224,7 +225,6 @@ class WatchListScreen extends ConsumerWidget {
                                       "Click here to view the trading view chart."
                                 });
                               }
-                              marketWatch.singlePageloader(false);
                             },
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 16),

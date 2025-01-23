@@ -398,6 +398,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       backgroundColor: Colors.white,
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (_) => bottomSheet,
     );
   }

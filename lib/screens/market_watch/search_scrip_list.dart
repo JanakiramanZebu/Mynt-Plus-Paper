@@ -61,6 +61,7 @@ class SearchScripList extends ConsumerWidget {
                           "${searchValue[index].exch}|${searchValue[index].token}",
                       task: "d",
                       context: context);
+                  searchScrip.singlePageloader(false);
                  
                   await searchScrip.fetchScripQuote(
                       "${searchValue[index].token}",
@@ -99,7 +100,6 @@ class SearchScripList extends ConsumerWidget {
                       "case": "Click here to view the trading view chart."
                     });
                   }
-                  searchScrip.singlePageloader(false);
                 },
                 dense: true,
                 contentPadding:

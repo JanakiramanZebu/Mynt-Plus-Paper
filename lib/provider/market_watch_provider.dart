@@ -963,6 +963,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   Future fetchScripQuote(
       String token, String exch, BuildContext context) async {
     try {
+      _returnsGridview = [];
       if (storeQuotes.isNotEmpty &&
           storeQuotes.containsKey(token) &&
           storeQuotes[token]?['q'] != null) {
@@ -1048,7 +1049,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   void scripQtyCal() {
     if (_getQuotes.instname != "UNDIND" && _getQuotes.instname != "COM") {
       if ((_getQuotes.tbq != "null" && _getQuotes.tbq != null) ||
-          _getQuotes.tsq != null) {
+          (_getQuotes.tsq != "null" && _getQuotes.tsq != null)) {
         _totBuyQtyPer = (int.tryParse(_getQuotes.tbq?.toString() ?? "0") ?? 0) /
             ((int.tryParse(_getQuotes.tbq?.toString() ?? "0") ?? 0) +
                 (int.tryParse(_getQuotes.tsq?.contains('.') == true
@@ -1082,7 +1083,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           int.tryParse(_getQuotes.sq3 ?? "0") ?? 0,
           int.tryParse(_getQuotes.sq4 ?? "0") ?? 0,
           int.tryParse(_getQuotes.sq5 ?? "0") ?? 0
-        ].reduce((a, b) => a > b ? a : b);
+        ].reduce(max);
 
 // Parse each value safely for maxBuyQty
         _maxBuyQty = [
@@ -1091,7 +1092,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           int.tryParse(_getQuotes.bq3 ?? "0") ?? 0,
           int.tryParse(_getQuotes.bq4 ?? "0") ?? 0,
           int.tryParse(_getQuotes.bq5 ?? "0") ?? 0
-        ].reduce((a, b) => a > b ? a : b);
+        ].reduce(max);
       }
     }
   }
@@ -1442,14 +1443,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         print('qqq td if ');
         ConstantName.sessCheck = true;
         _techData = storeQuotes[token]?['t'];
-        techDataCalc(lastPrc);
       } else {
         print('qqq td else');
         _techData = await api.getTechData(exch, tradeSym);
         _returnsGridview = [];
         if (_techData!.stat == "OK") {
           ConstantName.sessCheck = true;
-          techDataCalc(lastPrc);
           storeQuotes[token]?['t'] = {};
           storeQuotes[token]?['t'] = _techData;
         }
@@ -1459,6 +1458,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           ref(authProvider).ifSessionExpired(context);
         }
       }
+      techDataCalc(lastPrc);
 
       notifyListeners();
     } catch (e) {
