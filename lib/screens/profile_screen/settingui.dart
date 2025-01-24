@@ -327,93 +327,93 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showAlertDialog(
-      BuildContext context, String pwd, ThemesProvider theme) {
-    bool isHidden = true; // Local variable to track visibility
+  // void _showAlertDialog(
+  //     BuildContext context, String pwd, ThemesProvider theme) {
+  //   bool isHidden = true; // Local variable to track visibility
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
-              titleTextStyle: textStyles.appBarTitleTxt,
-              contentTextStyle: textStyles.menuTxt,
-              titlePadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(14))),
-              scrollable: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-              ),
-              insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-              title: Text("Sensitive Information"),
-              content: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Display sensitive text
-                  Expanded(
-                    child: Text(
-                      isHidden ? "••••••••••••••••••••••••••••••••" : "$pwd",
-                      style: TextStyle(fontSize: 16),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // Toggle button
-                  IconButton(
-                    icon: Icon(
-                      isHidden ? Icons.visibility_off : Icons.visibility,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        isHidden = !isHidden; // Toggle visibility
-                      });
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                Row(
-                  children: [
-                    SizedBox(
-                      child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: theme.isDarkMode
-                                  ? colors.colorbluegrey
-                                  : colors.colorBlack,
-                              padding: const EdgeInsets.symmetric(vertical: 13),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              )),
-                          child: Text("Proceed", style: textStyles.btnText)),
-                    ),
-                    SizedBox(
-                      child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: theme.isDarkMode
-                                  ? colors.colorbluegrey
-                                  : colors.colorBlack,
-                              padding: const EdgeInsets.symmetric(vertical: 13),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              )),
-                          child: Text("Proceed", style: textStyles.btnText)),
-                    ),
-                  ],
-                )
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return StatefulBuilder(
+  //         builder: (BuildContext context, StateSetter setState) {
+  //           return AlertDialog(
+  //             titleTextStyle: textStyles.appBarTitleTxt,
+  //             contentTextStyle: textStyles.menuTxt,
+  //             titlePadding:
+  //                 const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+  //             shape: const RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.all(Radius.circular(14))),
+  //             scrollable: true,
+  //             contentPadding: const EdgeInsets.symmetric(
+  //               horizontal: 14,
+  //             ),
+  //             insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+  //             title: Text("Sensitive Information"),
+  //             content: Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //               children: [
+  //                 // Display sensitive text
+  //                 Expanded(
+  //                   child: Text(
+  //                     isHidden ? "••••••••••••••••••••••••••••••••" : "$pwd",
+  //                     style: TextStyle(fontSize: 16),
+  //                     overflow: TextOverflow.ellipsis,
+  //                   ),
+  //                 ),
+  //                 const SizedBox(width: 10),
+  //                 // Toggle button
+  //                 IconButton(
+  //                   icon: Icon(
+  //                     isHidden ? Icons.visibility_off : Icons.visibility,
+  //                   ),
+  //                   onPressed: () {
+  //                     setState(() {
+  //                       isHidden = !isHidden; // Toggle visibility
+  //                     });
+  //                   },
+  //                 ),
+  //               ],
+  //             ),
+  //             actions: [
+  //               Row(
+  //                 children: [
+  //                   SizedBox(
+  //                     child: ElevatedButton(
+  //                         onPressed: () {},
+  //                         style: ElevatedButton.styleFrom(
+  //                             elevation: 0,
+  //                             backgroundColor: theme.isDarkMode
+  //                                 ? colors.colorbluegrey
+  //                                 : colors.colorBlack,
+  //                             padding: const EdgeInsets.symmetric(vertical: 13),
+  //                             shape: RoundedRectangleBorder(
+  //                               borderRadius: BorderRadius.circular(30),
+  //                             )),
+  //                         child: Text("Proceed", style: textStyles.btnText)),
+  //                   ),
+  //                   SizedBox(
+  //                     child: ElevatedButton(
+  //                         onPressed: () {},
+  //                         style: ElevatedButton.styleFrom(
+  //                             elevation: 0,
+  //                             backgroundColor: theme.isDarkMode
+  //                                 ? colors.colorbluegrey
+  //                                 : colors.colorBlack,
+  //                             padding: const EdgeInsets.symmetric(vertical: 13),
+  //                             shape: RoundedRectangleBorder(
+  //                               borderRadius: BorderRadius.circular(30),
+  //                             )),
+  //                         child: Text("Proceed", style: textStyles.btnText)),
+  //                   ),
+  //                 ],
+  //               )
+  //             ],
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
     return GoogleFonts.inter(

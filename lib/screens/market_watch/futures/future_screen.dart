@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/list_divider.dart';
-import '../scrip_depth_info.dart';
 
 class FutureScreen extends ConsumerWidget {
   const FutureScreen({super.key});
@@ -68,49 +66,9 @@ class FutureScreen extends ConsumerWidget {
         }
         return InkWell(
             onTap: () async {
-              watch(marketWatchProvider).singlePageloader(true);
               Navigator.pop(context);
-
-              DepthInputArgs depthArgs = DepthInputArgs(
-                  exch: '${future.fut![index].exch}',
-                  token: '${future.fut![index].token}',
-                  tsym: '${future.fut![index].tsym}',
-                  instname: "",
-                  symbol: '${future.fut![index].symbol}',
-                  expDate: '${future.fut![index].expDate}',
-                  option: '${future.fut![index].option}');
-              showModalBottomSheet(
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  isDismissible: true,
-                  shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(16))),
-                  backgroundColor: const Color(0xffffffff),
-                  context: context,
-                  builder: (context) => ScripDepthInfo(
-                        wlValue: depthArgs,
-                        isBasket: '',
-                      ));
-              watch(marketWatchProvider).singlePageloader(false);
-
-              await watch(websocketProvider).establishConnection(
-                  channelInput:
-                      "${future.fut![index].exch}|${future.fut![index].token}",
-                  task: "d",
-                  context: context);
-              await watch(marketWatchProvider).fetchScripQuote(
-                  "${future.fut![index].token}",
-                  "${future.fut![index].exch}",
-                  context);
-
-              if (watch(marketWatchProvider).getQuotes!.stat == "Ok") {
-                await context.read(marketWatchProvider).fetchLinkeScrip(
-                    "${future.fut![index].token}",
-                    "${future.fut![index].exch}",
-                    context);
-              }
-
+              await watch(marketWatchProvider)
+                  .calldepthApis(context, future.fut![index]);
             },
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16),

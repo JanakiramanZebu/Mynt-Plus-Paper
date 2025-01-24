@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
@@ -12,7 +11,6 @@ import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/snack_bar.dart';
-import '../scrip_depth_info.dart';
 
 class StocksScreen extends StatefulWidget {
   const StocksScreen({super.key});
@@ -65,70 +63,8 @@ class _StocksScreenState extends State<StocksScreen> {
                                 }
                               },
                               onTap: () async {
-                                marketWatch.chngDephBtn("Overview");
-                                marketWatch.singlePageloader(true);
-
-                                DepthInputArgs depthArgs = DepthInputArgs(
-                                    exch:
-                                        '${holdingProvide[index].exchTsym![0].exch}',
-                                    token:
-                                        '${holdingProvide[index].exchTsym![0].token}',
-                                    tsym:
-                                        '${holdingProvide[index].exchTsym![0].tsym}',
-                                    instname: "",
-                                    symbol:
-                                        '${holdingProvide[index].exchTsym![0].symbol}',
-                                    expDate:
-                                        '${holdingProvide[index].exchTsym![0].expDate}',
-                                    option:
-                                        '${holdingProvide[index].exchTsym![0].option}');
-
-                                showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    useSafeArea: true,
-                                    isDismissible: true,
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(16))),
-                                    backgroundColor: const Color(0xffffffff),
-                                    context: context,
-                                    builder: (context) => ScripDepthInfo(
-                                        wlValue: depthArgs, isBasket: ''));
-
-                                await watch(websocketProvider).establishConnection(
-                                    channelInput:
-                                        "${holdingProvide[index].exchTsym![0].exch}|${holdingProvide[index].exchTsym![0].token}",
-                                    task: "d",
-                                    context: context);
-                                marketWatch.singlePageloader(false);
-
-                                await marketWatch.fetchScripQuote(
-                                    "${holdingProvide[index].exchTsym![0].token}",
-                                    "${holdingProvide[index].exchTsym![0].exch}",
-                                    context);
-
-                                if (marketWatch.getQuotes!.stat == "Ok") {
-                                  await marketWatch.fetchLinkeScrip(
-                                      "${holdingProvide[index].exchTsym![0].token}",
-                                      "${holdingProvide[index].exchTsym![0].exch}",
-                                      context);
-
-                                  marketWatch.fetchFundamentalData(
-                                      tradeSym:
-                                          "${holdingProvide[index].exchTsym![0].exch}:${holdingProvide[index].exchTsym![0].tsym}");
-
-                                  await marketWatch.fetchTechData(
-                                      context: context,
-                                      exch:
-                                          "${context.read(marketWatchProvider).getQuotes!.exch}",
-                                      tradeSym:
-                                          "${context.read(marketWatchProvider).getQuotes!.tsym}",
-                                      lastPrc:
-                                          "${context.read(marketWatchProvider).getQuotes!.lp ?? context.read(marketWatchProvider).getQuotes!.c ?? 0.00}");
-
-                                  //  await watch(portfolioProvider).    isOpenScripInfo ("${holdingProvide[index].exchTsym![0].token}");
-                                  //  }
-                                }
+                                await marketWatch.calldepthApis(context,
+                                    holdingProvide[index].exchTsym![0]);
                               },
                               child: ListTile(
                                 contentPadding:

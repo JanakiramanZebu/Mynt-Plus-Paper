@@ -418,7 +418,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                     .singlePageloader(true);
 
                                                 setState(() {
-                                                  initSize = .99;
+                                                  initSize = scripInfo.depthBtns[index]
+                                                          ['btnName'] == "Chart" ? .40 : .99;
 
                                                   scripInfo.chngDephBtn(
                                                       scripInfo.depthBtns[index]
@@ -1209,7 +1210,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                               const SizedBox(height: 4),
                                               rowOfInfoData(
                                                   "Last Trade Qty",
-                                                  "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0' ?? 0}",
+                                                  "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}",
                                                   "Last Trade Time",
                                                   depthData.ltt != "null"
                                                       ? depthData.ltt ?? "--"
@@ -1578,9 +1579,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
   }
 
   Row lowHighBar(String low, String high, String value, ThemesProvider theme) {
-    double? lowValue = double.tryParse(low ?? "0.0");
-    double? valueValue = double.tryParse(value ?? "0.0");
-    double? highValue = double.tryParse(high ?? "0.0");
+    double? lowValue = double.tryParse(low);
+    double? valueValue = double.tryParse(value);
+    double? highValue = double.tryParse(high);
 
     double minValue = (lowValue != null && valueValue != null)
         ? (lowValue <= valueValue ? lowValue : valueValue)

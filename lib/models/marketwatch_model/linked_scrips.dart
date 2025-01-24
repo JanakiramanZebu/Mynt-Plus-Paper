@@ -98,6 +98,7 @@ class Futures {
   String? ltp;
   String? change; 
   String? perChange;
+  String? instname;
   String? open;
    String? symbol;
   String? expDate;
@@ -117,7 +118,7 @@ class Futures {
       this.close,
       this.high,
       this.low,
-      this.ltp,this.open,this.perChange,this.expDate,
+      this.ltp,this.open,this.perChange,this.instname,this.expDate,
       this.option,
       this.symbol
       });
@@ -130,6 +131,7 @@ class Futures {
         change=json['Change'].toString();
        
         perChange=json['PerChange'].toString();
+        instname=json['instname'].toString();
         open=json['open'].toString();
     exch = json['exch'];
     token = json['token'];
@@ -152,6 +154,7 @@ class Futures {
     data['Change'] = change;
  
     data['PerChange'] = perChange;
+    data['instname'] = instname;
     data['open'] = open;
     data['exch'] = exch;
     data['token'] = token;

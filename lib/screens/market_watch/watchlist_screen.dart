@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import '../../models/marketwatch_model/get_quotes.dart';
 import '../../provider/market_watch_provider.dart';
 
 import '../../provider/thems.dart';
@@ -14,7 +13,6 @@ import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/snack_bar.dart';
 import 'my_stocks/stocks_screen.dart';
-import 'scrip_depth_info.dart';
 
 class WatchListScreen extends ConsumerWidget {
   WatchListScreen({super.key});
@@ -137,76 +135,7 @@ class WatchListScreen extends ConsumerWidget {
                               }
                             },
                             onTap: () async {
-                              marketWatch.chngDephBtn("Overview");
-                              marketWatch.singlePageloader(true);
-
-                              DepthInputArgs depthArgs = DepthInputArgs(
-                                  exch: '${marketWatch.scrips[idx]['exch']}',
-                                  token: '${marketWatch.scrips[idx]['token']}',
-                                  tsym: '${marketWatch.scrips[idx]['tsym']}',
-                                  instname:
-                                      marketWatch.scrips[idx]['instname'] ?? "",
-                                  symbol:
-                                      '${marketWatch.scrips[idx]['symbol']}',
-                                  expDate:
-                                      '${marketWatch.scrips[idx]['expDate']}',
-                                  option:
-                                      '${marketWatch.scrips[idx]['option']}');
-
-                              showModalBottomSheet(
-                                  isScrollControlled: true,
-                                  useSafeArea: true,
-                                  isDismissible: true,
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16))),
-                                  context: context,
-                                  builder: (context) => Container(
-                                      padding: EdgeInsets.only(
-                                        bottom: MediaQuery.of(context)
-                                            .viewInsets
-                                            .bottom,
-                                      ),
-                                      child: ScripDepthInfo(
-                                          wlValue: depthArgs, isBasket: '')));
-
-                              await watch(websocketProvider).establishConnection(
-                                  channelInput:
-                                      "${marketWatch.scrips[idx]['exch']}|${marketWatch.scrips[idx]['token']}",
-                                  task: "d",
-                                  context: context);
-                              marketWatch.singlePageloader(false);
-
-                              await marketWatch.fetchScripQuote(
-                                  "${marketWatch.scrips[idx]['token']}",
-                                  "${marketWatch.scrips[idx]['exch']}",
-                                  context);
-
-                              if (marketWatch.getQuotes!.stat == "Ok") {
-                                await context
-                                    .read(marketWatchProvider)
-                                    .fetchLinkeScrip(
-                                        "${marketWatch.scrips[idx]['token']}",
-                                        "${marketWatch.scrips[idx]['exch']}",
-                                        context);
-
-                                context
-                                    .read(marketWatchProvider)
-                                    .fetchFundamentalData(
-                                        tradeSym:
-                                            "${marketWatch.scrips[idx]['exch']}:${marketWatch.scrips[idx]['tsym']}");
-                                if ((marketWatch.scrips[idx]['exch'] == "NSE" ||
-                                    marketWatch.scrips[idx]['exch'] == "BSE")) {
-                                  await context.read(marketWatchProvider).fetchTechData(
-                                      context: context,
-                                      exch:
-                                          "${marketWatch.scrips[idx]['exch']}",
-                                      tradeSym:
-                                          "${marketWatch.scrips[idx]['tsym']}",
-                                      lastPrc:
-                                          "${context.read(marketWatchProvider).getQuotes!.lp ?? context.read(marketWatchProvider).getQuotes!.c ?? 0.00}");
-                                }
-                              }
+                             await marketWatch.calldepthApis(context, marketWatch.scrips[idx]);
                             },
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 16),

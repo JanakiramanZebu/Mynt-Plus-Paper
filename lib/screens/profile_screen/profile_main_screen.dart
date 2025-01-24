@@ -36,9 +36,7 @@ class UserAccountScreen extends ConsumerWidget {
     final String reflink = "https://oa.mynt.in/?ref=${pref.clientId}";
     return Column(children: [
       Expanded(
-        child: userProfile.userloader
-            ? const Center(child: CircularProgressIndicator())
-            : ListView.separated(
+        child:  ListView.separated(
                 shrinkWrap: true,
                 itemCount: userProfile.profileMenu.length,
                 itemBuilder: (context, int index) {

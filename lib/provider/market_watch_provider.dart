@@ -30,6 +30,7 @@ import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_model.dart';
 import '../models/marketwatch_model/watchlist_rename_model.dart';
 import '../res/res.dart';
+import '../screens/market_watch/scrip_depth_info.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
@@ -340,6 +341,64 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   singlePageloader(bool value) {
     _scripDepthloader = value;
     notifyListeners();
+  }
+
+  calldepthApis(BuildContext context, raw) async {
+    chngDephBtn("Overview");
+    singlePageloader(true);
+    bool flow = raw.runtimeType.toString() == '_Map<String, dynamic>';
+// _Map<String, dynamic>
+    DepthInputArgs depthArgs = DepthInputArgs(
+        exch: '${flow ? raw['exch'] : raw.exch}',
+        token: '${flow ? raw['token'] : raw.token}',
+        tsym: '${flow ? raw['tsym'] : raw.tsym}',
+        instname: flow ? raw['instname'] : raw.instname ?? "",
+        symbol: '${flow ? raw['symbol'] : raw.symbol}',
+        expDate: '${flow ? raw['expDate'] : raw.expDate}',
+        option: '${flow ? raw['option'] : raw.option}');
+
+    showModalBottomSheet(
+        isScrollControlled: true,
+        useSafeArea: true,
+        isDismissible: true,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        context: context,
+        builder: (context) => Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
+
+    await ref(websocketProvider).establishConnection(
+        channelInput: "${flow ? raw['exch'] : raw.exch}|${flow ? raw['token'] : raw.token}",
+        task: "d",
+        context: context);
+    singlePageloader(false);
+
+    await fetchScripQuote("${flow ? raw['token'] : raw.token}", "${flow ? raw['exch'] : raw.exch}", context);
+    final portfolios = ref(portfolioProvider);
+
+    if ((flow ? raw['exch'] : raw.exch) == 'MCX' ||
+        (portfolios.oplists.isNotEmpty &&
+            portfolios.oplists.contains(int.parse(flow ? raw['token'] : raw.token)))) {
+      await context
+          .read(marketWatchProvider)
+          .fetchLinkeScrip("${flow ? raw['token'] : raw.token}", "${flow ? raw['exch'] : raw.exch}", context);
+    }
+
+    
+    if (((flow ? raw['exch'] : raw.exch) == "NSE" || (flow ? raw['exch'] : raw.exch) == "BSE")) {
+      context
+        .read(marketWatchProvider)
+        .fetchFundamentalData(tradeSym: "${flow ? raw['exch'] : raw.exch}:${(flow ? raw['tsym'] : raw.tsym)}");
+
+      await context.read(marketWatchProvider).fetchTechData(
+          context: context,
+          exch: "${(flow ? raw['exch'] : raw.exch)}",
+          tradeSym: "${(flow ? raw['tsym'] : raw.tsym)}",
+          lastPrc: "${_getQuotes.lp ?? _getQuotes.c ?? 0.00}");
+    }
   }
 
   showAlertPendingSearch(bool value) {
@@ -979,8 +1038,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       final portfolios = ref(portfolioProvider);
 
-      if (portfolios.oplists.isNotEmpty &&
-          portfolios.oplists.contains(int.parse(token))) {
+      if (exch == 'MCX' ||
+          (portfolios.oplists.isNotEmpty &&
+              portfolios.oplists.contains(int.parse(token)))) {
         _depthBtns.add({
           "btnName": "Option",
           "imgPath": assets.optChainIcon,
@@ -991,20 +1051,19 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           "imgPath": assets.optChainIcon,
           "case": "click here to view the futures of the underline scrpit."
         });
-      } 
-      if(exch == 'NSE' || exch == 'BSE') {
-            _depthBtns.add({
+      }
+      if (exch == 'NSE' || exch == 'BSE') {
+        _depthBtns.add({
           "btnName": "Fundamental",
           "imgPath": assets.dInfo,
           "case": "Click here to view fundamental data."
         });
-        
       }
-        _depthBtns.add({
-          "btnName": "Set Alert",
-          "imgPath": assets.calendar,
-          "case": "click here to view the futures of the underline scrpit."
-        });
+      _depthBtns.add({
+        "btnName": "Set Alert",
+        "imgPath": assets.calendar,
+        "case": "click here to view the futures of the underline scrpit."
+      });
       if (storeQuotes.isNotEmpty &&
           storeQuotes.containsKey(token) &&
           storeQuotes[token]?['q'] != null) {
@@ -1283,7 +1342,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _fut = storeQuotes[token]?['l']['fu'];
         _optExp = storeQuotes[token]?['l']['op'];
         if (_optExp!.isNotEmpty) {
-
           _sortedDate = storeQuotes[token]?['l']['sortdate'];
           _selectedExpDate = _sortedDate[0];
 
@@ -1291,7 +1349,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _selectedTradeSym = storeQuotes[token]?['l']['selectedTradeSym'];
         }
         if (_fut!.isNotEmpty) {
-
           _futToken = "${_fut![0].token}";
           __futExch = "${_fut![0].exch}";
         }
@@ -1305,7 +1362,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _optExp = _linkedScrips!.optExp;
 
           if (_optExp!.isNotEmpty) {
-
 // Option expiry Date wise sorting
 
             List<DateTime> dates = _optExp!.map((dateString) {

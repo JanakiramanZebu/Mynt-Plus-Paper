@@ -454,16 +454,16 @@ class PriceComChartState extends State<PriceComChart> {
                     isVisibleInLegend: true,
                     isVisible: true,
                     enableTooltip: true,
-                    legendItemText:
-                        priceCompare.peersChartKeys[0].toString().substring(4),
+                    legendItemText: priceCompare.peersChartKeys.isNotEmpty?
+                        priceCompare.peersChartKeys[0].toString().substring(4) : '',
                     legendIconType: LegendIconType.image,
                     dataSource: priceCompare.prcComChrtData1,
                     xValueMapper: (PrcComparisionChartData data, _) =>
                       data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
-                    name:
-                        priceCompare.peersChartKeys[0].toString().substring(4),
+                    name: priceCompare.peersChartKeys.isNotEmpty?
+                        priceCompare.peersChartKeys[0].toString().substring(4) : '',
                   ),
                 if (priceCompare.prcComChrtData2.isNotEmpty)
                   AreaSeries(
@@ -482,16 +482,16 @@ class PriceComChartState extends State<PriceComChart> {
                     isVisibleInLegend: true,
                     isVisible: true,
                     enableTooltip: true,
-                    legendItemText:
-                        priceCompare.peersChartKeys[1].toString().substring(4),
+                    legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
+                        priceCompare.peersChartKeys[1].toString().substring(4) : '',
                     legendIconType: LegendIconType.image,
                     dataSource: priceCompare.prcComChrtData2,
                     xValueMapper: (PrcComparisionChartData data, _) =>
                        data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
-                    name:
-                        priceCompare.peersChartKeys[1].toString().substring(4),
+                    name: priceCompare.peersChartKeys.isNotEmpty ?
+                        priceCompare.peersChartKeys[1].toString().substring(4) : '',
                   ),
                 if (priceCompare.prcComChrtData3.isNotEmpty)
                   AreaSeries(
@@ -510,15 +510,15 @@ class PriceComChartState extends State<PriceComChart> {
                     isVisibleInLegend: true,
                     isVisible: true,
                     enableTooltip: true,
-                    legendItemText:
-                        priceCompare.peersChartKeys[2].toString().substring(4),
+                    legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
+                        priceCompare.peersChartKeys[2].toString().substring(4) : '',
                     legendIconType: LegendIconType.image,
                     dataSource: priceCompare.prcComChrtData3,
                     xValueMapper: (PrcComparisionChartData data, _) =>
                         data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
-                    name: "${priceCompare.peersChartKeys[2]}",
+                    name: "${priceCompare.peersChartKeys.isNotEmpty ? priceCompare.peersChartKeys[2] : ''}",
                   ),
                 if (priceCompare.prcComChrtData4.isNotEmpty)
                   AreaSeries(
@@ -537,16 +537,16 @@ class PriceComChartState extends State<PriceComChart> {
                     isVisibleInLegend: true,
                     isVisible: true,
                     enableTooltip: true,
-                    legendItemText:
-                        priceCompare.peersChartKeys[3].toString().substring(4),
+                    legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
+                        priceCompare.peersChartKeys[3].toString().substring(4) : '',
                     legendIconType: LegendIconType.image,
                     dataSource: priceCompare.prcComChrtData4,
                     xValueMapper: (PrcComparisionChartData data, _) =>
                        data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
-                    name:
-                        priceCompare.peersChartKeys[3].toString().substring(4),
+                    name: priceCompare.peersChartKeys.isNotEmpty ?
+                        priceCompare.peersChartKeys[3].toString().substring(4) : '',
                   ),
                 if (priceCompare.prcComChrtData5.isNotEmpty)
                   AreaSeries(
@@ -565,16 +565,16 @@ class PriceComChartState extends State<PriceComChart> {
                     isVisibleInLegend: true,
                     isVisible: true,
                     enableTooltip: true,
-                    legendItemText:
-                        priceCompare.peersChartKeys[4].toString().substring(4),
+                    legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
+                        priceCompare.peersChartKeys[4].toString().substring(4) : '',
                     legendIconType: LegendIconType.image,
                     dataSource: priceCompare.prcComChrtData5,
                     xValueMapper: (PrcComparisionChartData data, _) =>
                         data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
-                    name:
-                        priceCompare.peersChartKeys[4].toString().substring(4),
+                    name: priceCompare.peersChartKeys.isNotEmpty ?
+                        priceCompare.peersChartKeys[4].toString().substring(4) : '',
                   ),
               ]));
     });

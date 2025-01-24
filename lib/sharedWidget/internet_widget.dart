@@ -1,15 +1,8 @@
-import 'dart:io';
-
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
-import 'package:mynt_plus/provider/websocket_provider.dart';
-
-import '../provider/index_list_provider.dart';
 import 'functions.dart';
 
 //  If there is no internet, it will show on the screen.

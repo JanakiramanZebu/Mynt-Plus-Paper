@@ -1508,7 +1508,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                       if (isActivePrice[2]) {
                                                         if (double.parse(
                                                                 triggerPriceCtrl
-                                                                    .text) <
+                                                                    .text) >
                                                             double.parse(widget
                                                                     .orderArg
                                                                     .ltp ??
@@ -1519,7 +1519,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger should be greater than LTP"));
-                                                        } else if (double.parse(
+                                                        } else 
+                                                        if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) >
                                                             double.parse(widget
@@ -1562,7 +1563,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                        } else if (double.parse(price) <
+                                                        } 
+                                                        else if (double.parse(price) <
                                                             double.parse(
                                                                 triggerPriceCtrl
                                                                     .text)) {
@@ -1572,7 +1574,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger should be less than price"));
-                                                        } else if (double.parse(
+                                                        }
+                                                         else if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) >
                                                             double.parse(widget
@@ -1617,7 +1620,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger should be lesser than LTP"));
-                                                        } else if (double.parse(
+                                                        } else 
+                                                        if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) <
                                                             double.parse(widget
@@ -1660,7 +1664,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                        } else if (double.parse(price) >
+                                                        } 
+                                                        else if (double.parse(price) >
                                                             double.parse(
                                                                 triggerPriceCtrl
                                                                     .text)) {
@@ -1670,7 +1675,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger should be greater than price"));
-                                                        } else if (double.parse(
+                                                        } 
+                                                        else if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) <
                                                             double.parse(widget
@@ -1784,6 +1790,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
   }
 
   modifyOrder() async {
+    print('object mm');
     context.read(orderProvider).setOrderloader(true);
     ModifyOrderInput input = ModifyOrderInput(
         dscqty: widget.modifyOrderArgs.dscqty ?? "0",
@@ -1813,7 +1820,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
             : priceCtrl.text,
         prd: widget.modifyOrderArgs.prd!,
         qty: qtyCtrl.text,
-        trantype: isBuy! ? "B" : "S",
+        trantype: isBuy ? "B" : "S",
         tsym: "${widget.scripInfo.tsym}");
     await context
         .read(orderProvider)

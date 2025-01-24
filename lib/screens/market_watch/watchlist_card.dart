@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import '../../models/marketwatch_model/get_quotes.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
@@ -10,7 +9,6 @@ import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/snack_bar.dart';
 import 'edit_scrip.dart';
-import 'scrip_depth_info.dart';
 
 class WatchlistCard extends ConsumerWidget {
   final dynamic watchListData;
@@ -57,60 +55,7 @@ class WatchlistCard extends ConsumerWidget {
           }
         },
         onTap: () async {
-          marketWatch.chngDephBtn("Overview");
-          marketWatch.singlePageloader(true);
-
-          DepthInputArgs depthArgs = DepthInputArgs(
-              exch: '${watchListData['exch']}',
-              token: '${watchListData['token']}',
-              tsym: '${watchListData['tsym']}',
-              instname: watchListData['instname'] ?? "",
-              symbol: '${watchListData['symbol']}',
-              expDate: '${watchListData['expDate']}',
-              option: '${watchListData['option']}');
-
-          showModalBottomSheet(
-              isScrollControlled: true,
-              useSafeArea: true,
-              isDismissible: true,
-              shape: const RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(16))),
-              context: context,
-              builder: (context) => Container(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                  ),
-                  child: ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
-
-          await watch(websocketProvider).establishConnection(
-              channelInput:
-                  "${watchListData['exch']}|${watchListData['token']}",
-              task: "d",
-              context: context);
-          marketWatch.singlePageloader(false);
-
-
-          await marketWatch.fetchScripQuote(
-              "${watchListData['token']}", "${watchListData['exch']}", context);
-
-          if (marketWatch.getQuotes!.stat == "Ok") {
-            await context.read(marketWatchProvider).fetchLinkeScrip(
-                "${watchListData['token']}",
-                "${watchListData['exch']}",
-                context);
-            if ((watchListData['exch'] == "NSE" ||
-                    watchListData['exch'] == "BSE") &&
-                (watchListData['instname'].toString() != "UNDIND")) {
-              await context.read(marketWatchProvider).fetchTechData(
-                  context: context,
-                  exch: "${context.read(marketWatchProvider).getQuotes!.exch}",
-                  tradeSym:
-                      "${context.read(marketWatchProvider).getQuotes!.tsym}",
-                  lastPrc:
-                      "${context.read(marketWatchProvider).getQuotes!.lp ?? context.read(marketWatchProvider).getQuotes!.c ?? 0.00}");
-            }
-          }
+          await marketWatch.calldepthApis(context, watchListData);
         },
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         dense: true,

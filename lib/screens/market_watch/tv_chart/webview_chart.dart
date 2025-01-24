@@ -10,7 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
-import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
@@ -19,7 +18,6 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
 import '../../../sharedWidget/functions.dart';
-import '../scrip_depth_info.dart';
 import 'charttype_bottom.dart';
 import 'drwaing_bottom.dart';
 import 'resolution_bottom.dart';
@@ -174,69 +172,6 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                       ), // Back icon
                       onPressed: () async {
                         userProfile.setChartdialog(false);
-                        tvChart.chngDephBtn("Overview");
-                        tvChart.singlePageloader(true);
-      
-                        DepthInputArgs depthArgs = DepthInputArgs(
-                            exch: '${tvChart.getQuotes?.exch}',
-                            token: '${tvChart.getQuotes?.token}',
-                            tsym: '${tvChart.getQuotes?.tsym}',
-                            instname: tvChart.getQuotes?.instname ?? "",
-                            symbol: '${tvChart.getQuotes?.symbol}',
-                            expDate: '${tvChart.getQuotes?.expDate}',
-                            option: '${tvChart.getQuotes?.option}');
-      
-                        showModalBottomSheet(
-                            isScrollControlled: true,
-                            useSafeArea: true,
-                            isDismissible: true,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(16))),
-                            context: context,
-                            builder: (context) => Container(
-                                padding: EdgeInsets.only(
-                                  bottom:
-                                      MediaQuery.of(context).viewInsets.bottom,
-                                ),
-                                child: ScripDepthInfo(
-                                    wlValue: depthArgs, isBasket: '')));
-      
-                        // if ((tvChart.getQuotes
-                        //                 ?.exch ==
-                        //             "NSE" ||
-                        //         tvChart
-                        //                 .getQuotes
-                        //                 ?.exch ==
-                        //             "BSE") &&
-                        //     (tvChart.getQuotes
-                        //             ?.instname
-                        //             .toString() !=
-                        //         "UNDIND")) {
-                        //   context
-                        //       .read(
-                        //           marketWatchProvider)
-                        //       .depthBtns
-                        //       .add({
-                        //     "btnName": "Fundamental",
-                        //     "imgPath": assets.dInfo,
-                        //     "case":
-                        //         "Click here to view fundamental data."
-                        //   });
-                        // }
-      
-                        // context
-                        //     .read(marketWatchProvider)
-                        //     .depthBtns
-                        //     .add({
-                        //   "btnName": "Set Alert",
-                        //   "imgPath":
-                        //       "assets/icon/calendar.svg",
-                        //   "case":
-                        //       "Click here to view the trading view chart."
-                        // });
-                        tvChart.singlePageloader(false);
-      
                         await ConstantName.webViewController!.evaluateJavascript(
                             source:
                                 "window.changeScript('ABC:ABCD',0123, '${theme.isDarkMode ? 'Y' : 'N'}')");
@@ -378,9 +313,9 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
           ConstantName.webViewController = controller;
           startChartUpdateTimer(controller);
 
-          // print("objec ${"https://tv-chart-new.firebaseapp.com/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
-          //     "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
-          //     "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}"}t");
+          print("objec ${"https://tv-chart-new.firebaseapp.com/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
+            "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
+            "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}&showseries=Y"}");
         },
         onProgressChanged: (_, progress) {
           setState(() {

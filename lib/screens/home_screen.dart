@@ -24,7 +24,6 @@ import '../sharedWidget/internet_widget.dart';
 import 'bonds/bond_screen.dart';
 import 'ipo/ipo_main_screen.dart';
 import 'market_watch/index/index_screen.dart';
-import 'market_watch/scrip_depth_info.dart';
 import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen.dart';
@@ -1255,14 +1254,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ]
                                   ])),
                               Positioned(
+                                // right: userProfile.showchartof
+                                //     ? 0
+                                //     : -300, 
                                 right: userProfile.showchartof
                                     ? 0
-                                    : -300, 
-                                // bottom: 0,
+                                    : -300,
+                                top: 0,
                                 // : 0,
                                 child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOutExpo,
+                                  alignment: Alignment.center,
+                                  duration: const Duration(milliseconds: 400),
+                                  curve: Curves.fastLinearToSlowEaseIn,
                                   decoration: BoxDecoration(
                                     color: theme.isDarkMode
                                         ? colors.colorBlack
@@ -1288,9 +1291,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   height: userProfile.showchartof
                                       ? MediaQuery.of(context).size.height
                                       : 0,
-                                  width: userProfile.showchartof
-                                      ? MediaQuery.of(context).size.width
-                                      : 0,
+                                  width:MediaQuery.of(context).size.width
+                                      ,
                                   child: SafeArea(
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.start,

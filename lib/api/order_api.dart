@@ -314,20 +314,24 @@ mixin OrderAPI on ApiCore {
         "norenordno": input.orderNum,
         "prctyp": input.prctyp,
         "ret": input.ret,
-        "trgprc": input.trgprc,
         "dscqty": input.dscqty,
         "ordersource": ApiLinks.source,
         "prd": input.prd,
         "trantype": input.trantype,
-         "usr_agent": "${prefs.deviceName!}   ${prefs.imei}",
+        "usr_agent": "${prefs.deviceName!}   ${prefs.imei}",
         "app_inst_id": "${prefs.imei}",
         "ipaddr": ip
       
       };
-      if (input.blprc.isNotEmpty && int.parse(input.blprc) != 0) {
+    // print('object mm pp yy ${input.trgprc.isNotEmpty && int.parse(input.trgprc) != 0} ${input.trgprc}');
+
+      if (input.trgprc.isNotEmpty && double.parse(input.trgprc) > 0) {
+        payload.addAll({"trgprc": input.trgprc});
+      }
+      if (input.blprc.isNotEmpty && double.parse(input.blprc) > 0) {
         payload.addAll({"blprc": input.blprc});
       }
-      if (input.bpprc.isNotEmpty && int.parse(input.blprc) != 0) {
+      if (input.bpprc.isNotEmpty && double.parse(input.blprc) > 0) {
         payload.addAll({"bpprc": input.bpprc});
       }
       // if (input.trailprc.isNotEmpty) {
