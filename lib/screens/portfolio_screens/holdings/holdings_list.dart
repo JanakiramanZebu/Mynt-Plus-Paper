@@ -16,6 +16,9 @@ class HoldingsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.read(themeProvider);
+    // final socketDatas = context.read(websocketProvider).socketDatas;
+
+    // context.read(portfolioProvider).updateHoldingValues(  "${exchTsym.token}", socketDatas[exchTsym.token]);
     return Container(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

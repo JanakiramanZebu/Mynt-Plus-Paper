@@ -394,6 +394,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                 .read(ordInputProvider)
                                                 .disableCondGTT(false);
                                           }
+                                          if (priceType == "Market" ||
+                                              priceType == "SL MKT") {
+                                            priceCtrl.text = "Market";
+                                          } else {
+                                            priceCtrl.text =
+                                                "${widget.orderArg.ltp}";
+                                            ordPrice = priceCtrl.text;
+                                          }
                                           FocusScope.of(context).unfocus();
                                         },
                                         child: Container(
@@ -959,6 +967,28 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         : const Color(
                                                             0xffF1F3F8),
                                                     onChanged: (value) {
+                                                      if (value.isNotEmpty &&
+                                                          double.parse(value) >
+                                                              0) {
+                                                        final regex = RegExp(
+                                                            r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                        if (!regex
+                                                            .hasMatch(value)) {
+                                                          orderInput.priceCtrl
+                                                                  .text =
+                                                              value.substring(
+                                                                  0,
+                                                                  value.length -
+                                                                      1); // Revert to previous valid input
+                                                          orderInput.priceCtrl
+                                                                  .selection =
+                                                              TextSelection.collapsed(
+                                                                  offset: orderInput
+                                                                      .priceCtrl
+                                                                      .text
+                                                                      .length); // Keep cursor at the end
+                                                        }
+                                                      }
                                                       ScaffoldMessenger.of(
                                                               context)
                                                           .hideCurrentSnackBar();
@@ -1343,7 +1373,33 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                           ? colors.darkGrey
                                                           : const Color(
                                                               0xffF1F3F8),
-                                                      onChanged: (value) {},
+                                                      onChanged: (value) {
+                                                        if (value.isNotEmpty &&
+                                                            double.parse(
+                                                                    value) >
+                                                                0) {
+                                                          final regex = RegExp(
+                                                              r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                          if (!regex.hasMatch(
+                                                              value)) {
+                                                            orderInput
+                                                                    .ocoPriceCtrl
+                                                                    .text =
+                                                                value.substring(
+                                                                    0,
+                                                                    value.length -
+                                                                        1); // Revert to previous valid input
+                                                            orderInput
+                                                                    .ocoPriceCtrl
+                                                                    .selection =
+                                                                TextSelection.collapsed(
+                                                                    offset: orderInput
+                                                                        .ocoPriceCtrl
+                                                                        .text
+                                                                        .length); // Keep cursor at the end
+                                                          }
+                                                        }
+                                                      },
                                                       hintText:
                                                           "${widget.orderArg.ltp}",
                                                       hintStyle: textStyle(
@@ -1370,8 +1426,11 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               12),
                                                           decoration: BoxDecoration(
                                                               borderRadius:
-                                                                  BorderRadius.circular(20),
-                                                              color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                                                                  BorderRadius.circular(
+                                                                      20),
+                                                              color: theme.isDarkMode
+                                                                  ? const Color(0xff555555)
+                                                                  : colors.colorWhite),
                                                           child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
                                                       textCtrl: orderInput.ocoPriceCtrl,
                                                       textAlign: TextAlign.start))
@@ -1408,6 +1467,28 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                       15,
                                                       FontWeight.w400),
                                                   onChanged: (value) {
+                                                    if (value.isNotEmpty &&
+                                                        double.parse(value) >
+                                                            0) {
+                                                      final regex = RegExp(
+                                                          r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                      if (!regex
+                                                          .hasMatch(value)) {
+                                                        orderInput.ocoTrgPrcCtrl
+                                                                .text =
+                                                            value.substring(
+                                                                0,
+                                                                value.length -
+                                                                    1); // Revert to previous valid input
+                                                        orderInput.ocoTrgPrcCtrl
+                                                                .selection =
+                                                            TextSelection.collapsed(
+                                                                offset: orderInput
+                                                                    .ocoTrgPrcCtrl
+                                                                    .text
+                                                                    .length); // Keep cursor at the end
+                                                      }
+                                                    }
                                                     ScaffoldMessenger.of(
                                                             context)
                                                         .hideCurrentSnackBar();
@@ -1939,6 +2020,27 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                           : const Color(
                                                               0xffF1F3F8),
                                                       onChanged: (value) {
+                                                        if (value.isNotEmpty &&
+                                                            double.parse(
+                                                                    value) >
+                                                                0) {
+                                                          final regex = RegExp(
+                                                              r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                          if (!regex.hasMatch(
+                                                              value)) {
+                                                            priceCtrl.text =
+                                                                value.substring(
+                                                                    0,
+                                                                    value.length -
+                                                                        1); // Revert to previous valid input
+                                                            priceCtrl
+                                                                    .selection =
+                                                                TextSelection.collapsed(
+                                                                    offset: priceCtrl
+                                                                        .text
+                                                                        .length); // Keep cursor at the end
+                                                          }
+                                                        }
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .removeCurrentSnackBar();
@@ -2031,6 +2133,26 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                       : const Color(0xffF1F3F8),
                                                   hintText: "0.00",
                                                   onChanged: (value) {
+                                                    if (value.isNotEmpty &&
+                                                        double.parse(value) >
+                                                            0) {
+                                                      final regex = RegExp(
+                                                          r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                      if (!regex
+                                                          .hasMatch(value)) {
+                                                        targetCtrl.text =
+                                                            value.substring(
+                                                                0,
+                                                                value.length -
+                                                                    1); // Revert to previous valid input
+                                                        targetCtrl.selection =
+                                                            TextSelection.collapsed(
+                                                                offset: targetCtrl
+                                                                    .text
+                                                                    .length); // Keep cursor at the end
+                                                      }
+                                                    }
+
                                                     ScaffoldMessenger.of(
                                                             context)
                                                         .hideCurrentSnackBar();
@@ -2086,6 +2208,24 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                     ? colors.darkGrey
                                                     : const Color(0xffF1F3F8),
                                                 onChanged: (value) {
+                                                  if (value.isNotEmpty &&
+                                                      double.parse(value) > 0) {
+                                                    final regex = RegExp(
+                                                        r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                    if (!regex
+                                                        .hasMatch(value)) {
+                                                      stopLossCtrl.text =
+                                                          value.substring(
+                                                              0,
+                                                              value.length -
+                                                                  1); // Revert to previous valid input
+                                                      stopLossCtrl.selection =
+                                                          TextSelection.collapsed(
+                                                              offset: stopLossCtrl
+                                                                  .text
+                                                                  .length); // Keep cursor at the end
+                                                    }
+                                                  }
                                                   ScaffoldMessenger.of(context)
                                                       .hideCurrentSnackBar();
                                                   if (value.isEmpty) {
@@ -3597,6 +3737,21 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                       hintStyle: textStyle(
                           const Color(0xff666666), 15, FontWeight.w400),
                       onChanged: (value) {
+                        if (value.isNotEmpty && double.parse(value) > 0) {
+                          final regex = RegExp(
+                              r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                          if (!regex.hasMatch(value)) {
+                            triggerPriceCtrl.text = value.substring(
+                                0,
+                                value.length -
+                                    1); // Revert to previous valid input
+                            triggerPriceCtrl.selection =
+                                TextSelection.collapsed(
+                                    offset: triggerPriceCtrl
+                                        .text.length); // Keep cursor at the end
+                          }
+                        }
+
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
                         if (value.isNotEmpty) {
                           marginUpdate();
@@ -4010,9 +4165,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
   void marginUpdate() {
     OrderMarginInput input = OrderMarginInput(
         exch: "${widget.scripInfo.exch}",
-        prc: (priceType == "Market" || priceType == "SL MKT")
-            ? "0"
-            : ordPrice,
+        prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prctyp: context.read(ordInputProvider).prcType,
         prd: context.read(ordInputProvider).orderType,
         qty: qtyCtrl.text,
@@ -4029,9 +4182,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
     context.read(orderProvider).fetchOrderMargin(input, context);
     BrokerageInput brokerageInput = BrokerageInput(
         exch: "${widget.scripInfo.exch}",
-        prc: (priceType == "Market" || priceType == "SL MKT")
-            ? "0"
-            : ordPrice,
+        prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prd: context.read(ordInputProvider).orderType,
         qty: qtyCtrl.text,
         trantype: isBuy! ? "B" : "S",

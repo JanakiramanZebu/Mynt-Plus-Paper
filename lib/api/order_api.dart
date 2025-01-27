@@ -42,7 +42,7 @@ mixin OrderAPI on ApiCore {
         "prd": placeOrderInput.prd,
         "trantype": placeOrderInput.trantype,
         "prctyp": placeOrderInput.prctype,
-        "ret": placeOrderInput.ret,
+        "ret": placeOrderInput.ret.toUpperCase(),
         "channel": placeOrderInput.channel,
         "usr_agent": "${prefs.deviceName!}   ${prefs.imei}",
         "app_inst_id": "${prefs.imei}",
@@ -68,12 +68,12 @@ mixin OrderAPI on ApiCore {
         payload.addAll({"mkt_protection": placeOrderInput.mktProt});
       }
 
-      // log("PlaceOrder Input => $payload");
+      log("PlaceOrder Input => $payload");
 
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
-      // log("PlaceOrder => ${res.body}");
+      log("PlaceOrder => ${res.body}");
       final json = jsonDecode(res.body);
 
       return PlaceOrderModel.fromJson(json as Map<String, dynamic>);
@@ -227,7 +227,7 @@ mixin OrderAPI on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","norenordno":"$orderNo","prd":"$prd"}&jKey=${prefs.clientSession}''');
 
-      // log("Exit SNO OrderModel => ${res.body}");
+      log("Exit SNO OrderModel => ${res.body} ${'''jData={"uid":"${prefs.clientId}","norenordno":"$orderNo","prd":"$prd"}&jKey=${prefs.clientSession}'''}");
       final json = jsonDecode(res.body);
 
       return CancelOrderModel.fromJson(json as Map<String, dynamic>);
@@ -246,7 +246,7 @@ mixin OrderAPI on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym.contains("&") ? input.tsym.replaceAll("&", "%26") : input.tsym}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}","prctyp":"${input.prctyp}","rorgqty":"${input.rorgqty}","rorgprc":"${input.rorgprc}","blprc": "${input.blprc}","trgprc": "${input.trgprc}"}&jKey=${prefs.clientSession}''');
 
-      // log("Order Margin => ${res.body}");
+      log("Order Margin => ${res.body}  ${'''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym.contains("&") ? input.tsym.replaceAll("&", "%26") : input.tsym}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}","prctyp":"${input.prctyp}","rorgqty":"${input.rorgqty}","rorgprc":"${input.rorgprc}","blprc": "${input.blprc}","trgprc": "${input.trgprc}"}&jKey=${prefs.clientSession}'''}");
       final json = jsonDecode(res.body);
 
       return OrderMarginModel.fromJson(json as Map<String, dynamic>);
@@ -265,7 +265,7 @@ mixin OrderAPI on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}" }&jKey=${prefs.clientSession}''');
 
-      // log("Order Brokerage => ${res.body} ");
+      log("Order Brokerage => ${res.body} ${'''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}" }&jKey=${prefs.clientSession}'''}");
       final json = jsonDecode(res.body);
 
       return GetBrokerageModel.fromJson(json as Map<String, dynamic>);
@@ -313,7 +313,7 @@ mixin OrderAPI on ApiCore {
             : input.prc,
         "norenordno": input.orderNum,
         "prctyp": input.prctyp,
-        "ret": input.ret,
+        "ret": input.ret.toUpperCase(),
         "dscqty": input.dscqty,
         "ordersource": ApiLinks.source,
         "prd": input.prd,
@@ -321,9 +321,7 @@ mixin OrderAPI on ApiCore {
         "usr_agent": "${prefs.deviceName!}   ${prefs.imei}",
         "app_inst_id": "${prefs.imei}",
         "ipaddr": ip
-      
       };
-    // print('object mm pp yy ${input.trgprc.isNotEmpty && int.parse(input.trgprc) != 0} ${input.trgprc}');
 
       if (input.trgprc.isNotEmpty && double.parse(input.trgprc) > 0) {
         payload.addAll({"trgprc": input.trgprc});
@@ -337,6 +335,7 @@ mixin OrderAPI on ApiCore {
       // if (input.trailprc.isNotEmpty) {
       //   payload.addAll({"trailprc": input.trailprc});
       // }
+      print('order modify $payload');
 
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
@@ -447,7 +446,7 @@ mixin OrderAPI on ApiCore {
         "trantype": input.trantype,
         "prctyp": input.prctyp,
         "prd": input.prd,
-        "ret": input.ret,
+        "ret": input.ret.toUpperCase(),
         "actid": prefs.clientId,
         "qty": input.qty,
         "prc": input.prc
@@ -487,7 +486,7 @@ mixin OrderAPI on ApiCore {
         "trantype": input.trantype,
         "prctyp": input.prctyp,
         "prd": input.prd,
-        "ret": input.ret,
+        "ret": input.ret.toUpperCase(),
         "actid": prefs.clientId,
         "qty": input.qty,
         "prc": input.prc,

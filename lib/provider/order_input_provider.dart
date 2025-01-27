@@ -198,11 +198,13 @@ class OrderInputProvider extends DefaultChangeNotifier {
     if (val == "Limit") {
       _prcType = "LMT";
     } else if (val == "Market") {
-      _prcType = (exch == "MCX" || exch == "BSE") ? "MKT" : "LMT";
+      _prcType = "MKT";
+      // _prcType = (exch == "MCX" || exch == "BSE") ? "MKT" : "LMT";
     } else if (val == "SL Limit") {
       _prcType = "SL-LMT";
     } else {
-      _prcType = (exch == "MCX" || exch == "BSE") ? "SL-MKT" : "SL-LMT";
+      _prcType = "SL-MKT";
+      // _prcType = (exch == "MCX" || exch == "BSE") ? "SL-MKT" : "SL-LMT";
     }
     log(_prcType);
     notifyListeners();

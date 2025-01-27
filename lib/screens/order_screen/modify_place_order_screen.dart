@@ -90,7 +90,13 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
       triggerPriceCtrl =
           TextEditingController(text: "${widget.modifyOrderArgs.trgprc ?? 0}");
       discQtyCtrl = TextEditingController(text: widget.modifyOrderArgs.dscqty);
-      validity = widget.modifyOrderArgs.ret!;
+      validity = widget.modifyOrderArgs.ret!.toUpperCase();
+
+        isActiveValidity = [
+      validity == 'DAY' ? true : false,
+      validity == 'IOC' ? true : false,
+    ];
+    addValidity = validity.toUpperCase() == 'IOC' || (widget.modifyOrderArgs.dscqty != null && int.parse(widget.modifyOrderArgs.dscqty.toString()) > 0) ? true : false;
       // context.read(networkStateProvider).networkStream();
 
       addStoploss = widget.modifyOrderArgs.sPrdtAli == "BO" ||
@@ -556,6 +562,27 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           : const Color(
                                                               0xffF1F3F8),
                                                       onChanged: (value) {
+                                                        if (value.isNotEmpty &&
+                                                            double.parse(
+                                                                    value) >
+                                                                0) {
+                                                          final regex = RegExp(
+                                                              r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                          if (!regex.hasMatch(
+                                                              value)) {
+                                                            priceCtrl
+                                                                    .text =
+                                                                value.substring(
+                                                                    0,
+                                                                    value.length -
+                                                                        1); // Revert to previous valid input
+                                                            priceCtrl
+                                                                    .selection =
+                                                                TextSelection.collapsed(
+                                                                    offset: priceCtrl.text
+                                                                        .length); // Keep cursor at the end
+                                                          }
+                                                        }
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .removeCurrentSnackBar();
@@ -696,6 +723,29 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           15,
                                                           FontWeight.w400),
                                                       onChanged: (value) {
+
+                                                        if (value.isNotEmpty &&
+                                                            double.parse(
+                                                                    value) >
+                                                                0) {
+                                                          final regex = RegExp(
+                                                              r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                          if (!regex.hasMatch(
+                                                              value)) {
+                                                            triggerPriceCtrl
+                                                                    .text =
+                                                                value.substring(
+                                                                    0,
+                                                                    value.length -
+                                                                        1); // Revert to previous valid input
+                                                            triggerPriceCtrl
+                                                                    .selection =
+                                                                TextSelection.collapsed(
+                                                                    offset: triggerPriceCtrl.text
+                                                                        .length); // Keep cursor at the end
+                                                          }
+                                                        }
+                                                        
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .hideCurrentSnackBar();
@@ -757,61 +807,93 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                           isActivePrice[2]
                                               ? const SizedBox(height: 10)
                                               : Container(),
-                                          headerTitleText("Target", theme),
-                                          const SizedBox(height: 7),
-                                          SizedBox(
-                                              height: 44,
-                                              child: CustomTextFormField(
-                                                  fillColor: theme.isDarkMode
-                                                      ? colors.darkGrey
-                                                      : const Color(0xffF1F3F8),
-                                                  hintText: "0.00",
-                                                  onChanged: (value) {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .hideCurrentSnackBar();
-                                                    if (value.isEmpty) {
+                                          if (widget.modifyOrderArgs.sPrdtAli ==
+                                              "BO") ...[
+                                            headerTitleText("Target", theme),
+                                            const SizedBox(height: 7),
+                                            SizedBox(
+                                                height: 44,
+                                                child: CustomTextFormField(
+                                                    fillColor: theme.isDarkMode
+                                                        ? colors.darkGrey
+                                                        : const Color(
+                                                            0xffF1F3F8),
+                                                    hintText: "0.00",
+                                                    onChanged: (value) {
+
+                                                       if (value.isNotEmpty &&
+                                                            double.parse(
+                                                                    value) >
+                                                                0) {
+                                                          final regex = RegExp(
+                                                              r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                          if (!regex.hasMatch(
+                                                              value)) {
+                                                            targetCtrl
+                                                                    .text =
+                                                                value.substring(
+                                                                    0,
+                                                                    value.length -
+                                                                        1); // Revert to previous valid input
+                                                            targetCtrl
+                                                                    .selection =
+                                                                TextSelection.collapsed(
+                                                                    offset: targetCtrl.text
+                                                                        .length); // Keep cursor at the end
+                                                          }
+                                                        }
+
                                                       ScaffoldMessenger.of(
                                                               context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "Target can not be empty"));
-                                                    }
-                                                  },
-                                                  hintStyle: textStyle(
-                                                      const Color(0xff666666),
-                                                      15,
-                                                      FontWeight.w400),
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      16,
-                                                      FontWeight.w600),
-                                                  prefixIcon: Container(
-                                                    margin:
-                                                        const EdgeInsets.all(
-                                                            12),
-                                                    decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(20),
-                                                        color: theme.isDarkMode
-                                                            ? const Color(
-                                                                0xff555555)
-                                                            : colors
-                                                                .colorWhite),
-                                                    child: SvgPicture.asset(
-                                                        color: theme.isDarkMode
+                                                          .hideCurrentSnackBar();
+                                                      if (value.isEmpty) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
+                                                                    context,
+                                                                    "Target can not be empty"));
+                                                      }
+                                                    },
+                                                    hintStyle: textStyle(
+                                                        const Color(0xff666666),
+                                                        15,
+                                                        FontWeight.w400),
+                                                    style: textStyle(
+                                                        theme.isDarkMode
                                                             ? colors.colorWhite
-                                                            : colors.colorGrey,
-                                                        assets.ruppeIcon,
-                                                        fit: BoxFit.scaleDown),
-                                                  ),
-                                                  textCtrl: targetCtrl,
-                                                  textAlign: TextAlign.start)),
-                                          const SizedBox(height: 10),
+                                                            : colors.colorBlack,
+                                                        16,
+                                                        FontWeight.w600),
+                                                    prefixIcon: Container(
+                                                      margin:
+                                                          const EdgeInsets.all(
+                                                              12),
+                                                      decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(20),
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? const Color(
+                                                                  0xff555555)
+                                                              : colors
+                                                                  .colorWhite),
+                                                      child: SvgPicture.asset(
+                                                          color: theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorGrey,
+                                                          assets.ruppeIcon,
+                                                          fit:
+                                                              BoxFit.scaleDown),
+                                                    ),
+                                                    textCtrl: targetCtrl,
+                                                    textAlign:
+                                                        TextAlign.start)),
+                                            const SizedBox(height: 10),
+                                          ],
                                           headerTitleText("Stoploss", theme),
                                           const SizedBox(height: 7),
                                           SizedBox(
@@ -821,6 +903,28 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                       ? colors.darkGrey
                                                       : const Color(0xffF1F3F8),
                                                   onChanged: (value) {
+
+                                                      if (value.isNotEmpty &&
+                                                            double.parse(
+                                                                    value) >
+                                                                0) {
+                                                          final regex = RegExp(
+                                                              r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                          if (!regex.hasMatch(
+                                                              value)) {
+                                                            stopLossCtrl
+                                                                    .text =
+                                                                value.substring(
+                                                                    0,
+                                                                    value.length -
+                                                                        1); // Revert to previous valid input
+                                                            stopLossCtrl
+                                                                    .selection =
+                                                                TextSelection.collapsed(
+                                                                    offset: stopLossCtrl.text
+                                                                        .length); // Keep cursor at the end
+                                                          }
+                                                        }
                                                     ScaffoldMessenger.of(
                                                             context)
                                                         .hideCurrentSnackBar();
@@ -1108,33 +1212,34 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                               ],
                               const Divider(
                                   color: Color(0xffDDDDDD), height: 0),
-                              Padding(
-                                  padding:
-                                      const EdgeInsets.only(left: 16, right: 4),
-                                  child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text("After Market Order (AMO)",
-                                            style: textStyle(
-                                                const Color(0xff666666),
-                                                14,
-                                                FontWeight.w500)),
-                                        IconButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                isAmo = !isAmo;
-                                              });
-                                            },
-                                            icon: SvgPicture.asset(theme
-                                                    .isDarkMode
-                                                ? isAmo
-                                                    ? assets.darkCheckedboxIcon
-                                                    : assets.darkCheckboxIcon
-                                                : isAmo
-                                                    ? assets.checkedbox
-                                                    : assets.checkbox))
-                                      ])),
+                              // Padding(
+                              //     padding:
+                              //         const EdgeInsets.only(left: 16, right: 4),
+                              //     child: Row(
+                              //         mainAxisAlignment:
+                              //             MainAxisAlignment.spaceBetween,
+                              //         children: [
+                              //           Text("After Market Order (AMO)",
+                              //               style: textStyle(
+                              //                   const Color(0xff666666),
+                              //                   14,
+                              //                   FontWeight.w500)),
+                              //           IconButton(
+                              //               onPressed: () {
+                              //                 setState(() {
+                              //                   isAmo = !isAmo;
+                              //                 });
+                              //               },
+                              //               icon: SvgPicture.asset(theme
+                              //                       .isDarkMode
+                              //                   ? isAmo
+                              //                       ? assets.darkCheckedboxIcon
+                              //                       : assets.darkCheckboxIcon
+                              //                   : isAmo
+                              //                       ? assets.checkedbox
+                              //                       : assets.checkbox))
+                              //         ])),
+                             
                               const SizedBox(height: 100)
                             ])),
                     if (internet.connectionStatus ==
@@ -1519,8 +1624,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger should be greater than LTP"));
-                                                        } else 
-                                                        if (double.parse(
+                                                        } else if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) >
                                                             double.parse(widget
@@ -1563,8 +1667,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                        } 
-                                                        else if (double.parse(price) <
+                                                        } else if (double.parse(priceCtrl.text) <
                                                             double.parse(
                                                                 triggerPriceCtrl
                                                                     .text)) {
@@ -1574,8 +1677,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger should be less than price"));
-                                                        }
-                                                         else if (double.parse(
+                                                        } else if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) >
                                                             double.parse(widget
@@ -1620,8 +1722,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger should be lesser than LTP"));
-                                                        } else 
-                                                        if (double.parse(
+                                                        } else if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) <
                                                             double.parse(widget
@@ -1664,8 +1765,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                        } 
-                                                        else if (double.parse(price) <
+                                                        } else if (double.parse(price) >
                                                             double.parse(
                                                                 triggerPriceCtrl
                                                                     .text)) {
@@ -1675,8 +1775,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger should be greater than price"));
-                                                        } 
-                                                        else if (double.parse(
+                                                        } else if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) <
                                                             double.parse(widget
@@ -1805,7 +1904,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
         blprc: stopLossCtrl.text,
         bpprc: targetCtrl.text,
         qty: qtyCtrl.text,
-        ret: widget.modifyOrderArgs.ret!,
+        ret: validity,
         trgprc: triggerPriceCtrl.text,
         tsym: widget.modifyOrderArgs.tsym!);
     await context.read(orderProvider).fetchModifyOrder(input, context);
