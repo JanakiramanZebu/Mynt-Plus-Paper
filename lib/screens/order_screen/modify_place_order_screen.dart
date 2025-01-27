@@ -1505,7 +1505,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                 : "Trigger can not be 0"));
                                                   } else {
                                                     if (isBuy) {
-                                                      if (isActivePrice[2]) {
+                                                      if (isActivePrice[3]) {
                                                         if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) >
@@ -1606,7 +1606,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         }
                                                       }
                                                     } else {
-                                                      if (isActivePrice[2]) {
+                                                      if (isActivePrice[3]) {
                                                         if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) >
@@ -1665,7 +1665,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                       context,
                                                                       "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
                                                         } 
-                                                        else if (double.parse(price) >
+                                                        else if (double.parse(price) <
                                                             double.parse(
                                                                 triggerPriceCtrl
                                                                     .text)) {

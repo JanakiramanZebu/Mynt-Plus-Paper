@@ -4010,9 +4010,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
   void marginUpdate() {
     OrderMarginInput input = OrderMarginInput(
         exch: "${widget.scripInfo.exch}",
-        prc: ((widget.scripInfo.exch == "MCX" ||
-                    widget.scripInfo.exch == "BSE") &&
-                (priceType == "Market" || priceType == "SL MKT"))
+        prc: (priceType == "Market" || priceType == "SL MKT")
             ? "0"
             : ordPrice,
         prctyp: context.read(ordInputProvider).prcType,
@@ -4031,9 +4029,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
     context.read(orderProvider).fetchOrderMargin(input, context);
     BrokerageInput brokerageInput = BrokerageInput(
         exch: "${widget.scripInfo.exch}",
-        prc: ((widget.scripInfo.exch == "MCX" ||
-                    widget.scripInfo.exch == "BSE") &&
-                (priceType == "Market" || priceType == "SL MKT"))
+        prc: (priceType == "Market" || priceType == "SL MKT")
             ? "0"
             : ordPrice,
         prd: context.read(ordInputProvider).orderType,
