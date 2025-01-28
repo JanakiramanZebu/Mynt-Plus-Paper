@@ -323,7 +323,7 @@ mixin OrderAPI on ApiCore {
         "ipaddr": ip
       };
 
-      if (input.trgprc.isNotEmpty && double.parse(input.trgprc) > 0) {
+      if ((input.prctyp == 'SL-MKT' || input.prctyp == 'SL-LMT') && input.trgprc.isNotEmpty && double.parse(input.trgprc) > 0) {
         payload.addAll({"trgprc": input.trgprc});
       }
       if (input.blprc.isNotEmpty && double.parse(input.blprc) > 0) {

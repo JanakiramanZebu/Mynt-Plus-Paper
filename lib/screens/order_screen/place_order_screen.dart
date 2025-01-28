@@ -104,8 +104,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
   String orderType = "Regular";
   String priceType = "Limit";
   String validityTypeGTT = "DAY";
+  double tik = 0.00;
+  double roundOffWithInterval(double input, double interval) {
+    return ((input / interval).round() * interval);
+  }
+
   @override
   void initState() {
+    tik = double.parse(widget.scripInfo.ti.toString());
     orderType = "Regular";
     orderTypes = [
       {"type": "Regular"},
@@ -447,6 +453,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                       ]))),
               body: Stack(children: [
                 SingleChildScrollView(
+                    padding: EdgeInsets.only(
+                        bottom: (priceType == "Market" || priceType == "SL MKT")
+                            ? 90
+                            : 0),
                     reverse: true,
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2597,7 +2607,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                     ]))
                               ],
                               Container(
-                                  height: 36,
                                   decoration: BoxDecoration(
                                       color: theme.isDarkMode
                                           ? colors.darkGrey
@@ -2613,14 +2622,34 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                   : colors.colorDivider))),
                                   padding: const EdgeInsets.only(
                                       left: 16.0, right: 3, top: 0),
-                                  child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(children: [
-                                          CustomWidgetButton(
-                                              onPress:
-                                                  internet.connectionStatus ==
+                                  child: Column(
+                                    children: [
+                                      if (priceType == "Market" ||
+                                          priceType == "SL MKT") ...[
+                                        AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 400),
+                                            curve: Curves.easeInCubic,
+                                            margin: const EdgeInsets.only(
+                                                right: 16, top: 16, bottom: 0),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10, horizontal: 14),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xffFCEFD4),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            child: const Text(
+                                                "A market order carries the risk of execution at a less advantageous price")),
+                                      ],
+                                      Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(children: [
+                                              CustomWidgetButton(
+                                                  onPress: internet
+                                                              .connectionStatus ==
                                                           ConnectivityResult
                                                               .none
                                                       ? () {}
@@ -2641,101 +2670,111 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                 return const MarginDetailsBottomsheet();
                                                               });
                                                         },
-                                              widget: Row(children: [
-                                                Text("Margin: ",
-                                                    style: textStyle(
-                                                        const Color(0xff666666),
-                                                        12,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}",
-                                                    style: textStyle(
-                                                        !theme.isDarkMode
+                                                  widget: Row(children: [
+                                                    Text("Margin: ",
+                                                        style: textStyle(
+                                                            const Color(
+                                                                0xff666666),
+                                                            12,
+                                                            FontWeight.w500)),
+                                                    Text(
+                                                        "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}",
+                                                        style: textStyle(
+                                                            !theme.isDarkMode
+                                                                ? colors
+                                                                    .colorBlue
+                                                                : colors
+                                                                    .colorLightBlue,
+                                                            12,
+                                                            FontWeight.w600)),
+                                                    Icon(Icons.arrow_drop_down,
+                                                        color: !theme.isDarkMode
                                                             ? colors.colorBlue
                                                             : colors
-                                                                .colorLightBlue,
-                                                        12,
-                                                        FontWeight.w600)),
-                                                Icon(Icons.arrow_drop_down,
-                                                    color: !theme.isDarkMode
-                                                        ? colors.colorBlue
-                                                        : colors.colorLightBlue)
-                                              ])),
-                                          const SizedBox(width: 20),
-                                          CustomWidgetButton(
-                                              onPress: internet
-                                                          .connectionStatus ==
-                                                      ConnectivityResult.none
-                                                  ? () {}
-                                                  : () {
-                                                      BrokerageInput
-                                                          brokerageInput =
-                                                          BrokerageInput(
-                                                              exch:
-                                                                  "${widget.scripInfo.exch}",
-                                                              prc: priceCtrl
-                                                                  .text,
-                                                              prd: orderInput
-                                                                  .orderType,
-                                                              qty:
-                                                                  "${widget.scripInfo.ls}",
-                                                              trantype: isBuy!
-                                                                  ? "B"
-                                                                  : "S",
-                                                              tsym:
-                                                                  "${widget.scripInfo.tsym}");
-                                                      context
-                                                          .read(orderProvider)
-                                                          .fetchGetBrokerage(
-                                                              brokerageInput,
-                                                              context);
-                                                      showModalBottomSheet(
-                                                          useSafeArea: true,
-                                                          isScrollControlled:
-                                                              true,
-                                                          shape: const RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius.vertical(
-                                                                      top: Radius
-                                                                          .circular(
+                                                                .colorLightBlue)
+                                                  ])),
+                                              const SizedBox(width: 20),
+                                              CustomWidgetButton(
+                                                  onPress:
+                                                      internet.connectionStatus ==
+                                                              ConnectivityResult
+                                                                  .none
+                                                          ? () {}
+                                                          : () {
+                                                              BrokerageInput brokerageInput = BrokerageInput(
+                                                                  exch:
+                                                                      "${widget.scripInfo.exch}",
+                                                                  prc: priceCtrl
+                                                                      .text,
+                                                                  prd: orderInput
+                                                                      .orderType,
+                                                                  qty:
+                                                                      "${widget.scripInfo.ls}",
+                                                                  trantype:
+                                                                      isBuy!
+                                                                          ? "B"
+                                                                          : "S",
+                                                                  tsym:
+                                                                      "${widget.scripInfo.tsym}");
+                                                              context
+                                                                  .read(
+                                                                      orderProvider)
+                                                                  .fetchGetBrokerage(
+                                                                      brokerageInput,
+                                                                      context);
+                                                              showModalBottomSheet(
+                                                                  useSafeArea:
+                                                                      true,
+                                                                  isScrollControlled:
+                                                                      true,
+                                                                  shape: const RoundedRectangleBorder(
+                                                                      borderRadius: BorderRadius.vertical(
+                                                                          top: Radius.circular(
                                                                               16))),
-                                                          context: context,
-                                                          builder: (context) {
-                                                            return const ChargesDetailsBottomsheet();
-                                                          });
-                                                    },
-                                              widget: Row(children: [
-                                                Text("Charges: ",
-                                                    style: textStyle(
-                                                        const Color(0xff666666),
-                                                        12,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                    style: textStyle(
-                                                        !theme.isDarkMode
+                                                                  context:
+                                                                      context,
+                                                                  builder:
+                                                                      (context) {
+                                                                    return const ChargesDetailsBottomsheet();
+                                                                  });
+                                                            },
+                                                  widget: Row(children: [
+                                                    Text("Charges: ",
+                                                        style: textStyle(
+                                                            const Color(
+                                                                0xff666666),
+                                                            12,
+                                                            FontWeight.w500)),
+                                                    Text(
+                                                        "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                        style: textStyle(
+                                                            !theme.isDarkMode
+                                                                ? colors
+                                                                    .colorBlue
+                                                                : colors
+                                                                    .colorLightBlue,
+                                                            12,
+                                                            FontWeight.w600)),
+                                                    Icon(Icons.arrow_drop_down,
+                                                        color: !theme.isDarkMode
                                                             ? colors.colorBlue
                                                             : colors
-                                                                .colorLightBlue,
-                                                        12,
-                                                        FontWeight.w600)),
-                                                Icon(Icons.arrow_drop_down,
-                                                    color: !theme.isDarkMode
-                                                        ? colors.colorBlue
-                                                        : colors.colorLightBlue)
-                                              ]))
-                                        ]),
-                                        IconButton(
-                                            onPressed:
-                                                internet.connectionStatus ==
+                                                                .colorLightBlue)
+                                                  ]))
+                                            ]),
+                                            IconButton(
+                                                onPressed: internet
+                                                            .connectionStatus ==
                                                         ConnectivityResult.none
                                                     ? null
                                                     : () {
                                                         marginUpdate();
                                                       },
-                                            icon: SvgPicture.asset(
-                                                assets.reloadIcon))
-                                      ]))
+                                                icon: SvgPicture.asset(
+                                                    assets.reloadIcon))
+                                          ]),
+                                    ],
+                                  ))
                             ],
                             Container(
                                 padding: const EdgeInsets.symmetric(
@@ -2884,9 +2923,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                   print(
                                                       "objectobject{$quantity | $reminder | $maxQty}");
                                                 });
-                                                if (qtyCtrl.text
-                                                        .trim()
-                                                        .isEmpty ||
+                                                if (qtyCtrl.text.trim().isEmpty ||
                                                     priceCtrl.text
                                                         .trim()
                                                         .isEmpty) {
@@ -2896,9 +2933,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                           qtyCtrl.text.isEmpty
                                                               ? "Quantity can not be empty"
                                                               : "Price can not be empty"));
-                                                } else if (qtyCtrl.text
-                                                            .trim() ==
-                                                        "0" ||
+                                                } else if (qtyCtrl.text.trim() == "0" ||
                                                     priceCtrl.text.trim() ==
                                                         "0") {
                                                   ScaffoldMessenger.of(context)
@@ -2907,8 +2942,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                           qtyCtrl.text == "0"
                                                               ? "Quantity can not be 0"
                                                               : "Price can not be 0"));
-                                                } else if ((double.parse(
-                                                            ordPrice) <
+                                                } else if ((double.parse(ordPrice) <
                                                         double.parse(
                                                             "${widget.scripInfo.lc ?? 0.00}")) ||
                                                     (double.parse(ordPrice) >
@@ -2923,14 +2957,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                       "${widget.scripInfo.lc ?? 0.00}")
                                                               ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc ?? 0.00}"
                                                               : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc ?? 0.00}"));
-                                                }
-
-                                                //
-                                                //
-                                                // --------------
-
-                                                else if (orderType ==
-                                                        "Regular" &&
+                                                } else if (orderType == "Regular" &&
                                                     (priceType == "SL Limit" ||
                                                         priceType ==
                                                             "SL MKT")) {
@@ -3174,8 +3201,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                       }
                                                     }
                                                   }
-                                                } else if (orderType ==
-                                                        "Cover" &&
+                                                } else if (orderType == "Cover" &&
                                                     (priceType == "Limit" ||
                                                         priceType ==
                                                             "Market")) {
@@ -3207,7 +3233,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                                    "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
                                                       } else {
                                                         if ((int.parse(qtyCtrl
                                                                         .text
@@ -3262,8 +3288,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                       }
                                                     }
                                                   }
-                                                } else if (orderType ==
-                                                        "Cover" &&
+                                                } else if (orderType == "Cover" &&
                                                     (priceType == "SL Limit")) {
                                                   if (stopLossCtrl.text.isEmpty ||
                                                       stopLossCtrl.text ==
@@ -3287,7 +3312,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         .showSnackBar(
                                                             warningMessage(
                                                                 context,
-                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
                                                   } else if (!isBuy! &&
                                                       (double.parse(ordPrice) +
                                                               double.parse(
@@ -3431,8 +3456,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                       }
                                                     }
                                                   }
-                                                } else if (orderType ==
-                                                        "Bracket" &&
+                                                } else if (orderType == "Bracket" &&
                                                     (priceType == "Limit" ||
                                                         priceType ==
                                                             "Market")) {
@@ -3459,7 +3483,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         .showSnackBar(
                                                             warningMessage(
                                                                 context,
-                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
                                                   } else if (!isBuy! &&
                                                       (double.parse(ordPrice) +
                                                               double.parse(
@@ -3492,8 +3516,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                           false, theme);
                                                     }
                                                   }
-                                                } else if (orderType ==
-                                                        "Bracket" &&
+                                                } else if (orderType == "Bracket" &&
                                                     (priceType == "SL Limit")) {
                                                   if (stopLossCtrl.text.isEmpty ||
                                                       targetCtrl.text.isEmpty) {
@@ -3517,7 +3540,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         .showSnackBar(
                                                             warningMessage(
                                                                 context,
-                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text))}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
                                                   } else if (!isBuy! &&
                                                       (double.parse(ordPrice) +
                                                               double.parse(
@@ -3816,34 +3839,56 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
       addBasketScrip(orderInput, bsktName);
     } else {
       if (!isSliceOrd) {
-        context.read(orderProvider).setOrderloader(true);
-        PlaceOrderInput placeOrderInput = PlaceOrderInput(
-            amo: isAmo ? "Yes" : "",
-            blprc: orderType == "Cover" || orderType == "Bracket"
-                ? stopLossCtrl.text
-                : '',
-            bpprc: orderType == "Bracket" ? targetCtrl.text : '',
-            dscqty: discQtyCtrl.text,
-            exch: widget.scripInfo.exch!,
-            prc: ordPrice,
-            prctype: orderInput.prcType,
-            prd: orderInput.orderType,
-            qty: qtyCtrl.text,
-            ret: validityType,
-            trailprc: '',
-            trantype: isBuy! ? 'B' : 'S',
-            trgprc: priceType == "SL Limit" || priceType == "SL MKT"
-                ? triggerPriceCtrl.text
-                : "",
-            tsym: widget.scripInfo.tsym!,
-            mktProt: priceType == "Market" || priceType == "SL MKT"
-                ? mktProtCtrl.text
-                : '',
-            channel: '');
-        await context
-            .read(orderProvider)
-            .fetchPlaceOrder(context, placeOrderInput, widget.orderArg.isExit);
-        context.read(orderProvider).setOrderloader(false);
+        bool placeorder = true;
+        if (priceType == "Limit" || priceType == "SL Limit") {
+          String r = roundOffWithInterval(double.parse(priceCtrl.text), tik)
+              .toStringAsFixed(2);
+          if (double.parse(priceCtrl.text) != double.parse(r)) {
+            placeorder = false;
+            ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                context, "Price should be multiple of tick size $tik => $r"));
+          }
+        }
+        if (placeorder && (priceType == "SL Limit" || priceType == "SL MKT")) {
+          String r =
+              roundOffWithInterval(double.parse(triggerPriceCtrl.text), tik)
+                  .toStringAsFixed(2);
+          if (double.parse(triggerPriceCtrl.text) != double.parse(r)) {
+            placeorder = false;
+            ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                context, "Trigger should be multiple of tick size $tik => $r"));
+          }
+        }
+        if (placeorder) {
+          context.read(orderProvider).setOrderloader(true);
+          PlaceOrderInput placeOrderInput = PlaceOrderInput(
+              amo: isAmo ? "Yes" : "",
+              blprc: orderType == "Cover" || orderType == "Bracket"
+                  ? stopLossCtrl.text
+                  : '',
+              bpprc: orderType == "Bracket" ? targetCtrl.text : '',
+              dscqty: discQtyCtrl.text,
+              exch: widget.scripInfo.exch!,
+              prc: ordPrice,
+              prctype: orderInput.prcType,
+              prd: orderInput.orderType,
+              qty: qtyCtrl.text,
+              ret: validityType,
+              trailprc: '',
+              trantype: isBuy! ? 'B' : 'S',
+              trgprc: priceType == "SL Limit" || priceType == "SL MKT"
+                  ? triggerPriceCtrl.text
+                  : "",
+              tsym: widget.scripInfo.tsym!,
+              mktProt: priceType == "Market" || priceType == "SL MKT"
+                  ? mktProtCtrl.text
+                  : '',
+              channel: '');
+          await context
+              .read(orderProvider)
+              .fetchPlaceOrder(context, placeOrderInput, widget.orderArg.isExit);
+          context.read(orderProvider).setOrderloader(false);
+        }
       } else {
         showModalBottomSheet(
             isScrollControlled: true,

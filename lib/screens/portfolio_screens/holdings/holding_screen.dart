@@ -35,20 +35,20 @@ class HoldingScreen extends ConsumerWidget {
     String totPnlPercHolding = "0.00";
 
     if (holdingProvide.holdingsModel!.isNotEmpty) {
-       for (var holdingJson in holdingProvide.holdingsModel!) {
-      totalPnlHolding +=
-          double.parse("${holdingJson.exchTsym![0].profitNloss ?? 0.0}");
-      oneDayChng +=
-          double.parse("${holdingJson.exchTsym![0].oneDayChg ?? 0.0}");
-      invest += double.parse("${holdingJson.invested ?? 0.0}");
-      totalCurrentVal += double.parse("${holdingJson.currentValue ?? 0.0}");
-    }
+      for (var holdingJson in holdingProvide.holdingsModel!) {
+        totalPnlHolding +=
+            double.parse("${holdingJson.exchTsym![0].profitNloss ?? 0.0}");
+        oneDayChng +=
+            double.parse("${holdingJson.exchTsym![0].oneDayChg ?? 0.0}");
+        invest += double.parse("${holdingJson.invested ?? 0.0}");
+        totalCurrentVal += double.parse("${holdingJson.currentValue ?? 0.0}");
+      }
 
-    oneDayChngPer =
-        totalCurrentVal > 0 ? (oneDayChng / totalCurrentVal) * 100 : 0.0;
-    totPnlPercHolding = invest > 0
-        ? ((totalPnlHolding / invest) * 100).toStringAsFixed(2)
-        : "0.00";
+      oneDayChngPer =
+          totalCurrentVal > 0 ? (oneDayChng / totalCurrentVal) * 100 : 0.0;
+      totPnlPercHolding = invest > 0
+          ? ((totalPnlHolding / invest) * 100).toStringAsFixed(2)
+          : "0.00";
     }
     return holdingProvide.holdloader
         ? const Center(child: CircularProgressIndicator())
@@ -108,8 +108,7 @@ class HoldingScreen extends ConsumerWidget {
                                     Text(
                                         "(${totPnlPercHolding == "NaN" ? 0.00 : totPnlPercHolding}%)",
                                         style: textStyle(
-                                            totPnlPercHolding
-                                                    .startsWith("-")
+                                            totPnlPercHolding.startsWith("-")
                                                 ? colors.darkred
                                                 : colors.ltpgreen,
                                             14,
@@ -361,6 +360,89 @@ class HoldingScreen extends ConsumerWidget {
                               ? ListView.separated(
                                   itemBuilder:
                                       (BuildContext context, int index) {
+                                    var exchTsym = holdingProvide
+                                        .holdingsModel![index].exchTsym![0];
+                                    if (socketDatas
+                                            .containsKey(exchTsym.token) &&
+                                        double.parse(exchTsym.profitNloss
+                                                .toString()) >
+                                            0 &&
+                                        double.parse(
+                                                exchTsym.pNlChng.toString()) ==
+                                            0.00) {
+                                      var currentItem =
+                                          holdingProvide.holdingsModel![index];
+
+                                      // exchTsym.lp =
+                                      //     "${socketDatas[exchTsym.token]['lp'] ?? 0.00}";
+                                      // exchTsym.perChange =
+                                      //     "${socketDatas[exchTsym.token]['pc'] ?? 0.00}";
+                                      // exchTsym.close =
+                                      //     "${socketDatas[exchTsym.token]['c'] ?? 0.00}";
+
+                                      // currentItem.currentValue = (int.parse(
+                                      //             "${currentItem.currentQty ?? 0}") *
+                                      //         double.parse(
+                                      //             "${exchTsym.lp ?? 0.0}"))
+                                      //     .toStringAsFixed(2);
+
+                                      // double avgCost = double.parse(
+                                      //     "${currentItem.upldprc == "0.00" ? exchTsym.close ?? 0.0 : currentItem.upldprc ?? 0.00}");
+                                      // currentItem.invested =
+                                      //     (currentItem.currentQty! * avgCost)
+                                      //         .toStringAsFixed(2);
+
+                                      holdingProvide
+                                          .holdingsModel![index]
+                                          .exchTsym![0]
+                                          .pNlChng = currentItem.invested ==
+                                              "0.00"
+                                          ? "0.00"
+                                          : ((double.parse(
+                                                          "${exchTsym.profitNloss ?? 0.0}") /
+                                                      double.parse(
+                                                          "${currentItem.invested ?? 0.0}")) *
+                                                  100)
+                                              .toStringAsFixed(2);
+
+                                      holdingProvide
+                                          .holdingsModel![index]
+                                          .exchTsym![0]
+                                          .oneDayChg = ((double.parse(
+                                                      exchTsym.lp ?? "0.00") -
+                                                  double.parse(exchTsym.close ??
+                                                      "0.00")) *
+                                              int.parse(
+                                                  "${currentItem.currentQty ?? 0}"))
+                                          .toStringAsFixed(2);
+
+                                      if (currentItem.currentQty == 0) {
+                                        double sellAmt = double.parse(
+                                            currentItem.sellAmt ?? "0.00");
+                                        int usedQty = int.parse(
+                                            currentItem.usedqty ?? "0");
+                                        double price = (sellAmt / usedQty);
+                                        double pnl = price -
+                                            double.parse(
+                                                currentItem.upldprc ?? "0.0");
+
+                                        holdingProvide.holdingsModel![index]
+                                                .exchTsym![0].profitNloss =
+                                            (pnl * usedQty).toStringAsFixed(2);
+                                      } else {
+                                        holdingProvide
+                                            .holdingsModel![index]
+                                            .exchTsym![0]
+                                            .profitNloss = (double.parse(
+                                                    currentItem.currentValue ??
+                                                        "0.00") -
+                                                double.parse(
+                                                    currentItem.invested ??
+                                                        "0.00"))
+                                            .toStringAsFixed(2);
+                                      }
+                                    }
+
                                     return InkWell(
                                         onLongPress: () {
                                           Navigator.pushNamed(

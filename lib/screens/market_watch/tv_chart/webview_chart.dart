@@ -128,20 +128,24 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         final theme = watch(themeProvider);
         final depthData = context.read(marketWatchProvider).getQuotes!;
         final userProfile = watch(userProfileProvider);
-        return SizedBox(
-          height: (MediaQuery.of(context).size.height -
-              (depthData.instname == "UNDIND" || depthData.instname == "COM"
-                  ? (defaultTargetPlatform == TargetPlatform.iOS)
-                      ? 70
-                      : 51
-                  : (defaultTargetPlatform == TargetPlatform.iOS)
-                      ? 120
-                      : 96)),
-          child: Column(
-            children: [
-              _buildTopBar(tvChart, theme, userProfile),
-              _buildWebView(tvChart, theme),
-            ],
+        return Expanded(
+          child: SingleChildScrollView(
+            child: SizedBox(
+              height: (MediaQuery.of(context).size.height -
+                  (depthData.instname == "UNDIND" || depthData.instname == "COM"
+                      ? (defaultTargetPlatform == TargetPlatform.iOS)
+                          ? 80
+                          : 51
+                      : (defaultTargetPlatform == TargetPlatform.iOS)
+                          ? 130
+                          : 96)),
+              child: Column(
+                children: [
+                  _buildTopBar(tvChart, theme, userProfile),
+                  _buildWebView(tvChart, theme),
+                ],
+              ),
+            ),
           ),
         );
       },

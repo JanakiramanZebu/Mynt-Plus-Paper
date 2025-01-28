@@ -62,8 +62,15 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
   int lotSize = 0;
   String price = "0.00";
   String validity = "DAY";
+  double tik = 0.00;
+  double roundOffWithInterval(double input, double interval) {
+    return ((input / interval).round() * interval);
+  }
+
   @override
   void initState() {
+    tik = double.parse(widget.scripInfo.ti.toString());
+
     prcType = widget.modifyOrderArgs.prctyp!;
     isActivePrice = [
       prcType == 'LMT' ? true : false,
@@ -92,12 +99,32 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
       discQtyCtrl = TextEditingController(text: widget.modifyOrderArgs.dscqty);
       validity = widget.modifyOrderArgs.ret!.toUpperCase();
 
-        isActiveValidity = [
-      validity == 'DAY' ? true : false,
-      validity == 'IOC' ? true : false,
-    ];
-    addValidity = validity.toUpperCase() == 'IOC' || (widget.modifyOrderArgs.dscqty != null && int.parse(widget.modifyOrderArgs.dscqty.toString()) > 0) ? true : false;
-      // context.read(networkStateProvider).networkStream();
+      isActiveValidity = [
+        validity == 'DAY' ? true : false,
+        validity == 'IOC' ? true : false,
+      ];
+      addValidity = validity.toUpperCase() == 'IOC' ||
+              (widget.modifyOrderArgs.dscqty != null &&
+                  int.parse(widget.modifyOrderArgs.dscqty.toString()) > 0)
+          ? true
+          : false;
+
+      if (isActivePrice[1] || isActivePrice[3]) {
+        double ltp = (double.parse("${widget.orderArg.ltp}") *
+                double.parse(
+                    mktProtCtrl.text.isEmpty ? "0" : mktProtCtrl.text)) /
+            100;
+        if (widget.modifyOrderArgs.trantype == "B") {
+          price = (double.parse("${widget.orderArg.ltp ?? 0.00}") + ltp)
+              .toStringAsFixed(2);
+        } else {
+          price = (double.parse("${widget.orderArg.ltp ?? 0.00}") - ltp)
+              .toStringAsFixed(2);
+        }
+        priceCtrl.text = "Market";
+      } else {
+        priceCtrl.text = "${widget.orderArg.ltp}";
+      }
 
       addStoploss = widget.modifyOrderArgs.sPrdtAli == "BO" ||
               widget.modifyOrderArgs.sPrdtAli == "CO"
@@ -552,7 +579,23 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                              headerTitleText("Price", theme),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                  children: [
+                                                    headerTitleText(
+                                                        "Price", theme),
+                                                    Text(
+                                                        "Tick: $tik",
+                                                        style: textStyle(
+                                                            const Color(
+                                                                0xff777777),
+                                                            11,
+                                                            FontWeight.w600))
+                                                  ]),
                                               const SizedBox(height: 8),
                                               SizedBox(
                                                   height: 44,
@@ -570,8 +613,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                               r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
                                                           if (!regex.hasMatch(
                                                               value)) {
-                                                            priceCtrl
-                                                                    .text =
+                                                            priceCtrl.text =
                                                                 value.substring(
                                                                     0,
                                                                     value.length -
@@ -579,7 +621,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             priceCtrl
                                                                     .selection =
                                                                 TextSelection.collapsed(
-                                                                    offset: priceCtrl.text
+                                                                    offset: priceCtrl
+                                                                        .text
                                                                         .length); // Keep cursor at the end
                                                           }
                                                         }
@@ -608,8 +651,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                     context,
                                                                     double.parse(value) <
                                                                             double.parse("${widget.scripInfo.lc}")
-                                                                        ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
-                                                                        : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}"));
+                                                                        ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc} 1 $value"
+                                                                        : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc} 1 $value"));
                                                           }
                                                           setState(() {
                                                             price = value;
@@ -723,7 +766,6 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           15,
                                                           FontWeight.w400),
                                                       onChanged: (value) {
-
                                                         if (value.isNotEmpty &&
                                                             double.parse(
                                                                     value) >
@@ -741,11 +783,12 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             triggerPriceCtrl
                                                                     .selection =
                                                                 TextSelection.collapsed(
-                                                                    offset: triggerPriceCtrl.text
+                                                                    offset: triggerPriceCtrl
+                                                                        .text
                                                                         .length); // Keep cursor at the end
                                                           }
                                                         }
-                                                        
+
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .hideCurrentSnackBar();
@@ -820,28 +863,25 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             0xffF1F3F8),
                                                     hintText: "0.00",
                                                     onChanged: (value) {
-
-                                                       if (value.isNotEmpty &&
-                                                            double.parse(
-                                                                    value) >
-                                                                0) {
-                                                          final regex = RegExp(
-                                                              r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
-                                                          if (!regex.hasMatch(
-                                                              value)) {
-                                                            targetCtrl
-                                                                    .text =
-                                                                value.substring(
-                                                                    0,
-                                                                    value.length -
-                                                                        1); // Revert to previous valid input
-                                                            targetCtrl
-                                                                    .selection =
-                                                                TextSelection.collapsed(
-                                                                    offset: targetCtrl.text
-                                                                        .length); // Keep cursor at the end
-                                                          }
+                                                      if (value.isNotEmpty &&
+                                                          double.parse(value) >
+                                                              0) {
+                                                        final regex = RegExp(
+                                                            r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                        if (!regex
+                                                            .hasMatch(value)) {
+                                                          targetCtrl.text =
+                                                              value.substring(
+                                                                  0,
+                                                                  value.length -
+                                                                      1); // Revert to previous valid input
+                                                          targetCtrl.selection =
+                                                              TextSelection.collapsed(
+                                                                  offset: targetCtrl
+                                                                      .text
+                                                                      .length); // Keep cursor at the end
                                                         }
+                                                      }
 
                                                       ScaffoldMessenger.of(
                                                               context)
@@ -903,28 +943,25 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                       ? colors.darkGrey
                                                       : const Color(0xffF1F3F8),
                                                   onChanged: (value) {
-
-                                                      if (value.isNotEmpty &&
-                                                            double.parse(
-                                                                    value) >
-                                                                0) {
-                                                          final regex = RegExp(
-                                                              r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
-                                                          if (!regex.hasMatch(
-                                                              value)) {
-                                                            stopLossCtrl
-                                                                    .text =
-                                                                value.substring(
-                                                                    0,
-                                                                    value.length -
-                                                                        1); // Revert to previous valid input
-                                                            stopLossCtrl
-                                                                    .selection =
-                                                                TextSelection.collapsed(
-                                                                    offset: stopLossCtrl.text
-                                                                        .length); // Keep cursor at the end
-                                                          }
-                                                        }
+                                                    if (value.isNotEmpty &&
+                                                        double.parse(value) >
+                                                            0) {
+                                                      final regex = RegExp(
+                                                          r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                      if (!regex
+                                                          .hasMatch(value)) {
+                                                        stopLossCtrl.text =
+                                                            value.substring(
+                                                                0,
+                                                                value.length -
+                                                                    1); // Revert to previous valid input
+                                                        stopLossCtrl.selection =
+                                                            TextSelection.collapsed(
+                                                                offset: stopLossCtrl
+                                                                    .text
+                                                                    .length); // Keep cursor at the end
+                                                      }
+                                                    }
                                                     ScaffoldMessenger.of(
                                                             context)
                                                         .hideCurrentSnackBar();
@@ -1239,7 +1276,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                               //                       ? assets.checkedbox
                               //                       : assets.checkbox))
                               //         ])),
-                             
+
                               const SizedBox(height: 100)
                             ])),
                     if (internet.connectionStatus ==
@@ -1591,8 +1628,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                       .text) <
                                                               double.parse(
                                                                   "${widget.scripInfo.lc}")
-                                                          ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
-                                                          : "Price can not be greater than Lower Circuit Limit ${widget.scripInfo.uc}"));
+                                                          ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc} 2 $price ${priceCtrl.text}"
+                                                          : "Price can not be greater than Lower Circuit Limit ${widget.scripInfo.uc} 2"));
                                                 } else if ((isActivePrice[2] ||
                                                     isActivePrice[3])) {
                                                   if (triggerPriceCtrl
@@ -1613,7 +1650,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                       if (isActivePrice[3]) {
                                                         if (double.parse(
                                                                 triggerPriceCtrl
-                                                                    .text) >
+                                                                    .text) <
                                                             double.parse(widget
                                                                     .orderArg
                                                                     .ltp ??
@@ -1623,7 +1660,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                               .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      "Trigger should be greater than LTP"));
+                                                                      "Trigger should be greater than LTP ${double.parse(triggerPriceCtrl.text) > double.parse(widget.orderArg.ltp ?? "0.00")}"));
                                                         } else if (double.parse(
                                                                 triggerPriceCtrl
                                                                     .text) >
@@ -1654,9 +1691,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           }
                                                         }
                                                       } else {
-                                                        if (double.parse(
-                                                                triggerPriceCtrl
-                                                                    .text) <
+                                                        if (double.parse(triggerPriceCtrl.text) <
                                                             double.parse(widget
                                                                     .scripInfo
                                                                     .lc ??
@@ -1667,7 +1702,9 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                        } else if (double.parse(priceCtrl.text) <
+                                                        } else if (double.parse(
+                                                                priceCtrl
+                                                                    .text) <
                                                             double.parse(
                                                                 triggerPriceCtrl
                                                                     .text)) {
@@ -1889,26 +1926,46 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
   }
 
   modifyOrder() async {
-    print('object mm');
-    context.read(orderProvider).setOrderloader(true);
-    ModifyOrderInput input = ModifyOrderInput(
-        dscqty: widget.modifyOrderArgs.dscqty ?? "0",
-        token: widget.modifyOrderArgs.token!,
-        exch: widget.modifyOrderArgs.exch!,
-        mktProt: widget.modifyOrderArgs.mktProtection ?? "",
-        orderNum: widget.modifyOrderArgs.norenordno!,
-        prc: priceCtrl.text,
-        prd: widget.modifyOrderArgs.prd!,
-        trantype: widget.modifyOrderArgs.trantype!,
-        prctyp: prcType,
-        blprc: stopLossCtrl.text,
-        bpprc: targetCtrl.text,
-        qty: qtyCtrl.text,
-        ret: validity,
-        trgprc: triggerPriceCtrl.text,
-        tsym: widget.modifyOrderArgs.tsym!);
-    await context.read(orderProvider).fetchModifyOrder(input, context);
-    context.read(orderProvider).setOrderloader(false);
+    bool placeorder = true;
+    if (prcType == "LMT" || prcType == "MKT") {
+      String r = roundOffWithInterval(double.parse(priceCtrl.text), tik)
+          .toStringAsFixed(2);
+      if (double.parse(priceCtrl.text) != double.parse(r)) {
+        placeorder = false;
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Price should be multiple of tick size $tik => $r"));
+      }
+    }
+    if (placeorder && (prcType == "SL-LMT" || prcType == "SL-MKT")) {
+      String r = roundOffWithInterval(double.parse(triggerPriceCtrl.text), tik)
+          .toStringAsFixed(2);
+      if (double.parse(triggerPriceCtrl.text) != double.parse(r)) {
+        placeorder = false;
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Trigger should be multiple of tick size $tik => $r"));
+      }
+    }
+    if (placeorder) {
+      context.read(orderProvider).setOrderloader(true);
+      ModifyOrderInput input = ModifyOrderInput(
+          dscqty: widget.modifyOrderArgs.dscqty ?? "0",
+          token: widget.modifyOrderArgs.token!,
+          exch: widget.modifyOrderArgs.exch!,
+          mktProt: widget.modifyOrderArgs.mktProtection ?? "",
+          orderNum: widget.modifyOrderArgs.norenordno!,
+          prc: priceCtrl.text,
+          prd: widget.modifyOrderArgs.prd!,
+          trantype: widget.modifyOrderArgs.trantype!,
+          prctyp: prcType,
+          blprc: stopLossCtrl.text,
+          bpprc: targetCtrl.text,
+          qty: qtyCtrl.text,
+          ret: validity,
+          trgprc: triggerPriceCtrl.text,
+          tsym: widget.modifyOrderArgs.tsym!);
+      await context.read(orderProvider).fetchModifyOrder(input, context);
+      context.read(orderProvider).setOrderloader(false);
+    }
 
     BrokerageInput brokerageInput = BrokerageInput(
         exch: "${widget.scripInfo.exch}",

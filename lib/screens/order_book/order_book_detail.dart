@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
+import 'package:flutter_svg/svg.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/order_provider.dart';
@@ -12,7 +12,7 @@ import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/scrip_info_btns.dart';
-import '../../sharedWidget/time_line.dart'; 
+import '../../sharedWidget/time_line.dart';
 
 class OrderBookDetail extends ConsumerWidget {
   final OrderBookModel orderBookData;
@@ -85,7 +85,7 @@ class OrderBookDetail extends ConsumerWidget {
                     Text(
                         "${double.parse("${orderBookData.change != "null" ? orderBookData.change ?? 0.00 : 0.0} ").toStringAsFixed(2)} (${orderBookData.perChange ?? 0.00}%)",
                         style: textStyle(
-                          (orderBookData.change == "null" ||
+                            (orderBookData.change == "null" ||
                                         orderBookData.change == null) ||
                                     orderBookData.change == "0.00"
                                 ? colors.ltpgrey
@@ -102,7 +102,8 @@ class OrderBookDetail extends ConsumerWidget {
             ScripInfoBtns(
                 exch: '${orderBookData.exch}',
                 token: '${orderBookData.token}',
-                insName: '', tsym: '${orderBookData.tsym}'),
+                insName: '',
+                tsym: '${orderBookData.tsym}'),
             Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
@@ -130,13 +131,9 @@ class OrderBookDetail extends ConsumerWidget {
                           "Avg.Price",
                           "${orderBookData.avgprc ?? 0.00}",
                           theme),
-                            const SizedBox(height: 4),
-                      rowOfInfoData(
-                          "Trigger Price",
-                          "${orderBookData.trgprc ?? 0.00}",
-                          "",
-                          "",
-                          theme),
+                      const SizedBox(height: 4),
+                      rowOfInfoData("Trigger Price",
+                          "${orderBookData.trgprc ?? 0.00}", "", "", theme),
                       const SizedBox(height: 4),
                       rowOfInfoData(
                           "Filled Qty",
@@ -179,9 +176,7 @@ class OrderBookDetail extends ConsumerWidget {
                                             FontWeight.w500)),
                                     const SizedBox(height: 3),
                                     Text('${orderBookData.rejreason}',
-                                        style: textStyle(
-                                            colors.darkred,
-                                            14,
+                                        style: textStyle(colors.darkred, 14,
                                             FontWeight.w500)),
                                   ]))
                             ]),
@@ -249,7 +244,8 @@ class OrderBookDetail extends ConsumerWidget {
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(children: [
                       if ((orderBookData.sPrdtAli == "BO" ||
-                          orderBookData.sPrdtAli == "CO") && orderBookData.snonum != null) ...[
+                              orderBookData.sPrdtAli == "CO") &&
+                          orderBookData.snonum != null) ...[
                         Expanded(
                             child: SizedBox(
                                 height: 40,
@@ -416,10 +412,8 @@ class OrderBookDetail extends ConsumerWidget {
                                               borderRadius:
                                                   BorderRadius.circular(4)),
                                           child: Text("${orderBookData.status}",
-                                              style: textStyle(
-                                                  colors.darkred,
-                                                  10,
-                                                  FontWeight.w600)),
+                                              style: textStyle(colors.darkred,
+                                                  10, FontWeight.w600)),
                                         ),
                                       ],
                                     ),
@@ -500,7 +494,7 @@ class OrderBookDetail extends ConsumerWidget {
                         ),
                       ],
                       const SizedBox(width: 16),
-                       Expanded(
+                      Expanded(
                         child: InkWell(
                           onTap: () async {
                             await context
@@ -550,7 +544,6 @@ class OrderBookDetail extends ConsumerWidget {
                           ),
                         ),
                       ),
-                     
                     ])))
             : BottomAppBar(
                 shape: const CircularNotchedRectangle(),
@@ -575,8 +568,31 @@ class OrderBookDetail extends ConsumerWidget {
                             "${orderBookData.token}",
                             "${orderBookData.exch}",
                             context);
-                        Navigator.pushNamed(context, Routes.repeatOrd,
-                            arguments: orderBookData);
+
+                        OrderScreenArgs orderArgs = OrderScreenArgs(
+                            exchange: orderBookData.exch.toString(),
+                            tSym: orderBookData.tsym.toString(),
+                            isExit: false,
+                            token: orderBookData.token.toString(),
+                            transType:
+                                orderBookData.trantype == 'B' ? true : false,
+                            lotSize: orderBookData.ls,
+                            ltp:
+                                "${orderBookData.ltp ?? orderBookData.c ?? 0.00}",
+                            perChange: orderBookData.change ?? "0.00",
+                            orderTpye: 'I',
+                            holdQty: '',
+                            isModify: false);
+
+                        // Navigator.pop(context);
+                        Navigator.pushNamed(context, Routes.placeOrderScreen,
+                            arguments: {
+                              "orderArg": orderArgs,
+                              "scripInfo": context
+                                  .read(marketWatchProvider)
+                                  .scripInfoModel!,
+                              "isBskt": ''
+                            });
                       },
                       child: Center(
                           child: Text("Repeat order",
@@ -632,6 +648,4 @@ class OrderBookDetail extends ConsumerWidget {
       ]))
     ]);
   }
-
-  
 }

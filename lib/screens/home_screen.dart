@@ -1313,8 +1313,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 "COM") ...[
                                           Padding(
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 20),
+                                                horizontal: 20, vertical: 0),
                                             child: Row(
+                                              crossAxisAlignment: CrossAxisAlignment.end,
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
                                                         .spaceBetween,
@@ -1503,8 +1504,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         orderTpye: '',
         holdQty: '',
         isModify: false);
-    await scripInfo.fetchScripInfo(
-        raw.token.toString(), raw.token.toString(), ctx);
+  
     // Navigator.pop(context);
     Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,

@@ -469,7 +469,7 @@ class WebSocketProvider extends ChangeNotifier {
               _socketDatas["${res['tk']}"]["ltt"] = res["ltt"] ?? "0.0";
 
             _socketDatas["${res['tk']}"]["chng"] = ((double.parse(
-                          res["lp"])) -
+                          res["lp"] ?? '0.00')) -
                       (double.parse(res["c"])))
                   .toStringAsFixed(2);
             // Check if the key exists in _socketDatas

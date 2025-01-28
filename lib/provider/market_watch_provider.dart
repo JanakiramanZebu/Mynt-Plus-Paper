@@ -371,27 +371,31 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             child: ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
 
     await ref(websocketProvider).establishConnection(
-        channelInput: "${flow ? raw['exch'] : raw.exch}|${flow ? raw['token'] : raw.token}",
+        channelInput:
+            "${flow ? raw['exch'] : raw.exch}|${flow ? raw['token'] : raw.token}",
         task: "d",
         context: context);
     singlePageloader(false);
 
-    await fetchScripQuote("${flow ? raw['token'] : raw.token}", "${flow ? raw['exch'] : raw.exch}", context);
+    await fetchScripQuote("${flow ? raw['token'] : raw.token}",
+        "${flow ? raw['exch'] : raw.exch}", context);
     final portfolios = ref(portfolioProvider);
 
     if ((flow ? raw['exch'] : raw.exch) == 'MCX' ||
         (portfolios.oplists.isNotEmpty &&
-            portfolios.oplists.contains(int.parse(flow ? raw['token'] : raw.token)))) {
-      await context
-          .read(marketWatchProvider)
-          .fetchLinkeScrip("${flow ? raw['token'] : raw.token}", "${flow ? raw['exch'] : raw.exch}", context);
+            portfolios.oplists
+                .contains(int.parse(flow ? raw['token'] : raw.token)))) {
+      await context.read(marketWatchProvider).fetchLinkeScrip(
+          "${flow ? raw['token'] : raw.token}",
+          "${flow ? raw['exch'] : raw.exch}",
+          context);
     }
 
-    
-    if (((flow ? raw['exch'] : raw.exch) == "NSE" || (flow ? raw['exch'] : raw.exch) == "BSE")) {
-      context
-        .read(marketWatchProvider)
-        .fetchFundamentalData(tradeSym: "${flow ? raw['exch'] : raw.exch}:${(flow ? raw['tsym'] : raw.tsym)}");
+    if (((flow ? raw['exch'] : raw.exch) == "NSE" ||
+        (flow ? raw['exch'] : raw.exch) == "BSE")) {
+      context.read(marketWatchProvider).fetchFundamentalData(
+          tradeSym:
+              "${flow ? raw['exch'] : raw.exch}:${(flow ? raw['tsym'] : raw.tsym)}");
 
       await context.read(marketWatchProvider).fetchTechData(
           context: context,
@@ -785,6 +789,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               element.symbol = "${spilitSymbol["symbol"]}";
               element.expDate = "${spilitSymbol["expDate"]}";
               element.option = "${spilitSymbol["option"]}";
+              if (element.exch == "MCX" && element.instname == 'FUTCOM') {
+                element.option = 'FUT';
+              }
             }
 
             // Holdings Qty add to market watch scrip
