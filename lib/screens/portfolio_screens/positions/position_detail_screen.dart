@@ -207,7 +207,8 @@ class PositionDetailScreen extends ConsumerWidget {
           ScripInfoBtns(
               exch: '${positionList.exch}',
               token: '${positionList.token}',
-              insName: '', tsym: '${positionList.tsym}'),
+              insName: '',
+              tsym: '${positionList.tsym}'),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
@@ -552,7 +553,7 @@ class PositionDetailScreen extends ConsumerWidget {
                           14,
                           FontWeight.w500),
                     ),
-                      const SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Divider(
                         color: theme.isDarkMode
                             ? colors.darkColorDivider
@@ -618,7 +619,8 @@ class PositionDetailScreen extends ConsumerWidget {
                                   perChange: positionList.perChange ?? "0.00",
                                   orderTpye: '',
                                   holdQty: '${positionList.netqty}',
-                                  isModify: false);
+                                  isModify: false,
+                                  raw: {});
 
                               Navigator.pushNamed(
                                   context, Routes.placeOrderScreen,
@@ -672,7 +674,8 @@ class PositionDetailScreen extends ConsumerWidget {
                                           positionList.perChange ?? "0.00",
                                       orderTpye: '',
                                       holdQty: '${positionList.netqty}',
-                                      isModify: false);
+                                      isModify: false,
+                                      raw: {});
 
                                   Navigator.pushNamed(
                                       context, Routes.placeOrderScreen,

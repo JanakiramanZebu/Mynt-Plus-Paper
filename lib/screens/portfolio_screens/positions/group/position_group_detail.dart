@@ -165,7 +165,8 @@ class PositionGroupDetail extends ConsumerWidget {
           ScripInfoBtns(
               exch: '${positionData['exch']}',
               token: '${positionData['token']}',
-              insName: '', tsym: '${positionData['tysm']}'),
+              insName: '',
+              tsym: '${positionData['tysm']}'),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
@@ -553,7 +554,8 @@ class PositionGroupDetail extends ConsumerWidget {
                                       positionData['perChange'] ?? "0.00",
                                   orderTpye: '',
                                   holdQty: '${positionData['netqty']}',
-                                  isModify: false);
+                                  isModify: false,
+                                  raw: {});
 
                               Navigator.pushNamed(
                                   context, Routes.placeOrderScreen,
@@ -609,7 +611,8 @@ class PositionGroupDetail extends ConsumerWidget {
                                           positionData['perChange'] ?? "0.00",
                                       orderTpye: '',
                                       holdQty: '${positionData['netqty']}',
-                                      isModify: false);
+                                      isModify: false,
+                                      raw: {});
 
                                   Navigator.pushNamed(
                                       context, Routes.placeOrderScreen,

@@ -23,6 +23,7 @@ class OrderBookDetail extends ConsumerWidget {
     final orderHistory = watch(orderProvider).orderHistoryModel;
     final theme = context.read(themeProvider);
     final socketDatas = watch(websocketProvider).socketDatas;
+    var repeatdetails = orderBookData;
     if (socketDatas.containsKey(orderBookData.token)) {
       orderBookData.ltp = "${socketDatas["${orderBookData.token}"]['lp']}";
       orderBookData.perChange =
@@ -513,7 +514,8 @@ class OrderBookDetail extends ConsumerWidget {
                                 perChange: orderBookData.perChange,
                                 orderTpye: '',
                                 holdQty: '',
-                                isModify: false);
+                                isModify: false,
+                                raw: {});
                             Navigator.pop(context);
                             Navigator.pushNamed(context, Routes.modifyOrder,
                                 arguments: {
@@ -580,9 +582,10 @@ class OrderBookDetail extends ConsumerWidget {
                             ltp:
                                 "${orderBookData.ltp ?? orderBookData.c ?? 0.00}",
                             perChange: orderBookData.change ?? "0.00",
-                            orderTpye: 'I',
+                            orderTpye: '',
                             holdQty: '',
-                            isModify: false);
+                            isModify: false,
+                            raw: repeatdetails.toJson());
 
                         // Navigator.pop(context);
                         Navigator.pushNamed(context, Routes.placeOrderScreen,

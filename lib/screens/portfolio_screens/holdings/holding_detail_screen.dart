@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/portfolio_model/holdings_model.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -11,7 +11,7 @@ import '../../../routes/route_names.dart';
 import '../../../sharedWidget/alert_dialogue.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/scrip_info_btns.dart'; 
+import '../../../sharedWidget/scrip_info_btns.dart';
 
 class HoldingDetailScreen extends ConsumerWidget {
   final ExchTsym exchTsym;
@@ -38,49 +38,51 @@ class HoldingDetailScreen extends ConsumerWidget {
             shadowColor: theme.isDarkMode
                 ? colors.darkColorDivider
                 : colors.colorDivider,
-            title:
-                   Padding(
-                  padding: const EdgeInsets.only(right:  8.0),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            title: Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("${exchTsym.tsym}",
-                        style: textStyles.appBarTitleTxt.copyWith(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack)),
-                    Text("₹${exchTsym.lp}",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            16,
-                            FontWeight.w600)),
-                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      CustomExchBadge(exch: exchTsym.exch!),
-                      Text(
-                          "${double.parse("${exchTsym.change.toString()=="null"?"0.00":exchTsym.change} ").toStringAsFixed(2)} (${exchTsym.perChange.toString()=="null"?"0.00":exchTsym.perChange}%)",
-                          style: textStyle(
-                             (exchTsym.change == "null" ||
-                                          exchTsym.change == null) ||
-                                      exchTsym.change == "0.00"
-                                  ? colors.ltpgrey
-                                  : exchTsym.change!.startsWith("-") ||
-                                          exchTsym.perChange!.startsWith("-")
-                                      ? colors.darkred
-                                      : colors.ltpgreen,
-                              12,
-                              FontWeight.w500))
-                    ])
-                              ]),
-                )),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("${exchTsym.tsym}",
+                            style: textStyles.appBarTitleTxt.copyWith(
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack)),
+                        Text("₹${exchTsym.lp}",
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                16,
+                                FontWeight.w600)),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          CustomExchBadge(exch: exchTsym.exch!),
+                          Text(
+                              "${double.parse("${exchTsym.change.toString() == "null" ? "0.00" : exchTsym.change} ").toStringAsFixed(2)} (${exchTsym.perChange.toString() == "null" ? "0.00" : exchTsym.perChange}%)",
+                              style: textStyle(
+                                  (exchTsym.change == "null" ||
+                                              exchTsym.change == null) ||
+                                          exchTsym.change == "0.00"
+                                      ? colors.ltpgrey
+                                      : exchTsym.change!.startsWith("-") ||
+                                              exchTsym.perChange!
+                                                  .startsWith("-")
+                                          ? colors.darkred
+                                          : colors.ltpgreen,
+                                  12,
+                                  FontWeight.w500))
+                        ])
+                  ]),
+            )),
         body: ListView(children: [
           Container(
               padding:
@@ -140,7 +142,8 @@ class HoldingDetailScreen extends ConsumerWidget {
           ScripInfoBtns(
               exch: '${exchTsym.exch}',
               token: '${exchTsym.token}',
-              insName: '', tsym: '${exchTsym.tsym}'),
+              insName: '',
+              tsym: '${exchTsym.tsym}'),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
@@ -372,7 +375,6 @@ class HoldingDetailScreen extends ConsumerWidget {
           // ScripInfoBtns(exch: '${exchTsym.exch}', token: '${exchTsym.token}', insName: '')
         ]),
         bottomNavigationBar: BottomAppBar(
-          
             padding: const EdgeInsets.symmetric(horizontal: 16),
             shape: const CircularNotchedRectangle(),
             child: Container(
@@ -389,14 +391,17 @@ class HoldingDetailScreen extends ConsumerWidget {
                       child: InkWell(
                         onTap: () async {
                           context.read(websocketProvider).establishConnection(
-                              channelInput: "${exchTsym.exch}|${exchTsym.token}#",
+                              channelInput:
+                                  "${exchTsym.exch}|${exchTsym.token}#",
                               task: "t",
                               context: context);
                           // context
                           //     .read(marketWatchProvider)
                           //     .lastScbTok("${exchTsym.exch}|${exchTsym.token}#");
-                          await context.read(marketWatchProvider).fetchScripInfo(
-                              "${exchTsym.token}", '${exchTsym.exch}', context);
+                          await context
+                              .read(marketWatchProvider)
+                              .fetchScripInfo("${exchTsym.token}",
+                                  '${exchTsym.exch}', context);
                           OrderScreenArgs orderArgs = OrderScreenArgs(
                               exchange: '${exchTsym.exch}',
                               tSym: '${exchTsym.tsym}',
@@ -408,14 +413,16 @@ class HoldingDetailScreen extends ConsumerWidget {
                               ltp: '${exchTsym.lp}',
                               perChange: '${exchTsym.perChange}',
                               holdQty: '',
-                              isModify: false);
+                              isModify: false,
+                              raw: {});
                           // ignore: use_build_context_synchronously
                           Navigator.pushNamed(context, Routes.placeOrderScreen,
                               arguments: {
                                 "orderArg": orderArgs,
                                 "scripInfo": context
                                     .read(marketWatchProvider)
-                                    .scripInfoModel!, "isBskt":""
+                                    .scripInfoModel!,
+                                "isBskt": ""
                               });
                         },
                         child: Center(
@@ -433,7 +440,7 @@ class HoldingDetailScreen extends ConsumerWidget {
                         ),
                         decoration: BoxDecoration(
                             color: holdingData.saleableQty == 0
-                                ?  colors.darkred.withOpacity(.8)
+                                ? colors.darkred.withOpacity(.8)
                                 : colors.darkred,
                             borderRadius: BorderRadius.circular(32)),
                         width: MediaQuery.of(context).size.width,
@@ -451,11 +458,13 @@ class HoldingDetailScreen extends ConsumerWidget {
                                     );
                                   });
                             } else {
-                              context.read(websocketProvider).establishConnection(
-                                  channelInput:
-                                      "${exchTsym.exch}|${exchTsym.token}#",
-                                  task: "t",
-                                  context: context);
+                              context
+                                  .read(websocketProvider)
+                                  .establishConnection(
+                                      channelInput:
+                                          "${exchTsym.exch}|${exchTsym.token}#",
+                                      task: "t",
+                                      context: context);
                               // context
                               //     .read(marketWatchProvider)
                               //     .lastScbTok("${exchTsym.exch}|${exchTsym.token}#");
@@ -474,14 +483,16 @@ class HoldingDetailScreen extends ConsumerWidget {
                                   perChange: '${exchTsym.perChange}',
                                   orderTpye: "${holdingData.sPrdtAli}",
                                   holdQty: "${holdingData.saleableQty ?? 0}",
-                                  isModify: false);
+                                  isModify: false,
+                                  raw: {});
                               Navigator.pushNamed(
                                   context, Routes.placeOrderScreen,
                                   arguments: {
                                     "orderArg": orderArgs,
                                     "scripInfo": context
                                         .read(marketWatchProvider)
-                                        .scripInfoModel!, "isBskt":""
+                                        .scripInfoModel!,
+                                    "isBskt": ""
                                   });
                             }
                           },

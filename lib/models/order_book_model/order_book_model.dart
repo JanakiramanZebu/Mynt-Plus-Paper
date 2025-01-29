@@ -259,6 +259,7 @@ class OrderScreenArgs {
   bool isExit;
   String? ltp, perChange, lotSize, holdQty;
   bool isModify;
+  Map raw;
 
   OrderScreenArgs(
       {required this.exchange,
@@ -271,6 +272,7 @@ class OrderScreenArgs {
       required this.isExit,
       required this.orderTpye,
       required this.isModify,
+      required this.raw,
       required this.holdQty});
 }
 

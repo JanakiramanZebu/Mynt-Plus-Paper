@@ -112,13 +112,24 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
   @override
   void initState() {
     tik = double.parse(widget.scripInfo.ti.toString());
-    orderType = "Regular";
+    bool rep = widget.orderArg.raw.isNotEmpty;
+    Map res = widget.orderArg.raw;
+
+    orderType = rep
+        ? res['prd'] == "B"
+            ? "Bracket"
+            : res['prd'] == "H"
+                ? "Cover"
+                : "Regular"
+        : "Regular";
     orderTypes = [
       {"type": "Regular"},
       {"type": "Cover"},
       {"type": "Bracket"}
     ];
 
+    print(
+        "object place oa ${widget.orderArg.raw.isNotEmpty} ${widget.orderArg.raw}");
     if (widget.isBasket != "Basket") {
       if (widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE") {
         if (context.read(userProfileProvider).userDetailModel != null &&
@@ -150,7 +161,15 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
       }
     }
 
-    priceType = "Limit";
+    priceType = rep
+        ? res['prctyp'] == "MKT"
+            ? "Market"
+            : res['prctyp'] == "SL-LMT"
+                ? "SL Limit"
+                : res['prctyp'] == "SL-MKT"
+                    ? "SL MKT"
+                    : "Limit"
+        : "Limit";
     priceTypes = [
       {
         "type": "Limit",
@@ -176,15 +195,30 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read(ordInputProvider).chngInvesType(
-          widget.scripInfo.seg == "EQT"
+          rep && res['prd'] == "C"
               ? InvestType.delivery
-              : InvestType.carryForward,
+              : rep && res['prd'] == "I"
+                  ? InvestType.intraday
+                  : widget.scripInfo.seg == "EQT"
+                      ? InvestType.delivery
+                      : InvestType.carryForward,
           "PlcOrder");
 
-      context
-          .read(ordInputProvider)
-          .chngPriceType("Limit", widget.orderArg.exchange);
+      context.read(ordInputProvider).chngPriceType(
+          (rep
+              ? res['prctyp'] == "MKT"
+                  ? "Market"
+                  : res['prctyp'] == "SL-LMT"
+                      ? "SL Limit"
+                      : res['prctyp'] == "SL-MKT"
+                          ? "SL MKT"
+                          : "Limit"
+              : "Limit"),
+          widget.orderArg.exchange);
       marginUpdate();
+
+      context.read(ordInputProvider).chngOrderType(orderType);
+
     });
 
     setState(() {
@@ -218,6 +252,24 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
         priceCtrl.text = ordPrice;
       }
     });
+
+    if (rep) {
+      isBuy = res['trantype'] == 'S' ? false : true;
+      addStoploss = (res['prd'] == "B" || res['prd'] == "H") ? true : false;
+      addValidity = res['ret'].toUpperCase() == 'IOC' ||
+              (res['dscqty'] != null && int.parse(res['dscqty']) > 0)
+          ? true
+          : false;
+      isAmo = res['amo'] == "Yes" ? true : false;
+      priceCtrl.text = res['prc'] ?? "0";
+      ordPrice = res['prc'] ?? "0";
+      qtyCtrl.text = res['qty'] ?? "0";
+      stopLossCtrl.text = res['blprc'] ?? "0";
+      targetCtrl.text = res['bpprc'] ?? "0";
+      validityType = res['ret'];
+      triggerPriceCtrl.text = res['trgprc'] ?? "0";
+      mktProtCtrl.text = res['mkt_protection'] ?? "0";
+    }
     super.initState();
   }
 
@@ -3884,9 +3936,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                   ? mktProtCtrl.text
                   : '',
               channel: '');
-          await context
-              .read(orderProvider)
-              .fetchPlaceOrder(context, placeOrderInput, widget.orderArg.isExit);
+          await context.read(orderProvider).fetchPlaceOrder(
+              context, placeOrderInput, widget.orderArg.isExit);
           context.read(orderProvider).setOrderloader(false);
         }
       } else {

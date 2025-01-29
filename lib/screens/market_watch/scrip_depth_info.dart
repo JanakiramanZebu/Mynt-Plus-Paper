@@ -418,8 +418,12 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                     .singlePageloader(true);
 
                                                 setState(() {
-                                                  initSize = scripInfo.depthBtns[index]
-                                                          ['btnName'] == "Chart" ? .40 : .99;
+                                                  initSize =
+                                                      scripInfo.depthBtns[index]
+                                                                  ['btnName'] ==
+                                                              "Chart"
+                                                          ? .40
+                                                          : .99;
 
                                                   scripInfo.chngDephBtn(
                                                       scripInfo.depthBtns[index]
@@ -936,7 +940,10 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 theme),
                                             const SizedBox(height: 4),
                                             if (depthData.l != "null" &&
-                                                depthData.h != "null" && double.parse(depthData.h.toString()) > 0) ...[
+                                                depthData.h != "null" &&
+                                                double.parse(depthData.h
+                                                        .toString()) >
+                                                    0) ...[
                                               Text("Low - High",
                                                   style: textStyle(
                                                       const Color(0xff666666),
@@ -958,7 +965,10 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                   "High", "0.00", theme),
                                             ],
                                             if (depthData.wk52L != "null" &&
-                                                depthData.wk52H != "null" && double.parse(depthData.wk52H.toString()) > 0) ...[
+                                                depthData.wk52H != "null" &&
+                                                double.parse(depthData.wk52H
+                                                        .toString()) >
+                                                    0) ...[
                                               const SizedBox(height: 6),
                                               Text("52 Week Low - 52 Week High",
                                                   style: textStyle(
@@ -1567,7 +1577,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
         perChange: depthData.pc ?? "0.00",
         orderTpye: '',
         holdQty: '',
-        isModify: false);
+        isModify: false,
+        raw: {});
     await scripInfo.fetchScripInfo(
         widget.wlValue.token, widget.wlValue.exch, ctx);
     Navigator.pop(ctx);

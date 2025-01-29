@@ -74,7 +74,8 @@ class _RepeatOrderState extends State<RepeatOrder> {
           isExit: false,
           orderTpye: '',
           isModify: false,
-          holdQty: '');
+          holdQty: '',
+          raw: {});
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await context.read(ordInputProvider).getOrderData(widget.orderBookList);
@@ -2276,38 +2277,38 @@ class _RepeatOrderState extends State<RepeatOrder> {
       ThemesProvider theme) async {
     if (!isSliceOrd) {
       PlaceOrderInput placeOrderInput = PlaceOrderInput(
-        amo: isAmo ? "Yes" : "",
-        blprc:
-            orderInput.orderName == "Cover" || orderInput.orderName == "Bracket"
-                ? orderInput.stopLossCtrl.text
-                : '',
-        bpprc:
-            orderInput.orderName == "Bracket" ? orderInput.targetCtrl.text : '',
-        dscqty: orderInput.discQtyCtrl.text,
-        exch: widget.orderBookList.exch!,
-        prc: ((widget.orderBookList.exch == "MCX" ||
-                    widget.orderBookList.exch == "BSE") &&
-                (orderInput.priceName == "Market" ||
-                    orderInput.priceName == "SL MKT"))
-            ? "0"
-            : orderInput.priceVal,
-        prctype: orderInput.prcType,
-        prd: orderInput.orderType,
-        qty: orderInput.qtyCrl.text,
-        ret: validityType,
-        trailprc: '',
-        trantype: isBuy! ? 'B' : 'S',
-        trgprc: orderInput.priceName == "SL Limit" ||
-                orderInput.priceName == "SL MKT"
-            ? orderInput.triggerPriceCtrl.text
-            : "",
-        tsym: widget.orderBookList.tsym!,
-        mktProt:
-            orderInput.priceName == "Market" || orderInput.priceName == "SL MKT"
-                ? orderInput.mktProtCtrl.text
-                : '',
-        channel: '' 
-      );
+          amo: isAmo ? "Yes" : "",
+          blprc: orderInput.orderName == "Cover" ||
+                  orderInput.orderName == "Bracket"
+              ? orderInput.stopLossCtrl.text
+              : '',
+          bpprc: orderInput.orderName == "Bracket"
+              ? orderInput.targetCtrl.text
+              : '',
+          dscqty: orderInput.discQtyCtrl.text,
+          exch: widget.orderBookList.exch!,
+          prc: ((widget.orderBookList.exch == "MCX" ||
+                      widget.orderBookList.exch == "BSE") &&
+                  (orderInput.priceName == "Market" ||
+                      orderInput.priceName == "SL MKT"))
+              ? "0"
+              : orderInput.priceVal,
+          prctype: orderInput.prcType,
+          prd: orderInput.orderType,
+          qty: orderInput.qtyCrl.text,
+          ret: validityType,
+          trailprc: '',
+          trantype: isBuy! ? 'B' : 'S',
+          trgprc: orderInput.priceName == "SL Limit" ||
+                  orderInput.priceName == "SL MKT"
+              ? orderInput.triggerPriceCtrl.text
+              : "",
+          tsym: widget.orderBookList.tsym!,
+          mktProt: orderInput.priceName == "Market" ||
+                  orderInput.priceName == "SL MKT"
+              ? orderInput.mktProtCtrl.text
+              : '',
+          channel: '');
       await context
           .read(orderProvider)
           .fetchPlaceOrder(context, placeOrderInput, false);
@@ -2477,40 +2478,39 @@ class _RepeatOrderState extends State<RepeatOrder> {
                           onPressed: () async {
                             for (var i = 0; i < quantity; i++) {
                               PlaceOrderInput placeOrderInput = PlaceOrderInput(
-                                amo: isAmo ? "Yes" : "",
-                                blprc: orderInput.orderName == "Cover" ||
-                                        orderInput.orderName == "Bracket"
-                                    ? orderInput.stopLossCtrl.text
-                                    : '',
-                                bpprc: orderInput.orderName == "Bracket"
-                                    ? orderInput.targetCtrl.text
-                                    : '',
-                                dscqty: orderInput.discQtyCtrl.text,
-                                exch: widget.orderBookList.exch!,
-                                prc: ((widget.orderBookList.exch == "MCX" ||
-                                            widget.orderBookList.exch ==
-                                                "BSE") &&
-                                        (orderInput.priceName == "Market" ||
-                                            orderInput.priceName == "SL MKT"))
-                                    ? "0"
-                                    : orderInput.priceVal,
-                                prctype: orderInput.prcType,
-                                prd: orderInput.orderType,
-                                qty: "$frezQty",
-                                ret: validityType,
-                                trailprc: '',
-                                trantype: isBuy! ? 'B' : 'S',
-                                trgprc: orderInput.priceName == "SL Limit" ||
-                                        orderInput.priceName == "SL MKT"
-                                    ? orderInput.triggerPriceCtrl.text
-                                    : "",
-                                tsym: widget.orderBookList.tsym!,
-                                mktProt: orderInput.priceName == "Market" ||
-                                        orderInput.priceName == "SL MKT"
-                                    ? orderInput.mktProtCtrl.text
-                                    : '',
-                                channel: '' 
-                              );
+                                  amo: isAmo ? "Yes" : "",
+                                  blprc: orderInput.orderName == "Cover" ||
+                                          orderInput.orderName == "Bracket"
+                                      ? orderInput.stopLossCtrl.text
+                                      : '',
+                                  bpprc: orderInput.orderName == "Bracket"
+                                      ? orderInput.targetCtrl.text
+                                      : '',
+                                  dscqty: orderInput.discQtyCtrl.text,
+                                  exch: widget.orderBookList.exch!,
+                                  prc: ((widget.orderBookList.exch == "MCX" ||
+                                              widget.orderBookList.exch ==
+                                                  "BSE") &&
+                                          (orderInput.priceName == "Market" ||
+                                              orderInput.priceName == "SL MKT"))
+                                      ? "0"
+                                      : orderInput.priceVal,
+                                  prctype: orderInput.prcType,
+                                  prd: orderInput.orderType,
+                                  qty: "$frezQty",
+                                  ret: validityType,
+                                  trailprc: '',
+                                  trantype: isBuy! ? 'B' : 'S',
+                                  trgprc: orderInput.priceName == "SL Limit" ||
+                                          orderInput.priceName == "SL MKT"
+                                      ? orderInput.triggerPriceCtrl.text
+                                      : "",
+                                  tsym: widget.orderBookList.tsym!,
+                                  mktProt: orderInput.priceName == "Market" ||
+                                          orderInput.priceName == "SL MKT"
+                                      ? orderInput.mktProtCtrl.text
+                                      : '',
+                                  channel: '');
                               await context
                                   .read(orderProvider)
                                   .slicePlaceOrder(context, placeOrderInput);
@@ -2518,40 +2518,39 @@ class _RepeatOrderState extends State<RepeatOrder> {
 
                             if (reminder != 0) {
                               PlaceOrderInput placeOrderInput = PlaceOrderInput(
-                                amo: isAmo ? "Yes" : "",
-                                blprc: orderInput.orderName == "Cover" ||
-                                        orderInput.orderName == "Bracket"
-                                    ? orderInput.stopLossCtrl.text
-                                    : '',
-                                bpprc: orderInput.orderName == "Bracket"
-                                    ? orderInput.targetCtrl.text
-                                    : '',
-                                dscqty: orderInput.discQtyCtrl.text,
-                                exch: widget.orderBookList.exch!,
-                                prc: ((widget.orderBookList.exch == "MCX" ||
-                                            widget.orderBookList.exch ==
-                                                "BSE") &&
-                                        (orderInput.priceName == "Market" ||
-                                            orderInput.priceName == "SL MKT"))
-                                    ? "0"
-                                    : orderInput.priceVal,
-                                prctype: orderInput.prcType,
-                                prd: orderInput.orderType,
-                                qty: "$reminder",
-                                ret: validityType,
-                                trailprc: '',
-                                trantype: isBuy! ? 'B' : 'S',
-                                trgprc: orderInput.priceName == "SL Limit" ||
-                                        orderInput.priceName == "SL MKT"
-                                    ? orderInput.triggerPriceCtrl.text
-                                    : "",
-                                tsym: widget.orderBookList.tsym!,
-                                mktProt: orderInput.priceName == "Market" ||
-                                        orderInput.priceName == "SL MKT"
-                                    ? orderInput.mktProtCtrl.text
-                                    : '',
-                                channel: '' 
-                              );
+                                  amo: isAmo ? "Yes" : "",
+                                  blprc: orderInput.orderName == "Cover" ||
+                                          orderInput.orderName == "Bracket"
+                                      ? orderInput.stopLossCtrl.text
+                                      : '',
+                                  bpprc: orderInput.orderName == "Bracket"
+                                      ? orderInput.targetCtrl.text
+                                      : '',
+                                  dscqty: orderInput.discQtyCtrl.text,
+                                  exch: widget.orderBookList.exch!,
+                                  prc: ((widget.orderBookList.exch == "MCX" ||
+                                              widget.orderBookList.exch ==
+                                                  "BSE") &&
+                                          (orderInput.priceName == "Market" ||
+                                              orderInput.priceName == "SL MKT"))
+                                      ? "0"
+                                      : orderInput.priceVal,
+                                  prctype: orderInput.prcType,
+                                  prd: orderInput.orderType,
+                                  qty: "$reminder",
+                                  ret: validityType,
+                                  trailprc: '',
+                                  trantype: isBuy! ? 'B' : 'S',
+                                  trgprc: orderInput.priceName == "SL Limit" ||
+                                          orderInput.priceName == "SL MKT"
+                                      ? orderInput.triggerPriceCtrl.text
+                                      : "",
+                                  tsym: widget.orderBookList.tsym!,
+                                  mktProt: orderInput.priceName == "Market" ||
+                                          orderInput.priceName == "SL MKT"
+                                      ? orderInput.mktProtCtrl.text
+                                      : '',
+                                  channel: '');
                               await context
                                   .read(orderProvider)
                                   .slicePlaceOrder(context, placeOrderInput);
@@ -2560,7 +2559,9 @@ class _RepeatOrderState extends State<RepeatOrder> {
                                 .read(orderProvider)
                                 .fetchOrderBook(context, true);
 
-                            context.read(indexListProvider).bottomMenu(2, context);
+                            context
+                                .read(indexListProvider)
+                                .bottomMenu(2, context);
                             Navigator.pop(context);
                             Navigator.pop(context);
                           },

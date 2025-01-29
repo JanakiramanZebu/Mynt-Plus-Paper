@@ -1256,11 +1256,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               Positioned(
                                 // right: userProfile.showchartof
                                 //     ? 0
-                                //     : -300, 
-                                right: userProfile.showchartof
-                                    ? 0
-                                    : -300,
-                                top: 0,
+                                //     : -300,
+                                bottom: userProfile.showchartof ? 0 : -300,
+                                // top: 0,
                                 // : 0,
                                 child: AnimatedContainer(
                                   alignment: Alignment.center,
@@ -1291,11 +1289,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   height: userProfile.showchartof
                                       ? MediaQuery.of(context).size.height
                                       : 0,
-                                  width:MediaQuery.of(context).size.width
-                                      ,
+                                  width: MediaQuery.of(context).size.width,
                                   child: SafeArea(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
                                       children: [
                                         ChartScreenWebView(
                                             chartArgs: ChartArgs(
@@ -1315,7 +1313,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 20, vertical: 0),
                                             child: Row(
-                                              crossAxisAlignment: CrossAxisAlignment.end,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
                                                         .spaceBetween,
@@ -1324,7 +1323,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       child: InkWell(
                                                     onTap: () async {
                                                       userProfile
-                                                          .setChartdialog(false);
+                                                          .setChartdialog(
+                                                              false);
                                                       await placeOrderInput(
                                                           watch(
                                                               marketWatchProvider),
@@ -1503,8 +1503,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         perChange: depthData.pc ?? "0.00",
         orderTpye: '',
         holdQty: '',
-        isModify: false);
-  
+        isModify: false,
+        raw: {});
+
     // Navigator.pop(context);
     Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,

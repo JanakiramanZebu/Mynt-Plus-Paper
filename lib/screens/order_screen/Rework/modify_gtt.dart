@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import '../../../models/marketwatch_model/scrip_info.dart';
 import '../../../models/order_book_model/gtt_order_book.dart';
 import '../../../models/order_book_model/order_book_model.dart';
@@ -14,7 +14,7 @@ import '../../../provider/network_state_provider.dart';
 import '../../../provider/order_input_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/res.dart'; 
+import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/custom_switch_btn.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
@@ -66,7 +66,8 @@ class _ModifyGTTState extends State<ModifyGTT> {
           isExit: false,
           orderTpye: '',
           isModify: false,
-          holdQty: '');
+          holdQty: '',
+          raw: {});
 
       isOco = widget.gttOrderBook.placeOrderParamsLeg2 != null;
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
@@ -261,7 +262,9 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                       });
                                                     },
                                                     child: SvgPicture.asset(
-                                                            theme.isDarkMode?assets.darkCMinus:    assets.minusIcon,
+                                                        theme.isDarkMode
+                                                            ? assets.darkCMinus
+                                                            : assets.minusIcon,
                                                         fit: BoxFit.scaleDown),
                                                   ),
                                                   suffixIcon: InkWell(
@@ -284,7 +287,9 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                       });
                                                     },
                                                     child: SvgPicture.asset(
-                                                       theme.isDarkMode?assets.darkAdd:   assets.addIcon,
+                                                        theme.isDarkMode
+                                                            ? assets.darkAdd
+                                                            : assets.addIcon,
                                                         fit: BoxFit.scaleDown),
                                                   ),
                                                   textCtrl: orderInput.qtyCtrl,
@@ -355,22 +360,24 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                             : colors.colorBlack,
                                                         16,
                                                         FontWeight.w600),
-                                                    isReadable:
-                                                        orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit"
-                                                            ? false
-                                                            : true,
+                                                    isReadable: orderInput.actPrcType ==
+                                                                "Limit" ||
+                                                            orderInput.actPrcType ==
+                                                                "SL Limit"
+                                                        ? false
+                                                        : true,
                                                     prefixIcon: Container(
-                                                        margin: const EdgeInsets.all(
-                                                            12),
+                                                        margin:
+                                                            const EdgeInsets.all(
+                                                                12),
                                                         decoration: BoxDecoration(
                                                             borderRadius:
                                                                 BorderRadius.circular(
                                                                     20),
-                                                           color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,
-                                                            orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock,
-                                                            fit: BoxFit.scaleDown)),
+                                                            color: theme.isDarkMode
+                                                                ? const Color(0xff555555)
+                                                                : colors.colorWhite),
+                                                        child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
                                                     textCtrl: orderInput.priceCtrl,
                                                     textAlign: TextAlign.start)),
                                           ]))
@@ -432,9 +439,15 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(20),
-                                                   color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,
+                                                        color: theme.isDarkMode
+                                                            ? const Color(
+                                                                0xff555555)
+                                                            : colors
+                                                                .colorWhite),
+                                                    child: SvgPicture.asset(
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorGrey,
                                                         assets.ruppeIcon,
                                                         fit: BoxFit.scaleDown)),
                                                 textCtrl: orderInput.trgPrcCtrl,
@@ -582,13 +595,15 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                 //                 .carryForward,
                                                 //         "OCO");
                                               },
-                                              icon: SvgPicture.asset(
-                                                theme.isDarkMode? isOco
-                                                  ? assets.darkCheckedboxIcon
-                                                  : assets.darkCheckboxIcon:
-                                                isOco
-                                                  ? assets.checkedbox
-                                                  : assets.checkbox))
+                                              icon: SvgPicture.asset(theme
+                                                      .isDarkMode
+                                                  ? isOco
+                                                      ? assets
+                                                          .darkCheckedboxIcon
+                                                      : assets.darkCheckboxIcon
+                                                  : isOco
+                                                      ? assets.checkedbox
+                                                      : assets.checkbox))
                                         ])
                                       ]
                                     ])),
@@ -685,7 +700,11 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                         });
                                                       },
                                                       child: SvgPicture.asset(
-                                                               theme.isDarkMode?assets.darkCMinus:   assets.minusIcon,
+                                                          theme.isDarkMode
+                                                              ? assets
+                                                                  .darkCMinus
+                                                              : assets
+                                                                  .minusIcon,
                                                           fit:
                                                               BoxFit.scaleDown),
                                                     ),
@@ -712,7 +731,9 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                         });
                                                       },
                                                       child: SvgPicture.asset(
-                                                    theme.isDarkMode?assets.darkAdd:      assets.addIcon,
+                                                          theme.isDarkMode
+                                                              ? assets.darkAdd
+                                                              : assets.addIcon,
                                                           fit:
                                                               BoxFit.scaleDown),
                                                     ),
@@ -784,9 +805,8 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                           decoration: BoxDecoration(
                                                               borderRadius:
                                                                   BorderRadius.circular(20),
-                                                          color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
+                                                              color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                                                          child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
                                                       textCtrl: orderInput.ocoPriceCtrl,
                                                       textAlign: TextAlign.start)),
                                             ]))
@@ -849,14 +869,20 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                           borderRadius:
                                                               BorderRadius
                                                                   .circular(20),
-                                                         color: theme.isDarkMode?const Color(0xff555555):colors.colorWhite ),
-                                                        child: SvgPicture.asset(
-                                                          color: theme.isDarkMode?colors.colorWhite:colors.colorGrey,
+                                                          color: theme.isDarkMode
+                                                              ? const Color(
+                                                                  0xff555555)
+                                                              : colors
+                                                                  .colorWhite),
+                                                      child: SvgPicture.asset(
+                                                          color: theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorGrey,
                                                           assets.ruppeIcon,
-                                                          fit: BoxFit
-                                                              .scaleDown)),
-                                                  textCtrl:
-                                                      orderInput.ocoTrgPrcCtrl,
+                                                          fit: BoxFit.scaleDown)),
+                                                  textCtrl: orderInput.ocoTrgPrcCtrl,
                                                   textAlign: TextAlign.start)),
                                         ])),
                               if (orderInput.actOcoPrcType == "SL Limit" ||
@@ -1007,8 +1033,9 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                       style: ElevatedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 10),
-                                          backgroundColor: 
-                                              isBuy! ? colors.ltpgreen : colors.darkred,
+                                          backgroundColor: isBuy!
+                                              ? colors.ltpgreen
+                                              : colors.darkred,
                                           shape: const StadiumBorder()),
                                       child: Text("Modify",
                                           style: textStyle(
