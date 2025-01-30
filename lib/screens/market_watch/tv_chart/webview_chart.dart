@@ -21,6 +21,7 @@ import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
 import '../../../sharedWidget/functions.dart';
+import '../scrip_depth_info.dart';
 import 'charttype_bottom.dart';
 import 'drwaing_bottom.dart';
 import 'resolution_bottom.dart';
@@ -141,8 +142,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                           ? 88
                           : 96)),
               child: Column(
-                  mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   _buildTopBar(tvChart, theme, userProfile),
                   _buildWebView(tvChart, theme),
@@ -233,37 +233,40 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                               : colors.colorBlack), // Back icon
                       onPressed: () async {
                         userProfile.setChartdialog(false);
-                        // tvChart.chngDephBtn("Overview");
-                        // tvChart.singlePageloader(true);
+                        tvChart.chngDephBtn("Overview");
+                        tvChart.singlePageloader(true);
 
-                        // DepthInputArgs depthArgs = DepthInputArgs(
-                        //     exch: '${tvChart.getQuotes?.exch}',
-                        //     token: '${tvChart.getQuotes?.token}',
-                        //     tsym: '${tvChart.getQuotes?.tsym}',
-                        //     instname: tvChart.getQuotes?.instname ?? "",
-                        //     symbol: '${tvChart.getQuotes?.symbol}',
-                        //     expDate: '${tvChart.getQuotes?.expDate}',
-                        //     option: '${tvChart.getQuotes?.option}');
+                        DepthInputArgs depthArgs = DepthInputArgs(
+                            exch: '${tvChart.getQuotes?.exch}',
+                            token: '${tvChart.getQuotes?.token}',
+                            tsym: '${tvChart.getQuotes?.tsym}',
+                            instname: tvChart.getQuotes?.instname ?? "",
+                            symbol: '${tvChart.getQuotes?.symbol}',
+                            expDate: '${tvChart.getQuotes?.expDate}',
+                            option: '${tvChart.getQuotes?.option}');
 
-                        // showModalBottomSheet(
-                        //     isScrollControlled: true,
-                        //     useSafeArea: true,
-                        //     isDismissible: true,
-                        //     shape: const RoundedRectangleBorder(
-                        //         borderRadius: BorderRadius.vertical(
-                        //             top: Radius.circular(16))),
-                        //     context: context,
-                        //     builder: (context) => Container(
-                        //         padding: EdgeInsets.only(
-                        //           bottom:
-                        //               MediaQuery.of(context).viewInsets.bottom,
-                        //         ),
-                        //         child: ScripDepthInfo(
-                        //             wlValue: depthArgs, isBasket: '')));
-                        // tvChart.singlePageloader(false);
-                        // await ConstantName.webViewController!.evaluateJavascript(
-                        //     source:
-                        //         "window.changeScript('ABC:ABCD',0123, '${theme.isDarkMode ? 'Y' : 'N'}')");
+                        showModalBottomSheet(
+                            isScrollControlled: true,
+                            useSafeArea: true,
+                            isDismissible: true,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16))),
+                            context: context,
+                            builder: (context) => Container(
+                                padding: EdgeInsets.only(
+                                  bottom:
+                                      MediaQuery.of(context).viewInsets.bottom,
+                                ),
+                                child: ScripDepthInfo(
+                                    wlValue: depthArgs, isBasket: '')));
+                        tvChart.singlePageloader(false);
+                        await ConstantName.webViewController!.evaluateJavascript(
+                            source:
+                                "window.changeScript('ABC:ABCD',0123, '${theme.isDarkMode ? 'Y' : 'N'}')");
+                        ConstantName.webViewController!.evaluateJavascript(
+                            source:
+                                'window.localStorage.removeItem("tick_tick")');
                       },
                     ),
                     _buildDivider(),

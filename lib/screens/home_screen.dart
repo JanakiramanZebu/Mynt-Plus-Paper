@@ -122,6 +122,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           }
         }
         print("app in resumed");
+        final userProfile = context.read(userProfileProvider);
+
+        final scriptInfo = context.read(marketWatchProvider).getQuotes;
+        final theme = context.read(themeProvider);
+
+        if (userProfile.showchartof) {
+          if (scriptInfo?.exch != null) {
+            await ConstantName.webViewController!.evaluateJavascript(
+                source:
+                    "window.changeScript('${scriptInfo?.exch}:${scriptInfo?.tsym}',${scriptInfo?.token}, '${theme.isDarkMode ? 'Y' : 'N'}')");
+
+            await context.read(websocketProvider).establishConnection(
+                channelInput: "${scriptInfo?.exch}|${scriptInfo?.token}",
+                task: "d",
+                context: context);
+                
+          } else {
+            userProfile.setChartdialog(false);
+          }
+        }
+
         break;
       case AppLifecycleState.inactive:
         if (context.read(indexListProvider).selectedBtmIndx == 2) {
@@ -1257,7 +1278,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 // right: userProfile.showchartof
                                 //     ? 0
                                 //     : -300,
-                                bottom: userProfile.showchartof ? 0 : (MediaQuery.of(context).size.height + 100),
+                                bottom: userProfile.showchartof
+                                    ? 0
+                                    : (MediaQuery.of(context).size.height +
+                                        100),
                                 // top: 0,
                                 // : 0,
                                 child: AnimatedContainer(
@@ -1286,7 +1310,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     //           0, theme.isDarkMode ? -3 : -6)),
                                     // ],
                                   ),
-                                  height:MediaQuery.of(context).size.height,
+                                  height: MediaQuery.of(context).size.height,
                                   width: MediaQuery.of(context).size.width,
                                   child: SafeArea(
                                     bottom: false,
@@ -1299,7 +1323,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 exch: 'ABC',
                                                 tsym: 'ABCD',
                                                 token: '0123'),
-                                            cHeight: 1.3), 
+                                            cHeight: 1.3),
                                       ],
                                     ),
                                   ),

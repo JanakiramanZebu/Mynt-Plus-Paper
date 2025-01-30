@@ -1651,7 +1651,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
           ),
           min: minValue,
           max: maxValue,
-          values: valuesList,
+          values:  minValue == maxValue ? [maxValue+1] : valuesList,
           onDragging: null,
           jump: false,
           disabled: true,
