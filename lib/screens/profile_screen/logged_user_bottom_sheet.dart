@@ -121,17 +121,29 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                       "Client ID ${loggedUser.loggedMobile[index].clientId}",
                                       style: textStyle(const Color(0xff666666),
                                           12, FontWeight.w500)),
-                                  trailing:
-                                      loggedUser.loggedMobile[index].clientId ==
-                                              pref.clientId
-                                          ? Text("Active",
+                                  trailing: loggedUser
+                                              .loggedMobile[index].clientId ==
+                                          pref.clientId
+                                      ? Text("Active",
+                                          style: textStyle(
+                                              theme.isDarkMode
+                                                  ? colors.colorLightBlue
+                                                  : colors.colorBlue,
+                                              13,
+                                              FontWeight.w600))
+                                      : InkWell(
+                                          onTap: () {
+                                            loggedUser.removeUsers(loggedUser
+                                              .loggedMobile[index], index, context);
+                                          },
+                                          child: Text("Remove",
                                               style: textStyle(
                                                   theme.isDarkMode
-                                                      ? colors.colorLightBlue
-                                                      : colors.colorBlue,
+                                                      ? colors.kColorLightRed
+                                                      : colors.kColorRedButton,
                                                   13,
-                                                  FontWeight.w600))
-                                          : Container(width: .3));
+                                                  FontWeight.w600)),
+                                        ));
                             })),
                     Padding(
                         padding: const EdgeInsets.symmetric(

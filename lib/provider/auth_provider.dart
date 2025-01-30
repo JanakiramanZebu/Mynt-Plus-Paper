@@ -26,6 +26,7 @@ import '../models/profile_model/client_detail_model.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../screens/authentication/login/bottom_otp_screen.dart';
+import '../sharedWidget/functions.dart';
 import '../sharedWidget/risk_disclosure_bottom_sheet.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'change_password_provider.dart';
@@ -55,6 +56,99 @@ class AuthProvider extends DefaultChangeNotifier {
 
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
+
+  removeUsers(user, i, context) {
+    print("object $user $i");
+
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: ref(themeProvider).isDarkMode
+              ? const Color.fromARGB(255, 18, 18, 18)
+              : colors.colorWhite,
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16))),
+          scrollable: true,
+          actionsPadding:
+              const EdgeInsets.only(left: 16, right: 16, bottom: 14, top: 3),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+          titlePadding: const EdgeInsets.only(left: 16),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Conformation!',
+                  style: textStyle(
+                      !ref(themeProvider).isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorWhite,
+                      16,
+                      FontWeight.w600)),
+              IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.close_rounded))
+            ],
+          ),
+          content: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: Column(children: [
+                Divider(color: colors.colorDivider, height: 0),
+                const SizedBox(height: 10),
+                Row(children: [
+                  Expanded(
+                      child: Text(
+                          "Do you like to remove this account from devices?",
+                          style: textStyle(
+                              !ref(themeProvider).isDarkMode
+                                  ? colors.colorBlack
+                                  : colors.colorWhite,
+                              14,
+                              FontWeight.w500)))
+                ]),
+                const SizedBox(height: 10),
+              ])),
+          actions: [
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: ElevatedButton(
+                  onPressed: () async {
+                    _loggedMobile.removeAt(i);
+                    notifyListeners();
+                    final List<String> jsonList =
+                        _loggedMobile.map((obj) => obj.toJson()).toList();
+                    pref.setLoggedClientList(jsonList);
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: !ref(themeProvider).isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorbluegrey,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50))),
+                  child: Text("Proceed",
+                      style: textStyle(
+                          ref(themeProvider).isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
+                          14,
+                          FontWeight.w500))),
+            ),
+          ],
+        );
+      },
+    );
+
+    // String clientId;
+    // String mobile;
+    // String userName;
+    // String sesstion;
+    // String imei;
+  }
 
   changeTabIndex(int index) {
     _selectedTab = index;
@@ -490,10 +584,10 @@ class AuthProvider extends DefaultChangeNotifier {
       } else {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
-               Navigator.pushNamedAndRemoveUntil(
+        Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, arguments: "login", (route) => false);
-      } 
-      
+      }
+
       // else {
       //   ScaffoldMessenger.of(context)
       //       .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
@@ -576,18 +670,18 @@ class AuthProvider extends DefaultChangeNotifier {
               imei: pref.imei!)
         ];
         await deviceAuth(context, "");
-       // Future.delayed(const Duration(seconds: 3), () async {
-          // Navigator.pushNamed(context, Routes.forgotPass);
-          _loggedMobile = await getLocalData();
+        // Future.delayed(const Duration(seconds: 3), () async {
+        // Navigator.pushNamed(context, Routes.forgotPass);
+        _loggedMobile = await getLocalData();
 
-          await setLocalData(_loggedMobile, currentUser);
+        await setLocalData(_loggedMobile, currentUser);
 
-          _loggedMobile = await getLocalData();
+        _loggedMobile = await getLocalData();
 
-          //log("loggued Useer -- ${pref.loggedClient}");
-          // ScaffoldMessenger.of(context)
-          //     .showSnackBar(successMessage(context, 'OTP Verified'));
-       // });
+        //log("loggued Useer -- ${pref.loggedClient}");
+        // ScaffoldMessenger.of(context)
+        //     .showSnackBar(successMessage(context, 'OTP Verified'));
+        // });
 
         notifyListeners();
       }
