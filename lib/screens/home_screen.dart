@@ -1257,12 +1257,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 // right: userProfile.showchartof
                                 //     ? 0
                                 //     : -300,
-                                bottom: userProfile.showchartof ? 0 : -300,
+                                bottom: userProfile.showchartof ? 0 : (MediaQuery.of(context).size.height + 100),
                                 // top: 0,
                                 // : 0,
                                 child: AnimatedContainer(
                                   alignment: Alignment.center,
-                                  duration: const Duration(milliseconds: 400),
+                                  duration: const Duration(milliseconds: 100),
                                   curve: Curves.fastLinearToSlowEaseIn,
                                   decoration: BoxDecoration(
                                     color: theme.isDarkMode
@@ -1286,11 +1286,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     //           0, theme.isDarkMode ? -3 : -6)),
                                     // ],
                                   ),
-                                  height: userProfile.showchartof
-                                      ? MediaQuery.of(context).size.height
-                                      : 0,
+                                  height:MediaQuery.of(context).size.height,
                                   width: MediaQuery.of(context).size.width,
                                   child: SafeArea(
+                                    bottom: false,
                                     child: Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.start,
@@ -1300,100 +1299,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 exch: 'ABC',
                                                 tsym: 'ABCD',
                                                 token: '0123'),
-                                            cHeight: 1.3),
-                                        if (watch(marketWatchProvider)
-                                                    .getQuotes
-                                                    ?.instname !=
-                                                "UNDIND" &&
-                                            watch(marketWatchProvider)
-                                                    .getQuotes
-                                                    ?.instname !=
-                                                "COM") ...[
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 20, vertical: 0),
-                                            child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Expanded(
-                                                      child: InkWell(
-                                                    onTap: () async {
-                                                      userProfile
-                                                          .setChartdialog(
-                                                              false);
-                                                      await placeOrderInput(
-                                                          watch(
-                                                              marketWatchProvider),
-                                                          context,
-                                                          watch(marketWatchProvider)
-                                                              .getQuotes!,
-                                                          true);
-                                                    },
-                                                    child: Container(
-                                                        height: 40,
-                                                        decoration: BoxDecoration(
-                                                            color: const Color(
-                                                                0xff43A833),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        108)),
-                                                        child: Center(
-                                                            child: Text("BUY",
-                                                                style: textStyle(
-                                                                    const Color(
-                                                                        0XFFFFFFFF),
-                                                                    16,
-                                                                    FontWeight
-                                                                        .w600)))),
-                                                  )),
-                                                  const SizedBox(width: 18),
-                                                  Expanded(
-                                                      child: InkWell(
-                                                          onTap: () async {
-                                                            userProfile
-                                                                .setChartdialog(
-                                                                    false);
-                                                            await placeOrderInput(
-                                                                watch(
-                                                                    marketWatchProvider),
-                                                                context,
-                                                                watch(marketWatchProvider)
-                                                                    .getQuotes!,
-                                                                false);
-                                                          },
-                                                          child: Container(
-                                                              height: 40,
-                                                              decoration: BoxDecoration(
-                                                                  color: colors
-                                                                      .darkred,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              108)),
-                                                              child: Center(
-                                                                  child: Text(
-                                                                      "SELL",
-                                                                      style: textStyle(
-                                                                          const Color(
-                                                                              0XFFFFFFFF),
-                                                                          16,
-                                                                          FontWeight
-                                                                              .w600))))))
-                                                ]),
-                                          )
-                                        ]
-                                        // ElevatedButton(
-                                        //   onPressed: () {
-                                        //     userProfile.setChartdialog(
-                                        //         !userProfile.showchartof);
-                                        //   },
-                                        //   child: Text('Go Back'),
-                                        // )
+                                            cHeight: 1.3), 
                                       ],
                                     ),
                                   ),
@@ -1484,33 +1390,5 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ]);
             }) ??
         false;
-  }
-
-  Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
-      GetQuotes depthData, bool transType) async {
-    final raw = context.read(marketWatchProvider).getQuotes;
-    await context
-        .read(marketWatchProvider)
-        .fetchScripInfo(raw!.token.toString(), raw.exch.toString(), ctx);
-    OrderScreenArgs orderArgs = OrderScreenArgs(
-        exchange: raw.exch.toString(),
-        tSym: raw.tsym.toString(),
-        isExit: false,
-        token: raw.token.toString(),
-        transType: transType,
-        lotSize: depthData.ls,
-        ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
-        perChange: depthData.pc ?? "0.00",
-        orderTpye: '',
-        holdQty: '',
-        isModify: false,
-        raw: {});
-
-    // Navigator.pop(context);
-    Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
-      "orderArg": orderArgs,
-      "scripInfo": ctx.read(marketWatchProvider).scripInfoModel!,
-      "isBskt": ''
-    });
   }
 }

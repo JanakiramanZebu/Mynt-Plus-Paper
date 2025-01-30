@@ -12,14 +12,15 @@ import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/marketwatch_model/market_watch_scrip_model.dart';
+import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/user_profile_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
+import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
 import '../../../sharedWidget/functions.dart';
-import '../scrip_depth_info.dart';
 import 'charttype_bottom.dart';
 import 'drwaing_bottom.dart';
 import 'resolution_bottom.dart';
@@ -134,15 +135,68 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
               height: (MediaQuery.of(context).size.height -
                   (depthData.instname == "UNDIND" || depthData.instname == "COM"
                       ? (defaultTargetPlatform == TargetPlatform.iOS)
-                          ? 80
+                          ? 72
                           : 51
                       : (defaultTargetPlatform == TargetPlatform.iOS)
-                          ? 130
+                          ? 88
                           : 96)),
               child: Column(
+                  mainAxisAlignment:
+                                          MainAxisAlignment.start,
                 children: [
                   _buildTopBar(tvChart, theme, userProfile),
                   _buildWebView(tvChart, theme),
+                  if (tvChart.getQuotes?.instname != "UNDIND" &&
+                      tvChart.getQuotes?.instname != "COM") ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 0),
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                                child: InkWell(
+                              onTap: () async {
+                                userProfile.setChartdialog(false);
+                                await placeOrderInput(
+                                    tvChart, context, tvChart.getQuotes!, true);
+                              },
+                              child: Container(
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                      color: const Color(0xff43A833),
+                                      borderRadius: BorderRadius.circular(108)),
+                                  child: Center(
+                                      child: Text("BUY",
+                                          style: textStyle(
+                                              const Color(0XFFFFFFFF),
+                                              16,
+                                              FontWeight.w600)))),
+                            )),
+                            const SizedBox(width: 18),
+                            Expanded(
+                                child: InkWell(
+                                    onTap: () async {
+                                      userProfile.setChartdialog(false);
+                                      await placeOrderInput(tvChart, context,
+                                          tvChart.getQuotes!, false);
+                                    },
+                                    child: Container(
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                            color: colors.darkred,
+                                            borderRadius:
+                                                BorderRadius.circular(108)),
+                                        child: Center(
+                                            child: Text("SELL",
+                                                style: textStyle(
+                                                    const Color(0XFFFFFFFF),
+                                                    16,
+                                                    FontWeight.w600))))))
+                          ]),
+                    )
+                  ]
                 ],
               ),
             ),
@@ -179,37 +233,37 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                               : colors.colorBlack), // Back icon
                       onPressed: () async {
                         userProfile.setChartdialog(false);
-                        tvChart.chngDephBtn("Overview");
-                        tvChart.singlePageloader(true);
-      
-                        DepthInputArgs depthArgs = DepthInputArgs(
-                            exch: '${tvChart.getQuotes?.exch}',
-                            token: '${tvChart.getQuotes?.token}',
-                            tsym: '${tvChart.getQuotes?.tsym}',
-                            instname: tvChart.getQuotes?.instname ?? "",
-                            symbol: '${tvChart.getQuotes?.symbol}',
-                            expDate: '${tvChart.getQuotes?.expDate}',
-                            option: '${tvChart.getQuotes?.option}');
-      
-                        showModalBottomSheet(
-                            isScrollControlled: true,
-                            useSafeArea: true,
-                            isDismissible: true,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(16))),
-                            context: context,
-                            builder: (context) => Container(
-                                padding: EdgeInsets.only(
-                                  bottom:
-                                      MediaQuery.of(context).viewInsets.bottom,
-                                ),
-                                child: ScripDepthInfo(
-                                    wlValue: depthArgs, isBasket: '')));
-                        tvChart.singlePageloader(false);
-                        await ConstantName.webViewController!.evaluateJavascript(
-                            source:
-                                "window.changeScript('ABC:ABCD',0123, '${theme.isDarkMode ? 'Y' : 'N'}')");
+                        // tvChart.chngDephBtn("Overview");
+                        // tvChart.singlePageloader(true);
+
+                        // DepthInputArgs depthArgs = DepthInputArgs(
+                        //     exch: '${tvChart.getQuotes?.exch}',
+                        //     token: '${tvChart.getQuotes?.token}',
+                        //     tsym: '${tvChart.getQuotes?.tsym}',
+                        //     instname: tvChart.getQuotes?.instname ?? "",
+                        //     symbol: '${tvChart.getQuotes?.symbol}',
+                        //     expDate: '${tvChart.getQuotes?.expDate}',
+                        //     option: '${tvChart.getQuotes?.option}');
+
+                        // showModalBottomSheet(
+                        //     isScrollControlled: true,
+                        //     useSafeArea: true,
+                        //     isDismissible: true,
+                        //     shape: const RoundedRectangleBorder(
+                        //         borderRadius: BorderRadius.vertical(
+                        //             top: Radius.circular(16))),
+                        //     context: context,
+                        //     builder: (context) => Container(
+                        //         padding: EdgeInsets.only(
+                        //           bottom:
+                        //               MediaQuery.of(context).viewInsets.bottom,
+                        //         ),
+                        //         child: ScripDepthInfo(
+                        //             wlValue: depthArgs, isBasket: '')));
+                        // tvChart.singlePageloader(false);
+                        // await ConstantName.webViewController!.evaluateJavascript(
+                        //     source:
+                        //         "window.changeScript('ABC:ABCD',0123, '${theme.isDarkMode ? 'Y' : 'N'}')");
                       },
                     ),
                     _buildDivider(),
@@ -348,9 +402,9 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
           ConstantName.webViewController = controller;
           startChartUpdateTimer(controller);
 
-          print("objec ${"https://tv-chart-new.firebaseapp.com/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
-              "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
-              "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}&showseries=Y"}");
+          // print("objec ${"https://tv-chart-new.firebaseapp.com/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
+          //     "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
+          //     "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}&showseries=Y"}");
         },
         onProgressChanged: (_, progress) {
           setState(() {
@@ -371,5 +425,33 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       useSafeArea: true,
       builder: (_) => bottomSheet,
     );
+  }
+
+  Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
+      GetQuotes depthData, bool transType) async {
+    final raw = context.read(marketWatchProvider).getQuotes;
+    await context
+        .read(marketWatchProvider)
+        .fetchScripInfo(raw!.token.toString(), raw.exch.toString(), ctx);
+    OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: raw.exch.toString(),
+        tSym: raw.tsym.toString(),
+        isExit: false,
+        token: raw.token.toString(),
+        transType: transType,
+        lotSize: depthData.ls,
+        ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
+        perChange: depthData.pc ?? "0.00",
+        orderTpye: '',
+        holdQty: '',
+        isModify: false,
+        raw: {});
+
+    // Navigator.pop(context);
+    Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
+      "orderArg": orderArgs,
+      "scripInfo": ctx.read(marketWatchProvider).scripInfoModel!,
+      "isBskt": ''
+    });
   }
 }

@@ -943,7 +943,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 depthData.h != "null" &&
                                                 double.parse(depthData.h
                                                         .toString()) >
-                                                    0) ...[
+                                                    0 &&
+                                                depthData.l != depthData.h) ...[
                                               Text("Low - High",
                                                   style: textStyle(
                                                       const Color(0xff666666),
@@ -961,14 +962,20 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                       ? colors.darkColorDivider
                                                       : colors.colorDivider),
                                             ] else ...[
-                                              rowOfInfoData("Low", "0.00",
-                                                  "High", "0.00", theme),
+                                              rowOfInfoData(
+                                                  "Low",
+                                                  "${depthData.l}",
+                                                  "High",
+                                                  "${depthData.h}",
+                                                  theme),
                                             ],
                                             if (depthData.wk52L != "null" &&
                                                 depthData.wk52H != "null" &&
                                                 double.parse(depthData.wk52H
                                                         .toString()) >
-                                                    0) ...[
+                                                    0 &&
+                                                depthData.wk52L !=
+                                                    depthData.wk52H) ...[
                                               const SizedBox(height: 6),
                                               Text("52 Week Low - 52 Week High",
                                                   style: textStyle(
@@ -989,9 +996,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                             ] else ...[
                                               rowOfInfoData(
                                                   "52 Week Low",
-                                                  "0.00",
+                                                  "${depthData.wk52L}",
                                                   "52 Week High",
-                                                  "0.00",
+                                                  "${depthData.wk52H}",
                                                   theme),
                                             ],
                                             if (widget.wlValue.instname !=
