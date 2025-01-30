@@ -425,9 +425,6 @@ class WebSocketProvider extends ChangeNotifier {
             }
           } else if (res['t'].toString().toLowerCase() == "tk" ||
               res['t'].toString().toLowerCase() == "dk") {
-            if (res['t'].toString().toLowerCase() == "dk") {
-              print("object ws ${res}");
-            }
             // fToast!.removeQueuedCustomToasts();
             if (!_socketDatas.containsKey("${res['tk']}")) {
               _socketDatas["${res['tk']}"] = <String, dynamic>{};

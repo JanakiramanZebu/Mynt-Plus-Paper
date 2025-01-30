@@ -216,8 +216,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
               : "Limit"),
           widget.orderArg.exchange);
       marginUpdate();
-
-      context.read(ordInputProvider).chngOrderType(orderType);
+      if (orderType != "Regular") {
+        context.read(ordInputProvider).chngOrderType(orderType);
+      }
 
     });
 
