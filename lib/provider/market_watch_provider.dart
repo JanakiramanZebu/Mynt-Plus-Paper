@@ -91,6 +91,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   MarketWatchlist? get marketWatchlist => _marketWatchlist;
   // MarketWatchlist? _preDefMWlist;
   // MarketWatchlist? get preDefMWlist => _preDefMWlist;
+  List linkedscript = ['NFO','BFO','MCX','NCOM','BCOM','CDS'];
 
 //  Pre-defined market watchlist
 
@@ -381,7 +382,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         "${flow ? raw['exch'] : raw.exch}", context);
     final portfolios = ref(portfolioProvider);
 
-    if ((flow ? raw['exch'] : raw.exch) == 'MCX' ||
+    if (linkedscript.contains(flow ? raw['exch'] : raw.exch) ||
         (portfolios.oplists.isNotEmpty &&
             portfolios.oplists
                 .contains(int.parse(flow ? raw['token'] : raw.token)))) {
@@ -1045,7 +1046,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       final portfolios = ref(portfolioProvider);
 
-      if (exch == 'MCX' ||
+      if (linkedscript.contains(exch) || 
           (portfolios.oplists.isNotEmpty &&
               portfolios.oplists.contains(int.parse(token)))) {
         _depthBtns.add({

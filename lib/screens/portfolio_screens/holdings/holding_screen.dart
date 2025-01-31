@@ -365,7 +365,7 @@ class HoldingScreen extends ConsumerWidget {
                                     if (socketDatas
                                             .containsKey(exchTsym.token) &&
                                         double.parse(exchTsym.profitNloss
-                                                .toString()) >
+                                                .toString()) !=
                                             0 &&
                                         double.parse(
                                                 exchTsym.pNlChng.toString()) ==

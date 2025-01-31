@@ -482,7 +482,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
         _holdloader = true;
         _oneDayChngPer = 0.00;
         _showSearchHold = false;
-        _holdingsModel = [];
         _totInvesHold = "0.00";
         _totPnlPercHolding = "0.00";
         _totalPnlHolding = 0.00;
@@ -593,7 +592,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
         }
       } else {
         _posloader = true;
-        _postionBookModel = [];
         _allPostionList = [];
         _totPnL = "0.00";
         _totMtm = "0.00";

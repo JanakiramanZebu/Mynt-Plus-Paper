@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
+import '../../provider/order_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
@@ -23,6 +24,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
     final loggedUser = watch(authProvider);
     final theme = watch(themeProvider);
     final portfolio = watch(portfolioProvider);
+    final orders = watch(orderProvider);
     final userProfile = watch(userProfileProvider);
     final Preferences pref = locator<Preferences>();
     return DraggableScrollableSheet(
@@ -103,6 +105,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                               loggedUser
                                                   .loggedMobile[index].imei);
                                       portfolio.clearAllportfolio();
+                                      orders.clearAllorders();
                                       userProfile.profilePageloader(false);
                                     }
                                   },

@@ -84,7 +84,8 @@ mixin OrderAPI on ApiCore {
 
   // Get order book data from kambala
 
-  Future<List<OrderBookModel>> getOrderBook() async {
+  Future<Map<String, dynamic>> getOrderBook() async {
+    String stat = "";
     try {
       final uri = Uri.parse(apiLinks.getOrder);
       final res = await apiClient.post(uri,
@@ -95,27 +96,42 @@ mixin OrderAPI on ApiCore {
       // log(res.statusCode.toString());
 
       final List<OrderBookModel> data = [];
-
-      final json = jsonDecode(res.body);
-      try {
-        if (json['stat'] == 'Not_Ok') {
-          final OrderBookModel ord =
-              OrderBookModel.fromJson(json as Map<String, dynamic>);
-          return [ord];
-        } else {
-          for (final item in json) {
-            data.add(OrderBookModel.fromJson(item as Map<String, dynamic>));
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        try {
+          if (json is Map<String, dynamic>) {
+            stat = 'no data';
+          } else if (json.isNotEmpty && json.length > 0) {
+            stat = 'success';
+            for (final item in json) {
+              data.add(OrderBookModel.fromJson(item as Map<String, dynamic>));
+            }
+          } else if (json['stat'] == 'Not_Ok') {
+            stat = 'Not_Ok';
+            final OrderBookModel ord =
+                OrderBookModel.fromJson(json as Map<String, dynamic>);
+            return {"stat": stat, "data": ord};
+          } else {
+            stat = 'error';
+            for (final item in json) {
+              data.add(OrderBookModel.fromJson(item as Map<String, dynamic>));
+            }
+          }
+        } catch (e) {
+          stat = 'error';
+          if (res.statusCode == 200) {
+            for (final item in json) {
+              data.add(OrderBookModel.fromJson(item as Map<String, dynamic>));
+            }
           }
         }
-      } catch (e) {
-        if (res.statusCode == 200) {
-          for (final item in json) {
-            data.add(OrderBookModel.fromJson(item as Map<String, dynamic>));
-          }
+      } else {
+        final json = jsonDecode(res.body);
+        if (json['emsg'].contains('Session Expired')) {
+          data.add(OrderBookModel.fromJson(json as Map<String, dynamic>));
         }
       }
-
-      return data;
+      return {"stat": stat, "data": data};
     } catch (e) {
       rethrow;
     }
@@ -123,7 +139,8 @@ mixin OrderAPI on ApiCore {
 
 // Get Trade book data from kambala
 
-  Future<List<TradeBookModel>> getTradeBook() async {
+  Future<Map<String, dynamic>> getTradeBook() async {
+    String stat = "";
     try {
       final uri = Uri.parse(apiLinks.tradeBook);
       final res = await apiClient.post(uri,
@@ -134,27 +151,42 @@ mixin OrderAPI on ApiCore {
       // log(res.statusCode.toString());
 
       final List<TradeBookModel> data = [];
-
-      final json = jsonDecode(res.body);
-      try {
-        if (json['stat'] == 'Not_Ok') {
-          final TradeBookModel ord =
-              TradeBookModel.fromJson(json as Map<String, dynamic>);
-          return [ord];
-        } else {
-          for (final item in json) {
-            data.add(TradeBookModel.fromJson(item as Map<String, dynamic>));
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        try {
+          if (json is Map<String, dynamic>) {
+            stat = 'no data';
+          } else if (json.isNotEmpty && json.length > 0) {
+            stat = 'success';
+            for (final item in json) {
+              data.add(TradeBookModel.fromJson(item as Map<String, dynamic>));
+            }
+          } else if (json['stat'] == 'Not_Ok') {
+            stat = 'Not_Ok';
+            final TradeBookModel ord =
+                TradeBookModel.fromJson(json as Map<String, dynamic>);
+            return {"stat": stat, "data": ord};
+          } else {
+            stat = 'error';
+            for (final item in json) {
+              data.add(TradeBookModel.fromJson(item as Map<String, dynamic>));
+            }
+          }
+        } catch (e) {
+          stat = 'error';
+          if (res.statusCode == 200) {
+            for (final item in json) {
+              data.add(TradeBookModel.fromJson(item as Map<String, dynamic>));
+            }
           }
         }
-      } catch (e) {
-        if (res.statusCode == 200) {
-          for (final item in json) {
-            data.add(TradeBookModel.fromJson(item as Map<String, dynamic>));
-          }
+      } else {
+        final json = jsonDecode(res.body);
+        if (json['emsg'].contains('Session Expired')) {
+          data.add(TradeBookModel.fromJson(json as Map<String, dynamic>));
         }
       }
-
-      return data;
+      return {"stat": stat, "data": data};
     } catch (e) {
       rethrow;
     }
@@ -323,7 +355,9 @@ mixin OrderAPI on ApiCore {
         "ipaddr": ip
       };
 
-      if ((input.prctyp == 'SL-MKT' || input.prctyp == 'SL-LMT') && input.trgprc.isNotEmpty && double.parse(input.trgprc) > 0) {
+      if ((input.prctyp == 'SL-MKT' || input.prctyp == 'SL-LMT') &&
+          input.trgprc.isNotEmpty &&
+          double.parse(input.trgprc) > 0) {
         payload.addAll({"trgprc": input.trgprc});
       }
       if (input.blprc.isNotEmpty && double.parse(input.blprc) > 0) {
@@ -637,7 +671,8 @@ mixin OrderAPI on ApiCore {
 
 // get GTT order book response from kambala
 
-  Future<List<GttOrderBookModel>> getGTTOrderBook() async {
+  Future<Map<String, dynamic>> getGTTOrderBook() async {
+    String stat = "";
     try {
       final uri = Uri.parse(apiLinks.pendingGttorder);
       final res = await apiClient.post(uri,
@@ -652,17 +687,28 @@ mixin OrderAPI on ApiCore {
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         try {
-          if (json['stat'] == 'Not_Ok') {
+          if (json is Map<String, dynamic>) {
+            stat = 'no data';
+          } else if (json.isNotEmpty && json.length > 0) {
+            stat = 'success';
+            for (final item in json) {
+              data.add(
+                  GttOrderBookModel.fromJson(item as Map<String, dynamic>));
+            }
+          } else if (json['stat'] == 'Not_Ok') {
+            stat = 'Not_Ok';
             final GttOrderBookModel ord =
                 GttOrderBookModel.fromJson(json as Map<String, dynamic>);
-            return [ord];
+            return {"stat": stat, "data": ord};
           } else {
+            stat = 'error';
             for (final item in json) {
               data.add(
                   GttOrderBookModel.fromJson(item as Map<String, dynamic>));
             }
           }
         } catch (e) {
+          stat = 'error';
           if (res.statusCode == 200) {
             for (final item in json) {
               data.add(
@@ -670,9 +716,13 @@ mixin OrderAPI on ApiCore {
             }
           }
         }
+      } else {
+        final json = jsonDecode(res.body);
+        if (json['emsg'].contains('Session Expired')) {
+          data.add(GttOrderBookModel.fromJson(json as Map<String, dynamic>));
+        }
       }
-
-      return data;
+      return {"stat": stat, "data": data};
     } catch (e) {
       rethrow;
     }

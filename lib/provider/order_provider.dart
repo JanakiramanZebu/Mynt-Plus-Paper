@@ -60,13 +60,16 @@ class OrderProvider extends DefaultChangeNotifier {
   PlaceGttOrderModel? get modifyGttOrderModel => _modifyGttOrderModel;
   List<OrderBookModel>? _orderBookModel;
   List<OrderBookModel>? get orderBookModel => _orderBookModel;
+  List<OrderBookModel>? _torderBookModel;
   List<GttOrderBookModel>? _gttOrderBookModel = [];
   List<GttOrderBookModel>? get gttOrderBookModel => _gttOrderBookModel;
+  List<GttOrderBookModel>? _tgttOrderBookModel = [];
   List<GttOrderBookModel>? _gttOrderBookSearch = [];
   List<GttOrderBookModel>? get gttOrderBookSearch => _gttOrderBookSearch;
   final Preferences pref = locator<Preferences>();
   List<TradeBookModel>? _tradeBook;
   List<TradeBookModel>? get tradeBook => _tradeBook;
+  List<TradeBookModel>? _ttradeBook;
   List<TradeBookModel>? _tradeBooksearch = [];
   List<TradeBookModel>? get tradeBooksearch => _tradeBooksearch;
   List<OrderBookModel>? _allOrder = [];
@@ -140,12 +143,71 @@ class OrderProvider extends DefaultChangeNotifier {
 
   bool _orderloader = false;
   bool get orderloader => _orderloader;
-  
+
+  clearAllorders() {
+    _torderBookModel = [];
+    _tgttOrderBookModel = [];
+    _ttradeBook = [];
+    _orderBookModel = [];
+    _gttOrderBookModel = [];
+    _tradeBook = [];
+    _orderSearchItem = [];
+    _orderHistoryModel = [];
+    _siporderBookModel = null;
+    _siporderBookSearch = [];
+    _bsktScripList = [];
+    _bsktScripList = [];
+    _gttOrderBookSearch = [];
+    _tradeBooksearch = [];
+    _executedOrder = [];
+    _openOrder = [];
+    _allOrder = [];
+    _orderBookModel = [];
+    _selectedTab = 0;
+    notifyListeners();
+  }
+
   setOrderloader(bool value) {
     _orderloader = value;
     notifyListeners();
   }
+
 // Change tab orderbook tab index
+  Future<void> setPortfolioupdate(String mode) async {
+    var result;
+    if (mode == 'ob') {
+      result = await api.getOrderBook();
+      if (result['stat'] == 'success') {
+        _torderBookModel = result['data'];
+      } else {
+        if (result['stat'] == 'no data') {
+          _orderBookModel = [];
+        }
+        _torderBookModel = [];
+      }
+    } else if (mode == 'tb') {
+      result = await api.getTradeBook();
+      if (result['stat'] == 'success') {
+        _ttradeBook = result['data'];
+      } else {
+        if (result['stat'] == 'no data') {
+          _tradeBook = [];
+        }
+        _ttradeBook = [];
+      }
+    } else if (mode == 'gtt') {
+      result = await api.getGTTOrderBook();
+      if (result['stat'] == 'success') {
+        _tgttOrderBookModel = result['data'];
+      } else {
+        if (result['stat'] == 'no data') {
+          _gttOrderBookModel = [];
+        }
+        _tgttOrderBookModel = [];
+      }
+    }
+    print("qwqwqw prov alert btm $mode");
+  }
 
   changeTabIndex(int index, BuildContext context) {
     _selectedTab = index;
@@ -441,18 +503,24 @@ class OrderProvider extends DefaultChangeNotifier {
 
   Future fetchOrderBook(context, bool websocCon) async {
     try {
-      toggleLoadingOn(true);
+      await setPortfolioupdate('ob');
+      if (_orderBookModel!.isNotEmpty) {
+        if (_torderBookModel!.isNotEmpty) {
+          _orderBookModel = _torderBookModel;
+        }
+      } else {
+        toggleLoadingOn(true);
+        _executedOrder = [];
+        _openOrder = [];
+        _allOrder = [];
+        _orderBookModel = _torderBookModel;
+      }
+
       pref.setOBScrip(true);
       pref.setOBPrice(true);
       pref.setOBtime(true);
       pref.setOBqty(true);
       pref.setOBproduct(true);
-      _executedOrder = [];
-      _openOrder = [];
-      _allOrder = [];
-      _orderBookModel = [];
-
-      _orderBookModel = await api.getOrderBook();
 
       if (_orderBookModel!.isNotEmpty) {
         if (_orderBookModel![0].stat != "Not_Ok") {
@@ -520,8 +588,14 @@ class OrderProvider extends DefaultChangeNotifier {
 
   Future fetchTradeBook(context) async {
     try {
-      _tradeBook = [];
-      _tradeBook = await api.getTradeBook();
+      await setPortfolioupdate('tb');
+      if (_tradeBook!.isNotEmpty) {
+        if (_ttradeBook!.isNotEmpty) {
+          _tradeBook = _ttradeBook;
+        }
+      } else {
+        _tradeBook = _ttradeBook;
+      }
       pref.setTbScrip(true);
       pref.setTbPrice(true);
       pref.setTbBuyOrSell(true);
@@ -570,8 +644,14 @@ class OrderProvider extends DefaultChangeNotifier {
 
   Future fetchGTTOrderBook(context, String initLoad) async {
     try {
-      _gttOrderBookModel = [];
-      _gttOrderBookModel = await api.getGTTOrderBook();
+      await setPortfolioupdate('gtt');
+      if (_gttOrderBookModel!.isNotEmpty) {
+        if (_tgttOrderBookModel!.isNotEmpty) {
+          _gttOrderBookModel = _tgttOrderBookModel;
+        }
+      } else {
+        _gttOrderBookModel = _tgttOrderBookModel;
+      }
       if (_gttOrderBookModel!.isNotEmpty) {
         if (_gttOrderBookModel![0].stat == "Ok") {
           ConstantName.sessCheck = true;

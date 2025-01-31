@@ -99,6 +99,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
   String product = "I";
 
   int lotSize = 0;
+  int multiplayer = 0;
   String ordPrice = "0.00";
   String validityType = "GTT";
   String orderType = "Regular";
@@ -237,9 +238,12 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
       sipqtyctrl = TextEditingController(text: "1");
 
       qtyCtrl = TextEditingController(
-          text: widget.orderArg.isExit
+          text: widget.orderArg.exchange == "MCX" ? widget.scripInfo.prcqqty : widget.orderArg.isExit
               ? widget.orderArg.holdQty!.replaceAll("-", "")
               : widget.orderArg.lotSize!.replaceAll("-", ""));
+
+      multiplayer = int.parse((widget.orderArg.exchange == "MCX" ? widget.scripInfo.prcqqty : widget.orderArg.lotSize).toString());
+
       mktProtCtrl = TextEditingController(text: "5");
       discQtyCtrl = TextEditingController(text: "0");
       product = widget.orderArg.orderTpye == "CNC" ? "C" : "I";
@@ -620,14 +624,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                               () {
                                                                             setState(() {
                                                                               if (sipqtyctrl.text.isNotEmpty) {
-                                                                                if (int.parse(sipqtyctrl.text) > lotSize) {
-                                                                                  sipqtyctrl.text = (int.parse(sipqtyctrl.text) - lotSize).toString();
+                                                                                if (int.parse(sipqtyctrl.text) > multiplayer) {
+                                                                                  sipqtyctrl.text = (int.parse(sipqtyctrl.text) - multiplayer).toString();
                                                                                   double inputValue = double.tryParse(sipqtyctrl.text) ?? 0.00;
                                                                                   double ltpsip = double.parse("${widget.orderArg.ltp}");
                                                                                   resultsip = inputValue * ltpsip;
                                                                                 }
                                                                               } else {
-                                                                                sipqtyctrl.text = "$lotSize";
+                                                                                sipqtyctrl.text = "$multiplayer";
                                                                               }
                                                                             });
                                                                           },
@@ -635,14 +639,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                               () {
                                                                             setState(() {
                                                                               if (sipqtyctrl.text.isNotEmpty) {
-                                                                                if (int.parse(sipqtyctrl.text) > lotSize) {
-                                                                                  sipqtyctrl.text = (int.parse(sipqtyctrl.text) - lotSize).toString();
+                                                                                if (int.parse(sipqtyctrl.text) > multiplayer) {
+                                                                                  sipqtyctrl.text = (int.parse(sipqtyctrl.text) - multiplayer).toString();
                                                                                   double inputValue = double.tryParse(sipqtyctrl.text) ?? 0.00;
                                                                                   double ltpsip = double.parse("${widget.orderArg.ltp}");
                                                                                   resultsip = inputValue * ltpsip;
                                                                                 }
                                                                               } else {
-                                                                                sipqtyctrl.text = "$lotSize";
+                                                                                sipqtyctrl.text = "$multiplayer";
                                                                               }
                                                                             });
                                                                           },
@@ -661,12 +665,12 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                               () {
                                                                             setState(() {
                                                                               if (sipqtyctrl.text.isNotEmpty) {
-                                                                                sipqtyctrl.text = (int.parse(sipqtyctrl.text) + lotSize).toString();
+                                                                                sipqtyctrl.text = (int.parse(sipqtyctrl.text) + multiplayer).toString();
                                                                                 double inputValue = double.tryParse(sipqtyctrl.text) ?? 0.00;
                                                                                 double ltpsip = double.parse("${widget.orderArg.ltp}");
                                                                                 resultsip = inputValue * ltpsip;
                                                                               } else {
-                                                                                sipqtyctrl.text = "$lotSize";
+                                                                                sipqtyctrl.text = "$multiplayer";
                                                                               }
                                                                             });
                                                                           },
@@ -674,12 +678,12 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                               () {
                                                                             setState(() {
                                                                               if (sipqtyctrl.text.isNotEmpty) {
-                                                                                sipqtyctrl.text = (int.parse(sipqtyctrl.text) + lotSize).toString();
+                                                                                sipqtyctrl.text = (int.parse(sipqtyctrl.text) + multiplayer).toString();
                                                                                 double inputValue = double.tryParse(sipqtyctrl.text) ?? 0.00;
                                                                                 double ltpsip = double.parse("${widget.orderArg.ltp}");
                                                                                 resultsip = inputValue * ltpsip;
                                                                               } else {
-                                                                                sipqtyctrl.text = "$lotSize";
+                                                                                sipqtyctrl.text = "$multiplayer";
                                                                               }
                                                                             });
                                                                           },
@@ -939,18 +943,18 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                     orderInput
                                                                         .qtyCtrl
                                                                         .text) >
-                                                                lotSize) {
+                                                                multiplayer) {
                                                               orderInput.qtyCtrl
                                                                   .text = (int.parse(orderInput
                                                                           .qtyCtrl
                                                                           .text) -
-                                                                      lotSize)
+                                                                      multiplayer)
                                                                   .toString();
                                                             }
                                                           } else {
                                                             orderInput.qtyCtrl
                                                                     .text =
-                                                                "$lotSize";
+                                                                "$multiplayer";
                                                           }
                                                         });
                                                       },
@@ -974,12 +978,12 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                 .text = (int.parse(orderInput
                                                                         .qtyCtrl
                                                                         .text) +
-                                                                    lotSize)
+                                                                    multiplayer)
                                                                 .toString();
                                                           } else {
                                                             orderInput.qtyCtrl
                                                                     .text =
-                                                                "$lotSize";
+                                                                "$multiplayer";
                                                           }
                                                         });
                                                       },
@@ -1340,20 +1344,20 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               if (int.parse(orderInput
                                                                       .ocoQtyCtrl
                                                                       .text) >
-                                                                  lotSize) {
+                                                                  multiplayer) {
                                                                 orderInput
                                                                     .ocoQtyCtrl
                                                                     .text = (int.parse(orderInput
                                                                             .ocoQtyCtrl
                                                                             .text) -
-                                                                        lotSize)
+                                                                        multiplayer)
                                                                     .toString();
                                                               }
                                                             } else {
                                                               orderInput
                                                                       .ocoQtyCtrl
                                                                       .text =
-                                                                  "$lotSize";
+                                                                  "$multiplayer";
                                                             }
                                                           });
                                                         },
@@ -1378,13 +1382,13 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                   .text = (int.parse(orderInput
                                                                           .ocoQtyCtrl
                                                                           .text) +
-                                                                      lotSize)
+                                                                      multiplayer)
                                                                   .toString();
                                                             } else {
                                                               orderInput
                                                                       .ocoQtyCtrl
                                                                       .text =
-                                                                  "$lotSize";
+                                                                  "$multiplayer";
                                                             }
                                                           });
                                                         },
@@ -1930,7 +1934,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                     headerTitleText(
                                                         "Quantity ", theme),
                                                     Text(
-                                                      "Lot: ${widget.scripInfo.ls}   ",
+                                                      "Lot: ${widget.scripInfo.ls} ${widget.scripInfo.prcunt ?? ''}  ",
                                                       style: textStyle(
                                                           const Color(
                                                               0xff777777),
@@ -1973,16 +1977,16 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               if (int.parse(
                                                                       qtyCtrl
                                                                           .text) >
-                                                                  lotSize) {
+                                                                  multiplayer) {
                                                                 qtyCtrl
                                                                     .text = (int.parse(
                                                                             qtyCtrl.text) -
-                                                                        lotSize)
+                                                                        multiplayer)
                                                                     .toString();
                                                               }
                                                             } else {
                                                               qtyCtrl.text =
-                                                                  "$lotSize";
+                                                                  "$multiplayer";
                                                             }
                                                             marginUpdate();
                                                           });
@@ -2005,11 +2009,11 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                   .text = (int.parse(
                                                                           qtyCtrl
                                                                               .text) +
-                                                                      lotSize)
+                                                                      multiplayer)
                                                                   .toString();
                                                             } else {
                                                               qtyCtrl.text =
-                                                                  "$lotSize";
+                                                                  "$multiplayer";
                                                             }
                                                             marginUpdate();
                                                           });
@@ -3912,6 +3916,12 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                 context, "Trigger should be multiple of tick size $tik => $r"));
           }
         }
+         int q = ((int.parse(qtyCtrl.text) / lotSize).round() * lotSize);
+          if (int.parse(qtyCtrl.text) != q && widget.scripInfo.exch != 'MCX') {
+            placeorder = false;
+            ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                context, "Quantity should be multiple of lot size $lotSize => $q"));
+          }
         if (placeorder) {
           context.read(orderProvider).setOrderloader(true);
           PlaceOrderInput placeOrderInput = PlaceOrderInput(
