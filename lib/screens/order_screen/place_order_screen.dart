@@ -129,8 +129,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
       {"type": "Bracket"}
     ];
 
-    print(
-        "object place oa ${widget.orderArg.raw.isNotEmpty} ${widget.orderArg.raw}");
     if (widget.isBasket != "Basket") {
       if (widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE") {
         if (context.read(userProfileProvider).userDetailModel != null &&

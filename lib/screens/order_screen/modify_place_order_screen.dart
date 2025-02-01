@@ -60,6 +60,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
 
   int frezQty = 0;
   int lotSize = 0;
+  int multiplayer = 0;
   String price = "0.00";
   String validity = "DAY";
   double tik = 0.00;
@@ -82,6 +83,10 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
 
     setState(() {
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
+      multiplayer = int.parse((widget.orderArg.exchange == "MCX"
+              ? widget.scripInfo.prcqqty
+              : widget.orderArg.lotSize)
+          .toString());
       isBuy = widget.modifyOrderArgs.trantype == "B" ? true : false;
       priceCtrl = TextEditingController(text: widget.modifyOrderArgs.prc);
       qtyCtrl = TextEditingController(text: widget.modifyOrderArgs.qty);
@@ -366,8 +371,24 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                              headerTitleText(
-                                                  "Quantity", theme),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                children: [
+                                                  headerTitleText(
+                                                      "Quantity", theme),
+                                                  Text(
+                                                    "Lot: ${widget.scripInfo.ls} ${widget.scripInfo.prcunt ?? ''}  ",
+                                                    style: textStyle(
+                                                        const Color(0xff777777),
+                                                        11,
+                                                        FontWeight.w600),
+                                                  )
+                                                ],
+                                              ),
                                               const SizedBox(height: 8),
                                               SizedBox(
                                                   height: 44,
@@ -400,17 +421,17 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             if (int.parse(
                                                                     qtyCtrl
                                                                         .text) >
-                                                                lotSize) {
+                                                                multiplayer) {
                                                               qtyCtrl
                                                                   .text = (int.parse(
                                                                           qtyCtrl
                                                                               .text) -
-                                                                      lotSize)
+                                                                      multiplayer)
                                                                   .toString();
                                                             }
                                                           } else {
                                                             qtyCtrl.text =
-                                                                "$lotSize";
+                                                                "$multiplayer";
                                                           }
                                                           OrderMarginInput input = OrderMarginInput(
                                                               exch:
@@ -467,14 +488,15 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         setState(() {
                                                           if (qtyCtrl.text
                                                               .isNotEmpty) {
-                                                            qtyCtrl.text =
-                                                                (int.parse(qtyCtrl
+                                                            qtyCtrl
+                                                                .text = (int.parse(
+                                                                        qtyCtrl
                                                                             .text) +
-                                                                        lotSize)
-                                                                    .toString();
+                                                                    multiplayer)
+                                                                .toString();
                                                           } else {
                                                             qtyCtrl.text =
-                                                                "$lotSize";
+                                                                "$multiplayer";
                                                           }
                                                           OrderMarginInput input = OrderMarginInput(
                                                               exch:
@@ -579,7 +601,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                Row(
+                                              Row(
                                                   mainAxisAlignment:
                                                       MainAxisAlignment
                                                           .spaceBetween,
@@ -588,8 +610,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                   children: [
                                                     headerTitleText(
                                                         "Price", theme),
-                                                    Text(
-                                                        "Tick: $tik",
+                                                    Text("Tick: $tik",
                                                         style: textStyle(
                                                             const Color(
                                                                 0xff777777),
@@ -1944,6 +1965,12 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
         ScaffoldMessenger.of(context).showSnackBar(warningMessage(
             context, "Trigger should be multiple of tick size $tik => $r"));
       }
+    }
+    int q = ((int.parse(qtyCtrl.text) / lotSize).round() * lotSize);
+    if (int.parse(qtyCtrl.text) != q && widget.scripInfo.exch != 'MCX') {
+      placeorder = false;
+      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+          context, "Quantity should be multiple of lot size $lotSize => $q"));
     }
     if (placeorder) {
       context.read(orderProvider).setOrderloader(true);
