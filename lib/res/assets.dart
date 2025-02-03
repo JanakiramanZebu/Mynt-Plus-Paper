@@ -58,6 +58,7 @@ class Assets {
   final String buyIcon = "assets/icon/buy_btn_icon.svg";
   final String sellIcon = "assets/icon/sell_btn_icon.svg";
   final String ruppeIcon = "assets/icon/₹.svg";
+  final String precentIcon = "assets/icon/%.svg";
   final String exclamationIcon = "assets/icon/exclamation-circle.svg";
   final String noteIcon = "assets/icon/note.svg";
   final String flagIcon = "assets/icon/flag.svg";

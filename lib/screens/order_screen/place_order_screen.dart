@@ -236,11 +236,16 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
       sipqtyctrl = TextEditingController(text: "1");
 
       qtyCtrl = TextEditingController(
-          text: widget.orderArg.exchange == "MCX" ? widget.scripInfo.prcqqty : widget.orderArg.isExit
-              ? widget.orderArg.holdQty!.replaceAll("-", "")
-              : widget.orderArg.lotSize!.replaceAll("-", ""));
+          text: widget.orderArg.exchange == "MCX"
+              ? widget.scripInfo.prcqqty
+              : widget.orderArg.isExit
+                  ? widget.orderArg.holdQty!.replaceAll("-", "")
+                  : widget.orderArg.lotSize!.replaceAll("-", ""));
 
-      multiplayer = int.parse((widget.orderArg.exchange == "MCX" ? widget.scripInfo.prcqqty : widget.orderArg.lotSize).toString());
+      multiplayer = int.parse((widget.orderArg.exchange == "MCX"
+              ? widget.scripInfo.prcqqty
+              : widget.orderArg.lotSize)
+          .toString());
 
       mktProtCtrl = TextEditingController(text: "5");
       discQtyCtrl = TextEditingController(text: "0");
@@ -920,10 +925,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         const Color(0xff666666),
                                                         15,
                                                         FontWeight.w400),
-                                                    inputFormate: [
-                                                      FilteringTextInputFormatter
-                                                          .digitsOnly
-                                                    ],
+                                                    inputFormate: TargetPlatform
+                                                                .iOS ==
+                                                            defaultTargetPlatform
+                                                        ? []
+                                                        : [
+                                                            FilteringTextInputFormatter
+                                                                .digitsOnly
+                                                          ],
                                                     style: textStyle(
                                                         theme.isDarkMode
                                                             ? colors.colorWhite
@@ -968,16 +977,24 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                     suffixIcon: InkWell(
                                                       onTap: () {
                                                         setState(() {
+                                                          int number =
+                                                              int.parse(
+                                                                  orderInput
+                                                                      .qtyCtrl
+                                                                      .text);
                                                           if (orderInput
                                                               .qtyCtrl
                                                               .text
                                                               .isNotEmpty) {
-                                                            orderInput.qtyCtrl
-                                                                .text = (int.parse(orderInput
-                                                                        .qtyCtrl
-                                                                        .text) +
-                                                                    multiplayer)
-                                                                .toString();
+                                                            if (number <
+                                                                999999) {
+                                                              orderInput.qtyCtrl
+                                                                  .text = (int.parse(orderInput
+                                                                          .qtyCtrl
+                                                                          .text) +
+                                                                      multiplayer)
+                                                                  .toString();
+                                                            }
                                                           } else {
                                                             orderInput.qtyCtrl
                                                                     .text =
@@ -1006,6 +1023,24 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                 warningMessage(
                                                                     context,
                                                                     "Quntity can not be empty"));
+                                                      } else {
+                                                        String newValue =
+                                                            value.replaceAll(
+                                                                RegExp(
+                                                                    r'[^0-9]'),
+                                                                '');
+                                                        if (newValue != value) {
+                                                          orderInput.qtyCtrl
+                                                              .text = newValue;
+                                                          orderInput.qtyCtrl
+                                                                  .selection =
+                                                              TextSelection
+                                                                  .fromPosition(
+                                                            TextPosition(
+                                                                offset: newValue
+                                                                    .length),
+                                                          );
+                                                        }
                                                       }
                                                     }))
                                           ])),
@@ -1320,10 +1355,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               0xff666666),
                                                           15,
                                                           FontWeight.w400),
-                                                      inputFormate: [
-                                                        FilteringTextInputFormatter
-                                                            .digitsOnly
-                                                      ],
+                                                      inputFormate: TargetPlatform
+                                                                  .iOS ==
+                                                              defaultTargetPlatform
+                                                          ? []
+                                                          : [
+                                                              FilteringTextInputFormatter
+                                                                  .digitsOnly
+                                                            ],
                                                       style: textStyle(
                                                           theme.isDarkMode
                                                               ? colors
@@ -1371,17 +1410,25 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                       suffixIcon: InkWell(
                                                         onTap: () {
                                                           setState(() {
+                                                            int number = int
+                                                                .parse(orderInput
+                                                                    .ocoQtyCtrl
+                                                                    .text);
+
                                                             if (orderInput
                                                                 .ocoQtyCtrl
                                                                 .text
                                                                 .isNotEmpty) {
-                                                              orderInput
-                                                                  .ocoQtyCtrl
-                                                                  .text = (int.parse(orderInput
-                                                                          .ocoQtyCtrl
-                                                                          .text) +
-                                                                      multiplayer)
-                                                                  .toString();
+                                                              if (number <
+                                                                  999999) {
+                                                                orderInput
+                                                                    .ocoQtyCtrl
+                                                                    .text = (int.parse(orderInput
+                                                                            .ocoQtyCtrl
+                                                                            .text) +
+                                                                        multiplayer)
+                                                                    .toString();
+                                                              }
                                                             } else {
                                                               orderInput
                                                                       .ocoQtyCtrl
@@ -1413,6 +1460,28 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                   warningMessage(
                                                                       context,
                                                                       "Quntity can not be empty"));
+                                                        } else {
+                                                          String newValue =
+                                                              value.replaceAll(
+                                                                  RegExp(
+                                                                      r'[^0-9]'),
+                                                                  '');
+                                                          if (newValue !=
+                                                              value) {
+                                                            orderInput
+                                                                    .ocoQtyCtrl
+                                                                    .text =
+                                                                newValue;
+                                                            orderInput
+                                                                    .ocoQtyCtrl
+                                                                    .selection =
+                                                                TextSelection
+                                                                    .fromPosition(
+                                                              TextPosition(
+                                                                  offset: newValue
+                                                                      .length),
+                                                            );
+                                                          }
                                                         }
                                                       }))
                                             ])),
@@ -1930,7 +1999,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                       CrossAxisAlignment.end,
                                                   children: [
                                                     headerTitleText(
-                                                        "Quantity ", theme),
+                                                        "Quantity", theme),
                                                     Text(
                                                       "Lot: ${widget.scripInfo.ls} ${widget.scripInfo.prcunt ?? ''}  ",
                                                       style: textStyle(
@@ -1955,10 +2024,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               0xff666666),
                                                           15,
                                                           FontWeight.w400),
-                                                      inputFormate: [
-                                                        FilteringTextInputFormatter
-                                                            .digitsOnly
-                                                      ],
+                                                      inputFormate: TargetPlatform
+                                                                  .iOS ==
+                                                              defaultTargetPlatform
+                                                          ? []
+                                                          : [
+                                                              FilteringTextInputFormatter
+                                                                  .digitsOnly
+                                                            ],
                                                       style: textStyle(
                                                           theme.isDarkMode
                                                               ? colors
@@ -2001,14 +2074,20 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                       suffixIcon: InkWell(
                                                         onTap: () {
                                                           setState(() {
+                                                            int number =
+                                                                int.parse(
+                                                                    qtyCtrl
+                                                                        .text);
                                                             if (qtyCtrl.text
                                                                 .isNotEmpty) {
-                                                              qtyCtrl
-                                                                  .text = (int.parse(
-                                                                          qtyCtrl
-                                                                              .text) +
-                                                                      multiplayer)
-                                                                  .toString();
+                                                              if (number <
+                                                                  999999) {
+                                                                qtyCtrl
+                                                                    .text = (int.parse(
+                                                                            qtyCtrl.text) +
+                                                                        multiplayer)
+                                                                    .toString();
+                                                              }
                                                             } else {
                                                               qtyCtrl.text =
                                                                   "$multiplayer";
@@ -2039,6 +2118,35 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                       context,
                                                                       "Quntity can not be empty"));
                                                         } else {
+                                                          int number =
+                                                              int.tryParse(qtyCtrl
+                                                                      .text) ??
+                                                                  0;
+
+                                                          if (number > 999999) {
+                                                            qtyCtrl.text = qtyCtrl
+                                                                .text
+                                                                .substring(0,
+                                                                    6); // Restrict max value
+                                                          }
+
+                                                          String newValue =
+                                                              value.replaceAll(
+                                                                  RegExp(
+                                                                      r'[^0-9]'),
+                                                                  '');
+                                                          if (newValue !=
+                                                              value) {
+                                                            qtyCtrl.text =
+                                                                newValue;
+                                                            qtyCtrl.selection =
+                                                                TextSelection
+                                                                    .fromPosition(
+                                                              TextPosition(
+                                                                  offset: newValue
+                                                                      .length),
+                                                            );
+                                                          }
                                                           marginUpdate();
                                                         }
                                                       })),
@@ -2470,17 +2578,25 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                 : const Color(
                                                                     0xffF1F3F8),
                                                         hintText: "0",
-                                                        hintStyle: textStyle(
-                                                            const Color(
-                                                                0xff666666),
-                                                            15,
-                                                            FontWeight.w400),
-                                                        inputFormate: [
-                                                          FilteringTextInputFormatter
-                                                              .digitsOnly
-                                                        ],
+                                                        hintStyle:
+                                                            textStyle(
+                                                                const Color(
+                                                                    0xff666666),
+                                                                15,
+                                                                FontWeight
+                                                                    .w400),
+                                                        inputFormate:
+                                                            TargetPlatform
+                                                                        .iOS ==
+                                                                    defaultTargetPlatform
+                                                                ? []
+                                                                : [
+                                                                    FilteringTextInputFormatter
+                                                                        .digitsOnly
+                                                                  ],
                                                         style: textStyle(
-                                                            theme.isDarkMode
+                                                            theme
+                                                                    .isDarkMode
                                                                 ? colors
                                                                     .colorWhite
                                                                 : colors
@@ -2525,14 +2641,21 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         suffixIcon: InkWell(
                                                           onTap: () {
                                                             setState(() {
+                                                              int number =
+                                                                  int.parse(
+                                                                      discQtyCtrl
+                                                                          .text);
                                                               if (discQtyCtrl
                                                                   .text
                                                                   .isNotEmpty) {
-                                                                discQtyCtrl
-                                                                        .text =
-                                                                    (int.parse(discQtyCtrl.text) +
-                                                                            1)
-                                                                        .toString();
+                                                                if (number <
+                                                                    999999) {
+                                                                  discQtyCtrl
+                                                                          .text =
+                                                                      (int.parse(discQtyCtrl.text) +
+                                                                              1)
+                                                                          .toString();
+                                                                }
                                                               } else {
                                                                 discQtyCtrl
                                                                     .text = "0";
@@ -2583,52 +2706,56 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                     ? assets.checkedbox
                                                     : assets.checkbox))
                                       ])),
-                              SizedBox(
-                                  height: priceType == "Market" ? 180 : 100)
-                            ]
-                          ]
-                        ])),
-                if (internet.connectionStatus == ConnectivityResult.none) ...[
-                  const NoInternetWidget()
-                ]
-              ]),
-              bottomSheet: internet.connectionStatus == ConnectivityResult.none
-                  ? const NoInternetWidget()
-                  : Container(
-                      color: theme.isDarkMode
-                          ? colors.colorBlack
-                          : colors.colorWhite,
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (orderType != "GTT" && orderType != "SIP") ...[
                               if (priceType == "Market" ||
                                   priceType == "SL MKT") ...[
                                 Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 16.0, bottom: 6),
-                                    child: headerTitleText(
-                                        "Market Production", theme)),
-                                Container(
-                                    padding: const EdgeInsets.only(
-                                        left: 16.0, bottom: 6),
-                                    height: 40,
-                                    child: Row(children: [
-                                      Expanded(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Divider(
+                                            color: theme.isDarkMode
+                                                ? colors.darkColorDivider
+                                                : colors.colorDivider),
+                                        headerTitleText(
+                                            "Market Production", theme),
+                                        const SizedBox(height: 7),
+                                        SizedBox(
+                                          height: 44,
                                           child: CustomTextFormField(
                                               fillColor: theme.isDarkMode
                                                   ? colors.darkGrey
                                                   : const Color(0xffF1F3F8),
-                                              inputFormate: [
-                                                FilteringTextInputFormatter
-                                                    .digitsOnly
-                                              ],
+                                              inputFormate:
+                                                  TargetPlatform.iOS ==
+                                                          defaultTargetPlatform
+                                                      ? []
+                                                      : [
+                                                          FilteringTextInputFormatter
+                                                              .digitsOnly
+                                                        ],
                                               onChanged: (value) {
                                                 setState(() {
                                                   ScaffoldMessenger.of(context)
                                                       .hideCurrentSnackBar();
                                                   if (value.isNotEmpty) {
+                                                    String newValue =
+                                                        value.replaceAll(
+                                                            RegExp(r'[^0-9]'),
+                                                            '');
+                                                    if (newValue != value) {
+                                                      mktProtCtrl.text =
+                                                          newValue;
+                                                      mktProtCtrl.selection =
+                                                          TextSelection
+                                                              .fromPosition(
+                                                        TextPosition(
+                                                            offset: newValue
+                                                                .length),
+                                                      );
+                                                    }
                                                     if (int.parse(value) > 20) {
                                                       mktProtCtrl.text = "20";
                                                       ScaffoldMessenger.of(
@@ -2658,10 +2785,51 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                   14,
                                                   FontWeight.w600),
                                               textCtrl: mktProtCtrl,
-                                              textAlign: TextAlign.start))
-                                    ]))
+                                              prefixIcon: Container(
+                                                margin:
+                                                    const EdgeInsets.all(12),
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20),
+                                                    color: theme.isDarkMode
+                                                        ? const Color(
+                                                            0xff555555)
+                                                        : colors.colorWhite),
+                                                child: SvgPicture.asset(
+                                                    color: theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorGrey,
+                                                    assets.precentIcon,
+                                                    fit: BoxFit.scaleDown),
+                                              ),
+                                              textAlign: TextAlign.start),
+                                        )
+                                      ],
+                                    )),
                               ],
+                              SizedBox(
+                                  height: priceType == "Market" ? 180 : 100)
+                            ]
+                          ]
+                        ])),
+                if (internet.connectionStatus == ConnectivityResult.none) ...[
+                  const NoInternetWidget()
+                ]
+              ]),
+              bottomSheet: internet.connectionStatus == ConnectivityResult.none
+                  ? const NoInternetWidget()
+                  : Container(
+                      color: theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorWhite,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (orderType != "GTT" && orderType != "SIP") ...[
                               Container(
+                                  width: MediaQuery.of(context).size.width,
                                   decoration: BoxDecoration(
                                       color: theme.isDarkMode
                                           ? colors.darkGrey
@@ -2678,6 +2846,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                   padding: const EdgeInsets.only(
                                       left: 16.0, right: 3, top: 0),
                                   child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       if (priceType == "Market" ||
                                           priceType == "SL MKT") ...[
@@ -2688,146 +2858,258 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                             margin: const EdgeInsets.only(
                                                 right: 16, top: 16, bottom: 0),
                                             padding: const EdgeInsets.symmetric(
-                                                vertical: 10, horizontal: 14),
+                                                vertical: 8, horizontal: 12),
                                             decoration: BoxDecoration(
                                               color: const Color(0xffFCEFD4),
                                               borderRadius:
                                                   BorderRadius.circular(6),
                                             ),
-                                            child: const Text(
-                                                "A market order carries the risk of execution at a less advantageous price")),
+                                            child: Text(
+                                                "A market order carries the risk of execution at a less advantageous price",
+                                                style: textStyle(
+                                                    const Color(0xff666666),
+                                                    13,
+                                                    FontWeight.w500))),
                                       ],
-                                      Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(children: [
-                                              CustomWidgetButton(
-                                                  onPress: internet
-                                                              .connectionStatus ==
-                                                          ConnectivityResult
-                                                              .none
-                                                      ? () {}
-                                                      : () {
-                                                          marginUpdate();
-                                                          showModalBottomSheet(
-                                                              useSafeArea: true,
-                                                              isScrollControlled:
-                                                                  true,
-                                                              shape: const RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius.vertical(
-                                                                          top: Radius.circular(
-                                                                              16))),
-                                                              context: context,
-                                                              builder:
-                                                                  (context) {
-                                                                return const MarginDetailsBottomsheet();
-                                                              });
-                                                        },
-                                                  widget: Row(children: [
-                                                    Text("Margin: ",
-                                                        style: textStyle(
-                                                            const Color(
-                                                                0xff666666),
-                                                            12,
-                                                            FontWeight.w500)),
-                                                    Text(
-                                                        "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}",
-                                                        style: textStyle(
-                                                            !theme.isDarkMode
-                                                                ? colors
-                                                                    .colorBlue
-                                                                : colors
-                                                                    .colorLightBlue,
-                                                            12,
-                                                            FontWeight.w600)),
-                                                    Icon(Icons.arrow_drop_down,
-                                                        color: !theme.isDarkMode
-                                                            ? colors.colorBlue
-                                                            : colors
-                                                                .colorLightBlue)
-                                                  ])),
-                                              const SizedBox(width: 20),
-                                              CustomWidgetButton(
-                                                  onPress:
+                                    //   if (isAvbSecu) ...[
+                                    //     AnimatedContainer(
+                                    //         duration: const Duration(
+                                    //             milliseconds: 400),
+                                    //         curve: Curves.easeInCubic,
+                                    //         margin: const EdgeInsets.only(
+                                    //             right: 16, top: 16, bottom: 0),
+                                    //         padding: const EdgeInsets.all(0),
+                                    //         decoration: BoxDecoration(
+                                    //           color: const Color(0xffFCEFD4),
+                                    //           borderRadius:
+                                    //               BorderRadius.circular(6),
+                                    //         ),
+                                    //         child: Row(
+                                    //           mainAxisAlignment:
+                                    //               MainAxisAlignment.start,
+                                    //           children: [
+                                    //             IconButton(
+                                    //                 onPressed: () {
+                                    //                   setState(() {
+                                    //                     isSecu = !isSecu;
+                                    //                   });
+                                    //                 },
+                                    //                 icon: SvgPicture.asset(theme
+                                    //                         .isDarkMode
+                                    //                     ? isSecu
+                                    //                         ? assets
+                                    //                             .darkCheckedboxIcon
+                                    //                         : assets
+                                    //                             .darkCheckboxIcon
+                                    //                     : isSecu
+                                    //                         ? assets.checkedbox
+                                    //                         : assets.checkbox)),
+                                    //             Expanded(
+                                    //                 // Ensures text takes available space and wraps
+                                    //                 child: Column(
+                                    //               crossAxisAlignment:
+                                    //                   CrossAxisAlignment.start,
+                                    //               children: [
+                                    //                 Text(
+                                    //                   "Security is under ASM, would you like to continue?",
+                                    //                   style: textStyle(
+                                    //                     const Color(0xff666666),
+                                    //                     13,
+                                    //                     FontWeight.w500,
+                                    //                   ),
+                                    //                   softWrap:
+                                    //                       true, // Allows wrapping
+                                    //                   overflow: TextOverflow
+                                    //                       .visible, // Ensures text is fully displayed
+                                    //                 ),
+                                    //                 Tooltip(
+                                    //                   preferBelow: false,
+                                    //                   message: quotemsg,
+                                    //                   textStyle:
+                                    //                       const TextStyle(
+                                    //                           color:
+                                    //                               Colors.white,
+                                    //                           fontSize: 13),
+                                    //                   padding: const EdgeInsets
+                                    //                       .symmetric(
+                                    //                       vertical: 8, horizontal: 16),
+                                    //                   margin: const EdgeInsets
+                                    //                       .symmetric(
+                                    //                       horizontal: 16),
+                                    //                   decoration: BoxDecoration(
+                                    //                     color: Colors.black,
+                                    //                     borderRadius:
+                                    //                         BorderRadius
+                                    //                             .circular(8),
+                                    //                   ),
+                                    //                   child: InkWell(
+                                    //                     child: Text(
+                                    //                       "Learn more",
+                                    //                       style: textStyle(
+                                    //                         !theme.isDarkMode
+                                    //                             ? colors
+                                    //                                 .colorBlue
+                                    //                             : colors
+                                    //                                 .colorLightBlue,
+                                    //                         13,
+                                    //                         FontWeight.w500,
+                                    //                       ),
+                                    //                       softWrap:
+                                    //                           true, // Allows wrapping
+                                    //                       overflow: TextOverflow
+                                    //                           .visible, // Ensures text is fully displayed
+                                    //                     ),
+                                    //                   ),
+                                    //                 ),
+                                    //               ],
+                                    //             ))
+                                    //           ],
+                                    //         )),
+                                    //   ],
+                                      SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(children: [
+                                                CustomWidgetButton(
+                                                    onPress: internet
+                                                                .connectionStatus ==
+                                                            ConnectivityResult
+                                                                .none
+                                                        ? () {}
+                                                        : () {
+                                                            marginUpdate();
+                                                            showModalBottomSheet(
+                                                                useSafeArea:
+                                                                    true,
+                                                                isScrollControlled:
+                                                                    true,
+                                                                shape: const RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.vertical(
+                                                                            top: Radius.circular(
+                                                                                16))),
+                                                                context:
+                                                                    context,
+                                                                builder:
+                                                                    (context) {
+                                                                  return const MarginDetailsBottomsheet();
+                                                                });
+                                                          },
+                                                    widget: Row(children: [
+                                                      Text("Margin: ",
+                                                          style: textStyle(
+                                                              const Color(
+                                                                  0xff666666),
+                                                              12,
+                                                              FontWeight.w500)),
+                                                      Text(
+                                                          "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}",
+                                                          style: textStyle(
+                                                              !theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorBlue
+                                                                  : colors
+                                                                      .colorLightBlue,
+                                                              12,
+                                                              FontWeight.w600)),
+                                                      Icon(
+                                                          Icons.arrow_drop_down,
+                                                          color: !theme
+                                                                  .isDarkMode
+                                                              ? colors.colorBlue
+                                                              : colors
+                                                                  .colorLightBlue)
+                                                    ])),
+                                                const SizedBox(width: 20),
+                                                CustomWidgetButton(
+                                                    onPress: internet
+                                                                .connectionStatus ==
+                                                            ConnectivityResult
+                                                                .none
+                                                        ? () {}
+                                                        : () {
+                                                            BrokerageInput
+                                                                brokerageInput =
+                                                                BrokerageInput(
+                                                                    exch:
+                                                                        "${widget.scripInfo.exch}",
+                                                                    prc: priceCtrl
+                                                                        .text,
+                                                                    prd: orderInput
+                                                                        .orderType,
+                                                                    qty:
+                                                                        "${widget.scripInfo.ls}",
+                                                                    trantype:
+                                                                        isBuy!
+                                                                            ? "B"
+                                                                            : "S",
+                                                                    tsym:
+                                                                        "${widget.scripInfo.tsym}");
+                                                            context
+                                                                .read(
+                                                                    orderProvider)
+                                                                .fetchGetBrokerage(
+                                                                    brokerageInput,
+                                                                    context);
+                                                            showModalBottomSheet(
+                                                                useSafeArea:
+                                                                    true,
+                                                                isScrollControlled:
+                                                                    true,
+                                                                shape: const RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.vertical(
+                                                                            top: Radius.circular(
+                                                                                16))),
+                                                                context:
+                                                                    context,
+                                                                builder:
+                                                                    (context) {
+                                                                  return const ChargesDetailsBottomsheet();
+                                                                });
+                                                          },
+                                                    widget: Row(children: [
+                                                      Text("Charges: ",
+                                                          style: textStyle(
+                                                              const Color(
+                                                                  0xff666666),
+                                                              12,
+                                                              FontWeight.w500)),
+                                                      Text(
+                                                          "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                          style: textStyle(
+                                                              !theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorBlue
+                                                                  : colors
+                                                                      .colorLightBlue,
+                                                              12,
+                                                              FontWeight.w600)),
+                                                      Icon(
+                                                          Icons.arrow_drop_down,
+                                                          color: !theme
+                                                                  .isDarkMode
+                                                              ? colors.colorBlue
+                                                              : colors
+                                                                  .colorLightBlue)
+                                                    ]))
+                                              ]),
+                                              IconButton(
+                                                  onPressed:
                                                       internet.connectionStatus ==
                                                               ConnectivityResult
                                                                   .none
-                                                          ? () {}
+                                                          ? null
                                                           : () {
-                                                              BrokerageInput brokerageInput = BrokerageInput(
-                                                                  exch:
-                                                                      "${widget.scripInfo.exch}",
-                                                                  prc: priceCtrl
-                                                                      .text,
-                                                                  prd: orderInput
-                                                                      .orderType,
-                                                                  qty:
-                                                                      "${widget.scripInfo.ls}",
-                                                                  trantype:
-                                                                      isBuy!
-                                                                          ? "B"
-                                                                          : "S",
-                                                                  tsym:
-                                                                      "${widget.scripInfo.tsym}");
-                                                              context
-                                                                  .read(
-                                                                      orderProvider)
-                                                                  .fetchGetBrokerage(
-                                                                      brokerageInput,
-                                                                      context);
-                                                              showModalBottomSheet(
-                                                                  useSafeArea:
-                                                                      true,
-                                                                  isScrollControlled:
-                                                                      true,
-                                                                  shape: const RoundedRectangleBorder(
-                                                                      borderRadius: BorderRadius.vertical(
-                                                                          top: Radius.circular(
-                                                                              16))),
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (context) {
-                                                                    return const ChargesDetailsBottomsheet();
-                                                                  });
+                                                              marginUpdate();
                                                             },
-                                                  widget: Row(children: [
-                                                    Text("Charges: ",
-                                                        style: textStyle(
-                                                            const Color(
-                                                                0xff666666),
-                                                            12,
-                                                            FontWeight.w500)),
-                                                    Text(
-                                                        "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                        style: textStyle(
-                                                            !theme.isDarkMode
-                                                                ? colors
-                                                                    .colorBlue
-                                                                : colors
-                                                                    .colorLightBlue,
-                                                            12,
-                                                            FontWeight.w600)),
-                                                    Icon(Icons.arrow_drop_down,
-                                                        color: !theme.isDarkMode
-                                                            ? colors.colorBlue
-                                                            : colors
-                                                                .colorLightBlue)
-                                                  ]))
+                                                  icon: SvgPicture.asset(
+                                                      assets.reloadIcon))
                                             ]),
-                                            IconButton(
-                                                onPressed: internet
-                                                            .connectionStatus ==
-                                                        ConnectivityResult.none
-                                                    ? null
-                                                    : () {
-                                                        marginUpdate();
-                                                      },
-                                                icon: SvgPicture.asset(
-                                                    assets.reloadIcon))
-                                          ]),
+                                      ),
                                     ],
                                   ))
                             ],
@@ -3914,12 +4196,18 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                 context, "Trigger should be multiple of tick size $tik => $r"));
           }
         }
-         int q = ((int.parse(qtyCtrl.text) / lotSize).round() * lotSize);
-          if (int.parse(qtyCtrl.text) != q && widget.scripInfo.exch != 'MCX') {
-            placeorder = false;
-            ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                context, "Quantity should be multiple of lot size $lotSize => $q"));
-          }
+        int q = ((int.parse(qtyCtrl.text) / lotSize).round() * lotSize);
+        if (int.parse(qtyCtrl.text) != q && widget.scripInfo.exch != 'MCX') {
+          placeorder = false;
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+              "Quantity should be multiple of lot size $lotSize => $q"));
+        }
+
+        if (mktProtCtrl.text.isEmpty || int.parse(mktProtCtrl.text) > 20) {
+          placeorder = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+              warningMessage(context, "Market production between 1% to 20%"));
+        }
         if (placeorder) {
           context.read(orderProvider).setOrderloader(true);
           PlaceOrderInput placeOrderInput = PlaceOrderInput(

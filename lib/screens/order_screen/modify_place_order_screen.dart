@@ -403,10 +403,14 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         const Color(0xff666666),
                                                         15,
                                                         FontWeight.w400),
-                                                    inputFormate: [
-                                                      FilteringTextInputFormatter
-                                                          .digitsOnly
-                                                    ],
+                                                    inputFormate: TargetPlatform
+                                                                .iOS ==
+                                                            defaultTargetPlatform
+                                                        ? []
+                                                        : [
+                                                            FilteringTextInputFormatter
+                                                                .digitsOnly
+                                                          ],
                                                     style: textStyle(
                                                         theme.isDarkMode
                                                             ? colors.colorWhite
@@ -486,14 +490,20 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                     suffixIcon: InkWell(
                                                       onTap: () {
                                                         setState(() {
+                                                          int number =
+                                                              int.parse(
+                                                                  qtyCtrl.text);
                                                           if (qtyCtrl.text
                                                               .isNotEmpty) {
-                                                            qtyCtrl
-                                                                .text = (int.parse(
-                                                                        qtyCtrl
-                                                                            .text) +
-                                                                    multiplayer)
-                                                                .toString();
+                                                            if (number <
+                                                                999999) {
+                                                              qtyCtrl
+                                                                  .text = (int.parse(
+                                                                          qtyCtrl
+                                                                              .text) +
+                                                                      multiplayer)
+                                                                  .toString();
+                                                            }
                                                           } else {
                                                             qtyCtrl.text =
                                                                 "$multiplayer";
@@ -557,6 +567,22 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                     context,
                                                                     "Quntity can not be empty"));
                                                       } else {
+                                                        String newValue =
+                                                            value.replaceAll(
+                                                                RegExp(
+                                                                    r'[^0-9]'),
+                                                                '');
+                                                        if (newValue != value) {
+                                                          qtyCtrl.text =
+                                                              newValue;
+                                                          qtyCtrl.selection =
+                                                              TextSelection
+                                                                  .fromPosition(
+                                                            TextPosition(
+                                                                offset: newValue
+                                                                    .length),
+                                                          );
+                                                        }
                                                         OrderMarginInput input = OrderMarginInput(
                                                             exch:
                                                                 "${widget.scripInfo.exch}",
@@ -1238,14 +1264,21 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         suffixIcon: InkWell(
                                                           onTap: () {
                                                             setState(() {
+                                                                 int number =
+                                                                int.parse(
+                                                                    discQtyCtrl
+                                                                        .text);
                                                               if (discQtyCtrl
                                                                   .text
                                                                   .isNotEmpty) {
+                                                                     if (number <
+                                                                  999999) {
                                                                 discQtyCtrl
                                                                         .text =
                                                                     (int.parse(discQtyCtrl.text) +
                                                                             1)
-                                                                        .toString();
+                                                                        .toString(); 
+                                                                        }
                                                               } else {
                                                                 discQtyCtrl
                                                                     .text = "0";
@@ -1374,6 +1407,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                     ]))
                               ],
                               Container(
+                                  width: MediaQuery.of(context).size.width,
                                   height: 36,
                                   decoration: BoxDecoration(
                                       color: theme.isDarkMode
@@ -1390,16 +1424,166 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                   : colors.colorDivider))),
                                   padding: const EdgeInsets.only(
                                       left: 16.0, right: 3),
-                                  child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(children: [
-                                          CustomWidgetButton(
-                                              onPress: internet
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(children: [
+                                            CustomWidgetButton(
+                                                onPress: internet
+                                                            .connectionStatus ==
+                                                        ConnectivityResult.none
+                                                    ? () {}
+                                                    : () {
+                                                        OrderMarginInput input = OrderMarginInput(
+                                                            exch:
+                                                                "${widget.scripInfo.exch}",
+                                                            prc: isActivePrice[
+                                                                        1] ||
+                                                                    isActivePrice[
+                                                                        3]
+                                                                ? price
+                                                                : priceCtrl
+                                                                    .text,
+                                                            prctyp: prcType,
+                                                            prd: widget
+                                                                .modifyOrderArgs
+                                                                .prd!,
+                                                            qty: qtyCtrl.text,
+                                                            rorgprc: '0',
+                                                            rorgqty: '0',
+                                                            trantype: widget
+                                                                .modifyOrderArgs
+                                                                .trantype!,
+                                                            tsym:
+                                                                "${widget.scripInfo.tsym}",
+                                                            blprc: '',
+                                                            trgprc: isActivePrice[
+                                                                        2] ||
+                                                                    isActivePrice[
+                                                                        3]
+                                                                ? triggerPriceCtrl
+                                                                    .text
+                                                                : "");
+                                                        context
+                                                            .read(orderProvider)
+                                                            .fetchOrderMargin(
+                                                                input, context);
+                                                        showModalBottomSheet(
+                                                            useSafeArea: true,
+                                                            isScrollControlled:
+                                                                true,
+                                                            shape: const RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .vertical(
+                                                                            top:
+                                                                                Radius.circular(16))),
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return const MarginDetailsBottomsheet();
+                                                            });
+                                                      },
+                                                widget: Row(children: [
+                                                  Text("Margin: ",
+                                                      style: textStyle(
+                                                          const Color(
+                                                              0xff666666),
+                                                          12,
+                                                          FontWeight.w500)),
+                                                  Text(
+                                                      "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}",
+                                                      style: textStyle(
+                                                          !theme.isDarkMode
+                                                              ? colors.colorBlue
+                                                              : colors
+                                                                  .colorLightBlue,
+                                                          12,
+                                                          FontWeight.w600)),
+                                                  Icon(
+                                                    Icons.arrow_drop_down,
+                                                    color: !theme.isDarkMode
+                                                        ? colors.colorBlue
+                                                        : colors.colorLightBlue,
+                                                  )
+                                                ])),
+                                            const SizedBox(width: 20),
+                                            CustomWidgetButton(
+                                              onPress:
+                                                  internet.connectionStatus ==
+                                                          ConnectivityResult
+                                                              .none
+                                                      ? () {}
+                                                      : () {
+                                                          BrokerageInput brokerageInput = BrokerageInput(
+                                                              exch:
+                                                                  "${widget.scripInfo.exch}",
+                                                              prc: priceCtrl
+                                                                  .text,
+                                                              prd: widget
+                                                                  .modifyOrderArgs
+                                                                  .prd!,
+                                                              qty:
+                                                                  "${widget.scripInfo.ls}",
+                                                              trantype: widget
+                                                                  .modifyOrderArgs
+                                                                  .trantype!,
+                                                              tsym:
+                                                                  "${widget.scripInfo.tsym}");
+                                                          context
+                                                              .read(
+                                                                  orderProvider)
+                                                              .fetchGetBrokerage(
+                                                                  brokerageInput,
+                                                                  context);
+                                                          showModalBottomSheet(
+                                                              useSafeArea: true,
+                                                              isScrollControlled:
+                                                                  true,
+                                                              shape: const RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius.vertical(
+                                                                          top: Radius.circular(
+                                                                              16))),
+                                                              context: context,
+                                                              builder:
+                                                                  (context) {
+                                                                return const ChargesDetailsBottomsheet();
+                                                              });
+                                                        },
+                                              widget: Row(children: [
+                                                Text("Charges: ",
+                                                    style: textStyle(
+                                                        const Color(0xff666666),
+                                                        12,
+                                                        FontWeight.w500)),
+                                                Text(
+                                                    "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                    style: textStyle(
+                                                        !theme.isDarkMode
+                                                            ? colors.colorBlue
+                                                            : colors
+                                                                .colorLightBlue,
+                                                        12,
+                                                        FontWeight.w600)),
+                                                Icon(
+                                                  Icons.arrow_drop_down,
+                                                  color: !theme.isDarkMode
+                                                      ? colors.colorBlue
+                                                      : colors.colorLightBlue,
+                                                )
+                                              ]),
+                                            )
+                                          ]),
+                                          IconButton(
+                                              onPressed: internet
                                                           .connectionStatus ==
                                                       ConnectivityResult.none
-                                                  ? () {}
+                                                  ? null
                                                   : () {
                                                       OrderMarginInput input = OrderMarginInput(
                                                           exch:
@@ -1434,170 +1618,34 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           .read(orderProvider)
                                                           .fetchOrderMargin(
                                                               input, context);
-                                                      showModalBottomSheet(
-                                                          useSafeArea: true,
-                                                          isScrollControlled:
-                                                              true,
-                                                          shape: const RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius.vertical(
-                                                                      top: Radius
-                                                                          .circular(
-                                                                              16))),
-                                                          context: context,
-                                                          builder: (context) {
-                                                            return const MarginDetailsBottomsheet();
-                                                          });
-                                                    },
-                                              widget: Row(children: [
-                                                Text("Margin: ",
-                                                    style: textStyle(
-                                                        const Color(0xff666666),
-                                                        12,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}",
-                                                    style: textStyle(
-                                                        !theme.isDarkMode
-                                                            ? colors.colorBlue
-                                                            : colors
-                                                                .colorLightBlue,
-                                                        12,
-                                                        FontWeight.w600)),
-                                                Icon(
-                                                  Icons.arrow_drop_down,
-                                                  color: !theme.isDarkMode
-                                                      ? colors.colorBlue
-                                                      : colors.colorLightBlue,
-                                                )
-                                              ])),
-                                          const SizedBox(width: 20),
-                                          CustomWidgetButton(
-                                            onPress:
-                                                internet.connectionStatus ==
-                                                        ConnectivityResult.none
-                                                    ? () {}
-                                                    : () {
-                                                        BrokerageInput brokerageInput = BrokerageInput(
-                                                            exch:
-                                                                "${widget.scripInfo.exch}",
-                                                            prc: priceCtrl.text,
-                                                            prd: widget
-                                                                .modifyOrderArgs
-                                                                .prd!,
-                                                            qty:
-                                                                "${widget.scripInfo.ls}",
-                                                            trantype: widget
-                                                                .modifyOrderArgs
-                                                                .trantype!,
-                                                            tsym:
-                                                                "${widget.scripInfo.tsym}");
-                                                        context
-                                                            .read(orderProvider)
-                                                            .fetchGetBrokerage(
-                                                                brokerageInput,
-                                                                context);
-                                                        showModalBottomSheet(
-                                                            useSafeArea: true,
-                                                            isScrollControlled:
-                                                                true,
-                                                            shape: const RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .vertical(
-                                                                            top:
-                                                                                Radius.circular(16))),
-                                                            context: context,
-                                                            builder: (context) {
-                                                              return const ChargesDetailsBottomsheet();
-                                                            });
-                                                      },
-                                            widget: Row(children: [
-                                              Text("Charges: ",
-                                                  style: textStyle(
-                                                      const Color(0xff666666),
-                                                      12,
-                                                      FontWeight.w500)),
-                                              Text(
-                                                  "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                  style: textStyle(
-                                                      !theme.isDarkMode
-                                                          ? colors.colorBlue
-                                                          : colors
-                                                              .colorLightBlue,
-                                                      12,
-                                                      FontWeight.w600)),
-                                              Icon(
-                                                Icons.arrow_drop_down,
-                                                color: !theme.isDarkMode
-                                                    ? colors.colorBlue
-                                                    : colors.colorLightBlue,
-                                              )
-                                            ]),
-                                          )
-                                        ]),
-                                        IconButton(
-                                            onPressed: internet
-                                                        .connectionStatus ==
-                                                    ConnectivityResult.none
-                                                ? null
-                                                : () {
-                                                    OrderMarginInput input = OrderMarginInput(
-                                                        exch:
-                                                            "${widget.scripInfo.exch}",
-                                                        prc: isActivePrice[1] ||
-                                                                isActivePrice[3]
-                                                            ? price
-                                                            : priceCtrl.text,
-                                                        prctyp: prcType,
-                                                        prd: widget
-                                                            .modifyOrderArgs
-                                                            .prd!,
-                                                        qty: qtyCtrl.text,
-                                                        rorgprc: '0',
-                                                        rorgqty: '0',
-                                                        trantype: widget
-                                                            .modifyOrderArgs
-                                                            .trantype!,
-                                                        tsym:
-                                                            "${widget.scripInfo.tsym}",
-                                                        blprc: '',
-                                                        trgprc: isActivePrice[
-                                                                    2] ||
-                                                                isActivePrice[3]
-                                                            ? triggerPriceCtrl
-                                                                .text
-                                                            : "");
-                                                    context
-                                                        .read(orderProvider)
-                                                        .fetchOrderMargin(
-                                                            input, context);
 
-                                                    BrokerageInput
-                                                        brokerageInput =
-                                                        BrokerageInput(
-                                                            exch:
-                                                                "${widget.scripInfo.exch}",
-                                                            prc: priceCtrl.text,
-                                                            prd: widget
-                                                                .modifyOrderArgs
-                                                                .prd!,
-                                                            qty:
-                                                                "${widget.scripInfo.ls}",
-                                                            trantype: widget
-                                                                .modifyOrderArgs
-                                                                .trantype!,
-                                                            tsym:
-                                                                "${widget.scripInfo.tsym}");
-                                                    context
-                                                        .read(orderProvider)
-                                                        .fetchGetBrokerage(
-                                                            brokerageInput,
-                                                            context);
-                                                  },
-                                            icon: SvgPicture.asset(
-                                                assets.reloadIcon))
-                                      ])),
+                                                      BrokerageInput
+                                                          brokerageInput =
+                                                          BrokerageInput(
+                                                              exch:
+                                                                  "${widget.scripInfo.exch}",
+                                                              prc: priceCtrl
+                                                                  .text,
+                                                              prd: widget
+                                                                  .modifyOrderArgs
+                                                                  .prd!,
+                                                              qty:
+                                                                  "${widget.scripInfo.ls}",
+                                                              trantype: widget
+                                                                  .modifyOrderArgs
+                                                                  .trantype!,
+                                                              tsym:
+                                                                  "${widget.scripInfo.tsym}");
+                                                      context
+                                                          .read(orderProvider)
+                                                          .fetchGetBrokerage(
+                                                              brokerageInput,
+                                                              context);
+                                                    },
+                                              icon: SvgPicture.asset(
+                                                  assets.reloadIcon))
+                                        ]),
+                                  )),
                               Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 4),

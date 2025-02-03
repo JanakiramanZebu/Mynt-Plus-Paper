@@ -45,6 +45,7 @@ class _ModifyGTTState extends State<ModifyGTT> {
   String product = "I";
 
   int lotSize = 0;
+  int multiplayer = 0;
   String price = "0.00";
   String validityType = "GTT";
   OrderScreenArgs? headerData;
@@ -72,6 +73,11 @@ class _ModifyGTTState extends State<ModifyGTT> {
       isOco = widget.gttOrderBook.placeOrderParamsLeg2 != null;
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
       isBuy = widget.gttOrderBook.trantype == "B";
+
+      multiplayer = int.parse((widget.gttOrderBook.exch == "MCX"
+              ? widget.scripInfo.prcqqty
+              : widget.gttOrderBook.ls)
+          .toString());
 
       product = "I";
       // context.read(networkStateProvider).networkStream();
@@ -227,10 +233,14 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                       const Color(0xff666666),
                                                       15,
                                                       FontWeight.w400),
-                                                  inputFormate: [
-                                                    FilteringTextInputFormatter
-                                                        .digitsOnly
-                                                  ],
+                                                  inputFormate: TargetPlatform
+                                                              .iOS ==
+                                                          defaultTargetPlatform
+                                                      ? []
+                                                      : [
+                                                          FilteringTextInputFormatter
+                                                              .digitsOnly
+                                                        ],
                                                   style: textStyle(
                                                       theme.isDarkMode
                                                           ? colors.colorWhite
@@ -246,18 +256,18 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                                   orderInput
                                                                       .qtyCtrl
                                                                       .text) >
-                                                              lotSize) {
+                                                              multiplayer) {
                                                             orderInput.qtyCtrl
                                                                 .text = (int.parse(orderInput
                                                                         .qtyCtrl
                                                                         .text) -
-                                                                    lotSize)
+                                                                    multiplayer)
                                                                 .toString();
                                                           }
                                                         } else {
                                                           orderInput.qtyCtrl
                                                                   .text =
-                                                              "$lotSize";
+                                                              "$multiplayer";
                                                         }
                                                       });
                                                     },
@@ -270,19 +280,23 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                   suffixIcon: InkWell(
                                                     onTap: () {
                                                       setState(() {
+                                                        int number = int.parse(
+                                                            orderInput
+                                                                .qtyCtrl.text);
                                                         if (orderInput.qtyCtrl
                                                             .text.isNotEmpty) {
-                                                          orderInput.qtyCtrl
-                                                              .text = (int.parse(
-                                                                      orderInput
-                                                                          .qtyCtrl
-                                                                          .text) +
-                                                                  lotSize)
-                                                              .toString();
+                                                          if (number < 999999) {
+                                                            orderInput.qtyCtrl
+                                                                .text = (int.parse(orderInput
+                                                                        .qtyCtrl
+                                                                        .text) +
+                                                                    multiplayer)
+                                                                .toString();
+                                                          }
                                                         } else {
                                                           orderInput.qtyCtrl
                                                                   .text =
-                                                              "$lotSize";
+                                                              "$multiplayer";
                                                         }
                                                       });
                                                     },
@@ -305,6 +319,23 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                               warningMessage(
                                                                   context,
                                                                   "Quntity can not be empty"));
+                                                    } else {
+                                                      String newValue =
+                                                          value.replaceAll(
+                                                              RegExp(r'[^0-9]'),
+                                                              '');
+                                                      if (newValue != value) {
+                                                        orderInput.qtyCtrl
+                                                            .text = newValue;
+                                                        orderInput.qtyCtrl
+                                                                .selection =
+                                                            TextSelection
+                                                                .fromPosition(
+                                                          TextPosition(
+                                                              offset: newValue
+                                                                  .length),
+                                                        );
+                                                      }
                                                     }
                                                   },
                                                 ))
@@ -661,10 +692,14 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                         const Color(0xff666666),
                                                         15,
                                                         FontWeight.w400),
-                                                    inputFormate: [
-                                                      FilteringTextInputFormatter
-                                                          .digitsOnly
-                                                    ],
+                                                    inputFormate: TargetPlatform
+                                                                .iOS ==
+                                                            defaultTargetPlatform
+                                                        ? []
+                                                        : [
+                                                            FilteringTextInputFormatter
+                                                                .digitsOnly
+                                                          ],
                                                     style: textStyle(
                                                         theme.isDarkMode
                                                             ? colors.colorWhite
@@ -682,20 +717,20 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                                     orderInput
                                                                         .ocoQtyCtrl
                                                                         .text) >
-                                                                lotSize) {
+                                                                multiplayer) {
                                                               orderInput
                                                                   .ocoQtyCtrl
                                                                   .text = (int.parse(orderInput
                                                                           .ocoQtyCtrl
                                                                           .text) -
-                                                                      lotSize)
+                                                                      multiplayer)
                                                                   .toString();
                                                             }
                                                           } else {
                                                             orderInput
                                                                     .ocoQtyCtrl
                                                                     .text =
-                                                                "$lotSize";
+                                                                "$multiplayer";
                                                           }
                                                         });
                                                       },
@@ -711,22 +746,30 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                     suffixIcon: InkWell(
                                                       onTap: () {
                                                         setState(() {
+                                                          int number = int
+                                                              .parse(orderInput
+                                                                  .ocoQtyCtrl
+                                                                  .text);
+
                                                           if (orderInput
                                                               .ocoQtyCtrl
                                                               .text
                                                               .isNotEmpty) {
-                                                            orderInput
-                                                                .ocoQtyCtrl
-                                                                .text = (int.parse(orderInput
-                                                                        .ocoQtyCtrl
-                                                                        .text) +
-                                                                    lotSize)
-                                                                .toString();
+                                                            if (number <
+                                                                999999) {
+                                                              orderInput
+                                                                  .ocoQtyCtrl
+                                                                  .text = (int.parse(orderInput
+                                                                          .ocoQtyCtrl
+                                                                          .text) +
+                                                                      multiplayer)
+                                                                  .toString();
+                                                            }
                                                           } else {
                                                             orderInput
                                                                     .ocoQtyCtrl
                                                                     .text =
-                                                                "$lotSize";
+                                                                "$multiplayer";
                                                           }
                                                         });
                                                       },
@@ -751,6 +794,24 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                                 warningMessage(
                                                                     context,
                                                                     "Quntity can not be empty"));
+                                                      } else {
+                                                        String newValue =
+                                                            value.replaceAll(
+                                                                RegExp(
+                                                                    r'[^0-9]'),
+                                                                '');
+                                                        if (newValue != value) {
+                                                          orderInput.ocoQtyCtrl
+                                                              .text = newValue;
+                                                          orderInput.ocoQtyCtrl
+                                                                  .selection =
+                                                              TextSelection
+                                                                  .fromPosition(
+                                                            TextPosition(
+                                                                offset: newValue
+                                                                    .length),
+                                                          );
+                                                        }
                                                       }
                                                     },
                                                   ))
