@@ -233,11 +233,7 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                       const Color(0xff666666),
                                                       15,
                                                       FontWeight.w400),
-                                                  inputFormate: TargetPlatform
-                                                              .iOS ==
-                                                          defaultTargetPlatform
-                                                      ? []
-                                                      : [
+                                                  inputFormate: [
                                                           FilteringTextInputFormatter
                                                               .digitsOnly
                                                         ],
@@ -692,11 +688,7 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                         const Color(0xff666666),
                                                         15,
                                                         FontWeight.w400),
-                                                    inputFormate: TargetPlatform
-                                                                .iOS ==
-                                                            defaultTargetPlatform
-                                                        ? []
-                                                        : [
+                                                    inputFormate: [
                                                             FilteringTextInputFormatter
                                                                 .digitsOnly
                                                           ],

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -174,10 +173,7 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
                         child: CustomTextFormField(
                             fillColor:
                                 theme.isDarkMode ? colors.darkGrey : null,
-                            inputFormate:
-                                TargetPlatform.iOS == defaultTargetPlatform
-                                    ? []
-                                    : [FilteringTextInputFormatter.digitsOnly],
+                            inputFormate:[FilteringTextInputFormatter.digitsOnly],
                             hintText: maxQty.text,
                             hintStyle: textStyle(
                                 const Color(0xff666666), 15, FontWeight.w400),

@@ -925,11 +925,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                         const Color(0xff666666),
                                                         15,
                                                         FontWeight.w400),
-                                                    inputFormate: TargetPlatform
-                                                                .iOS ==
-                                                            defaultTargetPlatform
-                                                        ? []
-                                                        : [
+                                                    inputFormate: [
                                                             FilteringTextInputFormatter
                                                                 .digitsOnly
                                                           ],
@@ -1355,11 +1351,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               0xff666666),
                                                           15,
                                                           FontWeight.w400),
-                                                      inputFormate: TargetPlatform
-                                                                  .iOS ==
-                                                              defaultTargetPlatform
-                                                          ? []
-                                                          : [
+                                                      inputFormate: [
                                                               FilteringTextInputFormatter
                                                                   .digitsOnly
                                                             ],
@@ -2024,11 +2016,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                               0xff666666),
                                                           15,
                                                           FontWeight.w400),
-                                                      inputFormate: TargetPlatform
-                                                                  .iOS ==
-                                                              defaultTargetPlatform
-                                                          ? []
-                                                          : [
+                                                      inputFormate: [
                                                               FilteringTextInputFormatter
                                                                   .digitsOnly
                                                             ],
@@ -2585,12 +2573,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                                                 15,
                                                                 FontWeight
                                                                     .w400),
-                                                        inputFormate:
-                                                            TargetPlatform
-                                                                        .iOS ==
-                                                                    defaultTargetPlatform
-                                                                ? []
-                                                                : [
+                                                        inputFormate:[
                                                                     FilteringTextInputFormatter
                                                                         .digitsOnly
                                                                   ],
@@ -2728,11 +2711,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                               fillColor: theme.isDarkMode
                                                   ? colors.darkGrey
                                                   : const Color(0xffF1F3F8),
-                                              inputFormate:
-                                                  TargetPlatform.iOS ==
-                                                          defaultTargetPlatform
-                                                      ? []
-                                                      : [
+                                              inputFormate:[
                                                           FilteringTextInputFormatter
                                                               .digitsOnly
                                                         ],

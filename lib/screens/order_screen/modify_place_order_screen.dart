@@ -403,11 +403,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         const Color(0xff666666),
                                                         15,
                                                         FontWeight.w400),
-                                                    inputFormate: TargetPlatform
-                                                                .iOS ==
-                                                            defaultTargetPlatform
-                                                        ? []
-                                                        : [
+                                                    inputFormate:[
                                                             FilteringTextInputFormatter
                                                                 .digitsOnly
                                                           ],
