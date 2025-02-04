@@ -26,6 +26,7 @@ import '../../provider/sip_order_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
 import '../../provider/websocket_provider.dart';
+import '../../routes/route_names.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -103,8 +104,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
 
   List<String> validityTypesGTT = ["DAY", "GTT"];
 
-  String product = "I";
-
   int lotSize = 0;
   int multiplayer = 0;
   String ordPrice = "0.00";
@@ -117,19 +116,35 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
     return ((input / interval).round() * interval);
   }
 
+  Map<String, dynamic> localdata = {};
+  bool defaultparams = false;
+
   @override
   void initState() {
+    String getlocal = "";
+    if (pref.showOrderpref != null) {
+      getlocal = pref.showOrderpref!;
+    }
+    if (getlocal != "") {
+      localdata = jsonDecode(getlocal);
+      defaultparams = true;
+    }
+
     tik = double.parse(widget.scripInfo.ti.toString());
     bool rep = widget.orderArg.raw.isNotEmpty;
     Map res = widget.orderArg.raw;
 
-    orderType = rep
-        ? res['prd'] == "B"
-            ? "Bracket"
-            : res['prd'] == "H"
-                ? "Cover"
-                : "Regular"
-        : "Regular";
+    orderType = defaultparams
+        ? (localdata['prd'] == "Delivery" || localdata['prd'] == "Intraday")
+            ? "Regular"
+            : localdata['prd']
+        : rep
+            ? res['prd'] == "B"
+                ? "Bracket"
+                : res['prd'] == "H"
+                    ? "Cover"
+                    : "Regular"
+            : "Regular";
     orderTypes = [
       {"type": "Regular"},
       {"type": "Cover"},
@@ -167,15 +182,19 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       }
     }
 
-    priceType = rep
-        ? res['prctyp'] == "MKT"
-            ? "Market"
-            : res['prctyp'] == "SL-LMT"
-                ? "SL Limit"
-                : res['prctyp'] == "SL-MKT"
-                    ? "SL MKT"
-                    : "Limit"
-        : "Limit";
+    priceType = defaultparams
+        ? (localdata['prc'] == "SL MKT" && orderType != "Regular")
+            ? 'Limit'
+            : localdata['prc']
+        : rep
+            ? res['prctyp'] == "MKT"
+                ? "Market"
+                : res['prctyp'] == "SL-LMT"
+                    ? "SL Limit"
+                    : res['prctyp'] == "SL-MKT"
+                        ? "SL MKT"
+                        : "Limit"
+            : "Limit";
     priceTypes = [
       {
         "type": "Limit",
@@ -205,22 +224,21 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
               ? InvestType.delivery
               : rep && res['prd'] == "I"
                   ? InvestType.intraday
-                  : widget.scripInfo.seg == "EQT"
-                      ? InvestType.delivery
-                      : InvestType.carryForward,
+                  : defaultparams
+                      ? localdata['prd'] == "Intraday"
+                          ? InvestType.intraday
+                          : (localdata['prd'] == "Delivery" &&
+                                  widget.scripInfo.seg == "EQT")
+                              ? InvestType.delivery
+                              : InvestType.carryForward
+                      : widget.scripInfo.seg == "EQT"
+                          ? InvestType.delivery
+                          : InvestType.carryForward,
           "PlcOrder");
 
-      context.read(ordInputProvider).chngPriceType(
-          (rep
-              ? res['prctyp'] == "MKT"
-                  ? "Market"
-                  : res['prctyp'] == "SL-LMT"
-                      ? "SL Limit"
-                      : res['prctyp'] == "SL-MKT"
-                          ? "SL MKT"
-                          : "Limit"
-              : "Limit"),
-          widget.orderArg.exchange);
+      context
+          .read(ordInputProvider)
+          .chngPriceType(priceType, widget.orderArg.exchange);
       marginUpdate();
       if (orderType != "Regular") {
         context.read(ordInputProvider).chngOrderType(orderType);
@@ -233,8 +251,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         orderTypes.remove("SIP");
       }
       frezQty = int.parse(widget.scripInfo.frzqty ?? "0");
-      validityType =
-          widget.orderArg.exchange == "BSE" || widget.orderArg.exchange == "BFO"
+      validityType = defaultparams && localdata['validity'] == 'IOC'
+          ? 'IOC'
+          : widget.orderArg.exchange == "BSE" ||
+                  widget.orderArg.exchange == "BFO"
               ? "EOS"
               : "DAY";
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
@@ -248,14 +268,18 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                   ? widget.orderArg.holdQty!.replaceAll("-", "")
                   : widget.orderArg.lotSize!.replaceAll("-", ""));
 
+      qtyCtrl.text = defaultparams
+          ? (int.parse(qtyCtrl.text) * int.parse(localdata['qty'])).toString()
+          : qtyCtrl.text;
+
       multiplayer = int.parse((widget.orderArg.exchange == "MCX"
               ? widget.scripInfo.prcqqty
               : widget.orderArg.lotSize)
           .toString());
 
-      mktProtCtrl = TextEditingController(text: "5");
+      mktProtCtrl = TextEditingController(
+          text: defaultparams ? localdata['mrkprot'] : "5");
       discQtyCtrl = TextEditingController(text: "0");
-      product = widget.orderArg.orderTpye == "CNC" ? "C" : "I";
 
       if (context
           .read(websocketProvider)
@@ -269,7 +293,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
 
     final quote = context.read(marketWatchProvider).getQuotes?.ordMsg;
 
-    print("object quote ${quote}");
     if (quote == null) {
       isAvbSecu = false;
       isSecu = true;
@@ -1742,15 +1765,31 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 16),
-                                        child: Text("Investment type",
-                                            style: textStyle(
-                                                theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                14,
-                                                FontWeight.w500))),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text("Investment type",
+                                                style: textStyle(
+                                                    theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    14,
+                                                    FontWeight.w500)),
+                                            InkWell(
+                                              onTap: () {
+                                                setState(() {
+                                                  Navigator.pushNamed(context,
+                                                      Routes.orderPrefer);
+                                                });
+                                              },
+                                              child: SvgPicture.asset(
+                                                  'assets/profile/privacy_settings.svg'),
+                                            )
+                                          ],
+                                        )),
                                     Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
@@ -1868,8 +1907,33 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                 orderType == "Bracket" ||
                                 orderType == "GTT") ...[
                               Padding(
-                                  padding: const EdgeInsets.only(left: 16),
-                                  child: headerTitleText("Price type", theme)),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text("Price type",
+                                          style: textStyle(
+                                              theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              14,
+                                              FontWeight.w500)),
+                                      if (orderType != "Regular") ...[
+                                        InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              Navigator.pushNamed(
+                                                  context, Routes.orderPrefer);
+                                            });
+                                          },
+                                          child: SvgPicture.asset(
+                                              'assets/profile/privacy_settings.svg'),
+                                        )
+                                      ]
+                                    ],
+                                  )),
                               const SizedBox(height: 10),
                               Padding(
                                   padding: const EdgeInsets.only(left: 16),
@@ -2296,6 +2360,18 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                             ]))
                                       ])),
                               const SizedBox(height: 3),
+                              if (priceType == "Market" ||
+                                  priceType == "SL MKT") ...[
+                                const SizedBox(height: 8),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: Text(
+                                      "A market order carries the risk of execution at a less advantageous price",
+                                      style: textStyle(const Color(0xff666666),
+                                          12, FontWeight.w500)),
+                                ),
+                              ],
                               Divider(
                                   color: theme.isDarkMode
                                       ? colors.darkColorDivider
@@ -2863,28 +2939,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      if (priceType == "Market" ||
-                                          priceType == "SL MKT") ...[
-                                        AnimatedContainer(
-                                            duration: const Duration(
-                                                milliseconds: 400),
-                                            curve: Curves.easeInCubic,
-                                            margin: const EdgeInsets.only(
-                                                right: 16, top: 16, bottom: 0),
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 8, horizontal: 12),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xffFFF6E6),
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                            ),
-                                            child: Text(
-                                                "A market order carries the risk of execution at a less advantageous price",
-                                                style: textStyle(
-                                                    const Color(0xffB37702),
-                                                    13,
-                                                    FontWeight.w500))),
-                                      ],
                                       if (isAvbSecu) ...[
                                         AnimatedBuilder(
                                           animation: anibuildctrl,
@@ -2912,14 +2966,22 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             6),
+                                                    border: Border.all(
+                                                      color: colors
+                                                          .darkred, // Border color
+                                                      width: anibuildctrl
+                                                              .isAnimating
+                                                          ? 1.0
+                                                          : 0.0, // Border width (1px)
+                                                    ),
                                                     boxShadow: anibuildctrl
                                                             .isAnimating
                                                         ? [
                                                             BoxShadow(
-                                                              color: const Color(
-                                                                      0xffB37702)
+                                                              color: colors
+                                                                  .darkred
                                                                   .withOpacity(
-                                                                      0.4),
+                                                                      0.6),
                                                               blurRadius: 10,
                                                               spreadRadius: 3,
                                                               offset:
@@ -4205,6 +4267,11 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                               fit: BoxFit.scaleDown)),
                       textCtrl: triggerPriceCtrl,
                       textAlign: TextAlign.start)),
+              const SizedBox(height: 8),
+              Text(
+                  "Your order wil executed after a stock crosses this trigger price set for you",
+                  style:
+                      textStyle(const Color(0xff666666), 12, FontWeight.w500))
             ]));
   }
 

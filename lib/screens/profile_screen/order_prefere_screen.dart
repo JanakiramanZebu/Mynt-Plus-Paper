@@ -25,7 +25,7 @@ class OrderPreference extends StatefulWidget {
 class _OrderPreference extends State<OrderPreference> {
   Map<String, dynamic> localdata = {};
   String priceType = "Limit";
-  String orderType = "Delivery";
+  String orderType = "Intraday";
   String validity = "DAY";
   List orderTypes = ["Intraday", 'Delivery', "Cover", "Bracket"];
   List priceTypes = [];
@@ -49,6 +49,9 @@ class _OrderPreference extends State<OrderPreference> {
       priceType = localdata['prc'];
       orderType = localdata['prd'];
       validity = localdata['validity'];
+      QtyPrefer =
+          localdata['qtypref'] == 'lot' ? OrdQtyPref.mktlot : OrdQtyPref.mktqty;
+      qtyCtrl = TextEditingController(text: "${localdata['qty']}");
       mktProtCtrl = TextEditingController(text: "${localdata['mrkprot']}");
     }
     priceTypes = [
@@ -130,7 +133,7 @@ class _OrderPreference extends State<OrderPreference> {
                                             ? colors.darkGrey
                                             : colors.colorbluegrey,
                                     shape: const StadiumBorder()),
-                                child: Text(orderTypes[index],
+                                child: Text(orderTypes[index] == "Delivery" ? "Delivery / Carry" : orderTypes[index],
                                     style: textStyle(
                                         !theme.isDarkMode
                                             ? orderType != orderTypes[index]
@@ -271,6 +274,7 @@ class _OrderPreference extends State<OrderPreference> {
                     onChanged: (OrdQtyPref? value) {
                       setState(() {
                         QtyPrefer = value!;
+                        qtyCtrl.text = "1";
                       });
                     }),
                 Text('Minimum Qty',
@@ -340,66 +344,8 @@ class _OrderPreference extends State<OrderPreference> {
                                       : colors.colorBlack,
                                   16,
                                   FontWeight.w600),
-                              prefixIcon: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    print("Current Value: ${qtyCtrl.text}");
-                                    if (qtyCtrl.text.isNotEmpty) {
-                                      int currentValue =
-                                          int.tryParse(qtyCtrl.text) ?? 0;
-                                      if (currentValue > multiplayer) {
-                                        qtyCtrl.text =
-                                            (currentValue - multiplayer)
-                                                .toString();
-                                      } else {
-                                        qtyCtrl.text = "$multiplayer";
-                                      }
-                                    } else {
-                                      qtyCtrl.text = "$multiplayer";
-                                    }
-                                    print(
-                                        "Updated Value: ${qtyCtrl.text}"); // Debugging
-                                    qtyCtrl.selection =
-                                        TextSelection.fromPosition(
-                                      TextPosition(offset: qtyCtrl.text.length),
-                                    );
-                                  });
-                                },
-                                child: SvgPicture.asset(
-                                  theme.isDarkMode
-                                      ? assets.darkCMinus
-                                      : assets.minusIcon,
-                                  fit: BoxFit.scaleDown,
-                                ),
-                              ),
-                              suffixIcon: InkWell(
-                                onTap: () {
-                                  int currentValue =
-                                      int.tryParse(qtyCtrl.text) ?? 0;
-                                  setState(() {
-                                    if (currentValue < 999999) {
-                                      qtyCtrl.text =
-                                          (currentValue + multiplayer)
-                                              .toString();
-                                    } else {
-                                      qtyCtrl.text =
-                                          "999999"; // Limit to 999999
-                                    }
-                                    qtyCtrl.selection =
-                                        TextSelection.fromPosition(
-                                      TextPosition(offset: qtyCtrl.text.length),
-                                    );
-                                  });
-                                },
-                                child: SvgPicture.asset(
-                                  theme.isDarkMode
-                                      ? assets.darkAdd
-                                      : assets.addIcon,
-                                  fit: BoxFit.scaleDown,
-                                ),
-                              ),
                               textCtrl: qtyCtrl,
-                              textAlign: TextAlign.center,
+                              textAlign: TextAlign.start,
                               onChanged: (value) {
                                 ScaffoldMessenger.of(context)
                                     .hideCurrentSnackBar();
@@ -422,7 +368,8 @@ class _OrderPreference extends State<OrderPreference> {
                                   }
                                 }
                               }))
-                    ]))
+                    ])),
+                const SizedBox(height: 14),
               ],
               //////////////////////////
 
@@ -504,7 +451,20 @@ class _OrderPreference extends State<OrderPreference> {
                               borderRadius: BorderRadius.circular(50),
                             )),
                         onPressed: () async {
-                          await setPrefOrderPrefer(context);
+                          if (mktProtCtrl.text.isEmpty ||
+                              int.parse(mktProtCtrl.text) > 20 ||
+                              int.parse(mktProtCtrl.text) < 1) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                warningMessage(context,
+                                    "Market Protection between 1% to 20%"));
+                          } else if ((QtyPrefer == OrdQtyPref.mktlot) &&
+                              qtyCtrl.text == "") {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                warningMessage(
+                                    context, "Quantity can not be 0 or empty"));
+                          } else {
+                            await setPrefOrderPrefer(context);
+                          }
                         },
                         child: Text("Save",
                             textAlign: TextAlign.center,
@@ -536,6 +496,8 @@ class _OrderPreference extends State<OrderPreference> {
     Map<String, dynamic> local = {
       "prc": priceType,
       "prd": orderType,
+      "qtypref": QtyPrefer == OrdQtyPref.mktlot ? 'lot' : ' qty',
+      "qty": qtyCtrl.text,
       "validity": validity,
       "mrkprot": mktProtCtrl.text,
     };
