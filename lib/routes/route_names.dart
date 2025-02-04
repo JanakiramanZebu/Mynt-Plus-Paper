@@ -111,6 +111,7 @@ class Routes {
   static const String ipowebview = "Ipowebview";
 
   static const String logError = 'logerror';
+  static const String orderPrefer = 'orderprefer';
 
   static const String stock = 'stocks';
   static const String allnews = 'allnews';

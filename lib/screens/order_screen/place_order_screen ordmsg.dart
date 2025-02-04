@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:math';
+import 'dart:developer';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/foundation.dart';
@@ -56,8 +56,7 @@ class PlaceOrderScreen extends StatefulWidget {
   State<PlaceOrderScreen> createState() => _PlaceOrderScreenState();
 }
 
-class _PlaceOrderScreenState extends State<PlaceOrderScreen>
-    with SingleTickerProviderStateMixin {
+class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
   bool? isBuy;
   bool addStoploss = false;
   bool isAgree = false;
@@ -66,9 +65,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
   bool isAmo = false;
   bool isAvbSecu = false;
   bool isSecu = false;
-
-  late AnimationController anibuildctrl;
-  late Animation<double> _shakeAnimation;
   TextEditingController priceCtrl = TextEditingController();
   TextEditingController triggerPriceCtrl = TextEditingController();
   TextEditingController mktProtCtrl = TextEditingController();
@@ -268,8 +264,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
     });
 
     final quote = context.read(marketWatchProvider).getQuotes?.ordMsg;
-
-    print("object quote ${quote}");
     if (quote == null) {
       isAvbSecu = false;
       isSecu = true;
@@ -297,24 +291,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       mktProtCtrl.text = res['mkt_protection'] ?? "0";
     }
     super.initState();
-    anibuildctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    )..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          anibuildctrl.reset(); // Reset animation after shake
-        }
-      });
-
-    _shakeAnimation = Tween<double>(begin: 0, end: 8).animate(
-      CurvedAnimation(parent: anibuildctrl, curve: Curves.elasticIn),
-    );
-  }
-
-  @override
-  void dispose() {
-    anibuildctrl.dispose();
-    super.dispose();
   }
 
   @override
@@ -550,12 +526,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
               body: Stack(children: [
                 SingleChildScrollView(
                     padding: EdgeInsets.only(
-                        bottom:
-                            ((priceType == "Market" || priceType == "SL MKT") &&
-                                    isAvbSecu)
-                                ? 120
-                                : 90),
-                    // reverse: true,
+                        bottom: (priceType == "Market" || priceType == "SL MKT")
+                            ? 90
+                            : 0),
+                    reverse: true,
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -963,10 +937,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                         const Color(0xff666666),
                                                         15,
                                                         FontWeight.w400),
-                                                    inputFormate: [
-                                                      FilteringTextInputFormatter
-                                                          .digitsOnly
-                                                    ],
+                                                    inputFormate: TargetPlatform
+                                                                .iOS ==
+                                                            defaultTargetPlatform
+                                                        ? []
+                                                        : [
+                                                            FilteringTextInputFormatter
+                                                                .digitsOnly
+                                                          ],
                                                     style: textStyle(
                                                         theme.isDarkMode
                                                             ? colors.colorWhite
@@ -1389,10 +1367,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                               0xff666666),
                                                           15,
                                                           FontWeight.w400),
-                                                      inputFormate: [
-                                                        FilteringTextInputFormatter
-                                                            .digitsOnly
-                                                      ],
+                                                      inputFormate: TargetPlatform
+                                                                  .iOS ==
+                                                              defaultTargetPlatform
+                                                          ? []
+                                                          : [
+                                                              FilteringTextInputFormatter
+                                                                  .digitsOnly
+                                                            ],
                                                       style: textStyle(
                                                           theme.isDarkMode
                                                               ? colors
@@ -2054,10 +2036,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                               0xff666666),
                                                           15,
                                                           FontWeight.w400),
-                                                      inputFormate: [
-                                                        FilteringTextInputFormatter
-                                                            .digitsOnly
-                                                      ],
+                                                      inputFormate: TargetPlatform
+                                                                  .iOS ==
+                                                              defaultTargetPlatform
+                                                          ? []
+                                                          : [
+                                                              FilteringTextInputFormatter
+                                                                  .digitsOnly
+                                                            ],
                                                       style: textStyle(
                                                           theme.isDarkMode
                                                               ? colors
@@ -2604,17 +2590,25 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                 : const Color(
                                                                     0xffF1F3F8),
                                                         hintText: "0",
-                                                        hintStyle: textStyle(
-                                                            const Color(
-                                                                0xff666666),
-                                                            15,
-                                                            FontWeight.w400),
-                                                        inputFormate: [
-                                                          FilteringTextInputFormatter
-                                                              .digitsOnly
-                                                        ],
+                                                        hintStyle:
+                                                            textStyle(
+                                                                const Color(
+                                                                    0xff666666),
+                                                                15,
+                                                                FontWeight
+                                                                    .w400),
+                                                        inputFormate:
+                                                            TargetPlatform
+                                                                        .iOS ==
+                                                                    defaultTargetPlatform
+                                                                ? []
+                                                                : [
+                                                                    FilteringTextInputFormatter
+                                                                        .digitsOnly
+                                                                  ],
                                                         style: textStyle(
-                                                            theme.isDarkMode
+                                                            theme
+                                                                    .isDarkMode
                                                                 ? colors
                                                                     .colorWhite
                                                                 : colors
@@ -2746,10 +2740,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                               fillColor: theme.isDarkMode
                                                   ? colors.darkGrey
                                                   : const Color(0xffF1F3F8),
-                                              inputFormate: [
-                                                FilteringTextInputFormatter
-                                                    .digitsOnly
-                                              ],
+                                              inputFormate:
+                                                  TargetPlatform.iOS ==
+                                                          defaultTargetPlatform
+                                                      ? []
+                                                      : [
+                                                          FilteringTextInputFormatter
+                                                              .digitsOnly
+                                                        ],
                                               onChanged: (value) {
                                                 setState(() {
                                                   ScaffoldMessenger.of(context)
@@ -2874,160 +2872,111 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 8, horizontal: 12),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xffFFF6E6),
+                                              color: const Color(0xffFCEFD4),
                                               borderRadius:
                                                   BorderRadius.circular(6),
                                             ),
                                             child: Text(
                                                 "A market order carries the risk of execution at a less advantageous price",
                                                 style: textStyle(
-                                                    const Color(0xffB37702),
+                                                    const Color(0xff666666),
                                                     13,
                                                     FontWeight.w500))),
                                       ],
                                       if (isAvbSecu) ...[
-                                        AnimatedBuilder(
-                                          animation: anibuildctrl,
-                                          builder: (context, child) {
-                                            return Transform.translate(
-                                              offset: Offset(
-                                                  _shakeAnimation.value *
-                                                      sin(DateTime.now()
-                                                              .millisecondsSinceEpoch *
-                                                          0.01),
-                                                  0),
-                                              child: AnimatedContainer(
-                                                  duration: const Duration(
-                                                      milliseconds: 300),
-                                                  curve: Curves.easeInCubic,
-                                                  margin: const EdgeInsets.only(
-                                                      right: 16,
-                                                      top: 16,
-                                                      bottom: 0),
-                                                  padding:
-                                                      const EdgeInsets.all(0),
-                                                  decoration: BoxDecoration(
-                                                    color:
-                                                        const Color(0xffFFF6E6),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            6),
-                                                    boxShadow: anibuildctrl
-                                                            .isAnimating
-                                                        ? [
-                                                            BoxShadow(
-                                                              color: const Color(
-                                                                      0xffB37702)
-                                                                  .withOpacity(
-                                                                      0.4),
-                                                              blurRadius: 10,
-                                                              spreadRadius: 3,
-                                                              offset:
-                                                                  const Offset(
-                                                                      0, 0),
-                                                            ),
-                                                          ]
-                                                        : [],
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: [
-                                                      IconButton(
-                                                          onPressed: () {
-                                                            setState(() {
-                                                              isSecu = !isSecu;
-                                                            });
-                                                          },
-                                                          icon: SvgPicture
-                                                              .asset(isSecu
-                                                                  ? assets
-                                                                      .checkedbox
-                                                                  : assets
-                                                                      .checkbox)),
-                                                      Expanded(
-                                                          // Ensures text takes available space and wraps
-                                                          child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          RichText(
-                                                            text: TextSpan(
-                                                              style: textStyle(
-                                                                const Color(
-                                                                    0xffB37702),
-                                                                13,
-                                                                FontWeight.w500,
-                                                              ),
-                                                              children: [
-                                                                const TextSpan(
-                                                                  text:
-                                                                      "Security is under ASM/GSM, tick the box to produce the order. ",
-                                                                ),
-                                                                WidgetSpan(
-                                                                  child:
-                                                                      Tooltip(
-                                                                    preferBelow:
-                                                                        false,
-                                                                    message:
-                                                                        quotemsg,
-                                                                    textStyle:
-                                                                        const TextStyle(
-                                                                      color: Colors
-                                                                          .white,
-                                                                      fontSize:
-                                                                          13,
-                                                                    ),
-                                                                    padding: const EdgeInsets
-                                                                        .symmetric(
-                                                                        vertical:
-                                                                            8,
-                                                                        horizontal:
-                                                                            16),
-                                                                    margin: const EdgeInsets
-                                                                        .symmetric(
-                                                                        horizontal:
-                                                                            16),
-                                                                    decoration:
-                                                                        BoxDecoration(
-                                                                      color: Colors
-                                                                          .black,
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              8),
-                                                                    ),
-                                                                    child:
-                                                                        InkWell(
-                                                                      onTap:
-                                                                          () {}, // Add any action if needed
-                                                                      child:
-                                                                          Text(
-                                                                        "Learn more",
-                                                                        style:
-                                                                            textStyle(
-                                                                          !theme.isDarkMode
-                                                                              ? colors.colorBlue
-                                                                              : colors.colorLightBlue,
-                                                                          13,
-                                                                          FontWeight
-                                                                              .w500,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            softWrap: true,
+                                        AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 400),
+                                            curve: Curves.easeInCubic,
+                                            margin: const EdgeInsets.only(
+                                                right: 16, top: 16, bottom: 0),
+                                            padding: const EdgeInsets.all(0),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xffFCEFD4),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: [
+                                                IconButton(
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        isSecu = !isSecu;
+                                                      });
+                                                    },
+                                                    icon: SvgPicture.asset(theme
+                                                            .isDarkMode
+                                                        ? isSecu
+                                                            ? assets
+                                                                .darkCheckedboxIcon
+                                                            : assets
+                                                                .darkCheckboxIcon
+                                                        : isSecu
+                                                            ? assets.checkedbox
+                                                            : assets.checkbox)),
+                                                Expanded(
+                                                    // Ensures text takes available space and wraps
+                                                    child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "Security is under ASM, would you like to continue?",
+                                                      style: textStyle(
+                                                        const Color(0xff666666),
+                                                        13,
+                                                        FontWeight.w500,
+                                                      ),
+                                                      softWrap:
+                                                          true, // Allows wrapping
+                                                      overflow: TextOverflow
+                                                          .visible, // Ensures text is fully displayed
+                                                    ),
+                                                    Tooltip(
+                                                      preferBelow: false,
+                                                      message: quotemsg,
+                                                      textStyle:
+                                                          const TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 13),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 8, horizontal: 16),
+                                                      margin: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 16),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8),
+                                                      ),
+                                                      child: InkWell(
+                                                        child: Text(
+                                                          "Learn more",
+                                                          style: textStyle(
+                                                            !theme.isDarkMode
+                                                                ? colors
+                                                                    .colorBlue
+                                                                : colors
+                                                                    .colorLightBlue,
+                                                            13,
+                                                            FontWeight.w500,
                                                           ),
-                                                        ],
-                                                      ))
-                                                    ],
-                                                  )),
-                                            );
-                                          },
-                                        ),
+                                                          softWrap:
+                                                              true, // Allows wrapping
+                                                          overflow: TextOverflow
+                                                              .visible, // Ensures text is fully displayed
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ))
+                                              ],
+                                            )),
                                       ],
                                       SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
@@ -3538,7 +3487,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                           }
                                                         }
                                                       } else {
-                                                        // log('x');
+                                                        log('x');
 
                                                         if (double.parse(
                                                                 triggerPriceCtrl
@@ -4270,10 +4219,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           placeorder = false;
           ScaffoldMessenger.of(context).showSnackBar(
               warningMessage(context, "Market Protection between 1% to 20%"));
-        }
-        if (!isSecu) {
-          placeorder = false;
-          anibuildctrl.forward();
         }
         if (placeorder) {
           context.read(orderProvider).setOrderloader(true);

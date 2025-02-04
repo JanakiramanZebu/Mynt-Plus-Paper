@@ -1349,7 +1349,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                   padding: const EdgeInsets.only(
                                       left: 16.0, bottom: 6),
                                   child: headerTitleText(
-                                      "Market Production", theme),
+                                      "Market Protection", theme),
                                 ),
                                 Container(
                                     padding: const EdgeInsets.only(
@@ -1377,7 +1377,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           .showSnackBar(
                                                               warningMessage(
                                                                   context,
-                                                                  "can't enter greater than 20% of market production"));
+                                                                  "can't enter greater than 20% of Market Protection"));
                                                     } else if (int.parse(
                                                             value) <
                                                         1) {
@@ -1387,7 +1387,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           .showSnackBar(
                                                               warningMessage(
                                                                   context,
-                                                                  "can't enter less than 1% of market production"));
+                                                                  "can't enter less than 1% of Market Protection"));
                                                     }
                                                   }
                                                 });

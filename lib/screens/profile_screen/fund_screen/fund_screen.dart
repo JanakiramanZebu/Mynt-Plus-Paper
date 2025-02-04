@@ -152,7 +152,7 @@ class _FundScreenState extends State<FundScreen> {
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly
                                   ],
-                                  keyboardType: TextInputType.datetime,
+                                  keyboardType: TextInputType.number,
                                   style: textStyle(
                                       theme.isDarkMode
                                           ? colors.colorWhite

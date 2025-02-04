@@ -52,6 +52,7 @@ import '../screens/profile_screen/my_ac_screens/profile_details.dart';
 import '../screens/profile_screen/my_ac_screens/set_auto_pay.dart';
 import '../screens/profile_screen/my_ac_screens/setautopayscreen.dart';
 import '../screens/profile_screen/notification_screens/notification_screen.dart';
+import '../screens/profile_screen/order_prefere_screen.dart';
 import '../screens/profile_screen/qr_scan_widget.dart';
 import '../screens/profile_screen/setting_screen/notification_setting.dart';
 import '../screens/profile_screen/setting_screen/settingmaincscreen.dart';
@@ -140,6 +141,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const NoInternetScreen());
       case Routes.logError:
         return MaterialPageRoute(builder: (_) => const LogMessage());
+      case Routes.orderPrefer:
+        return MaterialPageRoute(builder: (_) => const OrderPreference());
       case Routes.stock:
         return MaterialPageRoute(builder: (_) => const StockScreen());
       case Routes.searchScrip:

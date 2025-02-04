@@ -1417,13 +1417,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                     Expanded(
                                         child: InkWell(
                                       onTap: () async {
-                                        if (depthData.ordMsg == null) {
-                                          await placeOrderInput(
-                                              scripInfo, ctx, depthData, true);
-                                        } else {
-                                          exchAlert(ctx, depthData, scripInfo,
-                                              true, theme);
-                                        }
+                                        await placeOrderInput(
+                                            scripInfo, ctx, depthData, true);
                                       },
                                       child: Container(
                                           height: 40,
@@ -1442,13 +1437,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                     Expanded(
                                         child: InkWell(
                                             onTap: () async {
-                                              if (depthData.ordMsg == null) {
-                                                await placeOrderInput(scripInfo,
-                                                    ctx, depthData, false);
-                                              } else {
-                                                exchAlert(ctx, depthData,
-                                                    scripInfo, false, theme);
-                                              }
+                                              await placeOrderInput(scripInfo,
+                                                  ctx, depthData, false);
                                             },
                                             child: Container(
                                                 height: 40,
@@ -1477,96 +1467,96 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
     }));
   }
 
-  Future<dynamic> exchAlert(BuildContext ctx, GetQuotes depthData,
-      MarketWatchProvider scripInfo, bool transType, ThemesProvider theme) {
-    return showDialog(
-        context: ctx,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: theme.isDarkMode
-                ? const Color.fromARGB(255, 18, 18, 18)
-                : colors.colorWhite,
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(16))),
-            scrollable: true,
-            actionsPadding:
-                const EdgeInsets.only(left: 16, right: 16, bottom: 14, top: 3),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-            insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-            titlePadding: const EdgeInsets.only(left: 16),
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Alert!',
-                    style: textStyle(
-                        !theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
-                        16,
-                        FontWeight.w600)),
-                IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.close_rounded))
-              ],
-            ),
-            content: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: Column(children: [
-                  Divider(color: colors.colorDivider, height: 0),
-                  const SizedBox(height: 10),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text("${depthData.tsym} ",
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
-                        style: textStyles.appBarTitleTxt.copyWith(
-                            color: !theme.isDarkMode
-                                ? colors.colorBlack
-                                : colors.colorWhite)),
-                    CustomExchBadge(exch: "${depthData.exch}")
-                  ]),
-                  const SizedBox(height: 16),
-                  Row(children: [
-                    Expanded(
-                        child: Text("${depthData.ordMsg}",
-                            style: textStyle(
-                                !theme.isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorWhite,
-                                14,
-                                FontWeight.w500)))
-                  ]),
-                  const SizedBox(height: 10),
-                ])),
-            actions: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      await placeOrderInput(
-                          scripInfo, ctx, depthData, transType);
-                    },
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: !theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorbluegrey,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50))),
-                    child: Text("Proceed",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorBlack
-                                : colors.colorWhite,
-                            14,
-                            FontWeight.w500))),
-              ),
-            ],
-          );
-        });
-  }
+  // Future<dynamic> exchAlert(BuildContext ctx, GetQuotes depthData,
+  //     MarketWatchProvider scripInfo, bool transType, ThemesProvider theme) {
+  //   return showDialog(
+  //       context: ctx,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           backgroundColor: theme.isDarkMode
+  //               ? const Color.fromARGB(255, 18, 18, 18)
+  //               : colors.colorWhite,
+  //           shape: const RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.all(Radius.circular(16))),
+  //           scrollable: true,
+  //           actionsPadding:
+  //               const EdgeInsets.only(left: 16, right: 16, bottom: 14, top: 3),
+  //           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+  //           insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+  //           titlePadding: const EdgeInsets.only(left: 16),
+  //           title: Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               Text('Alert!',
+  //                   style: textStyle(
+  //                       !theme.isDarkMode
+  //                           ? colors.colorBlack
+  //                           : colors.colorWhite,
+  //                       16,
+  //                       FontWeight.w600)),
+  //               IconButton(
+  //                   onPressed: () {
+  //                     Navigator.pop(context);
+  //                   },
+  //                   icon: const Icon(Icons.close_rounded))
+  //             ],
+  //           ),
+  //           content: SizedBox(
+  //               width: MediaQuery.of(context).size.width,
+  //               child: Column(children: [
+  //                 Divider(color: colors.colorDivider, height: 0),
+  //                 const SizedBox(height: 10),
+  //                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+  //                   Text("${depthData.tsym} ",
+  //                       textAlign: TextAlign.center,
+  //                       overflow: TextOverflow.ellipsis,
+  //                       style: textStyles.appBarTitleTxt.copyWith(
+  //                           color: !theme.isDarkMode
+  //                               ? colors.colorBlack
+  //                               : colors.colorWhite)),
+  //                   CustomExchBadge(exch: "${depthData.exch}")
+  //                 ]),
+  //                 const SizedBox(height: 16),
+  //                 Row(children: [
+  //                   Expanded(
+  //                       child: Text("${depthData.ordMsg}",
+  //                           style: textStyle(
+  //                               !theme.isDarkMode
+  //                                   ? colors.colorBlack
+  //                                   : colors.colorWhite,
+  //                               14,
+  //                               FontWeight.w500)))
+  //                 ]),
+  //                 const SizedBox(height: 10),
+  //               ])),
+  //           actions: [
+  //             SizedBox(
+  //               width: MediaQuery.of(context).size.width,
+  //               child: ElevatedButton(
+  //                   onPressed: () async {
+  //                     Navigator.pop(context);
+  //                     await placeOrderInput(
+  //                         scripInfo, ctx, depthData, transType);
+  //                   },
+  //                   style: ElevatedButton.styleFrom(
+  //                       elevation: 0,
+  //                       backgroundColor: !theme.isDarkMode
+  //                           ? colors.colorBlack
+  //                           : colors.colorbluegrey,
+  //                       shape: RoundedRectangleBorder(
+  //                           borderRadius: BorderRadius.circular(50))),
+  //                   child: Text("Proceed",
+  //                       style: textStyle(
+  //                           theme.isDarkMode
+  //                               ? colors.colorBlack
+  //                               : colors.colorWhite,
+  //                           14,
+  //                           FontWeight.w500))),
+  //             ),
+  //           ],
+  //         );
+  //       });
+  // }
 
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {

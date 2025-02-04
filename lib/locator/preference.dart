@@ -181,6 +181,12 @@ class Preferences {
   Future setSipDate(bool isselect) async =>
       await _prefInstance!.setBool(_isSipDate, isselect);
 
+
+  Future setOrderprefer(String keys, String value) async =>
+      await _prefInstance!.setString(keys, value);
+
+  String? get showOrderpref => _prefInstance?.getString("ord_prf_$clientId");
+
   /// ORDER BOOK Filter
   bool? get isObScripname => _prefInstance?.getBool(_isObScripName) ?? true;
   bool? get isObPrice => _prefInstance?.getBool(_isObPrice) ?? true;

@@ -194,6 +194,13 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/profile/privacy_settings.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
+      {
+        "title": "Order Preference",
+        "subTitle": "Trading Order Preferences & Exchange Settings",
+        "leading": "assets/profile/privacy_settings.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
+      
     ];
     notifyListeners();
     return settingmenu;

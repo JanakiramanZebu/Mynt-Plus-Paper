@@ -165,6 +165,8 @@ class SettingsScreen extends ConsumerWidget {
                                     ])),
                           );
                         });
+                  } else if (index == 4) {
+                    Navigator.pushNamed(context, Routes.orderPrefer);
                   }
                 },
                 dense: true,
