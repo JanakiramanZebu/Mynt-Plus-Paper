@@ -506,5 +506,6 @@ class _OrderPreference extends State<OrderPreference> {
     ScaffoldMessenger.of(context).showSnackBar(
         successMessage(context, "Order Preference hav been saved"));
     await pref.init();
+    Navigator.pop(context);
   }
 }
