@@ -276,7 +276,7 @@ String getInputType(String value) {
   } else if (alphanumeric.hasMatch(value)) {
     return "clientid";
   }
-  return "Invalid"; // Fallback if it doesn't match any
+  return "clientid"; // Fallback if it doesn't match any
 }
 
 String convertToISOFormat(String dateTimeString) {
