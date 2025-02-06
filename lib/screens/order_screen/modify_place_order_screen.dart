@@ -298,12 +298,13 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                       priceCtrl.text =
                                                           "${widget.orderArg.ltp}";
                                                     }
-                                                    if (isActivePrice[0] ||
-                                                        isActivePrice[1]) {
-                                                      prcType = "LMT";
-                                                    } else {
-                                                      prcType = "SL-LMT";
-                                                    }
+                                                    prcType = isActivePrice[0]
+                                                        ? 'LMT'
+                                                        : isActivePrice[1]
+                                                            ? 'MKT'
+                                                            : isActivePrice[2]
+                                                                ? 'SL-LMT'
+                                                                : "SL-MKT";
                                                   });
                                                   FocusScope.of(context)
                                                       .unfocus();
@@ -1992,7 +1993,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
 
   modifyOrder() async {
     bool placeorder = true;
-    if (prcType == "LMT" || prcType == "MKT") {
+    if (prcType == "LMT" || prcType == "SL-LMT") {
       String r = roundOffWithInterval(double.parse(priceCtrl.text), tik)
           .toStringAsFixed(2);
       if (double.parse(priceCtrl.text) != double.parse(r)) {
