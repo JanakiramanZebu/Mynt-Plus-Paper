@@ -8,15 +8,25 @@ import 'package:mynt_plus/provider/thems.dart';
 import '../../api/core/api_core.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
+import '../../models/marketwatch_model/scrip_info.dart';
+import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/shocase_provider.dart';
 import '../../res/res.dart';
+import '../../routes/route_names.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/enums.dart';
 import '../../sharedWidget/snack_bar.dart';
 
 class OrderPreference extends StatefulWidget {
-  const OrderPreference({super.key});
+  final OrderScreenArgs? orderArg;
+  final ScripInfoModel? scripInfo;
+  final String? isRollback;
+  const OrderPreference(
+      {super.key,
+       this.scripInfo,
+       this.orderArg,
+       this.isRollback});
 
   @override
   State<OrderPreference> createState() => _OrderPreference();
@@ -35,10 +45,15 @@ class _OrderPreference extends State<OrderPreference> {
   final Preferences pref = locator<Preferences>();
   int multiplayer = 0;
 
+  bool gobackOP = false;
+
   OrdQtyPref QtyPrefer = OrdQtyPref.mktqty;
 
   @override
   void initState() {
+    gobackOP = widget.isRollback == "yes" ? true : false;
+    print(
+        "object lloloplpo ${widget.isRollback} $gobackOP");
     String getlocal = "";
     if (pref.showOrderpref != null) {
       getlocal = pref.showOrderpref!;
@@ -90,7 +105,24 @@ class _OrderPreference extends State<OrderPreference> {
           leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
-          leading: const CustomBackBtn(),
+          leading: gobackOP
+              ? InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, Routes.placeOrderScreen,
+                        arguments: {
+                          "orderArg": widget.orderArg,
+                          "scripInfo": widget.scripInfo,
+                          "isBskt": ""
+                        });
+                  },
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 9),
+                      child: SvgPicture.asset(assets.backArrow,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack)))
+              : const CustomBackBtn(),
           elevation: 0.2,
           title: Text('Order Preference',
               style: textStyle(
@@ -133,7 +165,10 @@ class _OrderPreference extends State<OrderPreference> {
                                             ? colors.darkGrey
                                             : colors.colorbluegrey,
                                     shape: const StadiumBorder()),
-                                child: Text(orderTypes[index] == "Delivery" ? "Delivery / Carry" : orderTypes[index],
+                                child: Text(
+                                    orderTypes[index] == "Delivery"
+                                        ? "Delivery / Carry"
+                                        : orderTypes[index],
                                     style: textStyle(
                                         !theme.isDarkMode
                                             ? orderType != orderTypes[index]
@@ -507,5 +542,12 @@ class _OrderPreference extends State<OrderPreference> {
         successMessage(context, "Order Preference hav been saved"));
     await pref.init();
     Navigator.pop(context);
+    if (gobackOP) {
+      Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
+        "orderArg": widget.orderArg,
+        "scripInfo": widget.scripInfo,
+        "isBskt": ""
+      });
+    }
   }
 }

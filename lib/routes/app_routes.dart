@@ -144,7 +144,12 @@ class AppRoutes {
       case Routes.logError:
         return MaterialPageRoute(builder: (_) => const LogMessage());
       case Routes.orderPrefer:
-        return MaterialPageRoute(builder: (_) => const OrderPreference());
+        return MaterialPageRoute(
+            builder: (_) => OrderPreference(
+                  orderArg: args?['orderArg'],
+                  scripInfo: args?['scripInfo'],
+                  isRollback: args?['isRollback'],
+                ));
       case Routes.stock:
         return MaterialPageRoute(builder: (_) => const StockScreen());
       case Routes.searchScrip:

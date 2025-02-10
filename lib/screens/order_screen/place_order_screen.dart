@@ -1781,8 +1781,16 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                             InkWell(
                                               onTap: () {
                                                 setState(() {
+                                                  Navigator.pop(context);
                                                   Navigator.pushNamed(context,
-                                                      Routes.orderPrefer);
+                                                      Routes.orderPrefer,
+                                                      arguments: {
+                                                        "orderArg":
+                                                            widget.orderArg,
+                                                        "scripInfo":
+                                                            widget.scripInfo,
+                                                        "isRollback": 'yes'
+                                                      });
                                                 });
                                               },
                                               child: SvgPicture.asset(
@@ -1924,8 +1932,15 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                         InkWell(
                                           onTap: () {
                                             setState(() {
+                                              Navigator.pop(context);
                                               Navigator.pushNamed(
-                                                  context, Routes.orderPrefer);
+                                                  context, Routes.orderPrefer,
+                                                  arguments: {
+                                                    "orderArg": widget.orderArg,
+                                                    "scripInfo":
+                                                        widget.scripInfo,
+                                                    "isRollback": 'yes'
+                                                  });
                                             });
                                           },
                                           child: SvgPicture.asset(
@@ -2967,8 +2982,11 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                         BorderRadius.circular(
                                                             6),
                                                     border: Border.all(
-                                                      color: colors
-                                                          .darkred, // Border color
+                                                      color: anibuildctrl
+                                                              .isAnimating
+                                                          ? colors.darkred
+                                                          : const Color(
+                                                              0xffFFF6E6), // Border color
                                                       width: anibuildctrl
                                                               .isAnimating
                                                           ? 1.0
@@ -3023,10 +3041,16 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                 FontWeight.w500,
                                                               ),
                                                               children: [
+                                                                const WidgetSpan(
+                                                                  child: Icon(
+                                                                      Icons
+                                                                          .warning_outlined,
+                                                                      color: Color.fromARGB(255, 255, 170, 0),
+                                                                      size: 16),
+                                                                ),
                                                                 const TextSpan(
                                                                     text:
-                                                                        // "Security is under Surveillance Measure, tick the box to produce the order.",
-                                                                        "Security is being monitored. Check the box to place the order."),
+                                                                        " Exchange surveillance measures are active; tick the box to produce the order."),
                                                                 WidgetSpan(
                                                                   child:
                                                                       Tooltip(
