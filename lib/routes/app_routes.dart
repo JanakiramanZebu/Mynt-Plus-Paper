@@ -68,8 +68,11 @@ import '../sharedWidget/internet_widget.dart';
 import 'route_names.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+String? currentRouteName;
+
 class AppRoutes {
   static Route router(RouteSettings settings) {
+    currentRouteName = settings.name;
     final dynamic args = settings.arguments;
     switch (settings.name) {
       case Routes.splash:
@@ -113,7 +116,6 @@ class AppRoutes {
                   position: animation.drive(tween), child: child);
             });
 
-     
       case Routes.forgotPass:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>

@@ -24,6 +24,7 @@ import '../models/auth_model/mobile_login_model.dart';
 import '../models/auth_model/mobile_otp_model.dart';
 import '../models/profile_model/client_detail_model.dart';
 import '../res/res.dart';
+import '../routes/app_routes.dart';
 import '../routes/route_names.dart';
 import '../screens/authentication/login/bottom_otp_screen.dart';
 import '../sharedWidget/functions.dart';
@@ -579,13 +580,23 @@ class AuthProvider extends DefaultChangeNotifier {
         _isDisableBtn = true;
         clearError();
         clearTextField();
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+        if (currentRouteName != Routes.loginScreen) {
+          Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.loginScreen,
+              arguments: "login",
+              (route) => false);
+        }
       } else {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, arguments: "login", (route) => false);
+        if (currentRouteName != Routes.loginScreen) {
+          Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.loginScreen,
+              arguments: "login",
+              (route) => false);
+        }
       }
 
       // else {

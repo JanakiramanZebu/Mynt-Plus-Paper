@@ -3024,9 +3024,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                               ),
                                                               children: [
                                                                 const TextSpan(
-                                                                  text:
-                                                                      "Security is under ASM/GSM, tick the box to produce the order. ",
-                                                                ),
+                                                                    text:
+                                                                        // "Security is under Surveillance Measure, tick the box to produce the order.",
+                                                                        "Security is being monitored. Check the box to place the order."),
                                                                 WidgetSpan(
                                                                   child:
                                                                       Tooltip(
@@ -3059,22 +3059,16 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                           BorderRadius.circular(
                                                                               8),
                                                                     ),
-                                                                    child:
-                                                                        InkWell(
-                                                                      onTap:
-                                                                          () {}, // Add any action if needed
-                                                                      child:
-                                                                          Text(
-                                                                        "Learn more",
-                                                                        style:
-                                                                            textStyle(
-                                                                          !theme.isDarkMode
-                                                                              ? colors.colorBlue
-                                                                              : colors.colorLightBlue,
-                                                                          13,
-                                                                          FontWeight
-                                                                              .w500,
-                                                                        ),
+                                                                    child: Text(
+                                                                      " Know more",
+                                                                      style:
+                                                                          textStyle(
+                                                                        !theme.isDarkMode
+                                                                            ? colors.colorBlue
+                                                                            : colors.colorLightBlue,
+                                                                        13,
+                                                                        FontWeight
+                                                                            .w500,
                                                                       ),
                                                                     ),
                                                                   ),
