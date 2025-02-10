@@ -2968,107 +2968,110 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                               .millisecondsSinceEpoch *
                                                           0.01),
                                                   0),
-                                              child: AnimatedContainer(
-                                                  duration: const Duration(
-                                                      milliseconds: 300),
-                                                  curve: Curves.easeInCubic,
-                                                  margin: const EdgeInsets.only(
-                                                      right: 16,
-                                                      top: 16,
-                                                      bottom: 0),
-                                                  padding:
-                                                      const EdgeInsets.all(0),
-                                                  decoration: BoxDecoration(
-                                                    color:
-                                                        const Color(0xffFFF6E6),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            6),
-                                                    border: Border.all(
-                                                      color: anibuildctrl
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  final dynamic tooltip =
+                                                      tooltipKey.currentState;
+                                                  tooltip
+                                                      ?.ensureTooltipVisible(); // Manually show tooltip on tap
+                                                },
+                                                child: AnimatedContainer(
+                                                    duration: const Duration(
+                                                        milliseconds: 300),
+                                                    curve: Curves.easeInCubic,
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                            right: 16,
+                                                            top: 16,
+                                                            bottom: 0),
+                                                    padding:
+                                                        const EdgeInsets.all(0),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                          0xffFFF6E6),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              6),
+                                                      border: Border.all(
+                                                        color: anibuildctrl
+                                                                .isAnimating
+                                                            ? colors.darkred
+                                                            : const Color(
+                                                                0xffFFF6E6), // Border color
+                                                        width: anibuildctrl
+                                                                .isAnimating
+                                                            ? 1.0
+                                                            : 0.0, // Border width (1px)
+                                                      ),
+                                                      boxShadow: anibuildctrl
                                                               .isAnimating
-                                                          ? colors.darkred
-                                                          : const Color(
-                                                              0xffFFF6E6), // Border color
-                                                      width: anibuildctrl
-                                                              .isAnimating
-                                                          ? 1.0
-                                                          : 0.0, // Border width (1px)
-                                                    ),
-                                                    boxShadow: anibuildctrl
-                                                            .isAnimating
-                                                        ? [
-                                                            BoxShadow(
-                                                              color: colors
-                                                                  .darkred
-                                                                  .withOpacity(
-                                                                      0.6),
-                                                              blurRadius: 10,
-                                                              spreadRadius: 3,
-                                                              offset:
-                                                                  const Offset(
-                                                                      0, 0),
-                                                            ),
-                                                          ]
-                                                        : [],
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: [
-                                                      IconButton(
-                                                          onPressed: () {
-                                                            setState(() {
-                                                              isSecu = !isSecu;
-                                                            });
-                                                          },
-                                                          icon: SvgPicture
-                                                              .asset(isSecu
-                                                                  ? assets
-                                                                      .checkedbox
-                                                                  : assets
-                                                                      .checkbox)),
-                                                      Expanded(
-                                                          // Ensures text takes available space and wraps
-                                                          child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          RichText(
-                                                            text: TextSpan(
-                                                              style: textStyle(
-                                                                const Color(
-                                                                    0xffB37702),
-                                                                13,
-                                                                FontWeight.w500,
+                                                          ? [
+                                                              BoxShadow(
+                                                                color: colors
+                                                                    .darkred
+                                                                    .withOpacity(
+                                                                        0.6),
+                                                                blurRadius: 10,
+                                                                spreadRadius: 3,
+                                                                offset:
+                                                                    const Offset(
+                                                                        0, 0),
                                                               ),
-                                                              children: [
-                                                                const WidgetSpan(
-                                                                  child: Icon(
-                                                                      Icons
-                                                                          .warning_outlined,
-                                                                      color: Color.fromARGB(
-                                                                          255,
-                                                                          255,
-                                                                          170,
-                                                                          0),
-                                                                      size: 16),
+                                                            ]
+                                                          : [],
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        IconButton(
+                                                            onPressed: () {
+                                                              setState(() {
+                                                                isSecu =
+                                                                    !isSecu;
+                                                              });
+                                                            },
+                                                            icon: SvgPicture
+                                                                .asset(isSecu
+                                                                    ? assets
+                                                                        .checkedbox
+                                                                    : assets
+                                                                        .checkbox)),
+                                                        Expanded(
+                                                            // Ensures text takes available space and wraps
+                                                            child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            RichText(
+                                                              text: TextSpan(
+                                                                style:
+                                                                    textStyle(
+                                                                  const Color(
+                                                                      0xffB37702),
+                                                                  13,
+                                                                  FontWeight
+                                                                      .w500,
                                                                 ),
-                                                                const TextSpan(
-                                                                    text:
-                                                                        " Exchange surveillance measures are active; tick the box to produce the order."),
-                                                                WidgetSpan(
-                                                                  child:
-                                                                      GestureDetector(
-                                                                    onTap: () {
-                                                                      final dynamic
-                                                                          tooltip =
-                                                                          tooltipKey
-                                                                              .currentState;
-                                                                      tooltip
-                                                                          ?.ensureTooltipVisible(); // Manually show tooltip on tap
-                                                                    },
+                                                                children: [
+                                                                  const WidgetSpan(
+                                                                    child: Icon(
+                                                                        Icons
+                                                                            .warning_outlined,
+                                                                        color: Color.fromARGB(
+                                                                            255,
+                                                                            255,
+                                                                            170,
+                                                                            0),
+                                                                        size:
+                                                                            16),
+                                                                  ),
+                                                                  const TextSpan(
+                                                                      text:
+                                                                          " Exchange surveillance measures are active; tick the box to produce the order."),
+                                                                  WidgetSpan(
                                                                     child:
                                                                         Tooltip(
                                                                       key:
@@ -3117,15 +3120,15 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                       ),
                                                                     ),
                                                                   ),
-                                                                ),
-                                                              ],
+                                                                ],
+                                                              ),
+                                                              softWrap: true,
                                                             ),
-                                                            softWrap: true,
-                                                          ),
-                                                        ],
-                                                      ))
-                                                    ],
-                                                  )),
+                                                          ],
+                                                        ))
+                                                      ],
+                                                    )),
+                                              ),
                                             );
                                           },
                                         ),
