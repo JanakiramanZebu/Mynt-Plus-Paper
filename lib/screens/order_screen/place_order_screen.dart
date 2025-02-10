@@ -264,7 +264,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
 
       qtyCtrl = TextEditingController(
           text: widget.orderArg.exchange == "MCX"
-              ? widget.scripInfo.prcqqty
+              ? "1"
               : widget.orderArg.isExit
                   ? widget.orderArg.holdQty!.replaceAll("-", "")
                   : widget.orderArg.lotSize!.replaceAll("-", ""));
@@ -274,7 +274,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           : qtyCtrl.text;
 
       multiplayer = int.parse((widget.orderArg.exchange == "MCX"
-              ? widget.scripInfo.prcqqty
+              ? "1"
               : widget.orderArg.lotSize)
           .toString());
 
@@ -4384,10 +4384,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           placeorder = false;
           anibuildctrl.forward();
         }
-        if (widget.scripInfo.exch == 'MCX') {
-          int sum = (int.parse(qtyCtrl.text) * lotSize);
-          qtyCtrl.text = sum.toString();
-        }
 
         if (placeorder) {
           context.read(orderProvider).setOrderloader(true);
@@ -4402,7 +4398,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
               prc: ordPrice,
               prctype: orderInput.prcType,
               prd: orderInput.orderType,
-              qty: qtyCtrl.text,
+              qty: widget.scripInfo.exch == 'MCX' ? (int.parse(qtyCtrl.text) * lotSize).toString() : qtyCtrl.text,
               ret: validityType,
               trailprc: '',
               trantype: isBuy! ? 'B' : 'S',
@@ -4742,7 +4738,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prctyp: context.read(ordInputProvider).prcType,
         prd: context.read(ordInputProvider).orderType,
-        qty: qtyCtrl.text,
+        qty: widget.scripInfo.exch == 'MCX' ? (int.parse(qtyCtrl.text) * lotSize).toString() : qtyCtrl.text,
         rorgprc: '0',
         rorgqty: '0',
         trantype: isBuy! ? "B" : "S",
@@ -4758,7 +4754,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         exch: "${widget.scripInfo.exch}",
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prd: context.read(ordInputProvider).orderType,
-        qty: qtyCtrl.text,
+        qty: widget.scripInfo.exch == 'MCX' ? (int.parse(qtyCtrl.text) * lotSize).toString() : qtyCtrl.text,
         trantype: isBuy! ? "B" : "S",
         tsym: "${widget.scripInfo.tsym}");
     context.read(orderProvider).fetchGetBrokerage(brokerageInput, context);

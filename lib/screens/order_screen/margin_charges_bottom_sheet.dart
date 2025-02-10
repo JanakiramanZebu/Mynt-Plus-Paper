@@ -91,7 +91,11 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                   14,
                                   FontWeight.w500)),
                           Text("${orderMargin.marginused}",
-                              style: textStyle(
+                              style: textStyle( 
+                                      orderMargin.remarks ==
+                                              "Insufficient Balance"
+                                          ? colors.darkred
+                                          : 
                                   !theme.isDarkMode
                                       ? colors.colorBlack
                                       : colors.colorWhite,
