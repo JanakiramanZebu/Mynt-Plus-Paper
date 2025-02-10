@@ -118,6 +118,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
 
   Map<String, dynamic> localdata = {};
   bool defaultparams = false;
+  final GlobalKey<TooltipState> tooltipKey = GlobalKey<TooltipState>();
 
   @override
   void initState() {
@@ -312,7 +313,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       isAmo = res['amo'] == "Yes" ? true : false;
       priceCtrl.text = res['prc'] ?? "0";
       ordPrice = res['prc'] ?? "0";
-      qtyCtrl.text = res['qty'] ?? "0";
+      qtyCtrl.text = widget.scripInfo.exch == 'MCX'
+          ? (int.parse(res['qty'] ?? lotSize) / lotSize).toStringAsFixed(0)
+          : res['qty'] ?? "1";
       stopLossCtrl.text = res['blprc'] ?? "0";
       targetCtrl.text = res['bpprc'] ?? "0";
       validityType = res['ret'];
@@ -3045,7 +3048,11 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                   child: Icon(
                                                                       Icons
                                                                           .warning_outlined,
-                                                                      color: Color.fromARGB(255, 255, 170, 0),
+                                                                      color: Color.fromARGB(
+                                                                          255,
+                                                                          255,
+                                                                          170,
+                                                                          0),
                                                                       size: 16),
                                                                 ),
                                                                 const TextSpan(
@@ -3053,46 +3060,60 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                         " Exchange surveillance measures are active; tick the box to produce the order."),
                                                                 WidgetSpan(
                                                                   child:
-                                                                      Tooltip(
-                                                                    preferBelow:
-                                                                        false,
-                                                                    message:
-                                                                        quotemsg,
-                                                                    textStyle:
-                                                                        const TextStyle(
-                                                                      color: Colors
-                                                                          .white,
-                                                                      fontSize:
+                                                                      GestureDetector(
+                                                                    onTap: () {
+                                                                      final dynamic
+                                                                          tooltip =
+                                                                          tooltipKey
+                                                                              .currentState;
+                                                                      tooltip
+                                                                          ?.ensureTooltipVisible(); // Manually show tooltip on tap
+                                                                    },
+                                                                    child:
+                                                                        Tooltip(
+                                                                      key:
+                                                                          tooltipKey,
+                                                                      // enableTapToDismiss: false,
+                                                                      preferBelow:
+                                                                          false,
+                                                                      message:
+                                                                          quotemsg,
+                                                                      textStyle:
+                                                                          const TextStyle(
+                                                                        color: Colors
+                                                                            .white,
+                                                                        fontSize:
+                                                                            13,
+                                                                      ),
+                                                                      padding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          vertical:
+                                                                              8,
+                                                                          horizontal:
+                                                                              16),
+                                                                      margin: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              16),
+                                                                      decoration:
+                                                                          BoxDecoration(
+                                                                        color: Colors
+                                                                            .black,
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(8),
+                                                                      ),
+                                                                      child:
+                                                                          Text(
+                                                                        " Know more",
+                                                                        style:
+                                                                            textStyle(
+                                                                          !theme.isDarkMode
+                                                                              ? colors.colorBlue
+                                                                              : colors.colorLightBlue,
                                                                           13,
-                                                                    ),
-                                                                    padding: const EdgeInsets
-                                                                        .symmetric(
-                                                                        vertical:
-                                                                            8,
-                                                                        horizontal:
-                                                                            16),
-                                                                    margin: const EdgeInsets
-                                                                        .symmetric(
-                                                                        horizontal:
-                                                                            16),
-                                                                    decoration:
-                                                                        BoxDecoration(
-                                                                      color: Colors
-                                                                          .black,
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              8),
-                                                                    ),
-                                                                    child: Text(
-                                                                      " Know more",
-                                                                      style:
-                                                                          textStyle(
-                                                                        !theme.isDarkMode
-                                                                            ? colors.colorBlue
-                                                                            : colors.colorLightBlue,
-                                                                        13,
-                                                                        FontWeight
-                                                                            .w500,
+                                                                          FontWeight
+                                                                              .w500,
+                                                                        ),
                                                                       ),
                                                                     ),
                                                                   ),
@@ -4360,6 +4381,11 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           placeorder = false;
           anibuildctrl.forward();
         }
+        if (widget.scripInfo.exch == 'MCX') {
+          int sum = (int.parse(qtyCtrl.text) * lotSize);
+          qtyCtrl.text = sum.toString();
+        }
+
         if (placeorder) {
           context.read(orderProvider).setOrderloader(true);
           PlaceOrderInput placeOrderInput = PlaceOrderInput(
