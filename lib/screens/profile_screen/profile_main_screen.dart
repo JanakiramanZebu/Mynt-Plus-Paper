@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 //import 'package:url_launcher/url_launcher.dart';
@@ -12,7 +13,6 @@ import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/bond_provider.dart';
 import '../../provider/fund_provider.dart';
-import '../../provider/mf_provider.dart';
 import '../../provider/notification_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/transcation_provider.dart';
@@ -22,8 +22,14 @@ import '../../routes/route_names.dart';
 import '../../sharedWidget/functions.dart';
 import 'need_help_screen.dart';
 
+// enum Availability { loading, available, unavailable }
+
 class UserAccountScreen extends ConsumerWidget {
-  const UserAccountScreen({super.key});
+  UserAccountScreen({super.key});
+
+  final InAppReview _inAppReview = InAppReview.instance;
+
+  Future<void> _requestReview() => _inAppReview.requestReview();
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
@@ -42,6 +48,7 @@ class UserAccountScreen extends ConsumerWidget {
                   shrinkWrap: true,
                   itemCount: userProfile.profileMenu.length,
                   itemBuilder: (context, int index) {
+                    final acttitle = userProfile.profileMenu[index]['title'];
                     return ListTile(
                       contentPadding:
                           const EdgeInsets.symmetric(horizontal: 16),
@@ -55,44 +62,38 @@ class UserAccountScreen extends ConsumerWidget {
                             index == 9) {
                           await funds.fetchHstoken(context);
                         }
-                        if (index == 0) {
+                        if (acttitle == "Fund") {
                           await funds.fetchFunds(context);
                           Navigator.pushNamed(context, Routes.fund);
-                        } else if (index == 1) {
+                        } else if (acttitle == "My Account") {
                           Navigator.pushNamed(context, Routes.myAcc);
-                        } else if (index == 2) {
+                        } else if (acttitle == "Reports") {
                           Navigator.pushNamed(context, Routes.reports);
-                        } else if (index == 3) {
+                        } else if (acttitle == "Verified P&L") {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "tradeverify");
-                        } else if (index == 4) {
+                        } else if (acttitle == "Corporate Action") {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "corporateaction");
-                        } else if (index == 5) {
+                        } else if (acttitle == "CA Events") {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "event");
-                        } else if (index == 6) {
+                        } else if (acttitle == "Pledge & Unpledge") {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "pledge");
-                        } else if (index == 7) {
-                          // 'https://profile.mynt.in/${widget.argument}/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}')),
-
+                        } else if (acttitle == "IPO") {
                           launch(
                               "https://app.mynt.in/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
-                          // Navigator.pushNamed(context, Routes.ipowebview,
-                          //     arguments: "https://app.mynt.in/ipo");
-                        } else if (index == 8) {
-                          // Navigator.pushNamed(context, Routes.ipowebview,
-                          //     arguments: "https://app.mynt.in/mutualfund");
+                        } else if (acttitle == "Mutual Fund") {
                           launch(
                               "https://app.mynt.in/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
-                        } else if (index == 9) {
+                        } else if (acttitle == "OptionZ") {
                           funds.optionZ(context);
-                        } else if (index == 10) {
+                        } else if (acttitle == "Refer") {
                           await Share.share(
                             "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
                           );
-                        } else if (index == 11) {
+                        } else if (acttitle == "Settings") {
                           await context
                               .read(userProfileProvider)
                               .fetchsetting();
@@ -101,7 +102,7 @@ class UserAccountScreen extends ConsumerWidget {
                               .fetchapikey(context);
                           Navigator.pushNamed(
                               context, Routes.profilesettingscreen);
-                        } else if (index == 12) {
+                        } else if (acttitle == "Notification") {
                           await context
                               .read(notificationprovider)
                               .fetchexchagemsg(context);
@@ -110,7 +111,7 @@ class UserAccountScreen extends ConsumerWidget {
                               .read(notificationprovider)
                               .fetchbrokermsg(context);
                           Navigator.pushNamed(context, Routes.notificationpage);
-                        } else if (index == 13) {
+                        } else if (acttitle == "Need Help?") {
                           showModalBottomSheet(
                               useSafeArea: true,
                               isScrollControlled: true,
@@ -121,17 +122,27 @@ class UserAccountScreen extends ConsumerWidget {
                               builder: (context) {
                                 return const NeedHelpScreen();
                               });
-                        } else if (index == 14) {
-                        } else if (index == 13) {
-                        } else if (index == 14) {
+                        } else if (acttitle == "Bonds") {
                           await context.read(bondProvider).fetchGovtBonds();
                           Navigator.pushNamed(context, Routes.bonds);
+                        } else if (acttitle == "Rate Us") {
+                          if (await _inAppReview.isAvailable()) {
+                            _requestReview();
+                          }
+                          // launch(
+                          //     "https://apps.apple.com/app/id6478270319?action=write-review");
+                          //  await userProfile.setAppreview(context);
+                          //  _inAppReview.requestReview();
+                          // _inAppReview.openStoreListing(
+                          //   appStoreId: "id6478270319",
+                          //   microsoftStoreId: "com.mynt.trading_app_zebu",
+                          // );
                         } else {
-                          await context
-                              .read(mfProvider)
-                              .fetchMFWatchlist(null, "", context, false);
-                          await context.read(mfProvider).fetchMasterMF();
-                          Navigator.pushNamed(context, Routes.mf);
+                          // await context
+                          //     .read(mfProvider)
+                          //     .fetchMFWatchlist(null, "", context, false);
+                          // await context.read(mfProvider).fetchMasterMF();
+                          // Navigator.pushNamed(context, Routes.mf);
                         }
                       },
                       dense: true,

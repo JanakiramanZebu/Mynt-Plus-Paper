@@ -1347,7 +1347,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       case 3:
         return const OrderBookScreen();
       case 4:
-        return const UserAccountScreen();
+        return UserAccountScreen();
 
       case 5:
         return const IPOScreen();

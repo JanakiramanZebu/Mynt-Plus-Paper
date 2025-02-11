@@ -240,7 +240,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/profileimage/verifiedpl.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": "",
-        "case": "Click here to view the report page."
+        "case": "Click here to view the Verified P&L page."
       },
       {
         "title": "Corporate Action",
@@ -272,7 +272,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/profileimage/reports.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": "",
-        "case": "Click here to view the Log message."
+        "case": "Click here to view the IPO."
       },
       {
         "title": "Mutual Fund",
@@ -280,7 +280,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/icon/mf_icon.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": "",
-        "case": "Click here to view the Log message."
+        "case": "Click here to view theMutual Fund."
       },
       {
         "title": "OptionZ",
@@ -288,7 +288,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/profileimage/pledge.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).pledgeunpcase,
-        "case": "Click here to view the Pledge & Unpledge page."
+        "case": "Click here to view the OptionZ."
       },
       //  {
       //   "title": "KRA",
@@ -304,7 +304,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/profileimage/Referal_Incentive.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).apikeycase,
-        "case": "Click here to view the Change Password page."
+        "case": "Click here to Refer your family and friends."
       },
       {
         "title": "Settings",
@@ -312,7 +312,16 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/profileimage/privacy_settings.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).logcase,
-        "case": "Click here to view the Log message."
+        "case": "Click here to view Settings."
+      },
+      {
+        "title": "Rate Us",
+        "subTitle":
+            "Share your experience! Rate us to help others discover our great service.",
+        "leading": "assets/icon/appbarIcon/bell.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": ref(showcaseProvide).notificationcase,
+        "case": "Click here to Share your experience!."
       },
       {
         "title": "Notification",
@@ -320,7 +329,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/icon/appbarIcon/bell.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).notificationcase,
-        "case": "Click here to view the Log message."
+        "case": "Click here to view the notification."
       },
       {
         "title": "Need Help?",
@@ -328,7 +337,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/profile/headphones.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": "",
-        "case": "Click here to view the Log message."
+        "case": "Click here to Contact us, Follow us."
       },
       /////
       // {
