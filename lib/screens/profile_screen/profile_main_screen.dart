@@ -125,7 +125,7 @@ class UserAccountScreen extends ConsumerWidget {
                           String devicesurl = TargetPlatform.iOS ==
                                   defaultTargetPlatform
                               ? "https://apps.apple.com/app/id6478270319?action=write-review"
-                              : "https://play.google.com/store/apps/details?id=com.mynt.trading_app_zebu";
+                              : "https://play.google.com/store/apps/details?id=com.mynt.trading_app_zebu&reviewId=0";
                           launch(devicesurl);
 
                           //  await userProfile.setAppreview(context);
