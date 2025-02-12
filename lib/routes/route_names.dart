@@ -138,11 +138,13 @@ class Routes {
   static const String smeapplyIPO = 'smeapplyIPO';
   static const String ipoopendetailsscreen = 'ipoopendetailsscreen';
   static const String ipoclosedetailsscreen = 'ipoclosedetailsscreen';
-  static const String ipoorderbook = 'Ipoorderbook';
+  static const String ipoorderbook = 'IpoOrderbookMainScreen';
   static const String modifyipoorder = 'Modifyipoorder';
+  static const String iposearchscreen = 'IpoSearchScreen';
 
 // Bonds
   static const String bonds = 'bonds';
+  static const String mfmainscreen = 'mfMainScreen';
   static const String mf = 'mutualFund';
   static const String mfWatchlist = 'mfWatchlist';
   static const String mforderScreen = 'mforderScreen';
@@ -154,4 +156,8 @@ class Routes {
   static const String iosfundscreen = "iosfundscreen";
 
   static const String optionStrategy = "optionStrategy";
+
+  static const String mfOrderbookscreen = 'mfOrderbook';
+
+  static const String mfsearchscreen = 'mfsearchscreen';
 }

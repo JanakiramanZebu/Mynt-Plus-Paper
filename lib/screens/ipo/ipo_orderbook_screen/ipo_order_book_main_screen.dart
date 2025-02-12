@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
-import '../../../sharedWidget/payment_loader.dart';
 import 'ipo_order_book_tab/close_ipo_tab.dart';
 import 'ipo_order_book_tab/open_ipo_tab.dart';
 
@@ -21,18 +19,6 @@ class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
     with TickerProviderStateMixin {
   @override
   void initState() {
-    context.read(ipoProvide).ipoTab = TabController(
-        length: context.read(ipoProvide).ipotabs.length,
-        vsync: this,
-        initialIndex: context.read(ipoProvide).selectedTab);
-
-    context.read(ipoProvide).ipoTab.addListener(() {
-      context
-          .read(ipoProvide)
-          .changeTabIndex(context.read(ipoProvide).ipoTab.index);
-      context.read(ipoProvide).ipotab();
-    });
-
     super.initState();
   }
 
@@ -41,8 +27,8 @@ class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
     return Consumer(builder: (context, ScopedReader watch, _) {
       final ipo = watch(ipoProvide);
       final theme = watch(themeProvider);
+
       return Scaffold(
-         
         appBar: AppBar(
           elevation: .2,
           centerTitle: false,
@@ -54,70 +40,165 @@ class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 9),
-              child: SvgPicture.asset(
-                assets.backArrow,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              ),
+              child: SvgPicture.asset(assets.backArrow,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
             ),
           ),
           backgroundColor:
               theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           shadowColor: const Color(0xffECEFF3),
-          title: Text("IPOs",
-              style: textStyles.appBarTitleTxt.copyWith(
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack)),
+          title: Text(
+            "Order Book",
+            style: textStyles.appBarTitleTxt.copyWith(
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            ),
+          ),
         ),
-        body: ipo.fundisLoad
-            ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                const ProgressiveDotsLoader(),
-                const SizedBox(height: 3),
-                Text('This will take a few seconds.',
-                    style: textStyle(colors.colorGrey, 13, FontWeight.w500)),
-              ])
-            : Column(
-                children: [
-                  Container(
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          border: Border(
-                              bottom: BorderSide(
-                                  color: theme.isDarkMode
-                                      ? colors.darkGrey
-                                      : const Color(0xffF1F3F8),
-                                  width: 0))),
-                      height: 46,
-                      child: TabBar(
-                          dividerColor: Colors.transparent,
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          indicatorColor: const Color(0xff0037B7),
-                          unselectedLabelColor: const Color(0XFF777777),
-                          unselectedLabelStyle: GoogleFonts.inter(
-                              textStyle: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: -0.28)),
-                          labelColor: const Color(0XFF0037B7),
-                          labelStyle: GoogleFonts.inter(
-                              textStyle: const TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w600)),
-                          controller: ipo.ipoTab,
-                          tabs: ipo.ipotabs)),
-                  Expanded(
-                      child: TabBarView(
-                    controller: ipo.ipoTab,
-                    children: [
-                      IpoOpenOrder(open: ipo),
-                      IpoCloseOrder(close: ipo)
-                    ],
-                  ))
-                ],
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              //   ListView(padding: EdgeInsets.zero, shrinkWrap: true, children: [
+              //     Container(
+              //         padding:
+              //             const EdgeInsets.only(left: 14, top: 8, bottom: 8),
+              //         height: 52,
+              //         decoration: BoxDecoration(
+              //             border: Border(
+              //                 bottom: BorderSide(
+              //                     color: theme.isDarkMode
+              //                         ? colors.darkColorDivider
+              //                         : colors.colorDivider,
+              //                     width: 0),
+              //                 top: BorderSide(
+              //                     color: theme.isDarkMode
+              //                         ? colors.darkColorDivider
+              //                         : colors.colorDivider,
+              //                     width: 0))),
+              //         child: ListView.separated(
+              //             scrollDirection: Axis.horizontal,
+              //             itemCount: ipo.ipoOrderBookTabNameBtns.length,
+              //             itemBuilder: (BuildContext context, int index) {
+              //               return ElevatedButton(
+              //                   onPressed: () async {
+              //                     ipo.chngOrderBookTabNameBtn(
+              //                         ipo.ipoOrderBookTabNameBtns[index]['btnName']);
+              //                   },
+              //                   style: ElevatedButton.styleFrom(
+              //                       elevation: 0,
+              //                       padding: const EdgeInsets.symmetric(
+              //                           horizontal: 12, vertical: 0),
+              //                       backgroundColor: theme.isDarkMode
+              //                           ? ipo.ipoOrderBookTabNameAct ==
+              //                                   ipo.ipoOrderBookTabNameBtns[index]
+              //                                       ['btnName']
+              //                               ? colors.colorbluegrey
+              //                               : const Color(0xffB5C0CF)
+              //                                   .withOpacity(.15)
+              //                           : ipo.ipoOrderBookTabNameAct ==
+              //                                   ipo.ipoOrderBookTabNameBtns[index]
+              //                                       ['btnName']
+              //                               ? const Color(0xff000000)
+              //                               : const Color(0xffF1F3F8),
+              //                       shape: const StadiumBorder()),
+              //                   child: Row(children: [
+              //                     SvgPicture.asset(
+              //                       "${ipo.ipoOrderBookTabNameBtns[index]['imgPath']}",
+              //                       color: theme.isDarkMode
+              //                           ? Color(ipo.ipoOrderBookTabNameAct ==
+              //                                   ipo.ipoOrderBookTabNameBtns[index]
+              //                                       ['btnName']
+              //                               ? 0xff000000
+              //                               : 0xffffffff)
+              //                           : Color(ipo.ipoOrderBookTabNameAct ==
+              //                                   ipo.ipoOrderBookTabNameBtns[index]
+              //                                       ['btnName']
+              //                               ? 0xffffffff
+              //                               : 0xff000000),
+              //                     ),
+              //                     const SizedBox(width: 8),
+              //                     Text(
+              //                         "${ipo.ipoOrderBookTabNameBtns[index]['btnName']}",
+              //                         style: textStyle(
+              //                             theme.isDarkMode
+              //                                 ? Color(ipo.ipoOrderBookTabNameAct ==
+              //                                         ipo.ipoOrderBookTabNameBtns[
+              //                                             index]['btnName']
+              //                                     ? 0xff000000
+              //                                     : 0xffffffff)
+              //                                 : Color(ipo.ipoOrderBookTabNameAct ==
+              //                                         ipo.ipoOrderBookTabNameBtns[
+              //                                             index]['btnName']
+              //                                     ? 0xffffffff
+              //                                     : 0xff000000),
+              //                             12.5,
+              //                             FontWeight.w500))
+              //                   ]));
+              //             },
+              //             separatorBuilder: (BuildContext context, int index) {
+              //               return const SizedBox(width: 10);
+              //             })),
+              //   ]),
+              // if (ipo.ipoOrderBookTabNameAct == "Open Order") ...[
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                child: Text(
+                  "Open Orders",
+                  style: textStyle(
+                      theme.isDarkMode
+                          ? colors.colorWhite.withOpacity(0.3)
+                          : colors.colorBlack.withOpacity(0.3),
+                      15,
+                      FontWeight.w600),
+                ),
               ),
+              IpoOpenOrder(open: ipo),
+              // ] else if (ipo.ipoOrderBookTabNameAct == "Closed Order") ...[
+              // Divider(
+              //   height: 10,
+              //     color: theme.isDarkMode
+              //         ? colors.darkColorDivider
+              //         : colors.colorDivider),
+              Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                  child: Text(
+                    "Closed Orders",
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite.withOpacity(0.3)
+                            : colors.colorBlack.withOpacity(0.3),
+                        15,
+                        FontWeight.w600),
+                  )),
+              IpoCloseOrder(close: ipo)
+              // ]
+            ],
+          ),
+        ),
       );
+
+      // return SingleChildScrollView(
+      //   child: Container(
+      //     child: ipo.fundisLoad
+      //         ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      //             const ProgressiveDotsLoader(),
+      //             const SizedBox(height: 3),
+      //             Text('This will take a few seconds.',
+      //                 style: textStyle(colors.colorGrey, 13, FontWeight.w500)),
+      //           ])
+      //         : TabBarView(controller: ipo.ipoOrderBookScreenTab, children:[
+      //                 IpoOpenOrder(open: ipo),
+      //                 IpoCloseOrder(close: ipo)
+
+      //             ],
+      //           ),
+      //   ),
+      // );
     });
   }
 }

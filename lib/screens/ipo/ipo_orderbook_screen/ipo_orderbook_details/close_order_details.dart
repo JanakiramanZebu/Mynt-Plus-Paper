@@ -21,6 +21,9 @@ class IpoCloseOrderDetails extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     int currentYear = DateTime.now().year;
+    final currentDate = DateTime.now();
+    print("currentDate :: $currentDate");
+
     final theme = watch(themeProvider);
     return Scaffold(
        
@@ -81,7 +84,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                                 colors.colorGrey, 13, FontWeight.w600),
                           ),
                           Text(
-                            ipoclose.reponseStatus == "cancel success" ||
+                            ipoclose.reponseStatus == "cancel success" ? "Cancelled" :
                                     ipoclose.reponseStatus == "new failed"
                                 ? "Failed"
                                 : "Success",
@@ -97,7 +100,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                       Row(
                         children: [
                           SvgPicture.asset(
-                              ipoclose.reponseStatus == "cancel success" ||
+                              ipoclose.reponseStatus == "cancel success" ? "assets/icon/failed.svg" :
                                       ipoclose.reponseStatus == "new failed"
                                   ? "assets/icon/failed.svg"
                                   : "assets/icon/pendingicon.svg"),
@@ -105,7 +108,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                             width: 4,
                           ),
                           Text(
-                            ipoclose.reponseStatus == "cancel success" ||
+                            ipoclose.reponseStatus == "cancel success" ? "Cancelled" :
                                     ipoclose.reponseStatus == "new failed"
                                 ? "Failed"
                                 : "Pending",
@@ -194,7 +197,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                         style: textStyle(colors.colorGrey, 13, FontWeight.w600),
                       ),
                       Text(
-                        ipoclose.applicationNumber.toString(),
+                        ipoclose.bidReferenceNumber != ""?ipoclose.bidReferenceNumber.toString():" - ",
                         style: textStyle(
                             theme.isDarkMode
                                 ? colors.colorWhite
@@ -231,7 +234,12 @@ class IpoCloseOrderDetails extends ConsumerWidget {
             const SizedBox(
               height: 10,
             ),
-            Padding(
+          // ipoclose.biddingstartdate // for NSE and BSE
+          // ipoclose.biddingendDate  // for BSE
+          // ipoclose.biddingenddate  // for NSE
+
+            if(currentDate.isBetween(convertIpoDates(ipoclose.biddingstartdate!,"dd-mm-yyyy"), convertIpoDates(ipoclose.type == "BSE" ? ipoclose.biddingendDate!:ipoclose.biddingenddate!,"dd-mm-yyyy")) == true) ...[
+                Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 // mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -270,6 +278,10 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                 ],
               ),
             ),
+            ],
+
+
+            
             const SizedBox(
               height: 10,
             ),
@@ -280,15 +292,21 @@ class IpoCloseOrderDetails extends ConsumerWidget {
             ),
             data(
                 "App no",
-                ipoclose.respBid == null
-                    ? "NAN"
-                    : ipoclose.respBid![0].bidReferenceNumber.toString(),
+                 ipoclose.applicationNumber.toString(),
                 theme),
             data("Quantity", ipoclose.bidDetail![0].quantity.toString(), theme),
+            
+            data(
+                "Price",
+                ipoclose.type == "BSE"
+                    ? "₹${double.parse(ipoclose.bidDetail![0].rate!).toInt()}"
+                    : "₹${ipoclose.bidDetail![0].price}",
+                theme),
+            
             data(
                 "Total amount",
-                ipoclose.bidDetail![0].amount! == "null"
-                    ? "NAN"
+                  ipoclose.type == "BSE"
+                    ? "₹${getFormatter(noDecimal: true,v4d: false,value: double.parse(ipoclose.bidDetail![0].rate!) * double.parse(ipoclose.bidDetail![0].quantity!))}"
                     : "₹${getFormatter(
                         noDecimal: true,
                         v4d: false,
@@ -296,12 +314,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                             .toDouble(),
                       )}",
                 theme),
-            data(
-                "Price",
-                ipoclose.bidDetail![0].price == "null"
-                    ? "NAN"
-                    : "₹${ipoclose.bidDetail![0].price}",
-                theme),
+
             Padding(
               padding: const EdgeInsets.only(left: 16, top: 15, bottom: 5),
               child: Text(
@@ -342,13 +355,17 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  ipoclose.bidDetail![0].amount! == "null"
-                                      ? "NAN"
+                                  ipoclose.type == "BSE"
+                                      ? "₹${getFormatter(
+                                          noDecimal: true,
+                                          v4d: false,
+                                          value: (double.parse(ipoclose.bidDetail![index].rate!) * double.parse(ipoclose.bidDetail![index].quantity!))
+                                          )}"
                                       : "₹${getFormatter(
                                           noDecimal: true,
                                           v4d: false,
                                           value: double.parse(ipoclose
-                                                  .bidDetail![0].amount!)
+                                                  .bidDetail![index].amount!)
                                               .toDouble(),
                                         )}",
                                   style: textStyle(
@@ -370,8 +387,8 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  ipoclose.bidDetail![index].price == "null"
-                                      ? "NAN"
+                                  ipoclose.type == "BSE"
+                                      ? ipoclose.bidDetail![index].rate!
                                       : ipoclose.bidDetail![index].price!,
                                   style: textStyle(
                                       theme.isDarkMode
@@ -413,10 +430,9 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  ipoclose.bidDetail![index].atCutOff == null
-                                      ? "NAN"
-                                      : ipoclose.bidDetail![index].atCutOff!
-                                          .toString(),
+                                  ipoclose.type == "BSE"
+                                      ? ipoclose.bidDetail![index].cuttoffflag! == "0" ? "false":"true"
+                                      : ipoclose.bidDetail![index].atCutOff!.toString(),
                                   style: textStyle(
                                       theme.isDarkMode
                                           ? colors.colorWhite
@@ -457,7 +473,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 2, left: 16, bottom: 5),
+              padding: const EdgeInsets.only(top: 2, left: 16, bottom: 10),
               child: Text(
                 ipoclose.failReason.toString(),
                 style: textStyle(colors.colorGrey, 13, FontWeight.w500),

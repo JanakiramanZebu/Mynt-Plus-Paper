@@ -38,6 +38,8 @@ class IpoScrip {
   String? symbol;
   String? token;
   String? exchange;
+  String? ipostatus;
+
 
   IpoScrip({
     this.clsPric,
@@ -69,6 +71,7 @@ class IpoScrip {
     symbol = json['symbol'];
     token = json['token'];
     exchange = json['exchange'];
+    ipostatus="Listed";
   }
 
   Map<String, dynamic> toJson() {

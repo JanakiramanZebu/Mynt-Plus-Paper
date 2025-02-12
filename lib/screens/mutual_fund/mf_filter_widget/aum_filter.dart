@@ -1,0 +1,60 @@
+// import 'package:flutter/material.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:mynt_plus/res/res.dart';
+// import 'package:mynt_plus/sharedWidget/functions.dart';
+
+// import '../../../provider/mf_provider.dart';
+
+// class AumFilter extends ConsumerWidget {
+//   const AumFilter({super.key});
+
+//   @override
+//   Widget build(BuildContext context, ScopedReader watch) {
+//     final mf = watch(mfProvider);
+//     return ExpansionTile(
+//         title: Text(
+//           "Min. purchase amount",
+//           style: textStyle(colors.colorBlack, 14, FontWeight.w500),
+//         ),
+//         children: [
+//           RangeSlider(
+//             activeColor: const Color(0xffFF1717),
+//             values: mf.currentRangeValues,
+//             min: 0, // Minimum index value
+//             max: (mf.amcfilter!.length - 1).toDouble(),
+//             divisions: mf.amcfilter!.length - 1,
+//             labels: RangeLabels(
+//               mf.startValueaum.toString(),
+//                 mf.endValueaum.toString(),
+//             ),
+//             onChanged: (RangeValues values) {
+//               mf.updateRange(
+//                 values,
+//                 mf.startValueaum.toString(),
+//                 mf.endValueaum.toString(),
+//               );
+//             },
+//           ),
+//         ]);
+//   }
+// }
+// //  mf.schmeminfilter!
+// //           .map(
+// //             (child) => ListTile(
+// //               onTap: () {
+// //                  mf.selectedminamt(child.toInt());
+// //               },
+// //               minLeadingWidth: 0,
+// //               title: Padding(
+// //                 padding: const EdgeInsets.only(bottom: 6.8),
+// //                 child: Text(
+// //                   child.toString(),
+// //                   style: textStyle(colors.colorBlack, 15, FontWeight.w500),
+// //                 ),
+// //               ),
+// //               leading: SvgPicture.asset(mf.minpurchase == child
+// //                   ? assets.checkedbox
+// //                   : assets.checkbox),
+// //             ),
+// //           )
+// //           .toList(),

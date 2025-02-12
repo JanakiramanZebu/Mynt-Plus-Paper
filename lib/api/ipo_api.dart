@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:mynt_plus/models/ipo_model/ipo_pre_close_model.dart';
+
 import '../models/ipo_model/ipo_mainstream_model.dart';
 import '../models/ipo_model/ipo_order_book_model.dart';
 import '../models/ipo_model/ipo_order_res_model.dart';
@@ -17,7 +19,7 @@ mixin IPOApi on ApiCore {
           headers: funddefaultHeaders,
           body: (jsonEncode({"client_id": "${prefs.clientId}"})));
       final List body = jsonDecode(res.body);
-      // log("++++++++++++ $body");
+      // log("IPO OrderBook ++++++++++++ $body");
       return body.map((e) {
         //  print("MAP ERROR $e");
         return IpoOrderBookModel.fromJson(e);
@@ -124,8 +126,10 @@ mixin IPOApi on ApiCore {
       );
       final json = jsonDecode(res.body);
       // log("mainstream ipo res=>${res.body} ");
+
       return MainStreamIpoModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
+      print("object IPO $e");
       rethrow;
     }
   }
@@ -138,7 +142,7 @@ mixin IPOApi on ApiCore {
         headers: defaultHeaders,
       );
       final json = jsonDecode(res.body);
-      // log("sme ipo res=>${res.body} ");
+      //  log("sme ipo res=>${res.body} ");
       return SmeIpoModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -152,7 +156,7 @@ mixin IPOApi on ApiCore {
           headers: defaultHeaders,
           body: (jsonEncode({"company_name": iponame})));
       final json = jsonDecode(res.body);
-      log(res.body);
+      // log(res.body);
       if (json['data'] != "no data") {
         IpoSinglePage ipoModel = IpoSinglePage.fromJson(json);
         return ipoModel;
@@ -166,4 +170,20 @@ mixin IPOApi on ApiCore {
       rethrow;
     }
   }
+
+  Future<IpoPreCloseModel> fetchIpoPreCloseApi() async {
+    try {
+      final uri = Uri.parse(apiLinks.ipoprecloseurl);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders);
+      final json = jsonDecode(res.body);
+      // log("fetchipopreclose :: ${res.body}");
+        IpoPreCloseModel ipoModel = IpoPreCloseModel.fromJson(json);
+        return ipoModel;
+    } catch (e) {
+      print("fetchipopreclose ::  $e");
+      rethrow;
+    }
+  }
+
 }

@@ -22,35 +22,35 @@ class IpoOpenOrder extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (open.openorder!.length > 4)
-            Container(
-              alignment: Alignment.centerRight,
-              width: MediaQuery.of(context).size.width,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                  border: Border(
-                      bottom: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                          width: 6))),
-              child: InkWell(
-                onTap: () {
-                  ipo.showOpenSearch(true);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 12, left: 10),
-                  child: SvgPicture.asset(assets.searchIcon,
-                      width: 19,
-                      color: theme.isDarkMode
-                          ? Color(0xffBDBDBD)
-                          : colors.colorGrey),
-                ),
-              ),
-            ),
+            // Container(
+            //   alignment: Alignment.centerRight,
+            //   width: MediaQuery.of(context).size.width,
+            //   padding: const EdgeInsets.symmetric(vertical: 8),
+            //   decoration: BoxDecoration(
+            //       border: Border(
+            //           bottom: BorderSide(
+            //               color: theme.isDarkMode
+            //                   ? colors.darkGrey
+            //                   : const Color(0xffF1F3F8),
+            //               width: 6))),
+            //   child: InkWell(
+            //     onTap: () {
+            //       // ipo.showOpenSearch(true);
+            //     },
+            //     child: Padding(
+            //       padding: const EdgeInsets.only(right: 12, left: 10),
+            //       child: SvgPicture.asset(assets.searchIcon,
+            //           width: 19,
+            //           color: theme.isDarkMode
+            //               ? Color(0xffBDBDBD)
+            //               : colors.colorGrey),
+            //     ),
+            //   ),
+            // ),
           if (ipo.showSearch)
             Container(
               height: 62,
-              padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
+              padding: const EdgeInsets.only(left: 16, top: 8),
               decoration: BoxDecoration(
                   border: Border(
                       bottom: BorderSide(
@@ -138,8 +138,7 @@ class IpoOpenOrder extends ConsumerWidget {
                     for (var i = 0;
                         i < open.openorder![index].bidDetail!.length;
                         i++) {
-                      stringList.add(open.openorder![index].bidDetail![i].amount
-                          .toString());
+                      stringList.add( open.openorder![index].type== "BSE" ? (double.parse(open.openorder![index].bidDetail![i].rate!) * double.parse(open.openorder![index].bidDetail![i].quantity!)).toString() : open.openorder![index].bidDetail![i].amount.toString());
                       bidqty.add(open.openorder![index].bidDetail![i].quantity
                           .toString());
                     }
@@ -157,7 +156,7 @@ class IpoOpenOrder extends ConsumerWidget {
                         children: [
                           Container(
                             padding: const EdgeInsets.only(
-                                left: 16, right: 16, top: 12),
+                                left: 16, right: 16, top: 4),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -245,11 +244,10 @@ class IpoOpenOrder extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      open.openorder![index].bidDetail![0]
-                                                  .amount ==
-                                              "null"
-                                          ? "NAN"
-                                          : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}",
+                                      // open.openorder![index].type == "BSE"
+                                      //     ? "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}"
+                                      // : 
+                                          "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}",
                                       style: textStyle(
                                           theme.isDarkMode
                                               ? colors.colorWhite
@@ -329,7 +327,7 @@ class IpoOpenOrder extends ConsumerWidget {
                         children: [
                           Container(
                             padding: const EdgeInsets.only(
-                                left: 16, right: 16, top: 12),
+                                left: 16, right: 16, top: 4),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -417,10 +415,8 @@ class IpoOpenOrder extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      open.iposearch![index].bidDetail![0]
-                                                  .amount ==
-                                              "null"
-                                          ? "NAN"
+                                      open.iposearch![index].type == "BSE"
+                                          ? "₹${getFormatter(noDecimal: true,v4d: false,value: double.parse(open.iposearch![index].bidDetail![0].rate!) * double.parse(open.iposearch![index].bidDetail![0].quantity!)).toString()}" 
                                           : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(open.iposearch![index].bidDetail![0].amount.toString()))}",
                                       style: textStyle(
                                           theme.isDarkMode

@@ -152,7 +152,7 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                       Expanded(
                         child: InkWell(
                           onTap: () {
-                             mfOrder.  datePickerEnd(context);
+                            mfOrder.datePickerEnd(context);
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,6 +187,7 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                           ),
                         ),
                       ),
+                    
                     ],
                   ),
                 ],
@@ -208,8 +209,15 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
             ElevatedButton(
                 onPressed: () async {
                   if (fund.invAmtError == null && fund.upiError == null) {
+                    await mfOrder.fetchCreateMandate(
+                        context,
+                        double.parse(mfOrder.instalmentAmt.text)
+                            .toInt()
+                            .toString(),
+                        mfOrder.startDate,
+                        mfOrder.endDate);
                     Navigator.pop(context);
-                  }
+                  } else {}
                 },
                 style: ElevatedButton.styleFrom(
                     elevation: 0,

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:sms_autofill/sms_autofill.dart';
@@ -34,9 +35,12 @@ import 'change_password_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'fund_provider.dart';
 import 'index_list_provider.dart';
+// import 'iop_provider.dart';
+import 'iop_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
+import 'stocks_provider.dart';
 import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
 
@@ -541,7 +545,6 @@ class AuthProvider extends DefaultChangeNotifier {
             "This user id logged in another device, Please login again"));
         _isDisableBtn = true;
         pref.setHideLoginOptBtn(false);
-
         clearError();
         clearTextField();
         pref.setMobileLogin(false);
@@ -979,26 +982,28 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(transcationProvider).fetchfundbank(context);
         ref(transcationProvider).fetchc(context);
 
-        // await ref(ipoProvide).getSmeIpo();
-        // await ref(ipoProvide).getmainstreamipo();
-        // await ref(ipoProvide).getipoperfomance(currentYear);
-        // await ref(ipoProvide).mergemainsme();
+// IPOs 
+        await ref(ipoProvide).getSmeIpo();
+        await ref(ipoProvide).getmainstreamipo();
+        await ref(ipoProvide).getipoperfomance(currentYear);
+        await ref(ipoProvide).mergemainsme();
+        await ref(ipoProvide).fetchIpoPreClose();
 
-// // Explore
-        // await ref(stocksProvide)
-        //     .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
-        // await ref(indexListProvider).fetchStockTopIndex();
+// Explore
+        await ref(stocksProvide)
+            .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
+        await ref(indexListProvider).fetchStockTopIndex();
+
         // await ref(stocksProvide).fetchCorporateAction();
         // await ref(stocksProvide).defaultSectorThemematicData();
         // await ref(stocksProvide).getNews();
         // await ref(stocksProvide).chngTradeAct("Equity");
-        //await ref(ipoProvide).getSmeIpo();
-        //await ref(ipoProvide).getmainstreamipo();
-        //await ref(ipoProvide).getipoperfomance(currentYear);
-        //await ref(ipoProvide).mergemainsme();
-        //await ref(mfProvider).fetchMFWatchlist(null, "", context, false);
-        //await ref(mfProvider).fetchMasterMF();
-        //await ref(bondProvider).fetchGovtBonds();
+
+        ref(mfProvider).fetchcommonsearchWadd(null, "", context, false);
+        ref(mfProvider).fetchmfCommonsearch("Z", context);
+        ref(mfProvider).fetchMFWatchlist(null, "", context, false,"");
+        ref(mfProvider).fetchMasterMF();
+        ref(mfProvider).fetchMfOrderbook(context);
 
 // End Explore
         if (s.isEmpty) {

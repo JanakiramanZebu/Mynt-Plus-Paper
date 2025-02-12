@@ -78,9 +78,11 @@ class UserAccountScreen extends ConsumerWidget {
                           Navigator.pushNamed(context, Routes.reportWebViewApp,
                               arguments: "pledge");
                         } else if (acttitle == "IPO") {
-                          launch(
-                              "https://app.mynt.in/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                          Navigator.pushNamed(context, Routes.ipo);
+                          // launch(
+                          //     "https://app.mynt.in/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                         } else if (acttitle == "Mutual Fund") {
+                          // Navigator.pushNamed(context, Routes.mfmainscreen);
                           launch(
                               "https://app.mynt.in/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                         } else if (acttitle == "OptionZ") {

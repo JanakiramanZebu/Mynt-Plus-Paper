@@ -34,6 +34,7 @@ class SMEIPO {
   String? cutOffPrice;
   String? dailyEndTime;
   String? dailyStartTime;
+  String? days_to_end_ipo;
   String? discounttype;
   String? discountvalue;
   String? errorcode;
@@ -68,6 +69,8 @@ class SMEIPO {
   String? type;
   String? updateIpoDate;
   String? key;
+  String? ipostatus;
+
 
   SMEIPO(
       {this.asbanonasba,
@@ -79,6 +82,7 @@ class SMEIPO {
       this.cutOffPrice,
       this.dailyEndTime,
       this.dailyStartTime,
+      this.days_to_end_ipo,
       this.discounttype,
       this.discountvalue,
       this.errorcode,
@@ -112,8 +116,7 @@ class SMEIPO {
       this.tplusmodificationto,
       this.type,
       this.updateIpoDate,
-      this.key
-      });
+      this.key});
 
   SMEIPO.fromJson(Map<String, dynamic> json) {
     asbanonasba = json['asbanonasba'].toString();
@@ -130,6 +133,7 @@ class SMEIPO {
     cutOffPrice = json['cutOffPrice'].toString();
     dailyEndTime = json['dailyEndTime'].toString();
     dailyStartTime = json['dailyStartTime'].toString();
+    days_to_end_ipo = json["days_to_end_ipo"].toString();
     discounttype = json['discounttype'].toString();
     discountvalue = json['discountvalue'].toString();
     errorcode = json['errorcode'].toString();
@@ -169,6 +173,8 @@ class SMEIPO {
     type = json['type'].toString();
     updateIpoDate = json['update_ipo_date'].toString();
     key = json['key'].toString();
+    ipostatus="Live";
+
   }
 
   Map<String, dynamic> toJson() {
@@ -185,6 +191,7 @@ class SMEIPO {
     data['cutOffPrice'] = cutOffPrice;
     data['dailyEndTime'] = dailyEndTime;
     data['dailyStartTime'] = dailyStartTime;
+    data["days_to_end_ipo"] = days_to_end_ipo;
     data['discounttype'] = discounttype;
     data['discountvalue'] = discountvalue;
     data['errorcode'] = errorcode;

@@ -2,19 +2,30 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/mf_model/best_mf_model.dart';
 import '../models/mf_model/mandate_detail_model.dart';
+import '../models/mf_model/mf_all_payment_model.dart';
 import '../models/mf_model/mf_bank_detail_model.dart';
+import '../models/mf_model/mf_create_mandate.dart';
 import '../models/mf_model/mf_factsheet_data_model.dart';
 import '../models/mf_model/mf_factsheet_graph.dart';
+import '../models/mf_model/mf_lumpsum_order.dart';
 import '../models/mf_model/mf_nav_graph_model.dart';
+import '../models/mf_model/mf_orderbook_lumpsum_model.dart';
 import '../models/mf_model/mf_scheme_peers_model.dart';
+import '../models/mf_model/mf_search_model.dart';
 import '../models/mf_model/mf_sip_model.dart';
 import '../models/mf_model/mf_watch_list.dart';
+import '../models/mf_model/mf_x_sip_order_responces.dart';
+import '../models/mf_model/mf_xsip_cancle_resone_res.dart';
 import '../models/mf_model/mutual_fundmodel.dart';
+import '../models/mf_model/x_sip_cancel_order_model.dart';
 import '../res/res.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
@@ -40,6 +51,9 @@ class MFProvider extends DefaultChangeNotifier {
   VerifyUPIModel? _verifyUPIModel;
   VerifyUPIModel? get verifyUPIModel => _verifyUPIModel;
 
+  MfPlaceOrderResponces? _mfPlaceOrderResponces;
+  MfPlaceOrderResponces? get mfPlaceOrderResponces => _mfPlaceOrderResponces;
+
   BestMFModel? _bestMFModel;
   BestMFModel? get bestMFModel => _bestMFModel;
 
@@ -57,8 +71,20 @@ class MFProvider extends DefaultChangeNotifier {
   List<MutualFundList>? _mutualFundList = [];
   List<MutualFundList>? get mutualFundList => _mutualFundList;
 
+  List<MutualFundList>? _mutualFundtopsearch = [];
+  List<MutualFundList>? get mutualFundtopsearch => _mutualFundtopsearch;
+
+  List<MfList>? _mutualFundcommonsearch;
+  List<MfList>? get mutualFundcommonsearch => _mutualFundcommonsearch;
+
+  SearchMFmodel? _mutualFundsearchdata;
+  SearchMFmodel? get mutualFundsearchdata => _mutualFundsearchdata;
+
   List<MutualFundList>? _mfWatchlist = [];
   List<MutualFundList>? get mfWatchlist => _mfWatchlist;
+
+  List<MutualFundList>? _topmutualfund = [];
+  List<MutualFundList>? get topmutualfund => _topmutualfund;
 
   List<MutualFundList>? _equityMf = [];
   List<MutualFundList>? get equityMf => _equityMf;
@@ -71,17 +97,195 @@ class MFProvider extends DefaultChangeNotifier {
   List<MutualFundList>? _solutionOMf = [];
   List<MutualFundList>? get solutionOMf => _solutionOMf;
 
+  List<MutualFundList>? _filteredMf = [];
+  List<MutualFundList>? get filteredMf => _filteredMf;
+
   List<MFCategory> _mfCategorys = [];
   List<MFCategory> get mfCategorys => _mfCategorys;
 
+  List<String>? _subCat = [];
+  List<String>? get subCat => _subCat;
+
+  List<String>? _uniqueList = [];
+  List<String>? get uniqueList => _uniqueList;
+
+  List<String>? _amc = [];
+  List<String>? get amc => _amc;
+
+  List<String>? _amcfilter = [];
+  List<String>? get amcfilter => _amcfilter;
+
+  List<double>? _schmemin = [];
+  List<double>? get schmemin => _schmemin;
+
+  List<int>? _schmeminfilter = [];
+  List<int>? get schmeminfilter => _schmeminfilter;
+
+  List<String>? _aum = [];
+  List<String>? get aum => _aum;
+
+  bool? _isFiltered = false;
+  bool? get isFiltered => _isFiltered;
+
+  RangeValues _currentRangeValues = const RangeValues(0, 11);
+  RangeValues get currentRangeValues => _currentRangeValues;
+
+  updateRange(RangeValues values, String start, String end) {
+    _currentRangeValues = values;
+    print("object  $start $end");
+
+    notifyListeners();
+  }
+
+  int get startValue => _schmeminfilter![_currentRangeValues.start.round()];
+  int get endValue => _schmeminfilter![_currentRangeValues.end.round()];
+
+  List<String>? _aumfilter = [];
+  List<String>? get aumfilter => _aumfilter;
+
   String _mfCategory = "Top Mutual Funds";
   String get mfCategory => _mfCategory;
+
+  String _bestmfselected = "";
+  String get bestmfselected => _bestmfselected;
+
   MFWatchlistModel? _mfWatchlistModel;
   MFWatchlistModel? get mfWatchlistModel => _mfWatchlistModel;
+
+  MfLumpSumOrderbook? _mfLumpSumOrderbook;
+  MfLumpSumOrderbook? get mflumpsumorderbook => _mfLumpSumOrderbook;
+
+  MfCreateMandateModel? _createMandateModel;
+  MfCreateMandateModel? get createMandateModel => _createMandateModel;
+
+  XsipOrderResponces? _xsipOrderResponces;
+  XsipOrderResponces? get xsipOrderResponces => _xsipOrderResponces;
+
+  XsipOrderCancleResone? _xsipOrderCancleResone;
+  XsipOrderCancleResone? get xsipOrderCancleResone => _xsipOrderCancleResone;
+
+  XsipOrderCancleResponces? _xsipOrderCancleResponces;
+  XsipOrderCancleResponces? get xsipOrderCancleResponces =>
+      _xsipOrderCancleResponces;
+
+  AllPaymentMfModel? _allPaymentMfModel;
+  AllPaymentMfModel? get allPaymentMfModel => _allPaymentMfModel;
+
+  List<MutualFundList>? _bestmfFilter = [];
+  List<MutualFundList>? get bestmfFilter => _bestmfFilter;
+
+  List<MutualFundList>? _bestmfList = [];
+  List<MutualFundList>? get bestmfList => _bestmfList;
+  bool? _isportfolio = false;
+  bool? get isportfolio => _isportfolio;
+
+  setPortfolioIs(bool value) {
+    _isportfolio = value;
+    notifyListeners();
+  }
+
+  makefalse(String isn) {
+    int index = _topmutualfund!.indexWhere((element) => element.iSIN == isn);
+    if (index != -1) {
+      _topmutualfund![index].isAdd = false;
+    } else {
+      print("Value not found");
+    }
+
+    notifyListeners();
+  }
+
+  maketrue(String isn) {
+    int index = _topmutualfund!.indexWhere((element) => element.iSIN == isn);
+    if (index != -1) {
+      _topmutualfund![index].isAdd = true;
+    } else {
+      print("Value not found");
+    }
+
+    notifyListeners();
+  }
+
+  updateFilteredMF(range) {
+    _filteredMf = _mutualFundList!.where((content) {
+      return _subcatselected.contains(content.sCHEMESUBCATEGORY);
+    }).toList();
+    _isFiltered = true;
+    _filteredMf = _subcatselected.isEmpty
+        ? _mutualFundList!.where((content) {
+            return _amcselected.contains(content.aMCCode!
+                .toLowerCase()
+                .replaceAll('mf', '')
+                .replaceAll('_', ' '));
+          }).toList()
+        : _filteredMf!.where((content) {
+            return _amcselected.contains(content.aMCCode!
+                .toLowerCase()
+                .replaceAll('mf', '')
+                .replaceAll('_', ' '));
+          }).toList();
+    _filteredMf = _subcatselected.isEmpty && _amcselected.isEmpty
+        ? _mutualFundList!.where((content) {
+            double value = double.parse(content.minimumPurchaseAmount!);
+            return value >= startValue && value <= endValue;
+          }).toList()
+        : _filteredMf!.where((content) {
+            double value = double.parse(content.minimumPurchaseAmount!);
+            return value >= startValue && value <= endValue;
+          }).toList();
+    if (_subcatselected.isEmpty & _amcselected.isEmpty & !range) {
+      _isFiltered = false;
+    }
+    notifyListeners();
+  }
+
+  bestmfEmpty(String val) {
+    _bestmfselected = val;
+    notifyListeners();
+  }
+
+  filterItem(String title) {
+    _bestmfselected = title;
+    _bestmfFilter = _bestmfList!.where((item) {
+      bool isT = item.schemeName!.contains("GROWTH");
+      if (isT) {
+        if (title == "Save taxes") {
+          return item.sCHEMECATEGORY!.toUpperCase().contains("EQUITY") &&
+              item.sCHEMESUBCATEGORY!.toUpperCase().contains("ELSS");
+        } else if (title == "Low-cost index funds") {
+          return item.sCHEMECATEGORY!.toUpperCase().contains("OTHER") &&
+              item.sCHEMESUBCATEGORY!.toUpperCase().contains("INDEX FUNDS") &&
+              double.parse(item.minimumPurchaseAmount.toString()).toInt() <
+                  5000;
+        } else if (title == "Smart beta") {
+          return item.sCHEMECATEGORY!.toUpperCase().contains("OTHER") &&
+              item.sCHEMESUBCATEGORY!.toUpperCase().contains("INDEX FUNDS") &&
+              item.schemeType!.toUpperCase().contains("EQUITY") &&
+              double.parse(item.minimumPurchaseAmount.toString()).toInt() <
+                  5000;
+        } else if (title == "Equity + Debt") {
+          return item.sCHEMECATEGORY!.toUpperCase().contains("HYBRID") &&
+              (item.sCHEMESUBCATEGORY!.contains(
+                      "Dynamic Asset Allocation or Balanced Advantage") ||
+                  item.sCHEMESUBCATEGORY!.contains("Balanced Hybrid Fund"));
+        } else if (title == "Alternatives to bank FDs") {
+          return item.sCHEMECATEGORY!.toUpperCase().contains('DEBT') &&
+              item.sCHEMESUBCATEGORY!.toUpperCase().contains('LIQUID');
+        }
+      }
+
+      return false;
+    }).toList();
+
+    notifyListeners();
+  }
 
   List _mfReturnsGridview = [];
 
   List get mfReturnsGridview => _mfReturnsGridview;
+
+  bool? _mfPlaceorderload = true;
+  bool? get mfPlaceorderload => _mfPlaceorderload;
 
   String _comYear = "10 Years";
   String get comYear => _comYear;
@@ -100,11 +304,20 @@ class MFProvider extends DefaultChangeNotifier {
 
   TextEditingController instalmentAmt = TextEditingController();
 
+  final TextEditingController mfsearchcontroller = TextEditingController();
+
   TextEditingController invDuration = TextEditingController();
   String _freqName = "";
   String _dates = "1";
   String get freqName => _freqName;
   String get dates => _dates;
+
+  String _xsipvalue = "";
+  String get xsipvalue => _xsipvalue;
+
+  String _xsipcaseno = "";
+  String get xsipcaseno => _xsipcaseno;
+
   List<String> _dateList = [];
   List<String> get dateList => _dateList;
   String _insAmt = "0.00";
@@ -114,8 +327,158 @@ class MFProvider extends DefaultChangeNotifier {
   String _mfOrderTpye = "Lumpsum";
   String get mfOrderTpye => _mfOrderTpye;
 
+  List mfOrderbookfilters = ["All", "Lumpsum", "X-SIP", "Redeem"];
+  String _mfOrderbookfilter = "All";
+  String get mfOrderbookfilter => _mfOrderbookfilter;
+
   String _mandateId = "";
   String get mandateId => _mandateId;
+
+  List<String> _subcatselected = [];
+  List<String> get subcatselected => _subcatselected;
+
+  List<String> _amcselected = [];
+  List<String> get amcselected => _amcselected;
+
+  String _aumselected = "";
+  String get aumselected => _aumselected;
+
+  bool? _mfloader = false;
+  bool? get mfloader => _mfloader;
+
+  bool _showSearch = false;
+  bool get showSearch => _showSearch;
+
+  int _shoew = 10;
+  int get shoew => _shoew;
+
+  int _minpurchase = 0;
+  int get minpurchase => _minpurchase;
+
+  int _bestshoew = 10;
+  int get bestshoew => _bestshoew;
+
+  selectedSubCat(String value) {
+    // _subcatselected = value;
+    if (_subcatselected.contains(value)) {
+      _subcatselected.remove(value); // Deselect the item
+    } else {
+      _subcatselected.add(value); // Select the item
+    }
+    print("value $_subcatselected");
+    notifyListeners();
+  }
+
+  selectedminamt(int value) {
+    _minpurchase = value;
+    print("value $_minpurchase");
+    notifyListeners();
+  }
+
+  selectedamc(String value) {
+    // _amcselected = value;
+    if (_amcselected.contains(value)) {
+      _amcselected.remove(value); // Deselect the item
+    } else {
+      _amcselected.add(value); // Select the item
+    }
+    print("value $_amcselected");
+    notifyListeners();
+  }
+
+  bestshowmore(int value) {
+    _bestmfFilter!.length > _bestshoew
+        ? _bestshoew += value
+        : _bestshoew += (_bestmfFilter!.length - _bestshoew);
+    notifyListeners();
+  }
+
+  showmore(int value) {
+    _topmutualfund!.length > _shoew
+        ? _shoew += value
+        : _shoew += (_topmutualfund!.length - _shoew);
+    // print(
+    //     " overall length ${_mutualFundList!.length} object ${_mutualFundList!.length > _shoew ? _shoew : _shoew += (_mutualFundList!.length - _shoew)}");
+    notifyListeners();
+  }
+
+  showOpenSearch(bool value) {
+    _showSearch = value;
+    if (!_showSearch) {
+      _mutualFundtopsearch = [];
+      mfsearchcontroller.clear();
+    }
+    notifyListeners();
+  }
+
+  commonsearch() {
+    _mutualFundsearchdata!.data = [];
+    mfsearchcontroller.clear();
+
+    notifyListeners();
+  }
+
+  clearopenoreder() {
+    mfsearchcontroller.clear();
+    _mutualFundtopsearch = [];
+    _mutualFundsearchdata!.data!.clear();
+    notifyListeners();
+  }
+
+  bestmfSearch(String value, BuildContext context) {
+    if (value.length > 1) {
+      _mutualFundtopsearch = [];
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      _mutualFundtopsearch = _bestmfFilter!.where((element) {
+        final symbol = element.schemeName!.toUpperCase();
+        // final companyname = element.companyName!.toUpperCase();
+        // final status = element.reponseStatus!.toUpperCase();
+        // final investedvalue = element.bidDetail![0].amount!.toUpperCase();
+        return
+            //companyname.contains(value.toUpperCase()) ||
+            //     status.contains(value.toUpperCase()) ||
+            //     investedvalue.contains(value.toUpperCase()) ||
+            symbol.contains(value.toUpperCase());
+      }).toList();
+      if (_bestmfFilter!.isEmpty) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'No Data Found'));
+      } else {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    } else {
+      _mutualFundtopsearch = [];
+    }
+    notifyListeners();
+  }
+
+  mfSearch(String value, BuildContext context) {
+    if (value.length > 1) {
+      _mutualFundtopsearch = [];
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      _mutualFundtopsearch = _mutualFundList!.where((element) {
+        final symbol = element.schemeName!.toUpperCase();
+        // final companyname = element.companyName!.toUpperCase();
+        // final status = element.reponseStatus!.toUpperCase();
+        // final investedvalue = element.bidDetail![0].amount!.toUpperCase();
+        return
+            //companyname.contains(value.toUpperCase()) ||
+            //     status.contains(value.toUpperCase()) ||
+            //     investedvalue.contains(value.toUpperCase()) ||
+            symbol.contains(value.toUpperCase());
+      }).toList();
+      if (_mutualFundtopsearch!.isEmpty) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'No Data Found'));
+      } else {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    } else {
+      _mutualFundtopsearch = [];
+    }
+    notifyListeners();
+  }
+
   chngMandate(String val) {
     _mandateId = val;
     notifyListeners();
@@ -129,6 +492,12 @@ class MFProvider extends DefaultChangeNotifier {
   chngComYear(String year, String yearName, String isin) async {
     _comYear = yearName;
     await fetchSchemePeer(isin, year);
+    notifyListeners();
+  }
+
+  chngOrderFilter(String val) {
+    _mfOrderbookfilter = val;
+
     notifyListeners();
   }
 
@@ -150,20 +519,41 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  chngxsip(
+    String val,
+  ) {
+    _xsipvalue = val;
+    _xsipcaseno = _xsipOrderCancleResone!.data!
+        .firstWhere((reason) => reason.reasonName == val)
+        .id
+        .toString();
+    print("object ${_xsipcaseno}");
+    notifyListeners();
+  }
+
   chngMFCategory(String val) {
     _mfCategory = val;
     if (_mfCategory == "Equity Funds") {
-      _mutualFundList = _equityMf;
+      _topmutualfund = _equityMf;
+      _shoew = 0;
     } else if (_mfCategory == "Debt Funds") {
-      _mutualFundList = _debutMf;
+      _topmutualfund = _debutMf;
+      _shoew = 0;
     } else if (_mfCategory == "Hybrid Funds") {
-      _mutualFundList = _hybridMf;
+      _topmutualfund = _hybridMf;
+      _shoew = 0;
     } else if (_mfCategory == "Solution Oriented Funds") {
-      _mutualFundList = _solutionOMf;
+      _topmutualfund = _solutionOMf;
+      _shoew = 0;
     } else if (_mfCategory == "Top Mutual Funds") {
-      _mutualFundList = _mutualFundModel!.mutualFundList;
+      _topmutualfund = _mutualFundModel!.mutualFundList;
+      _shoew = 0;
+    } else if (val == "out") {
+      _topmutualfund = _mutualFundModel!.mutualFundList;
+      _shoew = 10;
     } else {
-      _mutualFundList = _otherMf;
+      _shoew = 0;
+      _topmutualfund = _otherMf;
     }
 
     for (var watchListMf in _mfWatchlist!) {
@@ -181,11 +571,28 @@ class MFProvider extends DefaultChangeNotifier {
               ? "0.00"
               : a.aUM.toString()));
     });
+
     notifyListeners();
+  }
+
+  Future fetchmfCommonsearch(String value, BuildContext context) async {
+    try {
+      _mutualFundsearchdata = await api.getSearchMf(value);
+      var search = "";
+      for (var i = 0; i < _mutualFundsearchdata!.data!.length; i++) {
+        search = "${_mutualFundsearchdata!.data![i].fSchemeName}";
+      }
+      notifyListeners();
+      print("object ${search}");
+    } catch (e) {
+      print("SEARCH ERROR :: $e");
+    }
   }
 
   Future fetchMasterMF() async {
     try {
+      _mfloader = true;
+      _topmutualfund = [];
       _equityMf = [];
       _debutMf = [];
       _hybridMf = [];
@@ -212,7 +619,16 @@ class MFProvider extends DefaultChangeNotifier {
           }
         }
         _mutualFundList = _mutualFundModel!.mutualFundList;
+        _topmutualfund = _mutualFundModel!.mutualFundList;
+        _bestmfList = _mutualFundModel!.mutualFundList;
 
+        for (var element in _bestmfList!) {
+          _subCat?.add(element.sCHEMESUBCATEGORY.toString());
+          _amc?.add(element.aMCCode.toString());
+          _schmemin!
+              .add(double.parse(element.minimumPurchaseAmount.toString()));
+          _aum!.add(element.aUM.toString());
+        }
         for (var watchListMf in _mfWatchlist!) {
           for (var masterMf in _mutualFundList!) {
             if (watchListMf.iSIN == masterMf.iSIN) {
@@ -220,8 +636,24 @@ class MFProvider extends DefaultChangeNotifier {
             }
           }
         }
+        _uniqueList = _subCat!
+            .where((item) => item.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
 
-        _mutualFundList!.sort((a, b) {
+        _amcfilter = _amc!
+            .map((fund) =>
+                fund.toLowerCase().replaceAll('mf', '').replaceAll('_', ' '))
+            .toSet()
+            .toList();
+
+        _schmeminfilter =
+            _schmemin!.map((item) => item.toInt()).toSet().toList()..sort();
+        _aumfilter = _aum!.map((item) => item).toSet().toList()..sort();
+
+        print("object $_schmeminfilter");
+        _topmutualfund!.sort((a, b) {
           return double.parse(b.aUM.toString() == "null" || b.aUM!.isEmpty
                   ? "0.00"
                   : b.aUM.toString())
@@ -233,8 +665,7 @@ class MFProvider extends DefaultChangeNotifier {
       }
       _mfCategorys.add(MFCategory(
           name: "Top Mutual Funds",
-          length:
-              "${_mutualFundList!.length > 100 ? 100 : _mutualFundList!.length} Funds"));
+          length: "${_topmutualfund!.length > 100 ? 100 : null} Funds"));
 
       _mfCategorys.add(MFCategory(
           name: "Equity Funds", length: "${_equityMf!.length} Funds"));
@@ -251,9 +682,12 @@ class MFProvider extends DefaultChangeNotifier {
 
       _mfCategorys.add(
           MFCategory(name: "Other Funds", length: "${_otherMf!.length} Funds"));
+
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    } finally {
+      _mfloader = false;
     }
   }
 
@@ -404,14 +838,15 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchMFWatchlist(MutualFundList? scipt, String isAdd,
-      BuildContext context, bool bool) async {
+  Future fetchcommonsearchWadd(
+      MfList? scipt, String isAdd, BuildContext context, bool bool) async {
     try {
       _mfWatchlist = [];
-      _mfWatchlistModel = await api.getMFWatchlist(scipt, isAdd);
+      _mfWatchlistModel = await api.getMFWatchlistsearch(scipt, isAdd);
       if (_mfWatchlistModel!.stat == "Ok") {
         _mfWatchlist = _mfWatchlistModel!.scripts ?? [];
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        //log("SSSSSSSSSSSSS ${_mfWatchlistModel!.msg.toString()}");
         if (isAdd == "add") {
           ScaffoldMessenger.of(context).showSnackBar(successMessage(
               context, "Stock was Added to Mutual fund watchlist"));
@@ -419,6 +854,7 @@ class MFProvider extends DefaultChangeNotifier {
           ScaffoldMessenger.of(context).showSnackBar(successMessage(
               context, "Stock was Removed to Mutual fund watchlist"));
         }
+
         if (bool) {
           _mutualFundList = _mfWatchlist;
         }
@@ -430,10 +866,61 @@ class MFProvider extends DefaultChangeNotifier {
             }
           }
         }
+      } else {
+        _mfWatchlist = [];
+        if (_mfWatchlistModel!.msg == "script exists") {
+          ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, "${_mfWatchlistModel!.msg}"));
+        }
       }
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }
+  }
+
+  Future fetchMFWatchlist(MutualFundList? scipt, String isAdd,
+      BuildContext context, bool bool, String val) async {
+    try {
+      _mfWatchlist = [];
+      _mfWatchlistModel = await api.getMFWatchlist(scipt, isAdd);
+      if (_mfWatchlistModel!.stat == "Ok") {
+        _mfWatchlist = _mfWatchlistModel!.scripts ?? [];
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        //log("SSSSSSSSSSSSS ${_mfWatchlistModel!.msg.toString()}");
+        if (isAdd == "add") {
+          ScaffoldMessenger.of(context).showSnackBar(successMessage(
+              context, "Stock was Added to Mutual fund watchlist"));
+        } else if (isAdd == "delete") {
+          ScaffoldMessenger.of(context).showSnackBar(successMessage(
+              context, "Stock was Removed to Mutual fund watchlist"));
+        }
+
+        if (bool) {
+          print("object $bool");
+          _mutualFundList = _mfWatchlist;
+        }
+
+        for (var watchListMf in _mfWatchlist!) {
+          print("object 1");
+          for (var masterMf in _mutualFundList!) {
+            print("object 2");
+            if (watchListMf.iSIN == masterMf.iSIN) {
+              print("object 3");
+              masterMf.isAdd = true;
+            }
+          }
+        }
+      } else {
+        _mfWatchlist = [];
+        if (_mfWatchlistModel!.msg == "script exists") {
+          ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, "${_mfWatchlistModel!.msg}"));
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("rererer $e");
     }
   }
 
@@ -487,15 +974,57 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
+  Future fetchMfPlaceorder(
+      MfPlaceOrderInput placeorderinput, BuildContext context) async {
+    try {
+      _mfPlaceOrderResponces = await api.getLumpSumOrder(placeorderinput);
+      if (_mfPlaceOrderResponces?.stat == "Ok" &&
+          _mfPlaceOrderResponces?.orderNumber != null) {
+        fetchAllPayment(
+            context,
+            "${_mfPlaceOrderResponces?.orderNumber}",
+            placeorderinput.amount,
+            ref(fundProvider).accNum,
+            ref(fundProvider).ifsc,
+            ref(fundProvider).bankname,
+            ref(fundProvider).paymentName == "UPI" ? "UPI" : "NET BANKING",
+            "",
+            "",
+            ref(fundProvider).upiId.text);
+      } else {
+        ref(fundProvider).paymentName == "UPI"
+            ? ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                context, '${_mfPlaceOrderResponces!.responseMessage}'))
+            : null;
+      }
+    } catch (e) {
+      log("Failed to Place MF order :: ${e.toString()}");
+      notifyListeners();
+    }
+  }
+
+  Future fetchMfOrderbook(BuildContext context) async {
+    try {
+      _mfLumpSumOrderbook = await api.getorderbook();
+      print(
+          "object 1234${_mfLumpSumOrderbook!.xsipPurchaseNotListed![0].orderNumber}");
+    } catch (e) {
+      log("Failed to Place MF order :: ${e.toString()}");
+      notifyListeners();
+    }
+  }
+
   Future fetchVerifyUpi(
     BuildContext context,
     String upiId,
+    MfPlaceOrderInput input,
   ) async {
     try {
       toggleLoadingOn(true);
       _verifyUPIModel = await api.getVerifyUpi(upiId, "123456");
       if (_verifyUPIModel!.data!.verifiedVPAStatus1 == "Available" ||
           _verifyUPIModel!.data!.verifiedVPAStatus2 == "Available") {
+        fetchMfPlaceorder(input, context);
       } else {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'Invalid UPI ID'));
@@ -508,6 +1037,122 @@ class MFProvider extends DefaultChangeNotifier {
       notifyListeners();
     } finally {
       toggleLoadingOn(false);
+    }
+  }
+
+  Future fetchCreateMandate(BuildContext context, String amount,
+      String startDate, String endDate) async {
+    try {
+      _createMandateModel =
+          await api.getCreateMandate(amount, startDate, endDate);
+
+      if (_createMandateModel?.mandate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "${_createMandateModel!.error}"));
+      } else {
+        fetchMFMandateDetail();
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "${_createMandateModel!.resp}"));
+      }
+      print(
+          "object ${_createMandateModel!.error} ${_createMandateModel!.url1} ::${_createMandateModel!.mandate}");
+    } catch (e) {
+      log("Failed to Create Mandate :: ${e.toString()}");
+      notifyListeners();
+    }
+  }
+
+  Future fetchXsipPlaceOrder(
+      BuildContext context,
+      String schemecode,
+      String startDate,
+      String freqtype,
+      String amt,
+      String noofinstallment,
+      String enddate,
+      String mandateId) async {
+    try {
+      _xsipOrderResponces = await api.getXsipPurchase(schemecode, startDate,
+          freqtype, amt, noofinstallment, endDate, mandateId);
+
+      if (_xsipOrderResponces?.stat == 'OK') {
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "${_xsipOrderResponces!.responseMessage}"));
+        fetchAllPayment(
+            context,
+            "${_mfPlaceOrderResponces?.orderNumber}",
+            amt,
+            ref(fundProvider).accNum,
+            ref(fundProvider).ifsc,
+            ref(fundProvider).bankname,
+            ref(fundProvider).paymentName == "UPI" ? "UPI" : "NET BANKING",
+            "",
+            "",
+            ref(fundProvider).upiId.text);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "${_xsipOrderResponces!.responseMessage}"));
+      }
+      print("object ${_xsipOrderResponces!.responseMessage} ");
+    } catch (e) {
+      log("Failed to Place X-sip :: ${e.toString()}");
+      notifyListeners();
+    }
+  }
+
+  Future fetchXsipcancelResone() async {
+    try {
+      _xsipOrderCancleResone = await api.getXsipCancleResone();
+      _xsipvalue = "${_xsipOrderCancleResone!.data![0].reasonName}";
+      _xsipcaseno = "${_xsipOrderCancleResone!.data![0].id}";
+      print("object ${_xsipOrderCancleResone?.data![0].id}");
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future fetchXsipcancel(BuildContext context, String xsipregno,
+      String internalrefno, String caseno, String remarks) async {
+    try {
+      _xsipOrderCancleResponces =
+          await api.getxsipCancle(xsipregno, internalrefno, caseno, remarks);
+
+      if (_xsipOrderCancleResponces?.stat == "Not Ok") {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "${_xsipOrderCancleResponces!.emsg}"));
+      } else {}
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future fetchAllPayment(
+      BuildContext context,
+      String orderNumber,
+      String totalAmt,
+      String accno,
+      String ifsc,
+      String bankname,
+      String paymentMethod,
+      String internalrefno,
+      String mandateId,
+      String upi) async {
+    try {
+      _allPaymentMfModel = await api.getmfallpayment(orderNumber, totalAmt,
+          accno, ifsc, bankname, paymentMethod, internalrefno, mandateId, upi);
+      if (_allPaymentMfModel?.stat == "Not Ok") {
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "${_allPaymentMfModel!.emsg}"));
+      } else {
+        launch("https://v3.mynt.in/mf${_allPaymentMfModel!.file}");
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint("ALL MF ERROR $e");
     }
   }
 
@@ -576,6 +1221,38 @@ class MFProvider extends DefaultChangeNotifier {
     return itemsHeights;
   }
 
+  List<DropdownMenuItem<String>> xsipDividers() {
+    List<DropdownMenuItem<String>> menuItems = [];
+
+    for (var item in _xsipOrderCancleResone!.data!) {
+      menuItems.addAll([
+        DropdownMenuItem<String>(
+            value: item.reasonName.toString(),
+            child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: Text("${item.reasonName!}",
+                    style: textStyle(
+                        const Color(0xff000000), 13, FontWeight.w500)))),
+        if (item != _xsipOrderCancleResone!.data!.last)
+          const DropdownMenuItem<String>(enabled: false, child: Divider())
+      ]);
+    }
+    return menuItems;
+  }
+
+  List<double> xsipCustHeight() {
+    List<double> itemsHeights = [];
+    for (var i = 0; i < (_xsipOrderCancleResone!.data!.length * 2) - 1; i++) {
+      if (i.isEven) {
+        itemsHeights.add(40);
+      }
+      if (i.isOdd) {
+        itemsHeights.add(4);
+      }
+    }
+    return itemsHeights;
+  }
+
   DateTime _curDate = DateTime.now();
   DateTime get curDate => _curDate;
 
@@ -588,6 +1265,7 @@ class MFProvider extends DefaultChangeNotifier {
   String get startDate => _startDate;
   String _endDate = "";
   String get endDate => _endDate;
+
   getCurrentDate() {
     _curDate = DateTime.now();
     _pickedStartDate = null;
@@ -646,11 +1324,23 @@ class MFProvider extends DefaultChangeNotifier {
                       Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("${item.mandateId}",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: textStyle(
-                                    colors.colorBlack, 14, FontWeight.w500)),
+                            Row(
+                              children: [
+                                Text("${item.mandateId}",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: textStyle(colors.colorBlack, 14,
+                                        FontWeight.w500)),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                item.status == "REJECTED"
+                                    ? SvgPicture.asset(assets.cancelledIcon)
+                                    : item.status == "APPROVED"
+                                        ? SvgPicture.asset(assets.completedIcon)
+                                        : SvgPicture.asset(assets.warningIcon)
+                              ],
+                            ),
                             const SizedBox(height: 2),
                             Text("Reg date: ${item.regnDate}",
                                 style: textStyle(

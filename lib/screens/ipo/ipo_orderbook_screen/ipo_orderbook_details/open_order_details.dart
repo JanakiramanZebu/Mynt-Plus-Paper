@@ -245,7 +245,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                         style: textStyle(colors.colorGrey, 13, FontWeight.w600),
                       ),
                       Text(
-                        ipodetails.applicationNumber.toString(),
+                        ipodetails.bidReferenceNumber != ""?ipodetails.bidReferenceNumber.toString():" - ",
                         style: textStyle(
                             theme.isDarkMode
                                 ? colors.colorWhite
@@ -386,17 +386,24 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             ),
             data(
                 "App no",
-                ipodetails.respBid == null ||
-                        ipodetails.respBid![0].bidReferenceNumber == "null"
-                    ? "NAN"
+                ipodetails.type == "BSE"
+                    ? "-"
                     : ipodetails.respBid![0].bidReferenceNumber.toString(),
                 theme),
             data("Quantity", ipodetails.bidDetail![0].quantity.toString(),
                 theme),
+
+            data(
+                "Price",
+                ipodetails.type == "BSE"
+                    ? ipodetails.bidDetail![0].rate.toString()
+                    : "${double.parse(ipodetails.bidDetail![0].price.toString()).toInt()}",
+                theme),
+
             data(
                 "Total amount",
-                ipodetails.bidDetail![0].amount! == "null"
-                    ? "NAN"
+                ipodetails.type == "BSE"
+                    ?"₹${getFormatter(noDecimal: true,v4d: false,value: double.parse(ipodetails.bidDetail![0].rate!) * double.parse(ipodetails.bidDetail![0].quantity!)).toString()}"
                     : "₹${getFormatter(
                         noDecimal: true,
                         v4d: false,
@@ -404,12 +411,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                             .toDouble(),
                       )}",
                 theme),
-            data(
-                "Price",
-                ipodetails.type == "BSE"
-                    ? ipodetails.bidDetail![0].rate.toString()
-                    : "${double.parse(ipodetails.bidDetail![0].price.toString()).toInt()}",
-                theme),
+            
             Padding(
               padding: const EdgeInsets.only(left: 16, top: 15, bottom: 5),
               child: Text(
@@ -450,8 +452,12 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  ipodetails.bidDetail![index].amount! == "null"
-                                      ? "NAN"
+                                  ipodetails.type == "BSE"
+                                      ? "₹${getFormatter(
+                                          noDecimal: true,
+                                          v4d: false,
+                                          value: (double.parse(ipodetails.bidDetail![index].rate!) * double.parse(ipodetails.bidDetail![index].quantity!))
+                                          )}"
                                       : "₹${getFormatter(
                                           noDecimal: true,
                                           v4d: false,
@@ -567,7 +573,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 2, left: 16, bottom: 5),
+              padding: const EdgeInsets.only(top: 2, left: 16, bottom: 10),
               child: Text(
                 "Order placed successfully",
                 style: textStyle(colors.colorGrey, 13, FontWeight.w500),

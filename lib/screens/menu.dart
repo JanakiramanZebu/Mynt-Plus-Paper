@@ -75,7 +75,7 @@ class _MoreMenuBottomSheetState extends State<MoreMenuBottomSheet> {
                       } else {
                         await context
                             .read(mfProvider)
-                            .fetchMFWatchlist(null, "", context, false);
+                            .fetchMFWatchlist(null, "", context, false,"");
                         await context.read(mfProvider).fetchMasterMF();
                       }
                       menus.bottomMenu(5 + index, context);

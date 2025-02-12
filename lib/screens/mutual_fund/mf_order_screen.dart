@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
+import '../../models/mf_model/mf_lumpsum_order.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
@@ -206,7 +207,8 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         onChanged: (value) async {
                           mfOrder.chngMandate("$value");
                         })),
-                 const SizedBox(height: 8),   ],
+                const SizedBox(height: 8),
+              ],
               ElevatedButton(
                   onPressed: () async {
                     showDialog(
@@ -659,7 +661,10 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                   child: Text(
                       " NAV will be allotted on the day funds are realised at the clearing corporation.",
                       style: textStyle(colors.colorBlue, 12, FontWeight.w500)))
-            ])
+            ]),
+            const SizedBox(
+              height: 100,
+            ),
           ]),
           bottomSheet: Container(
               color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
@@ -720,15 +725,42 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(
-                        onPressed: () async {},
+                        onPressed: () async {
+                          if (mfOrder.mfOrderTpye == "Lumpsum") {
+                            mfPlaceorder(widget.mfData, mfOrder, context, fund);
+                          } else {
+                            mfOrder.fetchXsipPlaceOrder(
+                                context,
+                                "${double.parse(mfOrder.instalmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
+                                mfOrder.freqName == "Daily"
+                                    ? "0"
+                                    : mfOrder.startDate,
+                                mfOrder.freqName,
+                                mfOrder.instalmentAmt.text,
+                                mfOrder.invDuration.text,
+                                mfOrder.freqName == "Daily"
+                                    ? "0"
+                                    : mfOrder.endDate,
+                                mfOrder.mandateId);
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 10),
-                            backgroundColor: fund.invAmtError == null && fund.upiError == null
-                                ?  colors.ltpgreen:colors.ltpgreen.withOpacity(.7),
+                            backgroundColor: fund.invAmtError == null &&
+                                    fund.upiError == null
+                                ? colors.ltpgreen
+                                : colors.ltpgreen.withOpacity(.7),
                             shape: const StadiumBorder()),
-                        child: Text("Invest",
-                            style: textStyle(
-                                const Color(0xffffffff), 14, FontWeight.w600))),
+                        child: mfOrder.loading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Color(0xff666666)),
+                              )
+                            : Text("Invest",
+                                style: textStyle(const Color(0xffffffff), 14,
+                                    FontWeight.w600))),
                   ),
                   if (defaultTargetPlatform == TargetPlatform.iOS)
                     const SizedBox(height: 18)
@@ -736,4 +768,29 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
               )));
     });
   }
+}
+
+mfPlaceorder(
+  MutualFundList mfData,
+  MFProvider mfOrder,
+  BuildContext context,
+  FundProvider fund,
+) {
+  MfPlaceOrderInput input = MfPlaceOrderInput(
+    transcode: "NEW", //NEW/CXL
+    schemecode:
+        "${double.parse(mfOrder.instalmentAmt.text).toInt() >= 200000 ? "${mfData.schemeCode}-L1" : mfData.schemeCode}",
+    buysell: "P",
+    buyselltype: "FRESH",
+    dptxn: "C",
+    amount: double.parse(mfOrder.instalmentAmt.text).toInt().toString(),
+    allredeem: "N",
+    kycstatus: "Y",
+    qty: "0",
+    euinflag: "Y",
+    minredeem: "N",
+    dpc: "Y",
+  );
+  mfOrder.fetchVerifyUpi(context, fund.upiId.text, input);
+  print("object $input");
 }

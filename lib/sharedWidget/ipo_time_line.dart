@@ -18,10 +18,11 @@ class IpoTimeLineWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-   
     final today = DateTime.now();
     final eventDate =
-        DateFormat('EEEE, MMMM d, yyyy').parse(orderHistoryData['value']!);
+        DateFormat('EEE, MMM d, yyyy').parse(orderHistoryData['value']!);
+    // final eventDate =
+    // DateFormat('EEEE, MMMM d, yyyy').parse(orderHistoryData['value']!);
     Color lineColor;
     Color indicatorColor;
     // Check if the event is in the past, today, or in the future
@@ -37,7 +38,7 @@ class IpoTimeLineWidget extends StatelessWidget {
     }
     return Container(
       padding: const EdgeInsets.symmetric(),
-      height: 90,
+      height: 60,
       child: TimelineTile(
           hasIndicator: true,
           isFirst: isfFrist,
@@ -45,7 +46,7 @@ class IpoTimeLineWidget extends StatelessWidget {
           afterLineStyle: LineStyle(thickness: 2, color: lineColor),
           beforeLineStyle: LineStyle(thickness: 2, color: lineColor),
           indicatorStyle: IndicatorStyle(
-              width: 22,
+              width: 20,
               color: indicatorColor,
               iconStyle: IconStyle(
                 iconData: lineColor == const Color(0xffFFB038)
@@ -55,23 +56,20 @@ class IpoTimeLineWidget extends StatelessWidget {
                 color: const Color(0xffffffff),
               )),
           endChild: Container(
-            margin: const EdgeInsets.only(left: 20),
-            decoration: BoxDecoration(
-              color: lineColor == const Color(0xffFFB038)
-                  ? const Color(0xffFFF6E6)
-                  : const Color(0xffECF8F1),
-              borderRadius: BorderRadius.circular(10),
-              // border: Border.all(color: Colors.grey.withOpacity(.3)
-            ),
+            margin: const EdgeInsets.only(left: 4),
+            // decoration: BoxDecoration(
+            //   color: lineColor == const Color(0xffFFB038)
+            //       ? const Color(0xffFFF6E6)
+            //       : const Color(0xffECF8F1),
+            //   borderRadius: BorderRadius.circular(10),
+            //   // border: Border.all(color: Colors.grey.withOpacity(.3)
+            // ),
             child: ListTile(
               contentPadding:
-                  const EdgeInsets.symmetric(vertical: 0, horizontal: 14),
+                  const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
               dense: true,
               title: Text(orderHistoryData['name']!.toUpperCase(),
-                  style: textStyle(
-                      colors.colorBlack,
-                      14,
-                      FontWeight.w500)),
+                  style: textStyle(colors.colorBlack, 12, FontWeight.w500)),
               subtitle: Text(orderHistoryData['value']!,
                   style:
                       textStyle(const Color(0xff666666), 10, FontWeight.w500)),

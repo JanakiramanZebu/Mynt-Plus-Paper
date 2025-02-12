@@ -48,12 +48,15 @@ class Assets {
   final String rankIcon = "assets/icon/ranking.svg";
   final String volumeIcon = "assets/icon/volume.svg";
   final String optChainIcon = "assets/icon/option_chain.svg";
+  final String exportIcon = "assets/icon/exploreicon.svg";
+  final String bookmarkLineIcon = "assets/icon/bookmarkLineIcon.svg";
   final String bookmarkedIcon = "assets/icon/watchlistIcon/bookmark_plus.svg";
   final String bookmarkIcon = "assets/icon/watchlistIcon/bookmark.svg";
   final String rightarrow = "assets/icon/arrow_right.svg";
   final String depthIcon = "assets/icon/depthIcon.svg";
   final String lock = "assets/icon/lock 2.svg";
   final String backArrow = "assets/icon/appbarIcon/arrowleft.svg";
+  final String myntnewLogo = "assets/icon/MYNT App Logo_v2.svg";
 
   final String buyIcon = "assets/icon/buy_btn_icon.svg";
   final String sellIcon = "assets/icon/sell_btn_icon.svg";
@@ -122,6 +125,10 @@ class Assets {
   final String squareminus = "assets/icon/square_minus.svg";
   final String building = "assets/icon/building.svg";
   final String dash = "assets/icon/dash.svg";
+  final String groupnew = "assets/icon/Group.svg";
+  final String listed = "assets/icon/appbarIcon/listed.svg";
+  final String liveorpre = "assets/icon/appbarIcon/liveorpre.svg";
+  final String closed = "assets/icon/appbarIcon/closed.svg";
 
   /////stock inverst/////
   final String triangledown = 'assets/icon/triangle-down.svg';

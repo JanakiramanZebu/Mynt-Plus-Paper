@@ -1,7 +1,6 @@
 class MainStreamIpoModel {
   String? msg;
   List<MainIPO>? mainIPO;
-  
 
   MainStreamIpoModel({this.mainIPO});
 
@@ -35,6 +34,7 @@ class MainIPO {
   String? cutOffPrice;
   String? dailyEndTime;
   String? dailyStartTime;
+  String? days_to_end_ipo;
   String? discounttype;
   String? discountvalue;
   String? errorcode;
@@ -69,6 +69,7 @@ class MainIPO {
   String? type;
   String? updateIpoDate;
   String? key;
+  String? ipostatus;
 
   MainIPO(
       {this.asbanonasba,
@@ -80,6 +81,7 @@ class MainIPO {
       this.cutOffPrice,
       this.dailyEndTime,
       this.dailyStartTime,
+      this.days_to_end_ipo,
       this.discounttype,
       this.discountvalue,
       this.errorcode,
@@ -113,8 +115,7 @@ class MainIPO {
       this.tplusmodificationto,
       this.type,
       this.updateIpoDate,
-      this.key
-      });
+      this.key});
 
   MainIPO.fromJson(Map<String, dynamic> json) {
     asbanonasba = json['asbanonasba'].toString();
@@ -126,6 +127,7 @@ class MainIPO {
         categoryDetails!.add(CategoryDetails.fromJson(v));
       });
     }
+    days_to_end_ipo = json["days_to_end_ipo"].toString();
     closedatetime = json['closedatetime'].toString();
     companyName = json['company_name'].toString();
     cutOffPrice = json['cutOffPrice'].toString();
@@ -133,6 +135,7 @@ class MainIPO {
     dailyStartTime = json['dailyStartTime'].toString();
     discounttype = json['discounttype'].toString();
     discountvalue = json['discountvalue'].toString();
+    days_to_end_ipo = json["days_to_end_ipo"].toString();
     errorcode = json['errorcode'].toString();
     faceValue = json['faceValue'].toString();
     id = json['id'].toString();
@@ -169,6 +172,7 @@ class MainIPO {
     tplusmodificationto = json['tplusmodificationto'].toString();
     type = json['type'].toString();
     updateIpoDate = json['update_ipo_date'].toString();
+    ipostatus = "Live";
   }
 
   Map<String, dynamic> toJson() {

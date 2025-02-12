@@ -38,7 +38,7 @@ class _PerformanceInfoScreenState extends State<PerformanceInfoScreen> {
           expand: false,
           builder: (context, scrollController) {
             return widget.market.fundamentalData?.msg == "no data found"
-                ? Column(
+                ? const Column(
                     children: [
                       const CustomDragHandler(),
                       Padding(
@@ -135,6 +135,7 @@ class _PerformanceInfoScreenState extends State<PerformanceInfoScreen> {
                   );
           },
         );
+      
       },
     );
   }

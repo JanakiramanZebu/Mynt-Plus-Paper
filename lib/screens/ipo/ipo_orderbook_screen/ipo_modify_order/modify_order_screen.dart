@@ -714,7 +714,7 @@ class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
                                                             .toString())
                                                         .toInt()) {
                                               addIpo[index].biderrortext =
-                                                  "Your bit price ranges lesser than ₹${double.parse(widget.modifyipoorder.minprice!).toInt()} ₹${double.parse(widget.modifyipoorder.maxprice!).toInt()}";
+                                                  "Your bid price ranges lesser than ₹${double.parse(widget.modifyipoorder.minprice!).toInt()} ₹${double.parse(widget.modifyipoorder.maxprice!).toInt()}";
                                               ischecked = false;
                                             } else {
                                               addIpo[index].biderrortext = "";
@@ -925,7 +925,7 @@ class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
                                                 .toInt()) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(warningMessage(context,
-                                              "Your bit price ranges between ₹${double.parse(widget.modifyipoorder.minprice!).toInt()}-₹${double.parse(widget.modifyipoorder.maxprice!).toInt()}"));
+                                              "Your bid price ranges between ₹${double.parse(widget.modifyipoorder.minprice!).toInt()}-₹${double.parse(widget.modifyipoorder.maxprice!).toInt()}"));
                                       ischecked = false;
                                     } else if ((int.parse(addIpo[addIpo.length - 1].qualityController.text)) <
                                         int.parse(widget.modifyipoorder.minbidquantity.toString())
@@ -957,7 +957,7 @@ class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
                                             double.parse(widget.modifyipoorder.minprice.toString()).toInt()) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(warningMessage(context,
-                                              "Your bit price ranges between ₹${double.parse(widget.modifyipoorder.minprice!).toInt()} ₹${double.parse(widget.modifyipoorder.maxprice!).toInt()}"));
+                                              "Your bid price ranges between ₹${double.parse(widget.modifyipoorder.minprice!).toInt()} ₹${double.parse(widget.modifyipoorder.maxprice!).toInt()}"));
 
                                       ischecked = false;
                                     } else if (ipo.viewupiid.text.isEmpty) {

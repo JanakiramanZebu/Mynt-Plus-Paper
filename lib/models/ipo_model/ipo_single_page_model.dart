@@ -1,6 +1,6 @@
 class IpoSinglePage {
-  final dynamic data; // Can be a Map<String, dynamic> or String
-  final dynamic scripdata;
+  dynamic data; // Can be a Map<String, dynamic> or String
+  dynamic scripdata;
   // Constructor to initialize IpoSinglePage
   IpoSinglePage({
     required this.data,
@@ -8,10 +8,16 @@ class IpoSinglePage {
   });
 
   // Factory constructor to create an instance from JSON
-  factory IpoSinglePage.fromJson(Map<String, dynamic> json) {
-    return IpoSinglePage(
-        data: json['data'] ?? {}, // Handling default value
-        scripdata: json['data']['script_data']);
+  IpoSinglePage.fromJson(Map<String, dynamic> json) {
+    if (json["data"] != "no data") {
+      data = json['data']; // Handling default value
+      scripdata = json['data'].containsKey("script_data")
+          ? json['data']['script_data']
+          : {};
+    } else {
+      data = json['data'];
+      scripdata = {};
+    }
   }
 
   // Method to convert IpoSinglePage instance to a JSON representation

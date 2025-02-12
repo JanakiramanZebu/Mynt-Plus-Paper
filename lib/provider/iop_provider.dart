@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_details_model.dart';
+import 'package:mynt_plus/models/ipo_model/ipo_pre_close_model.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
@@ -27,8 +28,43 @@ class IPOProvider extends DefaultChangeNotifier {
 
   late TabController ipoTab;
 
+  // final String ipoImageUrl=api.apiLinks.dashBoardURL;
+
   final TextEditingController quantity = TextEditingController();
   final TextEditingController bidprice = TextEditingController();
+
+  bool _isSMEPlaceOrderBtnActive = false;
+  bool get isSMEPlaceOrderBtnActive => _isSMEPlaceOrderBtnActive;
+
+  set setisSMEPlaceOrderBtnActiveValue(bool value) {
+    _isSMEPlaceOrderBtnActive = value;
+  }
+
+  int _smePlaceOrderRequiredMaxPrice = 0;
+  int get smePlaceOrderRequiredMaxPrice => _smePlaceOrderRequiredMaxPrice;
+
+  set setsmePlaceOrderRequiredMaxPrice(List<IpoDetails> addIpo) {
+    _smePlaceOrderRequiredMaxPrice = addIpo.map((map) => map .requriedprice).reduce((a,b)=>a>b?a:b);
+  }
+    
+
+
+  bool _isMainIPOPlaceOrderBtnActive = false;
+  bool get isMainIPOPlaceOrderBtnActive => _isMainIPOPlaceOrderBtnActive;
+
+  set setisMainIPOPlaceOrderBtnActiveValue(bool value) {
+    _isMainIPOPlaceOrderBtnActive = value;
+  }
+
+
+  int _mainIPOPlaceOrderRequiredMaxPrice = 0;
+  int get mainIPOPlaceOrderRequiredMaxPrice => _mainIPOPlaceOrderRequiredMaxPrice;
+
+  set setMainIPOPlaceOrderRequiredMaxPrice(List<IpoDetails> addIpo) {
+    _mainIPOPlaceOrderRequiredMaxPrice = addIpo.map((map) => map .requriedprice).reduce((a,b)=>a>b?a:b);
+  }
+    
+
 
   bool _isActiveMainStream = true;
   bool get isActiveMainStream => _isActiveMainStream;
@@ -59,8 +95,11 @@ class IPOProvider extends DefaultChangeNotifier {
   final TextEditingController performancesearchcontroller =
       TextEditingController();
   final TextEditingController openOrderController = TextEditingController();
-
+  final TextEditingController ipocommonsearchcontroller =
+      TextEditingController();
   late TabController tabCtrl;
+  late TabController ipoScreenTab;
+  late TabController ipoOrderBookScreenTab;
 
   VerifyUPIModel? _upiIdValidationModel;
   VerifyUPIModel? get upiIdValidationModel => _upiIdValidationModel;
@@ -73,6 +112,9 @@ class IPOProvider extends DefaultChangeNotifier {
 
   IpoPerformanceModel? _ipoPerformanceModel;
   IpoPerformanceModel? get ipoPerformanceModel => _ipoPerformanceModel;
+
+  IpoPreCloseModel? _ipoPreClose;
+  IpoPreCloseModel? get ipoPreClose => _ipoPreClose;
 
   List<IpoScrip>? _performancesearch = [];
   List<IpoScrip>? get performancesearch => _performancesearch;
@@ -92,6 +134,12 @@ class IPOProvider extends DefaultChangeNotifier {
   List<IpoOrderBookModel>? _iposearch = [];
   List<IpoOrderBookModel>? get iposearch => _iposearch;
 
+
+  List _ipoCommonSearchList = [];
+  List get ipoCommonSearchList => _ipoCommonSearchList;
+
+  List _ipoCommonSearchAllIpos = [];
+
   List<IpoOrderBookModel>? _openorder = [];
   List<IpoOrderBookModel>? get openorder => _openorder;
 
@@ -107,11 +155,20 @@ class IPOProvider extends DefaultChangeNotifier {
   List<SMEIPO>? _sme = [];
   List<SMEIPO>? get sme => _sme;
 
+  String ipoCategoryvalue = "";
+  String get ipoCategorys => ipoCategoryvalue;
+
   mergemainsme() {
     _mainsme = [];
+    _ipoCommonSearchAllIpos =[];
     try {
-      _mainsme.addAll(mainStreamIpoModel!.mainIPO ?? []);
-      _mainsme.addAll(smeIpoModel!.sMEIPO ?? []);
+      _mainsme.addAll(_mainStreamIpoModel!.mainIPO ?? []);
+      _mainsme.addAll(_smeIpoModel!.sMEIPO ?? []);
+
+      _ipoCommonSearchAllIpos.addAll(_mainStreamIpoModel!.mainIPO ?? []);
+      _ipoCommonSearchAllIpos.addAll(_smeIpoModel!.sMEIPO ?? []);
+      _ipoCommonSearchAllIpos.addAll(_ipoPerformanceModel!.data??[]);
+      _ipoCommonSearchAllIpos.addAll(_ipoPreClose?.msg ?? []);
 
       for (int i = 0; i < _mainsme.length; i++) {
         if (_mainsme[i] is MainIPO) {
@@ -124,7 +181,7 @@ class IPOProvider extends DefaultChangeNotifier {
           //     "SME IPO : ${_mainsme[i].biddingStartDate} ${_mainsme[i].name} ${_mainsme[i].key}");
         }
       }
-      print("ODDDDD :: ${_mainsme[0].biddingStartDate} ${_mainsme[0].key}");
+      // print("ODDDDD :: ${_mainsme[0].biddingStartDate} ${_mainsme[0].key}");
 
       _mainsme.sort((a, b) {
         final DateFormat dateFormat = DateFormat("dd-MM-yyyy");
@@ -164,17 +221,41 @@ class IPOProvider extends DefaultChangeNotifier {
   List<String> _stringList = [];
   List<String> get stringList => _stringList;
 
-  List<Tab> _orderTabName = [];
-  List<Tab> get orderTabName => _orderTabName;
+  final List<Tab> _ipoScreenTabName = [
+    const Tab(text: "Explore IPOs"),
+    const Tab(text: "Order Book"),
+  ];
+  List<Tab> get ipoScreenTabName => _ipoScreenTabName;
 
-  tabSize() {
-    _orderTabName = [
-      Tab(text: "Current & Upcoming"),
-      Tab(text: "Listed IPO’s"),
-    ];
+  List<Tab> _orderBookTabName = [];
+  List<Tab> get orderBookTabName => _orderBookTabName;
 
+  bool _displayload = true;
+  bool get displayload => _displayload;
+
+  final List _inIPOTabNameBtns = [
+    {"btnName": "Live / Pre Open", "imgPath": assets.liveorpre},
+    {"btnName": "Closed", "imgPath": assets.closed},
+    {"btnName": "Listed", "imgPath": assets.listed}
+  ];
+  List get inIPOTabNameBtns => _inIPOTabNameBtns;
+
+  String _inIPOTabNameAct = "Live / Pre Open";
+  String get inIPOTabNameAct => _inIPOTabNameAct;
+
+  chngDephBtn(val) {
+    _inIPOTabNameAct = val;
     notifyListeners();
   }
+
+  // tabSize() {
+  //   _orderTabName = [
+  //     Tab(text: "Current & Upcoming"),
+  //     Tab(text: "Listed IPO’s")
+  //   ];
+
+  //   notifyListeners();
+  // }
 
   showOpenSearch(bool value) {
     _showSearch = value;
@@ -195,6 +276,54 @@ class IPOProvider extends DefaultChangeNotifier {
     _performancesearch = [];
     notifyListeners();
   }
+
+// Common search for IPOs
+
+
+  showCommonIpoSearch(bool value) {
+    _showSearch = value;
+    if (!_showSearch) {
+      _ipoCommonSearchList = [];
+    }
+    notifyListeners();
+  }
+
+  clearCommonIpoSearch() {
+    ipocommonsearchcontroller.clear();
+    _ipoCommonSearchList = [];
+    notifyListeners();
+  }
+
+  searchCommonIpo(String value, BuildContext context) {
+    print("searchCommonIpo :: $value");
+    if (value.length > 1) {
+      _ipoCommonSearchList = [];
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      
+      _ipoCommonSearchList = _ipoCommonSearchAllIpos
+          .where((element) =>
+              element.companyName != ""? element.companyName!.toUpperCase().contains(value.toUpperCase())
+              :element.name!.toUpperCase().contains(value.toUpperCase()) )
+          .toList();
+        print("_ipoCommonSearchList :: ${inspect(_ipoCommonSearchList)}");
+      if (_ipoCommonSearchList.isEmpty) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'No Data Found'));
+      } else {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    } else {
+      _ipoCommonSearchList = [];
+    }
+    notifyListeners();
+  }
+
+
+
+
+
+
+
 
   openOrderSearch(String value, BuildContext context) {
     if (value.length > 1) {
@@ -327,14 +456,14 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.biderrortext = addIpo.bidpricecontroller.text.isEmpty
           ? "* Value is required"
           : "Value cannot be 0";
-      ischecked = false;
+      setisSMEPlaceOrderBtnActiveValue = false;
     } else if ((int.parse(addIpo.bidpricecontroller.text)) >
             double.parse(smeipo.maxPrice.toString()).toInt() ||
         (int.parse(addIpo.bidpricecontroller.text)) <
             double.parse(smeipo.minPrice.toString()).toInt()) {
       addIpo.biderrortext =
-          "Your bit price ranges between ₹${double.parse(smeipo.minPrice!).toInt()}-₹${double.parse(smeipo.maxPrice!).toInt()}";
-      ischecked = false;
+          "Your bid price ranges between ₹${double.parse(smeipo.minPrice!).toInt()}-₹${double.parse(smeipo.maxPrice!).toInt()}";
+      setisSMEPlaceOrderBtnActiveValue = false;
     } else {
       addIpo.biderrortext = "";
     }
@@ -356,7 +485,7 @@ class IPOProvider extends DefaultChangeNotifier {
                 (int.parse(addIpo.qualityController.text))
         : addIpo.qualityController.text.isEmpty
             ? addIpo.qualityController.text = ""
-            : addIpo.requriedprice = double.parse(smeipo.minPrice!).toInt() *
+            : addIpo.requriedprice = double.parse(addIpo.bidpricecontroller.text).toInt() *
                 (int.parse(addIpo.qualityController.text));
     if (addIpo.qualityController.text.isEmpty ||
         addIpo.qualityController.text == "0") {
@@ -364,17 +493,17 @@ class IPOProvider extends DefaultChangeNotifier {
           ? "* Value is required"
           : "Value cannot be 0";
       addIpo.requriedprice = 0;
-      ischecked = false;
+      setisSMEPlaceOrderBtnActiveValue = false;
       notifyListeners();
     } else if ((int.parse(addIpo.qualityController.text)) <
         int.parse(smeipo.minBidQuantity.toString()).toInt()) {
       addIpo.qualityerrortext =
           "Minimum Bid quantity is ${smeipo.minBidQuantity.toString()} only ";
-      ischecked = false;
+      setisSMEPlaceOrderBtnActiveValue = false;
     } else if (addIpo.requriedprice > maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
-      ischecked = false;
+      setisSMEPlaceOrderBtnActiveValue = false;
     } else {
       addIpo.qualityerrortext = "";
     }
@@ -390,7 +519,7 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(smeipo.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
-          : addIpo.requriedprice = double.parse(smeipo.minPrice!).toInt() *
+          : addIpo.requriedprice = double.parse(addIpo.bidpricecontroller.text).toInt() *
               (int.parse(addIpo.qualityController.text));
     }
     if (addIpo.qualityController.text.isEmpty ||
@@ -401,7 +530,7 @@ class IPOProvider extends DefaultChangeNotifier {
     } else if (addIpo.requriedprice > maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
-      ischecked = false;
+      setisSMEPlaceOrderBtnActiveValue = false;
     } else {
       addIpo.qualityerrortext = "";
     }
@@ -410,6 +539,10 @@ class IPOProvider extends DefaultChangeNotifier {
 
   smequalityplusefunction(
       IpoDetails addIpo, bool ischecked, SMEIPO smeipo, double maxUPIAmt) {
+    print(addIpo);
+    print(ischecked);
+    print(smeipo);
+    print(maxUPIAmt);
     if (addIpo.qualityController.text.isNotEmpty) {
       addIpo.qualityController.text =
           (int.parse(addIpo.qualityController.text) + addIpo.lotsize)
@@ -417,7 +550,7 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(smeipo.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
-          : addIpo.requriedprice = double.parse(smeipo.minPrice!).toInt() *
+          : addIpo.requriedprice = double.parse(addIpo.bidpricecontroller.text).toInt() *
               (int.parse(addIpo.qualityController.text));
     }
     if (addIpo.qualityController.text.isEmpty ||
@@ -428,12 +561,27 @@ class IPOProvider extends DefaultChangeNotifier {
     } else if (addIpo.requriedprice > maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
-      ischecked = false;
+      setisSMEPlaceOrderBtnActiveValue = false;
     } else {
       addIpo.qualityerrortext = "";
     }
     notifyListeners();
   }
+
+  checkForErrorsInSMEPlaceOrder(List<IpoDetails> addIpo){
+        bool status = false;
+      for (final item in addIpo){
+          if (item.qualityerrortext.isEmpty && item.biderrortext.isEmpty){
+              status= true;
+          }else{
+            status =false;
+            break;
+          }
+      }
+      return status;
+    
+  }
+
 
   ipoOrdervalidation(
       IpoDetails addIpo,
@@ -485,7 +633,7 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(mainstream.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
-          : addIpo.requriedprice = double.parse(mainstream.minPrice!).toInt() *
+          : addIpo.requriedprice = double.parse(addIpo.bidpricecontroller.text).toInt() *
               (int.parse(addIpo.qualityController.text));
     }
     if (addIpo.qualityController.text.isEmpty ||
@@ -496,7 +644,7 @@ class IPOProvider extends DefaultChangeNotifier {
     } else if (addIpo.requriedprice > ipo.maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ";
-      ischecked = false;
+      setisMainIPOPlaceOrderBtnActiveValue = false;
     } else {
       addIpo.qualityerrortext = "";
     }
@@ -513,7 +661,7 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(mainstream.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
-          : addIpo.requriedprice = double.parse(mainstream.minPrice!).toInt() *
+          : addIpo.requriedprice = double.parse(addIpo.bidpricecontroller.text).toInt() *
               (int.parse(addIpo.qualityController.text));
     }
     if (addIpo.qualityController.text.isEmpty ||
@@ -524,11 +672,12 @@ class IPOProvider extends DefaultChangeNotifier {
     } else if (addIpo.requriedprice > ipo.maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ";
-      ischecked = false;
+      setisMainIPOPlaceOrderBtnActiveValue = false;
     } else if ((int.parse(addIpo.qualityController.text)) <
         int.parse(mainstream.minBidQuantity.toString()).toInt()) {
       addIpo.qualityerrortext =
           "Minimum Bid quantity is ${mainstream.minBidQuantity.toString()} only ";
+      setisMainIPOPlaceOrderBtnActiveValue = false;
     } else {
       addIpo.qualityerrortext = "";
     }
@@ -547,7 +696,7 @@ class IPOProvider extends DefaultChangeNotifier {
         : addIpo.qualityController.text.isEmpty
             ? addIpo.qualityController.text = ""
             : addIpo.requriedprice =
-                double.parse(mainstream.minPrice!).toInt() *
+                double.parse(addIpo.bidpricecontroller.text).toInt() *
                     (int.parse(addIpo.qualityController.text));
     addIpo.qualityController.text.isEmpty
         ? addIpo.requriedprice = 0
@@ -561,16 +710,16 @@ class IPOProvider extends DefaultChangeNotifier {
           ? "* Value is required"
           : "Value cannot be 0";
       addIpo.requriedprice = 0;
-      ischecked = false;
+      setisMainIPOPlaceOrderBtnActiveValue = false;
     } else if (addIpo.requriedprice > ipo.maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ";
-      ischecked = false;
+      setisMainIPOPlaceOrderBtnActiveValue = false;
     } else if ((int.parse(addIpo.qualityController.text)) <
         int.parse(mainstream.minBidQuantity.toString()).toInt()) {
       addIpo.qualityerrortext =
           "Minimum Bid quantity is ${mainstream.minBidQuantity.toString()} only ";
-      ischecked = false;
+      setisMainIPOPlaceOrderBtnActiveValue = false;
     } else {
       addIpo.qualityerrortext = "";
     }
@@ -591,24 +740,21 @@ class IPOProvider extends DefaultChangeNotifier {
           ? "* Value is required"
           : "Value cannot be 0";
       addIpo.requriedprice = 0;
+      setisMainIPOPlaceOrderBtnActiveValue= false;
     } else if ((int.parse(addIpo.bidpricecontroller.text)) >
             double.parse(mainstream.maxPrice.toString()).toInt() ||
         (int.parse(addIpo.bidpricecontroller.text)) <
             double.parse(mainstream.minPrice.toString()).toInt()) {
       addIpo.biderrortext =
-          "Your bit price ranges between ₹${double.parse(mainstream.minPrice!).toInt()}-₹${double.parse(mainstream.maxPrice!).toInt()}";
-      ischecked = false;
+          "Your bid price ranges between ₹${double.parse(mainstream.minPrice!).toInt()}-₹${double.parse(mainstream.maxPrice!).toInt()}";
+      setisMainIPOPlaceOrderBtnActiveValue = false;
     } else {
       addIpo.biderrortext = "";
     }
     notifyListeners();
   }
 
-  cutoffprice(
-    bool isChecked,
-    IpoDetails addIpo,
-    MainIPO mainstream,
-  ) {
+  cutoffprice(IpoDetails addIpo, MainIPO mainstream) {
     addIpo.biderrortext = "";
     addIpo.isChecked = !addIpo.isChecked;
     addIpo.isChecked == true
@@ -632,17 +778,25 @@ class IPOProvider extends DefaultChangeNotifier {
 
   smeipocategory() {
     ipoCategory = [];
+    ipoCategoryvalue = "";
     try {
       toggleLoadingOn(true);
       for (var element in smeIpoModel!.sMEIPO!) {
         for (var i = 0; i < element.subCategorySettings!.length; i++) {
           if (element.subCategorySettings![i].allowUpi!) {
-            if (element.subCategorySettings![i].subCatCode == "IND" &&
-                element.subCategorySettings![i].caCode == "RETAIL") {
-              ipoCategory.add({
-                "subCatCode": "Individual",
-                "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
-              });
+            if (element.subCategorySettings![i].subCatCode == "IND") {
+              if (element.key == "BSE") {
+                ipoCategory.add({
+                  "subCatCode": "Individual",
+                  "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
+                });
+              } else if (element.subCategorySettings![i].subCatCode == "IND" &&
+                  element.subCategorySettings![i].caCode == "RETAIL") {
+                ipoCategory.add({
+                  "subCatCode": "Individual",
+                  "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
+                });
+              }
             } else if (element.subCategorySettings![i].subCatCode == "EMP") {
               ipoCategory.add({
                 "subCatCode": "Employee",
@@ -686,6 +840,7 @@ class IPOProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       ipoCategory = [];
+      ipoCategoryvalue = "";
       for (var element in mainStreamIpoModel!.mainIPO!) {
         for (var i = 0; i < element.subCategorySettings!.length; i++) {
           if (element.subCategorySettings![i].allowUpi!) {
@@ -851,9 +1006,6 @@ class IPOProvider extends DefaultChangeNotifier {
 
   List ipoCategory = [];
 
-  String ipoCategoryvalue = "";
-  String get ipoCategorys => ipoCategoryvalue;
-
   chngCategoryType(String val) async {
     for (var element in ipoCategory) {
       if (val == element['subCatCode']) {
@@ -889,31 +1041,45 @@ class IPOProvider extends DefaultChangeNotifier {
     return menuItems;
   }
 
-  List<Tab> _ipotabs = [
-    const Tab(text: "Open order"),
-    const Tab(text: "Close order"),
+  final List _ipoOrderBookTabNameBtns = [
+    {"btnName": "Open Order", "imgPath": assets.dInfo},
+    {"btnName": "Closed Order", "imgPath": assets.charticon},
   ];
-  List<Tab> get ipotabs => _ipotabs;
+  List get ipoOrderBookTabNameBtns => _ipoOrderBookTabNameBtns;
 
-  ipotab() {
-    _ipotabs = [
-      Tab(
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-            Text("Open Order (${_openorder!.length})"),
-          ])),
-      Tab(
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-            Text("Close Order  (${_closeorder!.length})"),
-          ]))
-    ];
+  String _ipoOrderBookTabNameAct = "Open Order";
+  String get ipoOrderBookTabNameAct => _ipoOrderBookTabNameAct;
+
+  chngOrderBookTabNameBtn(currentTab) {
+    _ipoOrderBookTabNameAct = currentTab;
     notifyListeners();
   }
+
+  // List<Tab> _ipoOrderBookTabs = [
+  //   // const Tab(text: "Open order"),
+  //   // const Tab(text: "Close order"),
+  // ];
+  // List<Tab> get ipoOrderBookTabs => _ipoOrderBookTabs;
+
+  // ipotab() {
+  //    _ipoOrderBookTabs= [
+  //     Tab(
+  //         child: Row(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: [
+  //           Text("Open Order (${_openorder!.length})"),
+  //         ])),
+  //     Tab(
+  //         child: Row(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: [
+  //           Text("Close Order  (${_closeorder!.length})"),
+  //         ]))
+  //   ];
+  //   notifyListeners();
+  // }
 
   ordersplit() {
     _openorder = [];
@@ -942,6 +1108,21 @@ class IPOProvider extends DefaultChangeNotifier {
   }
 
 //// API CALLS
+  Future getipoorderbookmodel1(bool isTrue) async {
+    try {
+      _displayload = true;
+      _ipoOrderBookModel = await api.fetchipoorderbook();
+      ordersplit();
+      //  print("IPO RES ORDERBOOK ::: ${_ipoOrderBookModel![0].bidDetail![0].amount}");
+      notifyListeners();
+      return _ipoOrderBookModel;
+    } catch (e) {
+      print("IPOs ORDERBOOK error:: $e");
+    } finally {
+      _displayload = false;
+    }
+  }
+
   Future getipoorderbookmodel(bool isTrue) async {
     try {
       togglefundLoadingOn(isTrue ? true : false);
@@ -966,7 +1147,7 @@ class IPOProvider extends DefaultChangeNotifier {
           _upiIdValidationModel!.data!.verifiedVPAStatus2 == "Available") {
         getipoplaceorder(context, menudata, iposbids, iposupiid);
         getipoorderbookmodel(true);
-        ipotab();
+        // ipotab();
         Navigator.pushNamed(context, Routes.ipoorderbook);
       } else {
         ScaffoldMessenger.of(context)
@@ -991,7 +1172,7 @@ class IPOProvider extends DefaultChangeNotifier {
       _ipoOrderResponcesModel =
           await api.fetchipoplaceorder(menudata, iposbids, iposupiid);
       getipoorderbookmodel(true);
-      ipotab();
+      // ipotab();
 
       ScaffoldMessenger.of(context).showSnackBar(
           successMessage(context, '${_ipoOrderResponcesModel!.msg}'));
@@ -1022,12 +1203,13 @@ class IPOProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       _mainStreamIpoModel = await api.fetchmainstreamoipo();
+      print("object ${_mainStreamIpoModel!.mainIPO![0].asbanonasba}");
       getipoorderbookmodel(true);
       notifyListeners();
 
       return _mainStreamIpoModel;
     } catch (e) {
-      //print("MainStream IPOs error:: $e");
+      print("MainStream IPOs error:: $e");
     } finally {
       toggleLoadingOn(false);
     }
@@ -1038,7 +1220,7 @@ class IPOProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _smeIpoModel = await api.fetchsmeipo();
 
-      tabSize();
+      // tabSize();
       notifyListeners();
       return _smeIpoModel;
     } catch (e) {
@@ -1056,7 +1238,7 @@ class IPOProvider extends DefaultChangeNotifier {
         iposinglepage!.scripdata!["IPO_Timeline"].removeLast();
       }
 
-      print("object :::: ${_ipoSinglePage!.data}");
+      // print("object :::: ${_ipoSinglePage!.data}");
       notifyListeners();
       return _ipoSinglePage;
     } catch (e) {
@@ -1065,4 +1247,73 @@ class IPOProvider extends DefaultChangeNotifier {
       togglefundLoadingOn(false);
     }
   }
+
+  Future fetchIpoPreClose() async {
+    try {
+      togglefundLoadingOn(true);
+      _ipoPreClose = await api.fetchIpoPreCloseApi();
+      // print("object :::: ${_ipoPreClose}");
+      notifyListeners();
+      return _ipoPreClose;
+    } catch (e) {
+      print("fetchIpoPreClose error:: $e");
+    } finally {
+      togglefundLoadingOn(false);
+    }
+  }
+
+  sortpreCloseIPOListByDate(List<Msg> data) {
+    try {
+      data.sort((a, b) {
+        final DateFormat dateFormat = DateFormat("MMMM d, yyyy");
+        DateTime dateA = dateFormat.parse(a.listedDate.toString());
+        DateTime dateB = dateFormat.parse(b.listedDate.toString());
+        return dateB.compareTo(dateA);
+      }); // Sort by date
+    } catch (e) {}
+  }
+
+  convertDatetime(String? data) {
+    try {
+      final DateFormat dateFormat = DateFormat("MMMM d, yyyy");
+      return dateFormat.parse(data.toString());
+    } catch (e) {
+      return data;
+    }
+  }
+}
+
+extension DateTimeExtension on DateTime? {
+  
+  bool? isAfterOrEqualTo(DateTime dateTime) {
+    final date = this;
+    if (date != null) {
+      final isAtSameMomentAs = dateTime.isAtSameMomentAs(date);
+      return isAtSameMomentAs | date.isAfter(dateTime);
+    }
+    return null;
+  }
+
+  bool? isBeforeOrEqualTo(DateTime dateTime) {
+    final date = this;
+    if (date != null) {
+      final isAtSameMomentAs = dateTime.isAtSameMomentAs(date);
+      return isAtSameMomentAs | date.isBefore(dateTime);
+    }
+    return null;
+  }
+
+  bool? isBetween(
+    DateTime fromDateTime,
+    DateTime toDateTime,
+  ) {
+    final date = this;
+    if (date != null) {
+      final isAfter = date.isAfterOrEqualTo(fromDateTime) ?? false;
+      final isBefore = date.isBeforeOrEqualTo(toDateTime) ?? false;
+      return isAfter && isBefore;
+    }
+    return null;
+  }
+
 }

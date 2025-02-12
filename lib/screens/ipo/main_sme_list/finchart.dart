@@ -67,7 +67,9 @@ class _IPOFinancialChartState extends State<IPOFinancialChart> {
                 widget.data[2]['Net Worth'] == null
             ? 0
             : double.parse(widget.data[2]['Net Worth']),
-        revenue: double.parse(widget.data[2]['Revenue']),
+        revenue: widget.data[2]['Revenue'] == "" || widget.data[2]['Revenue'] == null
+                ? 0
+                : double.parse(widget.data[2]['Revenue']),
         borrowing: widget.data[2]['Total Borrowing'] == "" ||
                 widget.data[2]['Total Borrowing'] == null
             ? 0

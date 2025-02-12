@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 final NumberFormat numberFormat = NumberFormat("##,##,##,##,##0.00", "hi");
+final numberFormatter = NumberFormat("##,##,###","en_IN");
 
 bool checkIsInfOrNullOrNan({String? value}) {
   if (value == null ||
@@ -130,6 +131,9 @@ String formatCurrencyStandard({required String value}) {
     formatedCurrency = numberFormat.format(formatValue);
   }
   return formatedCurrency;
+}
+String convertCurrencyINRStandard(dynamic value) {
+  return numberFormatter.format(value);
 }
 
 // Convert the number to crores
@@ -347,6 +351,20 @@ String convertDateend(String dateString) {
   String formattedDate = outputFormat.format(dateTime);
   return formattedDate;
 }
+String convertClosedIpoDates(String dateString,String inputDateFormat,String outputDateFormat) {
+  DateFormat inputFormat = DateFormat(inputDateFormat); // "MMM dd, yyyy"t
+  DateFormat outputFormat = DateFormat(outputDateFormat); // "EEE, dd MMM yyyy HH:mm:ss"
+  DateTime dateTime = inputFormat.parseUTC(dateString);
+  String formattedDate = outputFormat.format(dateTime);
+  return formattedDate;
+} 
+
+DateTime convertIpoDates(String dateString,String inputDateFormat) {
+  DateFormat inputFormat = DateFormat(inputDateFormat); // "MMM dd, yyyy"t
+  DateTime dateTime = inputFormat.parseUTC(dateString);
+  return dateTime;
+} 
+
 
 String ipodateres(String dt1) {
   DateTime dateTime =

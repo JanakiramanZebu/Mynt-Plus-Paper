@@ -76,6 +76,14 @@ class FundProvider extends DefaultChangeNotifier {
 
   String get accNum => _accNum;
 
+  String _ifsc = "";
+
+  String get ifsc => _ifsc;
+
+  String _bankname = "";
+
+  String get bankname => _bankname;
+
   List<BankData>? _bankData = [];
   List<BankData>? get bankData => _bankData;
 
@@ -97,6 +105,14 @@ class FundProvider extends DefaultChangeNotifier {
 
   chngBankAcc(String val) {
     _accNum = val;
+    _ifsc = _bankDetailsModel!.data!
+        .firstWhere((reason) => reason.bankAcNo == val)
+        .iFSCCode
+        .toString();
+    _bankname = _bankDetailsModel!.data!
+        .firstWhere((reason) => reason.bankAcNo == val)
+        .bankName
+        .toString();
     notifyListeners();
   }
 
@@ -334,6 +350,8 @@ class FundProvider extends DefaultChangeNotifier {
         _bankData = _bankDetailsModel!.data ?? [];
         if (_bankData!.isNotEmpty) {
           _accNum = "${_bankData![0].bankAcNo}";
+          _ifsc = "${bankData![0].iFSCCode}";
+          _bankname = "${bankData![0].bankName}";
         }
       }
 

@@ -157,8 +157,7 @@ class ApiLinks {
 
   // String tradeAction = "https://v3.mynt.in/equity/getadindicesAdvdec";
 
-  String get fundamentalDetail =>
-      '$dashBoardURL/equity/stockFundamentalDetails';
+  String get fundamentalDetail =>'$dashBoardURL/equity/stockFundamentalDetails';
   String get topListStock => '$dashBoardURL/equity/TopList';
   String get getGlobalIndex => '$dashBoardURL/equity/getGlobalIndex';
   String get getadindices => '$dashBoardURL/equity/getadindices';
@@ -170,16 +169,20 @@ class ApiLinks {
   String get getQrScanner => '$mainBaseURL/QRMobileReq';
 
   ///ipo///
-  String get smeipos => "$dashBoardURL/ipo/getcurrentSMEIPOdetails";
-  String get mainstreamipo => "$dashBoardURL/ipo/getcurrentIPOdetails";
-  String get ipoperformance => "$dashBoardURL/ipo/ipo_performer?year=2024";
-  String get placeipoorder => "$dashBoardURL/ipo/addIPOtoPortfolio";
-  String get ipoorderbook => "$dashBoardURL/ipo/orderbookIPODetails";
-  String get iposinglepage => "$dashBoardURL/ipo/get_single_ipo_data";
+  String get ipourlendpoint =>"${dashBoardURL}/ipo/";
+  String get smeipos => "${ipourlendpoint}getcurrentSMEIPOdetails";
+  String get mainstreamipo => "${ipourlendpoint}getcurrentIPOdetails";
+  String get ipoperformance => "${ipourlendpoint}ipo_performer?year=2024";
+  String get placeipoorder => "${ipourlendpoint}addIPOtoPortfolio";
+  String get ipoorderbook => "${ipourlendpoint}orderbookIPODetails";
+  String get iposinglepage => "${ipourlendpoint}get_single_ipo_data_new";
+  String get ipoprecloseurl => "${ipourlendpoint}precloseipo";
+
 
 // Mutual Fund
   String get bestMf => "$dashBoardURL/mf/z_data";
   String get masterMF => "$dashBoardURL/mf/master_file_datas";
+  String get searchMF => "https://v3.mynt.in/mf/mfsearch";
   String get mfWatchlist => "$dashBoardURL/mf/watchlist";
   String get factSheetData => "$dashBoardURL/mf/getFactSheetData";
   String get navGraph => "$dashBoardURL/mf/getNavGraph";
@@ -189,8 +192,15 @@ class ApiLinks {
   String get bankDetail => "$dashBoardURL/mf/client_bank_details";
   String get mfSip => "$dashBoardURL/mf/sip_values";
   String get mandateDetail => "$dashBoardURL/mf/mandate_details";
+  String get lumpsumOrder => "$dashBoardURL/mf//lumsum_purchase";
+  String get lumpsumOrderbook => "$dashBoardURL/mf/lumsum_orderbook";
+  String get mandatecreate => "$dashBoardURL/mf/mandate_creation";
+  String get mfXSiporder=> "$dashBoardURL/mf//xsip_purchase";
+  String get mfXsipcancleRes => "$dashBoardURL/mf/reasons";
+  String get mfxsipcancel => "$dashBoardURL/mf/xsip_cancel";
+  String get mfallpayment => "https://v3.mynt.in/mf//all_payment";
+  
 
-  // String get mfSip=> "$dashBoardURL/mf/sip_values";
 
   String get mainfund => 'https://fundapi.mynt.in/api';
   String get clientcheck => '$mainfund/client_check';

@@ -33,7 +33,7 @@ class IpoCloseOrder extends ConsumerWidget {
                   children: [
                     Container(
                       padding:
-                          const EdgeInsets.only(left: 16, right: 16, top: 12),
+                          const EdgeInsets.only(left: 16, right: 16, top: 4),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -61,7 +61,7 @@ class IpoCloseOrder extends ConsumerWidget {
                                   Text(
                                     close.closeorder![index].reponseStatus ==
                                             "cancel success"
-                                        ? "Failed"
+                                        ? "Cancelled"
                                         : "Failed",
                                     style: textStyle(
                                         theme.isDarkMode
@@ -117,9 +117,8 @@ class IpoCloseOrder extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                close.closeorder![index].bidDetail![0].amount ==
-                                        "null"
-                                    ? "NAN"
+                                close.closeorder![index].type == "BSE"
+                                    ? "₹${getFormatter(noDecimal: true,v4d: false,value: double.parse(close.closeorder![index].bidDetail![0].rate!) * double.parse(close.closeorder![index].bidDetail![0].quantity!)).toString()}" 
                                     : "₹${getFormatter(
                                         noDecimal: true,
                                         v4d: false,
