@@ -318,7 +318,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "title": "Rate Us",
         "subTitle":
             "Share your experience! Rate us to help others discover our great service.",
-        "leading": "assets/icon/appbarIcon/bell.svg",
+        "leading": "assets/icon/appbarIcon/star.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).notificationcase,
         "case": "Click here to Share your experience!."

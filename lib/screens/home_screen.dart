@@ -1269,7 +1269,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     if (internet.connectionStatus ==
                                             ConnectivityResult.wifi ||
                                         internet.connectionStatus ==
-                                            ConnectivityResult.mobile) ...[
+                                            ConnectivityResult.mobile && !userProfile.showchartof) ...[
                                       _onItemTapped(
                                           indexProvide.selectedBtmIndx),
                                     ]

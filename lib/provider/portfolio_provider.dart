@@ -2150,7 +2150,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       holding.exchTsym![0].oneDayChg =
           ((double.parse(holding.exchTsym![0].lp ?? "0.00") -
-                      double.parse(holding.exchTsym![0].close ?? "0.00")) *
+                      double.parse(holding.exchTsym![0].close != null ? holding.exchTsym![0].close.toString() : avgCost.toString() )) *
                   int.parse("${holding.currentQty ?? 0}"))
               .toStringAsFixed(2);
 
