@@ -11,7 +11,6 @@ import device_info_plus
 import firebase_core
 import firebase_messaging
 import flutter_inappwebview_macos
-import in_app_review
 import local_auth_darwin
 import mobile_scanner
 import package_info_plus
@@ -27,7 +26,6 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FLTFirebaseCorePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseCorePlugin"))
   FLTFirebaseMessagingPlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseMessagingPlugin"))
   InAppWebViewFlutterPlugin.register(with: registry.registrar(forPlugin: "InAppWebViewFlutterPlugin"))
-  InAppReviewPlugin.register(with: registry.registrar(forPlugin: "InAppReviewPlugin"))
   FLALocalAuthPlugin.register(with: registry.registrar(forPlugin: "FLALocalAuthPlugin"))
   MobileScannerPlugin.register(with: registry.registrar(forPlugin: "MobileScannerPlugin"))
   FPPPackageInfoPlusPlugin.register(with: registry.registrar(forPlugin: "FPPPackageInfoPlusPlugin"))
