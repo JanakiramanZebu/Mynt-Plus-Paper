@@ -1,9 +1,9 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:in_app_review/in_app_review.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 //import 'package:url_launcher/url_launcher.dart';
@@ -25,11 +25,7 @@ import 'need_help_screen.dart';
 // enum Availability { loading, available, unavailable }
 
 class UserAccountScreen extends ConsumerWidget {
-  UserAccountScreen({super.key});
-
-  final InAppReview _inAppReview = InAppReview.instance;
-
-  Future<void> _requestReview() => _inAppReview.requestReview();
+  const UserAccountScreen({super.key});
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
@@ -126,11 +122,12 @@ class UserAccountScreen extends ConsumerWidget {
                           await context.read(bondProvider).fetchGovtBonds();
                           Navigator.pushNamed(context, Routes.bonds);
                         } else if (acttitle == "Rate Us") {
-                          if (await _inAppReview.isAvailable()) {
-                            _requestReview();
-                          }
-                          // launch(
-                          //     "https://apps.apple.com/app/id6478270319?action=write-review");
+                          String devicesurl = TargetPlatform.iOS ==
+                                  defaultTargetPlatform
+                              ? "https://apps.apple.com/app/id6478270319?action=write-review"
+                              : "https://play.google.com/store/apps/details?id=com.mynt.trading_app_zebu";
+                          launch(devicesurl);
+
                           //  await userProfile.setAppreview(context);
                           //  _inAppReview.requestReview();
                           // _inAppReview.openStoreListing(
