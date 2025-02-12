@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/api/core/api_core.dart';
 import 'package:mynt_plus/models/marketwatch_model/get_quotes.dart';
 import 'package:mynt_plus/provider/iop_provider.dart';
 import 'package:mynt_plus/provider/market_watch_provider.dart';
-import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/screens/ipo/main_sme_list/single_page.dart';
-import 'package:mynt_plus/screens/market_watch/scrip_depth_info.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
 
 class IpoCommonSearch extends ConsumerWidget {
@@ -129,39 +126,13 @@ class IpoCommonSearch extends ConsumerWidget {
                           String ipotype = "";
 
                           if (checkIpoStatus == "Listed") {
-                            await market.fetchFundamentalData(
-                                tradeSym:
-                                    "${ipo.ipoCommonSearchList[index].symbol}");
-
-                            await market.fetchScripQuote(
-                                "${ipo.ipoCommonSearchList[index].token}",
-                                "${ipo.ipoCommonSearchList[index].exchange}",
-                                context);
-
-                            await market.fetchTechData(
-                                context: context,
-                                exch: "${market.getQuotes!.exch}",
-                                tradeSym: "${market.getQuotes!.tsym}",
-                                lastPrc:
-                                    "${market.getQuotes!.lp ?? market.getQuotes!.c ?? 0.00}");
-
-                            market.chngDephBtn("Overview");
-
-                            if (market.actDeptBtn == "Overview") {
-                              await watch(websocketProvider).establishConnection(
-                                  channelInput:
-                                      "${market.getQuotes!.exch}|${market.getQuotes!.token}",
-                                  task: "d",
-                                  context: context);
-                            }
-                            depthArgs = DepthInputArgs(
-                                exch: market.getQuotes!.exch ?? "",
-                                token: market.getQuotes!.token ?? "",
-                                tsym: '${market.getQuotes!.tsym}',
-                                instname: market.getQuotes!.instname ?? "",
-                                symbol: '${market.getQuotes!.symbol}',
-                                expDate: '${market.getQuotes!.expDate}',
-                                option: '${market.getQuotes!.option}');
+                            var listdata = ipo.ipoCommonSearchList[index].toJson();
+                            listdata['exch'] = ipo.ipoCommonSearchList[index].exchange;
+                            listdata['expDate'] = "";
+                            listdata['option'] = "";
+                            listdata['instname'] = "";
+                            listdata['tsym'] = ipo.ipoCommonSearchList[index].symbol.split(":")[1];
+                            await market.calldepthApis(context, listdata);
                           } else if (checkIpoStatus == "Live") {
                             await ipo.getIpoSinglePage(
                                 ipoName:
@@ -194,32 +165,31 @@ class IpoCommonSearch extends ConsumerWidget {
                                 "dd-MM-yyyy");
                           }
 
-                          showModalBottomSheet(
-                            isScrollControlled: true,
-                            useSafeArea: true,
-                            isDismissible: true,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(16))),
-                            context: context,
-                            builder: (context) => Container(
-                              padding: EdgeInsets.only(
-                                bottom:
-                                    MediaQuery.of(context).viewInsets.bottom,
+                          if (checkIpoStatus != "Listed") {
+                            showModalBottomSheet(
+                              isScrollControlled: true,
+                              useSafeArea: true,
+                              isDismissible: true,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(16))),
+                              context: context,
+                              builder: (context) => Container(
+                                padding: EdgeInsets.only(
+                                  bottom:
+                                      MediaQuery.of(context).viewInsets.bottom,
+                                ),
+                                child: MainSmeSinglePage(
+                                    pricerange: pricerange,
+                                    mininv: mininvVal,
+                                    enddate: enddate,
+                                    startdate: startdate,
+                                    ipotype: ipotype,
+                                    ipodetails: jsonEncode(
+                                        ipo.ipoCommonSearchList[index])),
                               ),
-                              child: checkIpoStatus == "Listed"
-                                  ? ScripDepthInfo(
-                                      wlValue: depthArgs, isBasket: '')
-                                  : MainSmeSinglePage(
-                                      pricerange: pricerange,
-                                      mininv: mininvVal,
-                                      enddate: enddate,
-                                      startdate: startdate,
-                                      ipotype: ipotype,
-                                      ipodetails:
-                                          ipo.ipoCommonSearchList[index]),
-                            ),
-                          );
+                            );
+                          }
                         },
                         child: Container(
                             decoration: BoxDecoration(

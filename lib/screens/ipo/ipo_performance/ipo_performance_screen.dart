@@ -161,68 +161,77 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                         physics: const ScrollPhysics(),
                         itemBuilder: (context, index) {
                           final ipo = ipoList[index];
-                          var ipofun = 0;
                           DateTime listedDate = context
                               .read(ipoProvide)
                               .convertDatetime(ipo.listedDate);
                           return InkWell(
                             onTap: () async {
-                              await market.fetchFundamentalData(
-                                  tradeSym: "${ipo.symbol}");
+                              var listdata = ipo.toJson();
 
+                              print("listdata $listdata");
+                              listdata['exch'] = ipo.exchange;
+                              listdata['expDate'] = "";
+                              listdata['option'] = "";
+                              listdata['instname'] = "";
                               market.chngshareHold("Promoter Holding");
+                              await market.calldepthApis(context, listdata);
 
-                              await market.fetchScripQuote(
-                                  "${ipo.token}", "${ipo.exchange}", context);
-                              await market.fetchTechData(
-                                  context: context,
-                                  exch: "${market.getQuotes!.exch}",
-                                  tradeSym: "${market.getQuotes!.tsym}",
-                                  lastPrc:
-                                      "${market.getQuotes!.lp ?? market.getQuotes!.c ?? 0.00}");
+                              // await market.fetchFundamentalData(
+                              //     tradeSym: "${ipo.symbol}");
 
-                              market.chngDephBtn("Overview");
-                              if (market.actDeptBtn == "Overview") {
-                                await watch(websocketProvider).establishConnection(
-                                    channelInput:
-                                        "${market.getQuotes!.exch}|${market.getQuotes!.token}",
-                                    task: "d",
-                                    context: context);
-                              }
-                              DepthInputArgs depthArgs = DepthInputArgs(
-                                  exch: market.getQuotes!.exch ?? "",
-                                  token: market.getQuotes!.token ?? "",
-                                  tsym: '${market.getQuotes!.tsym}',
-                                  instname: market.getQuotes!.instname ?? "",
-                                  symbol: '${market.getQuotes!.symbol}',
-                                  expDate: '${market.getQuotes!.expDate}',
-                                  option: '${market.getQuotes!.option}');
-                              showModalBottomSheet(
-                                isScrollControlled: true,
-                                useSafeArea: true,
-                                isDismissible: true,
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(16))),
-                                context: context,
-                                builder: (context) => Container(
-                                    padding: EdgeInsets.only(
-                                      bottom: MediaQuery.of(context)
-                                          .viewInsets
-                                          .bottom,
-                                    ),
-                                    child: ScripDepthInfo(
-                                        wlValue: depthArgs, isBasket: '')
-                                    // const ScripInfoBtns(
-                                    //           exch: "NSE",// ${exchTsym.exch}',
-                                    //           token: "2885", // '${exchTsym.token}',
-                                    //           insName: ''),
-                                    // PerformanceInfoScreen(
-                                    //     ipoFundamental: ipo,
-                                    //     market: market,
-                                    //     indexipo: ipofun),
-                                    ),
-                              );
+                              // market.chngshareHold("Promoter Holding");
+
+                              // await market.fetchScripQuote(
+                              //     "${ipo.token}", "${ipo.exchange}", context);
+                              // await market.fetchTechData(
+                              //     context: context,
+                              //     exch: "${market.getQuotes!.exch}",
+                              //     tradeSym: "${market.getQuotes!.tsym}",
+                              //     lastPrc:
+                              //         "${market.getQuotes!.lp ?? market.getQuotes!.c ?? 0.00}");
+
+                              // market.chngDephBtn("Overview");
+                              // if (market.actDeptBtn == "Overview") {
+                              //   await watch(websocketProvider).establishConnection(
+                              //       channelInput:
+                              //           "${market.getQuotes!.exch}|${market.getQuotes!.token}",
+                              //       task: "d",
+                              //       context: context);
+                              // }
+                              // DepthInputArgs depthArgs = DepthInputArgs(
+                              //     exch: market.getQuotes!.exch ?? "",
+                              //     token: market.getQuotes!.token ?? "",
+                              //     tsym: '${market.getQuotes!.tsym}',
+                              //     instname: market.getQuotes!.instname ?? "",
+                              //     symbol: '${market.getQuotes!.symbol}',
+                              //     expDate: '${market.getQuotes!.expDate}',
+                              //     option: '${market.getQuotes!.option}');
+                              // showModalBottomSheet(
+                              //   isScrollControlled: true,
+                              //   useSafeArea: true,
+                              //   isDismissible: true,
+                              //   shape: const RoundedRectangleBorder(
+                              //       borderRadius: BorderRadius.vertical(
+                              //           top: Radius.circular(16))),
+                              //   context: context,
+                              //   builder: (context) => Container(
+                              //       padding: EdgeInsets.only(
+                              //         bottom: MediaQuery.of(context)
+                              //             .viewInsets
+                              //             .bottom,
+                              //       ),
+                              //       child: ScripDepthInfo(
+                              //           wlValue: depthArgs, isBasket: '')
+                              //       // const ScripInfoBtns(
+                              //       //           exch: "NSE",// ${exchTsym.exch}',
+                              //       //           token: "2885", // '${exchTsym.token}',
+                              //       //           insName: ''),
+                              //       // PerformanceInfoScreen(
+                              //       //     ipoFundamental: ipo,
+                              //       //     market: market,
+                              //       //     indexipo: ipofun),
+                              //       ),
+                              // );
                             },
                             child: Column(
                               children: [

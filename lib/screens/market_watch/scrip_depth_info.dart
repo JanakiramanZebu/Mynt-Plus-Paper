@@ -969,8 +969,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                   "${depthData.h}",
                                                   theme),
                                             ],
-                                            if (depthData.wk52L != "null" &&
-                                                depthData.wk52H != "null" &&
+                                            if ((depthData.wk52L != "null" && depthData.wk52L != null) &&
+                                                (depthData.wk52H != "null" && depthData.wk52H != null) &&
                                                 double.parse(depthData.wk52H
                                                         .toString()) >
                                                     0 &&

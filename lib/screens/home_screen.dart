@@ -1274,6 +1274,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           indexProvide.selectedBtmIndx),
                                     ]
                                   ])),
+                              
                               Positioned(
                                 // right: userProfile.showchartof
                                 //     ? 0
@@ -1347,7 +1348,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       case 3:
         return const OrderBookScreen();
       case 4:
-        return UserAccountScreen();
+        return const UserAccountScreen();
 
       case 5:
         return const IPOScreen();
