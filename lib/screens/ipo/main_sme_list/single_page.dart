@@ -52,6 +52,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
         final upi = watch(transcationProvider);
         //final ipoLtp = watch(marketWatchProvider);
         // print("iposymbol ::: ${iposymbol}");
+        print("::::::::::::::::: ${singlepage.iposinglepage!.data['status']}");
         return DraggableScrollableSheet(
           initialChildSize: 0.88,
           maxChildSize: .99,
@@ -1447,6 +1448,13 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
         return "Non Institution";
       case "Retail":
         return "Retail";
+      case "bNII (bids above ₹10L)":
+        return "Non Individual - big (bNII)";
+      case "sNII (bids below ₹10L)":
+        return "Non Individual - small (sNII)";
+      case "NII":
+        return "Non Individual";
+
       default:
         return category;
     }
@@ -1543,13 +1551,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
       DateTime todayWithoutTime = DateTime(today.year, today.month, today.day);
       DateTime parsedDateWithoutTime =
           DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
-      print("::::::::::::::::: ${parsedDateWithoutTime}");
-      print("::::::::::::::::: ${todayWithoutTime}");
-      print(
-          "::::::::::::::::: ${parsedDateWithoutTime.isAfter(todayWithoutTime)}");
-      print(
-          "::::::::::::::::: ${parsedDateWithoutTime.isAtSameMomentAs(todayWithoutTime)}");
-      // print("::::::::::::::::: ${parsedDateWithoutTime}");
+
       return parsedDateWithoutTime.isAfter(todayWithoutTime) ||
           parsedDateWithoutTime.isAtSameMomentAs(todayWithoutTime);
     } catch (e) {

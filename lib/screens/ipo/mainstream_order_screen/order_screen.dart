@@ -2,6 +2,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/screens/ipo/mainstream_order_screen/orderscreenbottompage.dart';
 import '../../../models/ipo_model/ipo_details_model.dart';
 import '../../../models/ipo_model/ipo_mainstream_model.dart';
 import '../../../models/ipo_model/ipo_place_order_model.dart';
@@ -301,6 +302,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                               FontWeight.w600)),
                     ),
                   ),
+
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -345,10 +347,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                       0xff000000), // Color when selected
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6.0, vertical: 2.0),
-                              side: const BorderSide(
-                                // color: Color(0xFF666666),
-                                width: 0.0,
-                              ),
+                              side: BorderSide.none,
                               selected:
                                   selectedChip == chip, // Mark selected chip
                               onSelected: (isSelected) async {
@@ -1242,419 +1241,538 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                 ],
               ),
               bottomSheet: BottomAppBar(
-                  elevation: .14,
-                  child: Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                        border: Border(
-                            top: BorderSide(color: colors.darkColorDivider))),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 16),
-                          child: Text("UPI ID (Virtual payment adress)",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  14,
-                                  FontWeight.w600)),
-                        ),
-                        SizedBox(
-                          height: 5,
-                        ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 16),
-                          height: 44,
-                          child: TextFormField(
-                            readOnly: ipo.loading ? true : false,
-                            controller: upiid.upiid,
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                14,
-                                FontWeight.w600),
-                            decoration: InputDecoration(
-                              fillColor: theme.isDarkMode
-                                  ? colors.darkGrey
-                                  : const Color(0xffF1F3F8),
-                              filled: true,
-                              enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(30)),
-                              disabledBorder: InputBorder.none,
-                              focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(30)),
-                              contentPadding: const EdgeInsets.all(13),
-                              border: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(30)),
-                            ),
-                            onChanged: (value) {
-                              setState(() {
-                                upiid.upiid.text = value;
-                                if (upiid.upiid.text.isEmpty) {
-                                  upierrortext = "* UPI ID cannot be empty";
-                                  ipo.setisMainIPOPlaceOrderBtnActiveValue =
-                                      false;
-                                } else if (!RegExp(r'^[\w.-]+@[\w]+$')
-                                    .hasMatch(upiid.upiid.text = value)) {
-                                  upierrortext = 'Invalid UPI ID format';
-                                  ipo.setisMainIPOPlaceOrderBtnActiveValue =
-                                      false;
-                                } else {
-                                  upierrortext = '';
-                                  ipo.setisMainIPOPlaceOrderBtnActiveValue =
-                                      true;
-                                }
-                              });
-                            },
-                          ),
-                        ),
-                        if (upiid.upiid.text.isEmpty ||
-                            !RegExp(r'^[\w.-]+@[\w]+$')
-                                .hasMatch(upiid.upiid.text)) ...[
-                          const SizedBox(
-                            height: 6,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: IpoErrorBadge(
-                              errorName: upierrortext,
-                            ),
-                          )
-                        ],
-                        Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                  splashRadius: 20,
-                                  onPressed: ipo.loading
-                                      ? null
-                                      : () {
-                                          setState(() {
-                                            // ischecked = !ischecked;
-                                            if (ipo
-                                                .checkForErrorsInSMEPlaceOrder(
-                                                    addIpo)) {
-                                              ipo.setisMainIPOPlaceOrderBtnActiveValue =
-                                                  true;
-                                            } else {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(warningMessage(
-                                                      context,
-                                                      "can't able place Order with current selected combination of Bids"));
-                                              ischecked = false;
-                                              ipo.setisMainIPOPlaceOrderBtnActiveValue =
-                                                  false;
-                                            }
+                elevation: .14,
+                child: ListTile(
+                  title: Text("₹ ${ipo.mainIPOPlaceOrderRequiredMaxPrice}",
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          16,
+                          FontWeight.w600)),
+                  subtitle: Text("Total Investment",
+                      style: textStyle(
+                          const Color(0xff666666), 13, FontWeight.w500)),
+                  trailing: ElevatedButton(
+                    onPressed: () {
+                      if (addIpo[addIpo.length - 1].requriedprice >
+                          ipo.maxUPIAmt) {
+                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                            context,
+                            "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
 
-                                            // for(final bid in addIpo){
-                                            //     if (bid.requriedprice >
-                                            //     ipo.maxUPIAmt) {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
-
-                                            //   ischecked = false;
-                                            // } else if (bid
-                                            //         .bidpricecontroller
-                                            //         .text
-                                            //         .isEmpty ||
-                                            //     bid
-                                            //             .bidpricecontroller
-                                            //             .text ==
-                                            //         "0") {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           bid
-                                            //                       .bidpricecontroller
-                                            //                       .text ==
-                                            //                   "0"
-                                            //               ? "*Bid Price Value cannot be 0"
-                                            //               : "*Bid Price Value is required"));
-
-                                            //   ischecked = false;
-                                            // } else if ((int.parse(bid.bidpricecontroller.text.toString())) >
-                                            //         double.parse(widget.mainstream.maxPrice.toString())
-                                            //             .toInt() ||
-                                            //     (int.parse(bid.bidpricecontroller.text)) <
-                                            //         double.parse(widget.mainstream.minPrice.toString())
-                                            //             .toInt()) {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           "Your bid price ranges between ₹${double.parse(widget.mainstream.minPrice!).toInt()}-₹${double.parse(widget.mainstream.maxPrice!).toInt()}"));
-                                            //   ischecked = false;
-                                            // } else if (bid
-                                            //         .qualityController
-                                            //         .text
-                                            //         .isEmpty ||
-                                            //     bid.qualityController.text ==
-                                            //         "0") {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           bid
-                                            //                       .qualityController
-                                            //                       .text ==
-                                            //                   "0"
-                                            //               ? '* Quantity cannot be 0'
-                                            //               : '* Quantity cannot be empty'));
-                                            //   ischecked = false;
-                                            // } else if ((int.parse(bid.qualityController.text)) <
-                                            //     int.parse(widget.mainstream.minBidQuantity.toString())
-                                            //         .toInt()) {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           "Minimum Bid quantity is ${widget.mainstream.minBidQuantity.toString()} only "));
-                                            //   ischecked = false;
-                                            // } else if (upiid.upiid.text.isEmpty) {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           "UPI ID cannot be empty"));
-                                            //   ischecked = false;
-                                            // } else if (!RegExp(r'^[\w.-]+@[\w]+$')
-                                            //     .hasMatch(upiid.upiid.text)) {
-                                            //   ischecked = false;
-                                            // }
-                                            // }
-                                            // if (addIpo[addIpo.length - 1].requriedprice >
-                                            //     ipo.maxUPIAmt) {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
-
-                                            //   ischecked = false;
-                                            // } else if (addIpo[addIpo.length - 1]
-                                            //         .bidpricecontroller
-                                            //         .text
-                                            //         .isEmpty ||
-                                            //     addIpo[addIpo.length - 1]
-                                            //             .bidpricecontroller
-                                            //             .text ==
-                                            //         "0") {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           addIpo[addIpo.length - 1]
-                                            //                       .bidpricecontroller
-                                            //                       .text ==
-                                            //                   "0"
-                                            //               ? "*Bid Price Value cannot be 0"
-                                            //               : "*Bid Price Value is required"));
-
-                                            //   ischecked = false;
-                                            // } else if ((int.parse(addIpo[addIpo.length - 1].bidpricecontroller.text.toString())) >
-                                            //         double.parse(widget.mainstream.maxPrice.toString())
-                                            //             .toInt() ||
-                                            //     (int.parse(addIpo[addIpo.length - 1].bidpricecontroller.text)) <
-                                            //         double.parse(widget.mainstream.minPrice.toString())
-                                            //             .toInt()) {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           "Your bid price ranges between ₹${double.parse(widget.mainstream.minPrice!).toInt()}-₹${double.parse(widget.mainstream.maxPrice!).toInt()}"));
-                                            //   ischecked = false;
-                                            // } else if (addIpo[addIpo.length - 1]
-                                            //         .qualityController
-                                            //         .text
-                                            //         .isEmpty ||
-                                            //     addIpo[addIpo.length - 1].qualityController.text ==
-                                            //         "0") {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           addIpo[addIpo.length - 1]
-                                            //                       .qualityController
-                                            //                       .text ==
-                                            //                   "0"
-                                            //               ? '* Quantity cannot be 0'
-                                            //               : '* Quantity cannot be empty'));
-                                            //   ischecked = false;
-                                            // } else if ((int.parse(addIpo[addIpo.length - 1].qualityController.text)) <
-                                            //     int.parse(widget.mainstream.minBidQuantity.toString())
-                                            //         .toInt()) {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           "Minimum Bid quantity is ${widget.mainstream.minBidQuantity.toString()} only "));
-                                            //   ischecked = false;
-                                            // } else if (upiid.upiid.text.isEmpty) {
-                                            //   ScaffoldMessenger.of(context)
-                                            //       .showSnackBar(warningMessage(
-                                            //           context,
-                                            //           "UPI ID cannot be empty"));
-                                            //   ischecked = false;
-                                            // } else if (!RegExp(r'^[\w.-]+@[\w]+$')
-                                            //     .hasMatch(upiid.upiid.text)) {
-                                            //   ischecked = false;
-                                            // }
-                                          });
-                                        },
-                                  icon: SvgPicture.asset(theme.isDarkMode
-                                      ? ipo.isMainIPOPlaceOrderBtnActive
-                                          ? assets.darkCheckedboxIcon
-                                          : assets.darkCheckboxIcon
-                                      : ipo.isMainIPOPlaceOrderBtnActive
-                                          ? assets.checkedbox
-                                          : assets.checkbox)),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text("I hereby undertake that ",
-                                    style: textStyle(const Color(0xff666666),
-                                        12, FontWeight.w600)),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ListTile(
-                          title: Text(
-                              "₹ ${ipo.mainIPOPlaceOrderRequiredMaxPrice}",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  16,
-                                  FontWeight.w600)),
-                          subtitle: Text("Total Investment",
-                              style: textStyle(const Color(0xff666666), 13,
-                                  FontWeight.w500)),
-                          trailing: SizedBox(
-                            width: 120,
-                            child: ElevatedButton(
-                              onPressed:
-                                  ipo.isMainIPOPlaceOrderBtnActive == true
-                                      ? () {
-                                          if (addIpo[addIpo.length - 1]
-                                                  .requriedprice >
-                                              ipo.maxUPIAmt) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(warningMessage(
-                                                    context,
-                                                    "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
-
-                                            ipo.setisMainIPOPlaceOrderBtnActiveValue =
-                                                false;
-                                          } else if (addIpo[addIpo.length - 1]
-                                                  .bidpricecontroller
-                                                  .text
-                                                  .isEmpty ||
-                                              addIpo[addIpo.length - 1]
-                                                      .bidpricecontroller
-                                                      .text ==
-                                                  "0") {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(warningMessage(
-                                                    context,
-                                                    addIpo[addIpo.length - 1]
-                                                                .bidpricecontroller
-                                                                .text ==
-                                                            "0"
-                                                        ? "Bid Price Value cannot be 0"
-                                                        : "*Bid Price Value is required"));
-                                          } else if (addIpo[addIpo.length - 1]
-                                                  .qualityController
-                                                  .text
-                                                  .isEmpty ||
-                                              addIpo[addIpo.length - 1]
-                                                      .qualityController
-                                                      .text ==
-                                                  "0") {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(warningMessage(
-                                                    context,
-                                                    addIpo[addIpo.length - 1]
-                                                                .qualityController
-                                                                .text ==
-                                                            "0"
-                                                        ? '* Quantity cannot be 0'
-                                                        : '* Quantity cannot be empty'));
-                                          } else if (upiid.upiid.text.isEmpty) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(warningMessage(
-                                                    context,
-                                                    '* UPI ID cannot be empty'));
-                                          } else if (!RegExp(r'^[\w.-]+@[\w]+$')
-                                              .hasMatch(upiid.upiid.text)) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(warningMessage(
-                                                    context,
-                                                    'Invalid UPI ID format'));
-                                          } else {
-                                            ipoplaceorder(upiid, ipo);
-                                          }
-                                        }
-                                      : () {},
-                              style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                backgroundColor: !theme.isDarkMode
-                                    ? ipo.isMainIPOPlaceOrderBtnActive == false
-                                        ? const Color(0xfff5f5f5)
-                                        : colors.colorBlack
-                                    : ipo.isMainIPOPlaceOrderBtnActive == false
-                                        ? colors.darkGrey
-                                        : colors.colorbluegrey,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(32),
+                        ipo.setisMainIPOPlaceOrderBtnActiveValue = false;
+                      } else if (addIpo[addIpo.length - 1]
+                              .bidpricecontroller
+                              .text
+                              .isEmpty ||
+                          addIpo[addIpo.length - 1].bidpricecontroller.text ==
+                              "0") {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            warningMessage(
+                                context,
+                                addIpo[addIpo.length - 1]
+                                            .bidpricecontroller
+                                            .text ==
+                                        "0"
+                                    ? "Bid Price Value cannot be 0"
+                                    : "*Bid Price Value is required"));
+                      } else if (addIpo[addIpo.length - 1]
+                              .qualityController
+                              .text
+                              .isEmpty ||
+                          addIpo[addIpo.length - 1].qualityController.text ==
+                              "0") {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            warningMessage(
+                                context,
+                                addIpo[addIpo.length - 1]
+                                            .qualityController
+                                            .text ==
+                                        "0"
+                                    ? '* Quantity cannot be 0'
+                                    : '* Quantity cannot be empty'));
+                      }
+                      // else if (upiid.upiid.text.isEmpty) {
+                      //   ScaffoldMessenger.of(context)
+                      //       .showSnackBar(warningMessage(
+                      //           context,
+                      //           '* UPI ID cannot be empty'));
+                      // } else if (!RegExp(r'^[\w.-]+@[\w]+$')
+                      //     .hasMatch(upiid.upiid.text)) {
+                      //   ScaffoldMessenger.of(context)
+                      //       .showSnackBar(warningMessage(
+                      //           context,
+                      //           'Invalid UPI ID format'));
+                      // }
+                      else {
+                        // ipoplaceorder(upiid, ipo);
+                        // _showBottomSheet(context, theme, ipo, upiid);
+                        showModalBottomSheet(
+                            isScrollControlled: true,
+                            useSafeArea: true,
+                            isDismissible: true,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16))),
+                            context: context,
+                            builder: (context) => Container(
+                                padding: EdgeInsets.only(
+                                  bottom:
+                                      MediaQuery.of(context).viewInsets.bottom,
                                 ),
-                              ),
-                              child: ipo.loading
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Color(0xff666666)),
-                                    )
-                                  : Text("Continue",
-                                      style: textStyle(
-                                          !theme.isDarkMode
-                                              ? ipo.isMainIPOPlaceOrderBtnActive ==
-                                                      false
-                                                  ? const Color(0xff999999)
-                                                  : colors.colorWhite
-                                              : ipo.isMainIPOPlaceOrderBtnActive ==
-                                                      false
-                                                  ? colors.darkGrey
-                                                  : colors.colorBlack,
-                                          14,
-                                          FontWeight.w500)),
-                            ),
-                          ),
-                        ),
-                      ],
+                                child: OrderScreenbottomPage(
+                                  mainstream: widget.mainstream,
+                                  addIpo: addIpo,
+                                )));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(145, 37),
+                      backgroundColor: !theme.isDarkMode
+                          ? colors.colorBlack
+                          : const Color(0xfff5f5f5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(32),
+                      ),
                     ),
-                  )
+                    child: Text("Continue",
+                        style: textStyle(
+                            !theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w500)),
+                  ),
+                ),
+              )
 
-                  // Container(
-                  //     width: MediaQuery.of(context).size.width,
-                  //     height: 55,
-                  //     decoration: BoxDecoration(
-                  //         color: colors.colorWhite,
-                  //         border: Border(
-                  //             top: BorderSide(color: colors.colorDivider))),
-                  //     child: Center(
-                  //         child: Text(
-                  //       "! MARKET IS CLOSED",
-                  //       style: textStyle(
-                  //           colors.colorBlack, 16, FontWeight.w600),
-                  //     )),
-                  //   )
-                  ));
+              // Container(
+              //     width: MediaQuery.of(context).size.width,
+              //     height: 55,
+              //     decoration: BoxDecoration(
+              //         color: colors.colorWhite,
+              //         border: Border(
+              //             top: BorderSide(color: colors.colorDivider))),
+              //     child: Center(
+              //         child: Text(
+              //       "! MARKET IS CLOSED",
+              //       style: textStyle(
+              //           colors.colorBlack, 16, FontWeight.w600),
+              //     )),
+              //   )
+              );
         },
       ),
     );
   }
+
+  // void _showBottomSheet(BuildContext context, theme, ipo, upiid) {
+  //   TextEditingController _controller = TextEditingController();
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true, // IMPORTANT: Allows full-screen input handling
+  //     shape: RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  //     ),
+  //     builder: (context) {
+  //       return Padding(
+  //         padding: EdgeInsets.only(
+  //           bottom: MediaQuery.of(context)
+  //               .viewInsets
+  //               .bottom, // Avoids keyboard overlap
+  //         ),
+  //         child: SingleChildScrollView(
+  //           // Ensures proper scrolling when keyboard appears
+  //           child: Container(
+  //             padding: EdgeInsets.all(16),
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               children: [
+  //                 Text(
+  //                   "Enter Your Text",
+  //                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //                 ),
+  //                 SizedBox(height: 10),
+
+  //                 /// Text Input Field
+  //                 TextField(
+  //                   controller: _controller,
+  //                   autofocus: true, // Ensures keyboard opens automatically
+  //                   decoration: InputDecoration(
+  //                     border: OutlineInputBorder(),
+  //                     hintText: "Type something...",
+  //                   ),
+  //                 ),
+  //                 SizedBox(height: 20),
+
+  //                 /// Buttons Row (Cancel & Submit)
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //                   children: [
+  //                     ElevatedButton(
+  //                       onPressed: () => Navigator.pop(context),
+  //                       style: ElevatedButton.styleFrom(
+  //                           backgroundColor: Colors.red),
+  //                       child: Text("Cancel"),
+  //                     ),
+  //                     ElevatedButton(
+  //                       onPressed: () {
+  //                         print("User Input: ${_controller.text}");
+  //                         Navigator.pop(context);
+  //                       },
+  //                       child: Text("Submit"),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
+  void _showBottomSheet(BuildContext context, ThemesProvider theme,
+      IPOProvider ipo, TranctionProvider upiid) {
+    TextEditingController _controller = TextEditingController();
+    print(ipo.loading);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows proper keyboard handling
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 0,
+            right: 0,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 16),
+                // padding: null,
+                child: Text("UPI ID (Virtual payment adress)",
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        14,
+                        FontWeight.w600)),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                height: 44,
+                child: TextFormField(
+                  readOnly: ipo.loading ? true : false,
+                  controller: upiid.upiid,
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      14,
+                      FontWeight.w600),
+                  decoration: InputDecoration(
+                    fillColor: theme.isDarkMode
+                        ? colors.darkGrey
+                        : const Color(0xffF1F3F8),
+                    filled: true,
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(30)),
+                    disabledBorder: InputBorder.none,
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(30)),
+                    contentPadding: const EdgeInsets.all(13),
+                    border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(30)),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      upiid.upiid.text = value;
+                      if (upiid.upiid.text.isEmpty) {
+                        upierrortext = "* UPI ID cannot be empty";
+                        ipo.setisMainIPOPlaceOrderBtnActiveValue = false;
+                      } else if (!RegExp(r'^[\w.-]+@[\w]+$')
+                          .hasMatch(upiid.upiid.text = value)) {
+                        upierrortext = 'Invalid UPI ID format';
+                        ipo.setisMainIPOPlaceOrderBtnActiveValue = false;
+                      } else {
+                        upierrortext = '';
+                        ipo.setisMainIPOPlaceOrderBtnActiveValue = true;
+                      }
+                    });
+                  },
+                ),
+              ),
+              if (upiid.upiid.text.isEmpty ||
+                  !RegExp(r'^[\w.-]+@[\w]+$').hasMatch(upiid.upiid.text)) ...[
+                const SizedBox(
+                  height: 6,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: IpoErrorBadge(
+                    errorName: upierrortext,
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 20),
+
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                child: Row(
+                  children: [
+                    IconButton(
+                        splashRadius: 20,
+                        onPressed: ipo.loading
+                            ? null
+                            : () {
+                                setState(() {
+                                  // ischecked = !ischecked;
+                                  if (ipo
+                                      .checkForErrorsInSMEPlaceOrder(addIpo)) {
+                                    ipo.setisMainIPOPlaceOrderBtnActiveValue =
+                                        true;
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        warningMessage(context,
+                                            "can't able place Order with current selected combination of Bids"));
+                                    ischecked = false;
+                                    ipo.setisMainIPOPlaceOrderBtnActiveValue =
+                                        false;
+                                  }
+                                });
+                              },
+                        icon: SvgPicture.asset(theme.isDarkMode
+                            ? ipo.isMainIPOPlaceOrderBtnActive
+                                ? assets.darkCheckedboxIcon
+                                : assets.darkCheckboxIcon
+                            : ipo.isMainIPOPlaceOrderBtnActive
+                                ? assets.checkedbox
+                                : assets.checkbox)),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        "I hereby undertake that I have read the Red Herring Prospectus and I am eligible bidder as per the applicable provisions of SEBI (Issue of Capital & Disclosure Agreement, 2009) regulations",
+                        style: TextStyle(
+                            color: Color(0xff666666),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            height: 1.3),
+                        textAlign: TextAlign.justify,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 35),
+                    elevation: 0,
+                    backgroundColor: !theme.isDarkMode
+                        ? ipo.isMainIPOPlaceOrderBtnActive == false
+                            ? const Color(0xfff5f5f5)
+                            : colors.colorBlack
+                        : ipo.isMainIPOPlaceOrderBtnActive == false
+                            ? colors.darkGrey
+                            : colors.colorbluegrey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                  ),
+                  onPressed: () {
+                    if (upiid.upiid.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          warningMessage(context, '* UPI ID cannot be empty'));
+                    } else if (!RegExp(r'^[\w.-]+@[\w]+$')
+                        .hasMatch(upiid.upiid.text)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          warningMessage(context, 'Invalid UPI ID format'));
+                    } else {
+                      ipoplaceorder(upiid, ipo);
+                    }
+                  },
+                  child: ipo.loading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Color(0xff666666)),
+                        )
+                      : Text("Apply",
+                          style: textStyle(
+                              !theme.isDarkMode
+                                  ? ipo.isMainIPOPlaceOrderBtnActive == false
+                                      ? const Color(0xff999999)
+                                      : colors.colorWhite
+                                  : ipo.isMainIPOPlaceOrderBtnActive == false
+                                      ? colors.darkGrey
+                                      : colors.colorBlack,
+                              14,
+                              FontWeight.w500)),
+                ),
+              ),
+
+              // /// Buttons
+
+              // /// Slider (Shows when OK button is clicked)
+              // if (_showSlider)
+              //   Column(
+              //     children: [
+              //       SizedBox(height: 10),
+              //       Text(
+              //           "Adjust Value: ${_sliderValue.toStringAsFixed(2)}"),
+              //       Slider(
+              //         value: _sliderValue,
+              //         min: 0,
+              //         max: 1,
+              //         divisions: 10,
+              //         label: _sliderValue.toStringAsFixed(2),
+              //         onChanged: (newValue) {
+              //           setState(() {
+              //             _sliderValue = newValue;
+              //           });
+              //         },
+              //       ),
+              //     ],
+              //   ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // void _showBottomSheet(BuildContext context, theme, ipo, upiid) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true, // Allows full-screen bottom sheet
+  //     shape: RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  //     ),
+  //     builder: (context) {
+  //       return DraggableScrollableSheet(
+  //         expand: false,
+  //         initialChildSize: 0.6, // Start at 40% of screen height
+  //         minChildSize: 0.2,
+  //         maxChildSize: 0.8, // Can be dragged up to 80%
+  //         builder: (context, scrollController) {
+  //           return Container(
+  //             padding: EdgeInsets.symmetric(vertical: 20),
+  //             child: ListView(
+  //               controller: scrollController,
+  //               children: [
+  //                 Column(children: [
+  //                   Column(
+  //                     children: [
+  //                       Padding(
+  //                         padding: const EdgeInsets.only(left: 16),
+  //                         // padding: null,
+  //                         child: Text("UPI ID (Virtual payment adress)",
+  //                             style: textStyle(
+  //                                 theme.isDarkMode
+  //                                     ? colors.colorWhite
+  //                                     : colors.colorBlack,
+  //                                 14,
+  //                                 FontWeight.w600)),
+  //                       ),
+  //                       SizedBox(
+  //                         height: 10,
+  //                       ),
+  //                       Container(
+  //                         margin: const EdgeInsets.symmetric(horizontal: 16),
+  //                         height: 44,
+  //                         child: TextFormField(
+  //                           readOnly: ipo.loading ? true : false,
+  //                           controller: upiid.upiid,
+  //                           style: textStyle(
+  //                               theme.isDarkMode
+  //                                   ? colors.colorWhite
+  //                                   : colors.colorBlack,
+  //                               14,
+  //                               FontWeight.w600),
+  //                           decoration: InputDecoration(
+  //                             fillColor: theme.isDarkMode
+  //                                 ? colors.darkGrey
+  //                                 : const Color(0xffF1F3F8),
+  //                             filled: true,
+  //                             enabledBorder: OutlineInputBorder(
+  //                                 borderSide: BorderSide.none,
+  //                                 borderRadius: BorderRadius.circular(30)),
+  //                             disabledBorder: InputBorder.none,
+  //                             focusedBorder: OutlineInputBorder(
+  //                                 borderSide: BorderSide.none,
+  //                                 borderRadius: BorderRadius.circular(30)),
+  //                             contentPadding: const EdgeInsets.all(13),
+  //                             border: OutlineInputBorder(
+  //                                 borderSide: BorderSide.none,
+  //                                 borderRadius: BorderRadius.circular(30)),
+  //                           ),
+  //                           onChanged: (value) {
+  //                             setState(() {
+  //                               upiid.upiid.text = value;
+  //                               if (upiid.upiid.text.isEmpty) {
+  //                                 upierrortext = "* UPI ID cannot be empty";
+  //                                 ipo.setisMainIPOPlaceOrderBtnActiveValue =
+  //                                     false;
+  //                               } else if (!RegExp(r'^[\w.-]+@[\w]+$')
+  //                                   .hasMatch(upiid.upiid.text = value)) {
+  //                                 upierrortext = 'Invalid UPI ID format';
+  //                                 ipo.setisMainIPOPlaceOrderBtnActiveValue =
+  //                                     false;
+  //                               } else {
+  //                                 upierrortext = '';
+  //                                 ipo.setisMainIPOPlaceOrderBtnActiveValue =
+  //                                     true;
+  //                               }
+  //                             });
+  //                           },
+  //                         ),
+  //                       ),
+  //                       if (upiid.upiid.text.isEmpty ||
+  //                           !RegExp(r'^[\w.-]+@[\w]+$')
+  //                               .hasMatch(upiid.upiid.text)) ...[
+  //                         const SizedBox(
+  //                           height: 6,
+  //                         ),
+  //                         Padding(
+  //                           padding: const EdgeInsets.symmetric(horizontal: 16),
+  //                           child: IpoErrorBadge(
+  //                             errorName: upierrortext,
+  //                           ),
+  //                         ),
+  //                       ],
+
+  //                     ],
+  //                   ),
+  //                   ElevatedButton(onPressed: () {}, child: Text("text"))
+  //                 ]),
+  //               ],
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
   ipoplaceorder(TranctionProvider upiid, IPOProvider ipo) async {
     MenuData menudata = MenuData(

@@ -44,10 +44,9 @@ class IPOProvider extends DefaultChangeNotifier {
   int get smePlaceOrderRequiredMaxPrice => _smePlaceOrderRequiredMaxPrice;
 
   set setsmePlaceOrderRequiredMaxPrice(List<IpoDetails> addIpo) {
-    _smePlaceOrderRequiredMaxPrice = addIpo.map((map) => map .requriedprice).reduce((a,b)=>a>b?a:b);
+    _smePlaceOrderRequiredMaxPrice =
+        addIpo.map((map) => map.requriedprice).reduce((a, b) => a > b ? a : b);
   }
-    
-
 
   bool _isMainIPOPlaceOrderBtnActive = false;
   bool get isMainIPOPlaceOrderBtnActive => _isMainIPOPlaceOrderBtnActive;
@@ -56,15 +55,14 @@ class IPOProvider extends DefaultChangeNotifier {
     _isMainIPOPlaceOrderBtnActive = value;
   }
 
-
   int _mainIPOPlaceOrderRequiredMaxPrice = 0;
-  int get mainIPOPlaceOrderRequiredMaxPrice => _mainIPOPlaceOrderRequiredMaxPrice;
+  int get mainIPOPlaceOrderRequiredMaxPrice =>
+      _mainIPOPlaceOrderRequiredMaxPrice;
 
   set setMainIPOPlaceOrderRequiredMaxPrice(List<IpoDetails> addIpo) {
-    _mainIPOPlaceOrderRequiredMaxPrice = addIpo.map((map) => map .requriedprice).reduce((a,b)=>a>b?a:b);
+    _mainIPOPlaceOrderRequiredMaxPrice =
+        addIpo.map((map) => map.requriedprice).reduce((a, b) => a > b ? a : b);
   }
-    
-
 
   bool _isActiveMainStream = true;
   bool get isActiveMainStream => _isActiveMainStream;
@@ -134,7 +132,6 @@ class IPOProvider extends DefaultChangeNotifier {
   List<IpoOrderBookModel>? _iposearch = [];
   List<IpoOrderBookModel>? get iposearch => _iposearch;
 
-
   List _ipoCommonSearchList = [];
   List get ipoCommonSearchList => _ipoCommonSearchList;
 
@@ -158,21 +155,28 @@ class IPOProvider extends DefaultChangeNotifier {
   String ipoCategoryvalue = "";
   String get ipoCategorys => ipoCategoryvalue;
 
+  bool _upivalid = false;
+  bool get upivalid => _upivalid;
+
+  String _upierror = "";
+  String get upierror => _upierror;
+
   mergemainsme() {
     _mainsme = [];
-    _ipoCommonSearchAllIpos =[];
+    _ipoCommonSearchAllIpos = [];
     try {
       _mainsme.addAll(_mainStreamIpoModel!.mainIPO ?? []);
       _mainsme.addAll(_smeIpoModel!.sMEIPO ?? []);
 
       _ipoCommonSearchAllIpos.addAll(_mainStreamIpoModel!.mainIPO ?? []);
       _ipoCommonSearchAllIpos.addAll(_smeIpoModel!.sMEIPO ?? []);
-      _ipoCommonSearchAllIpos.addAll(_ipoPerformanceModel!.data??[]);
+      _ipoCommonSearchAllIpos.addAll(_ipoPerformanceModel!.data ?? []);
       _ipoCommonSearchAllIpos.addAll(_ipoPreClose?.msg ?? []);
 
       for (int i = 0; i < _mainsme.length; i++) {
         if (_mainsme[i] is MainIPO) {
           _mainsme[i].key = "MAIN";
+
           // print(
           //     "MAIN IPO : ${_mainsme[i].biddingStartDate} ${_mainsme[i].name} ${_mainsme[i].key}");
         } else if (_mainsme[i] is SMEIPO) {
@@ -279,7 +283,6 @@ class IPOProvider extends DefaultChangeNotifier {
 
 // Common search for IPOs
 
-
   showCommonIpoSearch(bool value) {
     _showSearch = value;
     if (!_showSearch) {
@@ -299,13 +302,13 @@ class IPOProvider extends DefaultChangeNotifier {
     if (value.length > 1) {
       _ipoCommonSearchList = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      
+
       _ipoCommonSearchList = _ipoCommonSearchAllIpos
-          .where((element) =>
-              element.companyName != ""? element.companyName!.toUpperCase().contains(value.toUpperCase())
-              :element.name!.toUpperCase().contains(value.toUpperCase()) )
+          .where((element) => element.companyName != ""
+              ? element.companyName!.toUpperCase().contains(value.toUpperCase())
+              : element.name!.toUpperCase().contains(value.toUpperCase()))
           .toList();
-        print("_ipoCommonSearchList :: ${inspect(_ipoCommonSearchList)}");
+      print("_ipoCommonSearchList :: ${inspect(_ipoCommonSearchList)}");
       if (_ipoCommonSearchList.isEmpty) {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'No Data Found'));
@@ -317,13 +320,6 @@ class IPOProvider extends DefaultChangeNotifier {
     }
     notifyListeners();
   }
-
-
-
-
-
-
-
 
   openOrderSearch(String value, BuildContext context) {
     if (value.length > 1) {
@@ -485,8 +481,9 @@ class IPOProvider extends DefaultChangeNotifier {
                 (int.parse(addIpo.qualityController.text))
         : addIpo.qualityController.text.isEmpty
             ? addIpo.qualityController.text = ""
-            : addIpo.requriedprice = double.parse(addIpo.bidpricecontroller.text).toInt() *
-                (int.parse(addIpo.qualityController.text));
+            : addIpo.requriedprice =
+                double.parse(addIpo.bidpricecontroller.text).toInt() *
+                    (int.parse(addIpo.qualityController.text));
     if (addIpo.qualityController.text.isEmpty ||
         addIpo.qualityController.text == "0") {
       addIpo.qualityerrortext = addIpo.qualityController.text.isEmpty
@@ -519,8 +516,9 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(smeipo.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
-          : addIpo.requriedprice = double.parse(addIpo.bidpricecontroller.text).toInt() *
-              (int.parse(addIpo.qualityController.text));
+          : addIpo.requriedprice =
+              double.parse(addIpo.bidpricecontroller.text).toInt() *
+                  (int.parse(addIpo.qualityController.text));
     }
     if (addIpo.qualityController.text.isEmpty ||
         addIpo.qualityController.text == "0") {
@@ -550,8 +548,9 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(smeipo.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
-          : addIpo.requriedprice = double.parse(addIpo.bidpricecontroller.text).toInt() *
-              (int.parse(addIpo.qualityController.text));
+          : addIpo.requriedprice =
+              double.parse(addIpo.bidpricecontroller.text).toInt() *
+                  (int.parse(addIpo.qualityController.text));
     }
     if (addIpo.qualityController.text.isEmpty ||
         addIpo.qualityController.text == "0") {
@@ -568,20 +567,18 @@ class IPOProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  checkForErrorsInSMEPlaceOrder(List<IpoDetails> addIpo){
-        bool status = false;
-      for (final item in addIpo){
-          if (item.qualityerrortext.isEmpty && item.biderrortext.isEmpty){
-              status= true;
-          }else{
-            status =false;
-            break;
-          }
+  checkForErrorsInSMEPlaceOrder(List<IpoDetails> addIpo) {
+    bool status = false;
+    for (final item in addIpo) {
+      if (item.qualityerrortext.isEmpty && item.biderrortext.isEmpty) {
+        status = true;
+      } else {
+        status = false;
+        break;
       }
-      return status;
-    
+    }
+    return status;
   }
-
 
   ipoOrdervalidation(
       IpoDetails addIpo,
@@ -633,8 +630,9 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(mainstream.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
-          : addIpo.requriedprice = double.parse(addIpo.bidpricecontroller.text).toInt() *
-              (int.parse(addIpo.qualityController.text));
+          : addIpo.requriedprice =
+              double.parse(addIpo.bidpricecontroller.text).toInt() *
+                  (int.parse(addIpo.qualityController.text));
     }
     if (addIpo.qualityController.text.isEmpty ||
         addIpo.qualityController.text == "0") {
@@ -661,8 +659,9 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(mainstream.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
-          : addIpo.requriedprice = double.parse(addIpo.bidpricecontroller.text).toInt() *
-              (int.parse(addIpo.qualityController.text));
+          : addIpo.requriedprice =
+              double.parse(addIpo.bidpricecontroller.text).toInt() *
+                  (int.parse(addIpo.qualityController.text));
     }
     if (addIpo.qualityController.text.isEmpty ||
         addIpo.qualityController.text == "0") {
@@ -740,7 +739,7 @@ class IPOProvider extends DefaultChangeNotifier {
           ? "* Value is required"
           : "Value cannot be 0";
       addIpo.requriedprice = 0;
-      setisMainIPOPlaceOrderBtnActiveValue= false;
+      setisMainIPOPlaceOrderBtnActiveValue = false;
     } else if ((int.parse(addIpo.bidpricecontroller.text)) >
             double.parse(mainstream.maxPrice.toString()).toInt() ||
         (int.parse(addIpo.bidpricecontroller.text)) <
@@ -1148,8 +1147,12 @@ class IPOProvider extends DefaultChangeNotifier {
         getipoplaceorder(context, menudata, iposbids, iposupiid);
         getipoorderbookmodel(true);
         // ipotab();
+        _upierror = "";
+        _upivalid = false;
         Navigator.pushNamed(context, Routes.ipoorderbook);
       } else {
+        _upivalid = true;
+        _upierror = "Invalid UPI ID";
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'Invalid UPI ID'));
       }
@@ -1284,7 +1287,6 @@ class IPOProvider extends DefaultChangeNotifier {
 }
 
 extension DateTimeExtension on DateTime? {
-  
   bool? isAfterOrEqualTo(DateTime dateTime) {
     final date = this;
     if (date != null) {
@@ -1315,5 +1317,4 @@ extension DateTimeExtension on DateTime? {
     }
     return null;
   }
-
 }
