@@ -274,7 +274,8 @@ class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
                     onChanged: (value) async {
                       ipo.chngCategoryType("$value");
                       ipo.categoryOnChange(
-                          addIpo[addIpo.length - 1], ipo.maxUPIAmt, ischecked);
+                          addIpo, ipo.maxUPIAmt, ipo.isMainIPOPlaceOrderBtnActive,
+                                    "");
                     },
                   )),
                 ),
@@ -1102,7 +1103,7 @@ class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
       flow: "mod",
       type: widget.modifyipoorder.type.toString(),
       symbol: widget.modifyipoorder.symbol.toString(),
-      category: ipo.ipoCategoryvalue == "Individual"
+      category: ipo.ipoCategoryvalue == "Individual" || ipo.ipoCategoryvalue == "HNI"
           ? "IND"
           : ipo.ipoCategoryvalue == "Employee"
               ? "EMP"

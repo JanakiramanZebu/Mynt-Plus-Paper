@@ -282,8 +282,9 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                       value: ipo.ipoCategoryvalue,
                       onChanged: (value) async {
                         ipo.chngCategoryType("$value");
-                        ipo.categoryOnChange(addIpo[addIpo.length - 1],
-                            ipo.maxUPIAmt, ischecked);
+                        ipo.categoryOnChange(addIpo,
+                            ipo.maxUPIAmt, ipo.isMainIPOPlaceOrderBtnActive,
+                                    "");
                       },
                     )),
                   ),
@@ -1113,7 +1114,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
       flow: "now",
       type: widget.smeipo.type.toString(),
       symbol: widget.smeipo.symbol.toString(),
-      category: ipo.ipoCategoryvalue == "Individual"
+      category: ipo.ipoCategoryvalue == "Individual" || ipo.ipoCategoryvalue == "HNI"
           ? "IND"
           : ipo.ipoCategoryvalue == "Employee"
               ? "EMP"

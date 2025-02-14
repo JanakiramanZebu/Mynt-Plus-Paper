@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/screens/ipo/ipo_main_screen.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
@@ -37,6 +39,20 @@ class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
           leading: InkWell(
             onTap: () {
               Navigator.pop(context);
+              // Navigator.pushReplacement(context, 
+              //   PageRouteBuilder(
+              //     pageBuilder: (context, animation, secondaryAnimation) =>
+              //         const IPOScreen(),
+              //     transitionsBuilder:
+              //         (context, animation, secondaryAnimation, child) {
+              //       final tween = Tween<Offset>(
+              //           begin: const Offset(0, 1), end: const Offset(.0, .0));
+              //       return SlideTransition(
+              //           position: animation.drive(tween), child: child);
+              //     })
+              //   );
+
+
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 9),
@@ -156,7 +172,14 @@ class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
                       FontWeight.w600),
                 ),
               ),
-              IpoOpenOrder(open: ipo),
+               ipo.openorder!.isNotEmpty? const IpoOpenOrder():
+               const Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 250),
+                    child: NoDataFound(),
+                  ),
+                ),
               // ] else if (ipo.ipoOrderBookTabNameAct == "Closed Order") ...[
               // Divider(
               //   height: 10,
@@ -175,7 +198,14 @@ class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
                         15,
                         FontWeight.w600),
                   )),
-              IpoCloseOrder(close: ipo)
+              ipo.closeorder!.isNotEmpty? const IpoCloseOrder()
+              :const Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 250),
+                    child: NoDataFound(),
+                  ),
+                ),
               // ]
             ],
           ),

@@ -50,6 +50,7 @@ class _IPOmainScreenState extends State<IPOScreen> {
                       ),
                       child: SearchBar(
                         onTap: () {
+                          FocusScope.of(context).requestFocus(FocusNode()); 
                           Navigator.pushNamed(context, Routes.iposearchscreen);
                         },
                         hintText: "Search company",
@@ -184,14 +185,13 @@ class _IPOmainScreenState extends State<IPOScreen> {
                                   Center(
                                     child: ElevatedButton(
                                       onPressed: () async {
-                                        Future.delayed(
-                                            const Duration(microseconds: 100),
-                                            () async {
-                                          await context
-                                              .read(ipoProvide)
-                                              .getipoorderbookmodel(true);
-                                          // await context.read(ipoProvide).ipotab();
-                                        });
+                                    Future.delayed(const Duration(microseconds: 100),
+                                          () async {
+                                        await context
+                                            .read(ipoProvide)
+                                            .getipoorderbookmodel(true);
+                                        // await context.read(ipoProvide).ipotab();
+                                      });
 
                                         Navigator.pushNamed(
                                             context, Routes.ipoorderbook);

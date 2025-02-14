@@ -9,12 +9,13 @@ import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
 
 class IpoCloseOrder extends ConsumerWidget {
-  final IPOProvider close;
-  const IpoCloseOrder({super.key, required this.close});
+  // final IPOProvider ipo;
+  const IpoCloseOrder({super.key});
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = watch(themeProvider);
+    final ipo = watch(ipoProvide);
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -22,12 +23,12 @@ class IpoCloseOrder extends ConsumerWidget {
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: close.closeorder!.length,
+            itemCount: ipo.closeorder!.length,
             itemBuilder: (context, index) {
               return InkWell(
                 onTap: () {
                   Navigator.pushNamed(context, Routes.ipoclosedetailsscreen,
-                      arguments: close.closeorder![index]);
+                      arguments: ipo.closeorder![index]);
                 },
                 child: Column(
                   children: [
@@ -40,7 +41,7 @@ class IpoCloseOrder extends ConsumerWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(close.closeorder![index].symbol.toString(),
+                              Text(ipo.closeorder![index].symbol.toString(),
                                   style: textStyles.scripNameTxtStyle.copyWith(
                                       color: theme.isDarkMode
                                           ? colors.colorWhite
@@ -51,7 +52,7 @@ class IpoCloseOrder extends ConsumerWidget {
                               Row(
                                 children: [
                                   SvgPicture.asset(
-                                      close.closeorder![index].reponseStatus ==
+                                      ipo.closeorder![index].reponseStatus ==
                                               "cancel success"
                                           ? "assets/icon/failed.svg"
                                           : "assets/icon/failed.svg"),
@@ -59,7 +60,7 @@ class IpoCloseOrder extends ConsumerWidget {
                                     width: 4,
                                   ),
                                   Text(
-                                    close.closeorder![index].reponseStatus ==
+                                    ipo.closeorder![index].reponseStatus ==
                                             "cancel success"
                                         ? "Cancelled"
                                         : "Failed",
@@ -79,7 +80,7 @@ class IpoCloseOrder extends ConsumerWidget {
                                         colors.colorGrey, 12, FontWeight.w500),
                                   ),
                                   Text(
-                                    "${close.closeorder![index].bidDetail![0].quantity}",
+                                    "${ipo.closeorder![index].bidDetail![0].quantity}",
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -113,16 +114,44 @@ class IpoCloseOrder extends ConsumerWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                close.closeorder![index].type == "BSE"
-                                    ? "₹${getFormatter(noDecimal: true,v4d: false,value: double.parse(close.closeorder![index].bidDetail![0].rate!) * double.parse(close.closeorder![index].bidDetail![0].quantity!)).toString()}" 
+                                ipo.closeorder![index].responseDatetime
+                                            .toString() ==
+                                        ""
+                                    ? "----"
+                                    : ipodateres(ipo
+                                        .closeorder![index].responseDatetime
+                                        .toString()),
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    13,
+                                    FontWeight.w600),
+                              ),
+                              const SizedBox(
+                                height: 2,
+                              ),
+                              Text(
+                                "Bid Date & time",
+                                style: textStyle(
+                                    colors.colorGrey, 12, FontWeight.w500),
+                              )
+                            ],
+                          ),Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                ipo.closeorder![index].type == "BSE"
+                                    ? "₹${getFormatter(noDecimal: true,v4d: false,value: double.parse(ipo.closeorder![index].bidDetail![0].rate!) * double.parse(ipo.closeorder![index].bidDetail![0].quantity!)).toString()}" 
                                     : "₹${getFormatter(
                                         noDecimal: true,
                                         v4d: false,
-                                        value: double.parse(close
+                                        value: double.parse(ipo
                                                 .closeorder![index]
                                                 .bidDetail![0]
                                                 .amount
@@ -146,34 +175,6 @@ class IpoCloseOrder extends ConsumerWidget {
                               )
                             ],
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                close.closeorder![index].responseDatetime
-                                            .toString() ==
-                                        ""
-                                    ? "----"
-                                    : ipodateres(close
-                                        .closeorder![index].responseDatetime
-                                        .toString()),
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    13,
-                                    FontWeight.w600),
-                              ),
-                              const SizedBox(
-                                height: 2,
-                              ),
-                              Text(
-                                "Bid Date & time",
-                                style: textStyle(
-                                    colors.colorGrey, 12, FontWeight.w500),
-                              )
-                            ],
-                          )
                         ],
                       ),
                     ),
