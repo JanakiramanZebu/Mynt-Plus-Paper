@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import '../locator/constant.dart';
-// import '../models/marketwatch_model/get_quotes.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart';
-// import '../models/order_book_model/order_book_model.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
@@ -21,14 +20,11 @@ import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/internet_widget.dart';
-import 'bonds/bond_screen.dart';
-import 'ipo/ipo_main_screen.dart';
 import 'market_watch/index/index_screen.dart';
 import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen.dart';
 import 'market_watch/watchlists_bottom_sheet.dart';
-import 'mutual_fund/mutual_fund_screen.dart';
 import 'order_book/basket/create_basket.dart';
 import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
@@ -47,16 +43,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
-
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'HomeScreen',
+      screenClass: 'HomeScreen', // Customize if needed.
+    );
 // This is a websockt heartbeat connection that reconnects every two seconds only.
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
-        // print("websocket ${context.read(websocketProvider).wsConnected}");
         context.read(websocketProvider).reconnectWS();
         // context.read(websocketProvider).startPingCheck(context);
       }
     });
-
     context.read(networkStateProvider).networkStream();
     context.read(marketWatchProvider).fToast.init(context);
     context.read(versionProvider).checkVersion(context);
@@ -137,7 +134,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 channelInput: "${scriptInfo?.exch}|${scriptInfo?.token}",
                 task: "d",
                 context: context);
-                
           } else {
             userProfile.setChartdialog(false);
           }
@@ -1269,12 +1265,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     if (internet.connectionStatus ==
                                             ConnectivityResult.wifi ||
                                         internet.connectionStatus ==
-                                            ConnectivityResult.mobile && !userProfile.showchartof) ...[
+                                                ConnectivityResult.mobile &&
+                                            !userProfile.showchartof) ...[
                                       _onItemTapped(
-                                          indexProvide.selectedBtmIndx),
+                                          indexProvide.selectedBtmIndx, theme),
                                     ]
                                   ])),
-                              
                               Positioned(
                                 // right: userProfile.showchartof
                                 //     ? 0
@@ -1337,7 +1333,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
 // The screen will change depending on the condition when you click on the bottom menu items.
-  _onItemTapped(index) {
+  _onItemTapped(index, ThemesProvider theme) {
     switch (index) {
       // case 0:
       //   return ExploreScreens();
@@ -1350,12 +1346,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       case 4:
         return const UserAccountScreen();
 
-      case 5:
-        return const IPOScreen();
-      case 6:
-        return const BondScreen();
-      case 7:
-        return const MutualFundScreen();
+      // case 5:
+      //   return const IPOScreen();
+      // case 6:
+      //   return const BondScreen();
+      // case 7:
+      // return const MutualFundScreen();
     }
   }
 
