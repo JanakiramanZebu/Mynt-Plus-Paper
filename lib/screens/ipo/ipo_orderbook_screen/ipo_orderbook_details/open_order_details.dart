@@ -423,7 +423,8 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                 "App no",
                 ipodetails.type == "BSE"
                     ? "-"
-                    : ipodetails.respBid![0].bidReferenceNumber.toString(),
+                    : 
+                    ipodetails.respBid!=null ?  ipodetails.respBid![0].bidReferenceNumber.toString():" - ",
                 theme),
             data("Quantity", ipodetails.bidDetail![0].quantity.toString(),
                 theme),

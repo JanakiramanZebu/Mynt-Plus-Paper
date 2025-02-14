@@ -159,7 +159,7 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
                               ? assets.checkedbox
                               : assets.checkbox),
                     ),
-                    const SizedBox(width: 10),
+                    // const SizedBox(width: 10),
                     const Expanded(
                       child: Text(
                         "I hereby undertake that I have read the Red Herring Prospectus and I am eligible bidder as per the applicable provisions of SEBI (Issue of Capital & Disclosure Agreement, 2009) regulations",
