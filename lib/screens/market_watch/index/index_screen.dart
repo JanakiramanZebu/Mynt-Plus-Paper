@@ -41,7 +41,7 @@ class DefaultIndexList extends ConsumerWidget {
               await context
                   .read(indexListProvider)
                   .fetchIndexList("NSE", context);
-              showModalBottomSheet(
+              await showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
                   isDismissible: true,
@@ -52,6 +52,7 @@ class DefaultIndexList extends ConsumerWidget {
                     ),
                   ),
                   builder: (_) => IndexBottomSheet(defaultIndex: index));
+              await indexProvide.fetchIndexList("exit", context);
             },
             child: Container(
                 padding:

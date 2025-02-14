@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
 import 'package:mynt_plus/screens/profile_screen/app_webview/ipo_webview.dart';
@@ -79,6 +80,11 @@ String? currentRouteName;
 class AppRoutes {
   static Route router(RouteSettings settings) {
     currentRouteName = settings.name;
+
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: currentRouteName,
+      screenClass: currentRouteName, // Customize if needed.
+    );
     final dynamic args = settings.arguments;
     switch (settings.name) {
       case Routes.splash:

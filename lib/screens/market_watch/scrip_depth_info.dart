@@ -4,6 +4,7 @@ import 'package:another_xlider/another_xlider.dart';
 import 'package:another_xlider/models/handler.dart';
 import 'package:another_xlider/models/tooltip/tooltip.dart';
 import 'package:another_xlider/models/trackbar.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -74,6 +75,10 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
       //   }
     });
 
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'Stock details',
+      screenClass: 'ScripDepthInfo', // Customize if needed.
+    );
     super.initState();
   }
 
@@ -969,8 +974,10 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                   "${depthData.h}",
                                                   theme),
                                             ],
-                                            if ((depthData.wk52L != "null" && depthData.wk52L != null) &&
-                                                (depthData.wk52H != "null" && depthData.wk52H != null) &&
+                                            if ((depthData.wk52L != "null" &&
+                                                    depthData.wk52L != null) &&
+                                                (depthData.wk52H != "null" &&
+                                                    depthData.wk52H != null) &&
                                                 double.parse(depthData.wk52H
                                                         .toString()) >
                                                     0 &&

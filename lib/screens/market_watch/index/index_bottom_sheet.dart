@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:fluttertoast/fluttertoast.dart'; 
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/index_list_provider.dart';
+import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
@@ -25,6 +28,8 @@ class IndexBottomSheet extends ConsumerWidget {
     bool ischeck = false;
     final theme = context.read(themeProvider);
     final indexProvide = watch(indexListProvider);
+    final marketWatch = watch(marketWatchProvider);
+    final socketDatas = watch(websocketProvider).socketDatas;
     return DraggableScrollableSheet(
         initialChildSize: initialSize,
         minChildSize: 0.2,
@@ -70,7 +75,7 @@ class IndexBottomSheet extends ConsumerWidget {
                                       : const Color.fromARGB(255, 18, 18, 18)),
                             ),
                             menuItemStyleData: MenuItemStyleData(
-                                customHeights:  
+                                customHeights:
                                     indexProvide.getCustomItemsHeight()),
                             buttonStyleData: ButtonStyleData(
                                 height: 36,
@@ -156,22 +161,97 @@ class IndexBottomSheet extends ConsumerWidget {
                                 } else {
                                   ischeck = false;
                                 }
+                                String ltp = '0';
+                                String ch = '0.00';
+                                String chp = '0.00';
+                                socketDatas.containsKey(
+                                    indexProvide.indValuesList[index].token);
+                                if (socketDatas.isNotEmpty) {
+                                  final raw = indexProvide.indValuesList[index];
+
+                                  if (socketDatas.containsKey(raw.token)) {
+                                    ltp =
+                                        socketDatas[raw.token]['lp'].toString();
+                                    ch = socketDatas[raw.token]['chng']
+                                        .toString();
+                                    chp =
+                                        socketDatas[raw.token]['pc'].toString();
+                                  }
+                                }
+                                // DepthInputArgs depthArgs = DepthInputArgs(
+                                //     exch: indexProvide
+                                //         .indValuesList[index].exch
+                                //         .toString(),
+                                //     token: indexProvide
+                                //         .indValuesList[index].token
+                                //         .toString(),
+                                //     tsym: indexProvide
+                                //         .indValuesList[index].idxname
+                                //         .toString().toUpperCase(),
+                                //     instname: indexProvide
+                                //         .indValuesList[index].tsym
+                                //         .toString(),
+                                //     symbol: indexProvide
+                                //         .indValuesList[index].tsym
+                                //         .toString(),
+                                //     expDate: '',
+                                //     option: '');
+                                // Navigator.pop(context);
+                                // await marketWatch.calldepthApis(
+                                //     context, depthArgs);
                                 return ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 14),
+                                  contentPadding:
+                                      const EdgeInsets.only(left: 14, right: 4),
                                   dense: true,
-                                  title: Text(
-                                      indexProvide.indValuesList[index].idxname!
-                                          .toUpperCase(),
-                                      style: textStyles.scripNameTxtStyle
-                                          .copyWith(
-                                              color: theme.isDarkMode
+                                  title: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                          indexProvide
+                                              .indValuesList[index].idxname!
+                                              .toUpperCase(),
+                                          style: textStyles.scripNameTxtStyle
+                                              .copyWith(
+                                                  color: theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack)),
+                                      Text("₹$ltp",
+                                          style: textStyle(
+                                              theme.isDarkMode
                                                   ? colors.colorWhite
-                                                  : colors.colorBlack)),
-                                  subtitle: Row(children: [
-                                    CustomExchBadge(
-                                        exch: indexProvide.slectedExch)
-                                  ]),
+                                                  : colors.colorBlack,
+                                              14,
+                                              FontWeight.w600)),
+                                    ],
+                                  ),
+                                  subtitle: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        CustomExchBadge(
+                                            exch: indexProvide.slectedExch),
+                                        Text(
+                                          "${ch == "null" ? 0.00 : ch} (${chp == "null" ? 0.00 : chp}%)",
+                                          style: textStyle(
+                                              ch.toString().startsWith("-") ||
+                                                      chp
+                                                          .toString()
+                                                          .startsWith('-')
+                                                  ? colors.darkred
+                                                  : (ch.toString() == "null" ||
+                                                              chp.toString() ==
+                                                                  "null") ||
+                                                          (ch.toString() ==
+                                                                  "0.00" ||
+                                                              chp.toString() ==
+                                                                  "0.00")
+                                                      ? colors.ltpgrey
+                                                      : colors.ltpgreen,
+                                              12,
+                                              FontWeight.w600),
+                                        )
+                                      ]),
                                   trailing: IconButton(
                                       onPressed: () async {
                                         if (indexProvide.defaultIndexList!
@@ -229,6 +309,4 @@ class IndexBottomSheet extends ConsumerWidget {
           );
         });
   }
-
-  
 }

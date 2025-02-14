@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/core/api_export.dart';
@@ -81,6 +82,8 @@ class IndexListProvider extends DefaultChangeNotifier {
   String _indexToken = "";
   String get indexToken => _indexToken;
 
+  String _subscr = "";
+
   // More menus
 
   final List _moreMunus = [
@@ -103,7 +106,6 @@ class IndexListProvider extends DefaultChangeNotifier {
     // ref(indexListProvider).checkSession(context);
     notifyListeners();
   }
-
 
 // Set height for dropdown list items
 
@@ -143,43 +145,69 @@ class IndexListProvider extends DefaultChangeNotifier {
     }
     return menuItems;
   }
+
 // Fetching data from the api and stored in a variable
   Future fetchIndexList(String exch, BuildContext context) async {
     try {
-      toggleLoad(true);
-      // for (var i = 0; i < indexExch.length; i++) {
-      _selectedExch = exch;
-      _indValuesList = [];
+      if (_subscr.isNotEmpty) {
+        ref(websocketProvider).establishConnection(
+            channelInput: _subscr, task: 'u', context: context);
+        _subscr = "";
+      }
+      if (exch != "exit") {
+        _indValuesList = [];
+        toggleLoad(true);
+        // for (var i = 0; i < indexExch.length; i++) {
+        _selectedExch = exch;
 
-      _indexList = await api.getIndexList(exch);
-      final localstorage = await SharedPreferences.getInstance();
+        _indexList = await api.getIndexList(exch);
+        final localstorage = await SharedPreferences.getInstance();
 
-      if (_indexList!.stat != "Not_Ok" || _indexList!.stat != null) {
-        ConstantName.sessCheck = true;
-        _indValuesList = _indexList!.indValues!;
+        if (_indexList!.stat != "Not_Ok" || _indexList!.stat != null) {
+          ConstantName.sessCheck = true;
+          _indValuesList = _indexList!.indValues!;
+          if (_subscr.isNotEmpty) {
+            ref(websocketProvider).establishConnection(
+                channelInput: _subscr, task: 'u', context: context);
+          }
+          for (var n = 0; n < _indValuesList.length; n++) {
+            _indValuesList[n].exch = _selectedExch;
 
-        for (var n = 0; n < _indValuesList.length; n++) {
-          _indValuesList[n].exch = _selectedExch;
-        }
-      } else {
-        if (_indexList!.emsg == "Session Expired :  Invalid Session Key" &&
-            _indexList!.stat == "Not_Ok") {
-          pref.clearClientSession();
-          ConstantName.sessCheck = false;
-          ref(authProvider).loginMethCtrl.text =
-              localstorage.getString("userId") ?? "";
-          ConstantName.timer!.cancel();
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-              context, _indexList!.emsg!.replaceAll("Invalid Input :", "* ")));
+            if (_defaultIndexList!.indValues![0].token !=
+                    _indValuesList[n].token &&
+                _defaultIndexList!.indValues![1].token !=
+                    _indValuesList[n].token &&
+                _defaultIndexList!.indValues![2].token !=
+                    _indValuesList[n].token &&
+                _defaultIndexList!.indValues![3].token !=
+                    _indValuesList[n].token) {
+              _subscr +=
+                  "${_indValuesList[n].exch}|${_indValuesList[n].token}#";
+            }
+          }
+          if (_subscr.isNotEmpty) {
+            ref(websocketProvider).establishConnection(
+                channelInput: _subscr, task: 't', context: context);
+          }
+        } else {
+          if (_indexList!.emsg == "Session Expired :  Invalid Session Key" &&
+              _indexList!.stat == "Not_Ok") {
+            pref.clearClientSession();
+            ConstantName.sessCheck = false;
+            ref(authProvider).loginMethCtrl.text =
+                localstorage.getString("userId") ?? "";
+            ConstantName.timer!.cancel();
+            ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+                _indexList!.emsg!.replaceAll("Invalid Input :", "* ")));
 
-          Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.loginScreen,
-              arguments: "login",
-              (route) => false);
+            Navigator.pushNamedAndRemoveUntil(
+                context,
+                Routes.loginScreen,
+                arguments: "login",
+                (route) => false);
+          }
         }
       }
-
       notifyListeners();
     } catch (e) {
       _logError.add({"type": "API Index", "Error": "$e"});
@@ -189,7 +217,6 @@ class IndexListProvider extends DefaultChangeNotifier {
       toggleLoad(false);
     }
   }
-
 
 // Defalut index list
   Future getDeafultIndexList(BuildContext context) async {
@@ -277,7 +304,7 @@ class IndexListProvider extends DefaultChangeNotifier {
     } catch (e) {
       log("$e");
       notifyListeners();
-    }finally{
+    } finally {
       toggleLoadingOn(false);
     }
   }
@@ -458,10 +485,9 @@ class IndexListProvider extends DefaultChangeNotifier {
           _indexToken += "${element.exch}|${element.token}#";
         }
       }
-    } 
-   // notifyListeners();
+    }
+    // notifyListeners();
   }
-
 
 // Verifying the client's session each time
   checkSession(BuildContext context) async {
@@ -479,15 +505,12 @@ class IndexListProvider extends DefaultChangeNotifier {
     }
   }
 
-
 // Push Notification call
   fetchNotifyMsg() async {
-
     try {
-       await api.getNotifyMsg();
+      await api.getNotifyMsg();
     } catch (e) {
       print("   $e");
     }
-   
   }
 }
