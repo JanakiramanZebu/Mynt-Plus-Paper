@@ -15,9 +15,11 @@ class MFPerformance extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = watch(themeProvider);
-    final mfData = watch(mfProvider).sheetGraph!;
+    final mfData = watch(mfProvider);
     // final navGraph = watch(mfProvider).navGraph;
     final mfProvide = watch(mfProvider);
+    if(mfData.sheetGraph!.data!.isNotEmpty) {
+      
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -67,7 +69,7 @@ class MFPerformance extends ConsumerWidget {
                       borderColor: const Color(0xff1e53e5),
                       borderWidth: 3,
                       legendIconType: LegendIconType.circle,
-                      dataSource: mfData.data!,
+                      dataSource: mfData.sheetGraph!.data!,
                       xValueMapper: (SheetGraphData data, _) => data.navDate!,
                       yValueMapper: (SheetGraphData data, _) =>
                           double.parse(data.schReturns ?? "0.00"),
@@ -81,7 +83,7 @@ class MFPerformance extends ConsumerWidget {
                       borderColor: const Color(0xffD86F10),
                       borderWidth: 3,
                       legendIconType: LegendIconType.image,
-                      dataSource: mfData.data!,
+                      dataSource: mfData.sheetGraph!.data!,
                       xValueMapper: (SheetGraphData data, _) => data.navDate!,
                       yValueMapper: (SheetGraphData data, _) =>
                           double.parse(data.benchmarkReturns ?? "0.00"),
@@ -90,7 +92,15 @@ class MFPerformance extends ConsumerWidget {
         ],
       ),
     );
+    
+    } else {
+      
+      return Container();
+    
+    }
+    
   }
+
 
   Row rowOfInfoData(String title1, String value1, String title2, String value2,
       String title3, String value3, ThemesProvider theme) {

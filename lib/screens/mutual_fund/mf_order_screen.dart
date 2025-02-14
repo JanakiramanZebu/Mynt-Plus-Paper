@@ -15,7 +15,8 @@ import '../../res/res.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/functions.dart';
-import 'create_mandate_daialogue.dart';
+import '../../sharedWidget/snack_bar.dart';
+import '../mutual_fund_old/create_mandate_daialogue.dart';
 
 class MFOrderScreen extends StatefulWidget {
   final MutualFundList mfData;
@@ -35,6 +36,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
           "${widget.mfData.minimumPurchaseAmount}";
       invAmt = double.parse("${widget.mfData.minimumPurchaseAmount ?? 0.00}");
     });
+
     super.initState();
   }
 
@@ -44,6 +46,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
       final theme = watch(themeProvider);
       final fund = watch(fundProvider);
       final mfOrder = watch(mfProvider);
+      
       return Scaffold(
           appBar: AppBar(
               leadingWidth: 41,
@@ -502,7 +505,9 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                 value: mfOrder.dates,
                                 onChanged: mfOrder.dates == "DAILY"
                                     ? null
-                                    : (value) async {})),
+                                    : (value) async {
+                                      mfOrder.changeStartDate(value);
+                                    })),
                       ],
                     ),
                   ),
@@ -549,6 +554,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                       })),
             ],
             const SizedBox(height: 8),
+            if(isInitalPay && mfOrder.mfOrderTpye != "Lumpsum")...[
             Text("Payment method",
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -654,6 +660,114 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                 const SizedBox(height: 6)
               ]
             ],
+            ]
+            else if(mfOrder.mfOrderTpye == "Lumpsum")...[
+              Text("Payment method",
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w500)),
+            const SizedBox(height: 8),
+            DropdownButtonHideUnderline(
+                child: DropdownButton2(
+                    menuItemStyleData: MenuItemStyleData(
+                        customHeights: fund.getCustItemsHeight()),
+                    buttonStyleData: ButtonStyleData(
+                        height: 36,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: const BoxDecoration(
+                            color: Color(0xffF1F3F8),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(32)))),
+                    dropdownStyleData: DropdownStyleData(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      offset: const Offset(0, 8),
+                    ),
+                    isExpanded: true,
+                    style:
+                        textStyle(const Color(0XFF000000), 13, FontWeight.w500),
+                    hint: Text(fund.paymentName,
+                        style: textStyle(
+                            const Color(0XFF000000), 13, FontWeight.w500)),
+                    items: fund.addDividers(),
+                    value: fund.paymentName,
+                    onChanged: (value) async {
+                      fund.chngPayName("$value");
+                    })),
+            const SizedBox(height: 8),
+            Text("Bank account",
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w500)),
+            const SizedBox(height: 8),
+            DropdownButtonHideUnderline(
+                child: DropdownButton2(
+                    menuItemStyleData: MenuItemStyleData(
+                        customHeights: fund.getBankCustItemsHeight()),
+                    buttonStyleData: ButtonStyleData(
+                        padding: const EdgeInsets.only(top: 4, left: 16),
+                        height: 50,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: const BoxDecoration(
+                            color: Color(0xffF1F3F8),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(32)))),
+                    dropdownStyleData: DropdownStyleData(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4)),
+                        offset: const Offset(0, 1)),
+                    isExpanded: true,
+                    style:
+                        textStyle(const Color(0XFF000000), 13, FontWeight.w500),
+                    hint: Text(fund.accNum,
+                        style: textStyle(
+                            const Color(0XFF000000), 13, FontWeight.w500)),
+                    items: fund.addBankDividers(),
+                    // customItemsHeights: actionTrade.getCustomItemsHeight(),
+                    value: fund.accNum,
+                    onChanged: (value) async {
+                      fund.chngBankAcc("$value");
+                    })),
+            const SizedBox(height: 8),
+            if (fund.paymentName == "UPI") ...[
+              Text("UPI ID (Virtual payment address)",
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      14,
+                      FontWeight.w500)),
+              Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  height: 44,
+                  child: CustomTextFormField(
+                      textAlign: TextAlign.start,
+                      fillColor: theme.isDarkMode
+                          ? colors.darkGrey
+                          : const Color(0xffF1F3F8),
+                      hintText: 'exmaple@upi',
+                      hintStyle: textStyle(
+                          const Color(0xff666666), 14, FontWeight.w400),
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w600),
+                      textCtrl: fund.upiId,
+                      onChanged: (value) {
+                        fund.isValidUpiId();
+                      })),
+              if (fund.upiError != null) ...[
+                Text("${fund.upiError}",
+                    style:
+                        textStyle(colors.kColorRedText, 10, FontWeight.w500)),
+                const SizedBox(height: 6)
+              ]
+            ]
+            ],
             const SizedBox(height: 8),
             Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
@@ -727,14 +841,24 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     child: ElevatedButton(
                         onPressed: () async {
                           if (mfOrder.mfOrderTpye == "Lumpsum") {
+                            if(fund.isValidUpiId() == true){
                             mfPlaceorder(widget.mfData, mfOrder, context, fund);
+                            }
+                            else if(fund.paymentName != "UPI"){
+                              mfPlaceorder(widget.mfData, mfOrder, context, fund);
+                            }
+                            else{
+                              ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'Enter a valid UPI ID'));
+                            }
+
                           } else {
                             mfOrder.fetchXsipPlaceOrder(
                                 context,
                                 "${double.parse(mfOrder.instalmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
                                 mfOrder.freqName == "Daily"
                                     ? "0"
-                                    : mfOrder.startDate,
+                                    : mfOrder.dates,
                                 mfOrder.freqName,
                                 mfOrder.instalmentAmt.text,
                                 mfOrder.invDuration.text,
@@ -783,7 +907,9 @@ mfPlaceorder(
     buysell: "P",
     buyselltype: "FRESH",
     dptxn: "C",
-    amount: double.parse(mfOrder.instalmentAmt.text).toInt().toString(),
+    amount: double.parse(mfOrder.mfOrderTpye == "Lumpsum"
+                        ? fund.invAmt.text
+                        : mfOrder.instalmentAmt.text).toInt().toString(),
     allredeem: "N",
     kycstatus: "Y",
     qty: "0",
@@ -791,6 +917,12 @@ mfPlaceorder(
     minredeem: "N",
     dpc: "Y",
   );
-  mfOrder.fetchVerifyUpi(context, fund.upiId.text, input);
+  if(fund.paymentName == "UPI"){
+    mfOrder.fetchVerifyUpi(context, fund.upiId.text, input);
+  }
+  else{
+    mfOrder.fetchVerifyUpi(context, "", input);
+  }
+  
   print("object $input");
 }

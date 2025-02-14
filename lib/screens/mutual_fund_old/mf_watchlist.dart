@@ -18,9 +18,36 @@ class MFWatchlistScreen extends ConsumerWidget {
     final theme = watch(themeProvider);
     final fund = watch(fundProvider);
     final mfData = watch(mfProvider);
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        //await mfData.chngMFCategory(mfData.mfCategory);
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: .2,
+          leadingWidth: 41,
+          centerTitle: false,
+          titleSpacing: 6,
+          leading: InkWell(
+              onTap: () async {
+                Navigator.pop(context);
+              },
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 9),
+                  child: SvgPicture.asset(assets.backArrow,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack))),
+          shadowColor: const Color(0xffECEFF3),
+          title: Text("Mutual Fund Watchlist",
+              style: textStyles.appBarTitleTxt.copyWith(
+                  color: theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.colorBlack)),
+        ),
         body: mfData.mfWatchlist!.isEmpty
-            ? const Center(child: NoDataFound())
+            ? Center(child: NoDataFound())
             : ListView.builder(
                 shrinkWrap: true,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -282,6 +309,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                   );
                 },
               ),
-      );
+      ),
+    );
   }
 }

@@ -134,7 +134,7 @@ class PusrchaseNotListed {
   PusrchaseNotListed.fromJson(Map<String, dynamic> json) {
     amount = json['Amount'];
     transactionType = "Lumpsum";
-    transactionTypeOrderStatus = json['mf_status'] == "0" ? "Success" : "Failed";
+    transactionTypeOrderStatus = json['mf_status'] == "0" ? "Pending" : "Failed";
     date = json['Date'];
     schemeCode = json['Scheme_Code'];
     schemeName = json['Scheme_Name'];
@@ -218,7 +218,7 @@ class RedeemptionNotListed {
 
   RedeemptionNotListed.fromJson(Map<String, dynamic> json) {
     amount = json['Amount'];
-    transactionType = "reedem";
+    transactionType = "Redeem";
     transactionTypeOrderStatus = json['mf_status'] == "NEW" ? "Success" : "Failed";
     date = json['Date'];
     schemeCode = json['Scheme_Code'];

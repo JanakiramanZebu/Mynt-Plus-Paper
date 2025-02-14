@@ -7,7 +7,6 @@ import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
 
@@ -19,15 +18,26 @@ class MfCommonSearch extends ConsumerWidget {
     final mfData = watch(mfProvider);
     final theme = watch(themeProvider);
     final fund = watch(fundProvider);
+    
     return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
+      onTap: () { FocusScope.of(context).unfocus();
+      },
       child: Scaffold(
         appBar: AppBar(
             elevation: .2,
             leadingWidth: 41,
             centerTitle: false,
             titleSpacing: 6,
-            leading: const CustomBackBtn(),
+            leading: InkWell(
+        onTap: () {
+          Navigator.pop(context);
+          mfData.commonsearch();
+        },
+        child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 9),
+            child: SvgPicture.asset(assets.backArrow,
+                color:
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack))),
             shadowColor: const Color(0xffECEFF3),
             title: Text("Mutual Funds Search",
                 style: textStyles.appBarTitleTxt.copyWith(
@@ -92,23 +102,23 @@ class MfCommonSearch extends ConsumerWidget {
                       mfData.fetchmfCommonsearch(value, context);
                     },
                   )),
-              mfData.mutualFundsearchdata!.data!.isNotEmpty
+              mfData.mutualFundsearchdata!.isNotEmpty
                   ? ListView.builder(
                       shrinkWrap: true,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: mfData.mutualFundsearchdata!.data!.length,
+                      itemCount: mfData.mutualFundsearchdata!.length,
                       itemBuilder: (BuildContext context, int index) {
                         return Column(children: [
                           InkWell(
                               onTap: () async {
                                 await mfData.fetchFactSheet(
-                                    "${mfData.mutualFundsearchdata!.data![index].iSIN}");
+                                    "${mfData.mutualFundsearchdata![index].iSIN}");
 
                                 Navigator.pushNamed(
                                     context, Routes.mfStockDetail,
                                     arguments: mfData
-                                        .mutualFundsearchdata!.data![index]);
+                                        .mutualFundsearchdata![index]);
                               },
                               child: Container(
                                   decoration: BoxDecoration(
@@ -142,7 +152,7 @@ class MfCommonSearch extends ConsumerWidget {
                                                               .start,
                                                       children: [
                                                     Text(
-                                                        "${mfData.mutualFundsearchdata!.data![index].schemeName}",
+                                                        "${mfData.mutualFundsearchdata![index].schemeName}",
                                                         maxLines: 1,
                                                         overflow: TextOverflow
                                                             .ellipsis,
@@ -164,7 +174,7 @@ class MfCommonSearch extends ConsumerWidget {
                                                               CustomExchBadge(
                                                                   exch: mfData
                                                                           .mutualFundsearchdata!
-                                                                          .data![
+                                                                          [
                                                                               index]
                                                                           .schemeName!
                                                                           .contains(
@@ -172,22 +182,22 @@ class MfCommonSearch extends ConsumerWidget {
                                                                       ? "GROWTH"
                                                                       : mfData
                                                                               .mutualFundsearchdata!
-                                                                              .data![index]
+                                                                              [index]
                                                                               .schemeName!
                                                                               .contains("IDCW PAYOUT")
                                                                           ? "IDCW PAYOUT"
-                                                                          : mfData.mutualFundsearchdata!.data![index].schemeName!.contains("IDCW REINVESTMENT")
+                                                                          : mfData.mutualFundsearchdata![index].schemeName!.contains("IDCW REINVESTMENT")
                                                                               ? "IDCW REINVESTMENT"
-                                                                              : mfData.mutualFundsearchdata!.data![index].schemeName!.contains("IDCW")
+                                                                              : mfData.mutualFundsearchdata![index].schemeName!.contains("IDCW")
                                                                                   ? "IDCW"
                                                                                   : "NORMAL"),
                                                               CustomExchBadge(
                                                                   exch:
-                                                                      "${mfData.mutualFundsearchdata!.data![index].schemeType}"),
+                                                                      "${mfData.mutualFundsearchdata![index].schemeType}"),
                                                               CustomExchBadge(
                                                                   exch: mfData
                                                                       .mutualFundsearchdata!
-                                                                      .data![
+                                                                      [
                                                                           index]
                                                                       .sCHEMESUBCATEGORY!
                                                                       .replaceAll(
@@ -206,20 +216,30 @@ class MfCommonSearch extends ConsumerWidget {
                                                         .fetchcommonsearchWadd(
                                                             mfData
                                                                 .mutualFundsearchdata!
-                                                                .data![index],
-                                                            "add",
+                                                                [index].iSIN!,
+                                                            mfData.mutualFundsearchdata![index].isAdd!
+                                                ? "delete"
+                                                : "add",
                                                             context,
                                                             false);
+                                                            // mfData.mutualFundsearchdata![index].isAdd! ?
+                                                // await mfData.makefalse(mfData
+                                                //     .mutualFundsearchdata![index].iSIN
+                                                //     .toString())
+                                                // :
+                                                //   await mfData.maketrue(mfData
+                                                //     .mutualFundsearchdata![index].iSIN
+                                                //     .toString());
                                                   },
                                                   icon: SvgPicture.asset(
                                                     color: mfData
                                                             .mutualFundsearchdata!
-                                                            .data![index]
+                                                            [index]
                                                             .isAdd!
                                                         ? colors.colorBlue
                                                         : colors.colorGrey,
                                                     mfData.mutualFundsearchdata!
-                                                            .data![index].isAdd!
+                                                            [index].isAdd!
                                                         ? assets.bookmarkIcon
                                                         : assets.bookmarkedIcon,
                                                   ))
@@ -242,14 +262,14 @@ class MfCommonSearch extends ConsumerWidget {
                                                 Text(
                                                     (double.parse(mfData
                                                                     .mutualFundsearchdata!
-                                                                    .data![
+                                                                    [
                                                                         index]
                                                                     .aUM!
                                                                     .isEmpty
                                                                 ? "0.00"
                                                                 : mfData
                                                                     .mutualFundsearchdata!
-                                                                    .data![
+                                                                    [
                                                                         index]
                                                                     .aUM!) /
                                                             10000000)
@@ -270,13 +290,13 @@ class MfCommonSearch extends ConsumerWidget {
                                                 Text(
                                                     mfData
                                                             .mutualFundsearchdata!
-                                                            .data![index]
+                                                            [index]
                                                             .tHREEYEARDATA!
                                                             .isEmpty
                                                         ? "0.00"
                                                         : mfData
                                                             .mutualFundsearchdata!
-                                                            .data![index]
+                                                            [index]
                                                             .tHREEYEARDATA!,
                                                     style: textStyle(
                                                         theme.isDarkMode
@@ -300,13 +320,13 @@ class MfCommonSearch extends ConsumerWidget {
                                                 Text(
                                                     mfData
                                                             .mutualFundsearchdata!
-                                                            .data![index]
+                                                            [index]
                                                             .nETASSETVALUE!
                                                             .isEmpty
                                                         ? "0.00"
                                                         : mfData
                                                             .mutualFundsearchdata!
-                                                            .data![index]
+                                                            [index]
                                                             .nETASSETVALUE!,
                                                     style: textStyle(
                                                         theme.isDarkMode
@@ -324,13 +344,13 @@ class MfCommonSearch extends ConsumerWidget {
                                                 Text(
                                                     mfData
                                                             .mutualFundsearchdata!
-                                                            .data![index]
+                                                            [index]
                                                             .minimumPurchaseAmount!
                                                             .isEmpty
                                                         ? "0.00"
                                                         : mfData
                                                             .mutualFundsearchdata!
-                                                            .data![index]
+                                                            [index]
                                                             .minimumPurchaseAmount!,
                                                     style: textStyle(
                                                         theme.isDarkMode
@@ -346,12 +366,12 @@ class MfCommonSearch extends ConsumerWidget {
                                 mfData.chngMandate("Lumpsum");
                                 await fund.fetchUpiDetail();
                                 await fund.fetchBankDetail();
-                                if (mfData.mutualFundsearchdata!.data![index]
+                                if (mfData.mutualFundsearchdata![index]
                                         .sIPFLAG ==
                                     "Y") {
                                   await mfData.fetchMFSipData(
-                                      "${mfData.mutualFundsearchdata!.data![index].iSIN}",
-                                      "${mfData.mutualFundsearchdata!.data![index].schemeCode}");
+                                      "${mfData.mutualFundsearchdata![index].iSIN}",
+                                      "${mfData.mutualFundsearchdata![index].schemeCode}");
 
                                   await mfData.fetchMFMandateDetail();
                                 }
@@ -359,7 +379,7 @@ class MfCommonSearch extends ConsumerWidget {
                                 Navigator.pushNamed(
                                     context, Routes.mforderScreen,
                                     arguments: mfData
-                                        .mutualFundsearchdata!.data![index]);
+                                        .mutualFundsearchdata![index]);
                               },
                               child: Container(
                                   padding:

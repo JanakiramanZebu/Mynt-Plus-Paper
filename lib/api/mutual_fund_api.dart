@@ -1,14 +1,18 @@
 import 'dart:developer';
 
 import '../api/core/api_core.dart';
+import '../models/mf_model/best_mf_list_model.dart';
 import '../models/mf_model/best_mf_model.dart';
 import '../models/mf_model/mandate_detail_model.dart';
 import '../models/mf_model/mf_all_payment_model.dart';
+import '../models/mf_model/mf_category_list_model.dart';
+import '../models/mf_model/mf_categorytype_model.dart';
 import '../models/mf_model/mf_create_mandate.dart';
 import '../models/mf_model/mf_factsheet_data_model.dart';
 import '../models/mf_model/mf_factsheet_graph.dart';
 import '../models/mf_model/mf_lumpsum_order.dart';
 import '../models/mf_model/mf_nav_graph_model.dart';
+import '../models/mf_model/mf_nfo_model.dart';
 import '../models/mf_model/mf_orderbook_lumpsum_model.dart';
 import '../models/mf_model/mf_scheme_peers_model.dart';
 import '../models/mf_model/mf_search_model.dart';
@@ -19,6 +23,7 @@ import '../models/mf_model/mf_xsip_cancle_resone_res.dart';
 import '../models/mf_model/mutual_fundmodel.dart';
 import 'package:intl/intl.dart';
 
+import '../models/mf_model/top_schemes_model.dart';
 import '../models/mf_model/x_sip_cancel_order_model.dart';
 
 mixin MutualFundApi on ApiCore {
@@ -44,18 +49,81 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
+  Future<NFODataModel> getNFOData() async {
+    try {
+      final uri = Uri.parse(apiLinks.nfoMF);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({
+          }));
+
+      final json = jsonDecode((res.body));
+
+      // log("MF Master ==>$json");
+
+      return NFODataModel.fromJson({"data":json});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+
+dynamic convertValuesToString(dynamic data) {
+  if (data is Map) {
+    return {
+      for (final entry in data.entries)
+        entry.key.toString(): convertValuesToString(entry.value)
+    };
+  } else if (data is List) {
+    return [for (final item in data) convertValuesToString(item)];
+  } else if (data == null) {
+    return 'null';
+  } else {
+    // Handle special number cases
+    if (data is num) {
+      return convertNumber(data);
+    }
+    return data.toString();
+  }
+}
+
+String convertNumber(num value) {
+  // Convert scientific notation to full string representation
+  if (value.abs() >= 1e+21 || value.abs() <= 1e-7) {
+    return value.toStringAsExponential().toLowerCase();
+  }
+  // Preserve decimal precision for double values
+  return value is int ? value.toString() : value.toStringAsFixed(10).replaceAll(RegExp(r'0+$'), '').replaceAll(r'.$', '');
+}
+
   Future<SearchMFmodel> getSearchMf(String searchValue) async {
     try {
       final uri = Uri.parse(apiLinks.searchMF);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({"text": searchValue.toString()}));
+      final mfsearch = jsonDecode(res.body);
+      final json = convertValuesToString(mfsearch['data']);
 
-      final json = jsonDecode((res.body));
+     log("MF Master ==>$json");
 
-     // log("MF Master ==>$json");
+      return SearchMFmodel.fromJson({'data': json});
+    } catch (e) {
+      rethrow;
+    }
+  }
 
-      return SearchMFmodel.fromJson(json as Map<String, dynamic>);
+  Future<TopSchemesModel> getTopSchemes() async {
+    try {
+      final uri = Uri.parse(apiLinks.topSchemes);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({"sortkey":"AUM"}));
+      final json = jsonDecode(res.body);
+
+     log("Top Schemes ==>$json");
+
+      return TopSchemesModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
@@ -216,24 +284,21 @@ mixin MutualFundApi on ApiCore {
       String paymentMethod,
       String internalrefno,
       String mandateId,
-      String upi) async {
+      String upi,
+      String schemeCode) async {
     try {
       final uri = Uri.parse(apiLinks.mfallpayment);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
             "client_code": prefs.clientId,
-            "order_number": orderNumber,
-            "total_amount": totalAmt,
+            "scheme_code": schemeCode,
+            "amount": totalAmt,
             "acc_number": accno,
             "ifsc": ifsc,
             "bank_name": bankname,
             "mode_of_payment": paymentMethod,
-            "internal_ref_no": internalrefno,
-            "mandate_id": mandateId,
             "vpa_id": upi,
-            "loop_back_url": "https://app.mynt.in/mutualfund",
-            "allow_loop_back": "N"
           }));
 
       final json = jsonDecode((res.body));
@@ -261,6 +326,60 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
+  Future<MFCategoryList> getMFCategoryList(String type, String subtype) async {
+    try {
+      final uri = Uri.parse(apiLinks.mfCategoryList);
+      
+      final res = await apiClient.post(uri, headers: defaultHeaders,
+      body: jsonEncode({
+        "Type":type,
+        "sub":subtype
+          }));
+
+      final json = jsonDecode((res.body));
+
+      // log("Best MF ==>$json");
+
+      return MFCategoryList.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+   Future<BestMFListModel> getMFBestListData(String type) async {
+    try {
+      final uri = Uri.parse(apiLinks.mfCategoryListData);
+      
+      final res = await apiClient.post(uri, headers: defaultHeaders,
+      body: jsonEncode({
+        "title":type,
+          }));
+
+      final json = jsonDecode((res.body));
+
+      // log("Best MF ==>$json");
+
+      return BestMFListModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<MFCategoryType> getMFCategoryTypes() async {
+    try {
+      final uri = Uri.parse(apiLinks.mfCategoryTypes);
+      final res = await apiClient.post(uri, headers: defaultHeaders);
+
+      final json = jsonDecode((res.body));
+
+      // log("Category Type MF ==>$json");
+
+      return MFCategoryType.fromJson({"Data":json});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<XsipOrderCancleResone> getXsipCancleResone() async {
     try {
       final uri = Uri.parse(apiLinks.mfXsipcancleRes);
@@ -278,13 +397,13 @@ mixin MutualFundApi on ApiCore {
   }
 
   Future<MFWatchlistModel> getMFWatchlistsearch(
-      MfList? scipt, String isAdd) async {
+      String isin, String isAdd) async {
     try {
       final uri = Uri.parse(apiLinks.mfWatchlist);
-      Map payload = {"client_code": "${prefs.clientId}", "type": isAdd};
+      Map payload = {"client_code": "${prefs.clientId}", "type": isin == "" ? "View" : isAdd};
 
-      if (scipt != null) {
-        payload.addAll({"scripts": scipt.toJson()});
+      if (isin != "") {
+        payload.addAll({"isin": isin});
       }
 
       final res = await apiClient.post(uri,
@@ -300,13 +419,13 @@ mixin MutualFundApi on ApiCore {
   }
 
   Future<MFWatchlistModel> getMFWatchlist(
-      MutualFundList? scipt, String isAdd) async {
+       isin, String isAdd) async {
     try {
       final uri = Uri.parse(apiLinks.mfWatchlist);
-      Map payload = {"client_code": "${prefs.clientId}", "type": isAdd};
+      Map payload = {"client_code": "${prefs.clientId}", "type": isin == "" ? "View" : isAdd };
 
-      if (scipt != null) {
-        payload.addAll({"scripts": scipt.toJson()});
+      if (isin != "") {
+        payload.addAll({"isin": isin});
       }
 
       final res = await apiClient.post(uri,

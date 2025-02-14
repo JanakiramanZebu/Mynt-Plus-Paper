@@ -342,6 +342,7 @@ class FundProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
   Future fetchBankDetail() async {
+    upiId.text = "";
     try {
       _bankDetailsModel = await api.getBankDetail();
       _bankData = [];

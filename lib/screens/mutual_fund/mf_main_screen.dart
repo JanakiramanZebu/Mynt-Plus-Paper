@@ -5,7 +5,10 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../res/res.dart';
 import '../../provider/mf_provider.dart';
+import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
+import '../../routes/route_names.dart';
+import '../../sharedWidget/custom_back_btn.dart';
 import 'mf_explore_screens.dart';
 
 class MfmainScreen extends StatefulWidget {
@@ -27,7 +30,7 @@ class _MfmainScreenState extends State<MfmainScreen> {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final theme = watch(themeProvider);
       final mf = watch(mfProvider);
-
+final portfolio = watch(portfolioProvider);
       return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -35,41 +38,51 @@ class _MfmainScreenState extends State<MfmainScreen> {
           centerTitle: false,
           title: Row(
             children: [
-              InkWell(
-                onTap: () {
-                  bool? value = mf.isportfolio;
-                  mf.setPortfolioIs(!value!);
-                  print("object $value");
-                },
-                child: SvgPicture.asset(
+              // InkWell(
+              //   onTap: () {
+              //     bool? value = mf.isportfolio;
+              //     mf.setPortfolioIs(!value!);
+              //     print("object $value");
+              //   },
+                SvgPicture.asset(
                   'assets/icon/MYNT App Logo_v2.svg',
                   width: 40,
                   height: 40,
-                ),
+                
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF1F3F8),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: SearchBar(
-                    hintText: "Search",
-                    backgroundColor: WidgetStateProperty.all(
-                        colors.kColorLightGrey), // Gray background
-                    shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(50), // Rounded corners
-                      side: BorderSide.none, // No border
-                    )),
-                    elevation: WidgetStateProperty.all(0), // No shadow
-                    leading: const Icon(Icons.search,
-                        color: Colors.black54), // Prefix icon
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F3F8),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: ExcludeFocus(
+                      child: SearchBar(
+                        onTap: (){
+                          print("Pressed");
+                      Navigator.pushNamed(
+                        context,
+                        Routes.mfsearchscreen
+                      );
+                        },
+                        hintText: "Search",
+                        backgroundColor: WidgetStateProperty.all(
+                            colors.kColorLightGrey), // Gray background
+                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(50), // Rounded corners
+                          side: BorderSide.none, // No border
+                        )),
+                        elevation: WidgetStateProperty.all(0), // No shadow
+                        leading: const Icon(Icons.search,
+                            color: Colors.black54), // Prefix icon
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              
             ],
           ),
         ),
@@ -92,106 +105,98 @@ class _MfmainScreenState extends State<MfmainScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (mf.isportfolio!) ...[
-                                  const Column(
+                                if (portfolio.mfTotInveest > 0) ...[
+                                  Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        "Mutual funds",
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            color: Color(0xFF2F3A9F),
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        "₹1.46L",
-                                        style: TextStyle(
-                                            fontSize: 28,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black),
-                                      ),
-                                      SizedBox(height: 5),
-                                      Text(
-                                        "Current Value",
-                                        style: TextStyle(
-                                            color: Color(0xFF666666),
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                      SizedBox(height: 6),
-                                      Divider(
-                                        color:
-                                            Color.fromARGB(255, 216, 212, 212),
-                                        thickness: 0.5,
-                                      ),
-                                      SizedBox(height: 4),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text("Total Invested",
-                                                  style: TextStyle(
-                                                      color: Color(0xFF666666),
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w500)),
-                                              SizedBox(height: 6),
-                                              Text("₹1.32L",
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: Colors.black)),
-                                            ],
-                                          ),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text("Total Return",
-                                                  style: TextStyle(
-                                                      color: Color(0xFF666666),
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w500)),
-                                              SizedBox(height: 6),
-                                              Text("₹13.20K",
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: Colors.black)),
-                                            ],
-                                          ),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text("Return %",
-                                                  style: TextStyle(
-                                                      color: Color(0xFF666666),
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w500)),
-                                              SizedBox(height: 6),
-                                              Text("-12.56%",
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color:
-                                                          Color(0xFFFF1717))),
+                                      const Text(
+                                "Mutual funds",
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    color: Color(0xFF2F3A9F),
+                                    fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                portfolio.mfTotCurrentVal.toString(),
+                                style: const TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black),
+                              ),
+                              const SizedBox(height: 5),
+                              const Text(
+                                "Current Value",
+                                style: TextStyle(
+                                    color: Color(0xFF666666),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 6),
+                              const Divider(
+                                color: Color.fromARGB(255, 216, 212, 212),
+                                thickness: 0.5,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("Total Invested",
+                                          style: TextStyle(
+                                              color: Color(0xFF666666),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500)),
+                                      const SizedBox(height: 6),
+                                      Text(portfolio.mfTotInveest.toString(),
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black)),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("Total Return",
+                                          style: TextStyle(
+                                              color: Color(0xFF666666),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500)),
+                                      const SizedBox(height: 6),
+                                      Text(portfolio.mfTotalPnl.toString(),
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black)),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("Return %",
+                                          style: TextStyle(
+                                              color: Color(0xFF666666),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500)),
+                                      const SizedBox(height: 6),
+                                      Text("${portfolio.mfTotalPnlPerchng.toStringAsFixed(2)}%",
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xFFFF1717))),
                                             ],
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: 22),
+                                      const SizedBox(height: 22),
                                     ],
                                   )
                                 ] else ...[
@@ -201,9 +206,9 @@ class _MfmainScreenState extends State<MfmainScreen> {
                                     decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
-                                            Color(0xFF3E6742).withOpacity(
+                                            const Color(0xFF3E6742).withOpacity(
                                                 1.0), // #834EDA at 0% (100% opacity)
-                                            Color(0xFF3E6742).withOpacity(
+                                            const Color(0xFF3E6742).withOpacity(
                                                 0.5), // #834EDA at 100% (50% opacity)
                                           ],
                                           begin: Alignment.topCenter,
@@ -217,7 +222,7 @@ class _MfmainScreenState extends State<MfmainScreen> {
                                       children: [
                                         const SizedBox(height: 12),
                                         ListTile(
-                                          contentPadding: EdgeInsets.all(0),
+                                          contentPadding: const EdgeInsets.all(0),
                                           title: Text("Mutual Funds",
                                               style: GoogleFonts.inter(
                                                   textStyle: textStyle(
@@ -275,7 +280,10 @@ class _MfmainScreenState extends State<MfmainScreen> {
                                 ],
                                 Center(
                                   child: ElevatedButton(
-                                    onPressed: () {},
+                                    onPressed: () async{
+                                      await mf.fetchMfOrderbook(context);
+                                      Navigator.pushNamed(context, Routes.mfOrderbookscreen);
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8),

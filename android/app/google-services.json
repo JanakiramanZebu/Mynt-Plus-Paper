@@ -1,39 +1,39 @@
 {
-    "project_info": {
-      "project_number": "145091405497",
-      "project_id": "zebull-flutter-9380e",
-      "storage_bucket": "zebull-flutter-9380e.appspot.com"
-    },
-    "client": [
-      {
-        "client_info": {
-          "mobilesdk_app_id": "1:145091405497:android:4cdb8ad6b3a19164ab1d68",
-          "android_client_info": {
-            "package_name": "com.mynt.trading_app_zebu"
-          }
-        },
-        "oauth_client": [
-          {
-            "client_id": "145091405497-277r4abqvblttmtiqjhgv8ba6q2tgego.apps.googleusercontent.com",
-            "client_type": 3
-          }
-        ],
-        "api_key": [
-          {
-            "current_key": "AIzaSyAsQh_k2F4qx8YeSJ9zDGEfpXBZxdp6bQ0"
-          }
-        ],
-        "services": {
-          "appinvite_service": {
-            "other_platform_oauth_client": [
-              {
-                "client_id": "145091405497-277r4abqvblttmtiqjhgv8ba6q2tgego.apps.googleusercontent.com",
-                "client_type": 3
-              }
-            ]
-          }
+  "project_info": {
+    "project_number": "145091405497",
+    "project_id": "zebull-flutter-9380e",
+    "storage_bucket": "zebull-flutter-9380e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:145091405497:android:4cdb8ad6b3a19164ab1d68",
+        "android_client_info": {
+          "package_name": "com.mynt.trading_app_zebu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "145091405497-277r4abqvblttmtiqjhgv8ba6q2tgego.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsQh_k2F4qx8YeSJ9zDGEfpXBZxdp6bQ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "145091405497-277r4abqvblttmtiqjhgv8ba6q2tgego.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
-    ],
-    "configuration_version": "1"
-  }
+    }
+  ],
+  "configuration_version": "1"
+}

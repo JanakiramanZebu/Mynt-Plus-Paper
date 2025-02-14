@@ -5,9 +5,11 @@ class AllPaymentMfModel {
   String? msg;
   String? stat;
   String? emsg;
+  String? type;
+  String? payment_msg;
 
   AllPaymentMfModel(
-      {this.error, this.msg, this.stat, this.data, this.file, this.emsg});
+      {this.error, this.msg, this.stat, this.data, this.file, this.emsg, this.type, this.payment_msg});
 
   AllPaymentMfModel.fromJson(Map<String, dynamic> json) {
     data = json['data'] != null ? Data.fromJson(json['data']) : null;
@@ -16,6 +18,8 @@ class AllPaymentMfModel {
     msg = json['msg'];
     stat = json['stat'];
     emsg = json['emsg'];
+    type = json['type'];
+    payment_msg = json['payment_msg'];
   }
 
   Map<String, dynamic> toJson() {
@@ -28,6 +32,8 @@ class AllPaymentMfModel {
     }
     data['file'] = file;
     data['emsg'] = emsg;
+    data['type'] = type;
+    data['payment_msg'] = payment_msg;
     return data;
   }
 }

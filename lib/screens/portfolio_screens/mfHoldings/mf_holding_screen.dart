@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -12,11 +13,21 @@ import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import 'filter_scrip_bottom_sheet.dart';
 
-class MFHoldingScreen extends ConsumerWidget {
+class MFHoldingScreen extends StatefulWidget {
   const MFHoldingScreen({super.key});
+  @override
+  State<MFHoldingScreen> createState() => _MFHoldingScreen();
+}
+
+class _MFHoldingScreen extends State<MFHoldingScreen> {
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
+  Widget build(BuildContext context) {
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'MFHoldingScreen',
+      screenClass: 'MFHoldingScreen', // Customize if needed.
+    );
+    return Consumer(builder: (context, ScopedReader watch, _) {
     final mfHolding = watch(portfolioProvider);
     final theme = context.read(themeProvider);
     return mfHolding.mfhloader
@@ -637,5 +648,6 @@ class MFHoldingScreen extends ConsumerWidget {
                                 height: 6);
                           }))
             ]));
+  });
   }
 }

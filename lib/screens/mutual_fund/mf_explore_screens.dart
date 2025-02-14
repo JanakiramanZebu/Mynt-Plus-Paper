@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:flutter_riverpod/all.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+// import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/loader_ui.dart';
+// import '../../provider/mf_provider.dart';
+import 'mf_watchlist.dart';
 import 'mutual_fund_screen_new.dart';
 
 class MFExploreScreens extends StatefulWidget {
@@ -36,32 +39,32 @@ class _ExploreScreensState extends State<MFExploreScreens>
   ];
   int activeTab = 0;
 
-  final bestMFList = [
-    {
-      "funds": "46 funds",
-      "image": "assets/explore/loan.svg",
-      "subtitle": "Build wealth and save taxes",
-      "title": "Save taxes"
-    },
-    {
-      "funds": "90 funds",
-      "image": "assets/explore/transactions.svg",
-      "subtitle": "Stable income and growth",
-      "title": "Equity + Debt"
-    },
-    {
-      "funds": "56 funds",
-      "image": "assets/explore/goldcoin.svg",
-      "subtitle": "Hybrid of active and passive",
-      "title": "Smart beta"
-    },
-    {
-      "funds": "120 funds",
-      "image": "assets/explore/globe.svg",
-      "subtitle": "Diversify your portfolio globally",
-      "title": "International funds"
-    }
-  ];
+  // final bestMFList = [
+  //   {
+  //     "funds": "46 funds",
+  //     "image": "assets/explore/loan.svg",
+  //     "subtitle": "Build wealth and save taxes",
+  //     "title": "Save taxes"
+  //   },
+  //   {
+  //     "funds": "90 funds",
+  //     "image": "assets/explore/transactions.svg",
+  //     "subtitle": "Stable income and growth",
+  //     "title": "Equity + Debt"
+  //   },
+  //   {
+  //     "funds": "56 funds",
+  //     "image": "assets/explore/goldcoin.svg",
+  //     "subtitle": "Hybrid of active and passive",
+  //     "title": "Smart beta"
+  //   },
+  //   {
+  //     "funds": "120 funds",
+  //     "image": "assets/explore/globe.svg",
+  //     "subtitle": "Diversify your portfolio globally",
+  //     "title": "International funds"
+  //   }
+  // ];
 
   @override
   void initState() {
@@ -116,9 +119,10 @@ class _ExploreScreensState extends State<MFExploreScreens>
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _tabController,
-                  children: [
-                    MutualFundNewScreen(bestMFList: bestMFList),
-                    const NoDataFound()
+                  children: const [
+                    MutualFundNewScreen(),
+                    MFWatchlistScreen()
+           
                   ],
                 ),
               ),

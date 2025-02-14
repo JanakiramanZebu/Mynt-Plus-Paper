@@ -7,9 +7,11 @@ import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:vertical_scrollable_tabview/vertical_scrollable_tabview.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import '../../models/mf_model/mutual_fundmodel.dart';
+import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import 'widget/allocation.dart';
@@ -61,7 +63,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final theme = watch(themeProvider);
-
+      final fund = watch(fundProvider);
       final mfData = watch(mfProvider);
       return Scaffold(
           backgroundColor: Colors.white,
@@ -77,7 +79,28 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(
-                        onPressed: () async {},
+                        onPressed: () async {
+                          mfData.chngMandate("Lumpsum");
+                            await fund.fetchUpiDetail();
+                            await fund.fetchBankDetail();
+                            if (widget.mfStockData.sIPFLAG == "Y") {
+                              await mfData.fetchMFSipData(
+                                  "${widget.mfStockData.iSIN}",
+                                  "${widget.mfStockData.schemeCode}");
+
+                              await mfData.fetchMFMandateDetail();
+                            }
+
+                            // showDialog(
+                            //     context: context,
+                            //     builder: (BuildContext context) {
+                            //       return MFOrderScreen(
+                            //           mfData: mfData.topmutualfund![index]);
+                            //     });
+                            await mfData.fetchTopSchemes();
+                            Navigator.pushNamed(context, Routes.mforderScreen,
+                                arguments: widget.mfStockData);
+                        },
                         style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             backgroundColor: colors.ltpgreen,

@@ -999,11 +999,12 @@ class AuthProvider extends DefaultChangeNotifier {
         // await ref(stocksProvide).getNews();
         // await ref(stocksProvide).chngTradeAct("Equity");
 
-        ref(mfProvider).fetchcommonsearchWadd(null, "", context, false);
-        ref(mfProvider).fetchmfCommonsearch("Z", context);
-        ref(mfProvider).fetchMFWatchlist(null, "", context, false,"");
-        ref(mfProvider).fetchMasterMF();
-        ref(mfProvider).fetchMfOrderbook(context);
+        // ref(mfProvider).fetchcommonsearchWadd(null, "", context, false);
+        // ref(mfProvider).fetchmfCommonsearch("Z", context);
+        // ref(mfProvider).fetchMFWatchlist(null, "", context, false,"");
+        ref(mfProvider).fetchBestMF();
+
+        // ref(mfProvider).fetchMfOrderbook(context);
 
 // End Explore
         if (s.isEmpty) {

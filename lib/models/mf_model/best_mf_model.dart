@@ -33,8 +33,9 @@ class BestMFList {
   String? icon;
   String? subtitle;
   String? title;
+  String? counts;
 
-  BestMFList({this.funds, this.image, this.subtitle, this.title, this.icon});
+  BestMFList({this.funds, this.image, this.subtitle, this.title, this.icon,this.counts});
 
   BestMFList.fromJson(Map<String, dynamic> json) {
     funds = json['funds'].cast<String>();
@@ -42,6 +43,7 @@ class BestMFList {
     subtitle = json['subtitle'];
     icon = json['icon'];
     title = json['title'];
+    counts = json['counts'];
   }
 
   Map<String, dynamic> toJson() {
@@ -51,6 +53,7 @@ class BestMFList {
     data['subtitle'] = subtitle;
     data['title'] = title;
     data['icon'] = icon;
+    data['counts'] = counts;
     return data;
   }
 }

@@ -157,7 +157,12 @@ class Routes {
 
   static const String optionStrategy = "optionStrategy";
 
+  static const String bestMfScreen = "bestMfScreen";
+
   static const String mfOrderbookscreen = 'mfOrderbook';
 
   static const String mfsearchscreen = 'mfsearchscreen';
+
+  static const String mfnfoscreen = 'mfnfoscreen';
+  static const String mfCategoryList = 'mfCategoryList';
 }

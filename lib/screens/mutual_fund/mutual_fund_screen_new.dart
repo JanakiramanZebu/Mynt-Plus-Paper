@@ -2,24 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
+import '../../provider/mf_provider.dart';
 import '../../res/res.dart';
+import '../../routes/route_names.dart';
 import '../../sharedWidget/functions.dart';
 
 class MutualFundNewScreen extends ConsumerWidget {
-  final bestMFList;
-  const MutualFundNewScreen({super.key, required this.bestMFList});
+  // final bestMFList;
+  const MutualFundNewScreen({super.key});
   @override
   Widget build(BuildContext context, ScopedReader watch) {
+    final mfData = watch(mfProvider);
     // final theme = watch(themeProvider);
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          buildSlidingPanelContent(),
+          buildSlidingPanelContent(mfData.bestMFListStatic, mfData),
           const SizedBox(height: 16),
           Column(
             children: [
-              NfoCard(),
+              nfoCard(context),
               Container(
                 padding: const EdgeInsets.all(16.0),
                 margin: const EdgeInsets.all(16.0),
@@ -39,7 +42,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                             Row(
                               children: [
                                 Text(
-                                  "Create Watchlist",
+                                  "Watchlist",
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -92,50 +95,25 @@ class MutualFundNewScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                buildCategoryCard(
-                  dataIcon: 'assets/explore/equity.png',
-                  title: "Equity",
-                  description:
-                      "Invest primarily in stocks. High risk, high return potential.",
-                  chips: ["Large Cap", "Mid Cap", "Flexi Cap", "ELSS"],
+                ListView.separated(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemBuilder: (BuildContext context, int index) { 
+                    return buildCategoryCard(
+                    dataIcon: mfData.mFCategoryTypesStatic[index]['dataIcon'],
+                    title: mfData.mFCategoryTypesStatic[index]['title'],
+                    description:
+                        mfData.mFCategoryTypesStatic[index]['description'],
+                    chips: mfData.mFCategoryTypesStatic[index]['sub'],
+                    watch: watch
+                  );
+                   },
+                  separatorBuilder: (BuildContext context, int index) { return const SizedBox(height: 20); },
+                  itemCount: mfData.mFCategoryTypesStatic.length,
+                  
                 ),
-                const SizedBox(height: 20),
-                buildCategoryCard(
-                  dataIcon: 'assets/explore/coins.png',
-                  title: "Fixed Income",
-                  description:
-                      "Invest in bonds and fixed-income securities. Lower risk, stable returns.",
-                  chips: ["Liquid", "Short Duration", "Gilt Fund"],
-                ),
-                const SizedBox(height: 20),
-                buildCategoryCard(
-                  dataIcon: 'assets/explore/hybrid.png',
-                  title: "Hybrid",
-                  description:
-                      "Mix of equity and debt to balance risk and return.",
-                  chips: ["Arbitrage", "Aggressive", "Balanced Advantage"],
-                ),
-                const SizedBox(height: 20),
-                buildCategoryCard(
-                  dataIcon: 'assets/explore/gold.png',
-                  title: "Gold",
-                  description:
-                      "Invest in gold and related securities. Hedge against inflation.",
-                  chips: ["Gold ETF", "Sovereign Bonds"],
-                ),
-                const SizedBox(height: 20),
-                buildCategoryCard(
-                  dataIcon: 'assets/explore/solution.png',
-                  title: "Solution",
-                  description:
-                      "Financial goals include retirement planning, funding a child's education, and etc.",
-                  chips: ["Retirement Equity", "Children Equity"],
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             // height: 300,
             width: MediaQuery.of(context).size.width,
             decoration: const BoxDecoration(
@@ -152,30 +130,30 @@ class MutualFundNewScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 70),
+                const SizedBox(height: 70),
                 SvgPicture.asset("assets/icon/zebulogo.svg",
                               color: colors.logoColor,
                               // height: 50,
                               width: 100,
                               fit: BoxFit.contain),
-                SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 16),
+                const Text(
                   "NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL: 12080400",
                   style: TextStyle(
                     color: Color(0xff666666),
                     fontSize: 10,
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
+                const SizedBox(height: 4),
+                const Text(
                   "SEBI Registration No : INZ00174634 | AMFI ARN: 113118",
                   style: TextStyle(
                     color: Color(0xff666666),
                     fontSize: 10,
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
+                const SizedBox(height: 4),
+                const Text(
                   "Research Analyst : INH200006044",
                   style: TextStyle(
                     color: Color(0xff666666),
@@ -185,6 +163,9 @@ class MutualFundNewScreen extends ConsumerWidget {
               ],
             ),
           )
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -198,7 +179,7 @@ class MutualFundNewScreen extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(25),
         ),
-        padding: EdgeInsets.symmetric(vertical: 2, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -208,10 +189,10 @@ class MutualFundNewScreen extends ConsumerWidget {
             color: Colors.white,
             size: 20,
           ),
-          SizedBox(width: 6),
+          const SizedBox(width: 6),
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
@@ -221,7 +202,7 @@ class MutualFundNewScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildSlidingPanelContent() {
+  Widget buildSlidingPanelContent(bestMFList, MFProvider mfData) {
     return Container(
       padding: const EdgeInsets.all(16.0),
       color: const Color(0xFFF1F3F8),
@@ -253,43 +234,50 @@ class MutualFundNewScreen extends ConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 itemCount: bestMFList.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return Container(
-                    width: 180,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 16),
-                    decoration: BoxDecoration(
-                        color: colors.colorWhite,
-                        borderRadius: BorderRadius.circular(8)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SvgPicture.asset(
-                          "${bestMFList[index]['image']}",
-                          height: 50,
-                          width: 60,
-                        ),
-                        Text("${bestMFList[index]['title']}",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                colors.colorBlack, 16, FontWeight.w500)),
-                        Text("${bestMFList[index]['subtitle']}",
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0xff999999), 13, FontWeight.w500)),
-                        Text("${bestMFList[index]['funds']}",
-                            style: textStyle(
-                                colors.colorBlack, 14, FontWeight.w500)),
-                        const Text(
-                          "62 recommended",
-                          style: TextStyle(
-                              color: Color(0xFF43A833),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 12),
-                        ),
-                      ],
+                  return GestureDetector(
+                    onTap: () async{
+                      await mfData.fetchMFBestList(bestMFList[index]['title']);
+          Navigator.pushNamed(context, Routes.bestMfScreen,
+                            arguments: bestMFList[index]['title']);
+                    },
+                    child: Container(
+                      width: 180,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 16),
+                      decoration: BoxDecoration(
+                          color: colors.colorWhite,
+                          borderRadius: BorderRadius.circular(8)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SvgPicture.asset(
+                            "${bestMFList[index]['image']}",
+                            height: 50,
+                            width: 60,
+                          ),
+                          Text("${bestMFList[index]['title']}",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: textStyle(
+                                  colors.colorBlack, 16, FontWeight.w500)),
+                          Text("${bestMFList[index]['subtitle']}",
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: textStyle(
+                                  const Color(0xff999999), 13, FontWeight.w500)),
+                          Text("${bestMFList[index]['funds']} funds",
+                              style: textStyle(
+                                  colors.colorBlack, 14, FontWeight.w500)),
+                          // const Text(
+                          //   "62 recommended",
+                          //   style: TextStyle(
+                          //       color: Color(0xFF43A833),
+                          //       fontWeight: FontWeight.w500,
+                          //       fontSize: 12),
+                          // ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -307,13 +295,15 @@ class MutualFundNewScreen extends ConsumerWidget {
     required String title,
     required String description,
     required List<String> chips,
+    required ScopedReader watch
   }) {
+    final mfData = watch(mfProvider);
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(
-          color: Color(0xFFDDDDDD),
+          color: const Color(0xFFDDDDDD),
           width: 1.0,
         ),
         borderRadius: BorderRadius.circular(4),
@@ -326,15 +316,15 @@ class MutualFundNewScreen extends ConsumerWidget {
             width: 40,
             height: 40,
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             description,
             style: TextStyle(
@@ -342,7 +332,7 @@ class MutualFundNewScreen extends ConsumerWidget {
               fontSize: 14,
             ),
           ),
-          SizedBox(height: 14),
+          const SizedBox(height: 14),
           SizedBox(
             height: 34,
             child: ListView.builder(
@@ -351,23 +341,33 @@ class MutualFundNewScreen extends ConsumerWidget {
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
-                  child: Chip(
-                    label: Text(
-                      chips[index],
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF666666),
+                  child: GestureDetector(
+                    onTap: () async{
+                      await mfData.fetchMFCategoryList(title,chips[index]);
+                      Navigator.pushNamed(
+                      context,
+                      Routes.mfCategoryList,
+                      arguments: chips[index]
+                    );
+                    },
+                    child: Chip(
+                      label: Text(
+                        chips[index],
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF666666),
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    shape: StadiumBorder(),
-                    backgroundColor: Colors.white,
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
-                    side: BorderSide(
-                      color: Color(0xFF666666),
-                      width: 1.0,
+                      shape: const StadiumBorder(),
+                      backgroundColor: Colors.white,
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+                      side: const BorderSide(
+                        color: Color(0xFF666666),
+                        width: 1.0,
+                      ),
                     ),
                   ),
                 );
@@ -379,14 +379,14 @@ class MutualFundNewScreen extends ConsumerWidget {
     );
   }
 
-  Widget NfoCard() {
+  Widget nfoCard(context) {
     return GestureDetector(
       onTap: () {
-        print('hi from ngo');
+        Navigator.pushNamed(context, Routes.mfnfoscreen);
       },
       child: Container(
-        padding: EdgeInsets.all(16.0),
-        margin: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
+        margin: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10.0),
@@ -398,7 +398,7 @@ class MutualFundNewScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               "INVEST IN",
               style: TextStyle(
                 color: Color(0xFF0037B7),
@@ -406,11 +406,11 @@ class MutualFundNewScreen extends ConsumerWidget {
                 fontWeight: FontWeight.w400,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
+                const Expanded(
                   child: Text(
                     "Ongoing new fund offerings",
                     style: TextStyle(
@@ -427,16 +427,16 @@ class MutualFundNewScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            SizedBox(height: 8),
-            Text(
+            const SizedBox(height: 8),
+            const Text(
               "A new fund offer (NFO) is the first subscription for any new fund by an investment company.",
               style: TextStyle(
                 fontSize: 14,
                 color: Color(0xFF666666),
               ),
             ),
-            SizedBox(height: 12),
-            Row(
+            const SizedBox(height: 12),
+            const Row(
               children: [
                 Text(
                   "See all NFOs",

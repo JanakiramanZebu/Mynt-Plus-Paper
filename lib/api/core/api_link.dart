@@ -181,9 +181,13 @@ class ApiLinks {
 
 // Mutual Fund
   String get bestMf => "$dashBoardURL/mf/z_data";
+  String get mfCategoryList => "$dashBoardURL/mf/getCategoryschemes";
+  String get mfCategoryListData => "$dashBoardURL/mf/get_title_values";
+  String get mfCategoryTypes => "$dashBoardURL/mf/getCategoryType";
   String get masterMF => "$dashBoardURL/mf/master_file_datas";
+  String get nfoMF => "https://v3.mynt.in/mf/NFO_datas";
   String get searchMF => "https://v3.mynt.in/mf/mfsearch";
-  String get mfWatchlist => "$dashBoardURL/mf/watchlist";
+  String get mfWatchlist => "$dashBoardURL/mf/watchlist_for_mobile";
   String get factSheetData => "$dashBoardURL/mf/getFactSheetData";
   String get navGraph => "$dashBoardURL/mf/getNavGraph";
   String get factSheetGraph => "$dashBoardURL/mf/getFactSheetGraph";
@@ -198,7 +202,10 @@ class ApiLinks {
   String get mfXSiporder=> "$dashBoardURL/mf//xsip_purchase";
   String get mfXsipcancleRes => "$dashBoardURL/mf/reasons";
   String get mfxsipcancel => "$dashBoardURL/mf/xsip_cancel";
-  String get mfallpayment => "https://v3.mynt.in/mf//all_payment";
+  // String get mfallpayment => "https://v3.mynt.in/mf//all_payment";
+  String get mfallpayment => "https://v3.mynt.in/mf/lumsum_purchase_mob";
+  String get topSchemes => "https://v3.mynt.in/mf/getTopschemes";
+
   
 
 
