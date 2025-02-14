@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_details_model.dart';
-import 'package:mynt_plus/models/ipo_model/ipo_mainstream_model.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_place_order_model.dart';
 import 'package:mynt_plus/provider/iop_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
@@ -16,7 +15,7 @@ class OrderScreenbottomPage extends StatefulWidget {
   final List<IpoDetails> addIpo;
   final mainstream;
   const OrderScreenbottomPage(
-      {super.key, required this.addIpo, required this.mainstream});
+      {super.key,required this.addIpo, required this.mainstream});
 
   @override
   State<OrderScreenbottomPage> createState() => _OrderScreenbottomPage();
@@ -27,17 +26,16 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
   var ischecked = false;
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Consumer(builder: (context, watch, child) {
       final ipo = watch(ipoProvide);
       final upiid = watch(transcationProvider);
       final theme = watch(themeProvider);
       return Padding(
-        padding: EdgeInsets.only(
+        padding: const EdgeInsets.only(
           left: 0,
           right: 0,
           top: 16,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          bottom: 16,
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -47,7 +45,7 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
               Padding(
                 padding: const EdgeInsets.only(left: 16),
                 // padding: null,
-                child: Text("UPI ID (Virtual payment adress)",
+                child: Text("UPI ID (Virtual payment address)",
                     style: textStyle(
                         theme.isDarkMode
                             ? colors.colorWhite
@@ -55,7 +53,7 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
                         14,
                         FontWeight.w600)),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               Container(
@@ -122,41 +120,45 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
                         errorName: ipo.upierror,
                       ))
                   : Container(),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
                 child: Row(
+                  crossAxisAlignment:CrossAxisAlignment.start,
                   children: [
                     IconButton(
-                        splashRadius: 20,
-                        onPressed: ipo.loading
-                            ? null
-                            : () {
-                                setState(() {
-                                  // ischecked = !ischecked;
-                                  if (ipo.checkForErrorsInSMEPlaceOrder(
-                                      widget.addIpo)) {
-                                    ipo.setisMainIPOPlaceOrderBtnActiveValue =
-                                        true;
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        warningMessage(context,
-                                            "can't able place Order with current selected combination of Bids"));
-                                    ischecked = false;
-                                    ipo.setisMainIPOPlaceOrderBtnActiveValue =
-                                        false;
-                                  }
-                                });
-                              },
-                        icon: SvgPicture.asset(theme.isDarkMode
-                            ? ipo.isMainIPOPlaceOrderBtnActive
-                                ? assets.darkCheckedboxIcon
-                                : assets.darkCheckboxIcon
-                            : ipo.isMainIPOPlaceOrderBtnActive
-                                ? assets.checkedbox
-                                : assets.checkbox)),
+                      // padding:const EdgeInsets.all(0) ,
+                      splashRadius: 20,
+                      onPressed: ipo.loading
+                          ? null
+                          : () {
+                              setState(() {
+                                ischecked = !ischecked;
+                                if (ipo.checkForErrorsInSMEPlaceOrder(
+                                    widget.addIpo)) {
+                                  ipo.setisMainIPOPlaceOrderBtnActiveValue =
+                                      true;
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      warningMessage(context,
+                                          "can't able place Order with current selected combination of Bids"));
+                                  // ischecked = false;
+                                  ipo.setisMainIPOPlaceOrderBtnActiveValue =
+                                      false;
+                                  ischecked=false;
+                                }
+                              });
+                            },
+                      icon: SvgPicture.asset(theme.isDarkMode
+                          ? ischecked
+                              ? assets.darkCheckedboxIcon
+                              : assets.darkCheckboxIcon
+                          : ischecked
+                              ? assets.checkedbox
+                              : assets.checkbox),
+                    ),
                     const SizedBox(width: 10),
                     const Expanded(
                       child: Text(
@@ -182,17 +184,18 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
                     minimumSize: const Size(double.infinity, 35),
                     elevation: 0,
                     backgroundColor: !theme.isDarkMode
-                        ? ipo.isMainIPOPlaceOrderBtnActive == false
+                        ? ischecked == false
                             ? const Color(0xfff5f5f5)
                             : colors.colorBlack
-                        : ipo.isMainIPOPlaceOrderBtnActive == false
+                        : ischecked == false
                             ? colors.darkGrey
                             : colors.colorbluegrey,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(32),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: ischecked == true ? () {
+                    
                     if (upiid.upiid.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                           warningMessage(context, '* UPI ID cannot be empty'));
@@ -203,7 +206,7 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
                     } else {
                       ipoplaceorder(upiid, ipo);
                     }
-                  },
+                  }: (){},
                   child: ipo.loading
                       ? const SizedBox(
                           width: 18,
@@ -214,10 +217,10 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
                       : Text("Apply",
                           style: textStyle(
                               !theme.isDarkMode
-                                  ? ipo.isMainIPOPlaceOrderBtnActive == false
+                                  ? ischecked == false
                                       ? const Color(0xff999999)
                                       : colors.colorWhite
-                                  : ipo.isMainIPOPlaceOrderBtnActive == false
+                                  : ischecked == false
                                       ? colors.darkGrey
                                       : colors.colorBlack,
                               14,
@@ -260,15 +263,16 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
       flow: "now",
       type: widget.mainstream.type.toString(),
       symbol: widget.mainstream.symbol.toString(),
-      category: ipo.ipoCategoryvalue == "Individual"
-          ? "IND"
-          : ipo.ipoCategoryvalue == "Employee"
-              ? "EMP"
-              : ipo.ipoCategoryvalue == "Shareholder"
-                  ? "SHA"
-                  : ipo.ipoCategoryvalue == "Policyholder"
-                      ? "POL"
-                      : "",
+      category:
+          ipo.ipoCategoryvalue == "Individual" || ipo.ipoCategoryvalue == "HNI"
+              ? "IND"
+              : ipo.ipoCategoryvalue == "Employee"
+                  ? "EMP"
+                  : ipo.ipoCategoryvalue == "Shareholder"
+                      ? "SHA"
+                      : ipo.ipoCategoryvalue == "Policyholder"
+                          ? "POL"
+                          : "",
       name: widget.mainstream.name.toString(),
       applicationNumber: '',
       respBid: [BidReference(bidReferenceNumber: '')],

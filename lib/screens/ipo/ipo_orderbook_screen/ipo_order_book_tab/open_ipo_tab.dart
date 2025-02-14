@@ -9,8 +9,8 @@ import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
 
 class IpoOpenOrder extends ConsumerWidget {
-  final IPOProvider open;
-  const IpoOpenOrder({super.key, required this.open});
+  // final IPOProvider ipo;
+  const IpoOpenOrder({super.key});
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
@@ -21,7 +21,7 @@ class IpoOpenOrder extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (open.openorder!.length > 4)
+          // if (ipo.openorder!.length > 4)
             // Container(
             //   alignment: Alignment.centerRight,
             //   width: MediaQuery.of(context).size.width,
@@ -131,15 +131,15 @@ class IpoOpenOrder extends ConsumerWidget {
               ? ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: open.openorder!.length,
+                  itemCount: ipo.openorder!.length,
                   itemBuilder: (context, index) {
                     List<String> stringList = [];
                     List<String> bidqty = [];
                     for (var i = 0;
-                        i < open.openorder![index].bidDetail!.length;
+                        i < ipo.openorder![index].bidDetail!.length;
                         i++) {
-                      stringList.add( open.openorder![index].type== "BSE" ? (double.parse(open.openorder![index].bidDetail![i].rate!) * double.parse(open.openorder![index].bidDetail![i].quantity!)).toString() : open.openorder![index].bidDetail![i].amount.toString());
-                      bidqty.add(open.openorder![index].bidDetail![i].quantity
+                      stringList.add( ipo.openorder![index].type== "BSE" ? (double.parse(ipo.openorder![index].bidDetail![i].rate!) * double.parse(ipo.openorder![index].bidDetail![i].quantity!)).toString() : ipo.openorder![index].bidDetail![i].amount.toString());
+                      bidqty.add(ipo.openorder![index].bidDetail![i].quantity
                           .toString());
                     }
                     String maxValue = stringList.reduce((curr, next) =>
@@ -150,7 +150,7 @@ class IpoOpenOrder extends ConsumerWidget {
                       onTap: () {
                         Navigator.pushNamed(
                             context, Routes.ipoopendetailsscreen,
-                            arguments: open.openorder![index]);
+                            arguments: ipo.openorder![index]);
                       },
                       child: Column(
                         children: [
@@ -164,7 +164,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                        open.openorder![index].symbol
+                                        ipo.openorder![index].symbol
                                             .toString(),
                                         style: textStyles.scripNameTxtStyle
                                             .copyWith(
@@ -176,7 +176,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                     ),
                                     Row(
                                       children: [
-                                        SvgPicture.asset(open.openorder![index]
+                                        SvgPicture.asset(ipo.openorder![index]
                                                     .reponseStatus ==
                                                 "new success"
                                             ? "assets/icon/success.svg"
@@ -185,7 +185,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                           width: 4,
                                         ),
                                         Text(
-                                          open.openorder![index]
+                                          ipo.openorder![index]
                                                       .reponseStatus ==
                                                   "new success"
                                               ? "Success"
@@ -240,11 +240,40 @@ class IpoOpenOrder extends ConsumerWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      // open.openorder![index].type == "BSE"
+                                      ipo.openorder![index].responseDatetime
+                                                  .toString() ==
+                                              ""
+                                          ? "----"
+                                          : ipodateres(ipo.openorder![index]
+                                              .responseDatetime
+                                              .toString()),
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          13,
+                                          FontWeight.w600),
+                                    ),
+                                    const SizedBox(
+                                      height: 2,
+                                    ),
+                                    Text(
+                                      "Bid Date & time",
+                                      style: textStyle(colors.colorGrey, 12,
+                                          FontWeight.w500),
+                                    )
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      // ipo.openorder![index].type == "BSE"
                                       //     ? "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}"
                                       // : 
                                           "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}",
@@ -260,34 +289,6 @@ class IpoOpenOrder extends ConsumerWidget {
                                     ),
                                     Text(
                                       "Invested amount",
-                                      style: textStyle(colors.colorGrey, 12,
-                                          FontWeight.w500),
-                                    )
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      open.openorder![index].responseDatetime
-                                                  .toString() ==
-                                              ""
-                                          ? "----"
-                                          : ipodateres(open.openorder![index]
-                                              .responseDatetime
-                                              .toString()),
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          13,
-                                          FontWeight.w600),
-                                    ),
-                                    const SizedBox(
-                                      height: 2,
-                                    ),
-                                    Text(
-                                      "Bid Date & time",
                                       style: textStyle(colors.colorGrey, 12,
                                           FontWeight.w500),
                                     )
@@ -315,13 +316,13 @@ class IpoOpenOrder extends ConsumerWidget {
               : ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: open.iposearch!.length,
+                  itemCount: ipo.iposearch!.length,
                   itemBuilder: (context, index) {
                     return InkWell(
                       onTap: () {
                         Navigator.pushNamed(
                             context, Routes.ipoopendetailsscreen,
-                            arguments: open.iposearch![index]);
+                            arguments: ipo.iposearch![index]);
                       },
                       child: Column(
                         children: [
@@ -335,7 +336,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                        open.iposearch![index].symbol
+                                        ipo.iposearch![index].symbol
                                             .toString(),
                                         style: textStyles.scripNameTxtStyle
                                             .copyWith(
@@ -347,7 +348,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                     ),
                                     Row(
                                       children: [
-                                        SvgPicture.asset(open.iposearch![index]
+                                        SvgPicture.asset(ipo.iposearch![index]
                                                     .reponseStatus ==
                                                 "new success"
                                             ? "assets/icon/success.svg"
@@ -356,7 +357,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                           width: 4,
                                         ),
                                         Text(
-                                          open.iposearch![index]
+                                          ipo.iposearch![index]
                                                       .reponseStatus ==
                                                   "new success"
                                               ? "Success"
@@ -377,7 +378,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                               FontWeight.w500),
                                         ),
                                         Text(
-                                          "${open.iposearch![index].bidDetail![0].quantity}",
+                                          "${ipo.iposearch![index].bidDetail![0].quantity}",
                                           style: textStyle(
                                               theme.isDarkMode
                                                   ? colors.colorWhite
@@ -415,9 +416,9 @@ class IpoOpenOrder extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      open.iposearch![index].type == "BSE"
-                                          ? "₹${getFormatter(noDecimal: true,v4d: false,value: double.parse(open.iposearch![index].bidDetail![0].rate!) * double.parse(open.iposearch![index].bidDetail![0].quantity!)).toString()}" 
-                                          : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(open.iposearch![index].bidDetail![0].amount.toString()))}",
+                                      ipo.iposearch![index].type == "BSE"
+                                          ? "₹${getFormatter(noDecimal: true,v4d: false,value: double.parse(ipo.iposearch![index].bidDetail![0].rate!) * double.parse(ipo.iposearch![index].bidDetail![0].quantity!)).toString()}" 
+                                          : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(ipo.iposearch![index].bidDetail![0].amount.toString()))}",
                                       style: textStyle(
                                           theme.isDarkMode
                                               ? colors.colorWhite
@@ -439,11 +440,11 @@ class IpoOpenOrder extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      open.iposearch![index].responseDatetime
+                                      ipo.iposearch![index].responseDatetime
                                                   .toString() ==
                                               ""
                                           ? "----"
-                                          : ipodateres(open.iposearch![index]
+                                          : ipodateres(ipo.iposearch![index]
                                               .responseDatetime
                                               .toString()),
                                       style: textStyle(

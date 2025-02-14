@@ -2,7 +2,6 @@
 
 import 'dart:developer';
 
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -30,13 +29,12 @@ class SMEApplyIpoScreen extends StatefulWidget {
 }
 
 class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
-  bool ischecked = false;
-  String alertValue = "";
+  // bool ischecked = false;
   String upierrortext = "";
 
   // List<int> requriedpriceList = [];
   // int? maxValue;
-  String? selectedChip;
+  String selectedChip = "Individual";
   List<IpoDetails> addIpo = [];
   @override
   void initState() {
@@ -60,9 +58,9 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                   int.parse(widget.smeipo.minBidQuantity!).toInt())
               .toInt(),
           isChecked: false));
-      context.read(ipoProvide).viewupiid.text.isEmpty
-          ? upierrortext = "Please enter the UPI ID"
-          : upierrortext = "";
+      // context.read(ipoProvide).viewupiid.text.isEmpty
+      //     ? upierrortext = "Please enter the UPI ID"
+      //     : upierrortext = "";
     });
   }
 
@@ -91,8 +89,11 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
           var chips =
               ipo.ipoCategory.map((e) => e['subCatCode']).toSet().toList();
           // selectedChip = chips.isNotEmpty ? chips[0] : null;
-          if (selectedChip == null && chips.isNotEmpty) {
-            selectedChip = chips[0]; // Set first item as default
+          // if (selectedChip == null && chips.isNotEmpty) {
+          //   selectedChip = chips[0]; // Set first item as default
+          // }
+          if (ipo.checkForErrorsInSMEPlaceOrder(addIpo)) {
+            ipo.setisSMEPlaceOrderBtnActiveValue = true;
           }
 
           return Scaffold(
@@ -377,16 +378,25 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                               selected:
                                   selectedChip == chip, // Mark selected chip
                               onSelected: (isSelected) async {
-                                ipo.chngCategoryType("$chip");
-                                ipo.categoryOnChange(
-                                    addIpo[addIpo.length - 1],
-                                    ipo.maxUPIAmt,
-                                    ipo.isSMEPlaceOrderBtnActive);
                                 setState(() {
                                   selectedChip = isSelected
                                       ? chip
                                       : selectedChip; // Update selected chip
+
+                                  if (ipo
+                                      .checkForErrorsInSMEPlaceOrder(addIpo)) {
+                                    ipo.setisSMEPlaceOrderBtnActiveValue = true;
+                                  } else {
+                                    ipo.setisSMEPlaceOrderBtnActiveValue =
+                                        false;
+                                  }
                                 });
+                                ipo.chngCategoryType("$chip");
+                                await ipo.categoryOnChange(
+                                    addIpo,
+                                    ipo.maxUPIAmt,
+                                    ipo.isSMEPlaceOrderBtnActive,
+                                    selectedChip);
                               },
                             );
                           }).toList(),
@@ -783,7 +793,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Padding(
+                                  const Padding(
                                       padding: EdgeInsets.symmetric(
                                           horizontal: 55, vertical: 20)),
                                   InkWell(
@@ -1095,90 +1105,117 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                         style: textStyle(
                             const Color(0xff666666), 13, FontWeight.w500)),
                     trailing: ElevatedButton(
-                      onPressed: () {
-                        if (addIpo[addIpo.length - 1].requriedprice >
-                            ipo.maxUPIAmt) {
-                          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                              context,
-                              "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
-                          ipo.setisSMEPlaceOrderBtnActiveValue = false;
-                        } else if (addIpo[addIpo.length - 1]
-                                .bidpricecontroller
-                                .text
-                                .isEmpty ||
-                            addIpo[addIpo.length - 1].bidpricecontroller.text ==
-                                "0") {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              warningMessage(
-                                  context,
+                      onPressed: ipo.isSMEPlaceOrderBtnActive
+                          ? () {
+                              if (addIpo[addIpo.length - 1].requriedprice >
+                                  ipo.maxUPIAmt) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    warningMessage(context,
+                                        "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
+                                ipo.setisSMEPlaceOrderBtnActiveValue = false;
+                              } else if (addIpo[addIpo.length - 1]
+                                      .bidpricecontroller
+                                      .text
+                                      .isEmpty ||
                                   addIpo[addIpo.length - 1]
-                                              .bidpricecontroller
-                                              .text ==
-                                          "0"
-                                      ? "Bid Price Value cannot be 0"
-                                      : "*Bid Price Value is required"));
-                        } else if (addIpo[addIpo.length - 1]
-                                .qualityController
-                                .text
-                                .isEmpty ||
-                            addIpo[addIpo.length - 1].qualityController.text ==
-                                "0") {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              warningMessage(
-                                  context,
+                                          .bidpricecontroller
+                                          .text ==
+                                      "0") {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    warningMessage(
+                                        context,
+                                        addIpo[addIpo.length - 1]
+                                                    .bidpricecontroller
+                                                    .text ==
+                                                "0"
+                                            ? "Bid Price Value cannot be 0"
+                                            : "*Bid Price Value is required"));
+                              } else if (addIpo[addIpo.length - 1]
+                                      .qualityController
+                                      .text
+                                      .isEmpty ||
                                   addIpo[addIpo.length - 1]
-                                              .qualityController
-                                              .text ==
-                                          "0"
-                                      ? '* Quantity cannot be 0'
-                                      : '* Quantity cannot be empty'));
-                        }
-                        // else if (upiid.upiid.text.isEmpty) {
-                        //   ScaffoldMessenger.of(context).showSnackBar(
-                        //       warningMessage(
-                        //           context, '* UPI ID cannot be empty'));
-                        // } else if (!RegExp(r'^[\w.-]+@[\w]+$')
-                        //     .hasMatch(upiid.upiid.text)) {
-                        //   ScaffoldMessenger.of(context).showSnackBar(
-                        //       warningMessage(
-                        //           context, 'Invalid UPI ID format'));
-                        // }
-                        else {
-                          // ipoplaceorder(upiid, ipo);
-                          showModalBottomSheet(
-                              isScrollControlled: true,
-                              useSafeArea: true,
-                              isDismissible: true,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(16))),
-                              context: context,
-                              builder: (context) => Container(
-                                  padding: EdgeInsets.only(
-                                    bottom: MediaQuery.of(context)
-                                        .viewInsets
-                                        .bottom,
-                                  ),
-                                  child: OrderScreenbottomPage(
-                                    mainstream: widget.smeipo,
-                                    addIpo: addIpo,
-                                  )));
-                        }
-                      },
+                                          .qualityController
+                                          .text ==
+                                      "0") {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    warningMessage(
+                                        context,
+                                        addIpo[addIpo.length - 1]
+                                                    .qualityController
+                                                    .text ==
+                                                "0"
+                                            ? '* Quantity cannot be 0'
+                                            : '* Quantity cannot be empty'));
+                              }
+                              // else if (upiid.upiid.text.isEmpty) {
+                              //   ScaffoldMessenger.of(context).showSnackBar(
+                              //       warningMessage(
+                              //           context, '* UPI ID cannot be empty'));
+                              // } else if (!RegExp(r'^[\w.-]+@[\w]+$')
+                              //     .hasMatch(upiid.upiid.text)) {
+                              //   ScaffoldMessenger.of(context).showSnackBar(
+                              //       warningMessage(
+                              //           context, 'Invalid UPI ID format'));
+                              // }
+                              else {
+                                // ipoplaceorder(upiid, ipo);
+
+                                if (ipo.checkForErrorsInSMEPlaceOrder(addIpo)) {
+                                  ipo.setisSMEPlaceOrderBtnActiveValue = true;
+
+                                  showModalBottomSheet(
+                                    isScrollControlled: true,
+                                    useSafeArea: true,
+                                    isDismissible: true,
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(16))),
+                                    context: context,
+                                    builder: (context) => Container(
+                                      padding: EdgeInsets.only(
+                                        bottom: MediaQuery.of(context)
+                                            .viewInsets
+                                            .bottom,
+                                      ),
+                                      child: OrderScreenbottomPage(
+                                        mainstream: widget.smeipo,
+                                        addIpo: addIpo,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      warningMessage(context,
+                                          "can't able place Order with current selected combination of Bids"));
+                                  // ischecked = false;
+                                  ipo.setisSMEPlaceOrderBtnActiveValue = false;
+                                }
+                              }
+                            }
+                          : () {},
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(145, 37),
                         backgroundColor: !theme.isDarkMode
-                            ? colors.colorBlack
-                            : const Color(0xfff5f5f5),
+                          ? ipo.isSMEPlaceOrderBtnActive == false
+                              ? const Color(0xfff5f5f5)
+                              : colors.colorBlack
+                          : ipo.isSMEPlaceOrderBtnActive == false
+                              ? colors.darkGrey
+                              : colors.colorbluegrey,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(32),
                         ),
                       ),
                       child: Text("Continue",
                           style: textStyle(
-                              !theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
+                             !theme.isDarkMode
+                                ? ipo.isSMEPlaceOrderBtnActive == false
+                                    ? const Color(0xff999999)
+                                    : colors.colorWhite
+                                : ipo.isSMEPlaceOrderBtnActive == false
+                                    ? colors.darkGrey
+                                    : colors.colorBlack,
                               14,
                               FontWeight.w500)),
                     ),
@@ -1193,15 +1230,16 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
       flow: "now",
       type: widget.smeipo.type.toString(),
       symbol: widget.smeipo.symbol.toString(),
-      category: ipo.ipoCategoryvalue == "Individual"
-          ? "IND"
-          : ipo.ipoCategoryvalue == "Employee"
-              ? "EMP"
-              : ipo.ipoCategoryvalue == "Shareholder"
-                  ? "SHA"
-                  : ipo.ipoCategoryvalue == "Policyholder"
-                      ? "POL"
-                      : "",
+      category:
+          ipo.ipoCategoryvalue == "Individual" || ipo.ipoCategoryvalue == "HNI"
+              ? "IND"
+              : ipo.ipoCategoryvalue == "Employee"
+                  ? "EMP"
+                  : ipo.ipoCategoryvalue == "Shareholder"
+                      ? "SHA"
+                      : ipo.ipoCategoryvalue == "Policyholder"
+                          ? "POL"
+                          : "",
       name: widget.smeipo.name.toString(),
       applicationNumber: '',
       respBid: [BidReference(bidReferenceNumber: '')],
@@ -1221,8 +1259,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
     //   print(
     //       "Text: ${iposbids[i].bitis} Checkbox: ${iposbids[i].qty}, requried:${iposbids[i].cutoff},bidprice:${iposbids[i].price} value Total: ${iposbids[i].total}");
     // }
-    print(
-        "IPO PLACE ORDERS :: ${upiid.upiid.text} ,${inspect(menudata)} ,${inspect(iposbids)} ,${iposupiid}");
+    // print( "IPO PLACE ORDERS :: ${upiid.upiid.text} ,${inspect(menudata)} ,${inspect(iposbids)} ,${iposupiid}");
     await context.read(ipoProvide).fetchupiidvalidation(
         context, upiid.upiid.text, "343245", menudata, iposbids, iposupiid);
   }

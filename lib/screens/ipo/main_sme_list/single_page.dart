@@ -8,7 +8,6 @@ import 'package:mynt_plus/models/ipo_model/ipo_sme_model.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:readmore/readmore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/thems.dart';
@@ -16,7 +15,6 @@ import '../../../res/res.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/ipo_time_line.dart';
-import 'finchart.dart';
 
 class MainSmeSinglePage extends StatefulWidget {
   final String ipotype;
@@ -378,57 +376,69 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                                           : colors.colorDivider)
                                                 ])),
                                             const SizedBox(width: 18),
-                                            Expanded(
+                                            if (singlepage.iposinglepage!
+                                                        .data!['IpoDetails']
+                                                    ['RHP'] !=
+                                                "")
+                                              Expanded(
                                                 child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                  Text("RHP DOC",
-                                                      style: textStyle(
-                                                          const Color(
-                                                              0xff666666),
-                                                          10,
-                                                          FontWeight.w400)),
-                                                  const SizedBox(height: 4),
-                                                  TextButton(
-                                                    onPressed: () => _launchURL(
-                                                        singlepage.iposinglepage!
-                                                                    .data![
-                                                                'IpoDetails'][
-                                                            'RHP']), // Add your onPressed callback here
-                                                    style: TextButton.styleFrom(
-                                                      minimumSize: Size(0, 20),
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                        right: 16,
-                                                        top: 0,
-                                                        bottom: 0,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text("RHP DOC",
+                                                        style: textStyle(
+                                                            const Color(
+                                                                0xff666666),
+                                                            10,
+                                                            FontWeight.w400)),
+                                                    const SizedBox(height: 4),
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          _launchURL(singlepage
+                                                                  .iposinglepage!
+                                                                  .data![
+                                                              'IpoDetails']['RHP']),
+
+                                                      // Add your onPressed callback here
+                                                      style:
+                                                          TextButton.styleFrom(
+                                                        minimumSize:
+                                                            Size(0, 20),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                          right: 16,
+                                                          top: 0,
+                                                          bottom: 0,
+                                                        ),
+                                                        tapTargetSize:
+                                                            MaterialTapTargetSize
+                                                                .shrinkWrap, // Apply padding here
+                                                        alignment: Alignment
+                                                            .topLeft, // Align text to the left
                                                       ),
-                                                      tapTargetSize:
-                                                          MaterialTapTargetSize
-                                                              .shrinkWrap, // Apply padding here
-                                                      alignment: Alignment
-                                                          .topLeft, // Align text to the left
-                                                    ),
-                                                    child: Text(
-                                                      "Download",
-                                                      style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorBlue
-                                                            : colors.colorBlue,
-                                                        14,
-                                                        FontWeight.w600,
+                                                      child: Text(
+                                                        "Download",
+                                                        style: textStyle(
+                                                          theme.isDarkMode
+                                                              ? colors.colorBlue
+                                                              : colors
+                                                                  .colorBlue,
+                                                          14,
+                                                          FontWeight.w600,
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Divider(
-                                                      color: theme.isDarkMode
-                                                          ? colors
-                                                              .darkColorDivider
-                                                          : colors.colorDivider)
-                                                ])),
+                                                    const SizedBox(height: 2),
+                                                    Divider(
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .darkColorDivider
+                                                            : colors
+                                                                .colorDivider)
+                                                  ],
+                                                ),
+                                              )
                                           ]),
                                     ],
                                   ),
@@ -1388,11 +1398,11 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
   Column ipoDateDisplay(
       ThemesProvider theme, IPOProvider singlepage, String text, String value) {
     // Ensure the value is valid before parsing
-    double maxValue = 100.0; // Maximum value (100%)
+    double maxValue = 100; // Maximum value (100%)
     double convertedValue = 0.0;
 
     try {
-      convertedValue = double.parse(value); // Convert value to double
+      convertedValue = double.parse(value) * 100; // Convert value to double
     } catch (e) {
       // In case of invalid value, set to 0
       convertedValue = 0.0;
@@ -1432,7 +1442,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
             minHeight: 10,
             value: progress, // Use the normalized value
             backgroundColor: Colors.grey[300],
-            color: Color(0xFFFF148564),
+            color:progress<1? Color.fromARGB(255, 233, 196, 7) :Color(0xFFFF148564),
           ),
         ),
         const SizedBox(width: 20),

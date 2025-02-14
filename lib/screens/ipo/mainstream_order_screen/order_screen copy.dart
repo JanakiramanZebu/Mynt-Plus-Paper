@@ -276,8 +276,9 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                       value: ipo.ipoCategoryvalue,
                       onChanged: (value) async {
                         ipo.chngCategoryType("$value");
-                        ipo.categoryOnChange(addIpo[addIpo.length - 1],
-                            ipo.maxUPIAmt, ischecked);
+                        ipo.categoryOnChange(addIpo,
+                            ipo.maxUPIAmt, ipo.isMainIPOPlaceOrderBtnActive,
+                                    "");
                       },
                     )),
                   ),
@@ -1123,7 +1124,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
       flow: "now",
       type: widget.mainstream.type.toString(),
       symbol: widget.mainstream.symbol.toString(),
-      category: ipo.ipoCategoryvalue == "Individual"
+      category: ipo.ipoCategoryvalue == "Individual" || ipo.ipoCategoryvalue == "HNI"
           ? "IND"
           : ipo.ipoCategoryvalue == "Employee"
               ? "EMP"
