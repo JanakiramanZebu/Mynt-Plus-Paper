@@ -1,4 +1,3 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
@@ -20,10 +19,6 @@ class _Allholdings extends State<Allholdings> {
 
   @override
   Widget build(BuildContext context) {
-    FirebaseAnalytics.instance.logScreenView(
-      screenName: 'TotalPortfolioScreen',
-      screenClass: 'TotalPortfolioScreen', // Customize if needed.
-    );
     return Consumer(builder: (context, ScopedReader watch, _) {
       final theme = context.read(themeProvider);
 

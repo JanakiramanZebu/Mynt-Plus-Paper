@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
 import 'package:mynt_plus/screens/profile_screen/app_webview/ipo_webview.dart';
-import '../provider/core/screen_timeout_observer.dart';
 import '../screens/authentication/login/login_banner_screen.dart';
 import '../screens/authentication/login/login_screen.dart';
 import '../screens/authentication/password/change_pass.dart';
@@ -28,7 +27,6 @@ import '../screens/mutual_fund/mf_main_screen.dart';
 import '../screens/mutual_fund/mf_order_screen.dart';
 import '../screens/mutual_fund/mf_stock_detail_screen.dart';
 import '../screens/mutual_fund_old/mf_watchlist.dart';
-import '../screens/mutual_fund/mutual_fund_screen.dart';
 import '../screens/order_book/basket/basket_list.dart';
 import '../screens/order_book/gtt_order_detail.dart';
 import '../screens/order_book/order_book_detail.dart';
