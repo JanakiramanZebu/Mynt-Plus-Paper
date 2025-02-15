@@ -425,7 +425,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                               addIpo[index],
                                                               ischecked,
                                                               widget.smeipo,
-                                                              ipo.maxUPIAmt);
+                                                              ipo.maxUPIAmt,"");
                                                           setState(() {
                                                             maxValue = addIpo
                                                                 .map((map) => map
@@ -453,7 +453,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                                   addIpo[index],
                                                                   ischecked,
                                                                   widget.smeipo,
-                                                                  ipo.maxUPIAmt);
+                                                                  ipo.maxUPIAmt,"");
                                                               setState(() {
                                                                 maxValue = addIpo
                                                                     .map((map) => map
@@ -477,7 +477,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                   addIpo[index],
                                                   widget.smeipo,
                                                   ischecked,
-                                                  ipo.maxUPIAmt);
+                                                  ipo.maxUPIAmt,"");
                                               setState(() {
                                                 maxValue = addIpo
                                                     .map((map) =>

@@ -95,6 +95,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
           if (ipo.checkForErrorsInSMEPlaceOrder(addIpo)) {
             ipo.setisSMEPlaceOrderBtnActiveValue = true;
           }
+           ipo.setsmePlaceOrderRequiredMaxPrice = addIpo;
 
           return Scaffold(
               appBar: AppBar(
@@ -593,7 +594,8 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                               addIpo[index],
                                                               ipo.isSMEPlaceOrderBtnActive,
                                                               widget.smeipo,
-                                                              ipo.maxUPIAmt);
+                                                              ipo.maxUPIAmt,
+                                                              selectedChip);
                                                           setState(() {
                                                             ipo.setsmePlaceOrderRequiredMaxPrice =
                                                                 addIpo;
@@ -619,7 +621,8 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                                   addIpo[index],
                                                                   ipo.isSMEPlaceOrderBtnActive,
                                                                   widget.smeipo,
-                                                                  ipo.maxUPIAmt);
+                                                                  ipo.maxUPIAmt,
+                                                                  selectedChip);
                                                               setState(() {
                                                                 ipo.setsmePlaceOrderRequiredMaxPrice =
                                                                     addIpo;
@@ -645,7 +648,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                   addIpo[index],
                                                   widget.smeipo,
                                                   ipo.isSMEPlaceOrderBtnActive,
-                                                  ipo.maxUPIAmt);
+                                                  ipo.maxUPIAmt,selectedChip);
                                               setState(() {
                                                 ipo.setsmePlaceOrderRequiredMaxPrice =
                                                     addIpo;
@@ -865,6 +868,11 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                 ? null
                                 : () {
                                     addNewItem();
+                                    ipo.categoryOnChange(
+                                    addIpo,
+                                    ipo.maxUPIAmt,
+                                    ipo.isSMEPlaceOrderBtnActive,
+                                    selectedChip);
                                   },
                             icon: SvgPicture.asset(
                               assets.add,

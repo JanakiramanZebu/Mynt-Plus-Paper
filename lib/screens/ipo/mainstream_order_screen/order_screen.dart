@@ -82,6 +82,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
           if (ipo.checkForErrorsInSMEPlaceOrder(addIpo)) {
             ipo.setisMainIPOPlaceOrderBtnActiveValue = true;
           }
+           ipo.setMainIPOPlaceOrderRequiredMaxPrice = addIpo;
 
           return Scaffold(
               appBar: AppBar(
@@ -575,7 +576,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                               addIpo[index],
                                                               ipo.isMainIPOPlaceOrderBtnActive,
                                                               ipo,
-                                                              widget.mainstream);
+                                                              widget.mainstream,selectedChip);
                                                           setState(() {
                                                             ipo.setMainIPOPlaceOrderRequiredMaxPrice =
                                                                 addIpo;
@@ -611,7 +612,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                                       .isMainIPOPlaceOrderBtnActive,
                                                                   ipo,
                                                                   widget
-                                                                      .mainstream);
+                                                                      .mainstream,selectedChip);
                                                               setState(() {
                                                                 ipo.setMainIPOPlaceOrderRequiredMaxPrice =
                                                                     addIpo;
@@ -637,7 +638,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                   ipo.isMainIPOPlaceOrderBtnActive,
                                                   ipo,
                                                   value,
-                                                  widget.mainstream);
+                                                  widget.mainstream,selectedChip);
                                               setState(() {
                                                 // if (addIpo[index]
                                                 //         .qualityController
@@ -955,6 +956,11 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                 ? null
                                 : () {
                                     addNewItem();
+                                    ipo.categoryOnChange(
+                                    addIpo,
+                                    ipo.maxUPIAmt,
+                                    ipo.isMainIPOPlaceOrderBtnActive,
+                                    selectedChip);
                                   },
                             icon: SvgPicture.asset(
                               assets.add,

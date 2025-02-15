@@ -35,7 +35,7 @@ class MainSmeListCard extends StatelessWidget {
                 height: dev_height - 140,
                 child: Column(
                   children: [
-                    NoDataFound(),
+                   const NoDataFound(),
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Container(
@@ -103,8 +103,6 @@ class MainSmeListCard extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return InkWell(
                       onTap: () async {
-                        print(
-                            "::::::::::::::::::::::::::::::::::${mainstreamipo.mainsme[index].name}");
                         await ipos.getIpoSinglePage(
                             ipoName: "${mainstreamipo.mainsme[index].name}");
                         showModalBottomSheet(

@@ -48,7 +48,7 @@ class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
       // final market = watch(marketWatchProvider);
 
       return SingleChildScrollView(
-        child: Expanded(
+        // child: Expanded(
           // child: Container(
             // height: preClose.ipoPreClose!.msg.isNotEmpty
             //     ? devHeight
@@ -733,7 +733,7 @@ class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
               ],
             ),
           // ),
-        ),
+        // ),
       );
     });
   }

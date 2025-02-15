@@ -418,7 +418,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                               ischecked,
                                                               ipo,
                                                               widget
-                                                                  .mainstream);
+                                                                  .mainstream,"");
                                                           setState(() {
                                                             maxValue = addIpo
                                                                 .map((map) => map
@@ -451,7 +451,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                                   ischecked,
                                                                   ipo,
                                                                   widget
-                                                                      .mainstream);
+                                                                      .mainstream,"");
                                                               setState(() {
                                                                 maxValue = addIpo
                                                                     .map((map) => map
@@ -475,7 +475,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                                   ischecked,
                                                   ipo,
                                                   value,
-                                                  widget.mainstream);
+                                                  widget.mainstream,"");
                                               setState(() {
                                                 if (addIpo[index]
                                                         .qualityController

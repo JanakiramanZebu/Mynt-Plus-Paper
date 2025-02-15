@@ -1458,9 +1458,9 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
       case "Retail":
         return "Retail";
       case "bNII (bids above ₹10L)":
-        return "Non Individual - big (bNII)";
+        return "Non Individual - big";
       case "sNII (bids below ₹10L)":
-        return "Non Individual - small (sNII)";
+        return "Non Individual - small";
       case "NII":
         return "Non Individual";
 
