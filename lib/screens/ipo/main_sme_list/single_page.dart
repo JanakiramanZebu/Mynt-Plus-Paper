@@ -50,7 +50,6 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
         final upi = watch(transcationProvider);
         //final ipoLtp = watch(marketWatchProvider);
         // print("iposymbol ::: ${iposymbol}");
-        print("::::::::::::::::: ${singlepage.iposinglepage!.data['status']}");
         return DraggableScrollableSheet(
           initialChildSize: 0.88,
           maxChildSize: .99,
@@ -1311,7 +1310,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                           singlepage.iposinglepage!.data['status'] != "CLOSED"
                               ? Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
+                                      horizontal: 16,vertical: 16),
                                   child: Container(
                                     width: double.infinity,
                                     child: ElevatedButton(

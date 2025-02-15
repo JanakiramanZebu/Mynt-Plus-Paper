@@ -176,7 +176,7 @@ class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
                const Align(
                   alignment: Alignment.center,
                   child: Padding(
-                    padding: EdgeInsets.only(top: 250),
+                    padding: EdgeInsets.all(10),
                     child: NoDataFound(),
                   ),
                 ),
@@ -202,7 +202,7 @@ class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
               :const Align(
                   alignment: Alignment.center,
                   child: Padding(
-                    padding: EdgeInsets.only(top: 250),
+                    padding: EdgeInsets.all(10),
                     child: NoDataFound(),
                   ),
                 ),
