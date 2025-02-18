@@ -12,7 +12,6 @@ import 'index_bottom_sheet.dart';
 
 class DefaultIndexList extends ConsumerWidget {
   const DefaultIndexList({super.key});
-
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final socketDatas = watch(websocketProvider).socketDatas;
