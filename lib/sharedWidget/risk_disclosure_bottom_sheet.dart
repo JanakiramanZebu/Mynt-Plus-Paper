@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/locator/preference.dart'; 
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+import '../locator/locator.dart';
 import 'custom_drag_handler.dart';
 // import 'package:showcaseview/showcaseview.dart';
 // import 'package:trading_app_zebu/api/core/api_link.dart';
@@ -17,6 +19,8 @@ class RiskDisclousreBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
       final theme = context.read(themeProvider);
+    final Preferences pref = locator<Preferences>();
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
@@ -112,6 +116,7 @@ class RiskDisclousreBottomSheet extends StatelessWidget {
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
                       onPressed: () async {
+                        pref.setRiskDiscloser(true);
                         // if (ApiLinks.showAppTutorial) {
                         //    WidgetsBinding.instance.addPostFrameCallback((_) =>
                         //     ShowCaseWidget.of(context).startShowCase([

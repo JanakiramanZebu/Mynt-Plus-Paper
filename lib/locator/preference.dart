@@ -187,6 +187,13 @@ class Preferences {
 
   String? get showOrderpref => _prefInstance?.getString("ord_prf_$clientId");
 
+
+  Future setRiskDiscloser(bool statis) async =>
+      await _prefInstance!.setString('rist_dis', statis? 'true' : '');
+
+  String? get showRiskDis => _prefInstance?.getString("rist_dis");
+
+
   /// ORDER BOOK Filter
   bool? get isObScripname => _prefInstance?.getBool(_isObScripName) ?? true;
   bool? get isObPrice => _prefInstance?.getBool(_isObPrice) ?? true;

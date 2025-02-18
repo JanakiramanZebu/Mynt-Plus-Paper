@@ -499,6 +499,7 @@ class AuthProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, 'The OTP is sent via email and SMS'));
         _isDisableBtn = true;
+        pref.setRiskDiscloser(false);
         showModalBottomSheet(
           context: context,
           shape: const RoundedRectangleBorder(
@@ -1013,7 +1014,8 @@ class AuthProvider extends DefaultChangeNotifier {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.homeScreen, (route) => false);
           // if (pref.islogIn!) {
-          showModalBottomSheet(
+        if (pref.showRiskDis != 'true')   
+          {showModalBottomSheet(
               shape: const RoundedRectangleBorder(
                   borderRadius:
                       BorderRadius.vertical(top: Radius.circular(16))),
@@ -1030,7 +1032,7 @@ class AuthProvider extends DefaultChangeNotifier {
                       return false;
                     },
                     child: const RiskDisclousreBottomSheet());
-              });
+              });}
         }
         {
           await ref(fundProvider).fetchFunds(context);
