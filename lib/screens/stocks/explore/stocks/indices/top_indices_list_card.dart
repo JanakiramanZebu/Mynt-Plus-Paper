@@ -13,42 +13,41 @@ class TopIndicesListCard extends ConsumerWidget {
   Widget build(BuildContext context, watch) {
     final theme = watch(themeProvider);
     return Container(
-        padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 11),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
         decoration: BoxDecoration(
-            color: theme.isDarkMode
-                ? const Color(0xffB5C0CF).withOpacity(.15)
-                : const Color(0xffF1F3F8),
-            borderRadius: BorderRadius.circular(5)),
-        width: MediaQuery.of(context).size.width * 0.47,
+            gradient: const LinearGradient(
+          colors: [
+            Color(0xFFFFFFFF), // White at 10%
+            Color(0xFFF1F3F8), // Light Gray at 60%
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          stops: [0.1, 0.8], // 10% and 60%
+        ),
+            borderRadius: BorderRadius.circular(12)),
+        width: 130,
         //width: 142,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(indicesData.idxname!.toUpperCase(),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style:
-                      textStyle(const Color(0xff000000), 14, FontWeight.w600)),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text("₹${indicesData.ltp}",
-                    style: textStyle(
-                        const Color(0xff666666), 14, FontWeight.w500)),
-                const SizedBox(height: 2),
-                Text("${indicesData.change} (${indicesData.perChange}%)",
-                    style: textStyle(
-                        indicesData.perChange.toString().startsWith("-") ||
-                                indicesData.change.toString().startsWith("-")
-                            ? const Color(0xffE00000)
-                            : const Color(0xff43A833),
-                        12,
-                        FontWeight.w500))
-              ],
-            )
+            Text(indicesData.idxname!.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textStyle(const Color(0xff000000), 14, FontWeight.w600)),
+            const SizedBox(height: 10),
+            Text("₹${indicesData.ltp}",
+                maxLines: 1,
+                style: textStyle(const Color(0xff666666), 14, FontWeight.w500)),
+            const SizedBox(height: 4),
+            Text("${indicesData.change} (${indicesData.perChange}%)",
+                maxLines: 1,
+                style: textStyle(
+                    indicesData.perChange.toString().startsWith("-") ||
+                            indicesData.change.toString().startsWith("-")
+                        ? const Color(0xffE00000)
+                        : const Color(0xff43A833),
+                    12,
+                    FontWeight.w500))
           ],
         ));
   }

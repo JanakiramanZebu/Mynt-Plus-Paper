@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/screens/dashboard_screen.dart';
 import '../locator/constant.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../provider/fund_provider.dart';
@@ -364,7 +365,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                       });
                                                                 },
                                                                 child: Container(
-                                                                    padding: EdgeInsets.only(
+                                                                    padding: const EdgeInsets
+                                                                        .only(
                                                                         left: 8,
                                                                         right:
                                                                             10),
@@ -580,132 +582,137 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         ])
                                                       ]
                                                     ],
-                                          bottom:
-                                              indexProvide.selectedBtmIndx == 1
-                                                  ? const PreferredSize(
-                                                      preferredSize:
-                                                          Size(20, 44),
-                                                      child: DefaultIndexList())
-                                                  : indexProvide.selectedBtmIndx ==
-                                                          4
-                                                      ? PreferredSize(
-                                                          preferredSize: const Size(
-                                                              20, 20),
-                                                          child:
-                                                              userProfile
-                                                                      .userloader
-                                                                  ? ListTile(
-                                                                      dense:
-                                                                          true,
-                                                                      contentPadding: const EdgeInsets
-                                                                          .symmetric(
-                                                                          horizontal:
-                                                                              16),
-                                                                      leading:
-                                                                          CircleAvatar(
-                                                                        backgroundColor: !theme.isDarkMode
-                                                                            ? Colors.grey[300]
-                                                                            : Color(0xff666666),
+                                          bottom: indexProvide.selectedBtmIndx == 1
+                                              ? const PreferredSize(preferredSize: Size(20, 44), child: DefaultIndexList())
+                                              : indexProvide.selectedBtmIndx == 4
+                                                  ? PreferredSize(
+                                                      preferredSize: const Size(20, 20),
+                                                      child: userProfile.userloader
+                                                          ? ListTile(
+                                                              dense: true,
+                                                              contentPadding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          16),
+                                                              leading:
+                                                                  CircleAvatar(
+                                                                backgroundColor: !theme
+                                                                        .isDarkMode
+                                                                    ? Colors.grey[
+                                                                        300]
+                                                                    : Color(
+                                                                        0xff666666),
+                                                              ),
+                                                              title: Container(
+                                                                height: 16,
+                                                                width: 150,
+                                                                color: !theme
+                                                                        .isDarkMode
+                                                                    ? Colors.grey[
+                                                                        300]
+                                                                    : Color(
+                                                                        0xff666666),
+                                                              ),
+                                                              subtitle:
+                                                                  Container(
+                                                                height: 12,
+                                                                width: 100,
+                                                                color: !theme
+                                                                        .isDarkMode
+                                                                    ? Colors.grey[
+                                                                        300]
+                                                                    : Color(
+                                                                        0xff666666),
+                                                              ),
+                                                              trailing:
+                                                                  Container(
+                                                                height: 24,
+                                                                width: 50,
+                                                                color: !theme
+                                                                        .isDarkMode
+                                                                    ? Colors.grey[
+                                                                        300]
+                                                                    : Color(
+                                                                        0xff666666),
+                                                              ),
+                                                            )
+                                                          : ListTile(
+                                                              onTap: () {
+                                                                showModalBottomSheet(
+                                                                    context:
+                                                                        context,
+                                                                    isScrollControlled:
+                                                                        true,
+                                                                    isDismissible:
+                                                                        true,
+                                                                    shape:
+                                                                        const RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius
+                                                                              .only(
+                                                                        topLeft:
+                                                                            Radius.circular(10),
+                                                                        topRight:
+                                                                            Radius.circular(10),
                                                                       ),
-                                                                      title:
-                                                                          Container(
-                                                                        height:
-                                                                            16,
-                                                                        width:
-                                                                            150,
-                                                                        color: !theme.isDarkMode
-                                                                            ? Colors.grey[300]
-                                                                            : Color(0xff666666),
-                                                                      ),
-                                                                      subtitle:
-                                                                          Container(
-                                                                        height:
-                                                                            12,
-                                                                        width:
-                                                                            100,
-                                                                        color: !theme.isDarkMode
-                                                                            ? Colors.grey[300]
-                                                                            : Color(0xff666666),
-                                                                      ),
-                                                                      trailing:
-                                                                          Container(
-                                                                        height:
-                                                                            24,
-                                                                        width:
-                                                                            50,
-                                                                        color: !theme.isDarkMode
-                                                                            ? Colors.grey[300]
-                                                                            : Color(0xff666666),
-                                                                      ),
-                                                                    )
-                                                                  : ListTile(
-                                                                      onTap:
+                                                                    ),
+                                                                    builder: (_) =>
+                                                                        const LoggedUserBottomSheet(
+                                                                            initRoute:
+                                                                                'switchAcc'));
+                                                              },
+                                                              dense: true,
+                                                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                                              leading: SvgPicture.asset(
+                                                                'assets/icon/MYNT App Logo_v2.svg',
+                                                                width: 40,
+                                                                height: 40,
+                                                              ),
+                                                              //     CircleAvatar(
+                                                              //   backgroundColor:
+                                                              //       const Color(0xffF1F3F8),
+                                                              //   child: Text(
+                                                              //       userProfile.userDetailModel!.uname != null
+                                                              //           ? userProfile.userDetailModel!.uname![0]
+                                                              //           : "",
+                                                              //       style: textStyle(const Color(0xff000000), 18, FontWeight.w600)),
+                                                              // ),
+                                                              title: Text("${userProfile.userDetailModel!.uname}", overflow: TextOverflow.ellipsis, style: textStyle(Color(theme.isDarkMode ? 0xffffffff : 0xff000000), 16, FontWeight.w600)),
+                                                              subtitle: Text("Client ID ${userProfile.userDetailModel!.uid}", style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
+                                                              trailing: SizedBox(
+                                                                  width: 100,
+                                                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                                                                    IconButton(
+                                                                      splashRadius:
+                                                                          26,
+                                                                      onPressed:
                                                                           () {
-                                                                        showModalBottomSheet(
-                                                                            context:
-                                                                                context,
-                                                                            isScrollControlled:
-                                                                                true,
-                                                                            isDismissible:
-                                                                                true,
-                                                                            shape:
-                                                                                const RoundedRectangleBorder(
-                                                                              borderRadius: BorderRadius.only(
-                                                                                topLeft: Radius.circular(10),
-                                                                                topRight: Radius.circular(10),
-                                                                              ),
-                                                                            ),
-                                                                            builder: (_) =>
-                                                                                const LoggedUserBottomSheet(initRoute: 'switchAcc'));
+                                                                        Navigator.pushNamed(
+                                                                            context,
+                                                                            Routes.qrscanner);
                                                                       },
-                                                                      dense:
-                                                                          true,
-                                                                      contentPadding: const EdgeInsets
-                                                                          .symmetric(
-                                                                          horizontal:
-                                                                              16),
-                                                                      leading:
-                                                                          CircleAvatar(
-                                                                        backgroundColor:
-                                                                            const Color(0xffF1F3F8),
-                                                                        child: Text(
-                                                                            userProfile.userDetailModel!.uname != null
-                                                                                ? userProfile.userDetailModel!.uname![0]
-                                                                                : "",
-                                                                            style: textStyle(const Color(0xff000000), 18, FontWeight.w600)),
-                                                                      ),
-                                                                      title: Text(
-                                                                          "${userProfile.userDetailModel!.uname}",
-                                                                          overflow: TextOverflow
-                                                                              .ellipsis,
-                                                                          style: textStyle(
-                                                                              Color(theme.isDarkMode
-                                                                                  ? 0xffffffff
-                                                                                  : 0xff000000),
-                                                                              16,
-                                                                              FontWeight
-                                                                                  .w600)),
-                                                                      subtitle: Text(
-                                                                          "Client ID ${userProfile.userDetailModel!.uid}",
-                                                                          style: textStyle(
-                                                                              const Color(0xff666666),
-                                                                              12,
-                                                                              FontWeight.w500)),
-                                                                      trailing: SizedBox(
-                                                                          width: 100,
-                                                                          child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                                                                            IconButton(
-                                                                              splashRadius: 26,
-                                                                              onPressed: () {
-                                                                                Navigator.pushNamed(context, Routes.qrscanner);
-                                                                              },
-                                                                              icon: SvgPicture.asset("assets/profile/qr_code.svg", width: 20, height: 24, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-                                                                            ),
-                                                                            const SizedBox(width: 4),
-                                                                            Icon(Icons.arrow_drop_down_circle_outlined,
-                                                                                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack)
-                                                                          ]))))
-                                                      : null),
+                                                                      icon: SvgPicture.asset(
+                                                                          "assets/profile/qr_code.svg",
+                                                                          width:
+                                                                              20,
+                                                                          height:
+                                                                              24,
+                                                                          color: theme.isDarkMode
+                                                                              ? colors.colorWhite
+                                                                              : colors.colorBlack),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                        width:
+                                                                            4),
+                                                                    Icon(
+                                                                        Icons
+                                                                            .arrow_drop_down_circle_outlined,
+                                                                        color: theme.isDarkMode
+                                                                            ? colors.colorWhite
+                                                                            : colors.colorBlack)
+                                                                  ]))))
+                                                  : null),
 
                                   // Here is the Bottom menu items
                                   bottomNavigationBar: BottomAppBar(
@@ -719,59 +726,70 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         //             ConnectivityResult.none
                                         //         ? null
                                         //         : () async {
-                                        //             watch(stocksProvide)
-                                        //                 .chngExpName("Stock", 0);
-                                        //             await context
-                                        //                 .read(indexListProvider)
-                                        //                 .checkSession(context);
-                                        //             await portfolio.requestWSHoldings(
-                                        //                 context: context,
-                                        //                 isSubscribe: false);
+                                        //             // watch(stocksProvide)
+                                        //             //     .chngExpName("Stock", 0);
+                                        //             // await context
+                                        //             //     .read(indexListProvider)
+                                        //             //     .checkSession(context);
+                                        //             // await portfolio.requestWSHoldings(
+                                        //             //     context: context,
+                                        //             //     isSubscribe: false);
+
+                                        //             // // await context
+                                        //             // //     .read(orderProvider)
+                                        //             // //     .requestWSOrderBook(
+                                        //             // //         context: context,
+                                        //             // //         isSubscribe: false);
+                                        //             // await portfolio.requestWSPosition(
+                                        //             //     context: context,
+                                        //             //     isSubscribe: false);
 
                                         //             // await context
-                                        //             //     .read(orderProvider)
-                                        //             //     .requestWSOrderBook(
+                                        //             //     .read(marketWatchProvider)
+                                        //             //     .requestMWScrip(
                                         //             //         context: context,
                                         //             //         isSubscribe: false);
-                                        //             await portfolio.requestWSPosition(
-                                        //                 context: context,
-                                        //                 isSubscribe: false);
-
-                                        //             await context
-                                        //                 .read(marketWatchProvider)
-                                        //                 .requestMWScrip(
-                                        //                     context: context,
-                                        //                     isSubscribe: false);
-                                        //             await explore.exploretabSize();
-                                        //             indexProvide.bottomMenu(0);
+                                        //             // await explore.exploretabSize();
+                                        //             indexProvide.bottomMenu(
+                                        //                 0, context);
                                         //           },
                                         //     child: Container(
                                         //       margin:
-                                        //           const EdgeInsets.symmetric(horizontal: 7),
+                                        //           const EdgeInsets.symmetric(
+                                        //               horizontal: 7),
                                         //       decoration: BoxDecoration(
-                                        //           border: indexProvide.selectedBtmIndx == 0
+                                        //           border: indexProvide
+                                        //                       .selectedBtmIndx ==
+                                        //                   0
                                         //               ? Border(
                                         //                   top: BorderSide(
                                         //                       color: theme.isDarkMode
-                                        //                           ? colors.colorLightBlue
-                                        //                           : colors.colorBlue,
+                                        //                           ? colors
+                                        //                               .colorLightBlue
+                                        //                           : colors
+                                        //                               .colorBlue,
                                         //                       width: 2))
                                         //               : null),
                                         //       child: Column(
-                                        //         mainAxisAlignment: MainAxisAlignment.center,
+                                        //         mainAxisAlignment:
+                                        //             MainAxisAlignment.center,
                                         //         crossAxisAlignment:
                                         //             CrossAxisAlignment.center,
                                         //         children: [
-                                        //           SvgPicture.asset(assets.bookmarkedIcon,
+                                        //           SvgPicture.asset(
+                                        //               assets.bookmarkedIcon,
                                         //               color: theme.isDarkMode &&
                                         //                       indexProvide
                                         //                               .selectedBtmIndx ==
                                         //                           0
-                                        //                   ? colors.colorLightBlue
-                                        //                   : indexProvide.selectedBtmIndx ==
+                                        //                   ? colors
+                                        //                       .colorLightBlue
+                                        //                   : indexProvide
+                                        //                               .selectedBtmIndx ==
                                         //                           0
                                         //                       ? colors.colorBlue
-                                        //                       : colors.colorGrey),
+                                        //                       : colors
+                                        //                           .colorGrey),
                                         //           const SizedBox(height: 4),
                                         //           Text("Explore",
                                         //               style: textStyle(
@@ -779,16 +797,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         //                           indexProvide
                                         //                                   .selectedBtmIndx ==
                                         //                               0
-                                        //                       ? colors.colorLightBlue
+                                        //                       ? colors
+                                        //                           .colorLightBlue
                                         //                       : indexProvide
                                         //                                   .selectedBtmIndx ==
                                         //                               0
-                                        //                           ? colors.colorBlue
-                                        //                           : colors.colorGrey,
+                                        //                           ? colors
+                                        //                               .colorBlue
+                                        //                           : colors
+                                        //                               .colorGrey,
                                         //                   12,
-                                        //                   indexProvide.selectedBtmIndx == 0
+                                        //                   indexProvide.selectedBtmIndx ==
+                                        //                           0
                                         //                       ? FontWeight.w600
-                                        //                       : FontWeight.w500)),
+                                        //                       : FontWeight
+                                        //                           .w500)),
                                         //         ],
                                         //       ),
                                         //     ),
@@ -1339,7 +1362,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   _onItemTapped(index, ThemesProvider theme) {
     switch (index) {
       // case 0:
-      //   return ExploreScreens();
+      //   return const DashboardScreen();
       case 1:
         return const WatchListScreen();
       case 2:
