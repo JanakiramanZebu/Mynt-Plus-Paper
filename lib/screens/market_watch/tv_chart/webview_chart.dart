@@ -16,7 +16,7 @@ import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/user_profile_provider.dart';
-import '../../../provider/websocket_provider.dart';
+import '../../../provider/webview_chart_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
@@ -89,33 +89,6 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     }
   }
 
-  void startChartUpdateTimer(InAppWebViewController controller) {
-    chartUpdateTimer =
-        Timer.periodic(const Duration(milliseconds: 10), (timer) {
-      final socketDatas = context.read(websocketProvider).socketDatas;
-      final depthData = context.read(marketWatchProvider).getQuotes!;
-      final tokenData = socketDatas[depthData.token];
-
-      if (tokenData != null) {
-        final json = {
-          "t": "df",
-          "e": depthData.exch,
-          "tk": depthData.token,
-          "lp": tokenData['lp']?.toString() ?? "0.00",
-          "v": tokenData['v']?.toString() ?? "0.00",
-        };
-
-        // Update local storage
-        sharedPrefs?.setString("chartData", jsonEncode(json));
-
-        // Update WebView
-        controller.evaluateJavascript(
-            source:
-                'window.localStorage.setItem("tick_tick",\'${jsonEncode(json)}\')');
-      }
-    });
-  }
-
   @override
   void dispose() {
     chartUpdateTimer?.cancel();
@@ -130,6 +103,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         final theme = watch(themeProvider);
         final depthData = context.read(marketWatchProvider).getQuotes!;
         final userProfile = watch(userProfileProvider);
+        final chartUpdate = context.read(chartUpdateProvider);
         return Expanded(
           child: SingleChildScrollView(
             child: SizedBox(
@@ -144,8 +118,9 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  _buildTopBar(tvChart, theme, userProfile),
-                  _buildWebView(tvChart, theme),
+                  _buildTopBar(tvChart, theme, userProfile, chartUpdate),
+                  _buildWebView(
+                      tvChart, theme, userProfile.showchartof, chartUpdate),
                   if (tvChart.getQuotes?.instname != "UNDIND" &&
                       tvChart.getQuotes?.instname != "COM") ...[
                     Padding(
@@ -206,7 +181,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     );
   }
 
-  Widget _buildTopBar(MarketWatchProvider tvChart, theme, userProfile) {
+  Widget _buildTopBar(
+      MarketWatchProvider tvChart, theme, userProfile, chartUpdate) {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
@@ -267,6 +243,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                         ConstantName.webViewController!.evaluateJavascript(
                             source:
                                 'window.localStorage.removeItem("tick_tick")');
+                        chartUpdate
+                            .startChartUpdateTimer(userProfile.showchartof);
                       },
                     ),
                     _buildDivider(),
@@ -381,7 +359,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     );
   }
 
-  Widget _buildWebView(MarketWatchProvider tvChart, theme) {
+  Widget _buildWebView(
+      MarketWatchProvider tvChart, theme, showchartof, chartUpdate) {
     return Expanded(
       child: InAppWebView(
         gestureRecognizers: {
@@ -403,7 +382,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         ),
         onWebViewCreated: (controller) {
           ConstantName.webViewController = controller;
-          startChartUpdateTimer(controller);
+          chartUpdate.startChartUpdateTimer(showchartof);
 
           // print("objec ${"https://tv-chart-new.firebaseapp.com/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
           //     "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"

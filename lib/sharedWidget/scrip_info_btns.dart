@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/webview_chart_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
@@ -30,6 +31,7 @@ class ScripInfoBtns extends ConsumerWidget {
     final marketwatch = watch(marketWatchProvider);
     final userProfile = watch(userProfileProvider);
     final theme = context.read(themeProvider);
+    final chartUpdate = context.read(chartUpdateProvider);
     return Container(
         padding: const EdgeInsets.only(left: 14, top: 8, bottom: 8),
         height: 50,
@@ -132,6 +134,8 @@ class ScripInfoBtns extends ConsumerWidget {
                         await ConstantName.webViewController!.evaluateJavascript(
                             source:
                                 "window.changeScript('$exch:$tsym',$token, '${theme.isDarkMode ? 'Y' : 'N'}')");
+                        chartUpdate
+                            .startChartUpdateTimer(userProfile.showchartof);
                       }
 
                       marketwatch

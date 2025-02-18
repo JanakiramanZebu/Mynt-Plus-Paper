@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
+// import 'package:firebase_analytics/firebase_analytics.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +17,7 @@ import '../provider/thems.dart';
 import '../provider/user_profile_provider.dart';
 import '../provider/version_provider.dart';
 import '../provider/websocket_provider.dart';
+import '../provider/webview_chart_provider.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
@@ -124,13 +125,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
         final scriptInfo = context.read(marketWatchProvider).getQuotes;
         final theme = context.read(themeProvider);
+        final chartUpdate = context.read(chartUpdateProvider);
 
         if (userProfile.showchartof) {
           if (scriptInfo?.exch != null) {
             await ConstantName.webViewController!.evaluateJavascript(
                 source:
                     "window.changeScript('${scriptInfo?.exch}:${scriptInfo?.tsym}',${scriptInfo?.token}, '${theme.isDarkMode ? 'Y' : 'N'}')");
-
+            chartUpdate.startChartUpdateTimer(userProfile.showchartof);
             await context.read(websocketProvider).establishConnection(
                 channelInput: "${scriptInfo?.exch}|${scriptInfo?.token}",
                 task: "d",

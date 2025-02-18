@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
+// import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -990,7 +990,7 @@ class AuthProvider extends DefaultChangeNotifier {
         await ref(ipoProvide).mergemainsme();
         await ref(ipoProvide).fetchIpoPreClose();
 
-        await FirebaseAnalytics.instance.setUserId(id: pref.clientId);
+        // await FirebaseAnalytics.instance.setUserId(id: pref.clientId);
 // Explore
         await ref(stocksProvide)
             .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");

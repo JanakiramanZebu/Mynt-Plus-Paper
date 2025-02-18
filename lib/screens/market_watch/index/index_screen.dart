@@ -4,6 +4,7 @@ import 'package:mynt_plus/res/res.dart';
 
 import '../../../provider/index_list_provider.dart';
 
+import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../sharedWidget/functions.dart';
@@ -53,6 +54,9 @@ class DefaultIndexList extends ConsumerWidget {
                   ),
                   builder: (_) => IndexBottomSheet(defaultIndex: index));
               await indexProvide.fetchIndexList("exit", context);
+              await context
+                  .read(marketWatchProvider)
+                  .requestMWScrip(context: context, isSubscribe: true);
             },
             child: Container(
                 padding:
