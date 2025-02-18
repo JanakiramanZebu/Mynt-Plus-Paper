@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -81,6 +82,11 @@ class _PortfolioScreenState extends State<PortfolioScreen>
             .requestallHoldings(context: context, isSubscribe: false);
       }
     });
+
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'WatchlistScreen',
+      screenClass: 'WatchListScreen', // Customize if needed.
+    );
     super.initState();
   }
 
@@ -99,7 +105,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                 //         portfolio.allholds.isNotEmpty
                 //     ? TabAlignment.start
                 //     : TabAlignment.fill,
-                    tabAlignment: TabAlignment.start,
+                tabAlignment: TabAlignment.start,
                 indicatorSize: TabBarIndicatorSize.tab,
                 // isScrollable: portfolio.mfHoldingsModel!.isNotEmpty &&
                 //         portfolio.mfHoldingsModel![0].stat != "Not_Ok" ||
@@ -121,19 +127,19 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                 controller: portfolio.portTab,
                 tabs: portfolio.portTabName)),
         Expanded(
-            // child: TransparentLoaderScreen(
+          // child: TransparentLoaderScreen(
           // isLoading: portfolio.loading,
           child: TabBarView(controller: portfolio.portTab, children: [
             PositionScreen(listofPosition: portfolio.allPostionList),
             const HoldingScreen(),
             // if (portfolio.mfHoldingsModel!.isNotEmpty) ...[
             //   if (portfolio.mfHoldingsModel![0].stat != "Not_Ok") ...[
-                const MFHoldingScreen(),
+            const MFHoldingScreen(),
             //   ]
             // ],
             const Allholdings()
           ]),
-        // )
+          // )
         ),
       ]);
     });

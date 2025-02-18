@@ -1,13 +1,14 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../provider/order_provider.dart'; 
+import '../../provider/order_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import 'basket/basket_list.dart';
 import 'gtt_order_book.dart';
-import 'order_book.dart'; 
+import 'order_book.dart';
 import 'pending_alert_card.dart';
 import 'sip_order_book_screen.dart';
 import 'trade_book.dart';
@@ -30,13 +31,16 @@ class _OrderBookScreenState extends State<OrderBookScreen>
           initialIndex: context.read(orderProvider).selectedTab);
 
       context.read(orderProvider).tabCtrl.addListener(() {
-       
-
         context
             .read(orderProvider)
-            .changeTabIndex(context.read(orderProvider).tabCtrl.index,context); 
+            .changeTabIndex(context.read(orderProvider).tabCtrl.index, context);
       });
     });
+
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'WatchlistScreen',
+      screenClass: 'WatchListScreen', // Customize if needed.
+    );
     super.initState();
   }
 
@@ -84,7 +88,6 @@ class _OrderBookScreenState extends State<OrderBookScreen>
                                   fontSize: 14, fontWeight: FontWeight.w600)),
                           controller: orderBook.tabCtrl,
                           tabs: orderBook.orderTabName)),
-                  
                   Expanded(
                       child:
                           TabBarView(controller: orderBook.tabCtrl, children: [

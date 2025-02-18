@@ -1341,7 +1341,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       // case 0:
       //   return ExploreScreens();
       case 1:
-        return WatchListScreen();
+        return const WatchListScreen();
       case 2:
         return const PortfolioScreen();
       case 3:
