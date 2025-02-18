@@ -74,51 +74,51 @@ void main() async {
     sound: true,
   );
 // It requests a registration token for sending messages to users from your App server or other trusted server environment.
-  // ConstantName.msgToken = await messaging.getToken();
+  ConstantName.msgToken = await messaging.getToken();
 
-  // log("Token ${ConstantName.msgToken}");
-  // if (kDebugMode) {
-  //   print('Permission granted: ${settings.authorizationStatus}');
-  // }
-  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  // FirebaseMessaging.instance.getInitialMessage().then((value) async {
-  //   if (value != null) {
-  //     final Uri url = Uri.parse(value.data["url"]);
-  //     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {}
-  //   }
-  // });
-  // FirebaseMessaging.onMessageOpenedApp.listen((event) async {
-  //   final Uri url = Uri.parse(event.data["url"]);
-  //   if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {}
-  // });
-  // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  //   print("Message $message");
-  //   if (kDebugMode) {
-  //     print('Handling a foreground message: ${message.messageId}');
-  //     print('Message data: ${message.data}');
-  //     print('Message notification: ${message.notification?.title}');
-  //     print('Message notification: ${message.notification?.body}');
-  //     print('Message notification: ${message.data["imageUrl"]}');
-  //   }
+  log("Token ${ConstantName.msgToken}");
+  if (kDebugMode) {
+    print('Permission granted: ${settings.authorizationStatus}');
+  }
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  FirebaseMessaging.instance.getInitialMessage().then((value) async {
+    if (value != null) {
+      final Uri url = Uri.parse(value.data["url"]);
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {}
+    }
+  });
+  FirebaseMessaging.onMessageOpenedApp.listen((event) async {
+    final Uri url = Uri.parse(event.data["url"]);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {}
+  });
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print("Message $message");
+    if (kDebugMode) {
+      print('Handling a foreground message: ${message.messageId}');
+      print('Message data: ${message.data}');
+      print('Message notification: ${message.notification?.title}');
+      print('Message notification: ${message.notification?.body}');
+      print('Message notification: ${message.data["imageUrl"]}');
+    }
 
-  //   message.data["imageUrl"] != ""
-  //       ? NotificationService.showNotification(
-  //           title: message.notification!.title,
-  //           body: message.notification!.body,
-  //           summary: "Mynt+",
-  //           notificationLayout: NotificationLayout.BigPicture,
-  //           bigPicture: message.data["imageUrl"],
-  //           payload: {"navigate": "true", "url": message.data["url"]})
-  //       : NotificationService.showNotification(
-  //           title: message.notification!.title,
-  //           body: message.notification!.body,
-  //           summary: "Mynt+",
-  //           notificationLayout: NotificationLayout.Default);
+    message.data["imageUrl"] != ""
+        ? NotificationService.showNotification(
+            title: message.notification!.title,
+            body: message.notification!.body,
+            summary: "Mynt+",
+            notificationLayout: NotificationLayout.BigPicture,
+            bigPicture: message.data["imageUrl"],
+            payload: {"navigate": "true", "url": message.data["url"]})
+        : NotificationService.showNotification(
+            title: message.notification!.title,
+            body: message.notification!.body,
+            summary: "Mynt+",
+            notificationLayout: NotificationLayout.Default);
 
-  //   // NotificationService().showNotification(
-  //   //     title: message.notification?.title, body: message.notification?.body);
-  //   _messageStreamController.sink.add(message);
-  // });
+    // NotificationService().showNotification(
+    //     title: message.notification?.title, body: message.notification?.body);
+    _messageStreamController.sink.add(message);
+  });
   runApp(Phoenix(child: const ProviderScope(child: MyApp())));
 }
 

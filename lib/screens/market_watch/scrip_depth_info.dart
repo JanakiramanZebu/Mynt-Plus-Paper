@@ -4,7 +4,7 @@ import 'package:another_xlider/another_xlider.dart';
 import 'package:another_xlider/models/handler.dart';
 import 'package:another_xlider/models/tooltip/tooltip.dart';
 import 'package:another_xlider/models/trackbar.dart';
-// import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -76,10 +76,10 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
       //   }
     });
 
-    // FirebaseAnalytics.instance.logScreenView(
-    //   screenName: 'Stock details',
-    //   screenClass: 'ScripDepthInfo', // Customize if needed.
-    // );
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'Stock details',
+      screenClass: 'ScripDepthInfo', // Customize if needed.
+    );
     super.initState();
   }
 
