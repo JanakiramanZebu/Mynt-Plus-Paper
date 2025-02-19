@@ -54,42 +54,42 @@ class UserProfileProvider extends DefaultChangeNotifier {
   List _profileMenu = [];
 
   final List _accountMenu = [
-    {"title": "Personal Info", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Bank", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Demat", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Personal Info", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Bank", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Demat", "trailing": "assets/profile/ex-link.svg"},
     {
       "title": "Trading Preference",
-      "trailing": "assets/profile/greater_arrow.svg"
+      "trailing": "assets/profile/ex-link.svg"
     },
     {
       "title": "Margin Trading Facility (MTF)",
-      "trailing": "assets/profile/greater_arrow.svg"
+      "trailing": "assets/profile/ex-link.svg"
     },
-    {"title": "Annual Income", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Nominee", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Family Account", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Closure", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Form Download", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Annual Income", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Nominee", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Family Account", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Closure", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Form Download", "trailing": "assets/profile/ex-link.svg"},
   ];
 
   final List _reporttMenu = [
-    {"title": "Ledger", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Holdings", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Ledger", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Holdings", "trailing": "assets/profile/ex-link.svg"},
     {
       "title": "Positions - (Beta)",
-      "trailing": "assets/profile/greater_arrow.svg"
+      "trailing": "assets/profile/ex-link.svg"
     },
-    {"title": "Profit & Loss", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Profit & Loss", "trailing": "assets/profile/ex-link.svg"},
     {
       "title": "Calender P&L (Beta)",
-      "trailing": "assets/profile/greater_arrow.svg"
+      "trailing": "assets/profile/ex-link.svg"
     },
-    {"title": "Tax P&L", "trailing": "assets/profile/greater_arrow.svg"},
+    {"title": "Tax P&L", "trailing": "assets/profile/ex-link.svg"},
     {
       "title": "TradeBook/Contract",
-      "trailing": "assets/profile/greater_arrow.svg"
+      "trailing": "assets/profile/ex-link.svg"
     },
-    {"title": "PDF Download", "trailing": "assets/profile/greater_arrow.svg"}
+    {"title": "PDF Download", "trailing": "assets/profile/ex-link.svg"}
   ];
 
   List get profileMenu => _profileMenu;
@@ -210,14 +210,14 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
   fetchprofilemenu() {
     _profileMenu = [
-      {
-        "title": "Fund",
-        "subTitle": "Add Fund, Withdraw",
-        "leading": "assets/profileimage/wallet.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": ref(showcaseProvide).fundcase,
-        "case": "Click here to view the fund information page."
-      },
+      // {
+      //   "title": "Fund",
+      //   "subTitle": "Add Fund, Withdraw",
+      //   "leading": "assets/profileimage/wallet.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref(showcaseProvide).fundcase,
+      //   "case": "Click here to view the fund information page."
+      // },
       {
         "title": "My Account",
         "subTitle": "Profile Details, Bank Accounts",
@@ -238,7 +238,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "title": "Verified P&L",
         "subTitle": "Verified P&L",
         "leading": "assets/profileimage/verifiedpl.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
+        "trailing": "assets/profile/ex-link.svg",
         "key": "",
         "case": "Click here to view the Verified P&L page."
       },
@@ -246,7 +246,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "title": "Corporate Action",
         "subTitle": "Corporate Action",
         "leading": "assets/profileimage/coa_edited.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
+        "trailing": "assets/profile/ex-link.svg",
         "key": ref(showcaseProvide).corporateactioncase,
         "case": "Click here to view the Corporate Action page."
       },
@@ -254,7 +254,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "title": "CA Events",
         "subTitle": "CA Event",
         "leading": "assets/profileimage/caevent.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
+        "trailing": "assets/profile/ex-link.svg",
         "key": "",
         "case": "Click here to view the Corporate Action page."
       },
@@ -262,34 +262,34 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "title": "Pledge & Unpledge",
         "subTitle": "Pledge & Unpledge",
         "leading": "assets/profileimage/pledge.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
+        "trailing": "assets/profile/ex-link.svg",
         "key": ref(showcaseProvide).pledgeunpcase,
         "case": "Click here to view the Pledge & Unpledge page."
       },
-      {
-        "title": "IPO",
-        "subTitle": "A company's first public stock offering",
-        "leading": "assets/profileimage/reports.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": "",
-        "case": "Click here to view the IPO."
-      },
-      {
-        "title": "Mutual Fund",
-        "subTitle": "Invest in diversified assets managed by professionals",
-        "leading": "assets/icon/mf_icon.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": "",
-        "case": "Click here to view theMutual Fund."
-      },
-      {
-        "title": "OptionZ",
-        "subTitle": "OptionZ",
-        "leading": "assets/profileimage/pledge.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": ref(showcaseProvide).pledgeunpcase,
-        "case": "Click here to view the OptionZ."
-      },
+      // {
+      //   "title": "IPO",
+      //   "subTitle": "A company's first public stock offering",
+      //   "leading": "assets/profileimage/reports.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the IPO."
+      // },
+      // {
+      //   "title": "Mutual Fund",
+      //   "subTitle": "Invest in diversified assets managed by professionals",
+      //   "leading": "assets/icon/mf_icon.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view theMutual Fund."
+      // },
+      // {
+      //   "title": "OptionZ",
+      //   "subTitle": "OptionZ",
+      //   "leading": "assets/profileimage/pledge.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref(showcaseProvide).pledgeunpcase,
+      //   "case": "Click here to view the OptionZ."
+      // },
       //  {
       //   "title": "KRA",
       //   "subTitle": "KRA",
@@ -298,13 +298,21 @@ class UserProfileProvider extends DefaultChangeNotifier {
       //   "key": ref(showcaseProvide).pledgeunpcase,
       //   "case": "Click here to view the Pledge & Unpledge page."
       // },
-      {
-        "title": "Refer",
-        "subTitle": "Refer your family and friends",
-        "leading": "assets/profileimage/Referal_Incentive.svg",
+      // {
+      //   "title": "Refer",
+      //   "subTitle": "Refer your family and friends",
+      //   "leading": "assets/profileimage/Referal_Incentive.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref(showcaseProvide).apikeycase,
+      //   "case": "Click here to Refer your family and friends."
+      // },
+       {
+        "title": "Notification",
+        "subTitle": "Message, Exchange Status",
+        "leading": "assets/icon/appbarIcon/bell.svg",
         "trailing": "assets/profile/greater_arrow.svg",
-        "key": ref(showcaseProvide).apikeycase,
-        "case": "Click here to Refer your family and friends."
+        "key": ref(showcaseProvide).notificationcase,
+        "case": "Click here to view the notification."
       },
       {
         "title": "Settings",
@@ -314,23 +322,16 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "key": ref(showcaseProvide).logcase,
         "case": "Click here to view Settings."
       },
-      {
-        "title": "Rate Us",
-        "subTitle":
-            "Share your experience! Rate us to help others discover our great service.",
-        "leading": "assets/icon/appbarIcon/star.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": ref(showcaseProvide).notificationcase,
-        "case": "Click here to Share your experience!."
-      },
-      {
-        "title": "Notification",
-        "subTitle": "Message, Exchange Status",
-        "leading": "assets/icon/appbarIcon/bell.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": ref(showcaseProvide).notificationcase,
-        "case": "Click here to view the notification."
-      },
+      // {
+      //   "title": "Rate Us",
+      //   "subTitle":
+      //       "Share your experience! Rate us to help others discover our great service.",
+      //   "leading": "assets/icon/appbarIcon/star.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref(showcaseProvide).notificationcase,
+      //   "case": "Click here to Share your experience!."
+      // },
+     
       {
         "title": "Need Help?",
         "subTitle": "Contact us, Follow us",

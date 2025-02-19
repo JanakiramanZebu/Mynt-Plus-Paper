@@ -12,6 +12,7 @@ import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
 import '../provider/network_state_provider.dart';
+import '../provider/notification_provider.dart';
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
 import '../provider/thems.dart';
@@ -666,8 +667,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                                                               leading: SvgPicture.asset(
                                                                 'assets/icon/MYNT App Logo_v2.svg',
-                                                                width: 40,
-                                                                height: 40,
+                                                                width: 48,
+                                                                height: 48,
                                                               ),
                                                               //     CircleAvatar(
                                                               //   backgroundColor:
@@ -695,21 +696,44 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                       icon: SvgPicture.asset(
                                                                           "assets/profile/qr_code.svg",
                                                                           width:
-                                                                              20,
-                                                                          height:
+                                                                              28,
+                                                                          color: theme.isDarkMode
+                                                                              ? colors.colorWhite
+                                                                              : colors.colorBlack),
+                                                                    ),
+                                                                    IconButton(
+                                                                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                                                      // splashRadius:
+                                                                      //     26,
+                                                                      onPressed:
+                                                                          () async {
+                                                                        await context
+                                                                            .read(notificationprovider)
+                                                                            .fetchexchagemsg(context);
+
+                                                                        await context
+                                                                            .read(notificationprovider)
+                                                                            .fetchbrokermsg(context);
+                                                                        Navigator.pushNamed(
+                                                                            context,
+                                                                            Routes.notificationpage);
+                                                                      },
+                                                                      icon: SvgPicture.asset(
+                                                                          "assets/icon/appbarIcon/bell.svg",
+                                                                          width:
                                                                               24,
                                                                           color: theme.isDarkMode
                                                                               ? colors.colorWhite
                                                                               : colors.colorBlack),
                                                                     ),
-                                                                    Icon(
-                                                                        Icons
-                                                                            .expand_more,
-                                                                        size:
-                                                                            32,
-                                                                        color: theme.isDarkMode
-                                                                            ? colors.colorWhite
-                                                                            : colors.colorBlack)
+                                                                    // Icon(
+                                                                    //     Icons
+                                                                    //         .expand_more,
+                                                                    //     size:
+                                                                    //         32,
+                                                                    //     color: theme.isDarkMode
+                                                                    //         ? colors.colorWhite
+                                                                    //         : colors.colorBlack)
                                                                   ]))))
                                                   : null),
 
