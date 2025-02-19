@@ -833,7 +833,9 @@ class UserAccountScreen extends ConsumerWidget {
       onTap: action,
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xffdddddd), width: 1),
+          border: Border.all(color: theme.isDarkMode
+                            ? colors.darkColorDivider
+                            : colors.colorDivider, width: 0.6),
           // gradient: const LinearGradient(
           //   colors: [
           //     Color(0xFFFFFFFF), // White at 10%
