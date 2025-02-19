@@ -267,7 +267,6 @@ class UserAccountScreen extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Wrap(
                             spacing: 4,
-                            runSpacing: 2,
                             children: List.generate(
                                 chips.length,
                                 (index) => ChoiceChip(
