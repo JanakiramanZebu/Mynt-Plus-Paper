@@ -262,91 +262,96 @@ class UserAccountScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 6),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Wrap(
-                        spacing: 0,
-                        runSpacing: -18,
-                        children: chips.map((chip) {
-                          return ChoiceChip(
-                            label: Text(
-                              chip,
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.isDarkMode
-                                      ? colors.colorLightBlue
-                                      : colors.colorBlue),
-                            ),
-                            elevation: 0,
-                            shape: const StadiumBorder(),
-                            padding: const EdgeInsets.all(0),
-                            side: BorderSide.none,
-                            selected: false, // Mark selected chip
-                            onSelected: (isSelected) async {
-                              if ([
-                                "report",
-                                "holding",
-                                "profile & loss",
-                                "pledge",
-                                "corporate action",
-                                "events",
-                                "verified p&l"
-                              ].contains(chip)) {
-                                await funds.fetchHstoken(context);
-                              }
-                              if (chip == "profile") {
-                                Navigator.pushNamed(context, Routes.myAcc);
-                              } else if (chip == "report") {
-                                Navigator.pushNamed(context, Routes.reports);
-                              } else if (chip == "holding") {
-                                Navigator.pushNamed(
-                                    context, Routes.reportWebViewApp,
-                                    arguments: "holding");
-                              } else if (chip == "profile & loss") {
-                                Navigator.pushNamed(
-                                    context, Routes.reportWebViewApp,
-                                    arguments: "pnl");
-                              } else if (chip == "verified p&l") {
-                                Navigator.pushNamed(
-                                    context, Routes.reportWebViewApp,
-                                    arguments: "tradeverify");
-                              } else if (chip == "corporate action") {
-                                Navigator.pushNamed(
-                                    context, Routes.reportWebViewApp,
-                                    arguments: "corporateaction");
-                              } else if (chip == "events") {
-                                Navigator.pushNamed(
-                                    context, Routes.reportWebViewApp,
-                                    arguments: "event");
-                              } else if (chip == "pledge") {
-                                Navigator.pushNamed(
-                                    context, Routes.reportWebViewApp,
-                                    arguments: "pledge");
-                              }
-                            },
-                            backgroundColor: theme.isDarkMode
-                                ? const Color(0xff000000)
-                                : const Color(0xffffffff),
-                          );
-                        }).toList(),
-                      ),
-                    ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Wrap(
+                            spacing: 4,
+                            runSpacing: 2,
+                            children: List.generate(
+                                chips.length,
+                                (index) => ChoiceChip(
+                                  pressElevation: 0,
+                                      label: Text(
+                                        chips[index],
+                                        style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: theme.isDarkMode
+                                                ? colors.colorLightBlue
+                                                : colors.colorBlue),
+                                      ),
+                                      elevation: 0,
+                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, 
+                                      shape: const StadiumBorder(),
+                                      padding: const EdgeInsets.all(0),
+                                      side: BorderSide.none,
+                                      selected: false, // Mark selected chip
+                                      onSelected: (isSelected) async {
+                                        if ([
+                                          "report",
+                                          "holding",
+                                          "profile & loss",
+                                          "pledge",
+                                          "corporate action",
+                                          "events",
+                                          "verified p&l"
+                                        ].contains(chips[index])) {
+                                          await funds.fetchHstoken(context);
+                                        }
+                                        if (chips[index] == "profile") {
+                                          Navigator.pushNamed(
+                                              context, Routes.myAcc);
+                                        } else if (chips[index] == "report") {
+                                          Navigator.pushNamed(
+                                              context, Routes.reports);
+                                        } else if (chips[index] == "holding") {
+                                          Navigator.pushNamed(
+                                              context, Routes.reportWebViewApp,
+                                              arguments: "holding");
+                                        } else if (chips[index] ==
+                                            "profile & loss") {
+                                          Navigator.pushNamed(
+                                              context, Routes.reportWebViewApp,
+                                              arguments: "pnl");
+                                        } else if (chips[index] ==
+                                            "verified p&l") {
+                                          Navigator.pushNamed(
+                                              context, Routes.reportWebViewApp,
+                                              arguments: "tradeverify");
+                                        } else if (chips[index] ==
+                                            "corporate action") {
+                                          Navigator.pushNamed(
+                                              context, Routes.reportWebViewApp,
+                                              arguments: "corporateaction");
+                                        } else if (chips[index] == "events") {
+                                          Navigator.pushNamed(
+                                              context, Routes.reportWebViewApp,
+                                              arguments: "event");
+                                        } else if (chips[index] == "pledge") {
+                                          Navigator.pushNamed(
+                                              context, Routes.reportWebViewApp,
+                                              arguments: "pledge");
+                                        }
+                                      },
+                                      backgroundColor: theme.isDarkMode
+                                          ? const Color(0xff000000)
+                                          : const Color(0xffffffff),
+                                    )))),
                     SizedBox(
                       height: 206,
                       child: GridView.count(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 18, vertical: 32),
-                        shrinkWrap: false,
-                        physics: const BouncingScrollPhysics(),
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         crossAxisCount: 2,
                         crossAxisSpacing: 32,
                         mainAxisSpacing: 16,
                         childAspectRatio: 1.31,
                         children: [
                           ServiceCard(
-                              icon:
-                                  "assets/profileimage/privacy_settings.svg",
+                              icon: "assets/profileimage/privacy_settings.svg",
                               title: "Settings",
                               description: "Freeze Account",
                               actiontype: true,
@@ -365,22 +370,20 @@ class UserAccountScreen extends ConsumerWidget {
                                   context: context,
                                   builder: (BuildContext context) {
                                     return AlertDialog(
-                                      backgroundColor: context
-                                              .read(themeProvider)
-                                              .isDarkMode
-                                          ? const Color.fromARGB(
-                                              255, 18, 18, 18)
-                                          : colors.colorWhite,
-                                      titleTextStyle:
-                                          textStyles.appBarTitleTxt.copyWith(
+                                      backgroundColor:
+                                          context.read(themeProvider).isDarkMode
+                                              ? const Color.fromARGB(
+                                                  255, 18, 18, 18)
+                                              : colors.colorWhite,
+                                      titleTextStyle: textStyles.appBarTitleTxt
+                                          .copyWith(
                                               color: context
                                                       .read(themeProvider)
                                                       .isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack),
-                                      titlePadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 14, vertical: 12),
+                                      titlePadding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 12),
                                       shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(14))),
@@ -388,14 +391,12 @@ class UserAccountScreen extends ConsumerWidget {
                                       contentPadding:
                                           const EdgeInsets.symmetric(
                                               horizontal: 14),
-                                      insetPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 20),
+                                      insetPadding: const EdgeInsets.symmetric(
+                                          horizontal: 20),
                                       title: const Text("Freeze Account!"),
                                       content: SizedBox(
-                                          width: MediaQuery.of(context)
-                                              .size
-                                              .width,
+                                          width:
+                                              MediaQuery.of(context).size.width,
                                           child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
@@ -423,14 +424,16 @@ class UserAccountScreen extends ConsumerWidget {
                                             onPressed: () =>
                                                 Navigator.of(context).pop(),
                                             child: Text("Cancel",
-                                                style: textStyles.textBtn.copyWith(
-                                                    color: context
-                                                            .read(
-                                                                themeProvider)
-                                                            .isDarkMode
-                                                        ? colors
-                                                            .colorLightBlue
-                                                        : colors.colorBlue))),
+                                                style: textStyles.textBtn
+                                                    .copyWith(
+                                                        color: context
+                                                                .read(
+                                                                    themeProvider)
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .colorLightBlue
+                                                            : colors
+                                                                .colorBlue))),
                                         ElevatedButton(
                                             onPressed: () async {
                                               userProfile
@@ -449,8 +452,7 @@ class UserAccountScreen extends ConsumerWidget {
                                             child: Text("Continue",
                                                 style: textStyle(
                                                     !context
-                                                            .read(
-                                                                themeProvider)
+                                                            .read(themeProvider)
                                                             .isDarkMode
                                                         ? colors.colorWhite
                                                         : colors.colorBlack,
@@ -484,7 +486,6 @@ class UserAccountScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-
                     Divider(
                         color: theme.isDarkMode
                             ? colors.darkColorDivider
@@ -506,8 +507,8 @@ class UserAccountScreen extends ConsumerWidget {
                                         "assets/profileimage/referal.svg",
                                         width: 40,
                                         color: theme.isDarkMode
-                                                  ? colors.colorLightBlue
-                                                  : colors.colorBlue,
+                                            ? colors.colorLightBlue
+                                            : colors.colorBlue,
                                       ),
                                       const SizedBox(width: 8),
                                     ],
@@ -783,7 +784,7 @@ class UserAccountScreen extends ConsumerWidget {
                             : colors.colorBlue)
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   subtitle,
                   style: const TextStyle(
