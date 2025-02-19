@@ -702,12 +702,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                               ? colors.colorWhite
                                                                               : colors.colorBlack),
                                                                     ),
-                                                                    const SizedBox(
-                                                                        width:
-                                                                            4),
                                                                     Icon(
                                                                         Icons
-                                                                            .arrow_drop_down_circle_outlined,
+                                                                            .expand_more,
+                                                                        size:
+                                                                            32,
                                                                         color: theme.isDarkMode
                                                                             ? colors.colorWhite
                                                                             : colors.colorBlack)
