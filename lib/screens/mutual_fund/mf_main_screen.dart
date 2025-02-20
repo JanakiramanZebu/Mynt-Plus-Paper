@@ -278,11 +278,11 @@ final portfolio = watch(portfolioProvider);
                                   ),
                                   const SizedBox(height: 16),
                                 ],
-                                Center(
+                                Center(        
                                   child: ElevatedButton(
                                     onPressed: () async{
-                                      await mf.fetchMfOrderbook(context);
-                                      await portfolio.fetchMFHoldings(context);
+                                       mf.fetchMfOrderbook(context);
+                                       portfolio.fetchMFHoldings(context);
                                       Navigator.pushNamed(context, Routes.mfOrderbookscreen);
                                     },
                                     style: ElevatedButton.styleFrom(

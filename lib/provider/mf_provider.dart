@@ -73,6 +73,9 @@ class MFProvider extends DefaultChangeNotifier {
   MFCategoryType? _mfCategoryTypes;
   MFCategoryType? get mfCategoryTypes => _mfCategoryTypes;
 
+  bool _mforderloader = false;
+  bool get mforderloader => _mforderloader;
+
   MutualFundModel? _mutualFundModel;
   MutualFundModel? get mutualFundModel => _mutualFundModel;
 
@@ -156,6 +159,10 @@ class MFProvider extends DefaultChangeNotifier {
   bool? _singleloader = false;
   bool? get  singleloader => _singleloader ;
 
+  
+  bool? _bestmfloader = false;
+  bool? get  bestmfloader => _bestmfloader ;
+
   RangeValues _currentRangeValues = const RangeValues(0, 11);
   RangeValues get currentRangeValues => _currentRangeValues;
 
@@ -196,6 +203,9 @@ class MFProvider extends DefaultChangeNotifier {
 
   bool _isInitalPay = false;
   bool get isInitalPay => _isInitalPay;
+
+ bool _investloader = false;
+  bool get investloader => _investloader;
 
   String _accNum = "";
 
@@ -634,7 +644,16 @@ class MFProvider extends DefaultChangeNotifier {
   //   }
   //   notifyListeners();
   // }
+  invertfun(String isin, String schemeCode) {
+      _singleloader = true;
+      fetchMFMandateDetail();
+      fetchBankDetail();
+       fetchUpiDetail();
+      fetchMFSipData(isin,schemeCode);
+      chngMandate("Lumpsum"); 
+      _singleloader = false;
 
+  }
   chngMandate(String val) {
     _mandateId = val;
     if(val != "Lumpsum"){
@@ -770,6 +789,8 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future fetchTopSchemes() async {
     try {
+            _investloader = true;
+
       var topSchemesdata = await api.getTopSchemes();
       if (topSchemesdata.msg != "") {
         _topSchemesdata = topSchemesdata.data;
@@ -777,6 +798,12 @@ class MFProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       print("top schemes error $e");
+    }
+    finally{
+      _investloader = false;
+
+      notifyListeners();
+
     }
   }
 
@@ -900,6 +927,7 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future fetchMFBestList(String type) async {
     try {
+      _bestmfloader = true;
       _bestMFList = await api.getMFBestListData(type);
       print("_bestMFList $_mfCategoryList");
       for (var m in _bestMFList!.bestMFList!) {
@@ -909,6 +937,10 @@ class MFProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+      _bestmfloader = false;
+      notifyListeners();
+
     }
   }
 
@@ -1229,6 +1261,8 @@ notifyListeners();
 
   Future fetchMFSipData(String isin, String schemeCode) async {
     try {
+            _investloader = true;
+
       _dateList = [];
       _mfSIPModel = await api.getMFSip(isin, schemeCode);
 
@@ -1260,11 +1294,18 @@ notifyListeners();
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+      _investloader = false;
+
+      notifyListeners();
+
     }
   }
 
   Future fetchMFMandateDetail() async {
     try {
+            _investloader = true;
+
       _mandateData = [];
       _mandateDetailModel = await api.getMandateDetail();
 
@@ -1278,6 +1319,11 @@ notifyListeners();
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+      _investloader = false;
+
+      notifyListeners();
+
     }
   }
 
@@ -1314,11 +1360,17 @@ notifyListeners();
 
   Future fetchMfOrderbook(BuildContext context) async {
     try {
+      _mforderloader = true;
       _mfLumpSumOrderbook = await api.getorderbook();
+      
       
     } catch (e) {
       log("Failed to fetchMfOrderbook :: ${e.toString()}");
       notifyListeners();
+    }finally {
+      _mforderloader = false;
+      notifyListeners();
+
     }
   }
 
@@ -1812,8 +1864,10 @@ notifyListeners();
   // Fetching data from the api and stored in a variable
   Future fetchUpiDetail() async {
     try {
+      _investloader = true;
       _paymentMethod = [];
       _upiDetailsModel = await api.getUPI();
+
 
       if (_upiDetailsModel!.stat == "Ok") {
         _paymentMethod.add("UPI");
@@ -1821,6 +1875,11 @@ notifyListeners();
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+      _investloader = false;
+
+      notifyListeners();
+
     }
   }
 
@@ -1828,6 +1887,8 @@ notifyListeners();
   Future fetchBankDetail() async {
     upiId.text = "";
     try {
+      _investloader = true;
+
       _bankDetailsModel = await api.getBankDetail();
       _bankData = [];
       if (_bankDetailsModel!.stat == "Ok") {
@@ -1850,6 +1911,11 @@ notifyListeners();
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+      _investloader = false;
+
+      notifyListeners();
+
     }
   }
 
