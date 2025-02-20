@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:vertical_scrollable_tabview/vertical_scrollable_tabview.dart';
@@ -24,6 +24,9 @@ class MFStockDetailScreen extends StatefulWidget {
   final MutualFundList mfStockData;
   const MFStockDetailScreen({super.key, required this.mfStockData});
 
+//    final MutualFundList mfStockData1;
+//  MFStockDetailScreen({super.key, required this.mfStockData1});
+
   @override
   State<MFStockDetailScreen> createState() => _MFStockDetailScreenState();
 }
@@ -33,15 +36,16 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
   List<String> tabList = [
     "Overview",
     "Performance",
-    "Scheme",
     "Allocation",
+    "Scheme",
     // "Rollings",
-    "Comparition"
+    // "Comparition"
   ];
 
   late TabController tabController;
   late AutoScrollController autoScrollController;
   double scrollPosition = 0.00;
+  
   @override
   void initState() {
     tabController = TabController(length: tabList.length, vsync: this);
@@ -65,60 +69,58 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
       final theme = watch(themeProvider);
       final fund = watch(fundProvider);
       final mfData = watch(mfProvider);
+      
       return Scaffold(
-          backgroundColor: Colors.white,
-          bottomSheet: Container(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    width: MediaQuery.of(context).size.width,
-                    child: ElevatedButton(
-                        onPressed: () async {
-                          mfData.chngMandate("Lumpsum");
-                            await fund.fetchUpiDetail();
-                            await fund.fetchBankDetail();
-                            if (widget.mfStockData.sIPFLAG == "Y") {
-                              await mfData.fetchMFSipData(
-                                  "${widget.mfStockData.iSIN}",
-                                  "${widget.mfStockData.schemeCode}");
+        backgroundColor: Colors.white,
+        bottomSheet: Container(
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                width: MediaQuery.of(context).size.width,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    mfData.chngMandate("Lumpsum");
+                    await fund.fetchUpiDetail();
+                    await fund.fetchBankDetail();
+                    if (widget.mfStockData.sIPFLAG == "Y") {
+                      await mfData.fetchMFSipData(
+                          "${widget.mfStockData.iSIN}",
+                          "${widget.mfStockData.schemeCode}");
 
-                              await mfData.fetchMFMandateDetail();
-                            }
+                      await mfData.fetchMFMandateDetail();
+                    }
 
-                            // showDialog(
-                            //     context: context,
-                            //     builder: (BuildContext context) {
-                            //       return MFOrderScreen(
-                            //           mfData: mfData.topmutualfund![index]);
-                            //     });
-                            await mfData.fetchTopSchemes();
-                            Navigator.pushNamed(context, Routes.mforderScreen,
-                                arguments: widget.mfStockData);
-                        },
-                        style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            backgroundColor: colors.ltpgreen,
-                            shape: const StadiumBorder()),
-                        child: Text("Invest",
-                            style: textStyle(
-                                const Color(0xffffffff), 14, FontWeight.w600))),
+                    await mfData.fetchTopSchemes();
+                    Navigator.pushNamed(context, Routes.mforderScreen,
+                        arguments: widget.mfStockData);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    backgroundColor: colors.colorBlack,
+                    shape: const StadiumBorder(),
                   ),
-                  if (defaultTargetPlatform == TargetPlatform.iOS)
-                    const SizedBox(height: 18)
-                ],
-              )),
-          body: VerticalScrollableTabView(
-              autoScrollController: autoScrollController,
-              tabController: tabController,
-              listItemData: tabList,
-              slivers: [
-                SliverAppBar(
+                  child: Text("Invest",
+                      style: textStyle(
+                          const Color(0xffffffff), 14, FontWeight.w600)),
+                ),
+              ),
+              if (defaultTargetPlatform == TargetPlatform.iOS)
+                const SizedBox(height: 18),
+            ],
+          ),
+        ),
+        body: mfData.singleloader == true
+            ? const Center(child: CircularProgressIndicator())
+            : VerticalScrollableTabView(
+                autoScrollController: autoScrollController,
+                tabController: tabController,
+                listItemData: tabList,
+                slivers: [
+                  SliverAppBar(
                     pinned: true,
                     elevation: .2,
                     leadingWidth: 41,
@@ -128,224 +130,218 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                     shadowColor: const Color(0xffECEFF3),
                     title: Padding(
                       padding: const EdgeInsets.only(right: 14),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          CircleAvatar(
-                              backgroundImage: NetworkImage(
-                                  "https://v3.mynt.in/mf/static/images/mf/${widget.mfStockData.aMCCode}.png")),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Text("${widget.mfStockData.fSchemeName}",
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        16,
-                                        FontWeight.w500)),
-                                const SizedBox(height: 5),
-                                SizedBox(
-                                  height: 18,
-                                  child: ListView(
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.horizontal,
-                                    children: [
-                                      CustomExchBadge(
-                                          exch: widget.mfStockData.schemeName!
-                                                  .contains("GROWTH")
-                                              ? "GROWTH"
-                                              : widget.mfStockData.schemeName!
-                                                      .contains("IDCW PAYOUT")
-                                                  ? "IDCW PAYOUT"
-                                                  : widget.mfStockData.schemeName!
-                                                          .contains(
-                                                              "IDCW REINVESTMENT")
-                                                      ? "IDCW REINVESTMENT"
-                                                      : widget.mfStockData
-                                                              .schemeName!
-                                                              .contains("IDCW")
-                                                          ? "IDCW"
-                                                          : "NORMAL"),
-                                      CustomExchBadge(
-                                          exch: "${widget.mfStockData.schemeType}"),
-                                      CustomExchBadge(
-                                          exch: widget
-                                              .mfStockData.sCHEMESUBCATEGORY!
-                                              .replaceAll("Fund", '')
-                                              .replaceAll("Hybrid", "")
-                                              .toUpperCase()),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
-                    
                     bottom: PreferredSize(
-                        preferredSize: const Size.fromHeight(90),
-                        child: Column(children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      preferredSize: Size.fromHeight(110),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          color: const Color.fromARGB(255, 250, 251, 255),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
                               children: [
-                                Column(
+                                Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
-                                    Text("AUM (cr): ",
-                                        style: textStyle(
-                                            const Color(0xff999999),
-                                            12,
-                                            FontWeight.w500)),
-                                    const SizedBox(height: 3),
-                                    Text(
-                                        (double.parse(widget.mfStockData.aUM!
+                                    CircleAvatar(
+                                      backgroundImage: NetworkImage(
+                                        "https://v3.mynt.in/mf/static/images/mf/${widget.mfStockData.aMCCode}.png",
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "${widget.mfStockData.fSchemeName}",
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: textStyle(
+                                              theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              17,
+                                              FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          SizedBox(
+                                            height: 18,
+                                            child: ListView(
+                                              shrinkWrap: true,
+                                              scrollDirection: Axis.horizontal,
+                                              children: [
+                                                CustomExchBadge(
+                                                  exch: widget.mfStockData.schemeName!
+                                                          .contains("GROWTH")
+                                                      ? "GROWTH"
+                                                      : widget.mfStockData.schemeName!
+                                                              .contains("IDCW PAYOUT")
+                                                          ? "IDCW PAYOUT"
+                                                          : widget.mfStockData.schemeName!
+                                                                  .contains("IDCW REINVESTMENT")
+                                                              ? "IDCW REINVESTMENT"
+                                                              : widget.mfStockData.schemeName!
+                                                                      .contains("IDCW")
+                                                                  ? "IDCW"
+                                                                  : "NORMAL",
+                                                ),
+                                                const SizedBox(width: 5),
+                                                CustomExchBadge(exch: "${widget.mfStockData.schemeType}"),
+                                                const SizedBox(width: 5),
+                                                CustomExchBadge(
+                                                  exch: widget.mfStockData.sCHEMESUBCATEGORY!
+                                                      .replaceAll("Fund", '')
+                                                      .replaceAll("Hybrid", "")
+                                                      .toUpperCase(),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                          const SizedBox(height: 8),
+
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // Padding(
+                                    //   padding: const EdgeInsets.all(10.0),
+                                     Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const SizedBox(height: 7),
+
+                                          Text(
+                                            "AUM (CR)",
+                                            style: textStyle(
+                                              const Color(0xff999999),
+                                              12,
+                                              FontWeight.w500,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            (double.parse(widget.mfStockData.aUM!
                                                         .isEmpty
                                                     ? "0.00"
                                                     : widget.mfStockData.aUM!) /
                                                 10000000)
-                                            .toStringAsFixed(2),
-                                        style: textStyle(colors.colorBlack, 12,
-                                            FontWeight.w500)),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("Min. Inv",
-                                        style: textStyle(
-                                            const Color(0xff999999),
-                                            12,
-                                            FontWeight.w500)),
-                                    const SizedBox(height: 3),
-                                    Text(
-                                        widget.mfStockData
-                                                .minimumPurchaseAmount!.isEmpty
-                                            ? "0.00"
-                                            : widget.mfStockData
-                                                .minimumPurchaseAmount!,
-                                        style: textStyle(colors.colorBlack, 12,
-                                            FontWeight.w500)),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 4, horizontal: 8),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(
-                                          color: const Color(0xffEEF0F2),
-                                          width: 1.5)),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                          int.parse(mfData.factSheetDataModel!
-                                                          .data!.risk ??
-                                                      "0") >
-                                                  3
-                                              ? assets.highRisk
-                                              : assets.lowRisk,
-                                          height: 22,
-                                          width: 22),
-                                      const SizedBox(width: 12),
-                                      Column(
-                                        children: [
-                                          Text("RISK METER",
-                                              style: textStyle(
-                                                  const Color(0xff999999),
-                                                  12,
-                                                  FontWeight.w500)),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                              mfData.factSheetDataModel!.data!
-                                                          .risk ==
-                                                      "1"
-                                                  ? "Low"
-                                                  : mfData.factSheetDataModel!
-                                                              .data!.risk ==
-                                                          "2"
-                                                      ? "Moderately Low"
-                                                      : mfData.factSheetDataModel!
-                                                                  .data!.risk ==
-                                                              "3"
-                                                          ? "Moderate"
-                                                          : mfData.factSheetDataModel!
-                                                                      .data!.risk ==
-                                                                  "4"
-                                                              ? "Moderately High"
-                                                              : mfData
-                                                                          .factSheetDataModel!
-                                                                          .data!
-                                                                          .risk ==
-                                                                      "5"
-                                                                  ? "High"
-                                                                  : "Very High",
-                                              style: textStyle(
-                                                  colors.colorBlack,
-                                                  12,
-                                                  FontWeight.w500)),
+                                                .toStringAsFixed(2),
+                                            style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+                                          ),
                                         ],
                                       ),
-                                    ],
-                                  ),
+                                    // ),
+
+                                       Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          "NAV",
+                                          style: textStyle(
+                                            const Color(0xff999999),
+                                            12,
+                                            FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          widget.mfStockData.nETASSETVALUE!.isEmpty
+                                              ? "0.00"
+                                              : widget.mfStockData.nETASSETVALUE!,
+                                          style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
+                                    
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          "MIN. INV",
+                                          style: textStyle(
+                                            const Color(0xff999999),
+                                            12,
+                                            FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          widget.mfStockData.minimumPurchaseAmount!.isEmpty
+                                              ? "0.00"
+                                              : widget.mfStockData.minimumPurchaseAmount!,
+                                          style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
+                                    
+                                     Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          "5YR CAGR",
+                                          style: textStyle(
+                                            const Color(0xff999999),
+                                            12,
+                                            FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+  widget.mfStockData.fIVEYEARDATA?.isEmpty ?? true
+      ? "0.00"
+      : "${widget.mfStockData.fIVEYEARDATA}%",
+  style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+)
+
+                                      ],
+                                    ),
+                                        
+                                    
+                                  ],
                                 ),
+
+
+                             
+
+                             
                               ],
                             ),
+                         
                           ),
-                          TabBar(
-                              isScrollable: true,
-                              controller: tabController,
-                              indicatorPadding:
-                                  const EdgeInsets.symmetric(horizontal: 16.0),
-                              indicatorSize: TabBarIndicatorSize.tab,
-                              indicatorColor: theme.isDarkMode
-                                  ? colors.colorLightBlue
-                                  : colors.colorBlue,
-                              unselectedLabelColor: const Color(0XFF777777),
-                              unselectedLabelStyle: GoogleFonts.inter(
-                                  textStyle: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: -0.28)),
-                              labelColor: theme.isDarkMode
-                                  ? colors.colorLightBlue
-                                  : colors.colorBlue,
-                              labelStyle: GoogleFonts.inter(
-                                  textStyle: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600)),
-                              tabs: tabList.map((e) {
-                                return Tab(text: e);
-                              }).toList(),
-                              onTap: (index) {
-                                VerticalScrollableTabBarStatus.setIndex(index);
-                              })
-                        ])))
-              ],
-              eachItemChild: (aaa, int index) {
-                return aaa == "Overview"
-                    ? MFOverview(mfStockData: widget.mfStockData)
-                    : aaa == "Performance"
-                        ? MFPerformance(mfStockData: widget.mfStockData)
-                        : aaa == "Scheme"
-                            ? MFSchemeInfo(mfStockData: widget.mfStockData)
-                            : aaa == "Allocation"
-                                ? MFAllocation(mfStockData: widget.mfStockData)
-                                : aaa == "Rollings"
-                                    ? Container()
-                                    : MFComparison(
-                                        mfStockData: widget.mfStockData);
-              }));
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                eachItemChild: (aaa, int index) {
+                  return aaa == "Overview"
+                      ? MFOverview(mfStockData: widget.mfStockData)
+                      : aaa == "Performance"
+                          ? MFPerformance(mfStockData: widget.mfStockData)
+                          : aaa == "Scheme"
+                              ? MFSchemeInfo(mfStockData: widget.mfStockData)
+                              : aaa == "Allocation"
+                                  ? MFAllocation(mfStockData: widget.mfStockData)
+                                  : aaa == "Rollings"
+                                      ? Container()
+                                      : MFComparison(mfStockData: widget.mfStockData);
+                }
+              ),
+      );
     });
   }
+  
+
 }
+

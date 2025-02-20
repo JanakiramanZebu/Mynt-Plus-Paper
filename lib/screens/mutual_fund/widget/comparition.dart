@@ -21,20 +21,21 @@ class MFComparison extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const SizedBox(height: 10),
+          const SizedBox(height: 27),
           Text(
               "Comparison with ${mfStockData.schemeType![0].toUpperCase()}${mfStockData.schemeType!.substring(1).toLowerCase()} :${mfStockData.sCHEMESUBCATEGORY!.replaceAll("Fund", '').replaceAll("Hybrid", "")}",
               style: textStyle(
                   theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w500)),
-          const SizedBox(height: 8),
+                  17,
+                  FontWeight.w600)),
+          const SizedBox(height: 13),
           Text(
               "Comparison breakdown of ${mfProvide.factSheetDataModel!.data!.fundName} information",
               style: textStyle(
                   theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  12,
+                  14,
                   FontWeight.w500)),
+                  const SizedBox(height: 5),
           Container(
               padding: const EdgeInsets.only(bottom: 8),
               margin: const EdgeInsets.symmetric(vertical: 12),
@@ -44,7 +45,7 @@ class MFComparison extends ConsumerWidget {
                           color: theme.isDarkMode
                               ? colors.darkGrey
                               : const Color(0xffF1F3F8),
-                          width: 6))),
+                          width: 2))),
               height: 42,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
@@ -87,6 +88,7 @@ class MFComparison extends ConsumerWidget {
                   return const SizedBox(width: 10);
                 },
               )),
+           const SizedBox(height: 15),
           ListView.separated(
             padding: EdgeInsets.zero,
             shrinkWrap: true,
@@ -97,71 +99,95 @@ class MFComparison extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("${mfData.topSchemes![index].name}",
-                      style: textStyle(colors.colorBlack, 14, FontWeight.w500)),
-                  const SizedBox(height: 4),
+                      style: textStyle(colors.colorBlack, 15, FontWeight.w500)),
+                  const SizedBox(height: 15),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Column(
+                        // crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("AUM (Cr): ",
-                              style: textStyle(const Color(0xff999999), 12,
-                                  FontWeight.w500)),
-                          Text(
+                           Text(
                               (double.parse(
                                       mfData.topSchemes![index].aum!.isEmpty
                                           ? "0.00"
                                           : mfData.topSchemes![index].aum!))
                                   .toStringAsFixed(2),
                               style: textStyle(
-                                  colors.colorBlack, 12, FontWeight.w500)),
+                                  colors.colorBlack, 14, FontWeight.w600)),
+                                    const SizedBox(height: 5),
+                          Text("AUM (Cr) ",
+                              style: textStyle(const Color(0xff999999), 13,
+                                  FontWeight.w500)),
+                         
                         ],
                       ),
-                      Row(
+
+Column(
+children: [
+    Container(
+  margin: const EdgeInsets.only(top: 2),
+  child: SingleChildScrollView(  // Make the entire Column scrollable
+    child: Column(
+      children: [
+        // ListView displaying the stars with fixed height
+        SizedBox(
+          height: 16,  // Set height explicitly for ListView
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 5,
+            itemBuilder: (BuildContext context, int ind) {
+              return Icon(
+                Icons.star,
+                size: 16,
+                color: int.parse(mfData.topSchemes![index].fundRat ?? "0") <= ind
+                    ? const Color(0xff999999)
+                    : const Color(0xfff7cd6c),
+              );
+            },
+            separatorBuilder: (BuildContext context, int index) {
+              return const SizedBox(width: 2);
+            },
+          ),
+        ),
+                                    const SizedBox(height: 5),
+
+        Text(
+          "Ratings",
+          style: textStyle(const Color(0xff999999), 14, FontWeight.w500),
+        ),
+      ],
+    ),
+  ),
+)
+
+],
+),
+
+
+
+                      Column(
                         children: [
-                          Text("${mfData.topSchemes![index].yearName}: ",
-                              style: textStyle(const Color(0xff999999), 12,
-                                  FontWeight.w500)),
+
+                         
                           Text("${mfData.topSchemes![index].yearPer}%",
                               style: textStyle(
-                                  colors.colorBlack, 12, FontWeight.w500)),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Container(
-                      margin: const EdgeInsets.only(top: 2),
-                      height: 16,
-                      child: Row(
-                        children: [
-                          Text("Ratings: ",
+                                  colors.colorBlack, 15, FontWeight.w500)),
+                                                                      const SizedBox(height: 5),
+
+                                   Text("${mfData.topSchemes![index].yearName} ",
                               style: textStyle(const Color(0xff999999), 12,
                                   FontWeight.w500)),
-                          Expanded(
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: 5,
-                              itemBuilder: (BuildContext context, int ind) {
-                                return Icon(Icons.star,
-                                    size: 16,
-                                    color: int.parse(mfData.topSchemes![index]
-                                                    .fundRat ??
-                                                "0") <=
-                                            ind
-                                        ? const Color(0xff999999)
-                                        : const Color(0xfff7cd6c));
-                              },
-                              separatorBuilder:
-                                  (BuildContext context, int index) {
-                                return const SizedBox(width: 2);
-                              },
-                            ),
-                          ),
                         ],
-                      ))
+                      ),
+                   
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+              
+
                 ],
               );
             },

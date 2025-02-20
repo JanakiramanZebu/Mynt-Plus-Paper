@@ -148,8 +148,20 @@ class MFProvider extends DefaultChangeNotifier {
   bool? _isFiltered = false;
   bool? get isFiltered => _isFiltered;
 
+  bool? _singleloader = false;
+  bool? get  singleloader => _singleloader ;
+
   RangeValues _currentRangeValues = const RangeValues(0, 11);
   RangeValues get currentRangeValues => _currentRangeValues;
+
+  
+  int? _activeTab = 0;
+  int? get activeTab => _activeTab;
+
+  mfExTabchange(int tab) {
+    _activeTab = tab;
+    notifyListeners();
+  }
 
   updateRange(RangeValues values, String start, String end) {
     _currentRangeValues = values;
@@ -861,6 +873,7 @@ final List _bestMFListStatic = [
 
   Future fetchFactSheet(String isin) async {
     try {
+      _singleloader = true;
       Map trailingReturns = {};
       _mfReturnsGridview = [];
       _comYear = "10 Years";
@@ -956,7 +969,13 @@ log('Time taken 5: ${stopwatch.elapsedMilliseconds} ms');
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+
+_singleloader = false;
+
     }
+       
+notifyListeners();
   }
 
   Future fetchSchemePeer(String isin, String comYear) async {
@@ -1042,6 +1061,8 @@ log('Time taken 5: ${stopwatch.elapsedMilliseconds} ms');
       BuildContext context, bool bool, String val) async {
     try {
       // _mfWatchlist = [];
+      toggleLoadingOn(true);
+
       _mfWatchlistModel = await api.getMFWatchlist(isin, isAdd);
       if (_mfWatchlistModel!.stat == "Ok") {
         _mfWatchlist = _mfWatchlistModel!.scripts ?? [];
@@ -1123,6 +1144,7 @@ for (var m in mfCategoryList!.data!) {
       notifyListeners();
     } catch (e) {
       debugPrint("rererer $e");
+      toggleLoadingOn(false);
     }
   }
 
@@ -1210,6 +1232,7 @@ for (var m in mfCategoryList!.data!) {
   Future fetchMfOrderbook(BuildContext context) async {
     try {
       _mfLumpSumOrderbook = await api.getorderbook();
+      
     } catch (e) {
       log("Failed to fetchMfOrderbook :: ${e.toString()}");
       notifyListeners();

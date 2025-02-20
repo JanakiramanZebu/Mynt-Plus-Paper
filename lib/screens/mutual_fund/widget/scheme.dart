@@ -22,39 +22,41 @@ class MFSchemeInfo extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const SizedBox(height: 10),
-          Text("Scheme Information",
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w500)),
-          const SizedBox(height: 8),
-          Text("Investment Objective",
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w500)),
-          const SizedBox(height: 8),
-          ReadMoreText("${mfData.overview2}",
-              style: textStyle(const Color(0xff666666), 13, FontWeight.w500),
-              textAlign: TextAlign.left,
-              trimLines: 5,
-              moreStyle: theme.isDarkMode
-                  ? textStyles.darkmorestyle
-                  : textStyles.morestyle,
-              lessStyle: theme.isDarkMode
-                  ? textStyles.darkmorestyle
-                  : textStyles.morestyle,
-              colorClickableText: const Color(0xff0037B7),
-              trimMode: TrimMode.Line,
-              trimCollapsedText: 'Read more',
-              trimExpandedText: ' Read less'),
-          const SizedBox(height: 10),
+          const SizedBox(height: 30),
+  //         Text("Scheme Information",
+  //             style: textStyle(
+  //                 theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+  //                 19,
+  //                 FontWeight.w600)),
+  //         const SizedBox(height: 11),
+  //         Text("Investment Objective",
+  //             style: textStyle(
+  //                 theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+  //                 17,
+  //                 FontWeight.w500)),
+  //         const SizedBox(height: 8),
+  //         ReadMoreText("${mfData.overview2}",
+  //             style: textStyle(const Color(0xff666666), 13, FontWeight.w500).copyWith(
+  //   height: 1.5, 
+  // ),
+  //             textAlign: TextAlign.left,
+  //             trimLines: 3,
+  //             moreStyle: theme.isDarkMode
+  //                 ? textStyles.darkmorestyle
+  //                 : textStyles.morestyle,
+  //             lessStyle: theme.isDarkMode
+  //                 ? textStyles.darkmorestyle
+  //                 : textStyles.morestyle,
+  //             colorClickableText: const Color(0xff0037B7),
+  //             trimMode: TrimMode.Line,
+  //             trimCollapsedText: 'Read more',
+  //             trimExpandedText: ' Read less'),
+          // const SizedBox(height: 27),
           Text("Fund Manager",
               style: textStyle(
                   theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w500)),
+                  18,
+                  FontWeight.w600)),
           Container(
             margin: const EdgeInsets.symmetric(vertical: 10),
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
@@ -66,7 +68,7 @@ class MFSchemeInfo extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 CircleAvatar(
-                    maxRadius: 26,
+                    maxRadius: 24,
                     backgroundImage: NetworkImage(
                         "https://v3.mynt.in/mf/static/images/manager/${mfData.fundManager!.toLowerCase().trim()}.png")),
                 const SizedBox(width: 10),
@@ -80,9 +82,9 @@ class MFSchemeInfo extends ConsumerWidget {
                               theme.isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack,
-                              14,
+                              16,
                               FontWeight.w500)),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 5),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -100,7 +102,7 @@ class MFSchemeInfo extends ConsumerWidget {
                                   theme.isDarkMode
                                       ? colors.colorWhite
                                       : colors.colorBlack,
-                                  12,
+                                  14,
                                   FontWeight.w500)),
                         ],
                       ),
@@ -111,7 +113,7 @@ class MFSchemeInfo extends ConsumerWidget {
                         children: [
                           Text(
                               "${mfData.managerTotalExperience!.isEmpty ? "N/A" : mfData.managerTotalExperience} experience",
-                              style: textStyle(const Color(0xff999999), 12,
+                              style: textStyle(const Color(0xff999999), 14,
                                   FontWeight.w500)),
                           Text(
                               "${double.parse(mfData.managerNumberOfActiveFunds ?? "0.00").ceil()} funds managed",
@@ -125,37 +127,69 @@ class MFSchemeInfo extends ConsumerWidget {
               ],
             ),
           ),
-          rowOfInfoData(
-              "LAUNCHED",
-              "${mfData.launchDate}",
-              "SIP MIN.",
-              "${mfData.sipMinAmount}",
-              "CORPUS (Cr.)",
-              "${mfData.corpus}",
-              theme),
-          const SizedBox(height: 14),
-          rowOfInfoData(
-              "EXPENSE RATIO",
-              "${mfData.expenseRatio}",
-              "LUMPSUM MIN.",
-              "${mfData.purchaseMinAmount}",
-              "AUM (Cr.)",
-              (double.parse(mfStockData.aUM!.isEmpty
-                          ? "0.00"
-                          : mfStockData.aUM!) /
-                      10000000)
-                  .toStringAsFixed(2),
-              theme),
-          const SizedBox(height: 14),
-          rowOfInfoData(
-              "SETTLEMENT TYPE",
-              "${mfStockData.sETTLEMENTTYPE}",
-              "LOCK-IN",
-              "${mfStockData.lockInPeriod}",
-              "SCHEME TYPE",
-              "${mfStockData.nAVSchemeType}",
-              theme),
-          const SizedBox(height: 12),
+          const SizedBox(height: 
+          8),
+           Text("Manager Description",
+                              style: textStyle(
+                                  theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  16,
+                                  FontWeight.w500)),
+                          const SizedBox(height: 2),
+    const SizedBox(height: 8),
+          ReadMoreText("${mfData.managerDetailedDescription}",
+              style: textStyle(const Color(0xff666666), 13, FontWeight.w500).copyWith(
+    height: 1.5, 
+  ),
+              textAlign: TextAlign.left,
+              trimLines: 3,
+              moreStyle: theme.isDarkMode
+                  ? textStyles.darkmorestyle
+                  : textStyles.morestyle,
+              lessStyle: theme.isDarkMode
+                  ? textStyles.darkmorestyle
+                  : textStyles.morestyle,
+              colorClickableText: const Color(0xff0037B7),
+              trimMode: TrimMode.Line,
+              trimCollapsedText: 'Read more',
+              trimExpandedText: ' Read less'),
+          const SizedBox(height: 
+          47),
+        Text("")
+        
+          // const SizedBox(height: 13),
+          // rowOfInfoData(
+          //     "LAUNCHED",
+          //     "${mfData.launchDate}",
+          //     "SIP MIN.",
+          //     "${mfData.sipMinAmount}",
+          //     "CORPUS (Cr.)",
+          //     "${mfData.corpus}",
+          //     theme),
+          // const SizedBox(height: 14),
+          // rowOfInfoData(
+          //     "EXPENSE RATIO",
+          //     "${mfData.expenseRatio}",
+          //     "LUMPSUM MIN.",
+          //     "${mfData.purchaseMinAmount}",
+          //     "AUM (Cr.)",
+          //     (double.parse(mfStockData.aUM!.isEmpty
+          //                 ? "0.00"
+          //                 : mfStockData.aUM!) /
+          //             10000000)
+          //         .toStringAsFixed(2),
+          //     theme),
+          // const SizedBox(height: 14),
+          // rowOfInfoData(
+          //     "SETTLEMENT TYPE",
+          //     "${mfStockData.sETTLEMENTTYPE}",
+          //     "LOCK-IN",
+          //     "${mfStockData.lockInPeriod}",
+          //     "SCHEME TYPE",
+          //     "${mfStockData.nAVSchemeType}",
+          //     theme),
+          // const SizedBox(height: 12),
         ],
       ),
     );

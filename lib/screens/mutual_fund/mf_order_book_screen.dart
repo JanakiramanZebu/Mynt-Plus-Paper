@@ -188,18 +188,14 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                         .spaceBetween,
                                                 children: [
                                                   Expanded(
-                                                    child: Text(
-                                                        "${mforderbook.mflumpsumorderbook!.allMFLumpSumOrderbook[index].schemeName}",
-                                                        //overflow: TextOverflow.ellipsis,
-                                                        maxLines: 2,
-                                                        style: textStyles
-                                                            .scripNameTxtStyle
-                                                            .copyWith(
-                                                                color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .colorWhite
-                                                                    : colors
-                                                                        .colorBlack)),
+                                                    child:Text(
+  "${mforderbook.mflumpsumorderbook!.allMFLumpSumOrderbook[index].schemeName}",
+  maxLines: 2,
+  style: textStyles.scripNameTxtStyle.copyWith(
+    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+    height: 1.5, 
+  ),
+),
                                                   ),
                                                   Column(
                                                     crossAxisAlignment:
@@ -230,15 +226,15 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                                     .colorWhite
                                                                 : colors
                                                                     .colorBlack,
-                                                            12,
-                                                            FontWeight.w500),
+                                                            13,
+                                                            FontWeight.w600),
                                                       )
                                                     ],
                                                   )
                                                 ],
                                               ),
                                               const SizedBox(
-                                                height: 5,
+                                                height: 8,
                                               ),
                                               Row(
                                                 children: [
@@ -246,6 +242,8 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                     exch:
                                                         "${mforderbook.mflumpsumorderbook!.allMFLumpSumOrderbook[index].date}",
                                                   ),
+                                                  const SizedBox(width: 6),
+
                                                   CustomExchBadge(
                                                     exch:
                                                         "Order no:${mforderbook.mflumpsumorderbook!.allMFLumpSumOrderbook[index].orderNumber}",
@@ -253,8 +251,14 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                 ],
                                               ),
                                               const SizedBox(
-                                                height: 15,
+                                                height: 5,
                                               ),
+                                            Divider(
+                                            color: theme.isDarkMode
+                                                ? colors.darkColorDivider
+                                                : colors.colorDivider),
+                                        const SizedBox(height: 3),
+
                                               Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
@@ -266,13 +270,6 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                             .start,
                                                     children: [
                                                       Text(
-                                                        'Transaction',
-                                                        style: textStyle(
-                                                            colors.colorGrey,
-                                                            11,
-                                                            FontWeight.w500),
-                                                      ),
-                                                      Text(
                                                         '${mforderbook.mflumpsumorderbook!.allMFLumpSumOrderbook[index].transactionType}',
                                                         style: textStyle(
                                                             theme.isDarkMode
@@ -280,20 +277,23 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                                     .colorWhite
                                                                 : colors
                                                                     .colorBlack,
+                                                            14,
+                                                            FontWeight.w500),
+                                                      ),
+                                                      const SizedBox(height:3),
+                                                      Text(
+                                                        'Transaction',
+                                                        style: textStyle(
+                                                            colors.colorGrey,
                                                             13,
                                                             FontWeight.w500),
                                                       ),
+                                                      
                                                     ],
                                                   ),
                                                   Column(
                                                     children: [
-                                                      Text(
-                                                        'Units',
-                                                        style: textStyle(
-                                                            colors.colorGrey,
-                                                            11,
-                                                            FontWeight.w500),
-                                                      ),
+                                                     
                                                       Text(
                                                         '00.0',
                                                         style: textStyle(
@@ -302,6 +302,14 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                                     .colorWhite
                                                                 : colors
                                                                     .colorBlack,
+                                                            14,
+                                                            FontWeight.w500),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                       Text(
+                                                        'Units',
+                                                        style: textStyle(
+                                                            colors.colorGrey,
                                                             13,
                                                             FontWeight.w500),
                                                       ),
@@ -311,13 +319,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment.end,
                                                     children: [
-                                                      Text(
-                                                        'Invest amt',
-                                                        style: textStyle(
-                                                            colors.colorGrey,
-                                                            11,
-                                                            FontWeight.w500),
-                                                      ),
+                                                      
                                                       Text(
                                                         mforderbook
                                                                         .mflumpsumorderbook!
@@ -345,6 +347,14 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                                     .colorWhite
                                                                 : colors
                                                                     .colorBlack,
+                                                            14,
+                                                            FontWeight.w500),
+                                                      ),
+const SizedBox(height: 4),
+                                                      Text(
+                                                        'Invest amt',
+                                                        style: textStyle(
+                                                            colors.colorGrey,
                                                             13,
                                                             FontWeight.w500),
                                                       ),
@@ -352,6 +362,13 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                   ),
                                                 ],
                                               ),
+                                            const SizedBox(height: 8),
+                                            Divider(
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : const Color(0xffECEDEE),
+                            thickness: 5.0, // Increase the thickness here
+                          ),
                                             ],
                                           ),
                                         ),

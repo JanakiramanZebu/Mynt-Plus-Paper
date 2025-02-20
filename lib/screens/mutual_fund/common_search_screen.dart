@@ -20,7 +20,8 @@ class MfCommonSearch extends ConsumerWidget {
     final theme = watch(themeProvider);
     final fund = watch(fundProvider);
     return GestureDetector(
-      onTap: () { FocusScope.of(context).unfocus();
+      onTap: () {
+        FocusScope.of(context).unfocus();
       },
       child: Scaffold(
         appBar: AppBar(
@@ -29,15 +30,16 @@ class MfCommonSearch extends ConsumerWidget {
             centerTitle: false,
             titleSpacing: 6,
             leading: InkWell(
-        onTap: () {
-          Navigator.pop(context);
-          mfData.commonsearch();
-        },
-        child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 9),
-            child: SvgPicture.asset(assets.backArrow,
-                color:
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack))),
+                onTap: () {
+                  Navigator.pop(context);
+                  mfData.commonsearch();
+                },
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 9),
+                    child: SvgPicture.asset(assets.backArrow,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack))),
             shadowColor: const Color(0xffECEFF3),
             title: Text("Mutual Funds Search",
                 style: textStyles.appBarTitleTxt.copyWith(
@@ -68,8 +70,7 @@ class MfCommonSearch extends ConsumerWidget {
                             const Color(0xff69758F), 15, FontWeight.w500),
                         prefixIconColor: const Color(0xff586279),
                         prefixIcon: Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 20.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
                           child: SvgPicture.asset(assets.searchIcon,
                               color: const Color(0xff586279),
                               fit: BoxFit.contain,
@@ -105,7 +106,7 @@ class MfCommonSearch extends ConsumerWidget {
               mfData.mutualFundsearchdata!.isNotEmpty
                   ? ListView.builder(
                       shrinkWrap: true,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: mfData.mutualFundsearchdata!.length,
                       itemBuilder: (BuildContext context, int index) {
@@ -117,8 +118,8 @@ class MfCommonSearch extends ConsumerWidget {
 
                                 Navigator.pushNamed(
                                     context, Routes.mfStockDetail,
-                                    arguments: mfData
-                                        .mutualFundsearchdata![index]);
+                                    arguments:
+                                        mfData.mutualFundsearchdata![index]);
                               },
                               child: Container(
                                   decoration: BoxDecoration(
@@ -126,7 +127,7 @@ class MfCommonSearch extends ConsumerWidget {
                                           horizontal: BorderSide(
                                               color: theme.isDarkMode
                                                   ? colors.darkGrey
-                                                  : Color(0xffEEF0F2),
+                                                  : Color.fromARGB(255, 255, 255, 255),
                                               width: 1.5),
                                           vertical: BorderSide(
                                               color: theme.isDarkMode
@@ -151,20 +152,29 @@ class MfCommonSearch extends ConsumerWidget {
                                                           MainAxisAlignment
                                                               .start,
                                                       children: [
-                                                    Text(
+                                                    Container(
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.7,
+                                                      child: Text(
                                                         "${mfData.mutualFundsearchdata![index].schemeName}",
-                                                        maxLines: 1,
+                                                        maxLines: 2,
                                                         overflow: TextOverflow
                                                             .ellipsis,
                                                         style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            14,
-                                                            FontWeight.w500)),
-                                                    const SizedBox(height: 4),
+                                                          theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
+                                                          14,
+                                                          FontWeight.w500,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 10),
                                                     SizedBox(
                                                         height: 18,
                                                         child: ListView(
@@ -173,16 +183,13 @@ class MfCommonSearch extends ConsumerWidget {
                                                             children: [
                                                               CustomExchBadge(
                                                                   exch: mfData
-                                                                          .mutualFundsearchdata!
-                                                                          [
+                                                                          .mutualFundsearchdata![
                                                                               index]
                                                                           .schemeName!
                                                                           .contains(
                                                                               "GROWTH")
                                                                       ? "GROWTH"
-                                                                      : mfData
-                                                                              .mutualFundsearchdata!
-                                                                              [index]
+                                                                      : mfData.mutualFundsearchdata![index]
                                                                               .schemeName!
                                                                               .contains("IDCW PAYOUT")
                                                                           ? "IDCW PAYOUT"
@@ -191,13 +198,16 @@ class MfCommonSearch extends ConsumerWidget {
                                                                               : mfData.mutualFundsearchdata![index].schemeName!.contains("IDCW")
                                                                                   ? "IDCW"
                                                                                   : "NORMAL"),
+                                                              const SizedBox(
+                                                                  width: 5),
                                                               CustomExchBadge(
                                                                   exch:
                                                                       "${mfData.mutualFundsearchdata![index].schemeType}"),
+                                                              const SizedBox(
+                                                                  width: 5),
                                                               CustomExchBadge(
                                                                   exch: mfData
-                                                                      .mutualFundsearchdata!
-                                                                      [
+                                                                      .mutualFundsearchdata![
                                                                           index]
                                                                       .sCHEMESUBCATEGORY!
                                                                       .replaceAll(
@@ -212,34 +222,39 @@ class MfCommonSearch extends ConsumerWidget {
                                               IconButton(
                                                   splashRadius: 20,
                                                   onPressed: () async {
-                                                    await mfData
-                                                        .fetchcommonsearchWadd(
-                                                            mfData
-                                                                .mutualFundsearchdata!
-                                                                [index].iSIN!,
-                                                            mfData.mutualFundsearchdata![index].isAdd!
-                                                ? "delete"
-                                                : "add",
-                                                            context,
-                                                            false);
-                                                            // mfData.mutualFundsearchdata![index].isAdd! ?
-                                                // await mfData.makefalse(mfData
-                                                //     .mutualFundsearchdata![index].iSIN
-                                                //     .toString())
-                                                // :
-                                                //   await mfData.maketrue(mfData
-                                                //     .mutualFundsearchdata![index].iSIN
-                                                //     .toString());
+                                                    await mfData.fetchcommonsearchWadd(
+                                                        mfData
+                                                            .mutualFundsearchdata![
+                                                                index]
+                                                            .iSIN!,
+                                                        mfData
+                                                                .mutualFundsearchdata![
+                                                                    index]
+                                                                .isAdd!
+                                                            ? "delete"
+                                                            : "add",
+                                                        context,
+                                                        false);
+                                                    // mfData.mutualFundsearchdata![index].isAdd! ?
+                                                    // await mfData.makefalse(mfData
+                                                    //     .mutualFundsearchdata![index].iSIN
+                                                    //     .toString())
+                                                    // :
+                                                    //   await mfData.maketrue(mfData
+                                                    //     .mutualFundsearchdata![index].iSIN
+                                                    //     .toString());
                                                   },
                                                   icon: SvgPicture.asset(
                                                     color: mfData
-                                                            .mutualFundsearchdata!
-                                                            [index]
+                                                            .mutualFundsearchdata![
+                                                                index]
                                                             .isAdd!
                                                         ? colors.colorBlue
                                                         : colors.colorGrey,
-                                                    mfData.mutualFundsearchdata!
-                                                            [index].isAdd!
+                                                    mfData
+                                                            .mutualFundsearchdata![
+                                                                index]
+                                                            .isAdd!
                                                         ? assets.bookmarkIcon
                                                         : assets.bookmarkedIcon,
                                                   ))
@@ -253,155 +268,167 @@ class MfCommonSearch extends ConsumerWidget {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Row(children: [
-                                                Text("AUM (Cr): ",
-                                                    style: textStyle(
-                                                        const Color(0xff999999),
-                                                        12,
-                                                        FontWeight.w500)),
+                                              Column(children: [
                                                 Text(
-                                                    (double.parse(mfData
-                                                                    .mutualFundsearchdata!
-                                                                    [
-                                                                        index]
-                                                                    .aUM!
-                                                                    .isEmpty
-                                                                ? "0.00"
-                                                                : mfData
-                                                                    .mutualFundsearchdata!
-                                                                    [
-                                                                        index]
-                                                                    .aUM!) /
-                                                            10000000)
-                                                        .toStringAsFixed(2),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        12,
-                                                        FontWeight.w500))
+                                                  (double.parse(mfData
+                                                                  .mutualFundsearchdata![
+                                                                      index]
+                                                                  .aUM!
+                                                                  .isEmpty
+                                                              ? "0.00"
+                                                              : mfData
+                                                                  .mutualFundsearchdata![
+                                                                      index]
+                                                                  .aUM!) /
+                                                          10000000)
+                                                      .toStringAsFixed(2),
+                                                  textAlign: TextAlign
+                                                      .left, // Ensure proper text alignment
+                                                  style: textStyle(
+                                                      theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
+                                                      14,
+                                                      FontWeight.w600),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 8),
+                                                  child: Text("AUM (Cr) ",
+                                                      style: textStyle(
+                                                          const Color(
+                                                              0xff999999),
+                                                          13,
+                                                          FontWeight.w500)),
+                                                ),
                                               ]),
-                                              Row(children: [
-                                                Text("3yr: ",
-                                                    style: textStyle(
-                                                        const Color(0xff999999),
-                                                        12,
-                                                        FontWeight.w500)),
+                                              Column(children: [
                                                 Text(
                                                     mfData
-                                                            .mutualFundsearchdata!
-                                                            [index]
-                                                            .tHREEYEARDATA!
-                                                            .isEmpty
-                                                        ? "0.00"
-                                                        : mfData
-                                                            .mutualFundsearchdata!
-                                                            [index]
-                                                            .tHREEYEARDATA!,
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        12,
-                                                        FontWeight.w500))
-                                              ])
-                                            ]),
-                                        const SizedBox(height: 3),
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(children: [
-                                                Text("NAV: ",
-                                                    style: textStyle(
-                                                        const Color(0xff999999),
-                                                        12,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    mfData
-                                                            .mutualFundsearchdata!
-                                                            [index]
+                                                            .mutualFundsearchdata![
+                                                                index]
                                                             .nETASSETVALUE!
                                                             .isEmpty
                                                         ? "0.00"
                                                         : mfData
-                                                            .mutualFundsearchdata!
-                                                            [index]
+                                                            .mutualFundsearchdata![
+                                                                index]
                                                             .nETASSETVALUE!,
                                                     style: textStyle(
                                                         theme.isDarkMode
                                                             ? colors.colorWhite
                                                             : colors.colorBlack,
-                                                        12,
-                                                        FontWeight.w500))
+                                                        14,
+                                                        FontWeight.w600)),
+                                                const SizedBox(height: 4),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 8),
+                                                  child: Text("NAV",
+                                                      style: textStyle(
+                                                          const Color(
+                                                              0xff999999),
+                                                          13,
+                                                          FontWeight.w500)),
+                                                ),
                                               ]),
-                                              Row(children: [
-                                                Text("Min. Inv: ",
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    right: 8),
+                                                child: Column(children: [
+                                                  Text(
+                                                    "${mfData.mutualFundsearchdata![index].tHREEYEARDATA!.isEmpty ? "0.00" : mfData.mutualFundsearchdata![index].tHREEYEARDATA!}%",
                                                     style: textStyle(
-                                                        const Color(0xff999999),
-                                                        12,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    mfData
-                                                            .mutualFundsearchdata!
-                                                            [index]
-                                                            .minimumPurchaseAmount!
-                                                            .isEmpty
-                                                        ? "0.00"
-                                                        : mfData
-                                                            .mutualFundsearchdata!
-                                                            [index]
-                                                            .minimumPurchaseAmount!,
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        12,
-                                                        FontWeight.w500))
-                                              ])
-                                            ])
+                                                      double.parse(mfData
+                                                                      .mutualFundsearchdata![
+                                                                          index]
+                                                                      .tHREEYEARDATA!
+                                                                      .isEmpty
+                                                                  ? "0.00"
+                                                                  : mfData
+                                                                      .mutualFundsearchdata![
+                                                                          index]
+                                                                      .tHREEYEARDATA!) >=
+                                                              0
+                                                          ? (theme.isDarkMode
+                                                              ? Colors.green
+                                                              : Colors
+                                                                  .green) // Green for >= 0
+                                                          : (theme.isDarkMode
+                                                              ? Colors.red
+                                                              : Colors
+                                                                  .red), // Red for < 0
+                                                      12,
+                                                      FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 5),
+                                                  Text("3YR CAGR ",
+                                                      style: textStyle(
+                                                          const Color(
+                                                              0xff999999),
+                                                          14,
+                                                          FontWeight.w600)),
+                                                ]),
+                                              ),
+                                            ]),
+                                        // const SizedBox(height: 6),
                                       ]))),
-                          InkWell(
-                              onTap: () async {
-                                mfData.chngMandate("Lumpsum");
-                                await fund.fetchUpiDetail();
-                                await fund.fetchBankDetail();
-                                if (mfData.mutualFundsearchdata![index]
-                                        .sIPFLAG ==
-                                    "Y") {
-                                  await mfData.fetchMFSipData(
-                                      "${mfData.mutualFundsearchdata![index].iSIN}",
-                                      "${mfData.mutualFundsearchdata![index].schemeCode}");
+                          // InkWell(
+                          //     onTap: () async {
+                          //       mfData.chngMandate("Lumpsum");
+                          //       await fund.fetchUpiDetail();
+                          //       await fund.fetchBankDetail();
+                          //       if (mfData.mutualFundsearchdata![index]
+                          //               .sIPFLAG ==
+                          //           "Y") {
+                          //         await mfData.fetchMFSipData(
+                          //             "${mfData.mutualFundsearchdata![index].iSIN}",
+                          //             "${mfData.mutualFundsearchdata![index].schemeCode}");
 
-                                  await mfData.fetchMFMandateDetail();
-                                }
+                          //         await mfData.fetchMFMandateDetail();
+                          //       }
 
-                                Navigator.pushNamed(
-                                    context, Routes.mforderScreen,
-                                    arguments: mfData
-                                        .mutualFundsearchdata![index]);
-                              },
-                              child: Container(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 6),
-                                  alignment: Alignment.center,
-                                  width: MediaQuery.of(context).size.width,
-                                  decoration: BoxDecoration(
-                                    color: theme.isDarkMode
-                                        ? colors.colorbluegrey
-                                        : const Color(0xffF1F3F8),
-                                    border: Border.all(
-                                        color: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : const Color(0xffEEF0F2),
-                                        width: 1.5),
-                                  ),
-                                  child: Text("Invest",
-                                      style: textStyles.scripNameTxtStyle
-                                          .copyWith(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorBlack
-                                                  : colors.colorBlue))))
+                          //       Navigator.pushNamed(
+                          //           context, Routes.mforderScreen,
+                          //           arguments: mfData
+                          //               .mutualFundsearchdata![index]);
+                          //     },
+                          //     child: Padding(
+                          //       padding: const EdgeInsets.all(12.0),
+                          //       child: Container(
+                          //           padding:
+                          //               const EdgeInsets.symmetric(vertical: 6),
+                          //           alignment: Alignment.center,
+                          //           width: MediaQuery.of(context).size.width,
+                          //           decoration: BoxDecoration(
+                          //             borderRadius: BorderRadius.circular(17.0),
+                          //             color: theme.isDarkMode
+                          //                 ? colors.colorbluegrey
+                          //                 : const Color(0xffF1F3F8),
+                          //             border: Border.all(
+                          //                 color: theme.isDarkMode
+                          //                     ? colors.darkGrey
+                          //                     : const Color(0xffEEF0F2),
+                          //                 width: 1.5),
+                          //           ),
+                          //           child: Text("Invest",
+                          //               style: textStyles.scripNameTxtStyle
+                          //                   .copyWith(
+                          //                       color: theme.isDarkMode
+                          //                           ? colors.colorBlack
+                          //                           : colors.colorBlue))),
+                          //     )),
+
+                          Divider(
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : const Color(0xffECEDEE),
+                            thickness: 6.0, // Increase the thickness here
+                          ),
                         ]);
                       })
                   : const Padding(

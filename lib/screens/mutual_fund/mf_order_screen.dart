@@ -78,7 +78,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                       : colors.colorBlack,
                                   16,
                                   FontWeight.w500)),
-                          const SizedBox(height: 5),
+                          const SizedBox(height: 10),
                           SizedBox(
                             height: 18,
                             child: ListView(
@@ -100,8 +100,10 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                                         .contains("IDCW")
                                                     ? "IDCW"
                                                     : "NORMAL"),
+                          const SizedBox(width: 7),
                                 CustomExchBadge(
                                     exch: "${widget.mfData.schemeType}"),
+                          const SizedBox(width: 7),
                                 CustomExchBadge(
                                     exch: widget.mfData.sCHEMESUBCATEGORY!
                                         .replaceAll("Fund", '')
@@ -178,8 +180,8 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
               Text("Mandates",
                   style: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w500)),
+                      16,
+                      FontWeight.w600)),
               const SizedBox(height: 4),
               if (mfOrder.mandateData!.isNotEmpty) ...[
                 DropdownButtonHideUnderline(
@@ -212,6 +214,8 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         })),
                 const SizedBox(height: 8),
               ],
+                const SizedBox(height: 8),
+
               ElevatedButton(
                   onPressed: () async {
                     showDialog(
@@ -236,6 +240,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                   : colors.colorBlack,
                               14,
                               FontWeight.w500)))),
+            
               Row(
                 children: [
                   IconButton(
@@ -256,6 +261,8 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                       style: textStyle(colors.colorGrey, 12, FontWeight.w500)),
                 ],
               ),
+                const SizedBox(height: 8),
+            
               if (isInitalPay)
                 SizedBox(
                     height: 44,
@@ -315,14 +322,17 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         })),
               const SizedBox(height: 8)
             ],
+        const SizedBox(height: 10),
             Text(
                 mfOrder.mfOrderTpye == "Lumpsum"
                     ? "Investment amount"
                     : "Instalment amount",
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
+                    16,
+                    FontWeight.w600)),
+        const SizedBox(height: 7),
+
             Container(
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 height: 44,
@@ -416,7 +426,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                 "Min. ₹${widget.mfData.minimumPurchaseAmount} (multiple of ${widget.mfData.purchaseAmountMultiplier})",
                 style: textStyle(colors.colorGrey, 12, FontWeight.w500)),
             if (mfOrder.mfOrderTpye != "Lumpsum") ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -428,9 +438,9 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                 theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
-                        const SizedBox(height: 8),
+                                16,
+                                FontWeight.w600)),
+                        const SizedBox(height: 13),
                         DropdownButtonHideUnderline(
                             child: DropdownButton2(
                                 menuItemStyleData: MenuItemStyleData(
@@ -473,9 +483,9 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                 theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
-                        const SizedBox(height: 8),
+                                16,
+                                FontWeight.w600)),
+                        const SizedBox(height: 13),
                         DropdownButtonHideUnderline(
                             child: DropdownButton2(
                                 menuItemStyleData: MenuItemStyleData(
@@ -513,7 +523,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -522,12 +532,12 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                           theme.isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack,
-                          14,
-                          FontWeight.w500)),
+                          16,
+                          FontWeight.w600)),
                   Text(
                       "${mfOrder.invDuration.text} ${mfOrder.freqName == "DAILY" ? "Days" : mfOrder.freqName == "MONTHLY" ? "Months" : "Qtrs"}",
                       style:
-                          textStyle(colors.kColorRedText, 14, FontWeight.w500)),
+                          textStyle(colors.kColorRedText, 16, FontWeight.w600)),
                 ],
               ),
               Container(
@@ -553,14 +563,15 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         fund.isValidUpiId();
                       })),
             ],
-            const SizedBox(height: 8),
+       
             if(isInitalPay && mfOrder.mfOrderTpye != "Lumpsum")...[
+            const SizedBox(height: 9),
             Text("Payment method",
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
-            const SizedBox(height: 8),
+                    16,
+                    FontWeight.w600)),
+            const SizedBox(height: 14),
             DropdownButtonHideUnderline(
                 child: DropdownButton2(
                     menuItemStyleData: MenuItemStyleData(
@@ -590,13 +601,13 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     onChanged: (value) async {
                       fund.chngPayName("$value");
                     })),
-            const SizedBox(height: 8),
+            const SizedBox(height: 17),
             Text("Bank account",
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
-            const SizedBox(height: 8),
+                    16,
+                    FontWeight.w600)),
+            const SizedBox(height: 12),
             DropdownButtonHideUnderline(
                 child: DropdownButton2(
                     menuItemStyleData: MenuItemStyleData(
@@ -627,11 +638,15 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     })),
             const SizedBox(height: 8),
             if (fund.paymentName == "UPI") ...[
+            const SizedBox(height: 12),
+
               Text("UPI ID (Virtual payment address)",
                   style: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w500)),
+                      16,
+                      FontWeight.w600)),
+            const SizedBox(height: 8),
+
               Container(
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   height: 44,
@@ -662,12 +677,13 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
             ],
             ]
             else if(mfOrder.mfOrderTpye == "Lumpsum")...[
+                 const SizedBox(height: 14),
               Text("Payment method",
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
-            const SizedBox(height: 8),
+                    16,
+                    FontWeight.w600)),
+            const SizedBox(height: 14),
             DropdownButtonHideUnderline(
                 child: DropdownButton2(
                     menuItemStyleData: MenuItemStyleData(
@@ -697,13 +713,13 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     onChanged: (value) async {
                       fund.chngPayName("$value");
                     })),
-            const SizedBox(height: 8),
+            const SizedBox(height: 18),
             Text("Bank account",
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
-            const SizedBox(height: 8),
+                    16,
+                    FontWeight.w600)),
+            const SizedBox(height: 12),
             DropdownButtonHideUnderline(
                 child: DropdownButton2(
                     menuItemStyleData: MenuItemStyleData(
@@ -734,11 +750,14 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     })),
             const SizedBox(height: 8),
             if (fund.paymentName == "UPI") ...[
+            const SizedBox(height: 12),
               Text("UPI ID (Virtual payment address)",
                   style: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w500)),
+                      15,
+                      FontWeight.w600)),
+            const SizedBox(height: 4
+            ),
               Container(
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   height: 44,
@@ -768,13 +787,13 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
               ]
             ]
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: 11),
             Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
               Expanded(
                   child: Text(
                       " NAV will be allotted on the day funds are realised at the clearing corporation.",
-                      style: textStyle(colors.colorBlue, 12, FontWeight.w500)))
+                      style: textStyle(colors.colorBlue, 13, FontWeight.w500)))
             ]),
             const SizedBox(
               height: 100,
@@ -807,7 +826,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                           children: [
                             Row(children: [
                               Text("AUM: ",
-                                  style: textStyle(const Color(0xff666666), 12,
+                                  style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
                                       FontWeight.w500)),
                               Text(
                                   "₹${(double.parse(widget.mfData.aUM!.isEmpty ? "0.00" : widget.mfData.aUM!) / 10000000).toStringAsFixed(2)}",
@@ -818,12 +837,12 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                       12,
                                       FontWeight.w600)),
                               Text(" Cr.",
-                                  style: textStyle(const Color(0xff666666), 12,
+                                  style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
                                       FontWeight.w500))
                             ]),
                             Row(children: [
                               Text("NAV: ",
-                                  style: textStyle(const Color(0xff666666), 12,
+                                  style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
                                       FontWeight.w500)),
                               Text("₹${widget.mfData.nETASSETVALUE}",
                                   style: textStyle(
@@ -872,8 +891,8 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             backgroundColor: fund.invAmtError == null &&
                                     fund.upiError == null
-                                ? colors.ltpgreen
-                                : colors.ltpgreen.withOpacity(.7),
+                                ? Colors.black
+                                : Colors.black.withOpacity(.7),
                             shape: const StadiumBorder()),
                         child: mfOrder.loading
                             ? const SizedBox(
