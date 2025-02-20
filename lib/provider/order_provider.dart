@@ -240,9 +240,10 @@ class OrderProvider extends DefaultChangeNotifier {
 
     if (_bsktScripList.isNotEmpty) {
       String input = "";
-      for (var i = 0; i < _bsktScripList.length; i++) {
-        input += "${_bsktScripList[i]['exch']}|${_bsktScripList[i]['token']}#";
-      }
+      // for (var i = 0; i < _bsktScripList.length; i++) {
+      input =
+          _bsktScripList.map((e) => "${e.exch}|${e.token}").toSet().join("#");
+      // }
       if (input.isNotEmpty) {
         ref(websocketProvider).establishConnection(
             channelInput: input, task: "t", context: context);
@@ -867,17 +868,21 @@ class OrderProvider extends DefaultChangeNotifier {
       if (_orderBookModel != null) {
         if (_orderBookModel!.isNotEmpty &&
             _orderBookModel![0].stat != "Not_Ok") {
-          for (var i = 0; i < _orderBookModel!.length; i++) {
-            input +=
-                "${_orderBookModel![i].exch}|${_orderBookModel![i].token}#";
-          }
+          input = _orderBookModel!
+              .map((e) => "${e.exch}|${e.token}")
+              .toSet()
+              .join("#");
+          print("input $input");
         }
       }
 
       if (_gttOrderBookModel!.isNotEmpty) {
-        for (var element in _gttOrderBookModel!) {
-          input += "${element.exch}|${element.token}#";
-        }
+        // for (var element in _gttOrderBookModel!) {
+        input += _gttOrderBookModel!
+            .map((e) => "${e.exch}|${e.token}")
+            .toSet()
+            .join("#");
+        // }
       }
 
       if (input.isNotEmpty) {

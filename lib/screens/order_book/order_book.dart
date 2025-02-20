@@ -150,125 +150,360 @@ class OrderBook extends ConsumerWidget {
             ),
           ),
         Expanded(
-            child: RefreshIndicator(
-          onRefresh: () async {
-            order.fetchOrderBook(context, true);
-            order.fetchTradeBook(context);
-          },
-          child: ListView(
-            children: [
-              if (searchorder!.isEmpty)
-                orderBook.isNotEmpty
-                    ? ListView.separated(
-                        primary: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemBuilder: (context, index) {
-  // The order book scrip data item list is provided here. These scrips are subscribed to Websocket, and we verify that the conditions fit the order book scrip before adding the data to the order book list.
-                      
+          child: RefreshIndicator(
+              onRefresh: () async {
+                order.fetchOrderBook(context, true);
+                order.fetchTradeBook(context);
+              },
+              child: searchorder!.isEmpty
+                  ? orderBook.isNotEmpty
+                      ? ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          shrinkWrap: false,
+                          itemBuilder: (context, index) {
+                            final itemIndex = index ~/ 2;
 
-                          if (socketDatas.containsKey(orderBook[index].token)) {
-                            orderBook[index].ltp =
-                                "${socketDatas["${orderBook[index].token}"]['lp']}";
-                            orderBook[index].perChange =
-                                "${socketDatas["${orderBook[index].token}"]['pc']}";
-                          }
+                            if (socketDatas
+                                .containsKey(orderBook[itemIndex].token)) {
+                              orderBook[itemIndex].ltp =
+                                  "${socketDatas["${orderBook[itemIndex].token}"]['lp']}";
+                              orderBook[itemIndex].perChange =
+                                  "${socketDatas["${orderBook[itemIndex].token}"]['pc']}";
+                            }
+                            if (index.isOdd) {
+                              return Container(
+                                  color: theme.isDarkMode
+                                      ? colors.darkGrey
+                                      : const Color(0xffF1F3F8),
+                                  height: 6);
+                            }
 
-                          return InkWell(
-                              onTap: () async {
-                                await context
-                                    .read(marketWatchProvider)
-                                    .fetchLinkeScrip(
-                                        "${orderBook[index].token}",
-                                        "${orderBook[index].exch}",
-                                        context);
-
-                                await watch(marketWatchProvider)
-                                    .fetchScripQuote(
-                                        "${orderBook[index].token}",
-                                        "${orderBook[index].exch}",
-                                        context);
-                                context.read(orderProvider).fetchOrderHistory(
-                                    "${orderBook[index].norenordno}", context);
-                                if ((orderBook[index].exch == "NSE" ||
-                                        orderBook[index].exch == "BSE") &&
-                                    (orderBook[index].instname.toString() !=
-                                        "UNDIND")) {
-                                  context
-                                      .read(marketWatchProvider)
-                                      .depthBtns
-                                      .add({
-                                    "btnName": "Fundamental",
-                                    "imgPath": assets.dInfo,
-                                    "key": context
-                                        .read(showcaseProvide)
-                                        .fundamentalcase,
-                                    "case":
-                                        "Click here to view fundamental data."
-                                  });
-
+                            return InkWell(
+                                onTap: () async {
                                   await context
                                       .read(marketWatchProvider)
-                                      .fetchTechData(
-                                          context: context,
-                                          exch: "${orderBook[index].exch}",
-                                          tradeSym: "${orderBook[index].tsym}",
-                                          lastPrc:
-                                              "${orderBook[index].ltp ?? orderBook[index].c ?? 0.00}");
-                                }
-                                Navigator.pushNamed(context, Routes.orderDetail,
-                                    arguments: orderBook[index]);
-                              },
-                              child: orderBook[index].status != null
-                                  ? Container(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Row(children: [
-                                                    Text(
-                                                        "${orderBook[index].symbol} ",
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: textStyles
-                                                            .scripNameTxtStyle
-                                                            .copyWith(
-                                                                color: theme.isDarkMode
+                                      .fetchLinkeScrip(
+                                          "${orderBook[itemIndex].token}",
+                                          "${orderBook[itemIndex].exch}",
+                                          context);
+
+                                  await watch(marketWatchProvider)
+                                      .fetchScripQuote(
+                                          "${orderBook[itemIndex].token}",
+                                          "${orderBook[itemIndex].exch}",
+                                          context);
+                                  context.read(orderProvider).fetchOrderHistory(
+                                      "${orderBook[itemIndex].norenordno}",
+                                      context);
+                                  if ((orderBook[itemIndex].exch == "NSE" ||
+                                          orderBook[itemIndex].exch == "BSE") &&
+                                      (orderBook[itemIndex]
+                                              .instname
+                                              .toString() !=
+                                          "UNDIND")) {
+                                    context
+                                        .read(marketWatchProvider)
+                                        .depthBtns
+                                        .add({
+                                      "btnName": "Fundamental",
+                                      "imgPath": assets.dInfo,
+                                      "key": context
+                                          .read(showcaseProvide)
+                                          .fundamentalcase,
+                                      "case":
+                                          "Click here to view fundamental data."
+                                    });
+
+                                    await context
+                                        .read(marketWatchProvider)
+                                        .fetchTechData(
+                                            context: context,
+                                            exch:
+                                                "${orderBook[itemIndex].exch}",
+                                            tradeSym:
+                                                "${orderBook[itemIndex].tsym}",
+                                            lastPrc:
+                                                "${orderBook[itemIndex].ltp ?? orderBook[itemIndex].c ?? 0.00}");
+                                  }
+                                  Navigator.pushNamed(
+                                      context, Routes.orderDetail,
+                                      arguments: orderBook[itemIndex]);
+                                },
+                                child: orderBook[itemIndex].status != null
+                                    ? Container(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(children: [
+                                                      Text(
+                                                          "${orderBook[itemIndex].symbol} ",
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: textStyles
+                                                              .scripNameTxtStyle
+                                                              .copyWith(
+                                                                  color: theme.isDarkMode
+                                                                      ? colors
+                                                                          .colorWhite
+                                                                      : colors
+                                                                          .colorBlack)),
+                                                      Text(
+                                                          "${orderBook[itemIndex].option} ",
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: textStyles
+                                                              .scripNameTxtStyle
+                                                              .copyWith(
+                                                                  color: theme.isDarkMode
+                                                                      ? colors
+                                                                          .colorWhite
+                                                                      : colors
+                                                                          .colorBlack)),
+                                                    ]),
+                                                    Row(
+                                                      children: [
+                                                        Text(" LTP: ",
+                                                            style: textStyle(
+                                                                const Color(
+                                                                    0xff5E6B7D),
+                                                                13,
+                                                                FontWeight
+                                                                    .w600)),
+                                                        Text(
+                                                            "₹${orderBook[itemIndex].ltp ?? orderBook[itemIndex].close ?? 0.00}",
+                                                            style: textStyle(
+                                                                theme.isDarkMode
                                                                     ? colors
                                                                         .colorWhite
                                                                     : colors
-                                                                        .colorBlack)),
-                                                    Text(
-                                                        "${orderBook[index].option} ",
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: textStyles
-                                                            .scripNameTxtStyle
-                                                            .copyWith(
-                                                                color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .colorWhite
-                                                                    : colors
-                                                                        .colorBlack)),
+                                                                        .colorBlack,
+                                                                14,
+                                                                FontWeight
+                                                                    .w500)),
+                                                      ],
+                                                    ),
+
+                                                    // SvgPicture.asset(
+                                                    //     assets.rightArrowIcon)
                                                   ]),
-                                                  Row(
-                                                    children: [
-                                                      Text(" LTP: ",
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        CustomExchBadge(
+                                                            exch:
+                                                                "${orderBook[itemIndex].exch}"),
+                                                        Text(
+                                                            " ${orderBook[itemIndex].expDate} ",
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            style: textStyles
+                                                                .scripExchTxtStyle
+                                                                .copyWith(
+                                                                    color: theme.isDarkMode
+                                                                        ? colors
+                                                                            .colorWhite
+                                                                        : colors
+                                                                            .colorBlack)),
+                                                        Container(
+                                                            margin:
+                                                                const EdgeInsets.only(
+                                                                    left: 7),
+                                                            padding: const EdgeInsets.symmetric(
+                                                                horizontal: 7,
+                                                                vertical: 2),
+                                                            decoration: BoxDecoration(
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                        4),
+                                                                color: theme.isDarkMode
+                                                                    ? const Color(0xff666666)
+                                                                        .withOpacity(
+                                                                            .2)
+                                                                    : const Color(0xff999999)
+                                                                        .withOpacity(
+                                                                            .2)),
+                                                            child: Text(
+                                                                "${orderBook[itemIndex].sPrdtAli}",
+                                                                style: textStyle(
+                                                                    const Color(0xff666666),
+                                                                    11,
+                                                                    FontWeight.w600))),
+                                                        Container(
+                                                            margin:
+                                                                const EdgeInsets.only(
+                                                                    left: 7),
+                                                            padding: const EdgeInsets.symmetric(
+                                                                horizontal: 7,
+                                                                vertical: 2),
+                                                            decoration: BoxDecoration(
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                        4),
+                                                                color: theme.isDarkMode
+                                                                    ? const Color(0xff666666)
+                                                                        .withOpacity(
+                                                                            .2)
+                                                                    : const Color(0xff999999)
+                                                                        .withOpacity(
+                                                                            .2)),
+                                                            child: Text(
+                                                                "${orderBook[itemIndex].prctyp}",
+                                                                style: textStyle(
+                                                                    const Color(0xff666666),
+                                                                    11,
+                                                                    FontWeight.w600)))
+                                                      ],
+                                                    ),
+                                                    Text(
+                                                        " (${orderBook[itemIndex].perChange ?? 0.00}%)",
+                                                        style: textStyle(
+                                                            orderBook[itemIndex]
+                                                                    .perChange!
+                                                                    .startsWith(
+                                                                        "-")
+                                                                ? colors.darkred
+                                                                : orderBook[itemIndex]
+                                                                            .perChange ==
+                                                                        "0.00"
+                                                                    ? colors
+                                                                        .ltpgrey
+                                                                    : colors
+                                                                        .ltpgreen,
+                                                            12,
+                                                            FontWeight.w500)),
+                                                  ]),
+                                              const SizedBox(height: 4),
+                                              Divider(
+                                                  color: theme.isDarkMode
+                                                      ? colors.darkColorDivider
+                                                      : colors.colorDivider),
+                                              const SizedBox(height: 2),
+                                              Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(children: [
+                                                      Container(
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                  horizontal: 8,
+                                                                  vertical: 2),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                          4),
+                                                                  color: theme
+                                                                          .isDarkMode
+                                                                      ? orderBook[itemIndex].trantype ==
+                                                                              "S"
+                                                                          ? colors.darkred.withOpacity(
+                                                                              .2)
+                                                                          : colors.ltpgreen.withOpacity(
+                                                                              .2)
+                                                                      : Color(orderBook[itemIndex].trantype == "S"
+                                                                          ? 0xffFCF3F3
+                                                                          : 0xffECF8F1)),
+                                                          child: Text(orderBook[itemIndex].trantype == "S" ? "SELL" : "BUY",
+                                                              style: textStyle(
+                                                                  orderBook[itemIndex].trantype == "S"
+                                                                      ? colors.darkred
+                                                                      : colors.ltpgreen,
+                                                                  12,
+                                                                  FontWeight.w600))),
+                                                      const SizedBox(width: 8),
+                                                      Text(
+                                                          formatDateTime(
+                                                                  value: orderBook[
+                                                                          itemIndex]
+                                                                      .norentm!)
+                                                              .substring(
+                                                                  13, 21),
+                                                          style: textStyle(
+                                                              const Color(
+                                                                  0xff666666),
+                                                              12,
+                                                              FontWeight.w500))
+                                                    ]),
+                                                    Row(children: [
+                                                      Text("Qty: ",
                                                           style: textStyle(
                                                               const Color(
                                                                   0xff5E6B7D),
-                                                              13,
-                                                              FontWeight.w600)),
+                                                              14,
+                                                              FontWeight.w500)),
                                                       Text(
-                                                          "₹${orderBook[index].ltp ?? orderBook[index].close ?? 0.00}",
+                                                          "${orderBook[itemIndex].status == "COMPLETE" ? orderBook[itemIndex].rqty ?? 0 : orderBook[itemIndex].dscqty ?? 0}/${orderBook[itemIndex].qty ?? 0}",
+                                                          style: textStyle(
+                                                              theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack,
+                                                              14,
+                                                              FontWeight.w500))
+                                                    ])
+                                                  ]),
+                                              const SizedBox(height: 10),
+                                              Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(children: [
+                                                      SvgPicture.asset(orderBook[
+                                                                      itemIndex]
+                                                                  .status ==
+                                                              "COMPLETE"
+                                                          ? assets.completedIcon
+                                                          : orderBook[itemIndex]
+                                                                          .status ==
+                                                                      "CANCELED" ||
+                                                                  orderBook[itemIndex]
+                                                                          .status ==
+                                                                      "REJECTED"
+                                                              ? assets
+                                                                  .cancelledIcon
+                                                              : assets
+                                                                  .warningIcon),
+                                                      Text(
+                                                          " ${orderBook[itemIndex].status![0].toUpperCase()}${orderBook[itemIndex].status!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
+                                                          style: textStyle(
+                                                              theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack,
+                                                              13,
+                                                              FontWeight.w500)),
+                                                    ]),
+                                                    Row(children: [
+                                                      Text("Prc: ",
+                                                          style: textStyle(
+                                                              const Color(
+                                                                  0xff5E6B7D),
+                                                              14,
+                                                              FontWeight.w500)),
+                                                      Text(
+                                                          "${orderBook[itemIndex].avgprc ?? orderBook[itemIndex].prc ?? 0.00}",
                                                           style: textStyle(
                                                               theme.isDarkMode
                                                                   ? colors
@@ -277,570 +512,379 @@ class OrderBook extends ConsumerWidget {
                                                                       .colorBlack,
                                                               14,
                                                               FontWeight.w500)),
-                                                    ],
-                                                  ),
+                                                      if (orderBook[itemIndex]
+                                                                  .prctyp ==
+                                                              "SL-LMT" ||
+                                                          orderBook[itemIndex]
+                                                                  .prctyp ==
+                                                              "SL-MKT") ...[
+                                                        const SizedBox(
+                                                            child: Text(' / ')),
+                                                        Text("TP: ",
+                                                            style: textStyle(
+                                                                const Color(
+                                                                    0xff5E6B7D),
+                                                                14,
+                                                                FontWeight
+                                                                    .w500)),
+                                                        Text(
+                                                            "${orderBook[itemIndex].trgprc ?? 0.00}",
+                                                            style: textStyle(
+                                                                theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorBlack,
+                                                                14,
+                                                                FontWeight
+                                                                    .w500))
+                                                      ]
+                                                    ])
+                                                  ])
+                                            ]))
+                                    : Container());
+                          },
+                          itemCount: orderBook.length * 2 - 1,
+                        )
+                      : const SizedBox(height: 500, child: NoDataFound())
+                  : searchorder.isNotEmpty
+                      ? ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          shrinkWrap: false,
+                          itemBuilder: (context, index) {
+                            final itemIndex = index ~/ 2;
 
-                                                  // SvgPicture.asset(
-                                                  //     assets.rightArrowIcon)
-                                                ]),
-                                            const SizedBox(height: 4),
-                                            Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      CustomExchBadge(
-                                                          exch:
-                                                              "${orderBook[index].exch}"),
+                            if (socketDatas
+                                .containsKey(searchorder[itemIndex].token)) {
+                              searchorder[itemIndex].ltp =
+                                  "${socketDatas["${searchorder[itemIndex].token}"]['lp']}";
+                              searchorder[itemIndex].perChange =
+                                  "${socketDatas["${searchorder[itemIndex].token}"]['pc']}";
+                            }
+                            if (index.isOdd) {
+                              return Container(
+                                  color: theme.isDarkMode
+                                      ? colors.darkGrey
+                                      : const Color(0xffF1F3F8),
+                                  height: 6);
+                            }
+                            return InkWell(
+                                onTap: () async {
+                                  await context
+                                      .read(marketWatchProvider)
+                                      .fetchLinkeScrip(
+                                          "${orderBook[index].token}",
+                                          "${searchorder[itemIndex].exch}",
+                                          context);
+
+                                  await watch(marketWatchProvider)
+                                      .fetchScripQuote(
+                                          "${searchorder[itemIndex].token}",
+                                          "${searchorder[itemIndex].exch}",
+                                          context);
+                                  context.read(orderProvider).fetchOrderHistory(
+                                      "${searchorder[itemIndex].norenordno}",
+                                      context);
+                                  if ((searchorder[itemIndex].exch == "NSE" ||
+                                          searchorder[itemIndex].exch ==
+                                              "BSE") &&
+                                      (searchorder[itemIndex]
+                                              .instname
+                                              .toString() !=
+                                          "UNDIND")) {
+                                    context
+                                        .read(marketWatchProvider)
+                                        .depthBtns
+                                        .add({
+                                      "btnName": "Fundamental",
+                                      "imgPath": assets.dInfo,
+                                      "key": context
+                                          .read(showcaseProvide)
+                                          .fundamentalcase,
+                                      "case":
+                                          "Click here to view fundamental data."
+                                    });
+
+                                    await context
+                                        .read(marketWatchProvider)
+                                        .fetchTechData(
+                                            context: context,
+                                            exch:
+                                                "${searchorder[itemIndex].exch}",
+                                            tradeSym:
+                                                "${searchorder[itemIndex].tsym}",
+                                            lastPrc:
+                                                "${searchorder[itemIndex].ltp ?? searchorder[itemIndex].c ?? 0.00}");
+                                  }
+                                  Navigator.pushNamed(
+                                      context, Routes.orderDetail,
+                                      arguments: searchorder[itemIndex]);
+                                },
+                                child: searchorder[itemIndex].status != null
+                                    ? Container(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(children: [
                                                       Text(
-                                                          " ${orderBook[index].expDate} ",
+                                                          "${searchorder[itemIndex].symbol} ",
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                           style: textStyles
-                                                              .scripExchTxtStyle
+                                                              .scripNameTxtStyle
                                                               .copyWith(
                                                                   color: theme.isDarkMode
                                                                       ? colors
                                                                           .colorWhite
                                                                       : colors
                                                                           .colorBlack)),
+                                                      Text(
+                                                          "${searchorder[itemIndex].option} ",
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: textStyles
+                                                              .scripNameTxtStyle
+                                                              .copyWith(
+                                                                  color: theme.isDarkMode
+                                                                      ? colors
+                                                                          .colorWhite
+                                                                      : colors
+                                                                          .colorBlack)),
+                                                    ]),
+                                                    Row(
+                                                      children: [
+                                                        Text(" LTP: ",
+                                                            style: textStyle(
+                                                                const Color(
+                                                                    0xff5E6B7D),
+                                                                13,
+                                                                FontWeight
+                                                                    .w600)),
+                                                        Text(
+                                                            "₹${searchorder[itemIndex].ltp ?? searchorder[itemIndex].close ?? 0.00}",
+                                                            style: textStyle(
+                                                                theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorBlack,
+                                                                14,
+                                                                FontWeight
+                                                                    .w500)),
+                                                      ],
+                                                    ),
 
-                                                                              Container(
-                                                        margin: const EdgeInsets.only(
-                                                            left: 7),
-                                                        padding:
-                                                            const EdgeInsets.symmetric(
-                                                                horizontal: 7,
-                                                                vertical: 2),
-                                                        decoration: BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                    4),
-                                                            color: theme.isDarkMode
-                                                                ? const Color(0xff666666)
-                                                                    .withOpacity(
-                                                                        .2)
-                                                                : const Color(0xff999999)
-                                                                    .withOpacity(
-                                                                        .2)),
-                                                        child: Text(
-                                                            "${orderBook[index].sPrdtAli}",
-                                                            style: textStyle(
-                                                                const Color(0xff666666),
-                                                                11,
-                                                                FontWeight.w600))),
-                                                                
-                                                                  Container(
-                                                        margin: const EdgeInsets.only(
-                                                            left: 7),
-                                                        padding:
-                                                            const EdgeInsets.symmetric(
-                                                                horizontal: 7,
-                                                                vertical: 2),
-                                                        decoration: BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                    4),
-                                                            color: theme.isDarkMode
-                                                                ? const Color(0xff666666)
-                                                                    .withOpacity(
-                                                                        .2)
-                                                                : const Color(0xff999999)
-                                                                    .withOpacity(
-                                                                        .2)),
-                                                        child: Text(
-                                                            "${orderBook[index].prctyp}",
-                                                            style: textStyle(
-                                                                const Color(0xff666666),
-                                                                11,
-                                                                FontWeight.w600)))
-                                                    ],
-                                                  ),
-                                                  Text(
-                                                      " (${orderBook[index].perChange ?? 0.00}%)",
-                                                      style: textStyle(
-                                                          orderBook[index]
-                                                                  .perChange!
-                                                                  .startsWith(
-                                                                      "-")
-                                                              ? colors.darkred
-                                                              : orderBook[index]
-                                                                          .perChange ==
-                                                                      "0.00"
-                                                                  ? colors
-                                                                      .ltpgrey
-                                                                  : colors
-                                                                      .ltpgreen,
-                                                          12,
-                                                          FontWeight.w500)),
-                                                ]),
-                                            const SizedBox(height: 4),
-                                            Divider(
-                                                color: theme.isDarkMode
-                                                    ? colors.darkColorDivider
-                                                    : colors.colorDivider),
-                                            const SizedBox(height: 2),
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Row(children: [
-                                                    Container(
-                                                        padding:
-                                                            const EdgeInsets.symmetric(
-                                                                horizontal: 8,
-                                                                vertical: 2),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                        4),
-                                                                color: theme
-                                                                        .isDarkMode
-                                                                    ? orderBook[index].trantype ==
-                                                                            "S"
-                                                                        ? colors.darkred.withOpacity(
-                                                                            .2)
-                                                                        : colors.ltpgreen.withOpacity(
-                                                                            .2)
-                                                                    : Color(orderBook[index].trantype == "S"
-                                                                        ? 0xffFCF3F3
-                                                                        : 0xffECF8F1)),
-                                                        child: Text(orderBook[index].trantype == "S" ? "SELL" : "BUY",
-                                                            style: textStyle(
-                                                                orderBook[index].trantype == "S"
-                                                                    ? colors.darkred
-                                                                    : colors.ltpgreen,
-                                                                12,
-                                                                FontWeight.w600))),
-                                                                const SizedBox(width: 8),
+                                                    // SvgPicture.asset(
+                                                    //     assets.rightArrowIcon)
+                                                  ]),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        CustomExchBadge(
+                                                            exch:
+                                                                "${searchorder[itemIndex].exch}"),
+                                                        Text(
+                                                            " ${searchorder[itemIndex].expDate} ",
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            style: textStyles
+                                                                .scripExchTxtStyle
+                                                                .copyWith(
+                                                                    color: theme.isDarkMode
+                                                                        ? colors
+                                                                            .colorWhite
+                                                                        : colors
+                                                                            .colorBlack))
+                                                      ],
+                                                    ),
                                                     Text(
-                                                        formatDateTime(
-                                                            value:
-                                                                orderBook[index]
-                                                                    .norentm!).substring(13, 21),
+                                                        " (${searchorder[itemIndex].perChange ?? 0.00}%)",
                                                         style: textStyle(
-                                                            const Color(
-                                                                0xff666666),
+                                                            searchorder[itemIndex]
+                                                                    .perChange!
+                                                                    .startsWith(
+                                                                        "-")
+                                                                ? colors.darkred
+                                                                : searchorder[itemIndex]
+                                                                            .perChange ==
+                                                                        "0.00"
+                                                                    ? colors
+                                                                        .ltpgrey
+                                                                    : colors
+                                                                        .ltpgreen,
                                                             12,
-                                                            FontWeight.w500))
-
-
-
-
-
-
-
-                                                  ]),
-                                                  Row(children: [
-                                                    Text("Qty: ",
-                                                        style: textStyle(
-                                                            const Color(
-                                                                0xff5E6B7D),
-                                                            14,
-                                                            FontWeight.w500)),
-                                                    Text(
-                                                        "${orderBook[index].status == "COMPLETE" ? orderBook[index].rqty ?? 0 : orderBook[index].dscqty ?? 0}/${orderBook[index].qty ?? 0}",
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            14,
-                                                            FontWeight.w500))
-                                                  ])
-                                                ]),
-                                            const SizedBox(height: 10),
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Row(children: [
-                                                    SvgPicture.asset(orderBook[
-                                                                    index]
-                                                                .status ==
-                                                            "COMPLETE"
-                                                        ? assets.completedIcon
-                                                        : orderBook[index]
-                                                                        .status ==
-                                                                    "CANCELED" ||
-                                                                orderBook[index]
-                                                                        .status ==
-                                                                    "REJECTED"
-                                                            ? assets
-                                                                .cancelledIcon
-                                                            : assets
-                                                                .warningIcon),
-                                                    Text(
-                                                        " ${orderBook[index].status![0].toUpperCase()}${orderBook[index].status!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            13,
                                                             FontWeight.w500)),
                                                   ]),
-                                                  Row(children: [
-                                                    Text("Prc: ",
-                                                        style: textStyle(
-                                                            const Color(
-                                                                0xff5E6B7D),
-                                                            14,
-                                                            FontWeight.w500)),
-                                                    Text(
-                                                        "${orderBook[index].avgprc ?? orderBook[index].prc ?? 0.00}",
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            14,
-                                                            FontWeight.w500)),
-
-                                                            if(orderBook[index].prctyp == "SL-LMT" || orderBook[index].prctyp == "SL-MKT" ) ...[
-                                                              const SizedBox(child: Text(' / ')),
-                                                            Text("TP: ",
-                                                        style: textStyle(
-                                                            const Color(
-                                                                0xff5E6B7D),
-                                                            14,
-                                                            FontWeight.w500)),
-                                                    Text(
-                                                        "${orderBook[index].trgprc ?? 0.00}",
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            14,
-                                                            FontWeight.w500))
-                                                            ]
-                                                  ])
-                                                ])
-                                          ]))
-                                  : Container());
-                        },
-                        itemCount: orderBook.length,
-                        separatorBuilder: (BuildContext context, int index) {
-                          return Container(
-                              color: theme.isDarkMode
-                                  ? colors.darkGrey
-                                  : const Color(0xffF1F3F8),
-                              height: 6);
-                        })
-                    : const SizedBox(height: 500, child: NoDataFound()),
-              if (searchorder.isNotEmpty)
-                ListView.separated(
-                    primary: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      if (socketDatas.containsKey(searchorder[index].token)) {
-                        searchorder[index].ltp =
-                            "${socketDatas["${searchorder[index].token}"]['lp']}";
-                        searchorder[index].perChange =
-                            "${socketDatas["${searchorder[index].token}"]['pc']}";
-                      }
-
-                      return InkWell(
-                          onTap: () async {
-                            await context
-                                .read(marketWatchProvider)
-                                .fetchLinkeScrip("${orderBook[index].token}",
-                                    "${searchorder[index].exch}", context);
-
-                            await watch(marketWatchProvider).fetchScripQuote(
-                                "${searchorder[index].token}",
-                                "${searchorder[index].exch}",
-                                context);
-                            context.read(orderProvider).fetchOrderHistory(
-                                "${searchorder[index].norenordno}", context);
-                            if ((searchorder[index].exch == "NSE" ||
-                                    searchorder[index].exch == "BSE") &&
-                                (searchorder[index].instname.toString() !=
-                                    "UNDIND")) {
-                              context.read(marketWatchProvider).depthBtns.add({
-                                "btnName": "Fundamental",
-                                "imgPath": assets.dInfo,
-                                "key": context
-                                    .read(showcaseProvide)
-                                    .fundamentalcase,
-                                "case": "Click here to view fundamental data."
-                              });
-
-                              await context.read(marketWatchProvider).fetchTechData(
-                                  context: context,
-                                  exch: "${searchorder[index].exch}",
-                                  tradeSym: "${searchorder[index].tsym}",
-                                  lastPrc:
-                                      "${searchorder[index].ltp ?? searchorder[index].c ?? 0.00}");
-                            }
-                            Navigator.pushNamed(context, Routes.orderDetail,
-                                arguments: searchorder[index]);
-                          },
-                          child: searchorder[index].status != null
-                              ? Container(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(children: [
-                                                Text(
-                                                    "${searchorder[index].symbol} ",
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: textStyles
-                                                        .scripNameTxtStyle
-                                                        .copyWith(
-                                                            color: theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack)),
-                                                Text(
-                                                    "${searchorder[index].option} ",
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: textStyles
-                                                        .scripNameTxtStyle
-                                                        .copyWith(
-                                                            color: theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack)),
-                                              ]),
+                                              const SizedBox(height: 4),
+                                              Divider(
+                                                  color: theme.isDarkMode
+                                                      ? colors.darkColorDivider
+                                                      : colors.colorDivider),
+                                              const SizedBox(height: 2),
                                               Row(
-                                                children: [
-                                                  Text(" LTP: ",
-                                                      style: textStyle(
-                                                          const Color(
-                                                              0xff5E6B7D),
-                                                          13,
-                                                          FontWeight.w600)),
-                                                  Text(
-                                                      "₹${searchorder[index].ltp ?? searchorder[index].close ?? 0.00}",
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          14,
-                                                          FontWeight.w500)),
-                                                ],
-                                              ),
-
-                                              // SvgPicture.asset(
-                                              //     assets.rightArrowIcon)
-                                            ]),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  CustomExchBadge(
-                                                      exch:
-                                                          "${searchorder[index].exch}"),
-                                                  Text(
-                                                      " ${searchorder[index].expDate} ",
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: textStyles
-                                                          .scripExchTxtStyle
-                                                          .copyWith(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(children: [
+                                                      Container(
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                  horizontal: 8,
+                                                                  vertical: 2),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                          4),
+                                                                  color: theme
+                                                                          .isDarkMode
+                                                                      ? searchorder[itemIndex].trantype ==
+                                                                              "S"
+                                                                          ? colors.darkred.withOpacity(
+                                                                              .2)
+                                                                          : colors.ltpgreen.withOpacity(
+                                                                              .2)
+                                                                      : Color(searchorder[itemIndex].trantype == "S"
+                                                                          ? 0xffFCF3F3
+                                                                          : 0xffECF8F1)),
+                                                          child: Text(searchorder[itemIndex].trantype == "S" ? "SELL" : "BUY",
+                                                              style: textStyle(
+                                                                  searchorder[itemIndex].trantype == "S"
+                                                                      ? colors.darkred
+                                                                      : colors.ltpgreen,
+                                                                  12,
+                                                                  FontWeight.w600))),
+                                                      Container(
+                                                          margin: const EdgeInsets.only(
+                                                              left: 7),
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                  horizontal: 7,
+                                                                  vertical: 2),
+                                                          decoration: BoxDecoration(
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4),
                                                               color: theme.isDarkMode
+                                                                  ? const Color(0xff666666)
+                                                                      .withOpacity(
+                                                                          .2)
+                                                                  : const Color(0xff999999)
+                                                                      .withOpacity(
+                                                                          .2)),
+                                                          child: Text(
+                                                              "${searchorder[itemIndex].sPrdtAli}",
+                                                              style: textStyle(
+                                                                  const Color(0xff666666),
+                                                                  11,
+                                                                  FontWeight.w600)))
+                                                    ]),
+                                                    Row(children: [
+                                                      Text("Qty: ",
+                                                          style: textStyle(
+                                                              const Color(
+                                                                  0xff5E6B7D),
+                                                              14,
+                                                              FontWeight.w500)),
+                                                      Text(
+                                                          "${searchorder[itemIndex].status == "COMPLETE" ? searchorder[itemIndex].rqty ?? 0 : searchorder[itemIndex].dscqty ?? 0}/${searchorder[itemIndex].qty ?? 0}",
+                                                          style: textStyle(
+                                                              theme.isDarkMode
                                                                   ? colors
                                                                       .colorWhite
                                                                   : colors
-                                                                      .colorBlack))
-                                                ],
-                                              ),
-                                              Text(
-                                                  " (${searchorder[index].perChange ?? 0.00}%)",
-                                                  style: textStyle(
-                                                      searchorder[index]
-                                                              .perChange!
-                                                              .startsWith("-")
-                                                          ? colors.darkred
-                                                          : searchorder[index]
-                                                                      .perChange ==
-                                                                  "0.00"
-                                                              ? colors.ltpgrey
-                                                              : colors.ltpgreen,
-                                                      12,
-                                                      FontWeight.w500)),
-                                            ]),
-                                        const SizedBox(height: 4),
-                                        Divider(
-                                            color: theme.isDarkMode
-                                                ? colors.darkColorDivider
-                                                : colors.colorDivider),
-                                        const SizedBox(height: 2),
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(children: [
-                                                Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                            horizontal: 8,
-                                                            vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                                4),
-                                                        color: theme.isDarkMode
-                                                            ? searchorder[index]
-                                                                        .trantype ==
-                                                                    "S"
-                                                                ? colors.darkred
-                                                                    .withOpacity(
-                                                                        .2)
-                                                                : colors.ltpgreen
-                                                                    .withOpacity(
-                                                                        .2)
-                                                            : Color(searchorder[index].trantype == "S"
-                                                                ? 0xffFCF3F3
-                                                                : 0xffECF8F1)),
-                                                    child: Text(searchorder[index].trantype == "S" ? "SELL" : "BUY",
-                                                        style: textStyle(
-                                                            searchorder[index].trantype == "S"
-                                                                ? colors.darkred
-                                                                : colors.ltpgreen,
-                                                            12,
-                                                            FontWeight.w600))),
-                                                Container(
-                                                    margin:
-                                                        const EdgeInsets.only(
-                                                            left: 7),
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                            horizontal: 7,
-                                                            vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                                4),
-                                                        color: theme.isDarkMode
-                                                            ? const Color(0xff666666)
-                                                                .withOpacity(.2)
-                                                            : const Color(0xff999999)
-                                                                .withOpacity(
-                                                                    .2)),
-                                                    child: Text(
-                                                        "${searchorder[index].sPrdtAli}",
-                                                        style: textStyle(
-                                                            const Color(0xff666666),
-                                                            11,
-                                                            FontWeight.w600)))
-                                              ]),
-                                              Row(children: [
-                                                Text("Qty: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        14,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    "${searchorder[index].status == "COMPLETE" ? searchorder[index].rqty ?? 0 : searchorder[index].dscqty ?? 0}/${searchorder[index].qty ?? 0}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500))
-                                              ])
-                                            ]),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(children: [
-                                                SvgPicture.asset(orderBook[
-                                                                index]
-                                                            .status ==
-                                                        "COMPLETE"
-                                                    ? assets.completedIcon
-                                                    : searchorder[index]
-                                                                    .status ==
-                                                                "CANCELED" ||
-                                                            searchorder[index]
-                                                                    .status ==
-                                                                "REJECTED"
-                                                        ? assets.cancelledIcon
-                                                        : assets.warningIcon),
-                                                Text(
-                                                    " ${searchorder[index].status![0].toUpperCase()}${searchorder[index].status!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        13,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    formatDateTime(
-                                                        value:
-                                                            searchorder[index]
-                                                                .norentm!),
-                                                    style: textStyle(
-                                                        const Color(0xff666666),
-                                                        12,
-                                                        FontWeight.w500))
-                                              ]),
-                                              Row(children: [
-                                                Text("Price: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        14,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    "${searchorder[index].avgprc ?? searchorder[index].prc ?? 0.00}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500))
-                                              ])
-                                            ])
-                                      ]))
-                              : Container());
-                    },
-                    itemCount: searchorder.length,
-                    separatorBuilder: (BuildContext context, int index) {
-                      return Container(
-                          color: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                          height: 6);
-                    })
-            ],
-          ),
-        ))
+                                                                      .colorBlack,
+                                                              14,
+                                                              FontWeight.w500))
+                                                    ])
+                                                  ]),
+                                              const SizedBox(height: 10),
+                                              Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(children: [
+                                                      SvgPicture.asset(orderBook[
+                                                                      index]
+                                                                  .status ==
+                                                              "COMPLETE"
+                                                          ? assets.completedIcon
+                                                          : searchorder[itemIndex]
+                                                                          .status ==
+                                                                      "CANCELED" ||
+                                                                  searchorder[itemIndex]
+                                                                          .status ==
+                                                                      "REJECTED"
+                                                              ? assets
+                                                                  .cancelledIcon
+                                                              : assets
+                                                                  .warningIcon),
+                                                      Text(
+                                                          " ${searchorder[itemIndex].status![0].toUpperCase()}${searchorder[itemIndex].status!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
+                                                          style: textStyle(
+                                                              theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack,
+                                                              13,
+                                                              FontWeight.w500)),
+                                                      Text(
+                                                          formatDateTime(
+                                                              value: searchorder[
+                                                                      itemIndex]
+                                                                  .norentm!),
+                                                          style: textStyle(
+                                                              const Color(
+                                                                  0xff666666),
+                                                              12,
+                                                              FontWeight.w500))
+                                                    ]),
+                                                    Row(children: [
+                                                      Text("Price: ",
+                                                          style: textStyle(
+                                                              const Color(
+                                                                  0xff5E6B7D),
+                                                              14,
+                                                              FontWeight.w500)),
+                                                      Text(
+                                                          "${searchorder[itemIndex].avgprc ?? searchorder[itemIndex].prc ?? 0.00}",
+                                                          style: textStyle(
+                                                              theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack,
+                                                              14,
+                                                              FontWeight.w500))
+                                                    ])
+                                                  ])
+                                            ]))
+                                    : Container());
+                          },
+                          itemCount: searchorder.length * 2 - 1,
+                        )
+                      : Container()),
+        )
       ]),
     );
   }

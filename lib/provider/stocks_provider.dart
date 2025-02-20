@@ -400,7 +400,7 @@ chngSMFilter(String val,String val1){
       _topStockData = _topGainers;
     } else if (val == "Top losers") {
       _topStockData = _topLosers;
-    } else if (val == "Volume") {
+    } else if (val == "Vol. breakout") {
       _topStockData = _byVolume;
     } else {
       _topStockData = _byValue;

@@ -44,7 +44,7 @@ class _ReportWebViewAppState extends State<ReportWebViewApp> {
                 child: InAppWebView(
                     initialUrlRequest: URLRequest(
                         url: WebUri(
-                            'https://profile.mynt.in/${widget.argument}/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}')),
+                            'https://profile.mynt.in/${widget.argument}/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}&src=app')),
                     initialOptions: InAppWebViewGroupOptions(
                         crossPlatform: InAppWebViewOptions()),
                     onWebViewCreated: (InAppWebViewController controller) {

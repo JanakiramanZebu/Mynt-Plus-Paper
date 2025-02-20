@@ -199,103 +199,127 @@ class IndexBottomSheet extends ConsumerWidget {
                                 // Navigator.pop(context);
                                 // await marketWatch.calldepthApis(
                                 //     context, depthArgs);
-                                return ListTile(
-                                  contentPadding:
-                                      const EdgeInsets.only(left: 14, right: 4),
-                                  dense: true,
-                                  title: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                          indexProvide
-                                              .indValuesList[index].idxname!
-                                              .toUpperCase(),
-                                          style: textStyles.scripNameTxtStyle
-                                              .copyWith(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack)),
-                                      Text("₹$ltp",
-                                          style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              14,
-                                              FontWeight.w600)),
-                                    ],
-                                  ),
-                                  subtitle: Row(
+                                return InkWell(
+                                  onTap: () async {
+                                   await marketWatch.fetchScripQuoteIndex(
+                                        indexProvide.indValuesList[index].token
+                                            .toString(),
+                                        indexProvide.slectedExch.toString(),
+                                        context);
+
+                                    final quots = marketWatch.getQuotes;
+                                    DepthInputArgs depthArgs = DepthInputArgs(
+                                        exch: quots!.exch.toString(),
+                                        token: quots.token.toString(),
+                                        tsym: quots.tsym.toString(),
+                                        instname: quots.instname.toString(),
+                                        symbol: quots.symbol.toString(),
+                                        expDate: quots.expDate.toString(),
+                                        option: quots.option.toString());
+                                    Navigator.pop(context);
+                                    await marketWatch.calldepthApis(
+                                        context, depthArgs);
+                                  },
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.only(
+                                        left: 14, right: 4),
+                                    dense: true,
+                                    title: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        CustomExchBadge(
-                                            exch: indexProvide.slectedExch),
                                         Text(
-                                          "${ch == "null" ? 0.00 : ch} (${chp == "null" ? 0.00 : chp}%)",
-                                          style: textStyle(
-                                              ch.toString().startsWith("-") ||
-                                                      chp
-                                                          .toString()
-                                                          .startsWith('-')
-                                                  ? colors.darkred
-                                                  : (ch.toString() == "null" ||
-                                                              chp.toString() ==
-                                                                  "null") ||
-                                                          (ch.toString() ==
-                                                                  "0.00" ||
-                                                              chp.toString() ==
-                                                                  "0.00")
-                                                      ? colors.ltpgrey
-                                                      : colors.ltpgreen,
-                                              12,
-                                              FontWeight.w600),
-                                        )
-                                      ]),
-                                  trailing: IconButton(
-                                      onPressed: () async {
-                                        if (indexProvide.defaultIndexList!
-                                                    .indValues![0].token ==
+                                            indexProvide
+                                                .indValuesList[index].idxname!
+                                                .toUpperCase(),
+                                            style: textStyles.scripNameTxtStyle
+                                                .copyWith(
+                                                    color: theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack)),
+                                        Text("₹$ltp",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                14,
+                                                FontWeight.w600)),
+                                      ],
+                                    ),
+                                    subtitle: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          CustomExchBadge(
+                                              exch: indexProvide.slectedExch),
+                                          Text(
+                                            "${ch == "null" ? 0.00 : ch} (${chp == "null" ? 0.00 : chp}%)",
+                                            style: textStyle(
+                                                ch.toString().startsWith("-") ||
+                                                        chp
+                                                            .toString()
+                                                            .startsWith('-')
+                                                    ? colors.darkred
+                                                    : (ch.toString() ==
+                                                                    "null" ||
+                                                                chp.toString() ==
+                                                                    "null") ||
+                                                            (ch.toString() ==
+                                                                    "0.00" ||
+                                                                chp.toString() ==
+                                                                    "0.00")
+                                                        ? colors.ltpgrey
+                                                        : colors.ltpgreen,
+                                                12,
+                                                FontWeight.w600),
+                                          )
+                                        ]),
+                                    trailing: IconButton(
+                                        onPressed: () async {
+                                          if (indexProvide.defaultIndexList!
+                                                      .indValues![0].token ==
+                                                  indexProvide
+                                                      .indValuesList[index]
+                                                      .token ||
+                                              indexProvide.defaultIndexList!
+                                                      .indValues![1].token ==
+                                                  indexProvide
+                                                      .indValuesList[index]
+                                                      .token ||
+                                              indexProvide.defaultIndexList!
+                                                      .indValues![2].token ==
+                                                  indexProvide
+                                                      .indValuesList[index]
+                                                      .token ||
+                                              indexProvide.defaultIndexList!
+                                                      .indValues![3].token ==
+                                                  indexProvide
+                                                      .indValuesList[index]
+                                                      .token) {
+                                            Fluttertoast.showToast(
+                                                msg: "Scrip Already Exist!!",
+                                                backgroundColor: Colors.amber);
+                                          } else {
+                                            await indexProvide.changeIndex(
                                                 indexProvide
-                                                    .indValuesList[index]
-                                                    .token ||
-                                            indexProvide.defaultIndexList!
-                                                    .indValues![1].token ==
-                                                indexProvide
-                                                    .indValuesList[index]
-                                                    .token ||
-                                            indexProvide.defaultIndexList!
-                                                    .indValues![2].token ==
-                                                indexProvide
-                                                    .indValuesList[index]
-                                                    .token ||
-                                            indexProvide.defaultIndexList!
-                                                    .indValues![3].token ==
-                                                indexProvide
-                                                    .indValuesList[index]
-                                                    .token) {
-                                          Fluttertoast.showToast(
-                                              msg: "Scrip Already Exist!!",
-                                              backgroundColor: Colors.amber);
-                                        } else {
-                                          await indexProvide.changeIndex(
-                                              indexProvide.indValuesList[index],
-                                              context,
-                                              defaultIndex);
+                                                    .indValuesList[index],
+                                                context,
+                                                defaultIndex);
 
-                                          Navigator.of(context).pop();
-                                        }
-                                      },
-                                      icon: SvgPicture.asset(
-                                        color: theme.isDarkMode && ischeck
-                                            ? colors.colorLightBlue
-                                            : ischeck
-                                                ? colors.colorBlue
-                                                : colors.colorGrey,
-                                        ischeck
-                                            ? assets.bookmarkIcon
-                                            : assets.bookmarkedIcon,
-                                      )),
+                                            Navigator.of(context).pop();
+                                          }
+                                        },
+                                        icon: SvgPicture.asset(
+                                          color: theme.isDarkMode && ischeck
+                                              ? colors.colorLightBlue
+                                              : ischeck
+                                                  ? colors.colorBlue
+                                                  : colors.colorGrey,
+                                          ischeck
+                                              ? assets.bookmarkIcon
+                                              : assets.bookmarkedIcon,
+                                        )),
+                                  ),
                                 );
                               })
                           : Center(

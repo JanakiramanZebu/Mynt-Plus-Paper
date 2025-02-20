@@ -176,7 +176,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
                               child: Pinput(
-                                autofocus: true,
+                                autofocus: false,
                                 focusNode: _focusNode,
                                 separatorBuilder: (index) =>
                                     const SizedBox(width: 25),

@@ -91,7 +91,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   MarketWatchlist? get marketWatchlist => _marketWatchlist;
   // MarketWatchlist? _preDefMWlist;
   // MarketWatchlist? get preDefMWlist => _preDefMWlist;
-  List linkedscript = ['NFO','BFO','MCX','NCOM','BCOM','CDS'];
+  List linkedscript = ['NFO', 'BFO', 'MCX', 'NCOM', 'BCOM', 'CDS'];
 
 //  Pre-defined market watchlist
 
@@ -1026,6 +1026,58 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
+  Future fetchScripQuoteIndex(
+      String token, String exch, BuildContext context) async {
+    try {
+      if (storeQuotes.isNotEmpty &&
+          storeQuotes.containsKey(token) &&
+          storeQuotes[token]?['q'] != null) {
+        print('qqq sq if');
+        ConstantName.sessCheck = true;
+        _getQuotes = storeQuotes[token]?['q'];
+      } else {
+        print('qqq qs else');
+        _getQuotes = await api.getScripQuote(token, exch);
+
+        if (_getQuotes.stat == "Ok") {
+          ConstantName.sessCheck = true;
+// Seperating Trade symbol(symbol,exp date, Option)
+          if (_getQuotes.exch == "BFO" && _getQuotes.cname != null) {
+            List<String> splitVal = _getQuotes.cname!.split(" ");
+
+            _getQuotes.symbol = splitVal[0];
+            _getQuotes.expDate = "${splitVal[1]} ${splitVal[2]}";
+            _getQuotes.option = splitVal.length > 4
+                ? "${splitVal[3]} ${splitVal[4]}"
+                : splitVal[3];
+          } else {
+            Map spilitSymbol = spilitTsym(value: "${_getQuotes.tsym}");
+            _getQuotes.symbol = "${spilitSymbol["symbol"]}";
+            _getQuotes.expDate = "${spilitSymbol["expDate"]}";
+            _getQuotes.option = "${spilitSymbol["option"]}";
+          }
+
+          storeQuotes[token] = {};
+          storeQuotes[token]?['q'] = _getQuotes;
+          _optionStrPrc = "${_getQuotes.lp}";
+
+          scripQtyCal();
+        }
+        if (_getQuotes.emsg == "Session Expired :  Invalid Session Key" &&
+            _getQuotes.stat == "Not_Ok") {
+          ref(authProvider).ifSessionExpired(context);
+        }
+      }
+      notifyListeners();
+      return _getQuotes;
+    } catch (e) {
+      ref(indexListProvider)
+          .logError
+          .add({"type": "API Scrip Quote", "Error": "$e"});
+      notifyListeners();
+    } finally {}
+  }
+
 // Fetching data from the api and stored in a variable
   Future fetchScripQuote(
       String token, String exch, BuildContext context) async {
@@ -1046,7 +1098,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       final portfolios = ref(portfolioProvider);
 
-      if (linkedscript.contains(exch) || 
+      if (linkedscript.contains(exch) ||
           (portfolios.oplists.isNotEmpty &&
               portfolios.oplists.contains(int.parse(token)))) {
         _depthBtns.add({

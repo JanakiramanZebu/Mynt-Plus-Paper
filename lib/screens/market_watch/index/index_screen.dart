@@ -4,6 +4,7 @@ import 'package:mynt_plus/res/res.dart';
 
 import '../../../provider/index_list_provider.dart';
 
+import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../sharedWidget/functions.dart';
@@ -11,7 +12,6 @@ import 'index_bottom_sheet.dart';
 
 class DefaultIndexList extends ConsumerWidget {
   const DefaultIndexList({super.key});
-
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final socketDatas = watch(websocketProvider).socketDatas;
@@ -53,6 +53,9 @@ class DefaultIndexList extends ConsumerWidget {
                   ),
                   builder: (_) => IndexBottomSheet(defaultIndex: index));
               await indexProvide.fetchIndexList("exit", context);
+              await context
+                  .read(marketWatchProvider)
+                  .requestMWScrip(context: context, isSubscribe: true);
             },
             child: Container(
                 padding:
