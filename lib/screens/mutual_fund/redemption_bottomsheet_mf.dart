@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/mf_provider.dart';
+import 'package:mynt_plus/provider/portfolio_provider.dart';
 
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
@@ -8,10 +10,13 @@ import 'package:mynt_plus/screens/authentication/password/forgot_pass_unblock_us
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/ipo_error_widget.dart';
 
+import '../../models/portfolio_model/mf_holdings_model.dart';
+import '../../sharedWidget/snack_bar.dart';
+
 class RedemptionBottomScreen extends StatefulWidget {
-  // final BondsList bondInfo;
+  final MFHoldingsModel mfHoldingData;
 // , required this.bondInfo
-  const RedemptionBottomScreen({super.key});
+  const RedemptionBottomScreen({super.key, required this.mfHoldingData});
 
   @override
   State<RedemptionBottomScreen> createState() => _RedemptionBottomScreenState();
@@ -26,23 +31,20 @@ class _RedemptionBottomScreenState extends State<RedemptionBottomScreen> {
   @override
   void initState() {
     setState(() {
-      // addNewItem();
-
-      // maxValue = mininv(double.parse(widget.bondInfo.minPrice!).toDouble(),
-      //         int.parse(widget.bondInfo.minBidQuantity!).toInt())
-      //     .toInt();
-    });
+      context.read(mfProvider).redemptionQty.text = context.read(portfolioProvider). mfQuotes!.minRdQty!;
+      context.read(mfProvider).redemptionAmount.text = (double.parse(context.read(mfProvider).redemptionQty.text) * double.parse(widget.mfHoldingData.exchTsym![0].nav!)).toString();
+      });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, watch, child) {
-      // final upiid = watch(transcationProvider);
+      final portfolio = watch(portfolioProvider);
       final theme = watch(themeProvider);
-
+      final mf = watch(mfProvider);
       return DraggableScrollableSheet(
-          initialChildSize: 0.45,
+          initialChildSize: 0.50,
           maxChildSize: .99,
           expand: false,
           builder: (context, scrollController) {
@@ -80,12 +82,12 @@ class _RedemptionBottomScreenState extends State<RedemptionBottomScreen> {
 
                         child: Center(
                           child: Text(
-                              "Bond window is open from  till  on trading days.",
+                              "Redemption",
                               style: textStyle(
                                   theme.isDarkMode
                                       ? colors.colorWhite
                                       : colors.colorBlack,
-                                  10,
+                                  14,
                                   FontWeight.w600)),
                         ),
                       ),
@@ -95,7 +97,7 @@ class _RedemptionBottomScreenState extends State<RedemptionBottomScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("name",
+                              Text(widget.mfHoldingData.exchTsym![0].cname!,
                                   style: textStyle(
                                       theme.isDarkMode
                                           ? colors.colorWhite
@@ -105,44 +107,32 @@ class _RedemptionBottomScreenState extends State<RedemptionBottomScreen> {
                               const SizedBox(
                                 height: 5,
                               ),
-                              Row(
-                                children: [
-                                  // CustomExchBadge(
-                                  //     exch: widget.bondInfo.symbol!),
-                                  // CustomExchBadge(exch: widget.bondInfo.isin!)
-                                ],
-                              ),
                             ],
                           )),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 10),
-                        child: Column(children: [
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 children: [
-                                  Text("Units",
+                                  Text("Redemption Units",
                                       style: textStyle(
                                           theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
                                           14,
                                           FontWeight.w600)),
-                                  const SizedBox(width: 8),
-                                  Text("qty",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          10,
-                                          FontWeight.w600)),
+                                
                                 ],
                               ),
                               Row(
                                 children: [
-                                  Text("Units",
+                                  Text("Total Units: ",
                                       style: textStyle(
                                           theme.isDarkMode
                                               ? colors.colorWhite
@@ -150,7 +140,7 @@ class _RedemptionBottomScreenState extends State<RedemptionBottomScreen> {
                                           14,
                                           FontWeight.w600)),
                                   const SizedBox(width: 8),
-                                  Text("qty",
+                                  Text(widget.mfHoldingData.holdqty!,
                                       style: textStyle(
                                           theme.isDarkMode
                                               ? colors.colorWhite
@@ -163,6 +153,10 @@ class _RedemptionBottomScreenState extends State<RedemptionBottomScreen> {
                           ),
                           const SizedBox(height: 10),
                           TextFormField(
+                            onChanged: (value){
+                              mf.checkRedemption(value,portfolio.mfQuotes!.minRdQty,widget.mfHoldingData.holdqty!,widget.mfHoldingData.exchTsym![0].nav);
+                            },
+                            // initialValue:portfolio.mfQuotes!.minRdQty,
                             // readOnly: bonds.loading ? true : false,
                             textAlign: TextAlign.start,
                             style: textStyle(
@@ -172,7 +166,7 @@ class _RedemptionBottomScreenState extends State<RedemptionBottomScreen> {
                                 14,
                                 FontWeight.w600),
                             keyboardType: TextInputType.number,
-                            // controller: bondDetails.quantityController,
+                            controller: mf.redemptionQty,
                             decoration: InputDecoration(
                               fillColor: theme.isDarkMode
                                   ? colors.darkGrey
@@ -191,11 +185,17 @@ class _RedemptionBottomScreenState extends State<RedemptionBottomScreen> {
                                   borderRadius: BorderRadius.circular(30)),
                             ),
                           ),
+                          if(mf.redemptionError != "" && mf.redemptionError != null)...[
+                            Text("${mf.redemptionError}",
+                            textAlign: TextAlign.start,
+                  style: textStyle(colors.kColorRedText, 10, FontWeight.w500)),
+              const SizedBox(height: 6)
+                          ],
                           Row(
                             children: [
                               Padding(
                                 padding: const EdgeInsets.only(left: 20.0,top: 5.0),
-                                child: Text("Min. redemption uints NaN",
+                                child: Text("Min. redemption units ${portfolio.mfQuotes!.minRdQty}",
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -222,7 +222,7 @@ Row(
                           const SizedBox(height: 15),
 
                           TextFormField(
-                            // readOnly: bonds.loading ? true : false,
+                            readOnly: true,
                             textAlign: TextAlign.start,
                             style: textStyle(
                                 theme.isDarkMode
@@ -231,8 +231,14 @@ Row(
                                 14,
                                 FontWeight.w600),
                             keyboardType: TextInputType.number,
-                            // controller: bondDetails.quantityController,
+                            controller: mf.redemptionAmount,
                             decoration: InputDecoration(
+                              prefixIcon: InkWell(child: SvgPicture.asset(assets.rupee,
+              //             theme.isDarkMode
+              //                 ? assets.darkCMinus
+              //                 : assets.minusIcon,
+                          fit: BoxFit.scaleDown),
+                    ),
                               fillColor: theme.isDarkMode
                                   ? colors.darkGrey
                                   : const Color(0xffF1F3F8),
@@ -254,7 +260,7 @@ Row(
                             children: [
                               Padding(
                                 padding: const EdgeInsets.only(left: 20.0,top: 5.0),
-                                child: Text("Max. redemption amount 169.356",
+                                child: Text("Max. redemption amount ${double.parse(widget.mfHoldingData.holdqty!) * double.parse(portfolio.mfQuotes!.nav!)}",
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -263,8 +269,16 @@ Row(
                                         FontWeight.w600)),
                               ),
                               const SizedBox(width: 8),
+                              
                             ],
                           ),
+                          if(mf.redemptionOrderError != "")...[
+                            const SizedBox(height: 8),
+                            Text("${mf.redemptionOrderError}",
+                            textAlign: TextAlign.start,
+                  style: textStyle(colors.kColorRedText, 12, FontWeight.w500)),
+              const SizedBox(height: 6)
+                          ]
                         ]),
                       ),
                     ],
@@ -277,7 +291,15 @@ Row(
                         ListTile(
                            
                           trailing: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              if(mf.checkRedemption(mf.redemptionQty.text,portfolio.mfQuotes!.minRdQty,widget.mfHoldingData.holdqty!,widget.mfHoldingData.exchTsym![0].nav)){
+                                mf.mfRedemption(context,widget.mfHoldingData.exchTsym![0].tsym!,mf.redemptionQty.text);
+                              }
+                              else{
+                                ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "Please check the data you have provided"));
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size(145, 37),
                               backgroundColor: 
@@ -289,7 +311,7 @@ Row(
                                 borderRadius: BorderRadius.circular(32),
                               ),
                             ),
-                            child: Text("Continue",
+                            child: Text("Redeem",
                                 style: textStyle(const Color(0xff999999), 14,
                                     FontWeight.w500)),
                           ),

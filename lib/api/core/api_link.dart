@@ -196,15 +196,16 @@ class ApiLinks {
   String get bankDetail => "$dashBoardURL/mf/client_bank_details";
   String get mfSip => "$dashBoardURL/mf/sip_values";
   String get mandateDetail => "$dashBoardURL/mf/mandate_details";
-  String get lumpsumOrder => "$dashBoardURL/mf//lumsum_purchase";
+  String get lumpsumOrder => "$dashBoardURL/mf/lumsum_purchase";
   String get lumpsumOrderbook => "$dashBoardURL/mf/mf_orderbook";
   String get mandatecreate => "$dashBoardURL/mf/mandate_creation";
-  String get mfXSiporder=> "$dashBoardURL/mf//xsip_purchase";
+  String get mfXSiporder=> "$dashBoardURL/mf/xsip_purchase";
   String get mfXsipcancleRes => "$dashBoardURL/mf/reasons";
   String get mfxsipcancel => "$dashBoardURL/mf/xsip_cancel";
   // String get mfallpayment => "https://v3.mynt.in/mf//all_payment";
-  String get mfallpayment => "https://v3.mynt.in/mf/lumsum_purchase_mob";
-  String get topSchemes => "https://v3.mynt.in/mf/getTopschemes";
+  String get mfallpayment => "$dashBoardURL/mf/lumsum_purchase_mob";
+  String get topSchemes => "$dashBoardURL/mf/getTopschemes";
+  String get redemption => "$dashBoardURL/mf/lumsum_redemption_mob";
 
   
 

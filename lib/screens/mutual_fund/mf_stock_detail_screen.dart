@@ -96,7 +96,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                       await mfData.fetchMFMandateDetail();
                     }
 
-                    await mfData.fetchTopSchemes();
+                    // await mfData.fetchTopSchemes();
                     Navigator.pushNamed(context, Routes.mforderScreen,
                         arguments: widget.mfStockData);
                   },

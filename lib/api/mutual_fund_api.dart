@@ -23,6 +23,7 @@ import '../models/mf_model/mf_xsip_cancle_resone_res.dart';
 import '../models/mf_model/mutual_fundmodel.dart';
 import 'package:intl/intl.dart';
 
+import '../models/mf_model/redemption_model.dart';
 import '../models/mf_model/top_schemes_model.dart';
 import '../models/mf_model/x_sip_cancel_order_model.dart';
 
@@ -175,6 +176,29 @@ String convertNumber(num value) {
       // log("MF orderBook ==>${json}");
 
       return MFOrderBookModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<RedemptionModel> getMFRedemption(String scheme, String qty) async {
+    try {
+      final uri = Uri.parse(apiLinks.redemption);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({
+            "client_code": "${prefs.clientId}",
+            "scheme_code": scheme,
+            "qty": qty,
+            "all_redeem":"N"
+
+          }));
+
+      final json = jsonDecode((res.body));
+
+      // log("MF orderBook ==>${json}");
+
+      return RedemptionModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
