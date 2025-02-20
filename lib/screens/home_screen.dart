@@ -679,8 +679,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                               //           : "",
                                                               //       style: textStyle(const Color(0xff000000), 18, FontWeight.w600)),
                                                               // ),
-                                                              title: Text("${userProfile.userDetailModel!.uname}", overflow: TextOverflow.ellipsis, style: textStyle(Color(theme.isDarkMode ? 0xffffffff : 0xff000000), 16, FontWeight.w600)),
-                                                              subtitle: Text("Client ID ${userProfile.userDetailModel!.uid}", style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
+                                                              title: Row(
+                                                                children: [
+                                                                  Text(truncateText(userProfile.userDetailModel!.uname.toString()), 
+                                                                  maxLines: 1,
+                                                                  overflow: TextOverflow.ellipsis, style: textStyle(Color(theme.isDarkMode ? 0xffffffff : 0xff000000), 16, FontWeight.w600)),
+                                                                 Icon(Icons.expand_more, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack, size: 28,)
+                                                                
+                                                                ],
+                                                              ),
+                                                              subtitle: Text("Client ID: ${userProfile.userDetailModel!.uid}", style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
                                                               trailing: SizedBox(
                                                                   width: 100,
                                                                   child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -1461,4 +1469,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             }) ??
         false;
   }
+  String truncateText(String text, {int maxLength = 12}) {
+  return (text.length > maxLength) ? '${text.substring(0, maxLength)}...' : text;
+}
 }
