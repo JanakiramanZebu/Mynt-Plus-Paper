@@ -221,8 +221,8 @@ class UserAccountScreen extends ConsumerWidget {
                         theme, () async {
                       await funds.fetchHstoken(context);
                       // Navigator.pushNamed(context, Routes.mfmainscreen);
-                      launch(
-                          "https://app.mynt.in/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                      // launch(
+                      //     "https://app.mynt.in/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                     }),
                     productList('OptionZ', "Options Trading Platform.",
                         "assets/profileimage/prd-optz.svg", theme, () async {

@@ -84,6 +84,8 @@ class FundProvider extends DefaultChangeNotifier {
 
   String get bankname => _bankname;
 
+ 
+
   List<BankData>? _bankData = [];
   List<BankData>? get bankData => _bankData;
 

@@ -161,22 +161,20 @@ String convertNumber(num value) {
     }
   }
 
-  Future<MfLumpSumOrderbook> getorderbook() async {
+  Future<MFOrderBookModel> getorderbook() async {
     try {
       final uri = Uri.parse(apiLinks.lumpsumOrderbook);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
-            "client_code": "${prefs.clientId}",
-            "from_date": "",
-            "to_date": ""
+            "client_code": "${prefs.clientId}"
           }));
 
       final json = jsonDecode((res.body));
 
       // log("MF orderBook ==>${json}");
 
-      return MfLumpSumOrderbook.fromJson(json as Map<String, dynamic>);
+      return MFOrderBookModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
@@ -300,7 +298,16 @@ String convertNumber(num value) {
             "mode_of_payment": paymentMethod,
             "vpa_id": upi,
           }));
-
+      print({
+            "client_code": prefs.clientId,
+            "scheme_code": schemeCode,
+            "amount": totalAmt,
+            "acc_number": accno,
+            "ifsc": ifsc,
+            "bank_name": bankname,
+            "mode_of_payment": paymentMethod,
+            "vpa_id": upi,
+          });
       final json = jsonDecode((res.body));
 
       log("MF ALLL PAYMENT ==>$json");

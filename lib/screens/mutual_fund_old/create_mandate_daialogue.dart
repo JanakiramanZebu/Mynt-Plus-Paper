@@ -88,22 +88,22 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                                   : colors.colorBlack,
                               16,
                               FontWeight.w600),
-                          prefixIcon: InkWell(
-                            onTap: () {},
-                            child: SvgPicture.asset(
-                                theme.isDarkMode
-                                    ? assets.darkCMinus
-                                    : assets.minusIcon,
-                                fit: BoxFit.scaleDown),
-                          ),
-                          suffixIcon: InkWell(
-                              onTap: () {},
-                              child: SvgPicture.asset(
-                                  theme.isDarkMode
-                                      ? assets.darkAdd
-                                      : assets.addIcon,
-                                  fit: BoxFit.scaleDown)),
-                          textCtrl: mfOrder.instalmentAmt,
+                          // prefixIcon: InkWell(
+                          //   onTap: () {},
+                          //   child: SvgPicture.asset(
+                          //       theme.isDarkMode
+                          //           ? assets.darkCMinus
+                          //           : assets.minusIcon,
+                          //       fit: BoxFit.scaleDown),
+                          // ),
+                          // suffixIcon: InkWell(
+                          //     onTap: () {},
+                          //     child: SvgPicture.asset(
+                          //         theme.isDarkMode
+                          //             ? assets.darkAdd
+                          //             : assets.addIcon,
+                          //         fit: BoxFit.scaleDown)),
+                          textCtrl: mfOrder.installmentAmt,
                           onChanged: (value) {
                             fund.isValidUpiId();
                           })),
@@ -211,7 +211,7 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                   if (fund.invAmtError == null && fund.upiError == null) {
                     await mfOrder.fetchCreateMandate(
                         context,
-                        double.parse(mfOrder.instalmentAmt.text)
+                        double.parse(mfOrder.installmentAmt.text)
                             .toInt()
                             .toString(),
                         mfOrder.startDate,

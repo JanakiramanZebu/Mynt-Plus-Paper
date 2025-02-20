@@ -140,9 +140,9 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                     child: Column(
                       children: [
                         mforderbook.mfOrderbookfilter == "All"
-                            ? mforderbook.mflumpsumorderbook!.allMFLumpSumOrderbook == [] ||
+                            ? mforderbook.mflumpsumorderbook!.data == [] ||
                                     mforderbook.mflumpsumorderbook!
-                                        .allMFLumpSumOrderbook.isEmpty
+                                        .data!.isEmpty
                                 ? const Padding(
                                     padding: EdgeInsets.only(top: 280),
                                     child: Center(child: NoDataFound()),
@@ -153,28 +153,28 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                         const NeverScrollableScrollPhysics(),
                                     itemBuilder: (context, index) {
                                       return InkWell(
-                                        onTap: () {
-                                          if (mforderbook
-                                                  .mflumpsumorderbook!
-                                                  .allMFLumpSumOrderbook[index]
-                                                  .transactionType ==
-                                              "X-SIP") {
-                                            mforderbook.fetchXsipcancelResone();
-                                            Future.delayed(
-                                                const Duration(
-                                                    milliseconds: 500), () {
-                                              showDialog(
-                                                  context: context,
-                                                  builder:
-                                                      (BuildContext context) {
-                                                    return XsipAlertCancelResoneAlert(
-                                                        mfdata: mforderbook
-                                                            .mflumpsumorderbook!
-                                                            .allMFLumpSumOrderbook[index]);
-                                                  });
-                                            });
-                                          }
-                                        },
+                                        // onTap: () {
+                                        //   if (mforderbook
+                                        //           .mflumpsumorderbook!
+                                        //           .data![index]
+                                        //           .transactionType ==
+                                        //       "X-SIP") {
+                                        //     mforderbook.fetchXsipcancelResone();
+                                        //     Future.delayed(
+                                        //         const Duration(
+                                        //             milliseconds: 500), () {
+                                        //       showDialog(
+                                        //           context: context,
+                                        //           builder:
+                                        //               (BuildContext context) {
+                                        //             return XsipAlertCancelResoneAlert(
+                                        //                 mfdata: mforderbook
+                                        //                     .mflumpsumorderbook!
+                                        //                     .data![index]);
+                                        //           });
+                                        //     });
+                                        //   }
+                                        // },
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 16, vertical: 12),
@@ -189,7 +189,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                 children: [
                                                   Expanded(
                                                     child:Text(
-  "${mforderbook.mflumpsumorderbook!.allMFLumpSumOrderbook[index].schemeName}",
+  "${mforderbook.mflumpsumorderbook!.data![index].schemename}",
   maxLines: 2,
   style: textStyles.scripNameTxtStyle.copyWith(
     color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -203,11 +203,10 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                     children: [
                                                       SvgPicture.asset(
                                                         mforderbook
-                                                                    .mflumpsumorderbook!
-                                                                    .allMFLumpSumOrderbook[
+                                                                    .mflumpsumorderbook!.data![
                                                                         index]
-                                                                    .transactionTypeOrderStatus ==
-                                                                "Success"
+                                                                    .orderstatus ==
+                                                                "VALID"
                                                             ? assets
                                                                 .completedIcon
                                                             : assets
@@ -217,9 +216,9 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                       Text(
                                                         mforderbook
                                                             .mflumpsumorderbook!
-                                                            .allMFLumpSumOrderbook[
+                                                            .data![
                                                                 index]
-                                                            .transactionTypeOrderStatus,
+                                                            .orderstatus!,
                                                         style: textStyle(
                                                             theme.isDarkMode
                                                                 ? colors
@@ -240,13 +239,13 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                 children: [
                                                   CustomExchBadge(
                                                     exch:
-                                                        "${mforderbook.mflumpsumorderbook!.allMFLumpSumOrderbook[index].date}",
+                                                        "${mforderbook.mflumpsumorderbook!.data![index].date}",
                                                   ),
                                                   const SizedBox(width: 6),
 
                                                   CustomExchBadge(
                                                     exch:
-                                                        "Order no:${mforderbook.mflumpsumorderbook!.allMFLumpSumOrderbook[index].orderNumber}",
+                                                        "Order no:${mforderbook.mflumpsumorderbook!.data![index].ordernumber}",
                                                   ),
                                                 ],
                                               ),
@@ -270,7 +269,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                             .start,
                                                     children: [
                                                       Text(
-                                                        '${mforderbook.mflumpsumorderbook!.allMFLumpSumOrderbook[index].transactionType}',
+                                                        '${mforderbook.mflumpsumorderbook!.data![index].ordertype}',
                                                         style: textStyle(
                                                             theme.isDarkMode
                                                                 ? colors
@@ -323,13 +322,13 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                       Text(
                                                         mforderbook
                                                                         .mflumpsumorderbook!
-                                                                        .allMFLumpSumOrderbook[
+                                                                        .data![
                                                                             index]
                                                                         .amount ==
                                                                     "" ||
                                                                 double.tryParse(mforderbook
                                                                         .mflumpsumorderbook!
-                                                                        .allMFLumpSumOrderbook[
+                                                                        .data![
                                                                             index]
                                                                         .amount
                                                                         .toString()) ==
@@ -337,7 +336,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                             ? '0.00'
                                                             : mforderbook
                                                                 .mflumpsumorderbook!
-                                                                .allMFLumpSumOrderbook[
+                                                                .data![
                                                                     index]
                                                                 .amount
                                                                 .toString(),
@@ -383,648 +382,8 @@ const SizedBox(height: 4),
                                           height: 6);
                                     },
                                     itemCount: mforderbook.mflumpsumorderbook!
-                                        .allMFLumpSumOrderbook.length)
-                            : mforderbook.mfOrderbookfilter == "Lumpsum"
-                                ? mforderbook.mflumpsumorderbook!.pusrchaseNotListed! == [] ||
-                                        mforderbook.mflumpsumorderbook!
-                                            .pusrchaseNotListed!.isEmpty
-                                    ? const Padding(
-                                        padding: EdgeInsets.only(top: 280),
-                                        child: Center(child: NoDataFound()),
-                                      )
-                                    : ListView.separated(
-                                        shrinkWrap: true,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemBuilder: (context, index) {
-                                          return Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 12),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                          "${mforderbook.mflumpsumorderbook!.pusrchaseNotListed![index].schemeName}",
-                                                          //overflow: TextOverflow.ellipsis,
-                                                          maxLines: 2,
-                                                          style: textStyles
-                                                              .scripNameTxtStyle
-                                                              .copyWith(
-                                                                  color: theme.isDarkMode
-                                                                      ? colors
-                                                                          .colorWhite
-                                                                      : colors
-                                                                          .colorBlack)),
-                                                    ),
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .end,
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          mforderbook
-                                                                      .mflumpsumorderbook!
-                                                                      .pusrchaseNotListed![
-                                                                          index]
-                                                                      .mfStatus ==
-                                                                  "0"
-                                                              ? assets
-                                                                  .completedIcon
-                                                              : assets
-                                                                  .cancelledIcon,
-                                                          width: 20,
-                                                        ),
-                                                        Text(
-                                                          mforderbook
-                                                                      .mflumpsumorderbook!
-                                                                      .pusrchaseNotListed![
-                                                                          index]
-                                                                      .mfStatus ==
-                                                                  "0"
-                                                              ? "Success"
-                                                              : "Failed ",
-                                                          style: textStyle(
-                                                              theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack,
-                                                              12,
-                                                              FontWeight.w500),
-                                                        )
-                                                      ],
-                                                    )
-                                                  ],
-                                                ),
-                                                const SizedBox(
-                                                  height: 5,
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    CustomExchBadge(
-                                                      exch:
-                                                          "${mforderbook.mflumpsumorderbook!.pusrchaseNotListed![index].date}",
-                                                    ),
-                                                    CustomExchBadge(
-                                                      exch:
-                                                          "Order no:${mforderbook.mflumpsumorderbook!.pusrchaseNotListed![index].orderNumber}",
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(
-                                                  height: 15,
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          'Transaction',
-                                                          style: textStyle(
-                                                              colors.colorGrey,
-                                                              11,
-                                                              FontWeight.w500),
-                                                        ),
-                                                        Text(
-                                                          '${mforderbook.mflumpsumorderbook!.pusrchaseNotListed![index].transactionType}',
-                                                          style: textStyle(
-                                                              theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack,
-                                                              13,
-                                                              FontWeight.w500),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Column(
-                                                      children: [
-                                                        Text(
-                                                          'Units',
-                                                          style: textStyle(
-                                                              colors.colorGrey,
-                                                              11,
-                                                              FontWeight.w500),
-                                                        ),
-                                                        Text(
-                                                          '00.0',
-                                                          style: textStyle(
-                                                              theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack,
-                                                              13,
-                                                              FontWeight.w500),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .end,
-                                                      children: [
-                                                        Text(
-                                                          'Invest amt',
-                                                          style: textStyle(
-                                                              colors.colorGrey,
-                                                              11,
-                                                              FontWeight.w500),
-                                                        ),
-                                                        Text(
-                                                          mforderbook
-                                                                          .mflumpsumorderbook!
-                                                                          .pusrchaseNotListed![
-                                                                              index]
-                                                                          .amount ==
-                                                                      "" ||
-                                                                  double.tryParse(mforderbook
-                                                                          .mflumpsumorderbook!
-                                                                          .pusrchaseNotListed![
-                                                                              index]
-                                                                          .amount
-                                                                          .toString()) ==
-                                                                      null
-                                                              ? '0.00'
-                                                              : mforderbook
-                                                                  .mflumpsumorderbook!
-                                                                  .pusrchaseNotListed![
-                                                                      index]
-                                                                  .amount
-                                                                  .toString(),
-                                                          style: textStyle(
-                                                              theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack,
-                                                              13,
-                                                              FontWeight.w500),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                        separatorBuilder:
-                                            (BuildContext context, int index) {
-                                          return Container(
-                                              color: theme.isDarkMode
-                                                  ? colors.darkGrey
-                                                  : const Color(0xffF1F3F8),
-                                              height: 6);
-                                        },
-                                        itemCount: mforderbook
-                                            .mflumpsumorderbook!
-                                            .pusrchaseNotListed!
-                                            .length)
-                                : mforderbook.mfOrderbookfilter == "X-SIP"
-                                    ? mforderbook.mflumpsumorderbook!
-                                                    .xsipPurchaseNotListed! ==
-                                                [] ||
-                                            mforderbook.mflumpsumorderbook!
-                                                .xsipPurchaseNotListed!.isEmpty
-                                        ? const Padding(
-                                            padding: EdgeInsets.only(top: 280),
-                                            child: Center(child: NoDataFound()),
-                                          )
-                                        : ListView.separated(
-                                            shrinkWrap: true,
-                                            physics: const NeverScrollableScrollPhysics(),
-                                            itemBuilder: (context, index) {
-                                              return InkWell(
-                                                onTap: () {
-                                                  mforderbook
-                                                      .fetchXsipcancelResone();
-                                                  Future.delayed(
-                                                      const Duration(
-                                                          milliseconds: 500),
-                                                      () {
-                                                    showDialog(
-                                                        context: context,
-                                                        builder: (BuildContext
-                                                            context) {
-                                                          return XsipAlertCancelResoneAlert(
-                                                              mfdata: mforderbook
-                                                                  .mflumpsumorderbook!
-                                                                  .xsipPurchaseNotListed![index]);
-                                                        });
-                                                  });
-                                                },
-                                                child: Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 16,
-                                                      vertical: 12),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Expanded(
-                                                            child: Text(
-                                                                "${mforderbook.mflumpsumorderbook!.xsipPurchaseNotListed![index].schemeName}",
-                                                                //overflow: TextOverflow.ellipsis,
-                                                                maxLines: 2,
-                                                                style: textStyles
-                                                                    .scripNameTxtStyle
-                                                                    .copyWith(
-                                                                        color: theme.isDarkMode
-                                                                            ? colors.colorWhite
-                                                                            : colors.colorBlack)),
-                                                          ),
-                                                          Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .end,
-                                                            children: [
-                                                              SvgPicture.asset(
-                                                                mforderbook
-                                                                            .mflumpsumorderbook!
-                                                                            .xsipPurchaseNotListed![
-                                                                                index]
-                                                                            .orderStatus ==
-                                                                        "NEW"
-                                                                    ? assets
-                                                                        .completedIcon
-                                                                    : assets
-                                                                        .cancelledIcon,
-                                                                width: 20,
-                                                              ),
-                                                              Text(
-                                                                mforderbook
-                                                                            .mflumpsumorderbook!
-                                                                            .xsipPurchaseNotListed![index]
-                                                                            .orderStatus ==
-                                                                        "NEW"
-                                                                    ? "Success"
-                                                                    : "Failed ",
-                                                                style: textStyle(
-                                                                    theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorWhite
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                    12,
-                                                                    FontWeight
-                                                                        .w500),
-                                                              )
-                                                            ],
-                                                          )
-                                                        ],
-                                                      ),
-                                                      const SizedBox(
-                                                        height: 5,
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          CustomExchBadge(
-                                                            exch:
-                                                                "${mforderbook.mflumpsumorderbook!.xsipPurchaseNotListed![index].date}",
-                                                          ),
-                                                          CustomExchBadge(
-                                                            exch:
-                                                                "Order no:${mforderbook.mflumpsumorderbook!.xsipPurchaseNotListed![index].orderNumber}",
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(
-                                                        height: 15,
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Text(
-                                                                'Transaction',
-                                                                style: textStyle(
-                                                                    colors
-                                                                        .colorGrey,
-                                                                    11,
-                                                                    FontWeight
-                                                                        .w500),
-                                                              ),
-                                                              Text(
-                                                                '${mforderbook.mflumpsumorderbook!.xsipPurchaseNotListed![index].transactionType}',
-                                                                style: textStyle(
-                                                                    theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorWhite
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                    13,
-                                                                    FontWeight
-                                                                        .w500),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          Column(
-                                                            children: [
-                                                              Text(
-                                                                'Units',
-                                                                style: textStyle(
-                                                                    colors
-                                                                        .colorGrey,
-                                                                    11,
-                                                                    FontWeight
-                                                                        .w500),
-                                                              ),
-                                                              Text(
-                                                                '00.0',
-                                                                style: textStyle(
-                                                                    theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorWhite
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                    13,
-                                                                    FontWeight
-                                                                        .w500),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .end,
-                                                            children: [
-                                                              Text(
-                                                                'Invest amt',
-                                                                style: textStyle(
-                                                                    colors
-                                                                        .colorGrey,
-                                                                    11,
-                                                                    FontWeight
-                                                                        .w500),
-                                                              ),
-                                                              Text(
-                                                                mforderbook
-                                                                            .mflumpsumorderbook!
-                                                                            .xsipPurchaseNotListed![index]
-                                                                            .amount ==
-                                                                        ""
-                                                                    ? '0.00'
-                                                                    : '0.00',
-                                                                style: textStyle(
-                                                                    theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorWhite
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                    13,
-                                                                    FontWeight
-                                                                        .w500),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            separatorBuilder: (BuildContext context, int index) {
-                                              return Container(
-                                                  color: theme.isDarkMode
-                                                      ? colors.darkGrey
-                                                      : const Color(0xffF1F3F8),
-                                                  height: 6);
-                                            },
-                                            itemCount: mforderbook.mflumpsumorderbook!.xsipPurchaseNotListed!.length)
-                                    : mforderbook.mfOrderbookfilter == "Redeem"
-                                        ? mforderbook.mflumpsumorderbook!.redeemptionNotListed! == [] || mforderbook.mflumpsumorderbook!.redeemptionNotListed!.isEmpty
-                                            ? const Padding(
-                                                padding:
-                                                    EdgeInsets.only(top: 280),
-                                                child: Center(
-                                                    child: NoDataFound()),
-                                              )
-                                            : ListView.separated(
-                                                shrinkWrap: true,
-                                                physics: NeverScrollableScrollPhysics(),
-                                                itemBuilder: (context, index) {
-                                                  return Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 12),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
-                                                          children: [
-                                                            Expanded(
-                                                              child: Text(
-                                                                  "${mforderbook.mflumpsumorderbook!.redeemptionNotListed![index].schemeName}",
-                                                                  //overflow: TextOverflow.ellipsis,
-                                                                  maxLines: 2,
-                                                                  style: textStyles
-                                                                      .scripNameTxtStyle
-                                                                      .copyWith(
-                                                                          color: theme.isDarkMode
-                                                                              ? colors.colorWhite
-                                                                              : colors.colorBlack)),
-                                                            ),
-                                                            Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .end,
-                                                              children: [
-                                                                SvgPicture
-                                                                    .asset(
-                                                                  mforderbook
-                                                                              .mflumpsumorderbook!
-                                                                              .redeemptionNotListed![
-                                                                                  index]
-                                                                              .mfStatus ==
-                                                                          "NEW"
-                                                                      ? assets
-                                                                          .completedIcon
-                                                                      : assets
-                                                                          .cancelledIcon,
-                                                                  width: 20,
-                                                                ),
-                                                                Text(
-                                                                  mforderbook
-                                                                              .mflumpsumorderbook!
-                                                                              .redeemptionNotListed![index]
-                                                                              .mfStatus ==
-                                                                          "NEW"
-                                                                      ? "Success"
-                                                                      : "Failed ",
-                                                                  style: textStyle(
-                                                                      theme.isDarkMode
-                                                                          ? colors
-                                                                              .colorWhite
-                                                                          : colors
-                                                                              .colorBlack,
-                                                                      12,
-                                                                      FontWeight
-                                                                          .w500),
-                                                                )
-                                                              ],
-                                                            )
-                                                          ],
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 5,
-                                                        ),
-                                                        Row(
-                                                          children: [
-                                                            CustomExchBadge(
-                                                              exch:
-                                                                  "${mforderbook.mflumpsumorderbook!.redeemptionNotListed![index].date}",
-                                                            ),
-                                                            CustomExchBadge(
-                                                              exch:
-                                                                  "Order no:${mforderbook.mflumpsumorderbook!.redeemptionNotListed![index].orderNumber}",
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 15,
-                                                        ),
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
-                                                          children: [
-                                                            Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Text(
-                                                                  'Transaction',
-                                                                  style: textStyle(
-                                                                      colors
-                                                                          .colorGrey,
-                                                                      11,
-                                                                      FontWeight
-                                                                          .w500),
-                                                                ),
-                                                                Text(
-                                                                  'Redeem',
-                                                                  style: textStyle(
-                                                                      theme.isDarkMode
-                                                                          ? colors
-                                                                              .colorWhite
-                                                                          : colors
-                                                                              .colorBlack,
-                                                                      13,
-                                                                      FontWeight
-                                                                          .w500),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Column(
-                                                              children: [
-                                                                Text(
-                                                                  'Units',
-                                                                  style: textStyle(
-                                                                      colors
-                                                                          .colorGrey,
-                                                                      11,
-                                                                      FontWeight
-                                                                          .w500),
-                                                                ),
-                                                                Text(
-                                                                  '00.0',
-                                                                  style: textStyle(
-                                                                      theme.isDarkMode
-                                                                          ? colors
-                                                                              .colorWhite
-                                                                          : colors
-                                                                              .colorBlack,
-                                                                      13,
-                                                                      FontWeight
-                                                                          .w500),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .end,
-                                                              children: [
-                                                                Text(
-                                                                  'Invest amt',
-                                                                  style: textStyle(
-                                                                      colors
-                                                                          .colorGrey,
-                                                                      11,
-                                                                      FontWeight
-                                                                          .w500),
-                                                                ),
-                                                                Text(
-                                                                  mforderbook
-                                                                              .mflumpsumorderbook!
-                                                                              .redeemptionNotListed![index]
-                                                                              .amount ==
-                                                                          ""
-                                                                      ? '0.00'
-                                                                      : '0.00',
-                                                                  style: textStyle(
-                                                                      theme.isDarkMode
-                                                                          ? colors
-                                                                              .colorWhite
-                                                                          : colors
-                                                                              .colorBlack,
-                                                                      13,
-                                                                      FontWeight
-                                                                          .w500),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                },
-                                                separatorBuilder: (BuildContext context, int index) {
-                                                  return Container(
-                                                      color: theme.isDarkMode
-                                                          ? colors.darkGrey
-                                                          : const Color(
-                                                              0xffF1F3F8),
-                                                      height: 6);
-                                                },
-                                                itemCount: mforderbook.mflumpsumorderbook!.redeemptionNotListed!.length)
+                                        .data!.length)
+                            
                                         : const Padding(
                                             padding: EdgeInsets.only(top: 300),
                                             child: Center(child: NoDataFound()),

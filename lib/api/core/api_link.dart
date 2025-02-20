@@ -197,7 +197,7 @@ class ApiLinks {
   String get mfSip => "$dashBoardURL/mf/sip_values";
   String get mandateDetail => "$dashBoardURL/mf/mandate_details";
   String get lumpsumOrder => "$dashBoardURL/mf//lumsum_purchase";
-  String get lumpsumOrderbook => "$dashBoardURL/mf/lumsum_orderbook";
+  String get lumpsumOrderbook => "$dashBoardURL/mf/mf_orderbook";
   String get mandatecreate => "$dashBoardURL/mf/mandate_creation";
   String get mfXSiporder=> "$dashBoardURL/mf//xsip_purchase";
   String get mfXsipcancleRes => "$dashBoardURL/mf/reasons";

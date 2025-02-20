@@ -119,7 +119,7 @@ final portfolio = watch(portfolioProvider);
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                portfolio.mfTotCurrentVal.toString(),
+                                portfolio.mfTotCurrentVal.toStringAsFixed(2),
                                 style: const TextStyle(
                                     fontSize: 28,
                                     fontWeight: FontWeight.w600,
@@ -153,7 +153,7 @@ final portfolio = watch(portfolioProvider);
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500)),
                                       const SizedBox(height: 6),
-                                      Text(portfolio.mfTotInveest.toString(),
+                                      Text(portfolio.mfTotInveest.toStringAsFixed(2),
                                           style: const TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
@@ -170,7 +170,7 @@ final portfolio = watch(portfolioProvider);
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500)),
                                       const SizedBox(height: 6),
-                                      Text(portfolio.mfTotalPnl.toString(),
+                                      Text(portfolio.mfTotalPnl.toStringAsFixed(2),
                                           style: const TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
@@ -282,6 +282,7 @@ final portfolio = watch(portfolioProvider);
                                   child: ElevatedButton(
                                     onPressed: () async{
                                       await mf.fetchMfOrderbook(context);
+                                      await portfolio.fetchMFHoldings(context);
                                       Navigator.pushNamed(context, Routes.mfOrderbookscreen);
                                     },
                                     style: ElevatedButton.styleFrom(

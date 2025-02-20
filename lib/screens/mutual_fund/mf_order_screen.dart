@@ -27,14 +27,13 @@ class MFOrderScreen extends StatefulWidget {
 }
 
 class _MFOrderScreenState extends State<MFOrderScreen> {
-  bool isInitalPay = false;
-  double invAmt = 0.00;
+  // double invAmt = 0.00;
   @override
   void initState() {
     setState(() {
-      context.read(fundProvider).invAmt.text =
+      context.read(mfProvider).invAmt.text =
           "${widget.mfData.minimumPurchaseAmount}";
-      invAmt = double.parse("${widget.mfData.minimumPurchaseAmount ?? 0.00}");
+      // invAmt = double.parse("${widget.mfData.minimumPurchaseAmount ?? 0.00}");
     });
 
     super.initState();
@@ -44,7 +43,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final theme = watch(themeProvider);
-      final fund = watch(fundProvider);
+      // final fund = watch(fundProvider);
       final mfOrder = watch(mfProvider);
       
       return Scaffold(
@@ -226,10 +225,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor:
-                          fund.invAmtError == null && fund.upiError == null
-                              ? colors.colorBlack
-                              : const Color(0xffF1F3F8),
+                      backgroundColor:colors.colorBlack,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50))),
                   child: Text("Create mandate",
@@ -247,23 +243,23 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                       splashRadius: 20,
                       onPressed: () {
                         setState(() {
-                          isInitalPay = !isInitalPay;
+                          mfOrder.setInitialPay(!mfOrder.isInitalPay);
+                          mfOrder.isValidUpiId(widget.mfData);
                         });
                       },
                       icon: SvgPicture.asset(theme.isDarkMode
-                          ? isInitalPay
+                          ? mfOrder.isInitalPay
                               ? assets.darkCheckedboxIcon
                               : assets.darkCheckboxIcon
-                          : isInitalPay
+                          : mfOrder.isInitalPay
                               ? assets.checkedbox
                               : assets.checkbox)),
                   Text("Pay initial investment now",
                       style: textStyle(colors.colorGrey, 12, FontWeight.w500)),
                 ],
               ),
-                const SizedBox(height: 8),
-            
-              if (isInitalPay)
+              const SizedBox(height: 8),
+              if (mfOrder.isInitalPay)
                 SizedBox(
                     height: 44,
                     child: CustomTextFormField(
@@ -281,45 +277,52 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                 : colors.colorBlack,
                             16,
                             FontWeight.w600),
-                        prefixIcon: InkWell(
-                          onTap: () {
-                            setState(() {
-                              if (fund.invAmt.text.isNotEmpty) {
-                                if (double.parse(fund.invAmt.text) > invAmt) {
-                                  fund.invAmt.text =
-                                      (double.parse(fund.invAmt.text) - invAmt)
-                                          .toString();
-                                }
-                              } else {
-                                fund.invAmt.text = (invAmt).toString();
-                              }
-                            });
-                          },
-                          child: SvgPicture.asset(
-                              theme.isDarkMode
-                                  ? assets.darkCMinus
-                                  : assets.minusIcon,
-                              fit: BoxFit.scaleDown),
-                        ),
-                        suffixIcon: InkWell(
-                            onTap: () {
-                              if (fund.invAmt.text.isNotEmpty) {
-                                fund.invAmt.text =
-                                    (double.parse(fund.invAmt.text) + invAmt)
-                                        .toString();
-                              } else {
-                                fund.invAmt.text = (invAmt).toString();
-                              }
-                            },
-                            child: SvgPicture.asset(
-                                theme.isDarkMode
-                                    ? assets.darkAdd
-                                    : assets.addIcon,
-                                fit: BoxFit.scaleDown)),
-                        textCtrl: fund.invAmt,
+                        // prefixIcon: InkWell(
+                        //   onTap: () {
+                        //     setState(() {
+                        //       if (fund.invAmt.text.isNotEmpty) {
+                        //         if (double.parse(fund.invAmt.text) > invAmt) {
+                        //           fund.invAmt.text =
+                        //               (double.parse(fund.invAmt.text) - invAmt)
+                        //                   .toString();
+                        //         }
+                        //       } else {
+                        //         fund.invAmt.text = (invAmt).toString();
+                        //       }
+                        //     });
+                        //   },
+                        //   child: SvgPicture.asset(
+                        //       theme.isDarkMode
+                        //           ? assets.darkCMinus
+                        //           : assets.minusIcon,
+                        //       fit: BoxFit.scaleDown),
+                        // ),
+                        // suffixIcon: InkWell(
+                        //     onTap: () {
+                        //       if (fund.invAmt.text.isNotEmpty) {
+                        //         fund.invAmt.text =
+                        //             (double.parse(fund.invAmt.text) + invAmt)
+                        //                 .toString();
+                        //       } else {
+                        //         fund.invAmt.text = (invAmt).toString();
+                        //       }
+                        //     },
+                        //     child: SvgPicture.asset(
+                        //         theme.isDarkMode
+                        //             ? assets.darkAdd
+                        //             : assets.addIcon,
+                        //         fit: BoxFit.scaleDown)),
+                        
+                        textCtrl: mfOrder.invAmt,
                         onChanged: (value) {
-                          fund.isValidUpiId();
+                          mfOrder.isValidUpiId(widget.mfData);
                         })),
+                        if(mfOrder.invAmtError != null) ...[
+                          const SizedBox(height: 6),
+              Text("${mfOrder.invAmtError}",
+                  style: textStyle(colors.kColorRedText, 10, FontWeight.w500)),
+              
+            ],
               const SizedBox(height: 8)
             ],
         const SizedBox(height: 10),
@@ -353,74 +356,97 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                             : colors.colorBlack,
                         16,
                         FontWeight.w600),
-                    prefixIcon: InkWell(
-                      onTap: () {
-                        setState(() {
-                          if (mfOrder.mfOrderTpye == "Lumpsum") {
-                            if (fund.invAmt.text.isNotEmpty) {
-                              if (double.parse(fund.invAmt.text) > invAmt) {
-                                fund.invAmt.text =
-                                    (double.parse(fund.invAmt.text) - invAmt)
-                                        .toString();
-                              }
-                            } else {
-                              fund.invAmt.text = (invAmt).toString();
-                            }
-                          } else {
-                            if (mfOrder.instalmentAmt.text.isNotEmpty) {
-                              if (double.parse(mfOrder.instalmentAmt.text) >
-                                  double.parse(mfOrder.insAmt)) {
-                                mfOrder.instalmentAmt.text =
-                                    (double.parse(mfOrder.instalmentAmt.text) -
-                                            double.parse(mfOrder.insAmt))
-                                        .toString();
-                              }
-                            } else {
-                              mfOrder.instalmentAmt.text = mfOrder.insAmt;
-                            }
-                          }
-                        });
-                      },
-                      child: SvgPicture.asset(
-                          theme.isDarkMode
-                              ? assets.darkCMinus
-                              : assets.minusIcon,
-                          fit: BoxFit.scaleDown),
-                    ),
-                    suffixIcon: InkWell(
-                        onTap: () {
-                          if (mfOrder.mfOrderTpye == "Lumpsum") {
-                            if (fund.invAmt.text.isNotEmpty) {
-                              fund.invAmt.text =
-                                  (double.parse(fund.invAmt.text) + invAmt)
-                                      .toString();
-                            } else {
-                              fund.invAmt.text = (invAmt).toString();
-                            }
-                          } else {
-                            if (mfOrder.instalmentAmt.text.isNotEmpty) {
-                              mfOrder.instalmentAmt.text =
-                                  (double.parse(mfOrder.instalmentAmt.text) +
-                                          double.parse(mfOrder.insAmt))
-                                      .toString();
-                            } else {
-                              mfOrder.instalmentAmt.text = mfOrder.insAmt;
-                            }
-                          }
-                        },
-                        child: SvgPicture.asset(
-                            theme.isDarkMode ? assets.darkAdd : assets.addIcon,
-                            fit: BoxFit.scaleDown)),
+              //       prefixIcon: InkWell(
+              //         onTap: () {
+              //           setState(() {
+              //             if (mfOrder.mfOrderTpye == "Lumpsum") {
+              //               if (fund.invAmt.text.isNotEmpty) {
+              //                 if (double.parse(fund.invAmt.text) > invAmt) {
+              //                   if((double.parse(fund.invAmt.text) - invAmt) < invAmt){
+              //                       ScaffoldMessenger.of(context).showSnackBar(successMessage(
+              // context, "Installment Amount should not be less than ${mfOrder.insAmt}"));
+              //                     }
+              //                     else{
+              //                   fund.invAmt.text =
+              //                       (double.parse(fund.invAmt.text) - invAmt)
+              //                           .toString();
+              //                     }
+              //                 }
+              //               } else {
+              //                 fund.invAmt.text = (invAmt).toString();
+              //               }
+              //             } else {
+              //               if (mfOrder.installmentAmt.text.isNotEmpty) {
+              //                 if (double.parse(mfOrder.installmentAmt.text) >
+              //                     double.parse(mfOrder.insAmt)) {
+              //                       if((double.parse(mfOrder.installmentAmt.text) -
+              //                     double.parse(mfOrder.insAmt)) < double.parse(mfOrder.insAmt)){
+              //                       ScaffoldMessenger.of(context).showSnackBar(successMessage(
+              // context, "Installment Amount should not be less than ${mfOrder.insAmt}"));
+              //                     }
+              //                     else{
+              //                   mfOrder.installmentAmt.text =
+              //                       (double.parse(mfOrder.installmentAmt.text) -
+              //                               double.parse(mfOrder.insAmt))
+              //                           .toString();
+              //                 }
+              //                     }
+              //               } else {
+              //                 mfOrder.installmentAmt.text = mfOrder.insAmt;
+              //               }
+              //             }
+              //           });
+              //         },
+              //         child: SvgPicture.asset(
+              //             theme.isDarkMode
+              //                 ? assets.darkCMinus
+              //                 : assets.minusIcon,
+              //             fit: BoxFit.scaleDown),
+              //       ),
+              //       // suffixIcon: InkWell(
+                    //     onTap: () {
+                    //       if (mfOrder.mfOrderTpye == "Lumpsum") {
+                    //         if (fund.invAmt.text.isNotEmpty) {
+                    //           fund.invAmt.text =
+                    //               (double.parse(fund.invAmt.text) + invAmt)
+                    //                   .toString();
+                    //         } else {
+                    //           fund.invAmt.text = (invAmt).toString();
+                    //         }
+                    //       } else {
+                    //         if (mfOrder.installmentAmt.text.isNotEmpty) {
+                    //           mfOrder.installmentAmt.text =
+                    //               (double.parse(mfOrder.installmentAmt.text) +
+                    //                       double.parse(mfOrder.insAmt))
+                    //                   .toString();
+                    //         } else {
+                    //           mfOrder.installmentAmt.text = mfOrder.insAmt;
+                    //         }
+                    //       }
+                    //     },
+                    //     child: SvgPicture.asset(
+                    //         theme.isDarkMode ? assets.darkAdd : assets.addIcon,
+                    //         fit: BoxFit.scaleDown)),
+                    
                     textCtrl: mfOrder.mfOrderTpye == "Lumpsum"
-                        ? fund.invAmt
-                        : mfOrder.instalmentAmt,
+                        ? mfOrder.invAmt
+                        : mfOrder.installmentAmt,
                     onChanged: (value) {
-                      fund.isValidUpiId();
+                      mfOrder.isValidUpiId(widget.mfData);
                     })),
-            if (fund.invAmtError != null) ...[
-              Text("${fund.invAmtError}",
+            if(mfOrder.mfOrderTpye == "Lumpsum")...[
+            if (mfOrder.invAmtError != null) ...[
+              Text("${mfOrder.invAmtError}",
                   style: textStyle(colors.kColorRedText, 10, FontWeight.w500)),
               const SizedBox(height: 6)
+            ],
+            ]
+            else...[
+            if (mfOrder.installmentAmtError != null) ...[
+              Text("${mfOrder.installmentAmtError}",
+                  style: textStyle(colors.kColorRedText, 10, FontWeight.w500)),
+              const SizedBox(height: 6)
+            ],
             ],
             Text(
                 "Min. ₹${widget.mfData.minimumPurchaseAmount} (multiple of ${widget.mfData.purchaseAmountMultiplier})",
@@ -560,11 +586,16 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                           FontWeight.w600),
                       textCtrl: mfOrder.invDuration,
                       onChanged: (value) {
-                        fund.isValidUpiId();
+                        mfOrder.isValidUpiId(widget.mfData);
                       })),
+                      if (mfOrder.invDurationError != null) ...[
+              Text("${mfOrder.invDurationError}",
+                  style: textStyle(colors.kColorRedText, 10, FontWeight.w500)),
+              const SizedBox(height: 6)
+            ]
             ],
        
-            if(isInitalPay && mfOrder.mfOrderTpye != "Lumpsum")...[
+            if(mfOrder.isInitalPay && mfOrder.mfOrderTpye != "Lumpsum")...[
             const SizedBox(height: 9),
             Text("Payment method",
                 style: textStyle(
@@ -575,7 +606,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
             DropdownButtonHideUnderline(
                 child: DropdownButton2(
                     menuItemStyleData: MenuItemStyleData(
-                        customHeights: fund.getCustItemsHeight()),
+                        customHeights: mfOrder.getCustItemsHeight()),
                     buttonStyleData: ButtonStyleData(
                         height: 36,
                         width: MediaQuery.of(context).size.width,
@@ -593,13 +624,13 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     isExpanded: true,
                     style:
                         textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                    hint: Text(fund.paymentName,
+                    hint: Text(mfOrder.paymentName,
                         style: textStyle(
                             const Color(0XFF000000), 13, FontWeight.w500)),
-                    items: fund.addDividers(),
-                    value: fund.paymentName,
+                    items: mfOrder.addDividers(),
+                    value: mfOrder.paymentName,
                     onChanged: (value) async {
-                      fund.chngPayName("$value");
+                      mfOrder.chngPayName("$value");
                     })),
             const SizedBox(height: 17),
             Text("Bank account",
@@ -611,7 +642,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
             DropdownButtonHideUnderline(
                 child: DropdownButton2(
                     menuItemStyleData: MenuItemStyleData(
-                        customHeights: fund.getBankCustItemsHeight()),
+                        customHeights: mfOrder.getBankCustItemsHeight()),
                     buttonStyleData: ButtonStyleData(
                         padding: const EdgeInsets.only(top: 4, left: 16),
                         height: 50,
@@ -627,19 +658,18 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     isExpanded: true,
                     style:
                         textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                    hint: Text(fund.accNum,
+                    hint: Text(mfOrder.accNum,
                         style: textStyle(
                             const Color(0XFF000000), 13, FontWeight.w500)),
-                    items: fund.addBankDividers(),
+                    items: mfOrder.addBankDividers(),
                     // customItemsHeights: actionTrade.getCustomItemsHeight(),
-                    value: fund.accNum,
+                    value: mfOrder.accNum,
                     onChanged: (value) async {
-                      fund.chngBankAcc("$value");
+                      mfOrder.chngBankAcc("$value");
                     })),
             const SizedBox(height: 8),
-            if (fund.paymentName == "UPI") ...[
-            const SizedBox(height: 12),
-
+            if (mfOrder.paymentName == "UPI") ...[
+              const SizedBox(height: 12),
               Text("UPI ID (Virtual payment address)",
                   style: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -664,12 +694,12 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                               : colors.colorBlack,
                           14,
                           FontWeight.w600),
-                      textCtrl: fund.upiId,
+                      textCtrl: mfOrder.upiId,
                       onChanged: (value) {
-                        fund.isValidUpiId();
+                        mfOrder.isValidUpiId(widget.mfData);
                       })),
-              if (fund.upiError != null) ...[
-                Text("${fund.upiError}",
+              if (mfOrder.upiError != null) ...[
+                Text("${mfOrder.upiError}",
                     style:
                         textStyle(colors.kColorRedText, 10, FontWeight.w500)),
                 const SizedBox(height: 6)
@@ -687,7 +717,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
             DropdownButtonHideUnderline(
                 child: DropdownButton2(
                     menuItemStyleData: MenuItemStyleData(
-                        customHeights: fund.getCustItemsHeight()),
+                        customHeights: mfOrder.getCustItemsHeight()),
                     buttonStyleData: ButtonStyleData(
                         height: 36,
                         width: MediaQuery.of(context).size.width,
@@ -705,13 +735,13 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     isExpanded: true,
                     style:
                         textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                    hint: Text(fund.paymentName,
+                    hint: Text(mfOrder.paymentName,
                         style: textStyle(
                             const Color(0XFF000000), 13, FontWeight.w500)),
-                    items: fund.addDividers(),
-                    value: fund.paymentName,
+                    items: mfOrder.addDividers(),
+                    value: mfOrder.paymentName,
                     onChanged: (value) async {
-                      fund.chngPayName("$value");
+                      mfOrder.chngPayName("$value");
                     })),
             const SizedBox(height: 18),
             Text("Bank account",
@@ -723,7 +753,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
             DropdownButtonHideUnderline(
                 child: DropdownButton2(
                     menuItemStyleData: MenuItemStyleData(
-                        customHeights: fund.getBankCustItemsHeight()),
+                        customHeights: mfOrder.getBankCustItemsHeight()),
                     buttonStyleData: ButtonStyleData(
                         padding: const EdgeInsets.only(top: 4, left: 16),
                         height: 50,
@@ -739,18 +769,18 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     isExpanded: true,
                     style:
                         textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                    hint: Text(fund.accNum,
+                    hint: Text(mfOrder.accNum,
                         style: textStyle(
                             const Color(0XFF000000), 13, FontWeight.w500)),
-                    items: fund.addBankDividers(),
+                    items: mfOrder.addBankDividers(),
                     // customItemsHeights: actionTrade.getCustomItemsHeight(),
-                    value: fund.accNum,
+                    value: mfOrder.accNum,
                     onChanged: (value) async {
-                      fund.chngBankAcc("$value");
+                      mfOrder.chngBankAcc("$value");
                     })),
             const SizedBox(height: 8),
-            if (fund.paymentName == "UPI") ...[
-            const SizedBox(height: 12),
+            if (mfOrder.paymentName == "UPI") ...[
+              const SizedBox(height: 12),
               Text("UPI ID (Virtual payment address)",
                   style: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -775,12 +805,12 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                               : colors.colorBlack,
                           14,
                           FontWeight.w600),
-                      textCtrl: fund.upiId,
+                      textCtrl: mfOrder.upiId,
                       onChanged: (value) {
-                        fund.isValidUpiId();
+                        mfOrder.isValidUpiId(widget.mfData);
                       })),
-              if (fund.upiError != null) ...[
-                Text("${fund.upiError}",
+              if (mfOrder.upiError != null) ...[
+                Text("${mfOrder.upiError}",
                     style:
                         textStyle(colors.kColorRedText, 10, FontWeight.w500)),
                 const SizedBox(height: 6)
@@ -859,40 +889,54 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(
                         onPressed: () async {
+                          if(mfOrder.invAmtError == "" &&
+        mfOrder.upiError == "" &&
+        mfOrder.installmentAmtError == "" && mfOrder.invDurationError == ""){
+
                           if (mfOrder.mfOrderTpye == "Lumpsum") {
-                            if(fund.isValidUpiId() == true){
-                            mfPlaceorder(widget.mfData, mfOrder, context, fund);
+                            if(mfOrder.isValidUpiId(widget.mfData) == true){
+                            mfPlaceorder(widget.mfData, mfOrder, context);
                             }
-                            else if(fund.paymentName != "UPI"){
-                              mfPlaceorder(widget.mfData, mfOrder, context, fund);
-                            }
-                            else{
-                              ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'Enter a valid UPI ID'));
+                            else if(mfOrder.paymentName != "UPI"){
+                              mfPlaceorder(widget.mfData, mfOrder, context);
                             }
 
-                          } else {
+                          } 
+                          
+                          else {
+                            if(mfOrder.mandateStatus != "APPROVED"){
+          ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "Mandate is not Approved yet"));
+        }
+        else{
                             mfOrder.fetchXsipPlaceOrder(
                                 context,
-                                "${double.parse(mfOrder.instalmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
+                                "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
                                 mfOrder.freqName == "Daily"
                                     ? "0"
                                     : mfOrder.dates,
                                 mfOrder.freqName,
-                                mfOrder.instalmentAmt.text,
+                                mfOrder.installmentAmt.text,
                                 mfOrder.invDuration.text,
                                 mfOrder.freqName == "Daily"
                                     ? "0"
                                     : mfOrder.endDate,
                                 mfOrder.mandateId);
                           }
+                          }
+        }
+        
+        else{
+          ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "Please check if you have entered all Data Correctly"));
+        }
                         },
                         style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 10),
-                            backgroundColor: fund.invAmtError == null &&
-                                    fund.upiError == null
-                                ? Colors.black
-                                : Colors.black.withOpacity(.7),
+                            backgroundColor: mfOrder.invAmtError == null &&
+                                    mfOrder.upiError == null
+                                ? colors.ltpgreen
+                                : colors.ltpgreen.withOpacity(.7),
                             shape: const StadiumBorder()),
                         child: mfOrder.loading
                             ? const SizedBox(
@@ -917,18 +961,17 @@ mfPlaceorder(
   MutualFundList mfData,
   MFProvider mfOrder,
   BuildContext context,
-  FundProvider fund,
 ) {
   MfPlaceOrderInput input = MfPlaceOrderInput(
     transcode: "NEW", //NEW/CXL
     schemecode:
-        "${double.parse(mfOrder.instalmentAmt.text).toInt() >= 200000 ? "${mfData.schemeCode}-L1" : mfData.schemeCode}",
+        "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${mfData.schemeCode}-L1" : mfData.schemeCode}",
     buysell: "P",
     buyselltype: "FRESH",
     dptxn: "C",
     amount: double.parse(mfOrder.mfOrderTpye == "Lumpsum"
-                        ? fund.invAmt.text
-                        : mfOrder.instalmentAmt.text).toInt().toString(),
+                        ? mfOrder.invAmt.text
+                        : mfOrder.installmentAmt.text).toInt().toString(),
     allredeem: "N",
     kycstatus: "Y",
     qty: "0",
@@ -936,8 +979,8 @@ mfPlaceorder(
     minredeem: "N",
     dpc: "Y",
   );
-  if(fund.paymentName == "UPI"){
-    mfOrder.fetchVerifyUpi(context, fund.upiId.text, input);
+  if(mfOrder.paymentName == "UPI"){
+    mfOrder.fetchVerifyUpi(context, mfOrder.upiId.text, input);
   }
   else{
     mfOrder.fetchVerifyUpi(context, "", input);

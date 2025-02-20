@@ -86,6 +86,10 @@ class MFProvider extends DefaultChangeNotifier {
   List<MutualFundList>? _mutualFundList = [];
   List<MutualFundList>? get mutualFundList => _mutualFundList;
 
+  List _paymentMethod = [];
+
+  List get paymentMethod => _paymentMethod;
+
   NFODataModel? _mfNFOList;
   NFODataModel? get mfNFOList => _mfNFOList;
 
@@ -154,6 +158,11 @@ class MFProvider extends DefaultChangeNotifier {
   RangeValues _currentRangeValues = const RangeValues(0, 11);
   RangeValues get currentRangeValues => _currentRangeValues;
 
+  TextEditingController invAmt = TextEditingController();
+  TextEditingController upiId = TextEditingController();
+  TextEditingController installmentAmt = TextEditingController();
+  String? invAmtError, upiError, installmentAmtError, invDurationError = "";
+
   
   int? _activeTab = 0;
   int? get activeTab => _activeTab;
@@ -170,6 +179,34 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  String _paymentName = "";
+
+  String get paymentName => _paymentName;
+  BankDetailsModel? _bankDetailsModel;
+  UPIDetailsModel? _upiDetailsModel;
+  UPIDetailsModel? get upiDetailsModel => _upiDetailsModel;
+  BankDetailsModel? get bankDetailsModel => _bankDetailsModel;
+
+  String _sipDuration = "";
+
+  bool _isInitalPay = false;
+  bool get isInitalPay => _isInitalPay;
+
+  String _accNum = "";
+
+  String get accNum => _accNum;
+
+  String _ifsc = "";
+
+  String get ifsc => _ifsc;
+
+  String _bankname = "";
+
+  String get bankname => _bankname;
+
+  List<BankData>? _bankData = [];
+  List<BankData>? get bankData => _bankData;
+
   int get startValue => _schmeminfilter![_currentRangeValues.start.round()];
   int get endValue => _schmeminfilter![_currentRangeValues.end.round()];
 
@@ -185,8 +222,8 @@ class MFProvider extends DefaultChangeNotifier {
   MFWatchlistModel? _mfWatchlistModel;
   MFWatchlistModel? get mfWatchlistModel => _mfWatchlistModel;
 
-  MfLumpSumOrderbook? _mfLumpSumOrderbook;
-  MfLumpSumOrderbook? get mflumpsumorderbook => _mfLumpSumOrderbook;
+  MFOrderBookModel? _mfLumpSumOrderbook;
+  MFOrderBookModel? get mflumpsumorderbook => _mfLumpSumOrderbook;
 
   MfCreateMandateModel? _createMandateModel;
   MfCreateMandateModel? get createMandateModel => _createMandateModel;
@@ -217,7 +254,12 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-final List _bestMFListStatic = [
+  setInitialPay(bool value) {
+    _isInitalPay = value;
+    notifyListeners();
+  }
+
+  final List _bestMFListStatic = [
     {
       "funds": "46 funds",
       "image": "assets/explore/loan.svg",
@@ -248,35 +290,38 @@ final List _bestMFListStatic = [
 
   final List _mFCategoryTypesStatic = [
     {
-      "dataIcon":'assets/explore/equity.png',
-      "description": "Invest primarily in stocks. High risk, high return potential.",
+      "dataIcon": 'assets/explore/equity.png',
+      "description":
+          "Invest primarily in stocks. High risk, high return potential.",
       "title": "Equity",
-      "sub":[]
+      "sub": []
     },
     {
-      "dataIcon":'assets/explore/coins.png',
-      "description": "Invest in bonds and fixed-income securities. Lower risk, stable returns.",
+      "dataIcon": 'assets/explore/coins.png',
+      "description":
+          "Invest in bonds and fixed-income securities. Lower risk, stable returns.",
       "title": "Fixed Income",
-      "sub":[]
+      "sub": []
     },
     {
-      "dataIcon":'assets/explore/hybrid.png',
+      "dataIcon": 'assets/explore/hybrid.png',
       "description": "Mix of equity and debt to balance risk and return.",
       "title": "Hybrid",
-      "sub":[]
+      "sub": []
     },
     {
-      "dataIcon":'assets/explore/gold.png',
-      "description": "Invest in gold and related securities. Hedge against inflation.",
+      "dataIcon": 'assets/explore/gold.png',
+      "description":
+          "Invest in gold and related securities. Hedge against inflation.",
       "title": "Gold",
-      "sub":[]
+      "sub": []
     },
-    
     {
-      "dataIcon":'assets/explore/solution.png',
-      "description": "Financial goals include retirement planning, funding a child's education, and etc.",
+      "dataIcon": 'assets/explore/solution.png',
+      "description":
+          "Financial goals include retirement planning, funding a child's education, and etc.",
       "title": "Solution",
-      "sub":[]
+      "sub": []
     }
   ];
 
@@ -311,7 +356,7 @@ final List _bestMFListStatic = [
   // }
 
   // updateFilteredMF(range){
-    
+
   //   _filteredMf = _mutualFundList!
   //     .where((content) {
   //       return _subcatselected.contains(content.sCHEMESUBCATEGORY);}).toList();
@@ -400,7 +445,7 @@ final List _bestMFListStatic = [
 
   //  MF SIP
 
-  TextEditingController instalmentAmt = TextEditingController();
+  // TextEditingController instalmentAmt = TextEditingController();
 
   final TextEditingController mfsearchcontroller = TextEditingController();
 
@@ -421,7 +466,7 @@ final List _bestMFListStatic = [
   String _insAmt = "0.00";
   String get insAmt => _insAmt;
 
-  List mfOrderTpyes =  ["Lumpsum", "Monthly SIP"];  //["Lumpsum"];
+  List mfOrderTpyes = ["Lumpsum", "Monthly SIP"]; //["Lumpsum"];
   String _mfOrderTpye = "Lumpsum";
   String get mfOrderTpye => _mfOrderTpye;
 
@@ -431,6 +476,9 @@ final List _bestMFListStatic = [
 
   String _mandateId = "";
   String get mandateId => _mandateId;
+
+  String _mandateStatus = "";
+  String get mandateStatus => _mandateStatus;
 
   List<String> _subcatselected = [];
   List<String> get subcatselected => _subcatselected;
@@ -509,6 +557,11 @@ final List _bestMFListStatic = [
     notifyListeners();
   }
 
+  chngPayName(String val) {
+    _paymentName = val;
+    notifyListeners();
+  }
+
   commonsearch() {
     _mutualFundsearchdata = [];
     mfsearchcontroller.clear();
@@ -579,6 +632,12 @@ final List _bestMFListStatic = [
 
   chngMandate(String val) {
     _mandateId = val;
+    if(val != "Lumpsum"){
+    var indx = _mandateData!.indexWhere((f) => f.mandateId == val);
+    _mandateStatus = _mandateData![indx].status!;
+    print("${_mandateData![indx].mandateId}, ${_mandateData![indx].status}");
+    }
+    
     notifyListeners();
   }
 
@@ -610,7 +669,8 @@ final List _bestMFListStatic = [
             _dateList = element.sIPDATES!.replaceAll("\"", "").split(',');
           }
           invDuration.text = "${element.sIPMINIMUMINSTALLMENTNUMBERS}";
-          _insAmt = "${element.sIPMINIMUMINSTALLMENTNUMBERS ?? 0.00}";
+          _sipDuration = "${element.sIPMINIMUMINSTALLMENTNUMBERS}";
+          // _insAmt = "${element.sIPMINIMUMINSTALLMENTNUMBERS ?? 0.00}";
         }
       }
     }
@@ -678,7 +738,9 @@ final List _bestMFListStatic = [
       var mutualFundsearch = await api.getSearchMf(value);
       _mutualFundsearchdata = mutualFundsearch.data ?? [];
       for (var masterMf in _mfWatchlist!) {
-        _mutualFundsearchdata!.where((m) => m.iSIN == masterMf.iSIN).forEach((m) => m.isAdd = true);
+        _mutualFundsearchdata!
+            .where((m) => m.iSIN == masterMf.iSIN)
+            .forEach((m) => m.isAdd = true);
       }
       var search = "";
       for (var i = 0; i < _mutualFundsearchdata!.length; i++) {
@@ -691,10 +753,9 @@ final List _bestMFListStatic = [
     }
   }
 
-
   Future fetchmfNFO(BuildContext context) async {
     try {
-      _mfNFOList= await api.getNFOData();
+      _mfNFOList = await api.getNFOData();
       print("NFO list ${_mfNFOList!.nfoList}");
       notifyListeners();
     } catch (e) {
@@ -702,14 +763,14 @@ final List _bestMFListStatic = [
     }
   }
 
-  Future fetchTopSchemes() async{
-    try{
+  Future fetchTopSchemes() async {
+    try {
       var topSchemesdata = await api.getTopSchemes();
-      if(topSchemesdata.msg != ""){
+      if (topSchemesdata.msg != "") {
         _topSchemesdata = topSchemesdata.data;
         log("TopSchemesModel ${_topSchemesdata![0]}");
       }
-    } catch(e){
+    } catch (e) {
       print("top schemes error $e");
     }
   }
@@ -821,7 +882,9 @@ final List _bestMFListStatic = [
       _bestMFModel = await api.getBestMF();
       if (_bestMFModel!.stat == "Ok") {
         for (var watchListMf in _bestMFModel!.bestMFList!) {
-          _bestMFListStatic.where((m) => m['title'] == watchListMf.title).forEach((m) => m['funds'] = watchListMf.counts);
+          _bestMFListStatic
+              .where((m) => m['title'] == watchListMf.title)
+              .forEach((m) => m['funds'] = watchListMf.counts);
         }
       }
       notifyListeners();
@@ -830,31 +893,36 @@ final List _bestMFListStatic = [
     }
   }
 
-     Future fetchMFBestList(String type) async {
+  Future fetchMFBestList(String type) async {
     try {
       _bestMFList = await api.getMFBestListData(type);
       print("_bestMFList $_mfCategoryList");
       for (var m in _bestMFList!.bestMFList!) {
-  m.isAdd = _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
-}
+        m.isAdd =
+            _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
+      }
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
     }
   }
 
-   Future fetchMFCategoryList(String type, String subtype) async {
+  Future fetchMFCategoryList(String type, String subtype) async {
     try {
       _mfCategoryList = await api.getMFCategoryList(type, subtype);
       print("_mfCategoryList $_mfCategoryList");
-      if (_bestMFModel!.stat == "Ok") {
-        for (var watchListMf in _bestMFModel!.bestMFList!) {
-          _bestMFListStatic.where((m) => m['title'] == watchListMf.title).forEach((m) => m['funds'] = watchListMf.counts);
-        }
+      // if (_bestMFModel!.stat == "Ok") {
+      //   for (var watchListMf in _bestMFModel!.bestMFList!) {
+      //     _bestMFListStatic
+      //         .where((m) => m['title'] == watchListMf.title)
+      //         .forEach((m) => m['funds'] = watchListMf.counts);
+      //   }
         for (var masterMf in _mfWatchlist!) {
-        _mfCategoryList!.data!.where((m) => m.iSIN == masterMf.iSIN).forEach((m) => m.isAdd = true);
-      }
-      }
+          _mfCategoryList!.data!
+              .where((m) => m.iSIN == masterMf.iSIN)
+              .forEach((m) => m.isAdd = true);
+        }
+      // }
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
@@ -862,13 +930,15 @@ final List _bestMFListStatic = [
   }
 
   Future fetchMFCategoryType() async {
-     _mfCategoryTypes = await api.getMFCategoryTypes();
+    _mfCategoryTypes = await api.getMFCategoryTypes();
     //  print("_mfCategoryTypes ${_mfCategoryTypes!.data![0]}");
-     for (var watchListMf in _mfCategoryTypes!.data!) {
-          _mFCategoryTypesStatic.where((m) => m['title'] == watchListMf.type).forEach((m) => m['sub'] = watchListMf.sub);
-        }
-       print("_mfCategoryTypes $_mFCategoryTypesStatic"); 
-       notifyListeners();
+    for (var watchListMf in _mfCategoryTypes!.data!) {
+      _mFCategoryTypesStatic
+          .where((m) => m['title'] == watchListMf.type)
+          .forEach((m) => m['sub'] = watchListMf.sub);
+    }
+    print("_mfCategoryTypes $_mFCategoryTypesStatic");
+    notifyListeners();
   }
 
   Future fetchFactSheet(String isin) async {
@@ -879,9 +949,9 @@ final List _bestMFListStatic = [
       _comYear = "10 Years";
       var stopwatch = Stopwatch()..start();
       _factSheetDataModel = await api.getMFFactSheetData(isin);
-stopwatch.stop(); // Stop timer
+      stopwatch.stop(); // Stop timer
 
-log('Time taken 1: ${stopwatch.elapsedMilliseconds} ms');
+      log('Time taken 1: ${stopwatch.elapsedMilliseconds} ms');
       stopwatch = Stopwatch()..start();
       if (_factSheetDataModel!.stat == "Ok") {
         trailingReturns =
@@ -946,22 +1016,22 @@ log('Time taken 1: ${stopwatch.elapsedMilliseconds} ms');
       }
       stopwatch.stop(); // Stop timer
 
-log('Time taken 2: ${stopwatch.elapsedMilliseconds} ms');
+      log('Time taken 2: ${stopwatch.elapsedMilliseconds} ms');
       stopwatch = Stopwatch()..start();
       await fetchFactSheetGraph(isin);
       stopwatch.stop(); // Stop timer
 
-log('Time taken 3: ${stopwatch.elapsedMilliseconds} ms');
- stopwatch = Stopwatch()..start();
+      log('Time taken 3: ${stopwatch.elapsedMilliseconds} ms');
+      stopwatch = Stopwatch()..start();
       await fetchSchemePeer(isin, "10Year");
       stopwatch.stop(); // Stop timer
 
-log('Time taken 4: ${stopwatch.elapsedMilliseconds} ms');
-stopwatch = Stopwatch()..start();
+      log('Time taken 4: ${stopwatch.elapsedMilliseconds} ms');
+      stopwatch = Stopwatch()..start();
       _navGraph = await api.getMFNavGraph(isin);
       stopwatch.stop(); // Stop timer
 
-log('Time taken 5: ${stopwatch.elapsedMilliseconds} ms');
+      log('Time taken 5: ${stopwatch.elapsedMilliseconds} ms');
 
       if (_navGraph!.stat == "Ok") {
       } else {}
@@ -1041,8 +1111,12 @@ notifyListeners();
         // }
 
         for (var watchListMf in _mfWatchlist!) {
-          _mutualFundList!.where((m) => m.iSIN == watchListMf.iSIN).forEach((m) => m.isAdd = true);
-          _mutualFundsearchdata!.where((m) => m.iSIN == watchListMf.iSIN).forEach((m) => m.isAdd = true);
+          _mutualFundList!
+              .where((m) => m.iSIN == watchListMf.iSIN)
+              .forEach((m) => m.isAdd = true);
+          _mutualFundsearchdata!
+              .where((m) => m.iSIN == watchListMf.iSIN)
+              .forEach((m) => m.isAdd = true);
         }
       } else {
         _mfWatchlist = [];
@@ -1057,8 +1131,8 @@ notifyListeners();
     }
   }
 
-  Future fetchMFWatchlist(String isin, String isAdd,
-      BuildContext context, bool bool, String val) async {
+  Future fetchMFWatchlist(String isin, String isAdd, BuildContext context,
+      bool bool, String val) async {
     try {
       // _mfWatchlist = [];
       toggleLoadingOn(true);
@@ -1069,8 +1143,8 @@ notifyListeners();
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         //log("SSSSSSSSSSSSS ${_mfWatchlistModel!.msg.toString()}");
         if (isAdd == "add") {
-          ScaffoldMessenger.of(context).showSnackBar(successMessage(
-              context, "MF was Added to Mutual fund watchlist"));
+          ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, "MF was Added to Mutual fund watchlist"));
         } else if (isAdd == "delete") {
           ScaffoldMessenger.of(context).showSnackBar(successMessage(
               context, "MF was Removed from Mutual fund watchlist"));
@@ -1091,49 +1165,49 @@ notifyListeners();
         //     }
         //   }
         // }
-        if(_mfWatchlist!.isNotEmpty){
-                for (var m in _mutualFundList!) {
-  m.isAdd = _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
-}
-
-        for (var m in _bestMFList!.bestMFList!) {
-  m.isAdd = _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
-}
-
-//         if(_isFiltered == true){
-//                   for (var m in _filteredMf!) {
-//   m.isAdd = _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
-// }
-//         }
-
-        for (var m in _mutualFundtopsearch!) {
-  m.isAdd = _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
-}
-
-for (var m in mfCategoryList!.data!) {
-  m.isAdd = _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
-}
-
-        }
-        else{
+        if (_mfWatchlist!.isNotEmpty) {
+          if (_mutualFundList != null) {
           for (var m in _mutualFundList!) {
-  m.isAdd = false;
-}
-
-        for (var m in _bestMFList!.bestMFList!) {
-  m.isAdd = false;
-}
-        for (var m in _mutualFundtopsearch!) {
-  m.isAdd = false;
-}
-
-for (var m in mfCategoryList!.data!) {
-  m.isAdd = false;
-}
-
-        }
-
+            m.isAdd =
+                _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
+          }
+          }
+          if (_bestMFList != null) {
+          for (var m in _bestMFList!.bestMFList!) {
+            m.isAdd =
+                _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
+          }
+          }
+          if (_mutualFundtopsearch != null) {
+          for (var m in _mutualFundtopsearch!) {
+            m.isAdd =
+                _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
+          }
+          }
+          if (_mfCategoryList!.data != null) {
+          for (var m in _mfCategoryList!.data!) {
+            m.isAdd =
+                _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
+          }
+          }
+        } 
         
+        // else {
+        //   for (var m in _mutualFundList!) {
+        //     m.isAdd = false;
+        //   }
+
+        //   for (var m in _bestMFList!.bestMFList!) {
+        //     m.isAdd = false;
+        //   }
+        //   for (var m in _mutualFundtopsearch!) {
+        //     m.isAdd = false;
+        //   }
+
+        //   for (var m in mfCategoryList!.data!) {
+        //     m.isAdd = false;
+        //   }
+        // }
       } else {
         // _mfWatchlist = [];
         if (_mfWatchlistModel!.msg == "script exists") {
@@ -1157,10 +1231,12 @@ for (var m in mfCategoryList!.data!) {
         if (_mfSIPModel!.data!.isNotEmpty) {
           _freqName = "${_mfSIPModel!.data![0].sIPFREQUENCY}";
 
-          instalmentAmt.text =
+          installmentAmt.text =
               "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTAMOUNT}";
           invDuration.text =
               "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTNUMBERS}";
+              _sipDuration = "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTNUMBERS}";
+          
 
           if (_freqName == "MONTHLY" || _freqName == "QUARTERLY") {
             _dateList =
@@ -1191,6 +1267,8 @@ for (var m in mfCategoryList!.data!) {
         _mandateData = _mandateDetailModel!.data!.mandateDetails ?? [];
 
         _mandateId = _mandateData![0].mandateId!;
+        _mandateStatus = _mandateData![0].status!;
+
       }
       notifyListeners();
     } catch (e) {
@@ -1198,25 +1276,25 @@ for (var m in mfCategoryList!.data!) {
     }
   }
 
-  Future fetchMfPlaceorder(
-      MfPlaceOrderInput placeorderinput, BuildContext context, String upiId) async {
+  Future fetchMfPlaceorder(MfPlaceOrderInput placeorderinput,
+      BuildContext context, String upiId) async {
     try {
       // _mfPlaceOrderResponces = await api.getLumpSumOrder(placeorderinput);
       // if (_mfPlaceOrderResponces?.stat == "Ok" &&
       //     _mfPlaceOrderResponces?.orderNumber != null) {
-        fetchAllPayment(
-            context,
-            "${_mfPlaceOrderResponces?.orderNumber}",
-            placeorderinput.amount,
-            ref(fundProvider).accNum,
-            ref(fundProvider).ifsc,
-            ref(fundProvider).bankname,
-            ref(fundProvider).paymentName == "UPI" ? "UPI" : "NET BANKING",
-            "",
-            "",
-            upiId,
-            placeorderinput.schemecode);
-            
+      fetchAllPayment(
+          context,
+          "${_mfPlaceOrderResponces?.orderNumber}",
+          placeorderinput.amount,
+          accNum,
+          ifsc,
+          bankname,
+          paymentName == "UPI" ? "UPI" : "NET BANKING",
+          "",
+          "",
+          upiId,
+          placeorderinput.schemecode);
+
       // } else {
       //   ref(fundProvider).paymentName == "UPI"
       //       ? ScaffoldMessenger.of(context).showSnackBar(successMessage(
@@ -1246,18 +1324,17 @@ for (var m in mfCategoryList!.data!) {
   ) async {
     try {
       toggleLoadingOn(true);
-      if(upiId != ""){
-      _verifyUPIModel = await api.getVerifyUpi(upiId, "123456");
-      if (_verifyUPIModel!.data!.verifiedVPAStatus1 == "Available" ||
-          _verifyUPIModel!.data!.verifiedVPAStatus2 == "Available") {
-        fetchMfPlaceorder(input, context, upiId);
+      if (upiId != "") {
+        _verifyUPIModel = await api.getVerifyUpi(upiId, "123456");
+        if (_verifyUPIModel!.data!.verifiedVPAStatus1 == "Available" ||
+            _verifyUPIModel!.data!.verifiedVPAStatus2 == "Available") {
+          fetchMfPlaceorder(input, context, upiId);
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(warningMessage(context, 'Invalid UPI ID'));
+        }
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'Invalid UPI ID'));
-      }
-      }
-      else{
-        fetchMfPlaceorder(input, context,upiId);
+        fetchMfPlaceorder(input, context, upiId);
       }
 
       //log("HDFC BANK $_upiIdValidationModel");
@@ -1312,13 +1389,13 @@ for (var m in mfCategoryList!.data!) {
             context,
             "${_mfPlaceOrderResponces?.orderNumber}",
             amt,
-            ref(fundProvider).accNum,
-            ref(fundProvider).ifsc,
-            ref(fundProvider).bankname,
-            ref(fundProvider).paymentName == "UPI" ? "UPI" : "NET BANKING",
+            accNum,
+            ifsc,
+            bankname,
+            paymentName == "UPI" ? "UPI" : "NET BANKING",
             "",
             "",
-            ref(fundProvider).upiId.text,
+            upiId.text,
             schemecode);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1395,7 +1472,8 @@ for (var m in mfCategoryList!.data!) {
   //   }
   // }
 
-  Future fetchAllPayment(BuildContext context,
+  Future fetchAllPayment(
+      BuildContext context,
       String orderNumber,
       String totalAmt,
       String accno,
@@ -1406,33 +1484,39 @@ for (var m in mfCategoryList!.data!) {
       String mandateId,
       String upi,
       String schemeCode) async {
-        _allPaymentMfModel = await api.getmfallpayment(orderNumber, totalAmt,
-          accno, ifsc, bankname, paymentMethod, internalrefno, mandateId, upi, schemeCode);
-        if (_allPaymentMfModel?.stat == "Not Ok") {
+    _allPaymentMfModel = await api.getmfallpayment(
+        orderNumber,
+        totalAmt,
+        accno,
+        ifsc,
+        bankname,
+        paymentMethod,
+        internalrefno,
+        mandateId,
+        upi,
+        schemeCode);
+    if (_allPaymentMfModel?.stat == "Not Ok") {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(warningMessage(context, "${_allPaymentMfModel!.emsg}"));
+    } else if (_allPaymentMfModel?.stat == "Ok" &&
+        _allPaymentMfModel?.type == "NET BANKING") {
+      Navigator.pop(context);
+      launch("https://v3.mynt.in/mf${_allPaymentMfModel!.file}");
+    } else if (_allPaymentMfModel?.stat == "Ok") {
+      if (_allPaymentMfModel?.type == "UPI") {
         ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "${_allPaymentMfModel!.emsg}"));
-      } 
-      else if(_allPaymentMfModel?.stat == "Ok" && _allPaymentMfModel?.type == "NET BANKING"){
-        Navigator.pop(context);
-        launch("https://v3.mynt.in/mf${_allPaymentMfModel!.file}");
-      }
-      else if(_allPaymentMfModel?.stat == "Ok") {
-        if(_allPaymentMfModel?.type == "UPI"){
-ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_allPaymentMfModel!.payment_msg}"));
-            Navigator.pop(context);
-        }
-        else{
+        Navigator.pop(context);
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_allPaymentMfModel!.msg}"));
-            Navigator.pushNamed(
-                      context,
-                      Routes.mf,
-                    );
-        }
+        Navigator.pushNamed(
+          context,
+          Routes.mf,
+        );
       }
-      fetchMfOrderbook(context);
-      
+    }
+    fetchMfOrderbook(context);
   }
 
   List<DropdownMenuItem<String>> addFrqDividers() {
@@ -1555,7 +1639,7 @@ ScaffoldMessenger.of(context).showSnackBar(
     notifyListeners();
   }
 
-  changeStartDate(date){
+  changeStartDate(date) {
     _dates = date;
     notifyListeners();
   }
@@ -1654,5 +1738,219 @@ ScaffoldMessenger.of(context).showSnackBar(
       }
     }
     return itemsHeights;
+  }
+
+  chngBankAcc(String val) {
+    _accNum = val;
+    _ifsc = _bankDetailsModel!.data!
+        .firstWhere((reason) => reason.bankAcNo == val)
+        .iFSCCode
+        .toString();
+    _bankname = _bankDetailsModel!.data!
+        .firstWhere((reason) => reason.bankAcNo == val)
+        .bankName
+        .toString();
+    notifyListeners();
+  }
+
+  List<DropdownMenuItem<String>> addBankDividers() {
+    List<DropdownMenuItem<String>> menuItems = [];
+
+    for (var item in _bankData!) {
+      menuItems.addAll(
+        [
+          DropdownMenuItem<String>(
+              value: item.bankAcNo.toString(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("${item.bankName}",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            textStyle(colors.colorBlack, 14, FontWeight.w500)),
+                    const SizedBox(height: 2),
+                    Text("*******${item.bankAcNo!.substring(8)}",
+                        style:
+                            textStyle(colors.colorGrey, 12, FontWeight.w500)),
+                  ],
+                ),
+              )),
+          //If it's last item, we will not add Divider after it.
+          if (item != _bankData!.last)
+            const DropdownMenuItem<String>(
+              enabled: false,
+              child: Divider(),
+            ),
+        ],
+      );
+    }
+    return menuItems;
+  }
+
+  // set Dropdown item height
+  List<double> getBankCustItemsHeight() {
+    List<double> itemsHeights = [];
+    for (var i = 0; i < (_bankData!.length * 2) - 1; i++) {
+      if (i.isEven) {
+        itemsHeights.add(50);
+      }
+      if (i.isOdd) {
+        itemsHeights.add(4);
+      }
+    }
+    return itemsHeights;
+  }
+
+  // Fetching data from the api and stored in a variable
+  Future fetchUpiDetail() async {
+    try {
+      _paymentMethod = [];
+      _upiDetailsModel = await api.getUPI();
+
+      if (_upiDetailsModel!.stat == "Ok") {
+        _paymentMethod.add("UPI");
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  // Fetching data from the api and stored in a variable
+  Future fetchBankDetail() async {
+    upiId.text = "";
+    try {
+      _bankDetailsModel = await api.getBankDetail();
+      _bankData = [];
+      if (_bankDetailsModel!.stat == "Ok") {
+        _paymentMethod.add("Net banking");
+        _bankData = _bankDetailsModel!.data ?? [];
+        if (_bankData!.isNotEmpty) {
+          _accNum = "${_bankData![0].bankAcNo}";
+          _ifsc = "${bankData![0].iFSCCode}";
+          _bankname = "${bankData![0].bankName}";
+        }
+      }
+
+      if (_upiDetailsModel!.stat == "Ok" || _bankDetailsModel!.stat == "Ok") {
+        _paymentName = _paymentMethod[0];
+
+        if (_paymentName == "UPI") {
+          upiId.text = "${_upiDetailsModel!.data![0].upiId}";
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  List<DropdownMenuItem<String>> addDividers() {
+    List<DropdownMenuItem<String>> menuItems = [];
+
+    for (var item in _paymentMethod) {
+      menuItems.addAll(
+        [
+          DropdownMenuItem<String>(
+              value: item.toString(),
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Text(
+                    item.toString(),
+                    style:
+                        textStyle(const Color(0xff000000), 13, FontWeight.w500),
+                  ))),
+          //If it's last item, we will not add Divider after it.
+          if (item != _paymentMethod.last)
+            const DropdownMenuItem<String>(
+              enabled: false,
+              child: Divider(),
+            ),
+        ],
+      );
+    }
+    return menuItems;
+  }
+
+  List<double> getCustItemsHeight() {
+    List<double> itemsHeights = [];
+    for (var i = 0; i < (_paymentMethod.length * 2) - 1; i++) {
+      if (i.isEven) {
+        itemsHeights.add(40);
+      }
+      if (i.isOdd) {
+        itemsHeights.add(4);
+      }
+    }
+    return itemsHeights;
+  }
+
+  bool isValidUpiId(MutualFundList mfData) {
+    print("Change made");
+    final RegExp upiRegex =
+        RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
+    if (mfOrderTpye == "Lumpsum") {
+      if (invAmt.text.isEmpty) {
+        invAmtError = "Please enter Investment amount";
+      } else if (double.parse(invAmt.text) <
+          double.parse(mfData.minimumPurchaseAmount!)) {
+        invAmtError =
+            "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+      }
+      else{
+        invAmtError = "";
+      }
+    } else {
+      if (invAmt.text.isEmpty) {
+        invAmtError = "Please enter Investment amount";
+      } else if (double.parse(invAmt.text) <
+          double.parse(mfData.minimumPurchaseAmount!) && isInitalPay) {
+        invAmtError =
+            "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+      }
+      else{
+        invAmtError = "";
+      }
+
+
+      if (installmentAmt.text.isEmpty) {
+        installmentAmtError = "Please enter Installment amount";
+      } else if (double.parse(installmentAmt.text) <
+          double.parse(mfData.minimumPurchaseAmount!)) {
+        installmentAmtError =
+            "Installment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+      }
+      else{
+        installmentAmtError = "";
+      }
+
+    }
+
+    if (upiId.text.isEmpty) {
+      upiError = "Please enter UPI ID";
+    }
+    else if (!upiRegex.hasMatch(upiId.text)) {
+      upiError = "Please enter valid UPI ID";
+    }
+    else{
+      upiError = "";
+    }
+
+    if (invDuration.text.isEmpty) {
+      invDurationError = "Please enter Investment duration";
+    }
+    else if (double.parse(invDuration.text) < double.parse(_sipDuration)) {
+      invDurationError = "Installment Duration should not be less than $_sipDuration";
+    }
+    else{
+      invDurationError = "";
+    }
+    notifyListeners();
+    return invAmtError == "" &&
+        upiError == "" &&
+        installmentAmtError == "" && invDurationError == "";
   }
 }

@@ -306,8 +306,8 @@ class MFNFOScreen extends ConsumerWidget {
                       InkWell(
                           onTap: () async {
                             mf.chngMandate("Lumpsum");
-                            await fund.fetchUpiDetail();
-                            await fund.fetchBankDetail();
+                            await mf.fetchUpiDetail();
+                            await mf.fetchBankDetail();
                             if (mf.mfNFOList!.nfoList![index].sIPFLAG == "Y") {
                               await mf.fetchMFSipData(
                                   "${mf.mfNFOList!.nfoList![index].iSIN}",

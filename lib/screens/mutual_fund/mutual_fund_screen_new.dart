@@ -27,7 +27,7 @@ class MutualFundNewScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Column(
             children: [
-              nfoCard(context),
+              nfoCard(context, mfData),
               Container(
                 padding: const EdgeInsets.all(16.0),
                 margin: const EdgeInsets.all(16.0),
@@ -408,9 +408,10 @@ class MutualFundNewScreen extends ConsumerWidget {
     );
   }
 
-  Widget nfoCard(context) {
+  Widget nfoCard(context, mf) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async{
+        await mf.fetchmfNFO(context);
         Navigator.pushNamed(context, Routes.mfnfoscreen);
       },
       child: Container(

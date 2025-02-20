@@ -71,25 +71,27 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
       final mfData = watch(mfProvider);
       
       return Scaffold(
-        backgroundColor: Colors.white,
-        bottomSheet: Container(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                width: MediaQuery.of(context).size.width,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    mfData.chngMandate("Lumpsum");
-                    await fund.fetchUpiDetail();
-                    await fund.fetchBankDetail();
-                    if (widget.mfStockData.sIPFLAG == "Y") {
-                      await mfData.fetchMFSipData(
-                          "${widget.mfStockData.iSIN}",
-                          "${widget.mfStockData.schemeCode}");
+          backgroundColor: Colors.white,
+          bottomSheet: Container(
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    width: MediaQuery.of(context).size.width,
+                    child: ElevatedButton(
+                        onPressed: () async {
+                          mfData.chngMandate("Lumpsum");
+                            await mfData.fetchUpiDetail();
+                            await mfData.fetchBankDetail();
+                            if (widget.mfStockData.sIPFLAG == "Y") {
+                              await mfData.fetchMFSipData(
+                                  "${widget.mfStockData.iSIN}",
+                                  "${widget.mfStockData.schemeCode}");
 
                       await mfData.fetchMFMandateDetail();
                     }

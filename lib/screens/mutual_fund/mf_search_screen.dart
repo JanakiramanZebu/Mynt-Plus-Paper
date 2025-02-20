@@ -364,8 +364,8 @@ class MfCommonSearch extends ConsumerWidget {
                           InkWell(
                               onTap: () async {
                                 mfData.chngMandate("Lumpsum");
-                                await fund.fetchUpiDetail();
-                                await fund.fetchBankDetail();
+                                await mfData.fetchUpiDetail();
+                                await mfData.fetchBankDetail();
                                 if (mfData.mutualFundsearchdata![index]
                                         .sIPFLAG ==
                                     "Y") {
