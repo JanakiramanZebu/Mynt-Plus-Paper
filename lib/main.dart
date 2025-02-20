@@ -57,8 +57,14 @@ void main() async {
   await NotificationService.initializeNotification();
   // NotificationService().initNotification();
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(name: "dev project",options: DefaultFirebaseOptions.currentPlatform);
- 
+  if (TargetPlatform.android == defaultTargetPlatform) {
+    await Firebase.initializeApp(
+        name: "dev project", options: DefaultFirebaseOptions.currentPlatform);
+  } else {
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+  }
+
   final Preferences pref = locator<Preferences>();
   await pref.init();
 
