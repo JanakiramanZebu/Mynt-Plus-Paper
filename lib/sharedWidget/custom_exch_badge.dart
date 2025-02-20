@@ -12,7 +12,7 @@ class CustomExchBadge extends StatelessWidget {
     final theme = context.read(themeProvider);
     return Container(
       margin: const EdgeInsets.only(right: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(2),
           color: theme.isDarkMode

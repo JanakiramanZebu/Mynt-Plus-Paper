@@ -17,7 +17,8 @@ class MFOverview extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     late TooltipBehavior _tooltipBehavior;
     final theme = watch(themeProvider);
-    final mfData = watch(mfProvider).factSheetDataModel!.data!;
+    final mfData = watch(mfProvider);
+    // factSheetDataModel!.data!;
     final navGraph = watch(mfProvider).navGraph;
     final mfProvide = watch(mfProvider);
     _tooltipBehavior = TooltipBehavior(
@@ -237,7 +238,7 @@ Container(
     ),
      Expanded(
       child: Text(
-        "  (${mfData.benchmark})",
+        "  (${mfData.factSheetDataModel!.data!.benchmark})",
         style: textStyle(
           theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
           13,

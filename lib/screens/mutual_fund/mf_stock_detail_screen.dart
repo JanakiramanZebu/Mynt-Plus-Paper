@@ -14,6 +14,7 @@ import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
+import '../../sharedWidget/loader_ui.dart';
 import 'widget/allocation.dart';
 import 'widget/comparition.dart';
 import 'widget/overview.dart';
@@ -45,7 +46,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
   late TabController tabController;
   late AutoScrollController autoScrollController;
   double scrollPosition = 0.00;
-  
+
   @override
   void initState() {
     tabController = TabController(length: tabList.length, vsync: this);
@@ -69,34 +70,27 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
       final theme = watch(themeProvider);
       final fund = watch(fundProvider);
       final mfData = watch(mfProvider);
-      
-      return Scaffold(
-          backgroundColor: Colors.white,
-          bottomSheet: Container(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    width: MediaQuery.of(context).size.width,
-                    child: ElevatedButton(
-                        onPressed: () async {
-                          mfData.chngMandate("Lumpsum");
-                            await mfData.fetchUpiDetail();
-                            await mfData.fetchBankDetail();
-                            if (widget.mfStockData.sIPFLAG == "Y") {
-                              await mfData.fetchMFSipData(
-                                  "${widget.mfStockData.iSIN}",
-                                  "${widget.mfStockData.schemeCode}");
 
-                      await mfData.fetchMFMandateDetail();
+      return Scaffold(
+        backgroundColor: Colors.white,
+        bottomSheet: Container(
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                width: MediaQuery.of(context).size.width,
+                child: ElevatedButton(
+                  onPressed: () { 
+                    if (widget.mfStockData.sIPFLAG == "Y") {
+                      mfData.invertfun("${widget.mfStockData.iSIN}",
+                          "${widget.mfStockData.schemeCode}");
                     }
 
-                    await mfData.fetchTopSchemes();
+                    //  mfData.fetchTopSchemes();
                     Navigator.pushNamed(context, Routes.mforderScreen,
                         arguments: widget.mfStockData);
                   },
@@ -115,235 +109,247 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
             ],
           ),
         ),
-        body: mfData.singleloader == true
-            ? const Center(child: CircularProgressIndicator())
-            : VerticalScrollableTabView(
-                autoScrollController: autoScrollController,
-                tabController: tabController,
-                listItemData: tabList,
-                slivers: [
-                  SliverAppBar(
-                    pinned: true,
-                    elevation: .2,
-                    leadingWidth: 41,
-                    centerTitle: false,
-                    titleSpacing: 2,
-                    leading: const CustomBackBtn(),
-                    shadowColor: const Color(0xffECEFF3),
-                    title: Padding(
-                      padding: const EdgeInsets.only(right: 14),
-                    ),
-                    bottom: PreferredSize(
-                      preferredSize: Size.fromHeight(110),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                          color: const Color.fromARGB(255, 250, 251, 255),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundImage: NetworkImage(
-                                        "https://v3.mynt.in/mf/static/images/mf/${widget.mfStockData.aMCCode}.png",
-                                      ),
+        body: TransparentLoaderScreen(
+          isLoading: mfData.singleloader!,
+          child: VerticalScrollableTabView(
+              autoScrollController: autoScrollController,
+              tabController: tabController,
+              listItemData: tabList,
+              slivers: [
+                SliverAppBar(
+                  pinned: true,
+                  elevation: .2,
+                  leadingWidth: 41,
+                  centerTitle: false,
+                  titleSpacing: 2,
+                  leading: const CustomBackBtn(),
+                  shadowColor: const Color(0xffECEFF3),
+                  title: Padding(
+                    padding: const EdgeInsets.only(right: 14),
+                  ),
+                  bottom: PreferredSize(
+                    preferredSize: Size.fromHeight(110),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        color: const Color.fromARGB(255, 250, 251, 255),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  CircleAvatar(
+                                    backgroundImage: NetworkImage(
+                                      "https://v3.mynt.in/mf/static/images/mf/${widget.mfStockData.aMCCode}.png",
                                     ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "${widget.mfStockData.fSchemeName}",
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              17,
-                                              FontWeight.w600,
-                                            ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "${widget.mfStockData.fSchemeName}",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: textStyle(
+                                            theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                            17,
+                                            FontWeight.w600,
                                           ),
-                                          const SizedBox(height: 8),
-                                          SizedBox(
-                                            height: 18,
-                                            child: ListView(
-                                              shrinkWrap: true,
-                                              scrollDirection: Axis.horizontal,
-                                              children: [
-                                                CustomExchBadge(
-                                                  exch: widget.mfStockData.schemeName!
-                                                          .contains("GROWTH")
-                                                      ? "GROWTH"
-                                                      : widget.mfStockData.schemeName!
-                                                              .contains("IDCW PAYOUT")
-                                                          ? "IDCW PAYOUT"
-                                                          : widget.mfStockData.schemeName!
-                                                                  .contains("IDCW REINVESTMENT")
-                                                              ? "IDCW REINVESTMENT"
-                                                              : widget.mfStockData.schemeName!
-                                                                      .contains("IDCW")
-                                                                  ? "IDCW"
-                                                                  : "NORMAL",
-                                                ),
-                                                const SizedBox(width: 5),
-                                                CustomExchBadge(exch: "${widget.mfStockData.schemeType}"),
-                                                const SizedBox(width: 5),
-                                                CustomExchBadge(
-                                                  exch: widget.mfStockData.sCHEMESUBCATEGORY!
-                                                      .replaceAll("Fund", '')
-                                                      .replaceAll("Hybrid", "")
-                                                      .toUpperCase(),
-                                                ),
-                                              ],
-                                            ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        SizedBox(
+                                          height: 18,
+                                          child: ListView(
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.horizontal,
+                                            children: [
+                                              CustomExchBadge(
+                                                exch: widget
+                                                        .mfStockData.schemeName!
+                                                        .contains("GROWTH")
+                                                    ? "GROWTH"
+                                                    : widget.mfStockData
+                                                            .schemeName!
+                                                            .contains(
+                                                                "IDCW PAYOUT")
+                                                        ? "IDCW PAYOUT"
+                                                        : widget.mfStockData
+                                                                .schemeName!
+                                                                .contains(
+                                                                    "IDCW REINVESTMENT")
+                                                            ? "IDCW REINVESTMENT"
+                                                            : widget.mfStockData
+                                                                    .schemeName!
+                                                                    .contains(
+                                                                        "IDCW")
+                                                                ? "IDCW"
+                                                                : "NORMAL",
+                                              ),
+                                              const SizedBox(width: 5),
+                                              CustomExchBadge(
+                                                  exch:
+                                                      "${widget.mfStockData.schemeType}"),
+                                              const SizedBox(width: 5),
+                                              CustomExchBadge(
+                                                exch: widget.mfStockData
+                                                    .sCHEMESUBCATEGORY!
+                                                    .replaceAll("Fund", '')
+                                                    .replaceAll("Hybrid", "")
+                                                    .toUpperCase(),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                          const SizedBox(height: 8),
-
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    // Padding(
-                                    //   padding: const EdgeInsets.all(10.0),
-                                     Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(height: 7),
-
-                                          Text(
-                                            "AUM (CR)",
-                                            style: textStyle(
-                                              const Color(0xff999999),
-                                              12,
-                                              FontWeight.w500,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 3),
-                                          Text(
-                                            (double.parse(widget.mfStockData.aUM!
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Padding(
+                                  //   padding: const EdgeInsets.all(10.0),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 7),
+                                      Text(
+                                        "AUM (CR)",
+                                        style: textStyle(
+                                          const Color(0xff999999),
+                                          12,
+                                          FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        (double.parse(widget.mfStockData.aUM!
                                                         .isEmpty
                                                     ? "0.00"
                                                     : widget.mfStockData.aUM!) /
                                                 10000000)
-                                                .toStringAsFixed(2),
-                                            style: textStyle(colors.colorBlack, 14, FontWeight.w600),
-                                          ),
-                                        ],
+                                            .toStringAsFixed(2),
+                                        style: textStyle(colors.colorBlack, 14,
+                                            FontWeight.w600),
                                       ),
-                                    // ),
+                                    ],
+                                  ),
+                                  // ),
 
-                                       Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          "NAV",
-                                          style: textStyle(
-                                            const Color(0xff999999),
-                                            12,
-                                            FontWeight.w500,
-                                          ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        "NAV",
+                                        style: textStyle(
+                                          const Color(0xff999999),
+                                          12,
+                                          FontWeight.w500,
                                         ),
-                                        const SizedBox(height: 3),
-                                        Text(
-                                          widget.mfStockData.nETASSETVALUE!.isEmpty
-                                              ? "0.00"
-                                              : widget.mfStockData.nETASSETVALUE!,
-                                          style: textStyle(colors.colorBlack, 14, FontWeight.w600),
-                                        ),
-                                      ],
-                                    ),
-                                    
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          "MIN. INV",
-                                          style: textStyle(
-                                            const Color(0xff999999),
-                                            12,
-                                            FontWeight.w500,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 3),
-                                        Text(
-                                          widget.mfStockData.minimumPurchaseAmount!.isEmpty
-                                              ? "0.00"
-                                              : widget.mfStockData.minimumPurchaseAmount!,
-                                          style: textStyle(colors.colorBlack, 14, FontWeight.w600),
-                                        ),
-                                      ],
-                                    ),
-                                    
-                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          "5YR CAGR",
-                                          style: textStyle(
-                                            const Color(0xff999999),
-                                            12,
-                                            FontWeight.w500,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 3),
-                                        Text(
-  widget.mfStockData.fIVEYEARDATA?.isEmpty ?? true
-      ? "0.00"
-      : "${widget.mfStockData.fIVEYEARDATA}%",
-  style: textStyle(colors.colorBlack, 14, FontWeight.w600),
-)
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        widget.mfStockData.nETASSETVALUE!
+                                                .isEmpty
+                                            ? "0.00"
+                                            : widget.mfStockData.nETASSETVALUE!,
+                                        style: textStyle(colors.colorBlack, 14,
+                                            FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
 
-                                      ],
-                                    ),
-                                        
-                                    
-                                  ],
-                                ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        "MIN. INV",
+                                        style: textStyle(
+                                          const Color(0xff999999),
+                                          12,
+                                          FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        widget.mfStockData
+                                                .minimumPurchaseAmount!.isEmpty
+                                            ? "0.00"
+                                            : widget.mfStockData
+                                                .minimumPurchaseAmount!,
+                                        style: textStyle(colors.colorBlack, 14,
+                                            FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
 
-
-                             
-
-                             
-                              ],
-                            ),
-                         
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        "5YR CAGR",
+                                        style: textStyle(
+                                          const Color(0xff999999),
+                                          12,
+                                          FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        widget.mfStockData.fIVEYEARDATA
+                                                    ?.isEmpty ??
+                                                true
+                                            ? "0.00"
+                                            : "${widget.mfStockData.fIVEYEARDATA}%",
+                                        style: textStyle(colors.colorBlack, 14,
+                                            FontWeight.w600),
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
                   ),
-                ],
-                eachItemChild: (aaa, int index) {
-                  return aaa == "Overview"
-                      ? MFOverview(mfStockData: widget.mfStockData)
-                      : aaa == "Performance"
-                          ? MFPerformance(mfStockData: widget.mfStockData)
-                          : aaa == "Scheme"
-                              ? MFSchemeInfo(mfStockData: widget.mfStockData)
-                              : aaa == "Allocation"
-                                  ? MFAllocation(mfStockData: widget.mfStockData)
-                                  : aaa == "Rollings"
-                                      ? Container()
-                                      : MFComparison(mfStockData: widget.mfStockData);
-                }
-              ),
+                ),
+              ],
+              eachItemChild: (aaa, int index) {
+                return aaa == "Overview"
+                    ? MFOverview(mfStockData: widget.mfStockData)
+                    : aaa == "Performance"
+                        ? MFPerformance(mfStockData: widget.mfStockData)
+                        : aaa == "Scheme"
+                            ? MFSchemeInfo(mfStockData: widget.mfStockData)
+                            : aaa == "Allocation"
+                                ? MFAllocation(mfStockData: widget.mfStockData)
+                                : aaa == "Rollings"
+                                    ? Container()
+                                    : MFComparison(
+                                        mfStockData: widget.mfStockData);
+              }),
+        ),
       );
     });
   }
-  
-
 }
-
