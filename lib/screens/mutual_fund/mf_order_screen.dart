@@ -741,7 +741,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                       hint: Text(mfOrder.paymentName,
                           style: textStyle(
                               const Color(0XFF000000), 13, FontWeight.w500)),
-                      items: mfOrder.addDividers(),
+                      items: mfOrder.investloader == false  ? mfOrder.addDividers() : [],
                       value: mfOrder.paymentName,
                       onChanged: (value) async {
                         mfOrder.chngPayName("$value");

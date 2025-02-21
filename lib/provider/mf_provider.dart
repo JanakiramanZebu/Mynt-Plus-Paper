@@ -774,11 +774,15 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future fetchmfNFO(BuildContext context) async {
     try {
+      _investloader = true;
       _mfNFOList = await api.getNFOData();
       print("NFO list ${_mfNFOList!.nfoList}");
       notifyListeners();
     } catch (e) {
       print("NFO ERROR :: $e");
+    }finally{
+      _investloader = false;
+
     }
   }
 

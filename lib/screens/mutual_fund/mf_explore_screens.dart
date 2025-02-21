@@ -91,11 +91,7 @@ class _ExploreScreensState extends State<MFExploreScreens>
                   padding: const EdgeInsets.only(bottom: 0, left: 15, top: 2),
                   decoration: BoxDecoration(
                       border: Border(
-                          top: BorderSide(
-                              color: widget.theme.isDarkMode
-                                  ? colors.darkColorDivider
-                                  : colors.colorDivider,
-                              width: 0.4),
+                          
                           bottom: BorderSide(
                               color: widget.theme.isDarkMode
                                   ? colors.darkColorDivider

@@ -729,51 +729,54 @@ class UserAccountScreen extends ConsumerWidget {
 
   Widget productList(String title, String subtitle, String image,
       ThemesProvider theme, VoidCallback action) {
-    return ListTile(
-      contentPadding: const EdgeInsets.fromLTRB(18, 16, 24, 16),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                    fontSize: 18,
-                    color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-                    fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(width: 12),
-              Icon(Icons.arrow_forward,
-                  size: 20,
-                  color: theme.isDarkMode
-                      ? colors.colorLightBlue
-                      : colors.colorBlue)
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: const TextStyle(
-                color: Color(0xFF666666),
-                fontSize: 14,
-                fontWeight: FontWeight.w500),
-          )
-        ],
-      ),
-      trailing: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
+    return InkWell(
+      onTap: action,
+      child: ListTile(
+        contentPadding: const EdgeInsets.fromLTRB(18, 16, 24, 16),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+                      fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(width: 12),
+                Icon(Icons.arrow_forward,
+                    size: 20,
+                    color: theme.isDarkMode
+                        ? colors.colorLightBlue
+                        : colors.colorBlue)
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                  color: Color(0xFF666666),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500),
+            )
+          ],
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+              color: theme.isDarkMode
+                  ? const Color(0xff666666).withOpacity(0.4)
+                  : const Color(0xffEBF1FF),
+              borderRadius: BorderRadius.circular(60)),
+          child: SvgPicture.asset(
+            image,
+            width: 32,
             color: theme.isDarkMode
-                ? const Color(0xff666666).withOpacity(0.4)
-                : const Color(0xffEBF1FF),
-            borderRadius: BorderRadius.circular(60)),
-        child: SvgPicture.asset(
-          image,
-          width: 32,
-          color: theme.isDarkMode
-              ? const Color(0xffEBF1FF).withOpacity(0.8)
-              : const Color(0xff000000),
+                ? const Color(0xffEBF1FF).withOpacity(0.8)
+                : const Color(0xff000000),
+          ),
         ),
       ),
     );
