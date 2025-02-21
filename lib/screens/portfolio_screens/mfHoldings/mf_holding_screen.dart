@@ -278,7 +278,7 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
                                                   print("object");
                                                   _showBottomSheet(
                                                     context,
-                                                    RedemptionBottomScreen(),
+                                                    RedemptionBottomScreen(mfHoldingData:mfHolding.mfHoldingsModel![index]),
                                                   );
                                                 },
                                                 child: Container(

@@ -90,7 +90,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                           "${widget.mfStockData.schemeCode}");
                     }
 
-                    //  mfData.fetchTopSchemes();
+                    // await mfData.fetchTopSchemes();
                     Navigator.pushNamed(context, Routes.mforderScreen,
                         arguments: widget.mfStockData);
                   },
