@@ -144,7 +144,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                             }
                           }
 
-                          if (idx.isOdd) {
+                          if (index.isOdd) {
                             return const ListDivider();
                           }
                           return ListTile(

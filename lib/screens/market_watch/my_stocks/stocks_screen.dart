@@ -50,7 +50,7 @@ class _StocksScreenState extends State<StocksScreen> {
                           "${socketDatas["${holdingProvide[index].exchTsym![0].token}"]['c'] ?? 0.00}";
                     }
 
-                    if (index.isOdd) {
+                    if (idx.isOdd) {
                       return const ListDivider();
                     }
                     return InkWell(

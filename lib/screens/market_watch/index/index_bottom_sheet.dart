@@ -199,7 +199,7 @@ class IndexBottomSheet extends ConsumerWidget {
                                 // Navigator.pop(context);
                                 // await marketWatch.calldepthApis(
                                 //     context, depthArgs);
-                                if (index.isOdd) {
+                                if (idx.isOdd) {
                                   return const ListDivider();
                                 }
                                 return InkWell(
