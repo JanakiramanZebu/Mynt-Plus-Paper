@@ -143,9 +143,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                       child: Column(
                         children: [
                             mforderbook.mfOrderbookfilter == "All"
-                                  ? mforderbook.mflumpsumorderbook!.data == [] ||
-                                          mforderbook
-                                              .mflumpsumorderbook!.data!.isEmpty
+                                  ? mforderbook.mflumpsumorderbook == null
                                       ? const Padding(
                                           padding: EdgeInsets.only(top: 280),
                                           child: Center(child: NoDataFound()),

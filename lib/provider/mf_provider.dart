@@ -661,7 +661,10 @@ class MFProvider extends DefaultChangeNotifier {
     _mandateStatus = _mandateData![indx].status!;
     print("${_mandateData![indx].mandateId}, ${_mandateData![indx].status}");
     }
-    
+    invAmtError = "";
+    installmentAmtError = "";
+    invDurationError = "";
+    upiError = "";
     notifyListeners();
   }
 

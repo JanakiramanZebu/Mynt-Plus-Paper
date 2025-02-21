@@ -240,28 +240,28 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                 14,
                                 FontWeight.w500)))),
               
-                Row(
-                  children: [
-                    IconButton(
-                        splashRadius: 20,
-                        onPressed: () {
-                          setState(() {
-                            mfOrder.setInitialPay(!mfOrder.isInitalPay);
-                            mfOrder.isValidUpiId(widget.mfData);
-                          });
-                        },
-                        icon: SvgPicture.asset(theme.isDarkMode
-                            ? mfOrder.isInitalPay
-                                ? assets.darkCheckedboxIcon
-                                : assets.darkCheckboxIcon
-                            : mfOrder.isInitalPay
-                                ? assets.checkedbox
-                                : assets.checkbox)),
-                    Text("Pay initial investment now",
-                        style: textStyle(colors.colorGrey, 12, FontWeight.w500)),
-                  ],
-                ),
-                const SizedBox(height: 8),
+                // Row(
+                //   children: [
+                //     IconButton(
+                //         splashRadius: 20,
+                //         onPressed: () {
+                //           setState(() {
+                //             mfOrder.setInitialPay(!mfOrder.isInitalPay);
+                //             mfOrder.isValidUpiId(widget.mfData);
+                //           });
+                //         },
+                //         icon: SvgPicture.asset(theme.isDarkMode
+                //             ? mfOrder.isInitalPay
+                //                 ? assets.darkCheckedboxIcon
+                //                 : assets.darkCheckboxIcon
+                //             : mfOrder.isInitalPay
+                //                 ? assets.checkedbox
+                //                 : assets.checkbox)),
+                //     Text("Pay initial investment now",
+                //         style: textStyle(colors.colorGrey, 12, FontWeight.w500)),
+                //   ],
+                // ),
+                // const SizedBox(height: 8),
                 if (mfOrder.isInitalPay)
                   SizedBox(
                       height: 44,
@@ -893,12 +893,21 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(
                         onPressed: () async {
+                          print(mfOrder.invAmtError);
+                          print(mfOrder.upiError);
+
+                          print(mfOrder.installmentAmtError);
+                          print(mfOrder.invDurationError);
+
                           if(mfOrder.invAmtError == "" &&
         mfOrder.upiError == "" &&
         mfOrder.installmentAmtError == "" && mfOrder.invDurationError == ""){
 
                           if (mfOrder.mfOrderTpye == "Lumpsum") {
+                            print(mfOrder.isValidUpiId(widget.mfData));
+                            print(widget.mfData);
                             if(mfOrder.isValidUpiId(widget.mfData) == true){
+                              
                             mfPlaceorder(widget.mfData, mfOrder, context);
                             }
                             else if(mfOrder.paymentName != "UPI"){
