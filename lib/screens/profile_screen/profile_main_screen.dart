@@ -13,7 +13,9 @@ import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/bond_provider.dart';
 import '../../provider/fund_provider.dart';
+import '../../provider/mf_provider.dart';
 import '../../provider/notification_provider.dart';
+import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/transcation_provider.dart';
 import '../../provider/user_profile_provider.dart';
@@ -32,6 +34,9 @@ class UserAccountScreen extends ConsumerWidget {
     final userProfile = watch(userProfileProvider);
     final theme = watch(themeProvider);
     final trancation = watch(transcationProvider);
+    final mf = watch(mfProvider);
+    final portfolio = watch(portfolioProvider);
+
     //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
     final Preferences pref = locator<Preferences>();
@@ -82,9 +87,14 @@ class UserAccountScreen extends ConsumerWidget {
                           // launch(
                           //     "https://app.mynt.in/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                         } else if (acttitle == "Mutual Fund") {
-                          // Navigator.pushNamed(context, Routes.mfmainscreen);
-                          launch(
-                              "https://app.mynt.in/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                           await mf.fetchBestMF();
+                  await portfolio.fetchMFHoldings(context);
+                  await mf.fetchMFCategoryType();
+                  // await mf.fetchmfNFO(context);
+                  await mf.fetchMFWatchlist("", "", context, true, "");
+                  Navigator.pushNamed(context, Routes.mfmainscreen);
+                          // launch(
+                          //     "https://app.mynt.in/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                         } else if (acttitle == "OptionZ") {
                           funds.optionZ(context);
                         } else if (acttitle == "Refer") {
@@ -452,7 +462,7 @@ class UserAccountScreen extends ConsumerWidget {
             Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text("Version 3.0.2 Build 1.0.65(02) Released on 21 Feb",
+                child: Text("Version 3.0.2 Build 1.0.65(03) Released on 21 Feb",
                     style: textStyle(
                         const Color(0xff666666), 11, FontWeight.w500)))
           ]);
