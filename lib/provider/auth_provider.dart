@@ -985,6 +985,7 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(transcationProvider).fetchc(context);
 
 // IPOs
+        await ref(ipoProvide).getDashboardIpos();
         await ref(ipoProvide).getSmeIpo();
         await ref(ipoProvide).getmainstreamipo();
         await ref(ipoProvide).getipoperfomance(currentYear);
@@ -997,9 +998,9 @@ class AuthProvider extends DefaultChangeNotifier {
             .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
         await ref(indexListProvider).fetchStockTopIndex();
 
-        // await ref(stocksProvide).fetchCorporateAction();
+        await ref(stocksProvide).fetchCorporateAction();
         // await ref(stocksProvide).defaultSectorThemematicData();
-        // await ref(stocksProvide).getNews();
+        await ref(stocksProvide).getNews();
         // await ref(stocksProvide).chngTradeAct("Equity");
 
         // ref(mfProvider).fetchcommonsearchWadd(null, "", context, false);

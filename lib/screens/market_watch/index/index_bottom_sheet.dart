@@ -16,7 +16,8 @@ import '../../../sharedWidget/list_divider.dart';
 
 class IndexBottomSheet extends ConsumerWidget {
   final int defaultIndex;
-  const IndexBottomSheet({super.key, required this.defaultIndex});
+  final bool src;
+  const IndexBottomSheet({super.key, required this.defaultIndex, required  this.src});
 
   // int tabIndex = 0;
   @override
@@ -224,8 +225,8 @@ class IndexBottomSheet extends ConsumerWidget {
                                         context, depthArgs);
                                   },
                                   child: ListTile(
-                                    contentPadding: const EdgeInsets.only(
-                                        left: 14, right: 4),
+                                    contentPadding:  EdgeInsets.only(
+                                        left: 14, right:  src ? 14 :4),
                                     dense: true,
                                     title: Row(
                                       mainAxisAlignment:
@@ -277,7 +278,7 @@ class IndexBottomSheet extends ConsumerWidget {
                                                 FontWeight.w600),
                                           )
                                         ]),
-                                    trailing: IconButton(
+                                    trailing: src ? null : IconButton(
                                         onPressed: () async {
                                           if (indexProvide.defaultIndexList!
                                                       .indValues![0].token ==

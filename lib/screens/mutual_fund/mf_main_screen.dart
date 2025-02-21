@@ -45,9 +45,9 @@ final portfolio = watch(portfolioProvider);
               //     print("object $value");
               //   },
                 SvgPicture.asset(
-                  'assets/icon/MYNT App Logo_v2.svg',
-                  width: 40,
-                  height: 40,
+                assets.myntnewLogo,
+                width: 46,
+                height: 46,
                 
               ),
               const SizedBox(width: 10),

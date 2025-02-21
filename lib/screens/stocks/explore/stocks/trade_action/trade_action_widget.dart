@@ -32,102 +32,113 @@ class _TradeActionState extends State<TradeAction> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // const SectorThematicWidget(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Today's trade action",
-                  style: GoogleFonts.inter(
-                      textStyle: textStyle(
-                          const Color(0xff000000), 16, FontWeight.w600))),
-              DropdownButtonHideUnderline(
-                child: DropdownButton2(
-                  menuItemStyleData: MenuItemStyleData(
-                      customHeights: actionTrade.getCustomItemsHeight()),
-
-                  buttonStyleData: const ButtonStyleData(
-                      height: 32,
-                      width: 100,
-                      decoration: BoxDecoration(
-                          color: Color(0xffF1F3F8),
-                          borderRadius: BorderRadius.all(Radius.circular(32)))),
-                  dropdownStyleData: DropdownStyleData(
-                    width: 100,
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    offset: const Offset(0, 8),
-                  ),
-                  // buttonSplashColor: Colors.transparent,
-                  isExpanded: true,
-                  style:
-                      textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                  hint: Text(actionTrade.selctedTradeAct,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Today's trade action",
                       style: textStyle(
-                          const Color(0XFF000000), 13, FontWeight.w500)),
-                  items: actionTrade.addDividersAfterExpDates(),
-                  // customItemsHeights: actionTrade.getCustomItemsHeight(),
-                  value: actionTrade.selctedTradeAct,
-                  onChanged: (value) async {
-                    if (value != actionTrade.selctedTradeAct) {
-                      actionTrade.chngTradeAct("$value");
-                    }
-                  },
-                  // buttonHeight: 36,
-                  // buttonWidth: 120,
-                ),
+                          const Color(0xff000000), 16, FontWeight.w600)),
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton2(
+                      menuItemStyleData: MenuItemStyleData(
+                          customHeights: actionTrade.getCustomItemsHeight()),
+
+                      buttonStyleData: const ButtonStyleData(
+                          height: 32,
+                          width: 100,
+                          decoration: BoxDecoration(
+                              color: Color(0xffF1F3F8),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(32)))),
+                      dropdownStyleData: DropdownStyleData(
+                        width: 100,
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        offset: const Offset(0, 8),
+                      ),
+                      // buttonSplashColor: Colors.transparent,
+                      isExpanded: true,
+                      style: textStyle(
+                          const Color(0XFF000000), 13, FontWeight.w500),
+                      hint: Text(actionTrade.selctedTradeAct,
+                          style: textStyle(
+                              const Color(0XFF000000), 13, FontWeight.w500)),
+                      items: actionTrade.addDividersAfterExpDates(),
+                      // customItemsHeights: actionTrade.getCustomItemsHeight(),
+                      value: actionTrade.selctedTradeAct,
+                      onChanged: (value) async {
+                        if (value != actionTrade.selctedTradeAct) {
+                          actionTrade.chngTradeAct("$value");
+                        }
+                      },
+                      // buttonHeight: 36,
+                      // buttonWidth: 120,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-              height: 35,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: tradeAction.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        width: 1,
-                        color: tradeAction[index] == actionTrade.tradeData
-                            ? const Color(0xff000000)
-                            : const Color(0xff666666),
-                      ),
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(40))),
-                    ),
-                    onPressed: () async {
-                      actionTrade.chngTradeAction(tradeAction[index]);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: Row(
-                        children: [
-                          SvgPicture.asset(
-                              "assets/icon/${index == 0 ? 'tg' : index == 1 ? 'tl' : index == 2 ? 'vb' : 'ma'}.svg",
-                              width: 18,
-                              height: 18),
-                          const SizedBox(width: 6),
-                          Text(
-                            tradeAction[index],
-                            style: textStyle(
-                                tradeAction[index] == actionTrade.tradeData
-                                    ? const Color(0xff000000)
-                                    : const Color(0xff666666),
-                                13,
-                                FontWeight.w600),
+              const SizedBox(height: 20),
+              SizedBox(
+                  height: 35,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: tradeAction.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor:
+                              tradeAction[index] == actionTrade.tradeData
+                                  ? const Color(0xff000000)
+                                  : Colors.transparent,
+                          side: BorderSide(
+                            width: 1,
+                            color: tradeAction[index] == actionTrade.tradeData
+                                ? const Color(0xff000000)
+                                : const Color(0xff666666),
                           ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return const SizedBox(width: 8);
-                },
-              )),
-          const SizedBox(height: 16),
+                          shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(40))),
+                        ),
+                        onPressed: () async {
+                          actionTrade.chngTradeAction(tradeAction[index]);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5.0),
+                          child: Row(
+                            children: [
+                              SvgPicture.asset(
+                                  "assets/icon/${index == 0 ? 'tg' : index == 1 ? 'tl' : index == 2 ? 'vb' : 'ma'}.svg",
+                                  width: 18,
+                                  height: 18),
+                              const SizedBox(width: 6),
+                              Text(
+                                tradeAction[index],
+                                style: textStyle(
+                                    tradeAction[index] == actionTrade.tradeData
+                                        ? const Color(0xffffffff)
+                                        : const Color(0xff666666),
+                                    13,
+                                    FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    separatorBuilder: (BuildContext context, int index) {
+                      return const SizedBox(width: 8);
+                    },
+                  )),
+              const SizedBox(height: 16),
+            ]),
+          ),
           actionTrade.topStockData.isNotEmpty
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,59 +146,61 @@ class _TradeActionState extends State<TradeAction> {
                     ListView.builder(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: actionTrade.topStockData.length,
+                      itemCount: 7,
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
                         return Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                        "${actionTrade.topStockData[index].tsym}",
-                                        style: GoogleFonts.inter(
-                                            textStyle: textStyle(
-                                                const Color(0xff000000),
-                                                14,
-                                                FontWeight.w600))),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                        "Vol :₹${actionTrade.topStockData[index].v}",
-                                        style: GoogleFonts.inter(
-                                            textStyle: textStyle(
-                                                const Color(0xff999999),
-                                                12,
-                                                FontWeight.w500))),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                        "₹${actionTrade.topStockData[index].lp}",
-                                        style: GoogleFonts.inter(
-                                            textStyle: textStyle(
-                                                const Color(0xff000000),
-                                                14,
-                                                FontWeight.w600))),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                        "${actionTrade.topStockData[index].pc}%",
-                                        style: GoogleFonts.inter(
-                                            textStyle: textStyle(
-                                                actionTrade
-                                                        .topStockData[index].pc!
-                                                        .startsWith("-")
-                                                    ? const Color(0xffE00000)
-                                                    : const Color(0xff43A833),
-                                                12,
-                                                FontWeight.w600))),
-                                  ],
-                                ),
-                              ],
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          "${actionTrade.topStockData[index].tsym}",
+                                          style: textStyle(
+                                              const Color(0xff000000),
+                                              14,
+                                              FontWeight.w600)),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                          "Vol :₹${actionTrade.topStockData[index].v}",
+                                          style: textStyle(
+                                              const Color(0xff999999),
+                                              12,
+                                              FontWeight.w500)),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                          "₹${actionTrade.topStockData[index].lp}",
+                                          style: textStyle(
+                                              const Color(0xff000000),
+                                              14,
+                                              FontWeight.w600)),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                          "${actionTrade.topStockData[index].pc}%",
+                                          style: textStyle(
+                                              actionTrade
+                                                      .topStockData[index].pc!
+                                                      .startsWith("-")
+                                                  ? const Color(0xffE00000)
+                                                  : const Color(0xff43A833),
+                                              12,
+                                              FontWeight.w600)),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                             if (index !=
                                 (actionTrade.topStockData.length - 1)) ...[
@@ -203,10 +216,10 @@ class _TradeActionState extends State<TradeAction> {
                     ),
 
                     // const SizedBox(height: 8,),
-                    Divider(
-                      color: colors.colorDivider,
-                      thickness: 0.6,
-                    ),
+                    // Divider(
+                    //   color: colors.colorDivider,
+                    //   thickness: 0.6,
+                    // ),
                     // InkWell(
                     //     onTap: () async {
                     //       await actionTrade.fetchALLAdindices();
@@ -227,8 +240,6 @@ class _TradeActionState extends State<TradeAction> {
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+    return TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize);
   }
 }

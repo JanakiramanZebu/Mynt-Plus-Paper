@@ -170,6 +170,7 @@ class ApiLinks {
 
   ///ipo///
   String get ipourlendpoint =>"${dashBoardURL}/ipo/";
+  String get dashboardipos => "${ipourlendpoint}IpoDashboard";
   String get smeipos => "${ipourlendpoint}getcurrentSMEIPOdetails";
   String get mainstreamipo => "${ipourlendpoint}getcurrentIPOdetails";
   String get ipoperformance => "${ipourlendpoint}ipo_performer?year=2024";

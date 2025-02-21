@@ -36,9 +36,9 @@ class _IPOmainScreenState extends State<IPOScreen> {
             title: Row(
               children: [
                 SvgPicture.asset(
-                  'assets/icon/MYNT App Logo_v2.svg',
-                  width: 40,
-                  height: 40,
+                 assets.myntnewLogo,
+                width: 46,
+                height: 46,
                 ),
                 const SizedBox(width: 10),
                 Expanded(

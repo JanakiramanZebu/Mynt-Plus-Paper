@@ -7,6 +7,7 @@ import 'package:mynt_plus/models/ipo_model/ipo_pre_close_model.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
+import '../models/ipo_model/ipo_db_model.dart';
 import '../models/ipo_model/ipo_mainstream_model.dart';
 import '../models/ipo_model/ipo_order_book_model.dart';
 import '../models/ipo_model/ipo_order_res_model.dart';
@@ -64,9 +65,13 @@ class IPOProvider extends DefaultChangeNotifier {
         addIpo.map((map) => map.requriedprice).reduce((a, b) => a > b ? a : b);
   }
 
-
-  final List customIpoCategoryListOrder=["Individual","HNI","Employee","Shareholder","Policyholder"];
-
+  final List customIpoCategoryListOrder = [
+    "Individual",
+    "HNI",
+    "Employee",
+    "Shareholder",
+    "Policyholder"
+  ];
 
   bool _isActiveMainStream = true;
   bool get isActiveMainStream => _isActiveMainStream;
@@ -108,6 +113,9 @@ class IPOProvider extends DefaultChangeNotifier {
 
   SmeIpoModel? _smeIpoModel;
   SmeIpoModel? get smeIpoModel => _smeIpoModel;
+
+  DashbordIposIPOS? _dashboardIpoModel;
+  DashbordIposIPOS? get dashboardIpoModel => _dashboardIpoModel;
 
   MainStreamIpoModel? _mainStreamIpoModel;
   MainStreamIpoModel? get mainStreamIpoModel => _mainStreamIpoModel;
@@ -303,23 +311,22 @@ class IPOProvider extends DefaultChangeNotifier {
 
   dynamic getIpoDetails(String searchCompany) {
     print("searchCommonIpo :: $searchCompany");
-    dynamic returnData; 
+    dynamic returnData;
     if (searchCompany.length > 1) {
       returnData = _ipoCommonSearchAllIpos
           .where((element) => element.companyName != ""
-              ? element.companyName!.toUpperCase().contains(searchCompany.toUpperCase())
-              : element.name!.toUpperCase().contains(searchCompany.toUpperCase()))
+              ? element.companyName!
+                  .toUpperCase()
+                  .contains(searchCompany.toUpperCase())
+              : element.name!
+                  .toUpperCase()
+                  .contains(searchCompany.toUpperCase()))
           .toList();
       print("returnData :: ${inspect(returnData)}");
-   
-      
     }
     return returnData;
     // notifyListeners();
   }
-
-
-
 
   searchCommonIpo(String value, BuildContext context) {
     print("searchCommonIpo :: $value");
@@ -491,7 +498,7 @@ class IPOProvider extends DefaultChangeNotifier {
   }
 
   smequantityOnchange(String value, IpoDetails addIpo, SMEIPO smeipo,
-      bool ischecked, double maxUPIAmt,String selectedChip){
+      bool ischecked, double maxUPIAmt, String selectedChip) {
     addIpo.qualityController.text = value;
     addIpo.qualityController.text.isEmpty
         ? addIpo.requriedprice = 0
@@ -521,13 +528,11 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.qualityerrortext =
           "Minimum Bid quantity is ${smeipo.minBidQuantity.toString()} only ";
       setisSMEPlaceOrderBtnActiveValue = false;
-    } else if (selectedChip=="HNI" && addIpo.requriedprice < 200000) {
-      addIpo.qualityerrortext =
-          "Minimum investment for HNI is above ₹200000 ";
+    } else if (selectedChip == "HNI" && addIpo.requriedprice < 200000) {
+      addIpo.qualityerrortext = "Minimum investment for HNI is above ₹200000 ";
       // setisMainIPOPlaceOrderBtnActiveValue = false;
       setisSMEPlaceOrderBtnActiveValue = false;
-    } 
-    else if (addIpo.requriedprice > maxUPIAmt) {
+    } else if (addIpo.requriedprice > maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
       setisSMEPlaceOrderBtnActiveValue = false;
@@ -537,8 +542,8 @@ class IPOProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  smequantityminusfunction(
-      IpoDetails addIpo, bool ischecked, SMEIPO smeipo, double maxUPIAmt,String selectedChip) {
+  smequantityminusfunction(IpoDetails addIpo, bool ischecked, SMEIPO smeipo,
+      double maxUPIAmt, String selectedChip) {
     if (addIpo.qualityController.text.isNotEmpty) {
       addIpo.qualityController.text =
           (int.parse(addIpo.qualityController.text) - addIpo.lotsize)
@@ -555,13 +560,11 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.qualityerrortext = addIpo.qualityController.text.isEmpty
           ? "* Value is required"
           : "Value cannot be 0";
-    } else if (selectedChip=="HNI" && addIpo.requriedprice < 200000) {
-      addIpo.qualityerrortext =
-          "Minimum investment for HNI is above ₹200000 ";
+    } else if (selectedChip == "HNI" && addIpo.requriedprice < 200000) {
+      addIpo.qualityerrortext = "Minimum investment for HNI is above ₹200000 ";
       // setisMainIPOPlaceOrderBtnActiveValue = false;
       setisSMEPlaceOrderBtnActiveValue = false;
-    } 
-     else if (addIpo.requriedprice > maxUPIAmt) {
+    } else if (addIpo.requriedprice > maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
       setisSMEPlaceOrderBtnActiveValue = false;
@@ -571,8 +574,8 @@ class IPOProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  smequalityplusefunction(
-      IpoDetails addIpo, bool ischecked, SMEIPO smeipo, double maxUPIAmt,String selectedChip) {
+  smequalityplusefunction(IpoDetails addIpo, bool ischecked, SMEIPO smeipo,
+      double maxUPIAmt, String selectedChip) {
     print(addIpo);
     print(ischecked);
     print(smeipo);
@@ -593,13 +596,11 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.qualityerrortext = addIpo.qualityController.text.isEmpty
           ? "* Value is required"
           : "Value cannot be 0";
-    } else if (selectedChip=="HNI" && addIpo.requriedprice < 200000) {
-      addIpo.qualityerrortext =
-          "Minimum investment for HNI is above ₹200000 ";
+    } else if (selectedChip == "HNI" && addIpo.requriedprice < 200000) {
+      addIpo.qualityerrortext = "Minimum investment for HNI is above ₹200000 ";
       // setisMainIPOPlaceOrderBtnActiveValue = false;
       setisSMEPlaceOrderBtnActiveValue = false;
-    } 
-    else if (addIpo.requriedprice > maxUPIAmt) {
+    } else if (addIpo.requriedprice > maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
       setisSMEPlaceOrderBtnActiveValue = false;
@@ -651,30 +652,27 @@ class IPOProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  categoryOnChange(List<IpoDetails> addIpo, double maxUPIAmt, bool ischecked,String selectedChip) {
-    for (IpoDetails singleIpo in addIpo){
-    if (singleIpo.requriedprice > maxUPIAmt) {
-      singleIpo.qualityerrortext =
-          "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
-         setisMainIPOPlaceOrderBtnActiveValue = false;
-         setisSMEPlaceOrderBtnActiveValue = false;
-    } 
-     else if (selectedChip=="HNI" && singleIpo.requriedprice < 200000) {
-      singleIpo.qualityerrortext =
-          "Minimum investment for HNI is above ₹200000 ";
-      setisMainIPOPlaceOrderBtnActiveValue = false;
-      setisSMEPlaceOrderBtnActiveValue = false;
-    }
-    else {
-      singleIpo.qualityerrortext = "";
+  categoryOnChange(List<IpoDetails> addIpo, double maxUPIAmt, bool ischecked,
+      String selectedChip) {
+    for (IpoDetails singleIpo in addIpo) {
+      if (singleIpo.requriedprice > maxUPIAmt) {
+        singleIpo.qualityerrortext =
+            "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
         setisMainIPOPlaceOrderBtnActiveValue = false;
         setisSMEPlaceOrderBtnActiveValue = false;
+      } else if (selectedChip == "HNI" && singleIpo.requriedprice < 200000) {
+        singleIpo.qualityerrortext =
+            "Minimum investment for HNI is above ₹200000 ";
+        setisMainIPOPlaceOrderBtnActiveValue = false;
+        setisSMEPlaceOrderBtnActiveValue = false;
+      } else {
+        singleIpo.qualityerrortext = "";
+        setisMainIPOPlaceOrderBtnActiveValue = false;
+        setisSMEPlaceOrderBtnActiveValue = false;
+      }
+      notifyListeners();
     }
-    notifyListeners();
-    }
-    
   }
-
 
   // onChangeCheckmainIPOBids(List<IpoDetails> addIpo,IPOProvider ipo,String selectedChip,MainIPO mainstream){
   //   for (var singleIpo in addIpo){
@@ -690,7 +688,7 @@ class IPOProvider extends DefaultChangeNotifier {
   //     singleIpo.biderrortext =
   //         "Your bid price ranges between ₹${double.parse(mainstream.minPrice!).toInt()}-₹${double.parse(mainstream.maxPrice!).toInt()}";
   //     setisMainIPOPlaceOrderBtnActiveValue = false;
-  //   } 
+  //   }
   //   else if (singleIpo.requriedprice > ipo.maxUPIAmt) {
   //     singleIpo.qualityerrortext =
   //         "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ";
@@ -714,9 +712,8 @@ class IPOProvider extends DefaultChangeNotifier {
   //   notifyListeners();
   // }
 
-
-  qualityplusefunction(
-      IpoDetails addIpo, bool ischecked, IPOProvider ipo, MainIPO mainstream,String selectedChip) {
+  qualityplusefunction(IpoDetails addIpo, bool ischecked, IPOProvider ipo,
+      MainIPO mainstream, String selectedChip) {
     if (addIpo.qualityController.text.isNotEmpty) {
       addIpo.qualityController.text =
           (int.parse(addIpo.qualityController.text) + addIpo.lotsize)
@@ -733,14 +730,11 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.qualityerrortext = addIpo.qualityController.text.isEmpty
           ? "* Value is required"
           : "Value cannot be 0";
-    } else if (selectedChip=="HNI" && addIpo.requriedprice < 200000) {
-      addIpo.qualityerrortext =
-          "Minimum investment for HNI is above ₹200000 ";
+    } else if (selectedChip == "HNI" && addIpo.requriedprice < 200000) {
+      addIpo.qualityerrortext = "Minimum investment for HNI is above ₹200000 ";
       setisMainIPOPlaceOrderBtnActiveValue = false;
       // setisSMEPlaceOrderBtnActiveValue = false;
-    }  
-    
-    else if (addIpo.requriedprice > ipo.maxUPIAmt) {
+    } else if (addIpo.requriedprice > ipo.maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ";
       setisMainIPOPlaceOrderBtnActiveValue = false;
@@ -751,8 +745,8 @@ class IPOProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  quantityminusfunction(
-      IpoDetails addIpo, bool ischecked, IPOProvider ipo, MainIPO mainstream,String selectedChip) {
+  quantityminusfunction(IpoDetails addIpo, bool ischecked, IPOProvider ipo,
+      MainIPO mainstream, String selectedChip) {
     if (addIpo.qualityController.text.isNotEmpty) {
       addIpo.qualityController.text =
           (int.parse(addIpo.qualityController.text) - addIpo.lotsize)
@@ -769,18 +763,15 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.qualityerrortext = addIpo.qualityController.text.isEmpty
           ? "* Value is required"
           : "Value cannot be 0";
-    } else if (selectedChip=="HNI" && addIpo.requriedprice < 200000) {
-      addIpo.qualityerrortext =
-          "Minimum investment for HNI is above ₹200000 ";
+    } else if (selectedChip == "HNI" && addIpo.requriedprice < 200000) {
+      addIpo.qualityerrortext = "Minimum investment for HNI is above ₹200000 ";
       setisMainIPOPlaceOrderBtnActiveValue = false;
       // setisSMEPlaceOrderBtnActiveValue = false;
-    }    
-    else if (addIpo.requriedprice > ipo.maxUPIAmt) {
+    } else if (addIpo.requriedprice > ipo.maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ";
       setisMainIPOPlaceOrderBtnActiveValue = false;
-    }
-    else if ((int.parse(addIpo.qualityController.text)) <
+    } else if ((int.parse(addIpo.qualityController.text)) <
         int.parse(mainstream.minBidQuantity.toString()).toInt()) {
       addIpo.qualityerrortext =
           "Minimum Bid quantity is ${mainstream.minBidQuantity.toString()} only ";
@@ -792,7 +783,7 @@ class IPOProvider extends DefaultChangeNotifier {
   }
 
   quantityOnchange(IpoDetails addIpo, bool ischecked, IPOProvider ipo,
-      String value, MainIPO mainstream,String selectedChip) {
+      String value, MainIPO mainstream, String selectedChip) {
     addIpo.qualityController.text = value;
     addIpo.isChecked == true
         ? addIpo.qualityController.text.isEmpty
@@ -818,13 +809,11 @@ class IPOProvider extends DefaultChangeNotifier {
           : "Value cannot be 0";
       addIpo.requriedprice = 0;
       setisMainIPOPlaceOrderBtnActiveValue = false;
-    } else if (selectedChip=="HNI" && addIpo.requriedprice < 200000) {
-      addIpo.qualityerrortext =
-          "Minimum investment for HNI is above ₹200000 ";
+    } else if (selectedChip == "HNI" && addIpo.requriedprice < 200000) {
+      addIpo.qualityerrortext = "Minimum investment for HNI is above ₹200000 ";
       setisMainIPOPlaceOrderBtnActiveValue = false;
       // setisSMEPlaceOrderBtnActiveValue = false;
-    }    
-    else if (addIpo.requriedprice > ipo.maxUPIAmt) {
+    } else if (addIpo.requriedprice > ipo.maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ";
       setisMainIPOPlaceOrderBtnActiveValue = false;
@@ -908,7 +897,7 @@ class IPOProvider extends DefaultChangeNotifier {
                   "subCatCode": "Individual",
                   "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
                 });
-              } else if ( element.subCategorySettings![i].caCode == "NIB") {
+              } else if (element.subCategorySettings![i].caCode == "NIB") {
                 ipoCategory.add({
                   "subCatCode": "HNI",
                   "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
@@ -944,7 +933,9 @@ class IPOProvider extends DefaultChangeNotifier {
           return true;
         }
       }).toList();
-      ipoCategory.sort((a, b) => customIpoCategoryListOrder.indexOf(a['subCatCode']).compareTo(customIpoCategoryListOrder.indexOf(b['subCatCode'])));
+      ipoCategory.sort((a, b) => customIpoCategoryListOrder
+          .indexOf(a['subCatCode'])
+          .compareTo(customIpoCategoryListOrder.indexOf(b['subCatCode'])));
       ipoCategoryvalue = ipoCategory[0]["subCatCode"];
       _maxUPIAmt = double.parse(ipoCategory[0]["upiLimit"]);
       notifyListeners();
@@ -962,25 +953,24 @@ class IPOProvider extends DefaultChangeNotifier {
       for (var element in mainStreamIpoModel!.mainIPO!) {
         for (var i = 0; i < element.subCategorySettings!.length; i++) {
           if (element.subCategorySettings![i].allowUpi!) {
-              if (element.subCategorySettings![i].subCatCode == "IND"){
-                if(element.key == "BSE"){
-                      ipoCategory.add({
-                        "subCatCode": "Individual",
-                        "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
-                      });
-
-                } else if (element.subCategorySettings![i].caCode == "RETAIL") {
-                        ipoCategory.add({
-                          "subCatCode": "Individual",
-                          "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
-                        });
-                } else if (element.subCategorySettings![i].caCode == "NIB") {
-                        ipoCategory.add({
-                          "subCatCode": "HNI",
-                          "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
-                        });
-                } 
-              } else if (element.subCategorySettings![i].subCatCode == "EMP") {
+            if (element.subCategorySettings![i].subCatCode == "IND") {
+              if (element.key == "BSE") {
+                ipoCategory.add({
+                  "subCatCode": "Individual",
+                  "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
+                });
+              } else if (element.subCategorySettings![i].caCode == "RETAIL") {
+                ipoCategory.add({
+                  "subCatCode": "Individual",
+                  "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
+                });
+              } else if (element.subCategorySettings![i].caCode == "NIB") {
+                ipoCategory.add({
+                  "subCatCode": "HNI",
+                  "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
+                });
+              }
+            } else if (element.subCategorySettings![i].subCatCode == "EMP") {
               ipoCategory.add({
                 "subCatCode": "Employee",
                 "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
@@ -1011,9 +1001,10 @@ class IPOProvider extends DefaultChangeNotifier {
         }
       }).toList();
 
-      ipoCategory.sort((a, b) => customIpoCategoryListOrder.indexOf(a['subCatCode']).compareTo(customIpoCategoryListOrder.indexOf(b['subCatCode'])));
-      
-      
+      ipoCategory.sort((a, b) => customIpoCategoryListOrder
+          .indexOf(a['subCatCode'])
+          .compareTo(customIpoCategoryListOrder.indexOf(b['subCatCode'])));
+
       ipoCategoryvalue = ipoCategory[0]["subCatCode"];
       _maxUPIAmt = double.parse(ipoCategory[0]["upiLimit"]);
 
@@ -1133,7 +1124,9 @@ class IPOProvider extends DefaultChangeNotifier {
         return true;
       }
     }).toList();
-    ipoCategory.sort((a, b) => customIpoCategoryListOrder.indexOf(a['subCatCode']).compareTo(customIpoCategoryListOrder.indexOf(b['subCatCode'])));
+    ipoCategory.sort((a, b) => customIpoCategoryListOrder
+        .indexOf(a['subCatCode'])
+        .compareTo(customIpoCategoryListOrder.indexOf(b['subCatCode'])));
     ipoCategoryvalue = ipoCategory[0]["subCatCode"];
     _maxUPIAmt = double.parse(ipoCategory[0]["upiLimit"]);
     notifyListeners();
@@ -1229,26 +1222,23 @@ class IPOProvider extends DefaultChangeNotifier {
             element.reponseStatus == 'pending') {
           _openorder!.add(element);
           // _openorder!.sort((a, b) => a.companyName!.compareTo(b.companyName!));
-         
         } else {
           _closeorder!.add(element);
           // _closeorder!.sort((a, b) => a.companyName!.compareTo(b.companyName!));
-            
         }
       }
-       _openorder?.sort((b, a) {
-                // final DateFormat dateFormat = DateFormat("yyyy-MM-dd hh:mm a"); //"2025-01-30 13:37:46.945384"
-                DateTime dateA = DateTime.parse(a.responseDatetime.toString());
-                DateTime dateB = DateTime.parse(b.responseDatetime.toString());
-                return dateA.compareTo(dateB);
-            });
-       _closeorder?.sort((b, a) {
-                // final DateFormat dateFormat = DateFormat("yyyy-MM-dd hh:mm a"); //"2025-01-30 13:37:46.945384"
-                DateTime dateA = DateTime.parse(a.responseDatetime.toString());
-                DateTime dateB = DateTime.parse(b.responseDatetime.toString());
-                return dateA.compareTo(dateB);
-            });
-
+      _openorder?.sort((b, a) {
+        // final DateFormat dateFormat = DateFormat("yyyy-MM-dd hh:mm a"); //"2025-01-30 13:37:46.945384"
+        DateTime dateA = DateTime.parse(a.responseDatetime.toString());
+        DateTime dateB = DateTime.parse(b.responseDatetime.toString());
+        return dateA.compareTo(dateB);
+      });
+      _closeorder?.sort((b, a) {
+        // final DateFormat dateFormat = DateFormat("yyyy-MM-dd hh:mm a"); //"2025-01-30 13:37:46.945384"
+        DateTime dateA = DateTime.parse(a.responseDatetime.toString());
+        DateTime dateB = DateTime.parse(b.responseDatetime.toString());
+        return dateA.compareTo(dateB);
+      });
     } catch (e) {
       print("ordersplit :: ${e}");
     } finally {
@@ -1384,6 +1374,17 @@ class IPOProvider extends DefaultChangeNotifier {
       print("SME IPOs error:: $e");
     } finally {
       toggleLoadingOn(false);
+    }
+  }
+
+  Future getDashboardIpos() async {
+    try {
+      _dashboardIpoModel = await api.fetchDashbordIposIPOS();
+      log("message dbdbdb $_dashboardIpoModel");
+      notifyListeners();
+      return _dashboardIpoModel;
+    } catch (e) {
+      print("Dashboard IPOs error:: $e");
     }
   }
 
