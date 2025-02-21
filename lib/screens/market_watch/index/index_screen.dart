@@ -11,7 +11,8 @@ import '../../../sharedWidget/functions.dart';
 import 'index_bottom_sheet.dart';
 
 class DefaultIndexList extends ConsumerWidget {
-  const DefaultIndexList({super.key});
+  bool src;
+  DefaultIndexList({super.key, required this.src});
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final socketDatas = watch(websocketProvider).socketDatas;
@@ -19,8 +20,8 @@ class DefaultIndexList extends ConsumerWidget {
     final theme = context.read(themeProvider);
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.only(left: 14),
-      height: 50,
+      padding: EdgeInsets.only(left: src ? 0 : 14),
+      height: src ? 54 : 50,
       child: ListView.separated(
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
@@ -51,7 +52,7 @@ class DefaultIndexList extends ConsumerWidget {
                       topRight: Radius.circular(10),
                     ),
                   ),
-                  builder: (_) => IndexBottomSheet(defaultIndex: index));
+                  builder: (_) => IndexBottomSheet(defaultIndex: index, src: src));
               await indexProvide.fetchIndexList("exit", context);
               await context
                   .read(marketWatchProvider)
@@ -61,92 +62,185 @@ class DefaultIndexList extends ConsumerWidget {
                 padding:
                     const EdgeInsets.symmetric(vertical: 6.0, horizontal: 11),
                 decoration: BoxDecoration(
-                    color: theme.isDarkMode
-                        ? const Color(0xffB5C0CF).withOpacity(.15)
-                        : const Color(0xffF1F3F8),
+                    border: Border.all(
+                        color: theme.isDarkMode
+                            ? colors.darkColorDivider
+                            : colors.colorDivider,
+                        width: src ? 0.6 : 0),
+                    color: src
+                        ? Colors.transparent
+                        : theme.isDarkMode
+                            ? const Color(0xffB5C0CF).withOpacity(.15)
+                            : const Color(0xffF1F3F8),
                     borderRadius: BorderRadius.circular(5)),
-                width: MediaQuery.of(context).size.width * 0.47,
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          indexProvide
-                              .defaultIndexList!.indValues![index].idxname!
-                              .toUpperCase(),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? const Color(0xffB5C0CF)
-                                  : const Color(0xff000000),
-                              14,
-                              FontWeight.w600),
-                        ),
-                      ),
-                      Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                                "₹${indexProvide.defaultIndexList!.indValues![index].ltp ?? 0.00}",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? const Color(0xffE5E5E5)
-                                        : const Color(0xff000000),
-                                    13,
-                                    FontWeight.w600)),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                Text(
-                                    "${indexProvide.defaultIndexList!.indValues![index].change == "null" ? 0.00 : indexProvide.defaultIndexList!.indValues![index].change} ",
+                width: MediaQuery.of(context).size.width * 0.46,
+                child: src
+                    ? Column(
+                      // mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            indexProvide
+                                .defaultIndexList!.indValues![index].idxname!
+                                .toUpperCase(),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? const Color(0xffB5C0CF)
+                                    : const Color(0xff000000),
+                                14,
+                                FontWeight.w600),
+                          ),
+                          const SizedBox(height: 6),
+                          Expanded(
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      "₹${indexProvide.defaultIndexList!.indValues![index].ltp ?? 0.00}",
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? const Color(0xffE5E5E5)
+                                              : const Color(0xff666666),
+                                          13,
+                                          FontWeight.w600)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                      "${indexProvide.defaultIndexList!.indValues![index].change == "null" ? 0.00 : indexProvide.defaultIndexList!.indValues![index].change} ",
+                                      style: textStyle(
+                                          (indexProvide
+                                                          .defaultIndexList!
+                                                          .indValues![index]
+                                                          .change ==
+                                                      "null") ||
+                                                  (indexProvide
+                                                          .defaultIndexList!
+                                                          .indValues![index]
+                                                          .change ==
+                                                      "0.00")
+                                              ? colors.ltpgrey
+                                              : indexProvide.defaultIndexList!
+                                                      .indValues![index].change!
+                                                      .startsWith("-")
+                                                  ? colors.darkred
+                                                  : colors.ltpgreen,
+                                          12,
+                                          FontWeight.w600)),
+                                  Text(
+                                    "(${indexProvide.defaultIndexList!.indValues![index].perChange == "null" ? 0.00 : indexProvide.defaultIndexList!.indValues![index].perChange}%)",
                                     style: textStyle(
                                         (indexProvide
                                                         .defaultIndexList!
                                                         .indValues![index]
-                                                        .change ==
+                                                        .perChange ==
                                                     "null") ||
                                                 (indexProvide
                                                         .defaultIndexList!
                                                         .indValues![index]
-                                                        .change ==
+                                                        .perChange ==
                                                     "0.00")
                                             ? colors.ltpgrey
-                                            : indexProvide.defaultIndexList!
-                                                    .indValues![index].change!
-                                                    .startsWith("-")
+                                            : indexProvide
+                                                    .defaultIndexList!
+                                                    .indValues![index]
+                                                    .perChange!
+                                                    .startsWith('-')
                                                 ? colors.darkred
                                                 : colors.ltpgreen,
                                         12,
-                                        FontWeight.w600)),
-                                Text(
-                                  "(${indexProvide.defaultIndexList!.indValues![index].perChange == "null" ? 0.00 : indexProvide.defaultIndexList!.indValues![index].perChange}%)",
-                                  style: textStyle(
-                                      (indexProvide
-                                                      .defaultIndexList!
-                                                      .indValues![index]
-                                                      .perChange ==
-                                                  "null") ||
+                                        FontWeight.w600),
+                                  )
+                                ]),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                            Expanded(
+                              child: Text(
+                                indexProvide.defaultIndexList!.indValues![index]
+                                    .idxname!
+                                    .toUpperCase(),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? const Color(0xffB5C0CF)
+                                        : const Color(0xff000000),
+                                    14,
+                                    FontWeight.w600),
+                              ),
+                            ),
+                            Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                      "₹${indexProvide.defaultIndexList!.indValues![index].ltp ?? 0.00}",
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? const Color(0xffE5E5E5)
+                                              : const Color(0xff000000),
+                                          13,
+                                          FontWeight.w600)),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      Text(
+                                          "${indexProvide.defaultIndexList!.indValues![index].change == "null" ? 0.00 : indexProvide.defaultIndexList!.indValues![index].change} ",
+                                          style: textStyle(
                                               (indexProvide
-                                                      .defaultIndexList!
-                                                      .indValues![index]
-                                                      .perChange ==
-                                                  "0.00")
-                                          ? colors.ltpgrey
-                                          : indexProvide.defaultIndexList!
-                                                  .indValues![index].perChange!
-                                                  .startsWith('-')
-                                              ? colors.darkred
-                                              : colors.ltpgreen,
-                                      12,
-                                      FontWeight.w600),
-                                ),
-                              ],
-                            )
+                                                              .defaultIndexList!
+                                                              .indValues![index]
+                                                              .change ==
+                                                          "null") ||
+                                                      (indexProvide
+                                                              .defaultIndexList!
+                                                              .indValues![index]
+                                                              .change ==
+                                                          "0.00")
+                                                  ? colors.ltpgrey
+                                                  : indexProvide
+                                                          .defaultIndexList!
+                                                          .indValues![index]
+                                                          .change!
+                                                          .startsWith("-")
+                                                      ? colors.darkred
+                                                      : colors.ltpgreen,
+                                              12,
+                                              FontWeight.w600)),
+                                      Text(
+                                        "(${indexProvide.defaultIndexList!.indValues![index].perChange == "null" ? 0.00 : indexProvide.defaultIndexList!.indValues![index].perChange}%)",
+                                        style: textStyle(
+                                            (indexProvide
+                                                            .defaultIndexList!
+                                                            .indValues![index]
+                                                            .perChange ==
+                                                        "null") ||
+                                                    (indexProvide
+                                                            .defaultIndexList!
+                                                            .indValues![index]
+                                                            .perChange ==
+                                                        "0.00")
+                                                ? colors.ltpgrey
+                                                : indexProvide
+                                                        .defaultIndexList!
+                                                        .indValues![index]
+                                                        .perChange!
+                                                        .startsWith('-')
+                                                    ? colors.darkred
+                                                    : colors.ltpgreen,
+                                            12,
+                                            FontWeight.w600),
+                                      ),
+                                    ],
+                                  )
+                                ])
                           ])
-                    ])
 
                 //  DefaultIndexListCard(
                 //   indVal: widget.indexProvide.defaultIndexList!.indValues![index],

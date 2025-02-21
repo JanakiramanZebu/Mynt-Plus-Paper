@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../../../res/res.dart';
 
 import '../../../../../provider/stocks_provider.dart';
 import '../../../../../routes/route_names.dart';
-import '../../../../../sharedWidget/list_divider.dart'; 
+import '../../../../../sharedWidget/list_divider.dart';
 
 class NewsScreen extends ConsumerWidget {
   const NewsScreen({super.key});
@@ -15,13 +15,13 @@ class NewsScreen extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final news = watch(stocksProvide).newsModel!.data;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       color: const Color(0xffFFFFFF),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Stocks in News",
-              style: textStyle(const Color(0xff181B19), 16, FontWeight.w600)),
+          Text("News",
+              style: textStyle(const Color(0xff000000), 16, FontWeight.w600)),
           const SizedBox(height: 18),
           ListView.separated(
             shrinkWrap: true,
@@ -39,6 +39,8 @@ class NewsScreen extends ConsumerWidget {
                 dense: true,
                 title: Text(
                   "${news[index].title}",
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style:
                       textStyle(const Color(0xff000000), 14, FontWeight.w500),
                 ),
@@ -54,7 +56,7 @@ class NewsScreen extends ConsumerWidget {
                         decoration: BoxDecoration(color: colors.darkGrey),
                         width: 80,
                         height: 50,
-                        child: Text("MYNT +",
+                        child: Text("MYNT ",
                             style: textStyle(
                                 const Color(0xff000000), 14, FontWeight.w600)),
                       )

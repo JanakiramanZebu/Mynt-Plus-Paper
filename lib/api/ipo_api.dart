@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:mynt_plus/models/ipo_model/ipo_pre_close_model.dart';
 
+import '../models/ipo_model/ipo_db_model.dart';
 import '../models/ipo_model/ipo_mainstream_model.dart';
 import '../models/ipo_model/ipo_order_book_model.dart';
 import '../models/ipo_model/ipo_order_res_model.dart';
@@ -149,6 +150,21 @@ mixin IPOApi on ApiCore {
     }
   }
 
+  Future<DashbordIposIPOS> fetchDashbordIposIPOS() async {
+    try {
+      final uri = Uri.parse(apiLinks.dashboardipos);
+      final res = await apiClient.post(
+        uri,
+        headers: defaultHeaders,
+      );
+      final json = jsonDecode(res.body);
+      // print("dashbord ipo res=>${res.body} ");
+      return DashbordIposIPOS.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<IpoSinglePage> fetchiposinglepage(String iponame) async {
     try {
       final uri = Uri.parse(apiLinks.iposinglepage);
@@ -174,16 +190,14 @@ mixin IPOApi on ApiCore {
   Future<IpoPreCloseModel> fetchIpoPreCloseApi() async {
     try {
       final uri = Uri.parse(apiLinks.ipoprecloseurl);
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders);
+      final res = await apiClient.post(uri, headers: defaultHeaders);
       final json = jsonDecode(res.body);
       // log("fetchipopreclose :: ${res.body}");
-        IpoPreCloseModel ipoModel = IpoPreCloseModel.fromJson(json);
-        return ipoModel;
+      IpoPreCloseModel ipoModel = IpoPreCloseModel.fromJson(json);
+      return ipoModel;
     } catch (e) {
       print("fetchipopreclose ::  $e");
       rethrow;
     }
   }
-
 }

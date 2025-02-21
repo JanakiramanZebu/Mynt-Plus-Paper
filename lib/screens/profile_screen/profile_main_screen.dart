@@ -230,7 +230,7 @@ class UserAccountScreen extends ConsumerWidget {
                     thickness: 0.6,
                     height: 0),
                 productList(
-                    'Mutual Fund',
+                    'Mutual Funds',
                     "Invest in experts managed portfolio.",
                     "assets/profileimage/prd-mf.svg",
                     theme, () async {

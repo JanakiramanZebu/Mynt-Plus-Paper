@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/all.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/screens/stocks/explore/carousel_screen.dart';
+import 'package:mynt_plus/screens/stocks/explore/stocks/news/news_screen.dart';
+import 'package:mynt_plus/screens/stocks/explore/stocks/trade_action/corporate_action.dart';
 
+import '../../../../provider/fund_provider.dart';
+import '../../../../provider/mf_provider.dart';
+import '../../../../provider/thems.dart';
+import '../../../../res/res.dart';
+import '../../../../routes/route_names.dart';
+import '../explore_liveIPO.dart';
 import 'indices/top_indices.dart';
 import 'trade_action/trade_action_widget.dart';
 // import 'news/news_screen.dart';
@@ -15,13 +22,23 @@ class StockScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+    return Consumer(builder: (context, ScopedReader watch, _) {
+      final theme = watch(themeProvider);
+
+      final funds = watch(fundProvider);
+      final mf = watch(mfProvider);
+      return SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            const SizedBox(height: 1),
+            Divider(
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider,
+                thickness: 0.6,
+                height: 0),
             // Expanded(
             //   child: ListView(children: const [
             //     // ExploreWidget(),
@@ -39,77 +56,111 @@ class StockScreen extends StatelessWidget {
             const TopIndices(),
 
             const SizedBox(
+              height: 16,
+            ),
+
+            // const MyCarousel(),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Products",
+                      style: textStyle(
+                          const Color(0xff000000), 16, FontWeight.w600)),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      productList(
+                          'IPO',
+                          "A company's first public stock offering.",
+                          "assets/profileimage/prd-ipo.svg",
+                          theme, () {
+                        Navigator.pushNamed(context, Routes.ipo);
+                        // launch(
+                        //     "https://app.mynt.in/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                      }),
+                      productList(
+                          'Mutual Funds',
+                          "Invest in experts managed portfolio.",
+                          "assets/profileimage/prd-mf.svg",
+                          theme, () async {
+                        // await portfolio.fetchMFHoldings(context);
+                        await mf.fetchMFCategoryType();
+                        // await mf.fetchmfNFO(context);
+                        await mf.fetchMFWatchlist("", "", context, true, "");
+                        Navigator.pushNamed(context, Routes.mfmainscreen);
+                        // launch(
+                        //     "https://app.mynt.in/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                      }),
+                      productList('OptionZ', "Options Trading Platform.",
+                          "assets/profileimage/prd-optz.svg", theme, () async {
+                        await funds.fetchHstoken(context);
+                        funds.optionZ(context);
+                      }),
+                      productList(
+                          'All Broker',
+                          "A company's first public stock offering.",
+                          "assets/profileimage/prd-ab.svg",
+                          theme, () {
+                        Navigator.pushNamed(context, Routes.reportWebViewApp);
+                        // launch(
+                        //     "https://app.mynt.in/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                      }),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(
               height: 32,
             ),
 
-MyCarousel(),
-            
-            Text("Most products",
-                style: GoogleFonts.inter(
-                    textStyle: textStyle(
-                        const Color(0xff000000), 16, FontWeight.w600))),
-            const SizedBox(height: 8),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.24,
-              children: [
-                ServiceCard(
-                  icon: "assets/icon/dashboard/ipo.svg",
-                  title: "IPO's",
-                  description: "A company's first public stock offering",
-                ),
-                ServiceCard(
-                  icon: "assets/icon/dashboard/mf.svg",
-                  title: "Mutual Fund's",
-                  description: "Invest in experts managed portfolio",
-                ),
-                ServiceCard(
-                  icon: "assets/icon/dashboard/op.svg",
-                  title: "Option Chain",
-                  description: "Option chain with real-time prices",
-                ),
-                ServiceCard(
-                  icon: "assets/icon/dashboard/desk.svg",
-                  title: "Desk",
-                  description: "Your person info, reports, ledger & more",
-                ),
-              ],
-            ),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              TextButton(
-                  onPressed: () async {},
-                  child: Text("Most used products",
-                      style: GoogleFonts.inter(
-                          color: const Color(0xff0037B7),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600)))
-            ]),
-
-            const SizedBox(
-              height: 16,
-            ),
-            // Text("Today's trade action",
-            //     style: GoogleFonts.inter(
-            //         textStyle: textStyle(
-            //             const Color(0xff000000), 16, FontWeight.w600))),
-            // const SizedBox(height: 8),
             const TradeAction(),
 
-                    const SizedBox(height: 32),
+            // const SizedBox(
+            //   height: 24,
+            // ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Live IPO",
+                            style: textStyle(
+                                const Color(0xff000000), 16, FontWeight.w600)),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, Routes.ipo);
+                            },
+                            child: const Text('See all',
+                                style: TextStyle(
+                                    color: Color(0xff0037B7),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600)))
+                      ]),
+                  const LiveIPOList(),
+                ],
+              ),
+            ),
+
+            // const CorporateAction(),
+            const SizedBox(height: 32),
+            const NewsScreen(),
           ],
         ),
-      ),
-    );
+      );
+    });
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+    return TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize);
   }
 
   Widget ServiceCard(
@@ -152,6 +203,40 @@ MyCarousel(),
               fontSize: 13,
               color: Colors.black54,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget productList(String title, String subtitle, String image,
+      ThemesProvider theme, VoidCallback action) {
+    return InkWell(
+      onTap: action,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+                color: theme.isDarkMode
+                    ? const Color(0xff666666).withOpacity(0.4)
+                    : const Color(0xffEBF1FF),
+                borderRadius: BorderRadius.circular(60)),
+            child: SvgPicture.asset(
+              image,
+              width: 32,
+              color: theme.isDarkMode
+                  ? const Color(0xffEBF1FF).withOpacity(0.8)
+                  : const Color(0xff000000),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            style: TextStyle(
+                fontSize: 14,
+                color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+                fontWeight: FontWeight.w600),
           ),
         ],
       ),
