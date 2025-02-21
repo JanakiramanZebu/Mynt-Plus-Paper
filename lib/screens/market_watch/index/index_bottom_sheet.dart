@@ -131,16 +131,16 @@ class IndexBottomSheet extends ConsumerWidget {
                   child: indexProvide.isLoad
                       ? const Center(child: CircularProgressIndicator())
                       : indexProvide.indValuesList.isNotEmpty
-                          ? ListView.separated(
+                          ? ListView.builder(
+                              shrinkWrap: false,
                               controller: controller,
                               physics: const BouncingScrollPhysics(
                                   parent: AlwaysScrollableScrollPhysics()),
-                              separatorBuilder:
-                                  (BuildContext context, int index) {
-                                return const ListDivider();
-                              },
-                              itemCount: indexProvide.indValuesList.length,
-                              itemBuilder: (BuildContext context, index) {
+                              itemCount:
+                                  indexProvide.indValuesList.length * 2 - 1,
+                              itemBuilder: (BuildContext context, idx) {
+                                int index = idx ~/ 2;
+
                                 if (indexProvide.defaultIndexList!.indValues![0]
                                             .token ==
                                         indexProvide
@@ -199,9 +199,12 @@ class IndexBottomSheet extends ConsumerWidget {
                                 // Navigator.pop(context);
                                 // await marketWatch.calldepthApis(
                                 //     context, depthArgs);
+                                if (idx.isOdd) {
+                                  return const ListDivider();
+                                }
                                 return InkWell(
                                   onTap: () async {
-                                   await marketWatch.fetchScripQuoteIndex(
+                                    await marketWatch.fetchScripQuoteIndex(
                                         indexProvide.indValuesList[index].token
                                             .toString(),
                                         indexProvide.slectedExch.toString(),

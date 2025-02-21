@@ -130,7 +130,7 @@ Container(
       enableTooltip: true,
       borderColor: colors.colorBlue,
       borderWidth: 2,
-      dataSource: navGraph!.data!,
+      dataSource: mfProvide.singleloader == false ?  navGraph!.data! : [],
       xValueMapper: (NavGraphData data, _) =>
           data.navDate!.substring(0, data.navDate!.length - 14),
       yValueMapper: (NavGraphData data, _) => data.nav,
