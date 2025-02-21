@@ -709,31 +709,31 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                               ? colors.colorWhite
                                                                               : colors.colorBlack),
                                                                     ),
-                                                                    IconButton(
-                                                                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                                                                      // splashRadius:
-                                                                      //     26,
-                                                                      onPressed:
-                                                                          () async {
-                                                                        await context
-                                                                            .read(notificationprovider)
-                                                                            .fetchexchagemsg(context);
+                                                                    // IconButton(
+                                                                    //   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                                                    //   // splashRadius:
+                                                                    //   //     26,
+                                                                    //   onPressed:
+                                                                    //       () async {
+                                                                    //     await context
+                                                                    //         .read(notificationprovider)
+                                                                    //         .fetchexchagemsg(context);
 
-                                                                        await context
-                                                                            .read(notificationprovider)
-                                                                            .fetchbrokermsg(context);
-                                                                        Navigator.pushNamed(
-                                                                            context,
-                                                                            Routes.notificationpage);
-                                                                      },
-                                                                      icon: SvgPicture.asset(
-                                                                          "assets/icon/appbarIcon/bell.svg",
-                                                                          width:
-                                                                              24,
-                                                                          color: theme.isDarkMode
-                                                                              ? colors.colorWhite
-                                                                              : colors.colorBlack),
-                                                                    ),
+                                                                    //     await context
+                                                                    //         .read(notificationprovider)
+                                                                    //         .fetchbrokermsg(context);
+                                                                    //     Navigator.pushNamed(
+                                                                    //         context,
+                                                                    //         Routes.notificationpage);
+                                                                    //   },
+                                                                    //   icon: SvgPicture.asset(
+                                                                    //       "assets/icon/appbarIcon/bell.svg",
+                                                                    //       width:
+                                                                    //           24,
+                                                                    //       color: theme.isDarkMode
+                                                                    //           ? colors.colorWhite
+                                                                    //           : colors.colorBlack),
+                                                                    // ),
                                                                     // Icon(
                                                                     //     Icons
                                                                     //         .expand_more,
@@ -751,103 +751,103 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       shadowColor: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
                                       padding: EdgeInsets.zero,
                                       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
-                                        Expanded(
-                                          child: InkWell(
-                                            onTap: internet.connectionStatus ==
-                                                    ConnectivityResult.none
-                                                ? null
-                                                : () async {
-                                                    // watch(stocksProvide)
-                                                    //     .chngExpName("Stock", 0);
-                                                    // await context
-                                                    //     .read(indexListProvider)
-                                                    //     .checkSession(context);
-                                                    // await portfolio.requestWSHoldings(
-                                                    //     context: context,
-                                                    //     isSubscribe: false);
+                                        // Expanded(
+                                        //   child: InkWell(
+                                        //     onTap: internet.connectionStatus ==
+                                        //             ConnectivityResult.none
+                                        //         ? null
+                                        //         : () async {
+                                        //             // watch(stocksProvide)
+                                        //             //     .chngExpName("Stock", 0);
+                                        //             // await context
+                                        //             //     .read(indexListProvider)
+                                        //             //     .checkSession(context);
+                                        //             // await portfolio.requestWSHoldings(
+                                        //             //     context: context,
+                                        //             //     isSubscribe: false);
 
-                                                    // // await context
-                                                    // //     .read(orderProvider)
-                                                    // //     .requestWSOrderBook(
-                                                    // //         context: context,
-                                                    // //         isSubscribe: false);
-                                                    // await portfolio.requestWSPosition(
-                                                    //     context: context,
-                                                    //     isSubscribe: false);
+                                        //             // // await context
+                                        //             // //     .read(orderProvider)
+                                        //             // //     .requestWSOrderBook(
+                                        //             // //         context: context,
+                                        //             // //         isSubscribe: false);
+                                        //             // await portfolio.requestWSPosition(
+                                        //             //     context: context,
+                                        //             //     isSubscribe: false);
 
-                                                    // await context
-                                                    //     .read(marketWatchProvider)
-                                                    //     .requestMWScrip(
-                                                    //         context: context,
-                                                    //         isSubscribe: false);
-                                                    // await explore.exploretabSize();
-                                                    indexProvide.bottomMenu(
-                                                        0, context);
-                                                  },
-                                            child: Container(
-                                              margin:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 7),
-                                              decoration: BoxDecoration(
-                                                  border: indexProvide
-                                                              .selectedBtmIndx ==
-                                                          0
-                                                      ? Border(
-                                                          top: BorderSide(
-                                                              color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorLightBlue
-                                                                  : colors
-                                                                      .colorBlue,
-                                                              width: 2))
-                                                      : null),
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  SvgPicture.asset(
-                                                      assets.bookmarkedIcon,
-                                                      color: theme.isDarkMode &&
-                                                              indexProvide
-                                                                      .selectedBtmIndx ==
-                                                                  0
-                                                          ? colors
-                                                              .colorLightBlue
-                                                          : indexProvide
-                                                                      .selectedBtmIndx ==
-                                                                  0
-                                                              ? colors.colorBlue
-                                                              : colors
-                                                                  .colorGrey),
-                                                  const SizedBox(height: 4),
-                                                  Text("Explore",
-                                                      style: textStyle(
-                                                          theme.isDarkMode &&
-                                                                  indexProvide
-                                                                          .selectedBtmIndx ==
-                                                                      0
-                                                              ? colors
-                                                                  .colorLightBlue
-                                                              : indexProvide
-                                                                          .selectedBtmIndx ==
-                                                                      0
-                                                                  ? colors
-                                                                      .colorBlue
-                                                                  : colors
-                                                                      .colorGrey,
-                                                          12,
-                                                          indexProvide.selectedBtmIndx ==
-                                                                  0
-                                                              ? FontWeight.w600
-                                                              : FontWeight
-                                                                  .w500)),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                        //             // await context
+                                        //             //     .read(marketWatchProvider)
+                                        //             //     .requestMWScrip(
+                                        //             //         context: context,
+                                        //             //         isSubscribe: false);
+                                        //             // await explore.exploretabSize();
+                                        //             indexProvide.bottomMenu(
+                                        //                 0, context);
+                                        //           },
+                                        //     child: Container(
+                                        //       margin:
+                                        //           const EdgeInsets.symmetric(
+                                        //               horizontal: 7),
+                                        //       decoration: BoxDecoration(
+                                        //           border: indexProvide
+                                        //                       .selectedBtmIndx ==
+                                        //                   0
+                                        //               ? Border(
+                                        //                   top: BorderSide(
+                                        //                       color: theme.isDarkMode
+                                        //                           ? colors
+                                        //                               .colorLightBlue
+                                        //                           : colors
+                                        //                               .colorBlue,
+                                        //                       width: 2))
+                                        //               : null),
+                                        //       child: Column(
+                                        //         mainAxisAlignment:
+                                        //             MainAxisAlignment.center,
+                                        //         crossAxisAlignment:
+                                        //             CrossAxisAlignment.center,
+                                        //         children: [
+                                        //           SvgPicture.asset(
+                                        //               assets.bookmarkedIcon,
+                                        //               color: theme.isDarkMode &&
+                                        //                       indexProvide
+                                        //                               .selectedBtmIndx ==
+                                        //                           0
+                                        //                   ? colors
+                                        //                       .colorLightBlue
+                                        //                   : indexProvide
+                                        //                               .selectedBtmIndx ==
+                                        //                           0
+                                        //                       ? colors.colorBlue
+                                        //                       : colors
+                                        //                           .colorGrey),
+                                        //           const SizedBox(height: 4),
+                                        //           Text("Explore",
+                                        //               style: textStyle(
+                                        //                   theme.isDarkMode &&
+                                        //                           indexProvide
+                                        //                                   .selectedBtmIndx ==
+                                        //                               0
+                                        //                       ? colors
+                                        //                           .colorLightBlue
+                                        //                       : indexProvide
+                                        //                                   .selectedBtmIndx ==
+                                        //                               0
+                                        //                           ? colors
+                                        //                               .colorBlue
+                                        //                           : colors
+                                        //                               .colorGrey,
+                                        //                   12,
+                                        //                   indexProvide.selectedBtmIndx ==
+                                        //                           0
+                                        //                       ? FontWeight.w600
+                                        //                       : FontWeight
+                                        //                           .w500)),
+                                        //         ],
+                                        //       ),
+                                        //     ),
+                                        //   ),
+                                        // ),
 
                                         Expanded(
                                             child: InkWell(
