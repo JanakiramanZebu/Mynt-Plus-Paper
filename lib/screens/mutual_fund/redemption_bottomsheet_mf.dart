@@ -43,12 +43,12 @@ class _RedemptionBottomScreenState extends State<RedemptionBottomScreen> {
       final portfolio = watch(portfolioProvider);
       final theme = watch(themeProvider);
       final mf = watch(mfProvider);
-      return DraggableScrollableSheet(
-          initialChildSize: 0.50,
-          maxChildSize: .99,
-          expand: false,
-          builder: (context, scrollController) {
-            return Container(
+      return SingleChildScrollView(
+          // initialChildSize: 0.50,
+          // maxChildSize: .99,
+          // expand: false,
+          // builder: (context, scrollController) {
+            child: Container(
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   color:
@@ -321,8 +321,9 @@ Row(
                   ),
                 ],
               ),
-            );
-          });
+            ),
+          // }
+          );
     });
   }
 }

@@ -134,7 +134,7 @@ class MutualFundNewScreen extends ConsumerWidget {
 
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      const EdgeInsets.only(left: 20.0,bottom: 20.0),
                   // height: 300,
                   width: MediaQuery.of(context).size.width,
                   decoration: const BoxDecoration(
@@ -399,7 +399,7 @@ class MutualFundNewScreen extends ConsumerWidget {
   Widget nfoCard(context, mf) {
     return GestureDetector(
       onTap: () async {
-        await mf.fetchmfNFO(context);
+         mf.fetchmfNFO(context);
         Navigator.pushNamed(context, Routes.mfnfoscreen);
       },
       child: Container(
@@ -416,27 +416,36 @@ class MutualFundNewScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "INVEST IN",
-              style: TextStyle(
-                color: Color(0xFF0037B7),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 4),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
               children: [
-                const Expanded(
-                  child: Text(
-                    "Ongoing new fund offerings",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom : 6.0),
+                      child: const Text(
+                        "INVEST IN",
+                        style: TextStyle(
+                          
+                          color: Color(0xFF0037B7),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
+                    Text(
+                        "Ongoing new fund offerings",
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                  ],
                 ),
                 SvgPicture.asset(
                   'assets/explore/gift.svg',
@@ -445,7 +454,11 @@ class MutualFundNewScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            
+                
+              
+          
+            const SizedBox(height: 10),
             const Text(
               "A new fund offer (NFO) is the first subscription for any new fund by an investment company.",
               style: TextStyle(
@@ -453,7 +466,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                 color: Color(0xFF666666),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             const Row(
               children: [
                 Text(

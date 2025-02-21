@@ -54,7 +54,7 @@ class MFCategoryListScreen extends ConsumerWidget {
                   children: [
                     InkWell(
                       onTap: () async {
-                        await mfData.fetchFactSheet(
+                       mfData.fetchFactSheet(
                             "${mfData.mfCategoryList!.data![index].iSIN}");
                         Map<String, dynamic> jsonData =
                             mfData.mfCategoryList!.data![index].toJson();
@@ -86,7 +86,7 @@ class MFCategoryListScreen extends ConsumerWidget {
                                             MediaQuery.of(context).size.width *
                                                 0.7,
                                         child: Text(
-                                          " ${mfData.mfCategoryList!.data![index].schemeName}",
+                                          " ${mfData.mfCategoryList!.data![index].schemeName} ",
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: textStyle(

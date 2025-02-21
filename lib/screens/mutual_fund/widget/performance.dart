@@ -21,7 +21,7 @@ class MFPerformance extends ConsumerWidget {
     final mfDataprofile = watch(mfProvider).factSheetDataModel!.data!;
     // final navGraph = watch(mfProvider).navGraph;
     final mfProvide = watch(mfProvider);
-    if (mfData.sheetGraph!.data!.isNotEmpty) {
+    if (mfData.sheetGraph != null) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_export.dart';
@@ -157,11 +158,10 @@ class MFProvider extends DefaultChangeNotifier {
   bool? get isFiltered => _isFiltered;
 
   bool? _singleloader = false;
-  bool? get  singleloader => _singleloader ;
+  bool? get singleloader => _singleloader;
 
-  
   bool? _bestmfloader = false;
-  bool? get  bestmfloader => _bestmfloader ;
+  bool? get bestmfloader => _bestmfloader;
 
   RangeValues _currentRangeValues = const RangeValues(0, 11);
   RangeValues get currentRangeValues => _currentRangeValues;
@@ -171,11 +171,16 @@ class MFProvider extends DefaultChangeNotifier {
   TextEditingController installmentAmt = TextEditingController();
   TextEditingController redemptionQty = TextEditingController();
   TextEditingController redemptionAmount = TextEditingController();
-  String? invAmtError, upiError, installmentAmtError, invDurationError, redemptionError, redemptionOrderError = "";
+  String? invAmtError,
+      upiError,
+      installmentAmtError,
+      invDurationError,
+      redemptionError,
+      redemptionOrderError = "";
 
   RedemptionModel? _redemptionData;
   RedemptionModel? get redemptionData => _redemptionData;
-  
+
   int? _activeTab = 0;
   int? get activeTab => _activeTab;
 
@@ -204,7 +209,7 @@ class MFProvider extends DefaultChangeNotifier {
   bool _isInitalPay = false;
   bool get isInitalPay => _isInitalPay;
 
- bool _investloader = false;
+  bool _investloader = false;
   bool get investloader => _investloader;
 
   String _accNum = "";
@@ -645,23 +650,26 @@ class MFProvider extends DefaultChangeNotifier {
   //   notifyListeners();
   // }
   invertfun(String isin, String schemeCode) {
-      _singleloader = true;
-      fetchMFMandateDetail();
-      fetchBankDetail();
-       fetchUpiDetail();
-      fetchMFSipData(isin,schemeCode);
-      chngMandate("Lumpsum"); 
-      _singleloader = false;
-
+    _singleloader = true;
+    fetchMFMandateDetail();
+    fetchBankDetail();
+    fetchUpiDetail();
+    fetchMFSipData(isin, schemeCode);
+    chngMandate("Lumpsum");
+    _singleloader = false;
   }
+
   chngMandate(String val) {
     _mandateId = val;
-    if(val != "Lumpsum"){
-    var indx = _mandateData!.indexWhere((f) => f.mandateId == val);
-    _mandateStatus = _mandateData![indx].status!;
-    print("${_mandateData![indx].mandateId}, ${_mandateData![indx].status}");
+    if (val != "Lumpsum") {
+      var indx = _mandateData!.indexWhere((f) => f.mandateId == val);
+      _mandateStatus = _mandateData![indx].status!;
+      print("${_mandateData![indx].mandateId}, ${_mandateData![indx].status}");
     }
-    
+    invAmtError = "";
+    installmentAmtError = "";
+    invDurationError = "";
+    upiError = "";
     notifyListeners();
   }
 
@@ -779,17 +787,20 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future fetchmfNFO(BuildContext context) async {
     try {
+      _investloader = true;
       _mfNFOList = await api.getNFOData();
       print("NFO list ${_mfNFOList!.nfoList}");
       notifyListeners();
     } catch (e) {
       print("NFO ERROR :: $e");
+    } finally {
+      _investloader = false;
     }
   }
 
   Future fetchTopSchemes() async {
     try {
-            _investloader = true;
+      _investloader = true;
 
       var topSchemesdata = await api.getTopSchemes();
       if (topSchemesdata.msg != "") {
@@ -798,12 +809,10 @@ class MFProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       print("top schemes error $e");
-    }
-    finally{
+    } finally {
       _investloader = false;
 
       notifyListeners();
-
     }
   }
 
@@ -929,6 +938,13 @@ class MFProvider extends DefaultChangeNotifier {
     try {
       _bestmfloader = true;
       _bestMFList = await api.getMFBestListData(type);
+      if (_bestMFList != null) {
+        _bestMFList!.bestMFList!.sort((a, b) {
+          print("${a.aUM} ${b.aUM}");
+          return double.parse(b.aUM == '' ? "0.00" : b.aUM!)
+              .compareTo(double.parse(a.aUM == '' ? "0.00" : a.aUM!));
+        }); // Sor
+      }
       print("_bestMFList $_mfCategoryList");
       for (var m in _bestMFList!.bestMFList!) {
         m.isAdd =
@@ -937,16 +953,22 @@ class MFProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-    }finally{
+    } finally {
       _bestmfloader = false;
       notifyListeners();
-
     }
   }
 
   Future fetchMFCategoryList(String type, String subtype) async {
     try {
       _mfCategoryList = await api.getMFCategoryList(type, subtype);
+      if (_mfCategoryList != null) {
+        _mfCategoryList!.data!.sort((a, b) {
+          print("${a.aUM} ${b.aUM}");
+          return double.parse(b.aUM == '' ? "0.00" : b.aUM!)
+              .compareTo(double.parse(a.aUM == '' ? "0.00" : a.aUM!));
+        }); // Sor
+      }
       print("_mfCategoryList $_mfCategoryList");
       // if (_bestMFModel!.stat == "Ok") {
       //   for (var watchListMf in _bestMFModel!.bestMFList!) {
@@ -954,11 +976,11 @@ class MFProvider extends DefaultChangeNotifier {
       //         .where((m) => m['title'] == watchListMf.title)
       //         .forEach((m) => m['funds'] = watchListMf.counts);
       //   }
-        for (var masterMf in _mfWatchlist!) {
-          _mfCategoryList!.data!
-              .where((m) => m.iSIN == masterMf.iSIN)
-              .forEach((m) => m.isAdd = true);
-        }
+      for (var masterMf in _mfWatchlist!) {
+        _mfCategoryList!.data!
+            .where((m) => m.iSIN == masterMf.iSIN)
+            .forEach((m) => m.isAdd = true);
+      }
       // }
       notifyListeners();
     } catch (e) {
@@ -998,42 +1020,54 @@ class MFProvider extends DefaultChangeNotifier {
           "duration": "3MonthBenchMarkReturn",
           "durName": "3 Month",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d3Month !="null" ? _factSheetDataModel!.data!.d3Month! : "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d3Month != "null"
+                  ? _factSheetDataModel!.data!.d3Month!
+                  : "0.00")
               .toStringAsFixed(2)
         });
         _mfReturnsGridview.add({
           "duration": "6MonthBenchMarkReturn",
           "durName": "6 Month",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d6Month != "null" ? _factSheetDataModel!.data!.d6Month! : "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d6Month != "null"
+                  ? _factSheetDataModel!.data!.d6Month!
+                  : "0.00")
               .toStringAsFixed(2)
         });
         _mfReturnsGridview.add({
           "duration": "1YearBenchMarkReturn",
           "durName": "1 Year",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d1Year != "null" ? _factSheetDataModel!.data!.d1Year! : "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d1Year != "null"
+                  ? _factSheetDataModel!.data!.d1Year!
+                  : "0.00")
               .toStringAsFixed(2)
         });
         _mfReturnsGridview.add({
           "duration": "3YearBenchMarkReturn",
           "durName": "3 Year",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d3Year != "null" ? _factSheetDataModel!.data!.d3Year! : "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d3Year != "null"
+                  ? _factSheetDataModel!.data!.d3Year!
+                  : "0.00")
               .toStringAsFixed(2)
         });
         _mfReturnsGridview.add({
           "duration": "5YearBenchMarkReturn",
           "durName": "5 Year",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d5Year != "null" ?_factSheetDataModel!.data!.d5Year! : "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d5Year != "null"
+                  ? _factSheetDataModel!.data!.d5Year!
+                  : "0.00")
               .toStringAsFixed(2)
         });
         _mfReturnsGridview.add({
           "duration": "10YearBenchMarkReturn",
           "durName": "10 Year",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d10Year != "null" ?_factSheetDataModel!.data!.d10Year! : "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d10Year != "null"
+                  ? _factSheetDataModel!.data!.d10Year!
+                  : "0.00")
               .toStringAsFixed(2)
         });
 
@@ -1076,13 +1110,11 @@ class MFProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-    }finally{
-
-_singleloader = false;
-
+    } finally {
+      _singleloader = false;
     }
-       
-notifyListeners();
+
+    notifyListeners();
   }
 
   Future fetchSchemePeer(String isin, String comYear) async {
@@ -1204,31 +1236,31 @@ notifyListeners();
         // }
         if (_mfWatchlist!.isNotEmpty) {
           if (_mutualFundList != null) {
-          for (var m in _mutualFundList!) {
-            m.isAdd =
-                _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
-          }
+            for (var m in _mutualFundList!) {
+              m.isAdd = _mfWatchlist!
+                  .any((watchListMf) => watchListMf.iSIN == m.iSIN);
+            }
           }
           if (_bestMFList != null) {
-          for (var m in _bestMFList!.bestMFList!) {
-            m.isAdd =
-                _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
-          }
+            for (var m in _bestMFList!.bestMFList!) {
+              m.isAdd = _mfWatchlist!
+                  .any((watchListMf) => watchListMf.iSIN == m.iSIN);
+            }
           }
           if (_mutualFundtopsearch != null) {
-          for (var m in _mutualFundtopsearch!) {
-            m.isAdd =
-                _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
-          }
+            for (var m in _mutualFundtopsearch!) {
+              m.isAdd = _mfWatchlist!
+                  .any((watchListMf) => watchListMf.iSIN == m.iSIN);
+            }
           }
           if (_mfCategoryList!.data != null) {
-          for (var m in _mfCategoryList!.data!) {
-            m.isAdd =
-                _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
+            for (var m in _mfCategoryList!.data!) {
+              m.isAdd = _mfWatchlist!
+                  .any((watchListMf) => watchListMf.iSIN == m.iSIN);
+            }
           }
-          }
-        } 
-        
+        }
+
         // else {
         //   for (var m in _mutualFundList!) {
         //     m.isAdd = false;
@@ -1261,7 +1293,7 @@ notifyListeners();
 
   Future fetchMFSipData(String isin, String schemeCode) async {
     try {
-            _investloader = true;
+      _investloader = true;
 
       _dateList = [];
       _mfSIPModel = await api.getMFSip(isin, schemeCode);
@@ -1274,8 +1306,8 @@ notifyListeners();
               "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTAMOUNT}";
           invDuration.text =
               "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTNUMBERS}";
-              _sipDuration = "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTNUMBERS}";
-          
+          _sipDuration =
+              "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTNUMBERS}";
 
           if (_freqName == "MONTHLY" || _freqName == "QUARTERLY") {
             _dateList =
@@ -1294,17 +1326,16 @@ notifyListeners();
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-    }finally{
+    } finally {
       _investloader = false;
 
       notifyListeners();
-
     }
   }
 
   Future fetchMFMandateDetail() async {
     try {
-            _investloader = true;
+      _investloader = true;
 
       _mandateData = [];
       _mandateDetailModel = await api.getMandateDetail();
@@ -1314,16 +1345,14 @@ notifyListeners();
 
         _mandateId = _mandateData![0].mandateId!;
         _mandateStatus = _mandateData![0].status!;
-
       }
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-    }finally{
+    } finally {
       _investloader = false;
 
       notifyListeners();
-
     }
   }
 
@@ -1362,15 +1391,20 @@ notifyListeners();
     try {
       _mforderloader = true;
       _mfLumpSumOrderbook = await api.getorderbook();
-      
-      
+      if (_mfLumpSumOrderbook != null) {
+        _mfLumpSumOrderbook!.data!.sort((a, b) {
+          final DateFormat dateFormat = DateFormat("dd/MM/yyyy");
+          DateTime dateA = dateFormat.parse(a.date.toString());
+          DateTime dateB = dateFormat.parse(b.date.toString());
+          return dateB.compareTo(dateA);
+        }); // Sor
+      }
     } catch (e) {
       log("Failed to fetchMfOrderbook :: ${e.toString()}");
       notifyListeners();
-    }finally {
+    } finally {
       _mforderloader = false;
       notifyListeners();
-
     }
   }
 
@@ -1868,18 +1902,16 @@ notifyListeners();
       _paymentMethod = [];
       _upiDetailsModel = await api.getUPI();
 
-
       if (_upiDetailsModel!.stat == "Ok") {
         _paymentMethod.add("UPI");
       }
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-    }finally{
+    } finally {
       _investloader = false;
 
       notifyListeners();
-
     }
   }
 
@@ -1911,11 +1943,10 @@ notifyListeners();
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-    }finally{
+    } finally {
       _investloader = false;
 
       notifyListeners();
-
     }
   }
 
@@ -1970,22 +2001,20 @@ notifyListeners();
           double.parse(mfData.minimumPurchaseAmount!)) {
         invAmtError =
             "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
-      }
-      else{
+      } else {
         invAmtError = "";
       }
     } else {
       if (invAmt.text.isEmpty) {
         invAmtError = "Please enter Investment amount";
       } else if (double.parse(invAmt.text) <
-          double.parse(mfData.minimumPurchaseAmount!) && isInitalPay) {
+              double.parse(mfData.minimumPurchaseAmount!) &&
+          isInitalPay) {
         invAmtError =
             "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
-      }
-      else{
+      } else {
         invAmtError = "";
       }
-
 
       if (installmentAmt.text.isEmpty) {
         installmentAmtError = "Please enter Installment amount";
@@ -1993,71 +2022,64 @@ notifyListeners();
           double.parse(mfData.minimumPurchaseAmount!)) {
         installmentAmtError =
             "Installment amount should not be less than ${mfData.minimumPurchaseAmount!}";
-      }
-      else{
+      } else {
         installmentAmtError = "";
       }
-
     }
 
     if (upiId.text.isEmpty) {
       upiError = "Please enter UPI ID";
-    }
-    else if (!upiRegex.hasMatch(upiId.text)) {
+    } else if (!upiRegex.hasMatch(upiId.text)) {
       upiError = "Please enter valid UPI ID";
-    }
-    else{
+    } else {
       upiError = "";
     }
 
     if (invDuration.text.isEmpty) {
       invDurationError = "Please enter Investment duration";
-    }
-    else if (double.parse(invDuration.text) < double.parse(_sipDuration)) {
-      invDurationError = "Installment Duration should not be less than $_sipDuration";
-    }
-    else{
+    } else if (double.parse(invDuration.text) < double.parse(_sipDuration)) {
+      invDurationError =
+          "Installment Duration should not be less than $_sipDuration";
+    } else {
       invDurationError = "";
     }
     notifyListeners();
     return invAmtError == "" &&
         upiError == "" &&
-        installmentAmtError == "" && invDurationError == "";
+        installmentAmtError == "" &&
+        invDurationError == "";
   }
 
   bool checkRedemption(redQty, minRedQty, holdQty, nav) {
-    if(redQty == ""){
+    if (redQty == "") {
       redemptionError = "Please enter Redemption Qty";
-    }
-    else if(double.parse(redQty) > double.parse(holdQty)){
+    } else if (double.parse(redQty) > double.parse(holdQty)) {
       redemptionError = "Redemption Qty should not exceed $holdQty";
-    }
-    else if(double.parse(redQty) < double.parse(minRedQty)){
+    } else if (double.parse(redQty) < double.parse(minRedQty)) {
       redemptionError = "Redemption Qty should not be less than $minRedQty";
-    }
-    else{
+    } else {
       redemptionError = "";
     }
-    if(redQty != ""){
-      redemptionAmount.text = (double.parse(redQty) * double.parse(nav)).toStringAsFixed(4);
-      if(double.parse(redQty) == 0){
-      redemptionError = "Redemption Qty should not be 0";
+    if (redQty != "") {
+      redemptionAmount.text =
+          (double.parse(redQty) * double.parse(nav)).toStringAsFixed(4);
+      if (double.parse(redQty) == 0) {
+        redemptionError = "Redemption Qty should not be 0";
+      }
+      redemptionOrderError = "";
     }
-    redemptionOrderError = "";
-    }
-    
+
     notifyListeners();
     return redemptionError == "";
   }
 
-    mfRedemption(BuildContext context, String scheme, String qty) async {
+  mfRedemption(BuildContext context, String scheme, String qty) async {
     _redemptionData = await api.getMFRedemption(scheme, qty);
-    if(_redemptionData!.stat == "Ok"){
-      ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_redemptionData!.msg}"));
-            Navigator.pop(context);
-    }
-    else{
+    if (_redemptionData!.stat == "Ok") {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(successMessage(context, "${_redemptionData!.msg}"));
+      Navigator.pop(context);
+    } else {
       redemptionOrderError = _redemptionData!.emsg;
     }
     notifyListeners();

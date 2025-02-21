@@ -1006,7 +1006,7 @@ class AuthProvider extends DefaultChangeNotifier {
         // ref(mfProvider).fetchcommonsearchWadd(null, "", context, false);
         // ref(mfProvider).fetchmfCommonsearch("Z", context);
         // ref(mfProvider).fetchMFWatchlist(null, "", context, false,"");
-        ref(mfProvider).fetchBestMF();
+        // ref(mfProvider).fetchBestMF();
 
         // ref(mfProvider).fetchMfOrderbook(context);
 
