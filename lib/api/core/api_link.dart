@@ -180,7 +180,7 @@ class ApiLinks {
 
 
 // Mutual Fund
-  String get bestMf => "$dashBoardURL/mf/z_data";
+  String get bestMf => "$dashBoardURL/mf/z_data_1";
   String get mfCategoryList => "$dashBoardURL/mf/getCategoryschemes";
   String get mfCategoryListData => "$dashBoardURL/mf/get_title_values";
   String get mfCategoryTypes => "$dashBoardURL/mf/getCategoryType";
