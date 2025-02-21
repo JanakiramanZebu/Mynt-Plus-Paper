@@ -10,11 +10,7 @@ import '../../sharedWidget/functions.dart';
 class MutualFundNewScreen extends ConsumerWidget {
   TabController tabController;
   // final bestMFList;
-   MutualFundNewScreen({super.key,
-  required this.tabController
-  }
-  
-  );
+  MutualFundNewScreen({super.key, required this.tabController});
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final mfData = watch(mfProvider);
@@ -37,23 +33,20 @@ class MutualFundNewScreen extends ConsumerWidget {
                 ),
                 child: InkWell(
                   onTap: () {
-
-                    
-                      //  Navigator.pushNamed(
-                      //       context, Routes.mfStockDetail
-                      //  );
-                      
+                    //  Navigator.pushNamed(
+                    //       context, Routes.mfStockDetail
+                    //  );
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                       Expanded(
+                      Expanded(
                         child: InkWell(
                           onTap: () {
-          tabController.animateTo(1); 
-          mfData.mfExTabchange(1);
-          // Animate to Tab 2 (Index 1)
-        },
+                            tabController.animateTo(1);
+                            mfData.mfExTabchange(1);
+                            // Animate to Tab 2 (Index 1)
+                          },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -97,7 +90,6 @@ class MutualFundNewScreen extends ConsumerWidget {
                   ),
                 ),
               )
-            
             ],
           ),
           Container(
@@ -107,7 +99,7 @@ class MutualFundNewScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Padding(
-                  padding: EdgeInsets.only(left:16,top: 10,bottom: 8),
+                  padding: EdgeInsets.only(left: 16, top: 10, bottom: 8),
                   child: Text(
                     "All Categories",
                     style: TextStyle(
@@ -123,75 +115,75 @@ class MutualFundNewScreen extends ConsumerWidget {
                   child: ListView.separated(
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
-                    itemBuilder: (BuildContext context, int index) { 
+                    itemBuilder: (BuildContext context, int index) {
                       return buildCategoryCard(
-                      dataIcon: mfData.mFCategoryTypesStatic[index]['dataIcon'],
-                      title: mfData.mFCategoryTypesStatic[index]['title'],
-                      description:
-                          mfData.mFCategoryTypesStatic[index]['description'],
-                      chips: mfData.mFCategoryTypesStatic[index]['sub'],
-                      watch: watch
-                    );
-                     },
-                    separatorBuilder: (BuildContext context, int index) { return const SizedBox(height: 20); },
+                          dataIcon: mfData.mFCategoryTypesStatic[index]
+                              ['dataIcon'],
+                          title: mfData.mFCategoryTypesStatic[index]['title'],
+                          description: mfData.mFCategoryTypesStatic[index]
+                              ['description'],
+                          chips: mfData.mFCategoryTypesStatic[index]['sub'],
+                          watch: watch);
+                    },
+                    separatorBuilder: (BuildContext context, int index) {
+                      return const SizedBox(height: 20);
+                    },
                     itemCount: mfData.mFCategoryTypesStatic.length,
-                    
                   ),
                 ),
-               
-               
-               
+
                 Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            // height: 300,
-            width: MediaQuery.of(context).size.width,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFFFFFFFF), // #FFFFFF at 0%
-                  Color(0xFFF1F3F8), // #F1F3F8 at 100%
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-            child:  Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 70),
-                SvgPicture.asset("assets/icon/zebulogo.svg",
-                              color: colors.logoColor,
-                              // height: 50,
-                              width: 100,
-                              fit: BoxFit.contain),
-                const SizedBox(height: 16),
-                const Text(
-                  "NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL: 12080400",
-                  style: TextStyle(
-                    color: Color(0xff666666),
-                    fontSize: 10,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  // height: 300,
+                  width: MediaQuery.of(context).size.width,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFFFFFFFF), // #FFFFFF at 0%
+                        Color(0xFFF1F3F8), // #F1F3F8 at 100%
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  "SEBI Registration No : INZ00174634 | AMFI ARN: 113118",
-                  style: TextStyle(
-                    color: Color(0xff666666),
-                    fontSize: 10,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  "Research Analyst : INH200006044",
-                  style: TextStyle(
-                    color: Color(0xff666666),
-                    fontSize: 10,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 70),
+                      SvgPicture.asset("assets/icon/zebulogo.svg",
+                          color: colors.logoColor,
+                          // height: 50,
+                          width: 100,
+                          fit: BoxFit.contain),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL: 12080400",
+                        style: TextStyle(
+                          color: Color(0xff666666),
+                          fontSize: 10,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        "SEBI Registration No : INZ00174634 | AMFI ARN: 113118",
+                        style: TextStyle(
+                          color: Color(0xff666666),
+                          fontSize: 10,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        "Research Analyst : INH200006044",
+                        style: TextStyle(
+                          color: Color(0xff666666),
+                          fontSize: 10,
+                        ),
+                      )
+                    ],
                   ),
                 )
-              ],
-            ),
-          )
               ],
             ),
           ),
@@ -264,10 +256,10 @@ class MutualFundNewScreen extends ConsumerWidget {
                 itemCount: bestMFList.length,
                 itemBuilder: (BuildContext context, int index) {
                   return GestureDetector(
-                    onTap: () async{
-                      await mfData.fetchMFBestList(bestMFList[index]['title']);
-          Navigator.pushNamed(context, Routes.bestMfScreen,
-                            arguments: bestMFList[index]['title']);
+                    onTap: () async {
+                      mfData.fetchMFBestList(bestMFList[index]['title']);
+                      Navigator.pushNamed(context, Routes.bestMfScreen,
+                          arguments: bestMFList[index]['title']);
                     },
                     child: Container(
                       width: 180,
@@ -293,8 +285,8 @@ class MutualFundNewScreen extends ConsumerWidget {
                           Text("${bestMFList[index]['subtitle']}",
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: textStyle(
-                                  const Color(0xff999999), 14, FontWeight.w500)),
+                              style: textStyle(const Color(0xff999999), 14,
+                                  FontWeight.w500)),
                           Text("${bestMFList[index]['funds']} funds",
                               style: textStyle(
                                   colors.colorBlack, 15, FontWeight.w500)),
@@ -319,13 +311,12 @@ class MutualFundNewScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildCategoryCard({
-    required String dataIcon,
-    required String title,
-    required String description,
-    required List<String> chips,
-    required ScopedReader watch
-  }) {
+  Widget buildCategoryCard(
+      {required String dataIcon,
+      required String title,
+      required String description,
+      required List<String> chips,
+      required ScopedReader watch}) {
     final mfData = watch(mfProvider);
     return Container(
       padding: const EdgeInsets.all(16),
@@ -371,13 +362,10 @@ class MutualFundNewScreen extends ConsumerWidget {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: GestureDetector(
-                    onTap: () async{
-                      await mfData.fetchMFCategoryList(title,chips[index]);
-                      Navigator.pushNamed(
-                      context,
-                      Routes.mfCategoryList,
-                      arguments: chips[index]
-                    );
+                    onTap: () async {
+                      await mfData.fetchMFCategoryList(title, chips[index]);
+                      Navigator.pushNamed(context, Routes.mfCategoryList,
+                          arguments: chips[index]);
                     },
                     child: Chip(
                       label: Text(
@@ -391,8 +379,8 @@ class MutualFundNewScreen extends ConsumerWidget {
                       ),
                       shape: const StadiumBorder(),
                       backgroundColor: Colors.white,
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0, vertical: 4.0),
                       side: const BorderSide(
                         color: Color(0xFF666666),
                         width: 1.0,
@@ -410,7 +398,7 @@ class MutualFundNewScreen extends ConsumerWidget {
 
   Widget nfoCard(context, mf) {
     return GestureDetector(
-      onTap: () async{
+      onTap: () async {
         await mf.fetchmfNFO(context);
         Navigator.pushNamed(context, Routes.mfnfoscreen);
       },

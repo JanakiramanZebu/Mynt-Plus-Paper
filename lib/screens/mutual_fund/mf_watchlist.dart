@@ -30,7 +30,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                     children: [
                       InkWell(
                         onTap: () async {
-                          await mfData.fetchFactSheet(
+                           mfData.fetchFactSheet(
                               "${mfData.mfWatchlist![index].iSIN}");
 
                           Navigator.pushNamed(context, Routes.mfStockDetail,

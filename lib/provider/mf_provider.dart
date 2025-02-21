@@ -29,6 +29,7 @@ import '../models/mf_model/mf_watch_list.dart';
 import '../models/mf_model/mf_x_sip_order_responces.dart';
 import '../models/mf_model/mf_xsip_cancle_resone_res.dart';
 import '../models/mf_model/mutual_fundmodel.dart';
+import '../models/mf_model/redemption_model.dart';
 import '../models/mf_model/top_schemes_model.dart';
 import '../models/mf_model/x_sip_cancel_order_model.dart';
 import '../res/res.dart';
@@ -71,6 +72,9 @@ class MFProvider extends DefaultChangeNotifier {
 
   MFCategoryType? _mfCategoryTypes;
   MFCategoryType? get mfCategoryTypes => _mfCategoryTypes;
+
+  bool _mforderloader = false;
+  bool get mforderloader => _mforderloader;
 
   MutualFundModel? _mutualFundModel;
   MutualFundModel? get mutualFundModel => _mutualFundModel;
@@ -155,14 +159,22 @@ class MFProvider extends DefaultChangeNotifier {
   bool? _singleloader = false;
   bool? get  singleloader => _singleloader ;
 
+  
+  bool? _bestmfloader = false;
+  bool? get  bestmfloader => _bestmfloader ;
+
   RangeValues _currentRangeValues = const RangeValues(0, 11);
   RangeValues get currentRangeValues => _currentRangeValues;
 
   TextEditingController invAmt = TextEditingController();
   TextEditingController upiId = TextEditingController();
   TextEditingController installmentAmt = TextEditingController();
-  String? invAmtError, upiError, installmentAmtError, invDurationError = "";
+  TextEditingController redemptionQty = TextEditingController();
+  TextEditingController redemptionAmount = TextEditingController();
+  String? invAmtError, upiError, installmentAmtError, invDurationError, redemptionError, redemptionOrderError = "";
 
+  RedemptionModel? _redemptionData;
+  RedemptionModel? get redemptionData => _redemptionData;
   
   int? _activeTab = 0;
   int? get activeTab => _activeTab;
@@ -191,6 +203,9 @@ class MFProvider extends DefaultChangeNotifier {
 
   bool _isInitalPay = false;
   bool get isInitalPay => _isInitalPay;
+
+ bool _investloader = false;
+  bool get investloader => _investloader;
 
   String _accNum = "";
 
@@ -629,7 +644,16 @@ class MFProvider extends DefaultChangeNotifier {
   //   }
   //   notifyListeners();
   // }
+  invertfun(String isin, String schemeCode) {
+      _singleloader = true;
+      fetchMFMandateDetail();
+      fetchBankDetail();
+       fetchUpiDetail();
+      fetchMFSipData(isin,schemeCode);
+      chngMandate("Lumpsum"); 
+      _singleloader = false;
 
+  }
   chngMandate(String val) {
     _mandateId = val;
     if(val != "Lumpsum"){
@@ -765,6 +789,8 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future fetchTopSchemes() async {
     try {
+            _investloader = true;
+
       var topSchemesdata = await api.getTopSchemes();
       if (topSchemesdata.msg != "") {
         _topSchemesdata = topSchemesdata.data;
@@ -772,6 +798,12 @@ class MFProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       print("top schemes error $e");
+    }
+    finally{
+      _investloader = false;
+
+      notifyListeners();
+
     }
   }
 
@@ -895,6 +927,7 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future fetchMFBestList(String type) async {
     try {
+      _bestmfloader = true;
       _bestMFList = await api.getMFBestListData(type);
       print("_bestMFList $_mfCategoryList");
       for (var m in _bestMFList!.bestMFList!) {
@@ -904,6 +937,10 @@ class MFProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+      _bestmfloader = false;
+      notifyListeners();
+
     }
   }
 
@@ -961,42 +998,42 @@ class MFProvider extends DefaultChangeNotifier {
           "duration": "3MonthBenchMarkReturn",
           "durName": "3 Month",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d3Month ?? "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d3Month !="null" ? _factSheetDataModel!.data!.d3Month! : "0.00")
               .toStringAsFixed(2)
         });
         _mfReturnsGridview.add({
           "duration": "6MonthBenchMarkReturn",
           "durName": "6 Month",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d6Month ?? "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d6Month != "null" ? _factSheetDataModel!.data!.d6Month! : "0.00")
               .toStringAsFixed(2)
         });
         _mfReturnsGridview.add({
           "duration": "1YearBenchMarkReturn",
           "durName": "1 Year",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d1Year ?? "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d1Year != "null" ? _factSheetDataModel!.data!.d1Year! : "0.00")
               .toStringAsFixed(2)
         });
         _mfReturnsGridview.add({
           "duration": "3YearBenchMarkReturn",
           "durName": "3 Year",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d3Year ?? "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d3Year != "null" ? _factSheetDataModel!.data!.d3Year! : "0.00")
               .toStringAsFixed(2)
         });
         _mfReturnsGridview.add({
           "duration": "5YearBenchMarkReturn",
           "durName": "5 Year",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d5Year ?? "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d5Year != "null" ?_factSheetDataModel!.data!.d5Year! : "0.00")
               .toStringAsFixed(2)
         });
         _mfReturnsGridview.add({
           "duration": "10YearBenchMarkReturn",
           "durName": "10 Year",
           "return": "",
-          "value": double.parse(_factSheetDataModel!.data!.d10Year ?? "0.00")
+          "value": double.parse(_factSheetDataModel!.data!.d10Year != "null" ?_factSheetDataModel!.data!.d10Year! : "0.00")
               .toStringAsFixed(2)
         });
 
@@ -1224,6 +1261,8 @@ notifyListeners();
 
   Future fetchMFSipData(String isin, String schemeCode) async {
     try {
+            _investloader = true;
+
       _dateList = [];
       _mfSIPModel = await api.getMFSip(isin, schemeCode);
 
@@ -1255,11 +1294,18 @@ notifyListeners();
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+      _investloader = false;
+
+      notifyListeners();
+
     }
   }
 
   Future fetchMFMandateDetail() async {
     try {
+            _investloader = true;
+
       _mandateData = [];
       _mandateDetailModel = await api.getMandateDetail();
 
@@ -1273,6 +1319,11 @@ notifyListeners();
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+      _investloader = false;
+
+      notifyListeners();
+
     }
   }
 
@@ -1309,11 +1360,17 @@ notifyListeners();
 
   Future fetchMfOrderbook(BuildContext context) async {
     try {
+      _mforderloader = true;
       _mfLumpSumOrderbook = await api.getorderbook();
+      
       
     } catch (e) {
       log("Failed to fetchMfOrderbook :: ${e.toString()}");
       notifyListeners();
+    }finally {
+      _mforderloader = false;
+      notifyListeners();
+
     }
   }
 
@@ -1807,8 +1864,10 @@ notifyListeners();
   // Fetching data from the api and stored in a variable
   Future fetchUpiDetail() async {
     try {
+      _investloader = true;
       _paymentMethod = [];
       _upiDetailsModel = await api.getUPI();
+
 
       if (_upiDetailsModel!.stat == "Ok") {
         _paymentMethod.add("UPI");
@@ -1816,6 +1875,11 @@ notifyListeners();
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+      _investloader = false;
+
+      notifyListeners();
+
     }
   }
 
@@ -1823,6 +1887,8 @@ notifyListeners();
   Future fetchBankDetail() async {
     upiId.text = "";
     try {
+      _investloader = true;
+
       _bankDetailsModel = await api.getBankDetail();
       _bankData = [];
       if (_bankDetailsModel!.stat == "Ok") {
@@ -1845,6 +1911,11 @@ notifyListeners();
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+      _investloader = false;
+
+      notifyListeners();
+
     }
   }
 
@@ -1952,5 +2023,43 @@ notifyListeners();
     return invAmtError == "" &&
         upiError == "" &&
         installmentAmtError == "" && invDurationError == "";
+  }
+
+  bool checkRedemption(redQty, minRedQty, holdQty, nav) {
+    if(redQty == ""){
+      redemptionError = "Please enter Redemption Qty";
+    }
+    else if(double.parse(redQty) > double.parse(holdQty)){
+      redemptionError = "Redemption Qty should not exceed $holdQty";
+    }
+    else if(double.parse(redQty) < double.parse(minRedQty)){
+      redemptionError = "Redemption Qty should not be less than $minRedQty";
+    }
+    else{
+      redemptionError = "";
+    }
+    if(redQty != ""){
+      redemptionAmount.text = (double.parse(redQty) * double.parse(nav)).toStringAsFixed(4);
+      if(double.parse(redQty) == 0){
+      redemptionError = "Redemption Qty should not be 0";
+    }
+    redemptionOrderError = "";
+    }
+    
+    notifyListeners();
+    return redemptionError == "";
+  }
+
+    mfRedemption(BuildContext context, String scheme, String qty) async {
+    _redemptionData = await api.getMFRedemption(scheme, qty);
+    if(_redemptionData!.stat == "Ok"){
+      ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "${_redemptionData!.msg}"));
+            Navigator.pop(context);
+    }
+    else{
+      redemptionOrderError = _redemptionData!.emsg;
+    }
+    notifyListeners();
   }
 }

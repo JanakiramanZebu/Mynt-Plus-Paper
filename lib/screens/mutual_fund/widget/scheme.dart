@@ -97,7 +97,7 @@ class MFSchemeInfo extends ConsumerWidget {
                                   FontWeight.w500)),
                           const SizedBox(height: 2),
                           Text(
-                              "₹${double.parse(mfData.managerActiveFundsAumSum ?? "0.00").toStringAsFixed(2)}",
+                              "₹${double.parse(mfData.managerActiveFundsAumSum ?? "0.00").toStringAsFixed(2)} Cr",
                               style: textStyle(
                                   theme.isDarkMode
                                       ? colors.colorWhite
