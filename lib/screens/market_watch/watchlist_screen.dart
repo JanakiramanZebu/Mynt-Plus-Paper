@@ -109,10 +109,14 @@ class _WatchListScreen extends State<WatchListScreen> {
                                   icon: assets.addCircleIcon)
                             ]),
                       ))
-                    : ListView.separated(
-                        itemCount: marketWatch.scrips.length,
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        shrinkWrap: false,
+                        itemCount: marketWatch.scrips.length * 2 - 1,
                         // itemCount: marketWatch.marketWatchScripData[marketWatch.marketWatchlist!.values![index]],
-                        itemBuilder: (BuildContext context, int idx) {
+                        itemBuilder: (BuildContext context, int index) {
+                          int idx = index ~/ 2;
+
                           // The market watch scrip data item list is provided here. These scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the market watch list.
                           if (socketDatas
                               .containsKey(marketWatch.scrips[idx]['token'])) {
@@ -138,6 +142,10 @@ class _WatchListScreen extends State<WatchListScreen> {
                                 "null") {
                               marketWatch.scrips[idx]['close'] = "0.00";
                             }
+                          }
+
+                          if (idx.isOdd) {
+                            return const ListDivider();
                           }
                           return ListTile(
                               onLongPress: () {
@@ -268,9 +276,10 @@ class _WatchListScreen extends State<WatchListScreen> {
                                     )
                                   ]));
                         },
-                        separatorBuilder: (BuildContext context, int index) {
-                          return const ListDivider();
-                        }),
+                        // separatorBuilder: (BuildContext context, int index) {
+                        //   return const ListDivider();
+                        // }
+                      ),
           );
         },
       );
