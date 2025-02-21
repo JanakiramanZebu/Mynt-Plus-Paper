@@ -134,7 +134,7 @@ class MutualFundNewScreen extends ConsumerWidget {
 
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      const EdgeInsets.only(left: 20.0,bottom: 20.0),
                   // height: 300,
                   width: MediaQuery.of(context).size.width,
                   decoration: const BoxDecoration(

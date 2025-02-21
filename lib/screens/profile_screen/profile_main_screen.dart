@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/portfolio_provider.dart';
 import '../../provider/mf_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -34,6 +35,7 @@ class UserAccountScreen extends ConsumerWidget {
     //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
     final mf = watch(mfProvider);
+    final portfolio = watch(portfolioProvider);
     final Preferences pref = locator<Preferences>();
     final String reflink = "https://oa.mynt.in/?ref=${pref.clientId}";
     List chips = [
@@ -234,7 +236,8 @@ class UserAccountScreen extends ConsumerWidget {
                     "Invest in experts managed portfolio.",
                     "assets/profileimage/prd-mf.svg",
                     theme, () async {
-                  // await portfolio.fetchMFHoldings(context);
+                      await mf.fetchBestMF();
+                  await portfolio.fetchMFHoldings(context);
                   await mf.fetchMFCategoryType();
                   // await mf.fetchmfNFO(context);
                   await mf.fetchMFWatchlist("", "", context, true, "");
