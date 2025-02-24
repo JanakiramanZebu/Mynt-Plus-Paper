@@ -174,7 +174,7 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                               listdata['option'] = "";
                               listdata['instname'] = "";
                               market.chngshareHold("Promoter Holding");
-                              await market.calldepthApis(context, listdata);
+                              await market.calldepthApis(context, listdata, "");
 
                               // await market.fetchFundamentalData(
                               //     tradeSym: "${ipo.symbol}");

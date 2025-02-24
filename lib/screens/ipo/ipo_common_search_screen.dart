@@ -134,7 +134,7 @@ class IpoCommonSearch extends ConsumerWidget {
                             listdata['option'] = "";
                             listdata['instname'] = "";
                             listdata['tsym'] = ipo.ipoCommonSearchList[index].symbol.split(":")[1];
-                            await market.calldepthApis(context, listdata);
+                            await market.calldepthApis(context, listdata, "");
                           } else if (checkIpoStatus == "Live") {
                             await ipo.getIpoSinglePage(
                                 ipoName:

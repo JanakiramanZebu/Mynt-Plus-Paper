@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/websocket_provider.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
 import 'package:intl/intl.dart';
+import '../models/explore_model/ca_events_model.dart';
 import '../models/explore_model/stocks_model/corporate_action_model.dart';
 import '../models/explore_model/stocks_model/get_ad_indices.dart';
 import '../models/explore_model/stocks_model/sctor_thematic_model.dart';
@@ -26,7 +28,7 @@ class StocksProvider extends DefaultChangeNotifier {
   final Reader ref;
 
   NewsModel? _newsModel;
-   NewsModel? get newsModel => _newsModel;
+  NewsModel? get newsModel => _newsModel;
   List<GlobalIndicesModel>? _globalIndicesModel;
   List<GlobalIndicesModel>? get globalIndicesModel => _globalIndicesModel;
   List<ActionTradeModel>? _actionTrademodel;
@@ -54,6 +56,7 @@ class StocksProvider extends DefaultChangeNotifier {
   List<String> tradeActType = ["Equity", "F&O"];
 
   String _selctedTradeAct = "Equity";
+  String _selctedEventAct = "dividend";
 
   bool _moreFunRatio = false;
   bool get moreFunRatio => _moreFunRatio;
@@ -66,35 +69,35 @@ class StocksProvider extends DefaultChangeNotifier {
     "Split"
   ];
 
+  String _slectSMSym = "Nifty 50";
+  String get slectSMSym => _slectSMSym;
+  String _slectSMFilter = "Volume & Price Up";
+  String get slectSMFilter => _slectSMFilter;
 
-String _slectSMSym ="Nifty 50";
-String get slectSMSym =>_slectSMSym;
-String _slectSMFilter ="Volume & Price Up";
-String get slectSMFilter  =>_slectSMFilter ;
+  String _slectBaskt = "NIFTY50";
+  String get slectBaskt => _slectBaskt;
+  String _slectFilterCont = "VolUpPriceUp";
+  String get slectFilterCont => _slectFilterCont;
 
-String _slectBaskt="NIFTY50";
-String get slectBaskt =>_slectBaskt;
-String _slectFilterCont ="VolUpPriceUp";
-String get slectFilterCont  =>_slectFilterCont ;
+  chngSMSym(String val) {
+    _slectSMSym = val;
 
-chngSMSym(String val){
-  _slectSMSym=val;
+    for (var element in _stockMonitorSym) {
+      if (_slectSMSym == "${element['symbol']}") {
+        _slectBaskt = "${element["bskt"]}";
 
-  for (var element in _stockMonitorSym) {
-    if (_slectSMSym=="${element['symbol']}") {
-      _slectBaskt="${element["bskt"]}";
-
-      fetchStockMonitor("NSE",_slectBaskt,_slectFilterCont);
+        fetchStockMonitor("NSE", _slectBaskt, _slectFilterCont);
+      }
     }
+    notifyListeners();
   }
-  notifyListeners();
-}
-chngSMFilter(String val,String val1){
- _slectSMFilter=val;
- _slectFilterCont=val1;
-   fetchStockMonitor("NSE",_slectBaskt,_slectFilterCont);
-  notifyListeners();
-}
+
+  chngSMFilter(String val, String val1) {
+    _slectSMFilter = val;
+    _slectFilterCont = val1;
+    fetchStockMonitor("NSE", _slectBaskt, _slectFilterCont);
+    notifyListeners();
+  }
 
   final List _stockMonitorSym = [
     {"symbol": "All", "bskt": "A"},
@@ -140,6 +143,9 @@ chngSMFilter(String val,String val1){
   CorporateActionModel? _corporateActionModel;
   CorporateActionModel? get corporateActionModel => _corporateActionModel;
 
+  CAevents? _caeventsModel;
+  CAevents? get caeventsModel => _caeventsModel;
+
   List<SectorThematicDetailModel> _indicesData = [];
   List<SectorThematicDetailModel> get indicesData => _indicesData;
 
@@ -183,16 +189,29 @@ chngSMFilter(String val,String val1){
   }
 
   String get selctedTradeAct => _selctedTradeAct;
-  chngTradeAct(String val) async {
-    _selctedTradeAct = val;
+  String get selctedEventAct => _selctedEventAct;
 
-    if (val == "Equity") {
+  chngTradeAct(String val) async {
+    if (val == "init") {
+      _selctedTradeAct = "Equity";
       await fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
       await fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
     } else {
-      await fetchTradeAction("NFO", "NFOALL", "topG_L", "topG_L");
-      await fetchTradeAction("NFO", "NFOALL", "mostActive", "mostActive");
+      _selctedTradeAct = val;
+
+      if (val == "Equity") {
+        await fetchTradeAction("NSE", "NSEALL", "topG_L", "topG_L");
+        await fetchTradeAction("NSE", "NSEALL", "mostActive", "mostActive");
+      } else {
+        await fetchTradeAction("NFO", "NFOALL", "topG_L", "topG_L");
+        await fetchTradeAction("NFO", "NFOALL", "mostActive", "mostActive");
+      }
+      notifyListeners();
     }
+  }
+
+  chngEventAct(String val) async {
+    _selctedEventAct = val.toLowerCase();
     notifyListeners();
   }
 
@@ -209,7 +228,7 @@ chngSMFilter(String val,String val1){
     return itemsHeights;
   }
 
-    List<double> getSMCustomItemsHeight() {
+  List<double> getSMCustomItemsHeight() {
     List<double> itemsHeights = [];
     for (var i = 0; i < (_stockMonitorSym.length * 2) - 1; i++) {
       if (i.isEven) {
@@ -222,7 +241,7 @@ chngSMFilter(String val,String val1){
     return itemsHeights;
   }
 
-  List<DropdownMenuItem<String>> addSMDivider () {
+  List<DropdownMenuItem<String>> addSMDivider() {
     List<DropdownMenuItem<String>> menuItems = [];
 
     for (var item in _stockMonitorSym) {
@@ -374,9 +393,6 @@ chngSMFilter(String val,String val1){
           _topLosers = _topListStocks!.topLosers ?? [];
         }
       }
-
-      await chngTradeAction("Top gainers");
-
       notifyListeners();
     } catch (e) {
       print("$e");
@@ -395,18 +411,22 @@ chngSMFilter(String val,String val1){
   // }
 
   chngTradeAction(String val) {
-    _tradeData = val;
-    if (val == "Top gainers") {
+    if (val == 'init') {
+      _tradeData = "Top gainers";
       _topStockData = _topGainers;
-    } else if (val == "Top losers") {
-      _topStockData = _topLosers;
-    } else if (val == "Vol. breakout") {
-      _topStockData = _byVolume;
     } else {
-      _topStockData = _byValue;
+      _tradeData = val;
+      if (val == "Top gainers") {
+        _topStockData = _topGainers;
+      } else if (val == "Top losers") {
+        _topStockData = _topLosers;
+      } else if (val == "Vol. breakout") {
+        _topStockData = _byVolume;
+      } else {
+        _topStockData = _byValue;
+      }
+      notifyListeners();
     }
-
-    notifyListeners();
   }
 
   chngfinancilaType(String val) {
@@ -651,6 +671,15 @@ chngSMFilter(String val,String val1){
     }
   }
 
+  Future fetchCAevents() async {
+    try {
+      _caeventsModel = await api.getCAeventsdata();
+      notifyListeners();
+    } catch (e) {
+      print("$e");
+    }
+  }
+
   Future fetchAdindices(String name) async {
     try {
       _indicesData = await api.getadindices(name);
@@ -871,9 +900,31 @@ chngSMFilter(String val,String val1){
     }
   }
 
-  fetchStockMonitor(String exch,String bskt,String cont) async {
+  requestWSTradeaction(
+      {required bool isSubscribe, required BuildContext context}) {
     try {
-      _stockMonitor = await api.getStockMonitor(  exch, bskt,cont);
+      String input = "";
+      if (_topStockData.isNotEmpty) {
+        input =
+            _topStockData.map((e) => "${e.exch}|${e.token}").toSet().join("#");
+        print("input $input");
+      }
+
+      if (input.isNotEmpty) {
+        // ConstantName.lastSubscribe = input;
+        ref(websocketProvider).establishConnection(
+            channelInput: input,
+            task: isSubscribe ? "t" : "u",
+            context: context);
+      }
+    } catch (e) {}
+
+    // notifyListeners();
+  }
+
+  fetchStockMonitor(String exch, String bskt, String cont) async {
+    try {
+      _stockMonitor = await api.getStockMonitor(exch, bskt, cont);
       // List ltpArgs=[];
       if (_stockMonitor.isNotEmpty) {
         if (_stockMonitor[0].stat == "Not_Ok") {

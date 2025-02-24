@@ -57,6 +57,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
   void initState() {
     regtoken = widget.wlValue.token;
     setState(() {
+    print("basket ${widget.isBasket}");
+
       initSize = (widget.wlValue.instname != "UNDIND" &&
               widget.wlValue.instname != "COM")
           ? 0.88

@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/provider/stocks_provider.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -103,6 +104,10 @@ class IndexListProvider extends DefaultChangeNotifier {
 
   bottomMenu(int value, BuildContext context) {
     _selectedBtmIndx = value;
+    ref(stocksProvide).requestWSTradeaction(
+        isSubscribe: value == 0 ? true : false, context: context);
+    ref(marketWatchProvider).requestMWScrip(
+        context: context, isSubscribe: value == 1 ? true : false);
     // ref(indexListProvider).checkSession(context);
     notifyListeners();
   }

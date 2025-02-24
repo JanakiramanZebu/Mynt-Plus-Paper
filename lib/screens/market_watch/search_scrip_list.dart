@@ -12,8 +12,9 @@ import '../../sharedWidget/no_data_found.dart';
 class SearchScripList extends ConsumerWidget {
   final List<ScripValue> searchValue;
   final String wlName;
+  final String isBasket;
   const SearchScripList(
-      {super.key, required this.wlName, required this.searchValue});
+      {super.key, required this.wlName, required this.searchValue, required this.isBasket});
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
@@ -25,7 +26,7 @@ class SearchScripList extends ConsumerWidget {
             itemBuilder: (BuildContext context, int index) {
               return ListTile(
                 onTap: () async {
-                  await searchScrip.calldepthApis(context, searchValue[index]);
+                  await searchScrip.calldepthApis(context, searchValue[index], isBasket);
                 },
                 dense: true,
                 contentPadding:

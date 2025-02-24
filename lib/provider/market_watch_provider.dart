@@ -344,7 +344,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  calldepthApis(BuildContext context, raw) async {
+  calldepthApis(BuildContext context, raw, basket) async {
     chngDephBtn("Overview");
     singlePageloader(true);
     bool flow = raw.runtimeType.toString() == '_Map<String, dynamic>';
@@ -369,7 +369,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
+            child: ScripDepthInfo(wlValue: depthArgs, isBasket: basket)));
 
     await ref(websocketProvider).establishConnection(
         channelInput:

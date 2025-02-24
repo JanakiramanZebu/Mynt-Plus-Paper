@@ -168,7 +168,7 @@ class AppRoutes {
       case Routes.searchScrip:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              SearchScreen(wlName: args),
+              SearchScreen(wlName: args, isBasket: args,),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(-1.0, 0.0);
             const end = Offset.zero;

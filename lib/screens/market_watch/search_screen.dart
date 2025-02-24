@@ -16,7 +16,8 @@ import 'search_scrip_list.dart';
 
 class SearchScreen extends StatefulWidget {
   final String wlName;
-  const SearchScreen({super.key, required this.wlName});
+  final String isBasket;
+  const SearchScreen({super.key, required this.wlName, required this.isBasket});
 
   @override
   State<SearchScreen> createState() => _AddScripState();
@@ -84,13 +85,13 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                                       : colors.colorBlack,
                                   15,
                                   FontWeight.w500),
-                                  textCapitalization: TextCapitalization.characters,
+                              textCapitalization: TextCapitalization.characters,
                               inputFormatters: [
-                                        UpperCaseTextFormatter(),
-                                        RemoveEmojiInputFormatter(),
-                                        FilteringTextInputFormatter.deny(
-                                            RegExp('[π£•₹€℅™∆√¶/.,]')) 
-                                      ],
+                                UpperCaseTextFormatter(),
+                                RemoveEmojiInputFormatter(),
+                                FilteringTextInputFormatter.deny(
+                                    RegExp('[π£•₹€℅™∆√¶/.,]'))
+                              ],
                               keyboardType: TextInputType.text,
                               decoration: InputDecoration(
                                   fillColor: theme.isDarkMode
@@ -187,19 +188,24 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                           child: TabBarView(controller: tabCtrl, children: [
                         SearchScripList(
                             wlName: widget.wlName,
-                            searchValue: searchScrip.allSearchScrip!),
+                            searchValue: searchScrip.allSearchScrip!,
+                            isBasket: widget.isBasket),
                         SearchScripList(
                             wlName: widget.wlName,
-                            searchValue: searchScrip.equitySearchScrip!),
+                            searchValue: searchScrip.equitySearchScrip!,
+                            isBasket: widget.isBasket),
                         SearchScripList(
                             wlName: widget.wlName,
-                            searchValue: searchScrip.fNoSearchScrip!),
+                            searchValue: searchScrip.fNoSearchScrip!,
+                            isBasket: widget.isBasket),
                         SearchScripList(
                             wlName: widget.wlName,
-                            searchValue: searchScrip.currencySearchScrip!),
+                            searchValue: searchScrip.currencySearchScrip!,
+                            isBasket: widget.isBasket),
                         SearchScripList(
                             wlName: widget.wlName,
-                            searchValue: searchScrip.commoditySearchScrip!)
+                            searchValue: searchScrip.commoditySearchScrip!,
+                            isBasket: widget.isBasket)
                       ]))
                     ]),
                     if (internet.connectionStatus ==

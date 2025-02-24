@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/all.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/screens/stocks/explore/stocks/news/news_screen.dart';
-import 'package:mynt_plus/screens/stocks/explore/stocks/trade_action/corporate_action.dart';
 
 import '../../../../provider/fund_provider.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
+import '../explore_caevents.dart';
 import '../explore_liveIPO.dart';
 import 'indices/top_indices.dart';
 import 'trade_action/trade_action_widget.dart';
@@ -39,20 +39,6 @@ class StockScreen extends StatelessWidget {
                     : colors.colorDivider,
                 thickness: 0.6,
                 height: 0),
-            // Expanded(
-            //   child: ListView(children: const [
-            //     // ExploreWidget(),
-            //     TopIndices(),
-            //     // SizedBox(height: 16),
-            //     // TradeAction(),
-            //     // StockMonitorScreen(),
-            //     // // TradeScreen(),
-            //     // // GridViewScreen(),
-            //     // SizedBox(height: 16),
-            //     // CorporateAction(),
-            //     // NewsScreen(),
-            //   ]),
-            // ),
             const TopIndices(),
 
             const SizedBox(
@@ -121,10 +107,6 @@ class StockScreen extends StatelessWidget {
 
             const TradeAction(),
 
-            // const SizedBox(
-            //   height: 24,
-            // ),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
@@ -149,9 +131,9 @@ class StockScreen extends StatelessWidget {
                 ],
               ),
             ),
-
-            // const CorporateAction(),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+            const CaEvents(),
+            const SizedBox(height: 24),
             const NewsScreen(),
           ],
         ),

@@ -164,6 +164,7 @@ class ApiLinks {
   String get getadindicesAdvdec => '$dashBoardURL/equity/getadindicesAdvdec';
   String get getCorporateAction => '$dashBoardURL/ipo/getCorporateAction';
   String get getStockMonitor => '$dashBoardURL/equity/GetContentList';
+  String get getCAevents => '$dashBoardURL/equity/eventsDashboard';
 
   /// Qr Scanner
   String get getQrScanner => '$mainBaseURL/QRMobileReq';

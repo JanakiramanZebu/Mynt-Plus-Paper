@@ -68,7 +68,7 @@ class FutureScreen extends ConsumerWidget {
             onTap: () async {
               Navigator.pop(context);
               await watch(marketWatchProvider)
-                  .calldepthApis(context, future.fut![index]);
+                  .calldepthApis(context, future.fut![index], "");
             },
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16),

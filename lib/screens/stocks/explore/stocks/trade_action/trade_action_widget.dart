@@ -2,9 +2,11 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../../models/marketwatch_model/get_quotes.dart';
+import '../../../../../provider/market_watch_provider.dart';
 import '../../../../../provider/stocks_provider.dart';
+import '../../../../../provider/websocket_provider.dart';
 import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/no_data_found.dart';
 
@@ -25,13 +27,13 @@ class _TradeActionState extends State<TradeAction> {
 
   @override
   Widget build(BuildContext context) {
-    // double screenWidth = MediaQuery.of(context).size.width;
     return Consumer(builder: (context, ScopedReader watch, _) {
       final actionTrade = watch(stocksProvide);
+      final marketWatch = watch(marketWatchProvider);
+      final socketDatas = watch(websocketProvider).socketDatas;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // const SectorThematicWidget(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child:
@@ -85,7 +87,7 @@ class _TradeActionState extends State<TradeAction> {
               ),
               const SizedBox(height: 20),
               SizedBox(
-                  height: 35,
+                  height: 32,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: tradeAction.length,
@@ -107,7 +109,11 @@ class _TradeActionState extends State<TradeAction> {
                                   BorderRadius.all(Radius.circular(40))),
                         ),
                         onPressed: () async {
-                          actionTrade.chngTradeAction(tradeAction[index]);
+                          actionTrade.requestWSTradeaction(
+                              isSubscribe: false, context: context);
+                          await actionTrade.chngTradeAction(tradeAction[index]);
+                          actionTrade.requestWSTradeaction(
+                              isSubscribe: true, context: context);
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 5.0),
@@ -149,57 +155,85 @@ class _TradeActionState extends State<TradeAction> {
                       itemCount: 7,
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
+                        if (socketDatas.containsKey(
+                            actionTrade.topStockData[index].token)) {
+                          actionTrade.topStockData[index].lp =
+                              "${socketDatas["${actionTrade.topStockData[index].token}"]['lp'] ?? 0.00}";
+                          actionTrade.topStockData[index].pc =
+                              "${socketDatas["${actionTrade.topStockData[index].token}"]['pc'] ?? 0.00}";
+                          actionTrade.topStockData[index].v =
+                              "${socketDatas["${actionTrade.topStockData[index].token}"]['v'] ?? 0.00}";
+                        }
                         return Column(
                           children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                          "${actionTrade.topStockData[index].tsym}",
-                                          style: textStyle(
-                                              const Color(0xff000000),
-                                              14,
-                                              FontWeight.w600)),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                          "Vol :₹${actionTrade.topStockData[index].v}",
-                                          style: textStyle(
-                                              const Color(0xff999999),
-                                              12,
-                                              FontWeight.w500)),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                          "₹${actionTrade.topStockData[index].lp}",
-                                          style: textStyle(
-                                              const Color(0xff000000),
-                                              14,
-                                              FontWeight.w600)),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                          "${actionTrade.topStockData[index].pc}%",
-                                          style: textStyle(
-                                              actionTrade
-                                                      .topStockData[index].pc!
-                                                      .startsWith("-")
-                                                  ? const Color(0xffE00000)
-                                                  : const Color(0xff43A833),
-                                              12,
-                                              FontWeight.w600)),
-                                    ],
-                                  ),
-                                ],
+                            InkWell(
+                              onTap: () async {
+                                DepthInputArgs depthArgs = DepthInputArgs(
+                                    exch: actionTrade.topStockData[index].exch
+                                        .toString(),
+                                    token: actionTrade.topStockData[index].token
+                                        .toString(),
+                                    tsym: actionTrade.topStockData[index].tsym
+                                        .toString(),
+                                    instname: "",
+                                    symbol: actionTrade.topStockData[index].tsym
+                                        .toString(),
+                                    expDate: "",
+                                    option: "");
+                                await marketWatch.calldepthApis(
+                                    context, depthArgs, "");
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                            "${actionTrade.topStockData[index].tsym}",
+                                            style: textStyle(
+                                                const Color(0xff000000),
+                                                14,
+                                                FontWeight.w600)),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                            "Vol :${actionTrade.topStockData[index].v}",
+                                            style: textStyle(
+                                                const Color(0xff999999),
+                                                12,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                            "₹${actionTrade.topStockData[index].lp}",
+                                            style: textStyle(
+                                                const Color(0xff000000),
+                                                14,
+                                                FontWeight.w600)),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                            "${actionTrade.topStockData[index].pc}%",
+                                            style: textStyle(
+                                                actionTrade
+                                                        .topStockData[index].pc!
+                                                        .startsWith("-")
+                                                    ? const Color(0xffE00000)
+                                                    : const Color(0xff43A833),
+                                                12,
+                                                FontWeight.w600)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             if (index !=

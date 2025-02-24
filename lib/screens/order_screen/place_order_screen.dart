@@ -183,7 +183,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       }
     }
 
-    priceType = defaultparams
+    priceType = widget.orderArg.isExit && ["Limit", "Market"].contains(localdata['prc']) ? localdata['prc']  : defaultparams
         ? (localdata['prc'] == "SL MKT" && orderType != "Regular")
             ? 'Limit'
             : localdata['prc']
@@ -251,7 +251,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       if (widget.scripInfo.instname != "EQ") {
         orderTypes.remove("SIP");
       }
-      frezQty = int.parse(widget.scripInfo.frzqty ?? "0");
+      frezQty = ((int.parse(widget.scripInfo.frzqty.toString()) / int.parse(widget.scripInfo.ls.toString())).round() * int.parse(widget.scripInfo.ls.toString())).toInt(); 
+      
       validityType = defaultparams && localdata['validity'] == 'IOC'
           ? 'IOC'
           : widget.orderArg.exchange == "BSE" ||
@@ -294,7 +295,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
 
     final quote = context.read(marketWatchProvider).getQuotes?.ordMsg;
 
-    if (quote == null) {
+    if (widget.isBasket == "Basket" || quote == null) {
       isAvbSecu = false;
       isSecu = true;
     } else {
@@ -1745,6 +1746,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                     const EdgeInsets.symmetric(horizontal: 16),
                                 height: 40,
                                 child: CustomTextFormField(
+                                  keyboardType: TextInputType.text,
                                     fillColor: theme.isDarkMode
                                         ? colors.darkGrey
                                         : const Color(0xffF1F3F8),
@@ -2262,7 +2264,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                   null) ...[
                                                 const SizedBox(height: 8),
                                                 Text(
-                                                    "Frz Qty : ${widget.scripInfo.frzqty}",
+                                                    "Frz Qty : $frezQty",
                                                     style: textStyle(
                                                         const Color(0xff666666),
                                                         12,

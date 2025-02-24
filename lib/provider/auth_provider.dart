@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
-import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:sms_autofill/sms_autofill.dart';
@@ -998,10 +997,11 @@ class AuthProvider extends DefaultChangeNotifier {
             .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
         await ref(indexListProvider).fetchStockTopIndex();
 
-        await ref(stocksProvide).fetchCorporateAction();
+        // await ref(stocksProvide).fetchCorporateAction();
+        await ref(stocksProvide).fetchCAevents();
         // await ref(stocksProvide).defaultSectorThemematicData();
         await ref(stocksProvide).getNews();
-        // await ref(stocksProvide).chngTradeAct("Equity");
+        await ref(stocksProvide).chngTradeAct("Equity");
 
         // ref(mfProvider).fetchcommonsearchWadd(null, "", context, false);
         // ref(mfProvider).fetchmfCommonsearch("Z", context);

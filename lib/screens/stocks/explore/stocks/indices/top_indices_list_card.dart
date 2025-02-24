@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/provider/thems.dart';
 
 import '../../../../../models/indices/index_list_model.dart';
 
@@ -11,7 +10,6 @@ class TopIndicesListCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, watch) {
-    final theme = watch(themeProvider);
     return Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
         decoration: BoxDecoration(

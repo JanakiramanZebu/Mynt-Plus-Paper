@@ -164,7 +164,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                               },
                               onTap: () async {
                                 await marketWatch.calldepthApis(
-                                    context, marketWatch.scrips[idx]);
+                                    context, marketWatch.scrips[idx], "");
                               },
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 16),

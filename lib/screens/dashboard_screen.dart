@@ -12,14 +12,17 @@ class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _IPOmainScreenState();
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _IPOmainScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     setState(() {
-      context.read(stocksProvide).chngTradeAct("Equity");
+      context.read(stocksProvide).chngTradeAction("init");
+      context
+          .read(stocksProvide)
+          .requestWSTradeaction(isSubscribe: true, context: context);
     });
     super.initState();
   }

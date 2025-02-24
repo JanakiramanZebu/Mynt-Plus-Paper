@@ -1,3 +1,4 @@
+import '../models/explore_model/ca_events_model.dart';
 import '../models/explore_model/stocks_model/corporate_action_model.dart';
 import '../models/explore_model/stocks_model/get_ad_indices.dart';
 import '../models/explore_model/stocks_model/sector_thematric_detail_model.dart';
@@ -121,6 +122,21 @@ mixin StocksAPI on ApiCore {
       //  print("Top Indices Data ${response.body}");
       final json = jsonDecode(response.body);
       return CorporateActionModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+
+  Future<CAevents> getCAeventsdata() async {
+    try {
+      final uri = Uri.parse(apiLinks.getCAevents);
+      final response = await apiClient
+          .post(uri, headers: {'Content-Type': 'application/json'});
+
+      //  print("Top Indices Data ${response.body}");
+      final json = jsonDecode(response.body);
+      return CAevents.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

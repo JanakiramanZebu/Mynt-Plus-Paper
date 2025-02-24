@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/api/core/api_core.dart';
 import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../sharedWidget/functions.dart';
@@ -14,7 +15,7 @@ class LiveIPOList extends ConsumerWidget {
     final ipos = watch(ipoProvide);
     final ipo = watch(ipoProvide).dashboardIpoModel?.data;
     final theme = context.read(themeProvider);
-    return Container(
+    return ipo!.isNotEmpty ? Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       height: 110,
       child: ListView.separated(
@@ -22,7 +23,7 @@ class LiveIPOList extends ConsumerWidget {
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-        itemCount: ipo!.length,
+        itemCount: ipo.length,
         itemBuilder: (BuildContext context, int index) {
           return InkWell(
             onTap: () async {
@@ -143,6 +144,6 @@ class LiveIPOList extends ConsumerWidget {
           return const SizedBox(width: 9);
         },
       ),
-    );
+    ) : const NoDataFound();
   }
 }

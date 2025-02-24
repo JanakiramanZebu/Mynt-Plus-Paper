@@ -17,6 +17,7 @@ class CustomTextFormField extends StatelessWidget {
   final Widget? prefix;
   TextAlign textAlign;
 
+  final TextInputType? keyboardType;
   final Color? fillColor;
   final bool? isReadable;
   CustomTextFormField({
@@ -34,6 +35,7 @@ class CustomTextFormField extends StatelessWidget {
     this.prefix,
     this.isReadable,
     this.fillColor,
+    this.keyboardType,
     required this.textAlign,
     // required String type
   });
@@ -45,7 +47,7 @@ class CustomTextFormField extends StatelessWidget {
         controller: textCtrl,
         style: style,
         readOnly: isReadable ?? false,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        keyboardType: keyboardType ?? const TextInputType.numberWithOptions(decimal: true),
         textAlign: textAlign,
         inputFormatters: inputFormate,
         decoration: InputDecoration(

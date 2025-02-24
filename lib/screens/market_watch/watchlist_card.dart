@@ -55,7 +55,7 @@ class WatchlistCard extends ConsumerWidget {
           }
         },
         onTap: () async {
-          await marketWatch.calldepthApis(context, watchListData);
+          await marketWatch.calldepthApis(context, watchListData, "");
         },
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         dense: true,

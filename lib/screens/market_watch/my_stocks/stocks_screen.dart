@@ -63,7 +63,7 @@ class _StocksScreenState extends State<StocksScreen> {
                         },
                         onTap: () async {
                           await marketWatch.calldepthApis(
-                              context, holdingProvide[index].exchTsym![0]);
+                              context, holdingProvide[index].exchTsym![0], "");
                         },
                         child: ListTile(
                           contentPadding:
