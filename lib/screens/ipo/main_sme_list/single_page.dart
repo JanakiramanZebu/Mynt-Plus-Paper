@@ -42,7 +42,6 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
 
   @override
   Widget build(BuildContext context) {
-    int? maxLines = _isExpanded ? null : 3;
     return Consumer(
       builder: (context, watch, child) {
         final theme = watch(themeProvider);

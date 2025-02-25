@@ -6,10 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../../../../models/ipo_model/ipo_order_book_model.dart';
-import '../../../../provider/iop_provider.dart';
-import '../../../../provider/transcation_provider.dart';
 import '../../../../res/res.dart';
-import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../ipo_cancel_alert/cancel_alert.dart';
 
@@ -23,7 +20,6 @@ class IpoOpenOrderDetails extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = watch(themeProvider);
-    final upi = watch(transcationProvider);
     return Scaffold(
        
       appBar: AppBar(

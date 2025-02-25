@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/api/core/api_core.dart';
-import 'package:mynt_plus/models/marketwatch_model/get_quotes.dart';
 import 'package:mynt_plus/provider/iop_provider.dart';
 import 'package:mynt_plus/provider/market_watch_provider.dart';
 import 'package:mynt_plus/screens/ipo/main_sme_list/single_page.dart';
@@ -110,14 +109,14 @@ class IpoCommonSearch extends ConsumerWidget {
                   itemBuilder: (BuildContext context, int index) {
                     final checkIpoStatus =
                         ipo.ipoCommonSearchList[index].ipostatus;
-                    DepthInputArgs depthArgs = DepthInputArgs(
-                        exch: "",
-                        token: "",
-                        tsym: '',
-                        instname: "",
-                        symbol: '',
-                        expDate: '',
-                        option: '');
+                    // DepthInputArgs depthArgs = DepthInputArgs(
+                    //     exch: "",
+                    //     token: "",
+                    //     tsym: '',
+                    //     instname: "",
+                    //     symbol: '',
+                    //     expDate: '',
+                    //     option: '');
 
                     return InkWell(
                         onTap: () async {

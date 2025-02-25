@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:readmore/readmore.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../models/mf_model/mf_nav_graph_model.dart';
 import '../../../models/mf_model/mutual_fundmodel.dart';
@@ -15,40 +14,40 @@ class MFOverview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-    late TooltipBehavior _tooltipBehavior;
+    // late TooltipBehavior _tooltipBehavior;
     final theme = watch(themeProvider);
     final mfData = watch(mfProvider);
     // factSheetDataModel!.data!;
     final navGraph = watch(mfProvider).navGraph;
     final mfProvide = watch(mfProvider);
-    _tooltipBehavior = TooltipBehavior(
-      enable: true,
-      opacity: 0,
-      activationMode: ActivationMode.none,
-      shouldAlwaysShow: true,
-      builder: (data, point, series, pointIndex, seriesIndex) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10.0),
-          child: Container(
-            height: 30,
-            width: 70,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: Center(
-              child: Text(
-                point.x,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
+    // _tooltipBehavior = TooltipBehavior(
+    //   enable: true,
+    //   opacity: 0,
+    //   activationMode: ActivationMode.none,
+    //   shouldAlwaysShow: true,
+    //   builder: (data, point, series, pointIndex, seriesIndex) {
+    //     return Padding(
+    //       padding: const EdgeInsets.only(bottom: 10.0),
+    //       child: Container(
+    //         height: 30,
+    //         width: 70,
+    //         decoration: BoxDecoration(
+    //           color: Colors.white,
+    //           borderRadius: BorderRadius.circular(25),
+    //         ),
+    //         child: Center(
+    //           child: Text(
+    //             point.x,
+    //             style: const TextStyle(
+    //               color: Colors.black,
+    //               fontSize: 14,
+    //             ),
+    //           ),
+    //         ),
+    //       ),
+    //     );
+    //   },
+    // );
     var interactiveTooltip = InteractiveTooltip(
       enable: true,
       format: 'Nav : point.y',

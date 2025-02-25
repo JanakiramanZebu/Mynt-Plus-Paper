@@ -2,11 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
-
-import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../routes/route_names.dart';
@@ -21,7 +18,6 @@ class MFNFOScreen extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final mf = watch(mfProvider);
     final theme = watch(themeProvider);
-    final fund = watch(fundProvider);
     return Scaffold(
         appBar: AppBar(
             // actions: [

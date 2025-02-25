@@ -17,7 +17,7 @@ class IpoPreCloseModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (msg != null) {
+    if (msg.isNotEmpty) {
       data['msg'] = msg.map((v) => v.toJson()).toList();
     }
     return data;

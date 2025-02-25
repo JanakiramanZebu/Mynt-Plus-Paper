@@ -1,18 +1,11 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/routes/route_names.dart';
-import 'package:mynt_plus/screens/ipo/ipo_orderbook_screen/ipo_order_book_main_screen.dart';
-import 'package:mynt_plus/screens/ipo/ipo_orderbook_screen/ipo_order_book_tab/close_ipo_tab.dart';
-import 'package:mynt_plus/screens/ipo/ipo_orderbook_screen/ipo_order_book_tab/open_ipo_tab.dart';
 import '../../provider/iop_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/payment_loader.dart';
-import 'invest_ipo_banner/invest_banner_ui.dart';
 import 'ipo_main_sub_screen.dart';
 
 class IPOScreen extends StatefulWidget {

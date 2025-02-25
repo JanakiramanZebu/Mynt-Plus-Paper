@@ -8,7 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import '../../models/mf_model/mf_lumpsum_order.dart';
-import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';

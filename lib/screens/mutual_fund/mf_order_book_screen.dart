@@ -12,7 +12,6 @@ import '../../res/res.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 // import '../../sharedWidget/loader_ui.dart';
 import '../../sharedWidget/loader_ui.dart';
-import '../mutual_fund_old/cancle_xsip_resone.dart';
 // import '../mutual_fund_old/mf_order_filter_sheet.dart';
 import '../portfolio_screens/mfHoldings/mf_holding_screen.dart';
 

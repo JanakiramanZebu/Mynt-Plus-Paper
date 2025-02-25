@@ -1,7 +1,4 @@
 // ignore_for_file: unused_local_variable
-
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';

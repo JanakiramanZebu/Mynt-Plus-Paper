@@ -12,7 +12,6 @@ import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
 import '../provider/network_state_provider.dart';
-import '../provider/notification_provider.dart';
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
 import '../provider/thems.dart';

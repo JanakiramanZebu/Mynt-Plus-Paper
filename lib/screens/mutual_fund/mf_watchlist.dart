@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
@@ -16,7 +15,6 @@ class MFWatchlistScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = watch(themeProvider);
-    final fund = watch(fundProvider);
     final mfData = watch(mfProvider);
     return Scaffold(
         body: mfData.mfWatchlist!.isEmpty

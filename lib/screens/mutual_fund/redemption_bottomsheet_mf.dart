@@ -7,8 +7,6 @@ import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/authentication/password/forgot_pass_unblock_user.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
-import 'package:mynt_plus/sharedWidget/ipo_error_widget.dart';
 
 import '../../models/portfolio_model/mf_holdings_model.dart';
 import '../../sharedWidget/snack_bar.dart';

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
@@ -17,7 +16,6 @@ class MfCommonSearch extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final mfData = watch(mfProvider);
     final theme = watch(themeProvider);
-    final fund = watch(fundProvider);
     
     return GestureDetector(
       onTap: () { FocusScope.of(context).unfocus();

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../provider/mf_provider.dart';
@@ -20,25 +19,25 @@ class MFAllocation extends ConsumerWidget {
     final showMoreSectors = watch(showMoreSectorsProvider).state;
     final showMoreHoldings = watch(showMoreHoldingsProvider).state;
 
-    final List<ChartData> donutChart = [
-      if (mfData.vEquity != "0")
-        ChartData('Equity', double.parse(mfData.vEquity ?? "0.00"),
-            const Color(0xff2e8564)),
-      if (mfData.vDebt != "0")
-        ChartData('Debt', double.parse(mfData.vDebt ?? "0.00"),
-            const Color(0xff7cd36f)),
-      if (mfData.goldPercent != "0")
-        ChartData('Gold', double.parse(mfData.goldPercent ?? "0.00"),
-            const Color(0xfff7cd6c)),
-      if (mfData.globalEquityPercent != "0")
-        ChartData(
-            'Global Equity',
-            double.parse(mfData.globalEquityPercent ?? "0.00"),
-            const Color(0XFFfbebc4)),
-      if (mfData.vOther != "0")
-        ChartData('Others', double.parse(mfData.vOther ?? "0.00"),
-            const Color(0XFFdedede))
-    ];
+    // final List<ChartData> donutChart = [
+    //   if (mfData.vEquity != "0")
+    //     ChartData('Equity', double.parse(mfData.vEquity ?? "0.00"),
+    //         const Color(0xff2e8564)),
+    //   if (mfData.vDebt != "0")
+    //     ChartData('Debt', double.parse(mfData.vDebt ?? "0.00"),
+    //         const Color(0xff7cd36f)),
+    //   if (mfData.goldPercent != "0")
+    //     ChartData('Gold', double.parse(mfData.goldPercent ?? "0.00"),
+    //         const Color(0xfff7cd6c)),
+    //   if (mfData.globalEquityPercent != "0")
+    //     ChartData(
+    //         'Global Equity',
+    //         double.parse(mfData.globalEquityPercent ?? "0.00"),
+    //         const Color(0XFFfbebc4)),
+    //   if (mfData.vOther != "0")
+    //     ChartData('Others', double.parse(mfData.vOther ?? "0.00"),
+    //         const Color(0XFFdedede))
+    // ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),

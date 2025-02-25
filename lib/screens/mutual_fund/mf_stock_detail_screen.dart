@@ -1,13 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:vertical_scrollable_tabview/vertical_scrollable_tabview.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import '../../models/mf_model/mutual_fundmodel.dart';
-import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
@@ -68,7 +65,6 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final theme = watch(themeProvider);
-      final fund = watch(fundProvider);
       final mfData = watch(mfProvider);
 
       return Scaffold(
