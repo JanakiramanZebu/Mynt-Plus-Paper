@@ -223,7 +223,7 @@ class UserAccountScreen extends ConsumerWidget {
                     "assets/profileimage/prd-ipo.svg", theme, () {
                   Navigator.pushNamed(context, Routes.ipo);
                   // launch(
-                  //     "https://app.mynt.in/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                  //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                 }),
                 Divider(
                     color: theme.isDarkMode
@@ -243,7 +243,7 @@ class UserAccountScreen extends ConsumerWidget {
                   await mf.fetchMFWatchlist("", "", context, true, "");
                   Navigator.pushNamed(context, Routes.mfmainscreen);
                   // launch(
-                  //     "https://app.mynt.in/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                  //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                 }),
                 Divider(
                     color: theme.isDarkMode

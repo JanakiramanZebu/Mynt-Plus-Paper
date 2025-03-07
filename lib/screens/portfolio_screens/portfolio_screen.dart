@@ -84,8 +84,8 @@ class _PortfolioScreenState extends State<PortfolioScreen>
     });
 
     FirebaseAnalytics.instance.logScreenView(
-      screenName: 'WatchlistScreen',
-      screenClass: 'WatchListScreen', // Customize if needed.
+     screenName: 'Portfolio Screen',
+      screenClass: 'Portfolio_screen',
     );
     super.initState();
   }

@@ -357,9 +357,12 @@ class HoldingScreen extends ConsumerWidget {
                       },
                       child: holdingProvide.holdingSearchItem!.isEmpty
                           ? holdingProvide.holdingsModel!.isNotEmpty
-                              ? ListView.separated(
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
+                              ? ListView.builder(
+                                  physics: const BouncingScrollPhysics(),
+                                  shrinkWrap: false,
+                                  itemBuilder: (BuildContext context, int idx) {
+                                    final index = idx ~/ 2;
+
                                     var exchTsym = holdingProvide
                                         .holdingsModel![index].exchTsym![0];
                                     if (socketDatas
@@ -443,6 +446,15 @@ class HoldingScreen extends ConsumerWidget {
                                       }
                                     }
 
+                                    if (idx.isOdd) {
+                                      return Container(
+                                          color: theme.isDarkMode
+                                              ? const Color(0xffB5C0CF)
+                                                  .withOpacity(.15)
+                                              : const Color(0xffF1F3F8),
+                                          height: 6);
+                                    }
+
                                     return InkWell(
                                         onLongPress: () {
                                           Navigator.pushNamed(
@@ -514,16 +526,9 @@ class HoldingScreen extends ConsumerWidget {
                                                 .exchTsym![0]));
                                   },
                                   itemCount:
-                                      holdingProvide.holdingsModel!.length,
-                                  separatorBuilder:
-                                      (BuildContext context, int index) {
-                                    return Container(
-                                        color: theme.isDarkMode
-                                            ? const Color(0xffB5C0CF)
-                                                .withOpacity(.15)
-                                            : const Color(0xffF1F3F8),
-                                        height: 6);
-                                  })
+                                      holdingProvide.holdingsModel!.length * 2 -
+                                          1,
+                                )
                               : const Center(
                                   child: SizedBox(
                                     height: 400,
@@ -531,14 +536,15 @@ class HoldingScreen extends ConsumerWidget {
                                   ),
                                 )
                           : holdingProvide.holdingSearchItem!.isNotEmpty
-                              ? ListView.separated(
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
+                              ? ListView.builder(
+                                  physics: const BouncingScrollPhysics(),
+                                  shrinkWrap: false,
+                                  itemBuilder: (BuildContext context, int idx) {
+                                    final index = idx ~/ 2;
                                     if (socketDatas.containsKey(holdingProvide
                                         .holdingSearchItem![index]
                                         .exchTsym![0]
                                         .token)) {
-                                      print('hold if');
                                       var exchTsym = holdingProvide
                                           .holdingSearchItem![index]
                                           .exchTsym![0];
@@ -603,6 +609,15 @@ class HoldingScreen extends ConsumerWidget {
                                                         "0.00"))
                                             .toStringAsFixed(2);
                                       }
+                                    }
+
+                                    if (idx.isOdd) {
+                                      return Container(
+                                          color: theme.isDarkMode
+                                              ? const Color(0xffB5C0CF)
+                                                  .withOpacity(.15)
+                                              : const Color(0xffF1F3F8),
+                                          height: 6);
                                     }
 
                                     return InkWell(
@@ -678,16 +693,10 @@ class HoldingScreen extends ConsumerWidget {
                                                 .exchTsym![0]));
                                   },
                                   itemCount:
-                                      holdingProvide.holdingSearchItem!.length,
-                                  separatorBuilder:
-                                      (BuildContext context, int index) {
-                                    return Container(
-                                        color: theme.isDarkMode
-                                            ? const Color(0xffB5C0CF)
-                                                .withOpacity(.15)
-                                            : const Color(0xffF1F3F8),
-                                        height: 6);
-                                  })
+                                      holdingProvide.holdingSearchItem!.length *
+                                              2 -
+                                          1,
+                                )
                               : Container()))
             ]));
   }

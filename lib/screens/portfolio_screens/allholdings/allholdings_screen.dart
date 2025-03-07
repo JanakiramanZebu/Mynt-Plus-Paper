@@ -187,8 +187,8 @@ class _Allholdings extends State<Allholdings> {
                           double panelsum = 0;
                           double panelinv = 0;
                           if (asa.allholds[key]['keysval'] != 'Null') {
-                            panelsum = (asa.allholds[key]['keysval'] ?? 0.0);
-                            panelinv = (asa.allholds[key]['keysinv'] ?? 0.0);
+                            panelsum = (asa.allholds[key]['keysval'] ?? 0.0).toDouble();
+                            panelinv = (asa.allholds[key]['keysinv'] ?? 0.0).toDouble();
                           }
                           String keych =
                               (panelsum - panelinv).toStringAsFixed(2);

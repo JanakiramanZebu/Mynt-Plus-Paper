@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
@@ -62,8 +63,16 @@ class _StocksScreenState extends State<StocksScreen> {
                           }
                         },
                         onTap: () async {
+                             DepthInputArgs depthArgs = DepthInputArgs(
+                                    exch: holdingProvide[index].exchTsym![0].exch.toString(),
+                                    token: holdingProvide[index].exchTsym![0].token.toString(),
+                                    tsym: holdingProvide[index].exchTsym![0].tsym.toString(),
+                                    instname: holdingProvide[index].exchTsym![0].symbol.toString(),
+                                    symbol: holdingProvide[index].exchTsym![0].symbol.toString(),
+                                    expDate: "",
+                                    option: "");
                           await marketWatch.calldepthApis(
-                              context, holdingProvide[index].exchTsym![0], "");
+                              context, depthArgs, "");
                         },
                         child: ListTile(
                           contentPadding:

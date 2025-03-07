@@ -38,8 +38,8 @@ class _OrderBookScreenState extends State<OrderBookScreen>
     });
 
     FirebaseAnalytics.instance.logScreenView(
-      screenName: 'WatchlistScreen',
-      screenClass: 'WatchListScreen', // Customize if needed.
+ screenName: 'Place order screen',
+      screenClass: 'Order_screen',
     );
     super.initState();
   }

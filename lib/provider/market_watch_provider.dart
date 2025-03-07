@@ -386,7 +386,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         (portfolios.oplists.isNotEmpty &&
             portfolios.oplists
                 .contains(int.parse(flow ? raw['token'] : raw.token)))) {
-      await context.read(marketWatchProvider).fetchLinkeScrip(
+      await ref(marketWatchProvider).fetchLinkeScrip(
           "${flow ? raw['token'] : raw.token}",
           "${flow ? raw['exch'] : raw.exch}",
           context);
@@ -394,11 +394,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     if (((flow ? raw['exch'] : raw.exch) == "NSE" ||
         (flow ? raw['exch'] : raw.exch) == "BSE")) {
-      context.read(marketWatchProvider).fetchFundamentalData(
+      ref(marketWatchProvider).fetchFundamentalData(
           tradeSym:
               "${flow ? raw['exch'] : raw.exch}:${(flow ? raw['tsym'] : raw.tsym)}");
 
-      await context.read(marketWatchProvider).fetchTechData(
+      await ref(marketWatchProvider).fetchTechData(
           context: context,
           exch: "${(flow ? raw['exch'] : raw.exch)}",
           tradeSym: "${(flow ? raw['tsym'] : raw.tsym)}",

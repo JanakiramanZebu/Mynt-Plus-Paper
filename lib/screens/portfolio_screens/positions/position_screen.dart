@@ -16,7 +16,7 @@ import '../../../sharedWidget/custom_text_btn.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import 'filter_scrip_bottom_sheet.dart'; 
+import 'filter_scrip_bottom_sheet.dart';
 import 'group/create_group.dart';
 import 'group/position_group_symbol.dart';
 import 'position_list_card.dart';
@@ -157,7 +157,7 @@ class PositionScreen extends ConsumerWidget {
                             )
                           ])
                     ])),
-            if (positionBook. postionBookModel!.isNotEmpty)
+            if (positionBook.postionBookModel!.isNotEmpty)
               Container(
                 padding: const EdgeInsets.only(
                     left: 16, right: 4, top: 8, bottom: 8),
@@ -237,17 +237,18 @@ class PositionScreen extends ConsumerWidget {
                               )),
                         ],
                       )
+                    ] else if (positionBook.posSelection != "All position") ...[
+                      CustomTextBtn(
+                          label: 'Create Group',
+                          onPress: () {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return const CreateGroupPos();
+                                });
+                          },
+                          icon: assets.addCircleIcon)
                     ]
-                    else if( positionBook.posSelection != "All position")...[ CustomTextBtn(
-                                label: 'Create Group',
-                                onPress: () {
-                                   showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return const CreateGroupPos();
-                                    });
-                                },
-                                icon: assets.addCircleIcon)]
                   ],
                 ),
               ),
@@ -343,117 +344,110 @@ class PositionScreen extends ConsumerWidget {
                     onRefresh: () async {
                       await positionBook.fetchPositionBook(context, false);
                     },
-                    child: ListView(
-                      children: [
-                        if (listofPosition.isNotEmpty) ...[
-                          if (positionBook.posSelection == "Group by symbol")
-                            const PositionGroupSymbol()
-                          else
-                            ListView.separated(
-                              physics: const NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-
-
+                    child: listofPosition.isNotEmpty
+                        ? positionBook.posSelection == "Group by symbol"
+                            ? const PositionGroupSymbol()
+                            : ListView.builder(
+                                physics: const BouncingScrollPhysics(),
+                                shrinkWrap: false,
+                                itemBuilder: (context, idx) {
+                                  final index = idx ~/ 2;
                                   // The Position  data item list is provided here. These scrips are subscribed to Websocket, and we verify that the conditions fit the Position scrip before adding the data to the Position list.
-                      
-                                if (socketDatas
-                                    .containsKey(listofPosition[index].token)) {
-                                  listofPosition[index].lp =
-                                      "${socketDatas["${listofPosition[index].token}"]['lp']}";
 
-                                  listofPosition[index].perChange =
-                                      "${socketDatas["${listofPosition[index].token}"]['pc']}";
+                                  if (socketDatas.containsKey(
+                                      listofPosition[index].token)) {
+                                    listofPosition[index].lp =
+                                        "${socketDatas["${listofPosition[index].token}"]['lp']}";
 
-                                  // WidgetsBinding.instance
-                                  //     .addPostFrameCallback((_) {
-                                  positionBook.positionCal(positionBook.isDay);
-                                  // });
-                                }
-                                return InkWell(
-                                    onLongPress: () {
-                                      if (positionBook.openPosition!.length >
-                                              1 &&
-                                          listofPosition[index].qty != "0") {
-                                        Navigator.pushNamed(
-                                            context, Routes.positionExit,
-                                            arguments: listofPosition);
-                                      }
-                                    },
-                                    onTap: () async {
-                                      await context
-                                          .read(marketWatchProvider)
-                                          .fetchLinkeScrip(
-                                              "${listofPosition[index].token}",
-                                              "${listofPosition[index].exch}",
-                                              context);
+                                    listofPosition[index].perChange =
+                                        "${socketDatas["${listofPosition[index].token}"]['pc']}";
 
-                                      await watch(marketWatchProvider)
-                                          .fetchScripQuote(
-                                              "${listofPosition[index].token}",
-                                              "${listofPosition[index].exch}",
-                                              context);
-
-                                      if ((listofPosition[index].exch ==
-                                              "NSE" ||
-                                          listofPosition[index].exch ==
-                                              "BSE")) {
-                                        context
-                                            .read(marketWatchProvider)
-                                            .depthBtns
-                                            .add({
-                                          "btnName": "Fundamental",
-                                          "imgPath": assets.dInfo,
-                                          "case":
-                                              "Click here to view fundamental data."
-                                        });
-
+                                    // WidgetsBinding.instance
+                                    //     .addPostFrameCallback((_) {
+                                    positionBook
+                                        .positionCal(positionBook.isDay);
+                                    // });
+                                  }
+                                  if (idx.isOdd) {
+                                    return Container(
+                                        color: theme.isDarkMode
+                                            ? listofPosition[index].netqty ==
+                                                    "0"
+                                                ? colors.colorBlack
+                                                : colors.darkGrey
+                                            : listofPosition[index].netqty ==
+                                                    "0"
+                                                ? colors.colorWhite
+                                                : const Color(0xffF1F3F8),
+                                        height: 6);
+                                  }
+                                  return InkWell(
+                                      onLongPress: () {
+                                        if (positionBook.openPosition!.length >
+                                                1 &&
+                                            listofPosition[index].qty != "0") {
+                                          Navigator.pushNamed(
+                                              context, Routes.positionExit,
+                                              arguments: listofPosition);
+                                        }
+                                      },
+                                      onTap: () async {
                                         await context
                                             .read(marketWatchProvider)
-                                            .fetchTechData(
-                                                context: context,
-                                                exch:
-                                                    "${listofPosition[index].exch}",
-                                                tradeSym:
-                                                    "${listofPosition[index].tsym}",
-                                                lastPrc:
-                                                    "${listofPosition[index].lp}");
-                                      }
-                                      Navigator.pushNamed(
-                                          context, Routes.positionDetail,
-                                          arguments: listofPosition[index]);
-                                    },
-                                    child: PositionListCard(
-                                        positionList: listofPosition[index])
+                                            .fetchLinkeScrip(
+                                                "${listofPosition[index].token}",
+                                                "${listofPosition[index].exch}",
+                                                context);
 
-                                    // PositionListCard(
-                                    //     positionList:
-                                    //         listofPosition[index])),
-                                    );
-                              },
-                              itemCount: listofPosition.length,
-                              separatorBuilder:
-                                  (BuildContext context, int index) {
-                                return Container(
-                                    color: theme.isDarkMode
-                                        ? listofPosition[index].netqty == "0"
-                                            ? colors.colorBlack
-                                            : colors.darkGrey
-                                        : listofPosition[index].netqty == "0"
-                                            ? colors.colorWhite
-                                            : const Color(0xffF1F3F8),
-                                    height: 6);
-                              },
-                            )
-                        ] else
-                          const SizedBox(height: 500, child: NoDataFound())
-                      ],
-                    ),
+                                        await watch(marketWatchProvider)
+                                            .fetchScripQuote(
+                                                "${listofPosition[index].token}",
+                                                "${listofPosition[index].exch}",
+                                                context);
+
+                                        if ((listofPosition[index].exch ==
+                                                "NSE" ||
+                                            listofPosition[index].exch ==
+                                                "BSE")) {
+                                          context
+                                              .read(marketWatchProvider)
+                                              .depthBtns
+                                              .add({
+                                            "btnName": "Fundamental",
+                                            "imgPath": assets.dInfo,
+                                            "case":
+                                                "Click here to view fundamental data."
+                                          });
+
+                                          await context
+                                              .read(marketWatchProvider)
+                                              .fetchTechData(
+                                                  context: context,
+                                                  exch:
+                                                      "${listofPosition[index].exch}",
+                                                  tradeSym:
+                                                      "${listofPosition[index].tsym}",
+                                                  lastPrc:
+                                                      "${listofPosition[index].lp}");
+                                        }
+                                        Navigator.pushNamed(
+                                            context, Routes.positionDetail,
+                                            arguments: listofPosition[index]);
+                                      },
+                                      child: PositionListCard(
+                                          positionList: listofPosition[index]));
+                                },
+                                itemCount: listofPosition.length * 2 - 1,
+                              )
+                        : const SizedBox(height: 500, child: NoDataFound()),
                   ))
                 : Expanded(
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      shrinkWrap: false,
+                      itemBuilder: (context, idx) {
+                        final index = idx ~/ 2;
+
                         if (socketDatas.containsKey(
                             positionBook.positionSearchItem[index].token)) {
                           positionBook.positionSearchItem[index].lp =
@@ -465,6 +459,21 @@ class PositionScreen extends ConsumerWidget {
                           // WidgetsBinding.instance.addPostFrameCallback((_) {
                           //   positionBook.positionCal(positionBook.isDay);
                           // });
+                        }
+                        if (idx.isOdd) {
+                          return Container(
+                              color: theme.isDarkMode
+                                  ? positionBook.positionSearchItem[index]
+                                              .netqty ==
+                                          "0"
+                                      ? colors.colorBlack
+                                      : colors.darkGrey
+                                  : positionBook.positionSearchItem[index]
+                                              .netqty ==
+                                          "0"
+                                      ? colors.colorWhite
+                                      : const Color(0xffF1F3F8),
+                              height: 6);
                         }
                         return InkWell(
                             onTap: () async {
@@ -510,22 +519,7 @@ class PositionScreen extends ConsumerWidget {
                                 positionList:
                                     positionBook.positionSearchItem[index]));
                       },
-                      itemCount: positionBook.positionSearchItem.length,
-                      separatorBuilder: (BuildContext context, int index) {
-                        return Container(
-                            color: theme.isDarkMode
-                                ? positionBook
-                                            .positionSearchItem[index].netqty ==
-                                        "0"
-                                    ? colors.colorBlack
-                                    : colors.darkGrey
-                                : positionBook
-                                            .positionSearchItem[index].netqty ==
-                                        "0"
-                                    ? colors.colorWhite
-                                    : const Color(0xffF1F3F8),
-                            height: 6);
-                      },
+                      itemCount: positionBook.positionSearchItem.length * 2 - 1,
                     ),
                   )
           ]);

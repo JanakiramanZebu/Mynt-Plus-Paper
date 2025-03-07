@@ -85,16 +85,16 @@ class UserAccountScreen extends ConsumerWidget {
                         } else if (acttitle == "IPO") {
                           Navigator.pushNamed(context, Routes.ipo);
                           // launch(
-                          //     "https://app.mynt.in/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                          //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                         } else if (acttitle == "Mutual Fund") {
-                           await mf.fetchBestMF();
-                  await portfolio.fetchMFHoldings(context);
-                  await mf.fetchMFCategoryType();
-                  // await mf.fetchmfNFO(context);
-                  await mf.fetchMFWatchlist("", "", context, true, "");
-                  Navigator.pushNamed(context, Routes.mfmainscreen);
-                          // launch(
-                          //     "https://app.mynt.in/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                          // await mf.fetchBestMF();
+                          // await portfolio.fetchMFHoldings(context);
+                          // await mf.fetchMFCategoryType();
+                          // // await mf.fetchmfNFO(context);
+                          // await mf.fetchMFWatchlist("", "", context, true, "");
+                          // Navigator.pushNamed(context, Routes.mfmainscreen);
+                          launch(
+                              "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                         } else if (acttitle == "OptionZ") {
                           funds.optionZ(context);
                         } else if (acttitle == "Refer") {

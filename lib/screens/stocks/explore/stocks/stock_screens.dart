@@ -66,7 +66,7 @@ class StockScreen extends StatelessWidget {
                           theme, () {
                         Navigator.pushNamed(context, Routes.ipo);
                         // launch(
-                        //     "https://app.mynt.in/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                        //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                       }),
                       productList(
                           'Mutual Funds',
@@ -79,7 +79,7 @@ class StockScreen extends StatelessWidget {
                         await mf.fetchMFWatchlist("", "", context, true, "");
                         Navigator.pushNamed(context, Routes.mfmainscreen);
                         // launch(
-                        //     "https://app.mynt.in/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                        //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                       }),
                       productList('OptionZ', "Options Trading Platform.",
                           "assets/profileimage/prd-optz.svg", theme, () async {
@@ -93,7 +93,7 @@ class StockScreen extends StatelessWidget {
                           theme, () {
                         Navigator.pushNamed(context, Routes.reportWebViewApp);
                         // launch(
-                        //     "https://app.mynt.in/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                        //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                       }),
                     ],
                   ),

@@ -28,8 +28,8 @@ class _WatchListScreen extends State<WatchListScreen> {
   @override
   void initState() {
     FirebaseAnalytics.instance.logScreenView(
-      screenName: 'WatchlistScreen',
-      screenClass: 'WatchListScreen', // Customize if needed.
+      screenName: 'Watchlist screen',
+      screenClass: 'WatchList_screen', 
     );
     super.initState();
   }

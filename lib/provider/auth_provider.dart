@@ -552,8 +552,10 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setLogout(true);
         ref(indexListProvider).bottomMenu(1, context);
         loginMethCtrl.text = pref.clientId!;
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, (route) => false);
+        if (currentRouteName != Routes.loginScreen) {
+          Navigator.pushNamedAndRemoveUntil(
+              context, Routes.loginScreen, (route) => false);
+        }
       } else if (_mobileLogin!.apitoken != null && _mobileLogin!.stat == "Ok") {
         clearError();
         clearTextField();
@@ -766,8 +768,10 @@ class AuthProvider extends DefaultChangeNotifier {
         Navigator.of(context).pop();
         ref(websocketProvider).closeSocket();
         ref(websocketProvider).websockConn(false);
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, (route) => false);
+        if (currentRouteName != Routes.loginScreen) {
+          Navigator.pushNamedAndRemoveUntil(
+              context, Routes.loginScreen, (route) => false);
+        }
       }
     } catch (e) {
       ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
@@ -1062,7 +1066,9 @@ class AuthProvider extends DefaultChangeNotifier {
     ConstantName.timer!.cancel();
 
     ref(websocketProvider).websockConn(false);
-    Navigator.pushNamedAndRemoveUntil(
-        context, Routes.loginScreen, (route) => false);
+    if (currentRouteName != Routes.loginScreen) {
+      Navigator.pushNamedAndRemoveUntil(
+          context, Routes.loginScreen, (route) => false);
+    }
   }
 }
