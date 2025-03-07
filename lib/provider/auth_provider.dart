@@ -529,9 +529,15 @@ class AuthProvider extends DefaultChangeNotifier {
           _mobileLogin!.emsg == "Invalid Input : Password Expired") {
         ref(changePasswordProvider).userIdController.text =
             "${_mobileLogin!.clientid}";
+        if (_mobileLogin!.emsg == "Invalid Input : Password Expired") {
+          ref(changePasswordProvider).oldPassword.text = password.toString();
+        }
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
-        Navigator.pushNamed(context, Routes.changePass, arguments: "No");
+        Navigator.pushNamed(context, Routes.changePass,
+            arguments: _mobileLogin!.emsg == "Invalid Input : Password Expired"
+                ? 'Yes'
+                : "No");
       } else if (_mobileLogin!.emsg ==
           "Your mobile registered in multiple accounts, Please login with client ID") {
         loginMethod();
@@ -1019,25 +1025,26 @@ class AuthProvider extends DefaultChangeNotifier {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.homeScreen, (route) => false);
           // if (pref.islogIn!) {
-        if (pref.showRiskDis != 'true')   
-          {showModalBottomSheet(
-              shape: const RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(16))),
-              backgroundColor: const Color(0xffffffff),
-              isDismissible: false,
-              enableDrag: false,
-              showDragHandle: false,
-              useSafeArea: false,
-              isScrollControlled: true,
-              context: context,
-              builder: (BuildContext context) {
-                return WillPopScope(
-                    onWillPop: () async {
-                      return false;
-                    },
-                    child: const RiskDisclousreBottomSheet());
-              });}
+          if (pref.showRiskDis != 'true') {
+            showModalBottomSheet(
+                shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(16))),
+                backgroundColor: const Color(0xffffffff),
+                isDismissible: false,
+                enableDrag: false,
+                showDragHandle: false,
+                useSafeArea: false,
+                isScrollControlled: true,
+                context: context,
+                builder: (BuildContext context) {
+                  return WillPopScope(
+                      onWillPop: () async {
+                        return false;
+                      },
+                      child: const RiskDisclousreBottomSheet());
+                });
+          }
         }
         {
           await ref(fundProvider).fetchFunds(context);
