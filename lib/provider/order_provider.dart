@@ -287,7 +287,7 @@ class OrderProvider extends DefaultChangeNotifier {
       String input = "";
       // for (var i = 0; i < _bsktScripList.length; i++) {
       input =
-          _bsktScripList.map((e) => "${e.exch}|${e.token}").toSet().join("#");
+         _bsktScripList.map((e) => "${e['exch']}|${e['token']}").toSet().join("#");
       // }
       if (input.isNotEmpty) {
         ref(websocketProvider).establishConnection(

@@ -13,9 +13,7 @@ import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/bond_provider.dart';
 import '../../provider/fund_provider.dart';
-import '../../provider/mf_provider.dart';
 import '../../provider/notification_provider.dart';
-import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/transcation_provider.dart';
 import '../../provider/user_profile_provider.dart';
@@ -34,8 +32,6 @@ class UserAccountScreen extends ConsumerWidget {
     final userProfile = watch(userProfileProvider);
     final theme = watch(themeProvider);
     final trancation = watch(transcationProvider);
-    final mf = watch(mfProvider);
-    final portfolio = watch(portfolioProvider);
 
     //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);

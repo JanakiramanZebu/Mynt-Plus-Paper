@@ -178,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     // );
 
     return WillPopScope(
-        onWillPop: showExitPopup,
+        onWillPop: () => showExitPopup(context),
         child: Consumer(builder: (context, ScopedReader watch, _) {
           final marketWatchList = watch(marketWatchProvider);
           // final explore = watch(authProvider);
@@ -582,352 +582,365 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         ])
                                                       ]
                                                     ],
-                                          bottom: indexProvide.selectedBtmIndx == 1
-                                              ? PreferredSize(preferredSize: const Size(20, 44), child: DefaultIndexList(src: false))
-                                              : indexProvide.selectedBtmIndx == 4
+                                          bottom:
+                                              indexProvide.selectedBtmIndx == 1
                                                   ? PreferredSize(
-                                                      preferredSize: const Size(20, 8),
-                                                      child: userProfile.userloader
-                                                          ? ListTile(
-                                                              dense: true,
-                                                              contentPadding:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          16),
-                                                              leading:
-                                                                  CircleAvatar(
-                                                                backgroundColor: !theme
-                                                                        .isDarkMode
-                                                                    ? Colors.grey[
-                                                                        300]
-                                                                    : Color(
-                                                                        0xff666666),
-                                                              ),
-                                                              title: Container(
-                                                                height: 16,
-                                                                width: 150,
-                                                                color: !theme
-                                                                        .isDarkMode
-                                                                    ? Colors.grey[
-                                                                        300]
-                                                                    : Color(
-                                                                        0xff666666),
-                                                              ),
-                                                              subtitle:
-                                                                  Container(
-                                                                height: 12,
-                                                                width: 100,
-                                                                color: !theme
-                                                                        .isDarkMode
-                                                                    ? Colors.grey[
-                                                                        300]
-                                                                    : Color(
-                                                                        0xff666666),
-                                                              ),
-                                                              trailing:
-                                                                  Container(
-                                                                height: 24,
-                                                                width: 50,
-                                                                color: !theme
-                                                                        .isDarkMode
-                                                                    ? Colors.grey[
-                                                                        300]
-                                                                    : Color(
-                                                                        0xff666666),
-                                                              ),
-                                                            )
-                                                          : ListTile(
-                                                              onTap: () {
-                                                                showModalBottomSheet(
-                                                                    context:
-                                                                        context,
-                                                                    isScrollControlled:
-                                                                        true,
-                                                                    isDismissible:
-                                                                        true,
-                                                                    shape:
-                                                                        const RoundedRectangleBorder(
-                                                                      borderRadius:
-                                                                          BorderRadius
-                                                                              .only(
-                                                                        topLeft:
-                                                                            Radius.circular(10),
-                                                                        topRight:
-                                                                            Radius.circular(10),
+                                                      preferredSize:
+                                                          const Size(20, 44),
+                                                      child: DefaultIndexList(
+                                                          src: false))
+                                                  : indexProvide.selectedBtmIndx ==
+                                                          4
+                                                      ? PreferredSize(
+                                                          preferredSize:
+                                                              const Size(20, 8),
+                                                          child:
+                                                              userProfile
+                                                                      .userloader
+                                                                  ? ListTile(
+                                                                      dense:
+                                                                          true,
+                                                                      contentPadding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              16),
+                                                                      leading:
+                                                                          CircleAvatar(
+                                                                        backgroundColor: !theme.isDarkMode
+                                                                            ? Colors.grey[300]
+                                                                            : Color(0xff666666),
                                                                       ),
-                                                                    ),
-                                                                    builder: (_) =>
-                                                                        const LoggedUserBottomSheet(
-                                                                            initRoute:
-                                                                                'switchAcc'));
-                                                              },
-                                                              dense: true,
-                                                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                                              leading: SvgPicture.asset(
-                                                                assets.myntnewLogo,
-                                                                width: 46,
-                                                                height: 46,
-                                                              ),
-                                                              //     CircleAvatar(
-                                                              //   backgroundColor:
-                                                              //       const Color(0xffF1F3F8),
-                                                              //   child: Text(
-                                                              //       userProfile.userDetailModel!.uname != null
-                                                              //           ? userProfile.userDetailModel!.uname![0]
-                                                              //           : "",
-                                                              //       style: textStyle(const Color(0xff000000), 18, FontWeight.w600)),
-                                                              // ),
-                                                              title: Row(
-                                                                children: [
-                                                                  Text(truncateText(userProfile.userDetailModel!.uname.toString()), 
-                                                                  maxLines: 1,
-                                                                  overflow: TextOverflow.ellipsis, style: textStyle(Color(theme.isDarkMode ? 0xffffffff : 0xff000000), 16, FontWeight.w600)),
-                                                                 Icon(Icons.expand_more, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack, size: 28,)
-                                                                
-                                                                ],
-                                                              ),
-                                                              subtitle: Text("Client ID: ${userProfile.userDetailModel!.uid}", style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
-                                                              trailing: SizedBox(
-                                                                  width: 100,
-                                                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                                                                    IconButton(
-                                                                      splashRadius:
-                                                                          26,
-                                                                      onPressed:
+                                                                      title:
+                                                                          Container(
+                                                                        height:
+                                                                            16,
+                                                                        width:
+                                                                            150,
+                                                                        color: !theme.isDarkMode
+                                                                            ? Colors.grey[300]
+                                                                            : Color(0xff666666),
+                                                                      ),
+                                                                      subtitle:
+                                                                          Container(
+                                                                        height:
+                                                                            12,
+                                                                        width:
+                                                                            100,
+                                                                        color: !theme.isDarkMode
+                                                                            ? Colors.grey[300]
+                                                                            : Color(0xff666666),
+                                                                      ),
+                                                                      trailing:
+                                                                          Container(
+                                                                        height:
+                                                                            24,
+                                                                        width:
+                                                                            50,
+                                                                        color: !theme.isDarkMode
+                                                                            ? Colors.grey[300]
+                                                                            : Color(0xff666666),
+                                                                      ),
+                                                                    )
+                                                                  : ListTile(
+                                                                      onTap:
                                                                           () {
-                                                                        Navigator.pushNamed(
-                                                                            context,
-                                                                            Routes.qrscanner);
+                                                                        showModalBottomSheet(
+                                                                            context:
+                                                                                context,
+                                                                            isScrollControlled:
+                                                                                true,
+                                                                            isDismissible:
+                                                                                true,
+                                                                            shape:
+                                                                                const RoundedRectangleBorder(
+                                                                              borderRadius: BorderRadius.only(
+                                                                                topLeft: Radius.circular(10),
+                                                                                topRight: Radius.circular(10),
+                                                                              ),
+                                                                            ),
+                                                                            builder: (_) =>
+                                                                                const LoggedUserBottomSheet(initRoute: 'switchAcc'));
                                                                       },
-                                                                      icon: SvgPicture.asset(
-                                                                          "assets/profile/qr_code.svg",
-                                                                          width:
-                                                                              28,
-                                                                          color: theme.isDarkMode
-                                                                              ? colors.colorWhite
-                                                                              : colors.colorBlack),
-                                                                    ),
-                                                                    // IconButton(
-                                                                    //   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                                                                    //   // splashRadius:
-                                                                    //   //     26,
-                                                                    //   onPressed:
-                                                                    //       () async {
-                                                                    //     await context
-                                                                    //         .read(notificationprovider)
-                                                                    //         .fetchexchagemsg(context);
+                                                                      dense:
+                                                                          true,
+                                                                      contentPadding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              16),
+                                                                      leading:
+                                                                          SvgPicture
+                                                                              .asset(
+                                                                        assets
+                                                                            .myntnewLogo,
+                                                                        width:
+                                                                            46,
+                                                                        height:
+                                                                            46,
+                                                                      ),
+                                                                      //     CircleAvatar(
+                                                                      //   backgroundColor:
+                                                                      //       const Color(0xffF1F3F8),
+                                                                      //   child: Text(
+                                                                      //       userProfile.userDetailModel!.uname != null
+                                                                      //           ? userProfile.userDetailModel!.uname![0]
+                                                                      //           : "",
+                                                                      //       style: textStyle(const Color(0xff000000), 18, FontWeight.w600)),
+                                                                      // ),
+                                                                      title:
+                                                                          Row(
+                                                                        children: [
+                                                                          Text(
+                                                                              truncateText(userProfile.userDetailModel!.uname.toString()),
+                                                                              maxLines: 1,
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              style: textStyle(Color(theme.isDarkMode ? 0xffffffff : 0xff000000), 16, FontWeight.w600)),
+                                                                          Icon(
+                                                                            Icons.expand_more,
+                                                                            color: theme.isDarkMode
+                                                                                ? colors.colorWhite
+                                                                                : colors.colorBlack,
+                                                                            size:
+                                                                                28,
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                      subtitle: Text(
+                                                                          "Client ID: ${userProfile.userDetailModel!.uid}",
+                                                                          style: textStyle(
+                                                                              const Color(
+                                                                                  0xff666666),
+                                                                              12,
+                                                                              FontWeight
+                                                                                  .w500)),
+                                                                      trailing:
+                                                                          SizedBox(
+                                                                              width:
+                                                                                  100,
+                                                                              child: Row(
+                                                                                  mainAxisAlignment: MainAxisAlignment
+                                                                                      .end,
+                                                                                  children: [
+                                                                                    IconButton(
+                                                                                      splashRadius: 26,
+                                                                                      onPressed: () {
+                                                                                        Navigator.pushNamed(context, Routes.qrscanner);
+                                                                                      },
+                                                                                      icon: SvgPicture.asset("assets/profile/qr_code.svg", width: 28, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+                                                                                    ),
+                                                                                    // IconButton(
+                                                                                    //   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                                                                    //   // splashRadius:
+                                                                                    //   //     26,
+                                                                                    //   onPressed:
+                                                                                    //       () async {
+                                                                                    //     await context
+                                                                                    //         .read(notificationprovider)
+                                                                                    //         .fetchexchagemsg(context);
 
-                                                                    //     await context
-                                                                    //         .read(notificationprovider)
-                                                                    //         .fetchbrokermsg(context);
-                                                                    //     Navigator.pushNamed(
-                                                                    //         context,
-                                                                    //         Routes.notificationpage);
-                                                                    //   },
-                                                                    //   icon: SvgPicture.asset(
-                                                                    //       "assets/icon/appbarIcon/bell.svg",
-                                                                    //       width:
-                                                                    //           24,
-                                                                    //       color: theme.isDarkMode
-                                                                    //           ? colors.colorWhite
-                                                                    //           : colors.colorBlack),
-                                                                    // ),
-                                                                    // Icon(
-                                                                    //     Icons
-                                                                    //         .expand_more,
-                                                                    //     size:
-                                                                    //         32,
-                                                                    //     color: theme.isDarkMode
-                                                                    //         ? colors.colorWhite
-                                                                    //         : colors.colorBlack)
-                                                                  ]))))
-                                                  : null),
+                                                                                    //     await context
+                                                                                    //         .read(notificationprovider)
+                                                                                    //         .fetchbrokermsg(context);
+                                                                                    //     Navigator.pushNamed(
+                                                                                    //         context,
+                                                                                    //         Routes.notificationpage);
+                                                                                    //   },
+                                                                                    //   icon: SvgPicture.asset(
+                                                                                    //       "assets/icon/appbarIcon/bell.svg",
+                                                                                    //       width:
+                                                                                    //           24,
+                                                                                    //       color: theme.isDarkMode
+                                                                                    //           ? colors.colorWhite
+                                                                                    //           : colors.colorBlack),
+                                                                                    // ),
+                                                                                    // Icon(
+                                                                                    //     Icons
+                                                                                    //         .expand_more,
+                                                                                    //     size:
+                                                                                    //         32,
+                                                                                    //     color: theme.isDarkMode
+                                                                                    //         ? colors.colorWhite
+                                                                                    //         : colors.colorBlack)
+                                                                                  ]))))
+                                                      : null),
 
                                   // Here is the Bottom menu items
                                   bottomNavigationBar: BottomAppBar(
                                       height: 58,
-                                      shadowColor: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                                      shadowColor: theme.isDarkMode
+                                          ? colors.darkColorDivider
+                                          : colors.colorDivider,
                                       padding: EdgeInsets.zero,
-                                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
-                                        // Expanded(
-                                        //   child: InkWell(
-                                        //     onTap: internet.connectionStatus ==
-                                        //             ConnectivityResult.none
-                                        //         ? null
-                                        //         : () async {
-                                        //             // watch(stocksProvide)
-                                        //             //     .chngExpName("Stock", 0);
-                                        //             // await context
-                                        //             //     .read(indexListProvider)
-                                        //             //     .checkSession(context);
-                                        //             // await portfolio.requestWSHoldings(
-                                        //             //     context: context,
-                                        //             //     isSubscribe: false);
+                                      child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            // Expanded(
+                                            //   child: InkWell(
+                                            //     onTap: internet.connectionStatus ==
+                                            //             ConnectivityResult.none
+                                            //         ? null
+                                            //         : () async {
+                                            //             // watch(stocksProvide)
+                                            //             //     .chngExpName("Stock", 0);
+                                            //             // await context
+                                            //             //     .read(indexListProvider)
+                                            //             //     .checkSession(context);
+                                            //             // await portfolio.requestWSHoldings(
+                                            //             //     context: context,
+                                            //             //     isSubscribe: false);
 
-                                        //             // // await context
-                                        //             // //     .read(orderProvider)
-                                        //             // //     .requestWSOrderBook(
-                                        //             // //         context: context,
-                                        //             // //         isSubscribe: false);
-                                        //             // await portfolio.requestWSPosition(
-                                        //             //     context: context,
-                                        //             //     isSubscribe: false);
+                                            //             // // await context
+                                            //             // //     .read(orderProvider)
+                                            //             // //     .requestWSOrderBook(
+                                            //             // //         context: context,
+                                            //             // //         isSubscribe: false);
+                                            //             // await portfolio.requestWSPosition(
+                                            //             //     context: context,
+                                            //             //     isSubscribe: false);
 
-                                        //             // await context
-                                        //             //     .read(marketWatchProvider)
-                                        //             //     .requestMWScrip(
-                                        //             //         context: context,
-                                        //             //         isSubscribe: false);
-                                        //             // await explore.exploretabSize();
-                                        //             indexProvide.bottomMenu(
-                                        //                 0, context);
-                                        //           },
-                                        //     child: Container(
-                                        //       margin:
-                                        //           const EdgeInsets.symmetric(
-                                        //               horizontal: 7),
-                                        //       decoration: BoxDecoration(
-                                        //           border: indexProvide
-                                        //                       .selectedBtmIndx ==
-                                        //                   0
-                                        //               ? Border(
-                                        //                   top: BorderSide(
-                                        //                       color: theme.isDarkMode
-                                        //                           ? colors
-                                        //                               .colorLightBlue
-                                        //                           : colors
-                                        //                               .colorBlue,
-                                        //                       width: 2))
-                                        //               : null),
-                                        //       child: Column(
-                                        //         mainAxisAlignment:
-                                        //             MainAxisAlignment.center,
-                                        //         crossAxisAlignment:
-                                        //             CrossAxisAlignment.center,
-                                        //         children: [
-                                        //           SvgPicture.asset(
-                                        //               assets.bookmarkedIcon,
-                                        //               color: theme.isDarkMode &&
-                                        //                       indexProvide
-                                        //                               .selectedBtmIndx ==
-                                        //                           0
-                                        //                   ? colors
-                                        //                       .colorLightBlue
-                                        //                   : indexProvide
-                                        //                               .selectedBtmIndx ==
-                                        //                           0
-                                        //                       ? colors.colorBlue
-                                        //                       : colors
-                                        //                           .colorGrey),
-                                        //           const SizedBox(height: 4),
-                                        //           Text("Explore",
-                                        //               style: textStyle(
-                                        //                   theme.isDarkMode &&
-                                        //                           indexProvide
-                                        //                                   .selectedBtmIndx ==
-                                        //                               0
-                                        //                       ? colors
-                                        //                           .colorLightBlue
-                                        //                       : indexProvide
-                                        //                                   .selectedBtmIndx ==
-                                        //                               0
-                                        //                           ? colors
-                                        //                               .colorBlue
-                                        //                           : colors
-                                        //                               .colorGrey,
-                                        //                   12,
-                                        //                   indexProvide.selectedBtmIndx ==
-                                        //                           0
-                                        //                       ? FontWeight.w600
-                                        //                       : FontWeight
-                                        //                           .w500)),
-                                        //         ],
-                                        //       ),
-                                        //     ),
-                                        //   ),
-                                        // ),
+                                            //             // await context
+                                            //             //     .read(marketWatchProvider)
+                                            //             //     .requestMWScrip(
+                                            //             //         context: context,
+                                            //             //         isSubscribe: false);
+                                            //             // await explore.exploretabSize();
+                                            //             indexProvide.bottomMenu(
+                                            //                 0, context);
+                                            //           },
+                                            //     child: Container(
+                                            //       margin:
+                                            //           const EdgeInsets.symmetric(
+                                            //               horizontal: 7),
+                                            //       decoration: BoxDecoration(
+                                            //           border: indexProvide
+                                            //                       .selectedBtmIndx ==
+                                            //                   0
+                                            //               ? Border(
+                                            //                   top: BorderSide(
+                                            //                       color: theme.isDarkMode
+                                            //                           ? colors
+                                            //                               .colorLightBlue
+                                            //                           : colors
+                                            //                               .colorBlue,
+                                            //                       width: 2))
+                                            //               : null),
+                                            //       child: Column(
+                                            //         mainAxisAlignment:
+                                            //             MainAxisAlignment.center,
+                                            //         crossAxisAlignment:
+                                            //             CrossAxisAlignment.center,
+                                            //         children: [
+                                            //           SvgPicture.asset(
+                                            //               assets.bookmarkedIcon,
+                                            //               color: theme.isDarkMode &&
+                                            //                       indexProvide
+                                            //                               .selectedBtmIndx ==
+                                            //                           0
+                                            //                   ? colors
+                                            //                       .colorLightBlue
+                                            //                   : indexProvide
+                                            //                               .selectedBtmIndx ==
+                                            //                           0
+                                            //                       ? colors.colorBlue
+                                            //                       : colors
+                                            //                           .colorGrey),
+                                            //           const SizedBox(height: 4),
+                                            //           Text("Explore",
+                                            //               style: textStyle(
+                                            //                   theme.isDarkMode &&
+                                            //                           indexProvide
+                                            //                                   .selectedBtmIndx ==
+                                            //                               0
+                                            //                       ? colors
+                                            //                           .colorLightBlue
+                                            //                       : indexProvide
+                                            //                                   .selectedBtmIndx ==
+                                            //                               0
+                                            //                           ? colors
+                                            //                               .colorBlue
+                                            //                           : colors
+                                            //                               .colorGrey,
+                                            //                   12,
+                                            //                   indexProvide.selectedBtmIndx ==
+                                            //                           0
+                                            //                       ? FontWeight.w600
+                                            //                       : FontWeight
+                                            //                           .w500)),
+                                            //         ],
+                                            //       ),
+                                            //     ),
+                                            //   ),
+                                            // ),
 
-                                        Expanded(
-                                            child: InkWell(
-                                                onTap: () async {
-                                                  indexProvide.bottomMenu(
-                                                      1, context);
-                                                  portfolio.cancelTimer();
+                                            Expanded(
+                                                child: InkWell(
+                                                    onTap: () async {
+                                                      indexProvide.bottomMenu(
+                                                          1, context);
+                                                      portfolio.cancelTimer();
 
-                                                  // await context
-                                                  //     .read(indexListProvider)
-                                                  //     .checkSession(context);
-                                                  // if (indexProvide
-                                                  //         .checkSess!.stat ==
-                                                  //     "Ok") {
-                                                  await portfolio
-                                                      .requestWSHoldings(
-                                                          context: context,
-                                                          isSubscribe: false);
+                                                      // await context
+                                                      //     .read(indexListProvider)
+                                                      //     .checkSession(context);
+                                                      // if (indexProvide
+                                                      //         .checkSess!.stat ==
+                                                      //     "Ok") {
+                                                      await portfolio
+                                                          .requestWSHoldings(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  false);
 
-                                                  await context
-                                                      .read(orderProvider)
-                                                      .requestWSOrderBook(
-                                                          context: context,
-                                                          isSubscribe: false);
-                                                  await portfolio
-                                                      .requestWSPosition(
-                                                          context: context,
-                                                          isSubscribe: false);
-                                                  await context
-                                                      .read(marketWatchProvider)
-                                                      .requestMWScrip(
-                                                          context: context,
-                                                          isSubscribe: true);
-                                                  // }
-                                                },
-                                                child: Container(
-                                                    margin: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 7),
-                                                    decoration: BoxDecoration(
-                                                        border: indexProvide
-                                                                    .selectedBtmIndx ==
-                                                                1
-                                                            ? Border(
-                                                                top: BorderSide(
-                                                                    color: theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorLightBlue
-                                                                        : colors
-                                                                            .colorBlue,
-                                                                    width: 2))
-                                                            : null),
-                                                    child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          SvgPicture.asset(
-                                                              assets
-                                                                  .bookmarkedIcon,
-                                                              color: theme.isDarkMode &&
-                                                                      indexProvide
-                                                                              .selectedBtmIndx ==
-                                                                          1
-                                                                  ? colors
-                                                                      .colorLightBlue
-                                                                  : indexProvide
-                                                                              .selectedBtmIndx ==
-                                                                          1
-                                                                      ? colors
-                                                                          .colorBlue
-                                                                      : colors
-                                                                          .colorGrey),
-                                                          const SizedBox(
-                                                              height: 4),
-                                                          Text("Watchlist",
-                                                              style: textStyle(
-                                                                  theme.isDarkMode &&
+                                                      await context
+                                                          .read(orderProvider)
+                                                          .requestWSOrderBook(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  false);
+                                                      await portfolio
+                                                          .requestWSPosition(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  false);
+                                                      await context
+                                                          .read(
+                                                              marketWatchProvider)
+                                                          .requestMWScrip(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  true);
+                                                      // }
+                                                    },
+                                                    child: Container(
+                                                        margin: const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 7),
+                                                        decoration: BoxDecoration(
+                                                            border: indexProvide
+                                                                        .selectedBtmIndx ==
+                                                                    1
+                                                                ? Border(
+                                                                    top: BorderSide(
+                                                                        color: theme.isDarkMode
+                                                                            ? colors
+                                                                                .colorLightBlue
+                                                                            : colors
+                                                                                .colorBlue,
+                                                                        width:
+                                                                            2))
+                                                                : null),
+                                                        child: Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .center,
+                                                            children: [
+                                                              SvgPicture.asset(
+                                                                  assets
+                                                                      .bookmarkedIcon,
+                                                                  color: theme.isDarkMode &&
                                                                           indexProvide.selectedBtmIndx ==
                                                                               1
                                                                       ? colors
@@ -937,90 +950,82 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                           ? colors
                                                                               .colorBlue
                                                                           : colors
-                                                                              .colorGrey,
-                                                                  12,
-                                                                  indexProvide.selectedBtmIndx ==
-                                                                          1
-                                                                      ? FontWeight
-                                                                          .w600
-                                                                      : FontWeight
-                                                                          .w500))
-                                                        ])))),
-                                        Expanded(
-                                            child: InkWell(
-                                          onTap: () async {
-                                            // await context
-                                            //     .read(indexListProvider)
-                                            //     .checkSession(context);
+                                                                              .colorGrey),
+                                                              const SizedBox(
+                                                                  height: 4),
+                                                              Text("Watchlist",
+                                                                  style: textStyle(
+                                                                      theme.isDarkMode && indexProvide.selectedBtmIndx == 1
+                                                                          ? colors.colorLightBlue
+                                                                          : indexProvide.selectedBtmIndx == 1
+                                                                              ? colors.colorBlue
+                                                                              : colors.colorGrey,
+                                                                      12,
+                                                                      indexProvide.selectedBtmIndx == 1 ? FontWeight.w600 : FontWeight.w500))
+                                                            ])))),
+                                            Expanded(
+                                                child: InkWell(
+                                              onTap: () async {
+                                                // await context
+                                                //     .read(indexListProvider)
+                                                //     .checkSession(context);
 
-                                            // if (indexProvide.checkSess!.stat ==
-                                            //     "Ok")
-                                            //  {
-                                            indexProvide.bottomMenu(2, context);
-                                            await portfolio
-                                                .fetchMFHoldings(context);
-                                            await marketWatchList
-                                                .requestMWScrip(
-                                                    context: context,
-                                                    isSubscribe: false);
+                                                // if (indexProvide.checkSess!.stat ==
+                                                //     "Ok")
+                                                //  {
+                                                indexProvide.bottomMenu(
+                                                    2, context);
+                                                await portfolio
+                                                    .fetchMFHoldings(context);
+                                                await marketWatchList
+                                                    .requestMWScrip(
+                                                        context: context,
+                                                        isSubscribe: false);
 
-                                            await context
-                                                .read(orderProvider)
-                                                .requestWSOrderBook(
-                                                    context: context,
-                                                    isSubscribe: false);
+                                                await context
+                                                    .read(orderProvider)
+                                                    .requestWSOrderBook(
+                                                        context: context,
+                                                        isSubscribe: false);
 
-                                            await portfolio.requestWSHoldings(
-                                                context: context,
-                                                isSubscribe: true);
+                                                await portfolio
+                                                    .requestWSHoldings(
+                                                        context: context,
+                                                        isSubscribe: true);
 
-                                            await portfolio.requestWSPosition(
-                                                context: context,
-                                                isSubscribe: true);
-                                            // }
-                                          },
-                                          child: Container(
-                                              margin:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 7),
-                                              decoration: BoxDecoration(
-                                                  border: indexProvide
-                                                              .selectedBtmIndx ==
-                                                          2
-                                                      ? Border(
-                                                          top: BorderSide(
-                                                              color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorLightBlue
-                                                                  : colors
-                                                                      .colorBlue,
-                                                              width: 2))
-                                                      : null),
-                                              child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    SvgPicture.asset(
-                                                        assets.barChart,
-                                                        color: theme.isDarkMode &&
-                                                                indexProvide
-                                                                        .selectedBtmIndx ==
-                                                                    2
-                                                            ? colors
-                                                                .colorLightBlue
-                                                            : indexProvide
-                                                                        .selectedBtmIndx ==
-                                                                    2
-                                                                ? colors
-                                                                    .colorBlue
-                                                                : colors
-                                                                    .colorGrey),
-                                                    const SizedBox(height: 4),
-                                                    Text("Portfolio",
-                                                        style: textStyle(
-                                                            theme.isDarkMode &&
+                                                await portfolio
+                                                    .requestWSPosition(
+                                                        context: context,
+                                                        isSubscribe: true);
+                                                // }
+                                              },
+                                              child: Container(
+                                                  margin: const EdgeInsets
+                                                      .symmetric(horizontal: 7),
+                                                  decoration: BoxDecoration(
+                                                      border: indexProvide
+                                                                  .selectedBtmIndx ==
+                                                              2
+                                                          ? Border(
+                                                              top: BorderSide(
+                                                                  color: theme.isDarkMode
+                                                                      ? colors
+                                                                          .colorLightBlue
+                                                                      : colors
+                                                                          .colorBlue,
+                                                                  width: 2))
+                                                          : null),
+                                                  child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                            assets.barChart,
+                                                            color: theme.isDarkMode &&
                                                                     indexProvide
                                                                             .selectedBtmIndx ==
                                                                         2
@@ -1032,102 +1037,105 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                     ? colors
                                                                         .colorBlue
                                                                     : colors
-                                                                        .colorGrey,
-                                                            12,
-                                                            indexProvide.selectedBtmIndx ==
-                                                                    2
-                                                                ? FontWeight
-                                                                    .w600
-                                                                : FontWeight
-                                                                    .w500)),
-                                                  ])),
-                                        )),
-                                        Expanded(
-                                            child: InkWell(
-                                                onTap: () async {
-                                                  indexProvide.bottomMenu(
-                                                      3, context);
-
-                                                  portfolio.cancelTimer();
-                                                  // await context
-                                                  //     .read(indexListProvider)
-                                                  //     .checkSession(context);
-                                                  // if (indexProvide
-                                                  //         .checkSess!.stat ==
-                                                  //     "Ok") {
-                                                  await context
-                                                      .read(orderProvider)
-                                                      .fetchSipOrderHistory(
-                                                          context);
-                                                  await marketWatchList
-                                                      .fetchPendingAlert(
-                                                          context);
-                                                  await marketWatchList
-                                                      .requestMWScrip(
-                                                          context: context,
-                                                          isSubscribe: false);
-                                                  await portfolio
-                                                      .requestWSHoldings(
-                                                          context: context,
-                                                          isSubscribe: false);
-
-                                                  await portfolio
-                                                      .requestWSPosition(
-                                                          context: context,
-                                                          isSubscribe: false);
-
-                                                  context
-                                                      .read(orderProvider)
-                                                      .requestWSOrderBook(
-                                                          context: context,
-                                                          isSubscribe: true);
-                                                  // }
-                                                },
-                                                child: Container(
-                                                    margin: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 7),
-                                                    decoration: BoxDecoration(
-                                                        border: indexProvide
-                                                                    .selectedBtmIndx ==
-                                                                3
-                                                            ? Border(
-                                                                top: BorderSide(
-                                                                    color: theme.isDarkMode
+                                                                        .colorGrey),
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        Text("Portfolio",
+                                                            style: textStyle(
+                                                                theme.isDarkMode &&
+                                                                        indexProvide.selectedBtmIndx ==
+                                                                            2
+                                                                    ? colors
+                                                                        .colorLightBlue
+                                                                    : indexProvide.selectedBtmIndx ==
+                                                                            2
                                                                         ? colors
-                                                                            .colorLightBlue
+                                                                            .colorBlue
                                                                         : colors
-                                                                            .colorBlue,
-                                                                    width: 2))
-                                                            : null),
-                                                    child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          SvgPicture.asset(
-                                                              assets.bag,
-                                                              color: theme.isDarkMode &&
-                                                                      indexProvide
-                                                                              .selectedBtmIndx ==
-                                                                          3
-                                                                  ? colors
-                                                                      .colorLightBlue
-                                                                  : indexProvide
-                                                                              .selectedBtmIndx ==
-                                                                          3
-                                                                      ? colors
-                                                                          .colorBlue
-                                                                      : colors
-                                                                          .colorGrey),
-                                                          const SizedBox(
-                                                              height: 4),
-                                                          Text("Orders",
-                                                              style: textStyle(
-                                                                  theme.isDarkMode &&
+                                                                            .colorGrey,
+                                                                12,
+                                                                indexProvide.selectedBtmIndx ==
+                                                                        2
+                                                                    ? FontWeight
+                                                                        .w600
+                                                                    : FontWeight
+                                                                        .w500)),
+                                                      ])),
+                                            )),
+                                            Expanded(
+                                                child: InkWell(
+                                                    onTap: () async {
+                                                      indexProvide.bottomMenu(
+                                                          3, context);
+
+                                                      portfolio.cancelTimer();
+                                                      // await context
+                                                      //     .read(indexListProvider)
+                                                      //     .checkSession(context);
+                                                      // if (indexProvide
+                                                      //         .checkSess!.stat ==
+                                                      //     "Ok") {
+                                                      await context
+                                                          .read(orderProvider)
+                                                          .fetchSipOrderHistory(
+                                                              context);
+                                                      await marketWatchList
+                                                          .fetchPendingAlert(
+                                                              context);
+                                                      await marketWatchList
+                                                          .requestMWScrip(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  false);
+                                                      await portfolio
+                                                          .requestWSHoldings(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  false);
+
+                                                      await portfolio
+                                                          .requestWSPosition(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  false);
+
+                                                      context
+                                                          .read(orderProvider)
+                                                          .requestWSOrderBook(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  true);
+                                                      // }
+                                                    },
+                                                    child: Container(
+                                                        margin: const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 7),
+                                                        decoration: BoxDecoration(
+                                                            border: indexProvide
+                                                                        .selectedBtmIndx ==
+                                                                    3
+                                                                ? Border(
+                                                                    top: BorderSide(
+                                                                        color: theme.isDarkMode
+                                                                            ? colors
+                                                                                .colorLightBlue
+                                                                            : colors
+                                                                                .colorBlue,
+                                                                        width:
+                                                                            2))
+                                                                : null),
+                                                        child: Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .center,
+                                                            children: [
+                                                              SvgPicture.asset(
+                                                                  assets.bag,
+                                                                  color: theme.isDarkMode &&
                                                                           indexProvide.selectedBtmIndx ==
                                                                               3
                                                                       ? colors
@@ -1137,99 +1145,93 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                           ? colors
                                                                               .colorBlue
                                                                           : colors
-                                                                              .colorGrey,
-                                                                  12,
-                                                                  indexProvide.selectedBtmIndx ==
-                                                                          3
-                                                                      ? FontWeight
-                                                                          .w600
-                                                                      : FontWeight
-                                                                          .w500))
-                                                        ])))),
-                                        Expanded(
-                                            child: InkWell(
-                                                onTap: () async {
-                                                  indexProvide.bottomMenu(
-                                                      4, context);
-                                                  portfolio.cancelTimer();
-                                                  await context
-                                                      .read(fundProvider)
-                                                      .fetchFunds(context);
-                                                  // if (context
-                                                  //         .read(fundProvider)
-                                                  //         .fundDetailModel!
-                                                  //         .stat ==
-                                                  //     "Ok") {
-                                                  //   if (userProfile
-                                                  //       .profileMenu.isEmpty) {
-                                                  await userProfile
-                                                      .fetchprofilemenu();
-                                                  // }
+                                                                              .colorGrey),
+                                                              const SizedBox(
+                                                                  height: 4),
+                                                              Text("Orders",
+                                                                  style: textStyle(
+                                                                      theme.isDarkMode && indexProvide.selectedBtmIndx == 3
+                                                                          ? colors.colorLightBlue
+                                                                          : indexProvide.selectedBtmIndx == 3
+                                                                              ? colors.colorBlue
+                                                                              : colors.colorGrey,
+                                                                      12,
+                                                                      indexProvide.selectedBtmIndx == 3 ? FontWeight.w600 : FontWeight.w500))
+                                                            ])))),
+                                            Expanded(
+                                                child: InkWell(
+                                                    onTap: () async {
+                                                      indexProvide.bottomMenu(
+                                                          4, context);
+                                                      portfolio.cancelTimer();
+                                                      await context
+                                                          .read(fundProvider)
+                                                          .fetchFunds(context);
+                                                      // if (context
+                                                      //         .read(fundProvider)
+                                                      //         .fundDetailModel!
+                                                      //         .stat ==
+                                                      //     "Ok") {
+                                                      //   if (userProfile
+                                                      //       .profileMenu.isEmpty) {
+                                                      await userProfile
+                                                          .fetchprofilemenu();
+                                                      // }
 
-                                                  marketWatchList
-                                                      .requestMWScrip(
-                                                          context: context,
-                                                          isSubscribe: false);
-                                                  portfolio.requestWSHoldings(
-                                                      context: context,
-                                                      isSubscribe: false);
+                                                      marketWatchList
+                                                          .requestMWScrip(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  false);
+                                                      portfolio
+                                                          .requestWSHoldings(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  false);
 
-                                                  context
-                                                      .read(orderProvider)
-                                                      .requestWSOrderBook(
-                                                          context: context,
-                                                          isSubscribe: false);
-                                                  portfolio.requestWSPosition(
-                                                      context: context,
-                                                      isSubscribe: false);
-                                                  // }
-                                                },
-                                                child: Container(
-                                                    margin: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 7),
-                                                    decoration: BoxDecoration(
-                                                        border: indexProvide
-                                                                    .selectedBtmIndx ==
-                                                                4
-                                                            ? Border(
-                                                                top: BorderSide(
-                                                                    color: theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorLightBlue
-                                                                        : colors
-                                                                            .colorBlue,
-                                                                    width: 2))
-                                                            : null),
-                                                    child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          SvgPicture.asset(
-                                                              "assets/profile/userlogo.svg",
-                                                              height: 18,
-                                                              color: theme.isDarkMode &&
-                                                                      indexProvide
-                                                                              .selectedBtmIndx ==
-                                                                          4
-                                                                  ? colors
-                                                                      .colorLightBlue
-                                                                  : indexProvide
-                                                                              .selectedBtmIndx ==
-                                                                          4
-                                                                      ? colors
-                                                                          .colorBlue
-                                                                      : colors
-                                                                          .colorGrey),
-                                                          const SizedBox(
-                                                              height: 5),
-                                                          Text("Profile",
-                                                              style: textStyle(
-                                                                  theme.isDarkMode &&
+                                                      context
+                                                          .read(orderProvider)
+                                                          .requestWSOrderBook(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  false);
+                                                      portfolio
+                                                          .requestWSPosition(
+                                                              context: context,
+                                                              isSubscribe:
+                                                                  false);
+                                                      // }
+                                                    },
+                                                    child: Container(
+                                                        margin: const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 7),
+                                                        decoration: BoxDecoration(
+                                                            border: indexProvide
+                                                                        .selectedBtmIndx ==
+                                                                    4
+                                                                ? Border(
+                                                                    top: BorderSide(
+                                                                        color: theme.isDarkMode
+                                                                            ? colors
+                                                                                .colorLightBlue
+                                                                            : colors
+                                                                                .colorBlue,
+                                                                        width:
+                                                                            2))
+                                                                : null),
+                                                        child: Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .center,
+                                                            children: [
+                                                              SvgPicture.asset(
+                                                                  "assets/profile/userlogo.svg",
+                                                                  height: 18,
+                                                                  color: theme.isDarkMode &&
                                                                           indexProvide.selectedBtmIndx ==
                                                                               4
                                                                       ? colors
@@ -1239,83 +1241,87 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                           ? colors
                                                                               .colorBlue
                                                                           : colors
-                                                                              .colorGrey,
-                                                                  12,
-                                                                  indexProvide.selectedBtmIndx ==
-                                                                          4
-                                                                      ? FontWeight
-                                                                          .w600
-                                                                      : FontWeight
-                                                                          .w500))
-                                                        ])))),
-                                        // Expanded(
-                                        //     child: InkWell(
-                                        //         onTap: internet.connectionStatus ==
-                                        //                 ConnectivityResult.none
-                                        //             ? null
-                                        //             : () async {
-                                        //                 showModalBottomSheet(
-                                        //                     useSafeArea: true,
-                                        //                     isScrollControlled: true,
-                                        //                     shape: const RoundedRectangleBorder(
-                                        //                         borderRadius:
-                                        //                             BorderRadius.vertical(
-                                        //                                 top:
-                                        //                                     Radius.circular(16))),
-                                        //                     context: context,
-                                        //                     builder: (context) {
-                                        //                       return const MoreMenuBottomSheet();
-                                        //                     });
-                                        //               },
-                                        //         child: Container(
-                                        //             margin:
-                                        //                 const EdgeInsets.symmetric(horizontal: 7),
-                                        //             decoration: BoxDecoration(
-                                        //                 border: indexProvide.selectedBtmIndx > 4
-                                        //                     ? Border(
-                                        //                         top: BorderSide(
-                                        //                             color: theme.isDarkMode
-                                        //                                 ? colors.colorLightBlue
-                                        //                                 : colors.colorBlue,
-                                        //                             width: 2))
-                                        //                     : null),
-                                        //             child: Column(
-                                        //                 mainAxisAlignment:
-                                        //                     MainAxisAlignment.center,
-                                        //                 crossAxisAlignment:
-                                        //                     CrossAxisAlignment.center,
-                                        //                 children: [
-                                        //                   SvgPicture.asset(
-                                        //                       "assets/profile/userlogo.svg",
-                                        //                       height: 18,
-                                        //                       color: theme.isDarkMode &&
-                                        //                               indexProvide
-                                        //                                       .selectedBtmIndx >
-                                        //                                   4
-                                        //                           ? colors.colorLightBlue
-                                        //                           : indexProvide.selectedBtmIndx >
-                                        //                                   4
-                                        //                               ? colors.colorBlue
-                                        //                               : colors.colorGrey),
-                                        //                   const SizedBox(height: 5),
-                                        //                   Text("Menu",
-                                        //                       style: textStyle(
-                                        //                           theme.isDarkMode &&
-                                        //                                   indexProvide
-                                        //                                           .selectedBtmIndx >
-                                        //                                       4
-                                        //                               ? colors.colorLightBlue
-                                        //                               : indexProvide
-                                        //                                           .selectedBtmIndx >
-                                        //                                       4
-                                        //                                   ? colors.colorBlue
-                                        //                                   : colors.colorGrey,
-                                        //                           12,
-                                        //                           indexProvide.selectedBtmIndx > 4
-                                        //                               ? FontWeight.w600
-                                        //                               : FontWeight.w500))
-                                        //                 ]))))
-                                      ])),
+                                                                              .colorGrey),
+                                                              const SizedBox(
+                                                                  height: 5),
+                                                              Text("Profile",
+                                                                  style: textStyle(
+                                                                      theme.isDarkMode && indexProvide.selectedBtmIndx == 4
+                                                                          ? colors.colorLightBlue
+                                                                          : indexProvide.selectedBtmIndx == 4
+                                                                              ? colors.colorBlue
+                                                                              : colors.colorGrey,
+                                                                      12,
+                                                                      indexProvide.selectedBtmIndx == 4 ? FontWeight.w600 : FontWeight.w500))
+                                                            ])))),
+                                            // Expanded(
+                                            //     child: InkWell(
+                                            //         onTap: internet.connectionStatus ==
+                                            //                 ConnectivityResult.none
+                                            //             ? null
+                                            //             : () async {
+                                            //                 showModalBottomSheet(
+                                            //                     useSafeArea: true,
+                                            //                     isScrollControlled: true,
+                                            //                     shape: const RoundedRectangleBorder(
+                                            //                         borderRadius:
+                                            //                             BorderRadius.vertical(
+                                            //                                 top:
+                                            //                                     Radius.circular(16))),
+                                            //                     context: context,
+                                            //                     builder: (context) {
+                                            //                       return const MoreMenuBottomSheet();
+                                            //                     });
+                                            //               },
+                                            //         child: Container(
+                                            //             margin:
+                                            //                 const EdgeInsets.symmetric(horizontal: 7),
+                                            //             decoration: BoxDecoration(
+                                            //                 border: indexProvide.selectedBtmIndx > 4
+                                            //                     ? Border(
+                                            //                         top: BorderSide(
+                                            //                             color: theme.isDarkMode
+                                            //                                 ? colors.colorLightBlue
+                                            //                                 : colors.colorBlue,
+                                            //                             width: 2))
+                                            //                     : null),
+                                            //             child: Column(
+                                            //                 mainAxisAlignment:
+                                            //                     MainAxisAlignment.center,
+                                            //                 crossAxisAlignment:
+                                            //                     CrossAxisAlignment.center,
+                                            //                 children: [
+                                            //                   SvgPicture.asset(
+                                            //                       "assets/profile/userlogo.svg",
+                                            //                       height: 18,
+                                            //                       color: theme.isDarkMode &&
+                                            //                               indexProvide
+                                            //                                       .selectedBtmIndx >
+                                            //                                   4
+                                            //                           ? colors.colorLightBlue
+                                            //                           : indexProvide.selectedBtmIndx >
+                                            //                                   4
+                                            //                               ? colors.colorBlue
+                                            //                               : colors.colorGrey),
+                                            //                   const SizedBox(height: 5),
+                                            //                   Text("Menu",
+                                            //                       style: textStyle(
+                                            //                           theme.isDarkMode &&
+                                            //                                   indexProvide
+                                            //                                           .selectedBtmIndx >
+                                            //                                       4
+                                            //                               ? colors.colorLightBlue
+                                            //                               : indexProvide
+                                            //                                           .selectedBtmIndx >
+                                            //                                       4
+                                            //                                   ? colors.colorBlue
+                                            //                                   : colors.colorGrey,
+                                            //                           12,
+                                            //                           indexProvide.selectedBtmIndx > 4
+                                            //                               ? FontWeight.w600
+                                            //                               : FontWeight.w500))
+                                            //                 ]))))
+                                          ])),
                                   body: Stack(children: [
                                     // _onItemTapped(indexProvide.selectedBtmIndx),
                                     if (internet.connectionStatus ==
@@ -1412,63 +1418,73 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
 // If an application asks for user confirmation before you can exit it, do so.
-  Future<bool> showExitPopup() async {
-    return await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                  backgroundColor: context.read(themeProvider).isDarkMode
-                      ? const Color.fromARGB(255, 18, 18, 18)
-                      : colors.colorWhite,
-                  titleTextStyle: textStyles.appBarTitleTxt.copyWith(
-                      color: context.read(themeProvider).isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack),
-                  contentTextStyle: textStyles.menuTxt,
-                  titlePadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(14))),
-                  scrollable: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-                  insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-                  title: const Text("Exit App"),
-                  content: SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [Text("Do you want to Exit the App?")])),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text("No",
-                            style: textStyles.textBtn.copyWith(
-                                color: context.read(themeProvider).isDarkMode
-                                    ? colors.colorLightBlue
-                                    : colors.colorBlue))),
-                    ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor:
-                                context.read(themeProvider).isDarkMode
-                                    ? colors.colorbluegrey
-                                    : colors.colorBlack,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
-                            )),
-                        child: Text("Yes",
-                            style: textStyle(
-                                !context.read(themeProvider).isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                14,
-                                FontWeight.w500)))
-                  ]);
-            }) ??
-        false;
+  Future<bool> showExitPopup(BuildContext context) async {
+    if (context.read(userProfileProvider).showchartof) {
+      setState(() {
+        context.read(userProfileProvider).setChartdialog(false);
+      });
+      return false; // Prevent back navigation when chart is visible
+    } else {
+      return await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                    backgroundColor: context.read(themeProvider).isDarkMode
+                        ? const Color.fromARGB(255, 18, 18, 18)
+                        : colors.colorWhite,
+                    titleTextStyle: textStyles.appBarTitleTxt.copyWith(
+                        color: context.read(themeProvider).isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack),
+                    contentTextStyle: textStyles.menuTxt,
+                    titlePadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(14))),
+                    scrollable: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+                    insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                    title: const Text("Exit App"),
+                    content: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [Text("Do you want to Exit the App?")])),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text("No",
+                              style: textStyles.textBtn.copyWith(
+                                  color: context.read(themeProvider).isDarkMode
+                                      ? colors.colorLightBlue
+                                      : colors.colorBlue))),
+                      ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor:
+                                  context.read(themeProvider).isDarkMode
+                                      ? colors.colorbluegrey
+                                      : colors.colorBlack,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50),
+                              )),
+                          child: Text("Yes",
+                              style: textStyle(
+                                  !context.read(themeProvider).isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  14,
+                                  FontWeight.w500)))
+                    ]);
+              }) ??
+          false;
+    }
   }
+
   String truncateText(String text, {int maxLength = 12}) {
-  return (text.length > maxLength) ? '${text.substring(0, maxLength)}...' : text;
-}
+    return (text.length > maxLength)
+        ? '${text.substring(0, maxLength)}...'
+        : text;
+  }
 }

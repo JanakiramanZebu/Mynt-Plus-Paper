@@ -605,6 +605,8 @@ class PositionDetailScreen extends ConsumerWidget {
                                   .read(marketWatchProvider)
                                   .fetchScripInfo("${positionList.token}",
                                       '${positionList.exch}', context);
+                                        int lotsize = int.parse(context
+                                      .read(marketWatchProvider).scripInfoModel!.ls.toString());
                               Navigator.pop(context);
                               OrderScreenArgs orderArgs = OrderScreenArgs(
                                   exchange: '${positionList.exch}',
@@ -614,7 +616,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                   transType: true,
                                   // change: depthData.chng,
                                   // close: depthData.c,
-                                  lotSize: positionList.netqty,
+                                  lotSize: lotsize.toString(),
                                   ltp: positionList.lp,
                                   perChange: positionList.perChange ?? "0.00",
                                   orderTpye: '',
@@ -656,6 +658,11 @@ class PositionDetailScreen extends ConsumerWidget {
                                       .read(marketWatchProvider)
                                       .fetchScripInfo("${positionList.token}",
                                           '${positionList.exch}', context);
+                                  int lotsize = int.parse(context
+                                      .read(marketWatchProvider)
+                                      .scripInfoModel!
+                                      .ls
+                                      .toString());
                                   Navigator.pop(context);
                                   OrderScreenArgs orderArgs = OrderScreenArgs(
                                       exchange: '${positionList.exch}',
@@ -668,7 +675,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                               : false,
                                       // change: depthData.chng,
                                       // close: depthData.c,
-                                      lotSize: positionList.netqty,
+                                      lotSize: lotsize.toString(),
                                       ltp: positionList.lp,
                                       perChange:
                                           positionList.perChange ?? "0.00",

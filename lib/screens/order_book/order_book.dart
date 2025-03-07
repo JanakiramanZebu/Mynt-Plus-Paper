@@ -461,7 +461,7 @@ class OrderBook extends ConsumerWidget {
                                                               14,
                                                               FontWeight.w500)),
                                                       Text(
-                                                          "${orderBook[itemIndex].status == "COMPLETE" ? orderBook[itemIndex].rqty ?? 0 : orderBook[itemIndex].dscqty ?? 0}/${orderBook[itemIndex].qty ?? 0}",
+                                                          "${orderBook[itemIndex].status != "COMPLETE" && (orderBook[itemIndex].fillshares?.isNotEmpty ?? false) ? (int.tryParse(orderBook[itemIndex].qty.toString())! - int.parse(orderBook[itemIndex].fillshares.toString())) : orderBook[itemIndex].status == "COMPLETE" ? orderBook[itemIndex].rqty ?? 0 : orderBook[itemIndex].dscqty ?? 0}/${orderBook[itemIndex].qty ?? 0}",
                                                           style: textStyle(
                                                               theme.isDarkMode
                                                                   ? colors
