@@ -22,12 +22,12 @@ class ChartUpdateNotifier extends DefaultChangeNotifier {
 
     if (showchartof) {
       chartUpdateTimer =
-          Timer.periodic(const Duration(milliseconds: 10), (timer) {
-        print("Updating chart data");
+          Timer.periodic(const Duration(milliseconds: 100), (timer) {
 
         final socketDatas = ref(websocketProvider).socketDatas;
         final depthData = ref(marketWatchProvider).getQuotes!;
         final tokenData = socketDatas[depthData.token];
+        // print("||||||||||||||||| Updating chart data ${depthData.tsym}");
 
         if (tokenData != null) {
           final json = {
