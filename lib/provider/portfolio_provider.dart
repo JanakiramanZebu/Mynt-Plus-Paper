@@ -2171,6 +2171,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
+  updateHoldingStat() {
+    _totalCurrentVal = 0.0;
+    for (var holdingJson in holdingsModel!) {
+      _totalCurrentVal += double.parse("${holdingJson.currentValue ?? 0.0}");
+    }
+  }
+
   Future fetchOplist(context) async {
     try {
       List oplist = await api.getOptionlist();

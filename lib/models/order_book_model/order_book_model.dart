@@ -59,6 +59,7 @@ String? dname;
   String? snonum;
   String? snoordt;
   String? instname;
+  bool? isExitSelection;
 
   OrderBookModel(
       {this.actid,
@@ -119,7 +120,8 @@ String? dname;
       this.c,
       this.snonum,
       this.snoordt,
-      this.instname});
+      this.instname,
+      this.isExitSelection});
 
   OrderBookModel.fromJson(Map<String, dynamic> json) {
     actid = json['actid'];
@@ -182,6 +184,7 @@ String? dname;
     snoordt = json['snoordt'];
     instname = json['instname'];
     dname=json['dname'];
+    isExitSelection = json['isExitSelection'];
   }
 
   Map<String, dynamic> toJson() {
@@ -247,6 +250,7 @@ String? dname;
     data['snoordt'] = snoordt;
 
     data['instname'] = instname;
+    data['isExitSelection'] = isExitSelection;
     return data;
   }
 }

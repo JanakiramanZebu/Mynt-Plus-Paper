@@ -128,7 +128,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
         }
         priceCtrl.text = "Market";
       } else {
-        priceCtrl.text = "${widget.orderArg.ltp}";
+        priceCtrl.text = "${widget.modifyOrderArgs.prc}";
       }
 
       addStoploss = widget.modifyOrderArgs.sPrdtAli == "BO" ||

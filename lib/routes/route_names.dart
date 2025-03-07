@@ -88,6 +88,7 @@ class Routes {
   static const String positionGroupDetail = 'positionGroupDetail';
 
   static const String positionExit = 'PositionExit';
+  static const String orderExit = 'orderExit';
   static const String holdingDetail = 'HoldingDetail';
   static const String holdingExit = 'HoldingExit';
   static const String edis = 'Edis';

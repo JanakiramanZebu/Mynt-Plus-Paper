@@ -143,6 +143,10 @@ class OrderProvider extends DefaultChangeNotifier {
 
   bool _orderloader = false;
   bool get orderloader => _orderloader;
+  int _exitOrderQty = 0;
+  int get exitOrderQty => _exitOrderQty;
+  bool _isExitAllOrder = false;
+  bool get isExitAllOrder => _isExitAllOrder;
 
   clearAllorders() {
     _torderBookModel = [];
@@ -169,6 +173,47 @@ class OrderProvider extends DefaultChangeNotifier {
 
   setOrderloader(bool value) {
     _orderloader = value;
+    notifyListeners();
+  }
+
+  selectExitOrder(int index) {
+    for (var i = 0; i < (_openOrder?.length ?? 0); i++) {
+      if (index == i) {
+        if (_openOrder?[i] != null) {
+          _openOrder![i].isExitSelection =
+              !(_openOrder![i].isExitSelection ?? false);
+        }
+        if (_openOrder![i].isExitSelection!) {
+          _exitOrderQty = _exitOrderQty + 1;
+        } else {
+          _exitOrderQty = _exitOrderQty - 1;
+        }
+      }
+
+      if (_openOrder!.length == _exitOrderQty) {
+        _isExitAllOrder = true;
+      } else {
+        _isExitAllOrder = false;
+      }
+    }
+
+    notifyListeners();
+  }
+
+  selectExitAllOrders(bool isExitAll) {
+    _isExitAllOrder = isExitAll;
+    _exitOrderQty = 0;
+    for (var i = 0; i < (_openOrder?.length ?? 0); i++) {
+      if (_openOrder![i].qty != "0") {
+        if (isExitAll) {
+          _openOrder![i].isExitSelection = true;
+          _exitOrderQty = _exitOrderQty + 1;
+        } else {
+          _openOrder![i].isExitSelection = false;
+        }
+      }
+    }
+
     notifyListeners();
   }
 
@@ -739,17 +784,37 @@ class OrderProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  Future fetchOrderCancel(String orderNum, context) async {
+  exitOrders(context) async {
+    for (var element in _openOrder!) {
+      if (element.isExitSelection!) {
+        if ((element.sPrdtAli == "BO" || element.sPrdtAli == "CO") &&
+            element.snonum != null) {
+          await fetchExitSNOOrd(element.snonum.toString(),
+              element.prd.toString(), context, false);
+        } else {
+          await fetchOrderCancel(element.norenordno.toString(), context, false);
+        }
+      }
+    }
+    await fetchOrderBook(context, true);
+    // Navigator.pop(context);
+    _exitOrderQty = 0;
+    _isExitAllOrder = false;
+  }
+
+  Future fetchOrderCancel(String orderNum, context, bool loop) async {
     try {
       _cancelOrderModel = await api.getCancelOrder(orderNum);
       if (_cancelOrderModel!.stat == "Ok") {
-        ConstantName.sessCheck = true;
-        await fetchOrderBook(context, true);
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, 'Order Cancelled'));
+        if (loop) {
+          ConstantName.sessCheck = true;
+          await fetchOrderBook(context, true);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context)
+              .showSnackBar(successMessage(context, 'Order Cancelled'));
 
-        Navigator.pop(context);
+          Navigator.pop(context);
+        }
       } else {
         ref(authProvider).ifSessionExpired(context);
       }
@@ -763,17 +828,20 @@ class OrderProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
-  Future fetchExitSNOOrd(String snoOrdNum, String prd, context) async {
+  Future fetchExitSNOOrd(
+      String snoOrdNum, String prd, context, bool loop) async {
     try {
       _cancelOrderModel = await api.getExitSNOOrder(snoOrdNum, prd);
       if (_cancelOrderModel!.stat == "Ok" &&
           _cancelOrderModel!.dmsg == "success") {
-        ConstantName.sessCheck = true;
-        await fetchOrderBook(context, true);
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, 'Order Exited'));
-        Navigator.pop(context);
+        if (loop) {
+          ConstantName.sessCheck = true;
+          await fetchOrderBook(context, true);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context)
+              .showSnackBar(successMessage(context, 'Order Exited'));
+          Navigator.pop(context);
+        }
       } else {
         ref(authProvider).ifSessionExpired(context);
       }

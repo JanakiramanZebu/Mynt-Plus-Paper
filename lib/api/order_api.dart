@@ -240,7 +240,7 @@ mixin OrderAPI on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","norenordno":"$orderNo","ordersource":"${ApiLinks.source}"}&jKey=${prefs.clientSession}''');
 
-      // log("Cancel Order => ${res.body}");
+      log("Cancel Order => ${res.body}"'''jData={"uid":"${prefs.clientId}","norenordno":"$orderNo","ordersource":"${ApiLinks.source}"}&jKey=${prefs.clientSession}''');
       final json = jsonDecode(res.body);
 
       return CancelOrderModel.fromJson(json as Map<String, dynamic>);

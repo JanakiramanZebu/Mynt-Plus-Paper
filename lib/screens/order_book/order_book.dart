@@ -179,6 +179,16 @@ class OrderBook extends ConsumerWidget {
                             }
 
                             return InkWell(
+                                onLongPress: () {
+                                  if (order.openOrder!.length > 0 && order.tabCtrl.index == 1 ||
+                                      order.openOrder!.length > 0 && !(["COMPLETE", "CANCELED", "REJECTED"]
+                                          .contains(
+                                              orderBook[itemIndex].status))) {
+                                    Navigator.pushNamed(
+                                        context, Routes.orderExit,
+                                        arguments: order.openOrder);
+                                  }
+                                },
                                 onTap: () async {
                                   await context
                                       .read(marketWatchProvider)

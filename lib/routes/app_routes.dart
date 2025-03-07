@@ -29,6 +29,7 @@ import '../screens/mutual_fund/mf_order_screen.dart';
 import '../screens/mutual_fund/mf_stock_detail_screen.dart';
 import '../screens/mutual_fund_old/mf_watchlist.dart';
 import '../screens/order_book/basket/basket_list.dart';
+import '../screens/order_book/exit_order_screen.dart';
 import '../screens/order_book/gtt_order_detail.dart';
 import '../screens/order_book/order_book_detail.dart';
 import '../screens/order_book/pending_alert_detail_screen.dart';
@@ -41,6 +42,7 @@ import '../screens/order_screen/place_order_screen.dart';
 import '../screens/portfolio_screens/holdings/edies_webview.dart';
 import '../screens/portfolio_screens/holdings/exit_holdings_screen.dart';
 import '../screens/portfolio_screens/holdings/holding_detail_screen.dart';
+// import '../screens/portfolio_screens/positions/exit_position_screen.dart';
 import '../screens/portfolio_screens/positions/exit_position_screen.dart';
 import '../screens/portfolio_screens/positions/group/position_group_detail.dart';
 import '../screens/portfolio_screens/positions/position_detail_screen.dart';
@@ -563,6 +565,24 @@ class AppRoutes {
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               ExitPositionScreen(exitPositionList: args),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0.0, 1.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+        case Routes.orderExit:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ExitOrderScreen(exitOrdersList: args),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;

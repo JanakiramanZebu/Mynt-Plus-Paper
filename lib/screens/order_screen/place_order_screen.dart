@@ -183,19 +183,22 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       }
     }
 
-    priceType = widget.orderArg.isExit && ["Limit", "Market"].contains(localdata['prc']) ? localdata['prc']  : defaultparams
-        ? (localdata['prc'] == "SL MKT" && orderType != "Regular")
-            ? 'Limit'
-            : localdata['prc']
-        : rep
-            ? res['prctyp'] == "MKT"
-                ? "Market"
-                : res['prctyp'] == "SL-LMT"
-                    ? "SL Limit"
-                    : res['prctyp'] == "SL-MKT"
-                        ? "SL MKT"
-                        : "Limit"
-            : "Limit";
+    priceType =
+        widget.orderArg.isExit && ["Limit", "Market"].contains(localdata['prc'])
+            ? localdata['prc']
+            : defaultparams
+                ? (localdata['prc'] == "SL MKT" && orderType != "Regular")
+                    ? 'Limit'
+                    : localdata['prc']
+                : rep
+                    ? res['prctyp'] == "MKT"
+                        ? "Market"
+                        : res['prctyp'] == "SL-LMT"
+                            ? "SL Limit"
+                            : res['prctyp'] == "SL-MKT"
+                                ? "SL MKT"
+                                : "Limit"
+                    : "Limit";
     priceTypes = [
       {
         "type": "Limit",
@@ -251,8 +254,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       if (widget.scripInfo.instname != "EQ") {
         orderTypes.remove("SIP");
       }
-      frezQty = ((int.parse(widget.scripInfo.frzqty.toString()) / int.parse(widget.scripInfo.ls.toString())).round() * int.parse(widget.scripInfo.ls.toString())).toInt(); 
-      
+      int sfq = int.tryParse(widget.scripInfo.frzqty?.toString() ?? '1') ?? 1;
+
       validityType = defaultparams && localdata['validity'] == 'IOC'
           ? 'IOC'
           : widget.orderArg.exchange == "BSE" ||
@@ -260,6 +263,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
               ? "EOS"
               : "DAY";
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
+      frezQty = ((sfq / lotSize).round() * lotSize);
       isBuy = widget.orderArg.transType;
       sipqtyctrl = TextEditingController(text: "1");
 
@@ -274,10 +278,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           ? (int.parse(qtyCtrl.text) * int.parse(localdata['qty'])).toString()
           : qtyCtrl.text;
 
-      multiplayer = int.parse((widget.orderArg.exchange == "MCX"
-              ? "1"
-              : widget.orderArg.lotSize)
-          .toString());
+      multiplayer = int.parse(
+          (widget.orderArg.exchange == "MCX" ? "1" : widget.orderArg.lotSize)
+              .toString());
 
       mktProtCtrl = TextEditingController(
           text: defaultparams ? localdata['mrkprot'] : "5");
@@ -1746,7 +1749,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                     const EdgeInsets.symmetric(horizontal: 16),
                                 height: 40,
                                 child: CustomTextFormField(
-                                  keyboardType: TextInputType.text,
+                                    keyboardType: TextInputType.text,
                                     fillColor: theme.isDarkMode
                                         ? colors.darkGrey
                                         : const Color(0xffF1F3F8),
@@ -2263,8 +2266,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                               if (widget.scripInfo.frzqty !=
                                                   null) ...[
                                                 const SizedBox(height: 8),
-                                                Text(
-                                                    "Frz Qty : $frezQty",
+                                                Text("Frz Qty : $frezQty",
                                                     style: textStyle(
                                                         const Color(0xff666666),
                                                         12,
@@ -4400,7 +4402,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
               prc: ordPrice,
               prctype: orderInput.prcType,
               prd: orderInput.orderType,
-              qty: widget.scripInfo.exch == 'MCX' ? (int.parse(qtyCtrl.text) * lotSize).toString() : qtyCtrl.text,
+              qty: widget.scripInfo.exch == 'MCX'
+                  ? (int.parse(qtyCtrl.text) * lotSize).toString()
+                  : qtyCtrl.text,
               ret: validityType,
               trailprc: '',
               trantype: isBuy! ? 'B' : 'S',
@@ -4740,7 +4744,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prctyp: context.read(ordInputProvider).prcType,
         prd: context.read(ordInputProvider).orderType,
-        qty: widget.scripInfo.exch == 'MCX' ? (int.parse(qtyCtrl.text) * lotSize).toString() : qtyCtrl.text,
+        qty: widget.scripInfo.exch == 'MCX'
+            ? (int.parse(qtyCtrl.text) * lotSize).toString()
+            : qtyCtrl.text,
         rorgprc: '0',
         rorgqty: '0',
         trantype: isBuy! ? "B" : "S",
@@ -4756,7 +4762,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         exch: "${widget.scripInfo.exch}",
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prd: context.read(ordInputProvider).orderType,
-        qty: widget.scripInfo.exch == 'MCX' ? (int.parse(qtyCtrl.text) * lotSize).toString() : qtyCtrl.text,
+        qty: widget.scripInfo.exch == 'MCX'
+            ? (int.parse(qtyCtrl.text) * lotSize).toString()
+            : qtyCtrl.text,
         trantype: isBuy! ? "B" : "S",
         tsym: "${widget.scripInfo.tsym}");
     context.read(orderProvider).fetchGetBrokerage(brokerageInput, context);

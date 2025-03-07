@@ -323,7 +323,7 @@ class OrderBookDetail extends ConsumerWidget {
                                                       .fetchExitSNOOrd(
                                                           "${orderBookData.snonum}",
                                                           "${orderBookData.prd}",
-                                                          context);
+                                                          context, true);
                                                 },
                                                 style: ElevatedButton.styleFrom(
                                                     elevation: 0,
@@ -458,7 +458,7 @@ class OrderBookDetail extends ConsumerWidget {
                                                 .read(orderProvider)
                                                 .fetchOrderCancel(
                                                     "${orderBookData.norenordno}",
-                                                    context);
+                                                    context, true);
                                           },
                                           child: Text(
                                             "Yes",
