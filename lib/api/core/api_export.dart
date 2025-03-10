@@ -11,6 +11,7 @@ import '../mutual_fund_api.dart';
 import '../notification_api.dart';
 import '../order_api.dart';
 import '../portfolio_api.dart';
+import '../profile_all_details_api.dart';
 import '../stocks_api.dart';
 import '../transcation_api.dart';
 import '../user_profile_api.dart';
@@ -36,4 +37,5 @@ class ApiExporter
         MutualFundApi,
         TranscationApi,
         StrategyJson,
+        ProfileAllDetailsApi,
         VersionApi {}

@@ -60,6 +60,7 @@ import '../screens/profile_screen/my_ac_screens/my_acc.dart';
 import '../screens/profile_screen/my_ac_screens/profile_details.dart';
 import '../screens/profile_screen/my_ac_screens/set_auto_pay.dart';
 import '../screens/profile_screen/my_ac_screens/setautopayscreen.dart';
+import '../screens/profile_screen/my_account_screens/profile_all_details_main_screen.dart';
 import '../screens/profile_screen/notification_screens/notification_screen.dart';
 import '../screens/profile_screen/order_prefere_screen.dart';
 import '../screens/profile_screen/qr_scan_widget.dart';
@@ -169,8 +170,10 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const StockScreen());
       case Routes.searchScrip:
         return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              SearchScreen(wlName: args, isBasket: args,),
+          pageBuilder: (context, animation, secondaryAnimation) => SearchScreen(
+            wlName: args,
+            isBasket: args,
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(-1.0, 0.0);
             const end = Offset.zero;
@@ -579,7 +582,7 @@ class AppRoutes {
             );
           },
         );
-        case Routes.orderExit:
+      case Routes.orderExit:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               ExitOrderScreen(exitOrdersList: args),
@@ -632,7 +635,8 @@ class AppRoutes {
       case Routes.myAcc:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              const MyAccount(),
+              // MyAccount
+              const ProfileDetailsMainScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;
@@ -648,24 +652,24 @@ class AppRoutes {
           },
         );
 
-      case Routes.profileDetail:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const ProfileDetails(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
+      // case Routes.profileDetail:
+      //   return PageRouteBuilder(
+      //     pageBuilder: (context, animation, secondaryAnimation) =>
+      //         const ProfileDetails(),
+      //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      //       const begin = Offset(0.0, 1.0);
+      //       const end = Offset.zero;
+      //       const curve = Curves.ease;
 
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      //       final tween =
+      //           Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
-        );
+      //       return SlideTransition(
+      //         position: animation.drive(tween),
+      //         child: child,
+      //       );
+      //     },
+      //   );
 
       case Routes.bankDetail:
         return PageRouteBuilder(

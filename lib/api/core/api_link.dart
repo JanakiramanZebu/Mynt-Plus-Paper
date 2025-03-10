@@ -246,4 +246,55 @@ class ApiLinks {
 
   String get ledgerBaseURL => 'https://rekycbe.mynt.in';
   String get getLedgerBal => "$ledgerBaseURL/all_ledger_balance";
+
+  // ###### Profile All Details  #############
+String get profileDetailsURL => "https://rekycbe.mynt.in/";
+String get detailschangecurrentstatusURL => '$profileDetailsURL/add_mob_email_stat';
+String get profileAllDetailsURL => '$profileDetailsURL/profile';
+
+
+  // email change
+  String get sendOTPEmailURL => '$profileDetailsURL/mail_otpsend';
+  String get verifyOTPEmailURL => '$profileDetailsURL/mail_otpverify';
+  String get filewriteemailURL => '$profileDetailsURL/file_write_email';
+
+  // mobile no change
+  String get mobotpreq => '$profileDetailsURL/mob_otp_req';
+  String get mobotpver => '$profileDetailsURL/mob_otp_ver';
+  String get filewritemob => '$profileDetailsURL/file_write_mob';
+
+  // Address change 
+  String get adrchnURL => '$profileDetailsURL/adr_chn';
+  // String get freezeAccount => '$profileDetailsURL/FreezeAccount';
+  // String get blockAcct => '$profileDetailsURL/BlockAcct';
+
+  // Bank
+  String get bankURL => '$profileDetailsURL/bank';
+  // String get freezeAccount => '$profileDetailsURL/FreezeAccount';
+  // String get blockAcct => '$profileDetailsURL/BlockAcct';
+
+  // Demat DDPI
+  String get allledgerbalanceURL => '$profileDetailsURL/all_ledger_balance';
+  String get ddpiURL => '$profileDetailsURL/DDPI';
+  // String get blockAcct => '$profileDetailsURL/BlockAcct';
+
+  // MTF
+  String get mtfURL => '$profileDetailsURL/mtf';
+  // String get freezeAccount => '$profileDetailsURL/FreezeAccount';
+  // String get blockAcct => '$profileDetailsURL/BlockAcct';
+
+  // Annual Income
+  String get incomeotpreqURL => '$profileDetailsURL/income_otp_req';
+  String get incomeotpverURL => '$profileDetailsURL/income_otp_ver';
+  String get incomeURL => '$profileDetailsURL/income';
+
+  //Add Famliy
+  String get sendlinkrequestURL => '$profileDetailsURL/send_link_request';
+  // String get freezeAccount => '$profileDetailsURL/FreezeAccount';
+  // String get blockAcct => '$profileDetailsURL/BlockAcct';
+
+  // account closure
+  String get checkclosureURL => '$profileDetailsURL/check_closure';
+  String get getholdingscheckURL => '$profileDetailsURL/getholdingscheck';
+  String get closureURL => '$profileDetailsURL/closure';
 }

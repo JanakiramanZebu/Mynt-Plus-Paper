@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:sms_autofill/sms_autofill.dart';
@@ -1012,6 +1013,7 @@ class AuthProvider extends DefaultChangeNotifier {
         // await ref(stocksProvide).defaultSectorThemematicData();
         await ref(stocksProvide).getNews();
         await ref(stocksProvide).chngTradeAct("Equity");
+        await ref(profileAllDetailsProvider).fetchClientProfileAllDetails();
 
         // ref(mfProvider).fetchcommonsearchWadd(null, "", context, false);
         // ref(mfProvider).fetchmfCommonsearch("Z", context);
