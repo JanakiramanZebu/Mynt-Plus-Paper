@@ -613,7 +613,9 @@ class PositionDetailScreen extends ConsumerWidget {
                                   tSym: '${positionList.tsym}',
                                   isExit: false,
                                   token: "${positionList.token}",
-                                  transType: true,
+                                  transType: int.parse(positionList.netqty!) > 0
+                                              ? true
+                                              : false,
                                   // change: depthData.chng,
                                   // close: depthData.c,
                                   lotSize: lotsize.toString(),
@@ -658,16 +660,11 @@ class PositionDetailScreen extends ConsumerWidget {
                                       .read(marketWatchProvider)
                                       .fetchScripInfo("${positionList.token}",
                                           '${positionList.exch}', context);
-                                  int lotsize = int.parse(context
-                                      .read(marketWatchProvider)
-                                      .scripInfoModel!
-                                      .ls
-                                      .toString());
                                   Navigator.pop(context);
                                   OrderScreenArgs orderArgs = OrderScreenArgs(
                                       exchange: '${positionList.exch}',
                                       tSym: '${positionList.tsym}',
-                                      isExit: false,
+                                      isExit: true,
                                       token: "${positionList.token}",
                                       transType:
                                           int.parse(positionList.netqty!) < 0
@@ -675,7 +672,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                               : false,
                                       // change: depthData.chng,
                                       // close: depthData.c,
-                                      lotSize: lotsize.toString(),
+                                      lotSize: positionList.netqty,
                                       ltp: positionList.lp,
                                       perChange:
                                           positionList.perChange ?? "0.00",

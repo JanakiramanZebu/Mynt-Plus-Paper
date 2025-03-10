@@ -178,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     // );
 
     return WillPopScope(
-        onWillPop: () => showExitPopup(context),
+        onWillPop: showExitPopup,
         child: Consumer(builder: (context, ScopedReader watch, _) {
           final marketWatchList = watch(marketWatchProvider);
           // final explore = watch(authProvider);
@@ -1418,13 +1418,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
 // If an application asks for user confirmation before you can exit it, do so.
-  Future<bool> showExitPopup(BuildContext context) async {
-    if (context.read(userProfileProvider).showchartof) {
-      setState(() {
-        context.read(userProfileProvider).setChartdialog(false);
-      });
-      return false; // Prevent back navigation when chart is visible
-    } else {
+  Future<bool> showExitPopup() async {
+    // if (context.read(userProfileProvider).showchartof) {
+    //   setState(() {
+    //     context.read(userProfileProvider).setChartdialog(false);
+    //   });
+    //   return false; // Prevent back navigation when chart is visible
+    // } else {
       return await showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -1479,7 +1479,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ]);
               }) ??
           false;
-    }
+    // }
   }
 
   String truncateText(String text, {int maxLength = 12}) {

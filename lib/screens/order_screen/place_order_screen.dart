@@ -183,8 +183,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       }
     }
 
-    priceType =
-        widget.orderArg.isExit && ["Limit", "Market"].contains(localdata['prc'])
+    priceType = widget.orderArg.isExit &&
+            ["Limit", "Market"].contains(localdata['expos'])
+        ? localdata['expos']
+        : ["Limit", "Market"].contains(localdata['prc'])
             ? localdata['prc']
             : defaultparams
                 ? (localdata['prc'] == "SL MKT" && orderType != "Regular")
