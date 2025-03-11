@@ -148,7 +148,7 @@ class _TotpScreenState extends State<TotpScreen> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.transparent,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.symmetric(
                                 horizontal: BorderSide(

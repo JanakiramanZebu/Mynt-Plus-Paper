@@ -15,7 +15,7 @@ class ProfileAllDetails {
         bankData!.add(BankData.fromJson(v));
       });
     }
-    if (json['nominee_data'] != null) {
+    if (json['nominee_data'] != 'error') {
           nomineeData = <NomineeDetails>[];
           json['nominee_data'].forEach((v) {
             nomineeData!.add(NomineeDetails.fromJson(v));

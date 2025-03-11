@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 // import 'package:mynt_plus/screens/profile_screen/my_account_screens/bottomsheet_screen.dart';
 import '../../../res/res.dart';
@@ -60,8 +61,8 @@ void _submit() {
         ];
 
         return Scaffold(
-          backgroundColor:
-              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          // backgroundColor:
+          //     theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           // appBar: AppBar(
           //   backgroundColor:
           //       theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
@@ -84,711 +85,730 @@ void _submit() {
           //           FontWeight.w600)),
           // ),
           body: Container(
+
             child: ListView(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 7.0, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               children: [
-                const Divider(color: Color(0xffDDDDDD)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 0.0, vertical: 0),
-                    child: Card(
-                      elevation: 0, // No shadow
-                      shape: RoundedRectangleBorder(
-                        side: const BorderSide(
-                            color: Color.fromARGB(255, 255, 255, 255),
-                            width: 1), // Outlined border
-                        borderRadius:
-                            BorderRadius.circular(8), // Rounded corners
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(
-                            5.0), // Padding inside the card
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Bank Accounts Linked",
-                              style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                16,
-                                FontWeight.w600,
+                // const Divider(color: Color(0xffDDDDDD)),
+                  Card(
+                    color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+
+                    elevation: 0, 
+                    shape: RoundedRectangleBorder(
+                      // side: const BorderSide(
+                      //     color: Color.fromARGB(255, 255, 255, 255),
+                      //     width: 1),
+                      borderRadius:
+                          BorderRadius.circular(8), // Rounded corners
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextWidget.titleText(text:  "Bank Accounts Linked",theme: theme.isDarkMode,fw:1),
+                        // Text(
+                        //   "Bank Accounts Linked",
+                        //   style: textStyle(
+                        //     theme.isDarkMode
+                        //         ? colors.colorWhite
+                        //         : colors.colorBlack,
+                        //     16,
+                        //     FontWeight.w600,
+                        //   ),
+                        // ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: TextWidget.subText(text:  "View bank details and add new banks.",theme: theme.isDarkMode),
+                          // Text(
+                          //   "View bank details and add new banks.",
+                          //   style: textStyle(const Color(0xff666666), 14,
+                          //       FontWeight.w500),
+                          // ),
+                        ),
+                        // const Padding(
+                        //   padding: EdgeInsets.only(bottom: 5),
+                        //   child: Divider(color: Color(0xffDDDDDD)),
+                        // ),
+                    
+                        // Text("${profileprovider.clientAllDetails?.bankData}"),
+                        // Text("${jsonEncode(profileprovider.clientAllDetails?.bankData)}"),
+                    
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: profileprovider
+                                  .clientAllDetails.bankData?.length ??
+                              0,
+                          itemBuilder: (BuildContext context, int index) {
+                            // var bankData = profileprovider.clientAllDetails!.bankData![index];
+                    
+                            return Card(
+                    color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0),
+                                side: const BorderSide(
+                                  color: Color.fromARGB(255, 214, 214, 214),
+                                ),
                               ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8, bottom: 3),
-                              child: Text(
-                                "View bank details and add new banks.",
-                                style: textStyle(const Color(0xff666666), 14,
-                                    FontWeight.w500),
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.only(bottom: 5),
-                              child: Divider(color: Color(0xffDDDDDD)),
-                            ),
-
-                            // Text("${profileprovider.clientAllDetails?.bankData}"),
-                            // Text("${jsonEncode(profileprovider.clientAllDetails?.bankData)}"),
-
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemCount: profileprovider
-                                      .clientAllDetails.bankData?.length ??
-                                  0,
-                              itemBuilder: (BuildContext context, int index) {
-                                // var bankData = profileprovider.clientAllDetails!.bankData![index];
-
-                                return Card(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    side: const BorderSide(
-                                      color: Color.fromARGB(255, 214, 214, 214),
-                                    ),
-                                  ),
-                                  elevation: 0,
-                                  clipBehavior: Clip.hardEdge,
-                                  child: Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                              elevation: 0,
+                              clipBehavior: Clip.hardEdge,
+                              child: Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    // Bank Name and Primary Label
+                                    Row(
                                       children: [
-                                        // Bank Name and Primary Label
-                                        Row(
-                                          children: [
-                                            //                  CircleAvatar(
-                                            //   backgroundColor: Colors.white,
-                                            //   radius: 20,
-                                            //   backgroundImage: NetworkImage(
-                                            //     "https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails!.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg&t=${DateTime.now().millisecondsSinceEpoch}",
+                                        //                  CircleAvatar(
+                                        //   backgroundColor: Colors.white,
+                                        //   radius: 20,
+                                        //   backgroundImage: NetworkImage(
+                                        //     "https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails!.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg&t=${DateTime.now().millisecondsSinceEpoch}",
+                                        //   ),
+                                        //   onBackgroundImageError: (exception, stackTrace) {
+                                        //     debugPrint("Error loading bank logo: $exception");
+                                        //     debugPrint("Image URL: https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails!.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg");
+                                        //   },
+                                        // ),
+                    
+                                        // const CircleAvatar(
+                                        //   backgroundColor: const Color
+                                        //       .fromARGB(255, 255, 255,
+                                        //       255), // Placeholder for logo
+                                        //   child: Icon(Icons.account_balance,
+                                        //       color: const Color.fromARGB(
+                                        //           255, 119, 115, 115)),
+                                        // ),
+                    
+                                        // SizedBox(width: 10),
+                                        Expanded(
+                                          child: TextWidget.titleText(text: "${profileprovider.clientAllDetails!.bankData![index].bankName}",textOverflow: TextOverflow.ellipsis,theme: theme.isDarkMode,fw:1),
+                                          
+                                          
+                                          // Text(
+                                          //   "${profileprovider.clientAllDetails!.bankData![index].bankName}",
+                                          //   style: const TextStyle(
+                                          //     fontSize: 16,
+                                          //     fontWeight: FontWeight.w600,
+                                          //     color: Colors.black,
+                                          //   ),
+                                          // ),
+                                        ),
+                    
+                                        if ("${profileprovider.clientAllDetails!.bankData![index].defaultAc}" ==
+                                            "Yes")
+                                          Container(
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: colors.colorGrey,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: TextWidget.paraText(text:'PRIMARY',theme: theme.isDarkMode,fw:1),
+                                            
+                                            
+                                            // const Text(
+                                            //   'PRIMARY',
+                                            //   style: TextStyle(
+                                            //     fontSize: 12,
+                                            //     fontWeight: FontWeight.w500,
+                                            //     color: Colors.black,
                                             //   ),
-                                            //   onBackgroundImageError: (exception, stackTrace) {
-                                            //     debugPrint("Error loading bank logo: $exception");
-                                            //     debugPrint("Image URL: https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails!.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg");
-                                            //   },
                                             // ),
-
-                                            const CircleAvatar(
-                                              backgroundColor: const Color
-                                                  .fromARGB(255, 255, 255,
-                                                  255), // Placeholder for logo
-                                              child: Icon(Icons.account_balance,
-                                                  color: const Color.fromARGB(
-                                                      255, 119, 115, 115)),
-                                            ),
-
-                                            // SizedBox(width: 10),
-                                            Expanded(
-                                              child: Text(
-                                                "${profileprovider.clientAllDetails!.bankData![index].bankName}",
-                                                style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.black,
-                                                ),
+                                          ),
+                                        SizedBox(
+                                          width: 8,
+                                        ),
+                    
+                                        InkWell(
+                                          onTap: () async {
+                                            await context.read(fundProvider).fetchHstoken(context);
+                                              Navigator.pushNamed(context, Routes.profileWebViewApp,
+                                                  arguments: "bank");
+                                          },
+                                          child: const Row(
+                                            mainAxisSize: MainAxisSize
+                                                .min, // Ensures that the Row doesn't take up full width
+                                            children: [
+                                              Icon(
+                                                Icons.edit,
+                                                color: Color(0xFF0037B7),
+                                                size: 17,
+                                                // Blue color for the icon
                                               ),
-                                            ),
-
-                                            if ("${profileprovider.clientAllDetails!.bankData![index].defaultAc}" ==
-                                                "Yes")
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey.shade300,
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                child: const Text(
-                                                  'PRIMARY',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ),
-                                            SizedBox(
-                                              width: 10,
-                                            ),
-
-                                            InkWell(
-                                              onTap: () async {
-                                                await context.read(fundProvider).fetchHstoken(context);
-                                                  Navigator.pushNamed(context, Routes.profileWebViewApp,
-                                                      arguments: "bank");
-                                              },
-                                              child: const Row(
-                                                mainAxisSize: MainAxisSize
-                                                    .min, // Ensures that the Row doesn't take up full width
-                                                children: [
-                                                  Icon(
-                                                    Icons.edit,
-                                                    color: Color(0xFF0037B7),
-                                                    size: 17,
-                                                    // Blue color for the icon
-                                                  ),
-                                                  Text(
-                                                    'EDIT',
-                                                    style: TextStyle(
-                                                      color: Color(
-                                                          0xFF0037B7), // Blue color for the text
-                                                      fontSize:
-                                                          15, // You can adjust the size as needed
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-
-                                            // TextButton.icon(
-                                            //   icon:const Icon(
-                                            //     Icons.edit,
-                                            //     color: Color(0xFF0037B7),
-                                            //     size: 17,
+                                              // Text(
+                                              //   'EDIT',
+                                              //   style: TextStyle(
+                                              //     color: Color(
+                                              //         0xFF0037B7), // Blue color for the text
+                                              //     fontSize:
+                                              //         15, // You can adjust the size as needed
+                                              //     fontWeight:
+                                              //         FontWeight.w500,
+                                              //   ),
+                                              // ),
+                                            ],
+                                          ),
+                                        ),
+                    
+                                        // TextButton.icon(
+                                        //   icon:const Icon(
+                                        //     Icons.edit,
+                                        //     color: Color(0xFF0037B7),
+                                        //     size: 17,
+                                        //   ),
+                                        //   label:const Text(
+                                        //     'Edit',
+                                        //     style: TextStyle(
+                                        //       color: Color(0xFF0037B7),
+                                        //       fontSize: 15,
+                                        //       fontWeight: FontWeight.w500,
+                                        //     ),
+                                        //   ),
+                                        //   onPressed: () {
+                                        //     // Menu action
+                                        //   },
+                                        // )
+                                      ],
+                                    ),
+                    
+                                    SizedBox(height: 8),
+                    
+                                    // Account Number with Masking
+                                    TextWidget.subText(text: 'A/C No: ${profileprovider.clientAllDetails!.bankData![index].bankAcNo}',theme: theme.isDarkMode,fw:1),
+                                    // Text(
+                                    //   'A/C No: ${profileprovider.clientAllDetails!.bankData![index].bankAcNo}',
+                                    //   style: const TextStyle(
+                                    //       fontSize: 14,
+                                    //       color: Colors.black87),
+                                    // ),
+                    
+                                    SizedBox(height: 16),
+                    
+                                    // IFSC Code and Branch in a Row
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                             TextWidget.paraText(text: 'IFSC CODE',theme: theme.isDarkMode),
+                                            // const Text(
+                                            //   'IFSC CODE',
+                                            //   style: TextStyle(
+                                            //     fontSize: 12,
+                                            //     fontWeight: FontWeight.w500,
+                                            //     color: Colors.black54,
                                             //   ),
-                                            //   label:const Text(
-                                            //     'Edit',
-                                            //     style: TextStyle(
-                                            //       color: Color(0xFF0037B7),
+                                            // ),
+                                            // SizedBox(height: 2),
+                                             SizedBox(height: 8),
+                                            TextWidget.titleText(text: "${profileprovider.clientAllDetails!.bankData![index].iFSCCode}",theme: theme.isDarkMode,fw:1),
+                                            // Text(
+                                            //   "${profileprovider.clientAllDetails!.bankData![index].iFSCCode}",
+                                            //   style: TextStyle(
                                             //       fontSize: 15,
-                                            //       fontWeight: FontWeight.w500,
-                                            //     ),
-                                            //   ),
-                                            //   onPressed: () {
-                                            //     // Menu action
-                                            //   },
-                                            // )
+                                            //       color: Colors.black),
+                                            // ),
                                           ],
                                         ),
-
-                                        SizedBox(height: 8),
-
-                                        // Account Number with Masking
-                                        Text(
-                                          'A/C No: ${profileprovider.clientAllDetails!.bankData![index].bankAcNo}',
-                                          style: const TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black87),
-                                        ),
-
-                                        SizedBox(height: 12),
-
-                                        // IFSC Code and Branch in a Row
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                       
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const Text(
-                                                  'IFSC CODE',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black54,
-                                                  ),
-                                                ),
-                                                SizedBox(height: 2),
-                                                Text(
-                                                  "${profileprovider.clientAllDetails!.bankData![index].iFSCCode}",
-                                                  style: TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.black),
-                                                ),
-                                              ],
-                                            ),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'A/C Type',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black54,
-                                                  ),
-                                                ),
-                                                SizedBox(height: 2),
-                                                Text(
-                                                  '${profileprovider.clientAllDetails!.bankData![index].bANKACCTYPE}', // Static for now, replace dynamically if needed
-                                                  style: TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.black),
-                                                ),
-                                              ],
-                                            ),
+                                            TextWidget.paraText(text:'A/C Type',theme: theme.isDarkMode),
+                                            // Text(
+                                            //   'A/C Type',
+                                            //   style: TextStyle(
+                                            //     fontSize: 12,
+                                            //     fontWeight: FontWeight.w500,
+                                            //     color: Colors.black54,
+                                            //   ),
+                                            // ),
+                                            // SizedBox(height: 2),
+                                             SizedBox(height: 8),
+                                            TextWidget.titleText(text:'${profileprovider.clientAllDetails!.bankData![index].bANKACCTYPE}',theme: theme.isDarkMode,fw:1),
+                                            // Text(
+                                            //   '${profileprovider.clientAllDetails!.bankData![index].bANKACCTYPE}', // Static for now, replace dynamically if needed
+                                            //   style: TextStyle(
+                                            //       fontSize: 15,
+                                            //       color: Colors.black),
+                                            // ),
                                           ],
                                         ),
                                       ],
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 15),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () async {
-                                    profileprovider.clearProfilePop(
-                                        context, 'bankifsc');
-                                        
-                                            await context.read(fundProvider).fetchHstoken(context);
-                                              Navigator.pushNamed(context, Routes.profileWebViewApp,
-                                                  arguments: "bank");
-                                         
-                                    // showModalBottomSheet(
-                                    //   context: context,
-                                    //   isDismissible: false,
-                                    //   enableDrag: false,
-                                    //   isScrollControlled: true,
-                                    //   shape: RoundedRectangleBorder(
-                                    //     borderRadius: BorderRadius.vertical(
-                                    //         top: Radius.circular(20.0)),
-                                    //   ),
-                                    //   builder: (context) {
-                                    //     return Consumer(
-                                    //       builder: (context, watch, _) {
-                                    //         // final selectedbankchin =
-                                    //         //     watch(selectedbankchipprovi);
-                                    //         // final popproprv = watch(profileProvider);
-
-                                    //         // final selectedDropdownValue =
-                                    //         //     watch(dropdownProvider).state;
-                                    //         // final isActive =
-                                    //         //     watch(radioButtonProvider).state;
-                                    //         return Container(
-                                    //           padding: EdgeInsets.all(16),
-                                    //           child: Column(
-                                    //             crossAxisAlignment:
-                                    //                 CrossAxisAlignment.start,
-                                    //             children: [
-                                    //               SizedBox(height: 40),
-
-                                    //               const Text(
-                                    //                 '  Bank change request  ',
-                                    //                 style: TextStyle(
-                                    //                     fontSize: 20,
-                                    //                     fontWeight:
-                                    //                         FontWeight.bold),
-                                    //               ),
-                                    //               SizedBox(height: 20),
-                                    //               Row(
-                                    //                 children: [
-                                    //                   Wrap(
-                                    //                     spacing:
-                                    //                         10, // Horizontal space between chips
-                                    //                     runSpacing:
-                                    //                         10, // Vertical space between chips
-                                    //                     children: List.generate(
-                                    //                         bankchip.length,
-                                    //                         (index) {
-                                    //                       return ChoiceChip(
-                                    //                         label: Text(
-                                    //                             bankchip[
-                                    //                                 index]),
-                                    //                         selected: true,
-                                    //                         // selectedbankchin ==
-                                    //                         //     index,
-                                    //                         onSelected:
-                                    //                             (isSelected) {
-                                    //                           // context
-                                    //                           //     .read(
-                                    //                           //         selectedbankchipprovi
-                                    //                           //             .notifier)
-                                    //                           //     .selectedchipba(
-                                    //                           //         isSelected
-                                    //                           //             ? index
-                                    //                           //             : -1);
-                                    //                         },
-                                    //                         selectedColor: Colors
-                                    //                             .black, // Selected background color
-                                    //                         backgroundColor: Colors
-                                    //                                 .grey[
-                                    //                             300], // Unselected background color
-                                    //                         labelStyle:
-                                    //                             TextStyle(
-                                    //                           color: true
-                                    //                               // selectedbankchin ==
-                                    //                               //         index
-                                    //                               ? Colors.white
-                                    //                               : Colors
-                                    //                                   .black,
-                                    //                         ),
-                                    //                       );
-                                    //                     }),
-                                    //                   ),
-                                    //                 ],
-                                    //               ),
-                                    //               SizedBox(height: 15),
-                                    //               Text(" Bank A/C No *",
-                                    //                   style: textStyle(
-                                    //                       const Color.fromARGB(
-                                    //                           255, 0, 0, 0),
-                                    //                       15,
-                                    //                       FontWeight.w600)),
-                                    //               TextFormField(
-                                    //                 controller: profileprovider
-                                    //                     .newBankAccController,
-                                    //                 onChanged: (value) {
-                                    //                   // context
-                                    //                   //         .read(bankifscprov)
-                                    //                   //         .state =
-                                    //                   //     value; // Update state
-                                    //                 },
-                                    //                 decoration:
-                                    //                     const InputDecoration(
-                                    //                   hintText:
-                                    //                       'Enter Bank A/C no',
-                                    //                   border:
-                                    //                       UnderlineInputBorder(),
-                                    //                 ),
-                                    //               ),
-
-                                    //               SizedBox(height: 20),
-                                    //               Text("IFSC Code *",
-                                    //                   style: textStyle(
-                                    //                       const Color.fromARGB(
-                                    //                           255, 0, 0, 0),
-                                    //                       15,
-                                    //                       FontWeight.w600)),
-                                    //               TextFormField(
-                                    //                 controller: profileprovider
-                                    //                     .newBankIFSCController,
-                                    //                 onChanged: (value) {
-                                    //                   // context
-                                    //                   //     .read(
-                                    //                   //         bankaccnoprov.notifier)
-                                    //                   //     .state = value;
-
-                                    //                   // String bankisfctext = context
-                                    //                   //     .read(newaddprov.notifier)
-                                    //                   //     .state;
-
-                                    //                   profileprovider
-                                    //                       .ifscapiporov(value);
-                                    //                 },
-                                    //                 decoration:
-                                    //                     const InputDecoration(
-                                    //                   hintText:
-                                    //                       'Enter  IFSC  code',
-                                    //                   border:
-                                    //                       UnderlineInputBorder(),
-                                    //                 ),
-                                    //               ),
-
-                                    //               SizedBox(height: 5),
-                                    //               Text(
-                                    //                   "${profileprovider.ifsccoderess}"),
-
-                                    //               SizedBox(height: 0),
-                                    //               Text("Proof Type *",
-                                    //                   style: textStyle(
-                                    //                       const Color.fromARGB(
-                                    //                           255, 0, 0, 0),
-                                    //                       15,
-                                    //                       FontWeight.w600)),
-                                    //               Padding(
-                                    //                 padding: const EdgeInsets
-                                    //                     .symmetric(
-                                    //                     vertical: 15.0),
-                                    //                 child:
-                                    //                     DropdownButtonFormField<
-                                    //                         String>(
-                                    //                   value: profileprovider
-                                    //                       .selectedBankProofTypeValue,
-                                    //                   hint: const Text(
-                                    //                       "Select Bank Proof"),
-                                    //                   items: [
-                                    //                     "Passbook",
-                                    //                     "Latest Statement",
-                                    //                     "Cancelled Cheque",
-                                    //                   ].map((String value) {
-                                    //                     return DropdownMenuItem<
-                                    //                         String>(
-                                    //                       value: value,
-                                    //                       child: Text(value),
-                                    //                     );
-                                    //                   }).toList(),
-                                    //                   onChanged: (newValue) {
-                                    //                     // Use context.read instead of watch to update the state
-                                    //                     // context
-                                    //                     //         .read(dropdownProvider
-                                    //                     //             .notifier)
-                                    //                     //         .state =
-                                    //                     //     newValue; // Correct way to update state
-                                    //                   },
-                                    //                   decoration:
-                                    //                       const InputDecoration(
-                                    //                     border:
-                                    //                         UnderlineInputBorder(
-                                    //                       // Only bottom border
-                                    //                       borderSide: BorderSide(
-                                    //                           color: Colors
-                                    //                               .black), // Customize the color if needed
-                                    //                     ),
-                                    //                   ),
-                                    //                 ),
-                                    //               ),
-
-                                    //               ElevatedButton(
-                                    //                 child: Text('UPLOAD FILE'),
-                                    //                 onPressed: () async {
-                                    //                   var picked =
-                                    //                       await FilePicker
-                                    //                           .platform
-                                    //                           .pickFiles();
-
-                                    //                   if (picked != null &&
-                                    //                       picked.files.first
-                                    //                               .path !=
-                                    //                           null) {
-                                    //                     String filePath = picked
-                                    //                         .files.first.path!;
-                                    //                     String fileName = picked
-                                    //                         .files.first.name;
-
-                                    //                     print(
-                                    //                         "Selected File: $fileName");
-                                    //                     print(
-                                    //                         "File Path: $filePath");
-
-                                    //                     // Store file path in provider
-                                    //                     // context
-                                    //                     //     .read(filePathProvider)
-                                    //                     //     .state = filePath;
-                                    //                   }
-
-                                    //                   Text("elseee");
-                                    //                 },
-                                    //                 style: ElevatedButton
-                                    //                     .styleFrom(
-                                    //                   elevation: 0,
-                                    //                   backgroundColor:
-                                    //                       colors.colorBlack,
-                                    //                   padding: const EdgeInsets
-                                    //                       .symmetric(
-                                    //                       vertical: 12,
-                                    //                       horizontal: 12),
-                                    //                   shape:
-                                    //                       RoundedRectangleBorder(
-                                    //                     borderRadius:
-                                    //                         BorderRadius
-                                    //                             .circular(25),
-                                    //                   ),
-                                    //                 ),
-                                    //               ),
-                                    //               Row(
-                                    //                 children: [
-                                    //                   Radio<bool>(
-                                    //                     value: false,
-                                    //                     groupValue: profileprovider
-                                    //                         .selectedBankTypeValue,
-                                    //                     onChanged: (value) {
-                                    //                       // Toggle the value between true and false
-                                    //                       // context
-                                    //                       //         .read(
-                                    //                       //             radioButtonProvider
-                                    //                       //                 .notifier)
-                                    //                       //         .state =
-                                    //                       //     !isActive; // Toggle state on each click
-                                    //                     },
-                                    //                     activeColor:
-                                    //                         Colors.black,
-                                    //                   ),
-                                    //                   const Text(
-                                    //                       "Set As Primary"),
-                                    //                 ],
-                                    //               ),
-                                    //               const SizedBox(height: 20),
-                                    //               // Display current selection
-                                    //               // Text(
-                                    //               //   "Primary is: ${isActive ? 'True' : 'False'}",
-                                    //               //   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                                    //               // ),
-
-                                    //               // // Display Selected Dropdown Value
-                                    //               // Padding(
-                                    //               //   padding: const EdgeInsets.only(top: 10),
-                                    //               //   child: Text(
-                                    //               //     "Selected: $selectedDropdownValue",
-                                    //               //     style: textStyle(const Color(0xff000000), 16, FontWeight.w500),
-                                    //               //   ),
-                                    //               // ),
-
-                                    //               const Divider(
-                                    //                   color: Color(0xffDDDDDD)),
-                                    //               SizedBox(height: 30),
-                                    //               Row(
-                                    //                 children: [
-                                    //                   Expanded(
-                                    //                     flex:
-                                    //                         1, // Takes 50% width
-                                    //                     child: OutlinedButton(
-                                    //                       onPressed: () {
-                                    //                         Navigator.pop(
-                                    //                             context);
-                                    //                       },
-                                    //                       style: OutlinedButton
-                                    //                           .styleFrom(
-                                    //                         side: BorderSide(
-                                    //                             color: colors
-                                    //                                 .colorBlack), // Border color
-                                    //                         backgroundColor: Colors
-                                    //                             .white, // Background color
-                                    //                         padding:
-                                    //                             const EdgeInsets
-                                    //                                 .symmetric(
-                                    //                                 vertical:
-                                    //                                     12,
-                                    //                                 horizontal:
-                                    //                                     12),
-                                    //                         shape:
-                                    //                             RoundedRectangleBorder(
-                                    //                           borderRadius:
-                                    //                               BorderRadius
-                                    //                                   .circular(
-                                    //                                       25),
-                                    //                         ),
-                                    //                       ),
-                                    //                       child: Text(
-                                    //                         'Close',
-                                    //                         style: TextStyle(
-                                    //                             color: colors
-                                    //                                 .colorBlack), // Text color
-                                    //                       ),
-                                    //                     ),
-                                    //                   ),
-
-                                    //                   SizedBox(
-                                    //                       width:
-                                    //                           10), // Adds spacing between buttons
-                                    //                   Expanded(
-                                    //                     flex:
-                                    //                         1, // Takes 50% width
-                                    //                     child: ElevatedButton(
-                                    //                       onPressed: () {
-                                    //                         // String bankisfctext =
-                                    //                         //     context
-                                    //                         //         .read(
-                                    //                         //             bankifscprov)
-                                    //                         //         .state;
-                                    //                         // String bankacctext =
-                                    //                         //     context
-                                    //                         //         .read(
-                                    //                         //             bankaccnoprov)
-                                    //                         //         .state;
-
-                                    //                         // String filePath = context
-                                    //                         //     .read(
-                                    //                         //         filePathProvider)
-                                    //                         //     .state;
-
-                                    //                         // if (filePath.isEmpty) {
-                                    //                         //   ScaffoldMessenger.of(
-                                    //                         //           context)
-                                    //                         //       .showSnackBar(
-                                    //                         //     SnackBar(
-                                    //                         //         content: Text(
-                                    //                         //             "Please select a file first!")),
-                                    //                         //   );
-                                    //                         //   return;
-                                    //                         // }
-                                    //                         // String
-                                    //                         //     finalDropdownValue =
-                                    //                         //     selectedDropdownValue ??
-                                    //                         //         'Default Value';
-                                    //                         // String isActiveString =
-                                    //                         //     isActive
-                                    //                         //         ? 'True'
-                                    //                         //         : 'False';
-                                    //                         // profileprovider
-                                    //                         //     .addbankprovui(
-                                    //                         //   bankisfctext,
-                                    //                         //   bankacctext,
-                                    //                         //   filePath,
-                                    //                         //   finalDropdownValue,
-                                    //                         //   isActiveString,
-                                    //                         //   bankchip[
-                                    //                         //       selectedbankchin],
-                                    //                         //   (profileprovider.clientAllDetails
-                                    //                         //       .clientData),
-                                    //                         //   jsonEncode(profileprovider.clientAllDetails
-                                    //                         //           .bankData ??
-                                    //                         //       []),
-                                    //                         // );
-                                    //                       },
-                                    //                       style: ElevatedButton
-                                    //                           .styleFrom(
-                                    //                         elevation: 0,
-                                    //                         backgroundColor:
-                                    //                             colors
-                                    //                                 .colorBlack,
-                                    //                         padding:
-                                    //                             const EdgeInsets
-                                    //                                 .symmetric(
-                                    //                                 vertical:
-                                    //                                     12,
-                                    //                                 horizontal:
-                                    //                                     12),
-                                    //                         shape:
-                                    //                             RoundedRectangleBorder(
-                                    //                           borderRadius:
-                                    //                               BorderRadius
-                                    //                                   .circular(
-                                    //                                       25),
-                                    //                         ),
-                                    //                       ),
-                                    //                       child: Text('Submit'),
-                                    //                     ),
-                                    //                   ),
-                                    //                 ],
-                                    //               ),
-                                    //             ],
-                                    //           ),
-                                    //         );
-                                    //       },
-                                    //     );
-                                    //   },
-                                    // );
-                                 
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    elevation: 0,
-                                    backgroundColor: colors.colorBlack,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 13),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                  ),
-                                  child: Text("Add Bank Account",
-                                      style: textStyles.btnText),
+                                  ],
                                 ),
                               ),
-                            ),
-                            SizedBox(height: 17),
-                            Text(
-                              "*As per the regulation, you can have upto 3 bank a/c linked to trading a/c",
-                              style: textStyle(
-                                  const Color(0xff666666), 12, FontWeight.w400),
-                            ),
-                          ],
+                            );
+                          },
                         ),
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 15),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                profileprovider.clearProfilePop(
+                                    context, 'bankifsc');
+                                    
+                                        await context.read(fundProvider).fetchHstoken(context);
+                                          Navigator.pushNamed(context, Routes.profileWebViewApp,
+                                              arguments: "bank");
+                                     
+                                // showModalBottomSheet(
+                                //   context: context,
+                                //   isDismissible: false,
+                                //   enableDrag: false,
+                                //   isScrollControlled: true,
+                                //   shape: RoundedRectangleBorder(
+                                //     borderRadius: BorderRadius.vertical(
+                                //         top: Radius.circular(20.0)),
+                                //   ),
+                                //   builder: (context) {
+                                //     return Consumer(
+                                //       builder: (context, watch, _) {
+                                //         // final selectedbankchin =
+                                //         //     watch(selectedbankchipprovi);
+                                //         // final popproprv = watch(profileProvider);
+                    
+                                //         // final selectedDropdownValue =
+                                //         //     watch(dropdownProvider).state;
+                                //         // final isActive =
+                                //         //     watch(radioButtonProvider).state;
+                                //         return Container(
+                                //           padding: EdgeInsets.all(16),
+                                //           child: Column(
+                                //             crossAxisAlignment:
+                                //                 CrossAxisAlignment.start,
+                                //             children: [
+                                //               SizedBox(height: 40),
+                    
+                                //               const Text(
+                                //                 '  Bank change request  ',
+                                //                 style: TextStyle(
+                                //                     fontSize: 20,
+                                //                     fontWeight:
+                                //                         FontWeight.bold),
+                                //               ),
+                                //               SizedBox(height: 20),
+                                //               Row(
+                                //                 children: [
+                                //                   Wrap(
+                                //                     spacing:
+                                //                         10, // Horizontal space between chips
+                                //                     runSpacing:
+                                //                         10, // Vertical space between chips
+                                //                     children: List.generate(
+                                //                         bankchip.length,
+                                //                         (index) {
+                                //                       return ChoiceChip(
+                                //                         label: Text(
+                                //                             bankchip[
+                                //                                 index]),
+                                //                         selected: true,
+                                //                         // selectedbankchin ==
+                                //                         //     index,
+                                //                         onSelected:
+                                //                             (isSelected) {
+                                //                           // context
+                                //                           //     .read(
+                                //                           //         selectedbankchipprovi
+                                //                           //             .notifier)
+                                //                           //     .selectedchipba(
+                                //                           //         isSelected
+                                //                           //             ? index
+                                //                           //             : -1);
+                                //                         },
+                                //                         selectedColor: Colors
+                                //                             .black, // Selected background color
+                                //                         backgroundColor: Colors
+                                //                                 .grey[
+                                //                             300], // Unselected background color
+                                //                         labelStyle:
+                                //                             TextStyle(
+                                //                           color: true
+                                //                               // selectedbankchin ==
+                                //                               //         index
+                                //                               ? Colors.white
+                                //                               : Colors
+                                //                                   .black,
+                                //                         ),
+                                //                       );
+                                //                     }),
+                                //                   ),
+                                //                 ],
+                                //               ),
+                                //               SizedBox(height: 15),
+                                //               Text(" Bank A/C No *",
+                                //                   style: textStyle(
+                                //                       const Color.fromARGB(
+                                //                           255, 0, 0, 0),
+                                //                       15,
+                                //                       FontWeight.w600)),
+                                //               TextFormField(
+                                //                 controller: profileprovider
+                                //                     .newBankAccController,
+                                //                 onChanged: (value) {
+                                //                   // context
+                                //                   //         .read(bankifscprov)
+                                //                   //         .state =
+                                //                   //     value; // Update state
+                                //                 },
+                                //                 decoration:
+                                //                     const InputDecoration(
+                                //                   hintText:
+                                //                       'Enter Bank A/C no',
+                                //                   border:
+                                //                       UnderlineInputBorder(),
+                                //                 ),
+                                //               ),
+                    
+                                //               SizedBox(height: 20),
+                                //               Text("IFSC Code *",
+                                //                   style: textStyle(
+                                //                       const Color.fromARGB(
+                                //                           255, 0, 0, 0),
+                                //                       15,
+                                //                       FontWeight.w600)),
+                                //               TextFormField(
+                                //                 controller: profileprovider
+                                //                     .newBankIFSCController,
+                                //                 onChanged: (value) {
+                                //                   // context
+                                //                   //     .read(
+                                //                   //         bankaccnoprov.notifier)
+                                //                   //     .state = value;
+                    
+                                //                   // String bankisfctext = context
+                                //                   //     .read(newaddprov.notifier)
+                                //                   //     .state;
+                    
+                                //                   profileprovider
+                                //                       .ifscapiporov(value);
+                                //                 },
+                                //                 decoration:
+                                //                     const InputDecoration(
+                                //                   hintText:
+                                //                       'Enter  IFSC  code',
+                                //                   border:
+                                //                       UnderlineInputBorder(),
+                                //                 ),
+                                //               ),
+                    
+                                //               SizedBox(height: 5),
+                                //               Text(
+                                //                   "${profileprovider.ifsccoderess}"),
+                    
+                                //               SizedBox(height: 0),
+                                //               Text("Proof Type *",
+                                //                   style: textStyle(
+                                //                       const Color.fromARGB(
+                                //                           255, 0, 0, 0),
+                                //                       15,
+                                //                       FontWeight.w600)),
+                                //               Padding(
+                                //                 padding: const EdgeInsets
+                                //                     .symmetric(
+                                //                     vertical: 15.0),
+                                //                 child:
+                                //                     DropdownButtonFormField<
+                                //                         String>(
+                                //                   value: profileprovider
+                                //                       .selectedBankProofTypeValue,
+                                //                   hint: const Text(
+                                //                       "Select Bank Proof"),
+                                //                   items: [
+                                //                     "Passbook",
+                                //                     "Latest Statement",
+                                //                     "Cancelled Cheque",
+                                //                   ].map((String value) {
+                                //                     return DropdownMenuItem<
+                                //                         String>(
+                                //                       value: value,
+                                //                       child: Text(value),
+                                //                     );
+                                //                   }).toList(),
+                                //                   onChanged: (newValue) {
+                                //                     // Use context.read instead of watch to update the state
+                                //                     // context
+                                //                     //         .read(dropdownProvider
+                                //                     //             .notifier)
+                                //                     //         .state =
+                                //                     //     newValue; // Correct way to update state
+                                //                   },
+                                //                   decoration:
+                                //                       const InputDecoration(
+                                //                     border:
+                                //                         UnderlineInputBorder(
+                                //                       // Only bottom border
+                                //                       borderSide: BorderSide(
+                                //                           color: Colors
+                                //                               .black), // Customize the color if needed
+                                //                     ),
+                                //                   ),
+                                //                 ),
+                                //               ),
+                    
+                                //               ElevatedButton(
+                                //                 child: Text('UPLOAD FILE'),
+                                //                 onPressed: () async {
+                                //                   var picked =
+                                //                       await FilePicker
+                                //                           .platform
+                                //                           .pickFiles();
+                    
+                                //                   if (picked != null &&
+                                //                       picked.files.first
+                                //                               .path !=
+                                //                           null) {
+                                //                     String filePath = picked
+                                //                         .files.first.path!;
+                                //                     String fileName = picked
+                                //                         .files.first.name;
+                    
+                                //                     print(
+                                //                         "Selected File: $fileName");
+                                //                     print(
+                                //                         "File Path: $filePath");
+                    
+                                //                     // Store file path in provider
+                                //                     // context
+                                //                     //     .read(filePathProvider)
+                                //                     //     .state = filePath;
+                                //                   }
+                    
+                                //                   Text("elseee");
+                                //                 },
+                                //                 style: ElevatedButton
+                                //                     .styleFrom(
+                                //                   elevation: 0,
+                                //                   backgroundColor:
+                                //                       colors.colorBlack,
+                                //                   padding: const EdgeInsets
+                                //                       .symmetric(
+                                //                       vertical: 12,
+                                //                       horizontal: 12),
+                                //                   shape:
+                                //                       RoundedRectangleBorder(
+                                //                     borderRadius:
+                                //                         BorderRadius
+                                //                             .circular(25),
+                                //                   ),
+                                //                 ),
+                                //               ),
+                                //               Row(
+                                //                 children: [
+                                //                   Radio<bool>(
+                                //                     value: false,
+                                //                     groupValue: profileprovider
+                                //                         .selectedBankTypeValue,
+                                //                     onChanged: (value) {
+                                //                       // Toggle the value between true and false
+                                //                       // context
+                                //                       //         .read(
+                                //                       //             radioButtonProvider
+                                //                       //                 .notifier)
+                                //                       //         .state =
+                                //                       //     !isActive; // Toggle state on each click
+                                //                     },
+                                //                     activeColor:
+                                //                         Colors.black,
+                                //                   ),
+                                //                   const Text(
+                                //                       "Set As Primary"),
+                                //                 ],
+                                //               ),
+                                //               const SizedBox(height: 20),
+                                //               // Display current selection
+                                //               // Text(
+                                //               //   "Primary is: ${isActive ? 'True' : 'False'}",
+                                //               //   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                //               // ),
+                    
+                                //               // // Display Selected Dropdown Value
+                                //               // Padding(
+                                //               //   padding: const EdgeInsets.only(top: 10),
+                                //               //   child: Text(
+                                //               //     "Selected: $selectedDropdownValue",
+                                //               //     style: textStyle(const Color(0xff000000), 16, FontWeight.w500),
+                                //               //   ),
+                                //               // ),
+                    
+                                //               const Divider(
+                                //                   color: Color(0xffDDDDDD)),
+                                //               SizedBox(height: 30),
+                                //               Row(
+                                //                 children: [
+                                //                   Expanded(
+                                //                     flex:
+                                //                         1, // Takes 50% width
+                                //                     child: OutlinedButton(
+                                //                       onPressed: () {
+                                //                         Navigator.pop(
+                                //                             context);
+                                //                       },
+                                //                       style: OutlinedButton
+                                //                           .styleFrom(
+                                //                         side: BorderSide(
+                                //                             color: colors
+                                //                                 .colorBlack), // Border color
+                                //                         backgroundColor: Colors
+                                //                             .white, // Background color
+                                //                         padding:
+                                //                             const EdgeInsets
+                                //                                 .symmetric(
+                                //                                 vertical:
+                                //                                     12,
+                                //                                 horizontal:
+                                //                                     12),
+                                //                         shape:
+                                //                             RoundedRectangleBorder(
+                                //                           borderRadius:
+                                //                               BorderRadius
+                                //                                   .circular(
+                                //                                       25),
+                                //                         ),
+                                //                       ),
+                                //                       child: Text(
+                                //                         'Close',
+                                //                         style: TextStyle(
+                                //                             color: colors
+                                //                                 .colorBlack), // Text color
+                                //                       ),
+                                //                     ),
+                                //                   ),
+                    
+                                //                   SizedBox(
+                                //                       width:
+                                //                           10), // Adds spacing between buttons
+                                //                   Expanded(
+                                //                     flex:
+                                //                         1, // Takes 50% width
+                                //                     child: ElevatedButton(
+                                //                       onPressed: () {
+                                //                         // String bankisfctext =
+                                //                         //     context
+                                //                         //         .read(
+                                //                         //             bankifscprov)
+                                //                         //         .state;
+                                //                         // String bankacctext =
+                                //                         //     context
+                                //                         //         .read(
+                                //                         //             bankaccnoprov)
+                                //                         //         .state;
+                    
+                                //                         // String filePath = context
+                                //                         //     .read(
+                                //                         //         filePathProvider)
+                                //                         //     .state;
+                    
+                                //                         // if (filePath.isEmpty) {
+                                //                         //   ScaffoldMessenger.of(
+                                //                         //           context)
+                                //                         //       .showSnackBar(
+                                //                         //     SnackBar(
+                                //                         //         content: Text(
+                                //                         //             "Please select a file first!")),
+                                //                         //   );
+                                //                         //   return;
+                                //                         // }
+                                //                         // String
+                                //                         //     finalDropdownValue =
+                                //                         //     selectedDropdownValue ??
+                                //                         //         'Default Value';
+                                //                         // String isActiveString =
+                                //                         //     isActive
+                                //                         //         ? 'True'
+                                //                         //         : 'False';
+                                //                         // profileprovider
+                                //                         //     .addbankprovui(
+                                //                         //   bankisfctext,
+                                //                         //   bankacctext,
+                                //                         //   filePath,
+                                //                         //   finalDropdownValue,
+                                //                         //   isActiveString,
+                                //                         //   bankchip[
+                                //                         //       selectedbankchin],
+                                //                         //   (profileprovider.clientAllDetails
+                                //                         //       .clientData),
+                                //                         //   jsonEncode(profileprovider.clientAllDetails
+                                //                         //           .bankData ??
+                                //                         //       []),
+                                //                         // );
+                                //                       },
+                                //                       style: ElevatedButton
+                                //                           .styleFrom(
+                                //                         elevation: 0,
+                                //                         backgroundColor:
+                                //                             colors
+                                //                                 .colorBlack,
+                                //                         padding:
+                                //                             const EdgeInsets
+                                //                                 .symmetric(
+                                //                                 vertical:
+                                //                                     12,
+                                //                                 horizontal:
+                                //                                     12),
+                                //                         shape:
+                                //                             RoundedRectangleBorder(
+                                //                           borderRadius:
+                                //                               BorderRadius
+                                //                                   .circular(
+                                //                                       25),
+                                //                         ),
+                                //                       ),
+                                //                       child: Text('Submit'),
+                                //                     ),
+                                //                   ),
+                                //                 ],
+                                //               ),
+                                //             ],
+                                //           ),
+                                //         );
+                                //       },
+                                //     );
+                                //   },
+                                // );
+                             
+                              },
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 13),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                              ),
+                              child:  TextWidget.subText(text:"Add Bank Account",theme: !theme.isDarkMode, fw: 1),
+                              
+                              
+                              // Text("Add Bank Account",
+                              //     style: textStyles.btnText),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                          TextWidget.paraText(text: "*As per the regulation, you can have upto 5 bank a/c linked to trading a/c",theme: theme.isDarkMode),
+                        // Text(
+                        //   "*As per the regulation, you can have upto 5 bank a/c linked to trading a/c",
+                        //   style: textStyle(
+                        //       const Color(0xff666666), 12, FontWeight.w400),
+                        // ),
+                      ],
                     ),
                   ),
                
@@ -1504,33 +1524,6 @@ void _submit() {
     );
   }
 
-  Widget buildSection(List segmentsData, String sectionTitle,
-      List validCompanyCodes, ThemesProvider theme) {
-    final sectionData = segmentsData
-        .where((segment) => validCompanyCodes.contains(segment['COMPANY_CODE']))
-        .toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        headerText(sectionTitle, theme),
-        const SizedBox(height: 5),
-        ...sectionData.map((segment) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              valueText(segment['COMPANY_CODE'] ?? 'N/A'),
-              valueText(segment['ACTIVE_INACTIVE'] == "A"
-                  ? 'ACTIVE'
-                  : segment['Exchange_ACTIVE_INACTIVE']),
-              valueText(segment['REGISTRATION_DATE'] ?? 'N/A'),
-              const SizedBox(height: 8),
-            ],
-          );
-        }).toList(),
-      ],
-    );
-  }
 
 //  Widget buildBottomSheetSection(ThemesProvider theme) {
 //                            return  showModalBottomSheet(

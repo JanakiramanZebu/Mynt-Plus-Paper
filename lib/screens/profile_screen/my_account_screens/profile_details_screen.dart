@@ -7,6 +7,7 @@ import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import '../../../res/res.dart';
@@ -66,7 +67,6 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
           "Support & Service Issues",
           "Personal Reasons",
 
-
           // 'High brokerage and charges',
           // 'Annual maintenance charges',
           // 'Faced losses',
@@ -119,24 +119,37 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                   children: [
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                                "UCC : ${profileprovider.clientAllDetails.clientData!.cLIENTID}",
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w500)),
-                            SizedBox(
-                              height: 5,
+                            TextWidget.subText(
+                                text:
+                                    "UCC : ${profileprovider.clientAllDetails.clientData!.cLIENTID}",
+                                theme: theme.isDarkMode,
+                                fw: 1),
+                            // Text(
+                            //     "UCC : ${profileprovider.clientAllDetails.clientData!.cLIENTID}",
+                            //     style: TextStyle(
+                            //         fontSize: 14, fontWeight: FontWeight.w500)),
+                            const SizedBox(
+                              height: 8,
                             ),
-                            Text(
-                                profileprovider
+                            TextWidget.titleText(
+                                text: profileprovider
                                         .clientAllDetails.clientData?.panName ??
                                     "",
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w800)),
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                fw: 2),
+                            // Text(
+                            //     profileprovider
+                            //             .clientAllDetails.clientData?.panName ??
+                            //         "",
+                            //     overflow: TextOverflow.ellipsis,
+                            //     style: TextStyle(
+                            //         fontSize: 16, fontWeight: FontWeight.w800)),
                           ],
                         ),
                       ),
@@ -144,26 +157,37 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: CircleAvatar(
-                              minRadius: 30,
-                              backgroundColor:
-                                  const Color(0xffF1F3F8),
-                              child: Text(profileprovider.clientAllDetails.clientData?.panName!=null
-                                                    ? '${profileprovider.clientAllDetails.clientData?.panName![0]}'
-                                                    : "",style: textStyle(theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack, 24, FontWeight.w600),)
-                      ,
-                            ),
+                        minRadius: 30,
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorbluegrey
+                            : const Color(0xffF1F3F8),
+                        child: TextWidget.custmText(
+                            text: profileprovider
+                                        .clientAllDetails.clientData?.panName !=
+                                    null
+                                ? '${profileprovider.clientAllDetails.clientData?.panName![0]}'
+                                : "",
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fs: 24,
+                            fw: 1),
+
+                        // Text(profileprovider.clientAllDetails.clientData?.panName!=null
+                        //                       ? '${profileprovider.clientAllDetails.clientData?.panName![0]}'
+                        //                       : "",style: textStyle(theme.isDarkMode
+                        //   ? colors.colorWhite
+                        //   : colors.colorBlack, 24, FontWeight.w600),),
+                      ),
                     ),
                   ],
                 ),
-                SizedBox(height: 8),
+                // SizedBox(height: 8),
                 Divider(
                     thickness: 4,
                     color: theme.isDarkMode
                         ? colors.darkColorDivider
                         : colors.colorDivider),
-                SizedBox(height: 8),
+                // SizedBox(height: 8),
                 // Divider(
                 //   thickness: 0.5,
                 //   color: context.read(themeProvider).isDarkMode
@@ -171,109 +195,141 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                 //           : colors.colorBlack,),
                 UserInfoCard(
                   profileprovider: profileprovider,
+                  theme: theme,
                 ),
-                SizedBox(height: 8),
+                // SizedBox(height: 8),
                 Divider(
                     thickness: 4,
                     color: theme.isDarkMode
                         ? colors.darkColorDivider
                         : colors.colorDivider),
-                SizedBox(height: 8),
-                DematDetailsCard(profileprovider: profileprovider),
+                // SizedBox(height: 8),
+
                 // const Padding(
                 //   padding: EdgeInsets.symmetric(horizontal: 16.0),
                 //   child:
                 // ),
                 if (!DDPIActive && !POAActive)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 8,),
-                        const Text(
-                            "Do you want to sell your stocks without CDSL T-Pin",
-                            style: TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w400)),
-                                SizedBox(height: 8,),
-                        ElevatedButton(
-                          // style: ElevatedButton.styleFrom(
-                          //   // padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                          //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-                          //   backgroundColor: Colors.black,
-                          // ),
-                          onPressed: () async {
-                            await context.read(fundProvider).fetchHstoken(context);
-                            Navigator.pushNamed(
-                                context, Routes.profileWebViewApp,
-                                arguments: "deposltory");
-                          },
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            // minimumSize: Size(double.infinity, 30),
-                            backgroundColor:
-                                context.read(themeProvider).isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorWhite,
-                            shape:
-                                // MaterialStateProperty.all(RoundedRectangleBorder( borderRadius: BorderRadius.circular(40) ))
-                                RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(32),
+                        DematDetailsCard(
+                            profileprovider: profileprovider, theme: theme),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextWidget.paraText(
+                                text:
+                                    "Do you want to sell your stocks without CDSL T-Pin",
+                                theme: theme.isDarkMode,
+                                fw: 1),
+
+                            // Text(
+                            //     "Do you want to sell your stocks without CDSL T-Pin",
+                            //     style: TextStyle(
+                            //         fontSize: 12, fontWeight: FontWeight.w400)),
+                            ElevatedButton(
+                              // style: ElevatedButton.styleFrom(
+                              //   // padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                              //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                              //   backgroundColor: Colors.black,
+                              // ),
+                              onPressed: () async {
+                                await context
+                                    .read(fundProvider)
+                                    .fetchHstoken(context);
+                                Navigator.pushNamed(
+                                    context, Routes.profileWebViewApp,
+                                    arguments: "deposltory");
+                              },
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                // minimumSize: Size(double.infinity, 30),
+                                backgroundColor:
+                                    context.read(themeProvider).isDarkMode
+                                        ? colors.colorBlack
+                                        : colors.colorWhite,
+                                shape:
+                                    // MaterialStateProperty.all(RoundedRectangleBorder( borderRadius: BorderRadius.circular(40) ))
+                                    RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(32),
+                                ),
+                                side: BorderSide(
+                                  width: 1,
+                                  color: context.read(themeProvider).isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                ),
+                              ),
+                              child: TextWidget.subText(
+                                  text: "Activate DDPI",
+                                  theme: theme.isDarkMode,
+                                  fw: 1),
+
+                              // Text("Activate DDPI",
+                              //     style: textStyle(
+                              //         !context.read(themeProvider).isDarkMode
+                              //             ? colors.colorBlack
+                              //             : colors.colorWhite,
+                              //         14,
+                              //         FontWeight.w500)),
                             ),
-                            side: BorderSide(
-                              width: 1,
-                              color: context.read(themeProvider).isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                            ),
-                          ),
-                          child: Text("Activate DDPI",
-                              style: textStyle(
-                                  !context.read(themeProvider).isDarkMode
-                                      ? colors.colorBlack
-                                      : colors.colorWhite,
-                                  14,
-                                  FontWeight.w500)),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                const SizedBox(height: 8),
+                // const SizedBox(height: 8),
                 Divider(
                     thickness: 4,
                     color: theme.isDarkMode
                         ? colors.darkColorDivider
                         : colors.colorDivider),
-                const SizedBox(height: 8),
+                // const SizedBox(height: 8),
 
-                TradingPreferencesCard(profileprovider: profileprovider),
+                TradingPreferencesCard(
+                    profileprovider: profileprovider, theme: theme),
 
-                const SizedBox(height: 8),
+                // const SizedBox(height: 8),
                 Divider(
                     thickness: 4,
                     color: theme.isDarkMode
                         ? colors.darkColorDivider
                         : colors.colorDivider),
-                const SizedBox(height: 8),
+                // const SizedBox(height: 8),
 
                 // Nominee section
                 ExpansionPanelList(
                   elevation: 0,
+                  expandIconColor:
+                      !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   expansionCallback: (panelIndex, expanded) {
                     nomineeActive = !nomineeActive;
                     setState(() {});
                   },
                   children: [
                     ExpansionPanel(
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
                         headerBuilder: (context, isExpanded) {
-                          return const ListTile(
-                            title: Text("Nominee",
-                                style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w500)),
+                          return ListTile(
+                            title: TextWidget.titleText(
+                                text: "Nominee",
+                                theme: theme.isDarkMode,
+                                fw: 1),
+
+                            // Text("Nominee",
+                            //     style: TextStyle(
+                            //         fontSize: 15, fontWeight: FontWeight.w500)),
                           );
                         },
                         body: UserNomineeInfoCard(
                           profileprovider: profileprovider,
+                          theme: theme,
                         ),
                         isExpanded: nomineeActive,
                         canTapOnHeader: true),
@@ -282,6 +338,8 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
 
                 // Account Closure
                 ExpansionPanelList(
+                  expandIconColor:
+                      !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   elevation: 0,
                   expansionCallback: (panelIndex, expanded) {
                     active = !active;
@@ -289,11 +347,19 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                   },
                   children: [
                     ExpansionPanel(
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
                         headerBuilder: (context, isExpanded) {
-                          return const ListTile(
-                            title: const Text("Account Closure",
-                                style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w500)),
+                          return ListTile(
+                            title: TextWidget.titleText(
+                                text: "Account Closure",
+                                theme: theme.isDarkMode,
+                                fw: 1),
+
+                            // const Text("Account Closure",
+                            //     style: TextStyle(
+                            //         fontSize: 15, fontWeight: FontWeight.w500)),
                           );
                         },
                         body: Container(
@@ -313,13 +379,19 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                               if (profileprovider.chackaccbalace['stage'] ==
                                   null) ...{
                                 // SizedBox(height: 20),
-                                const Text(
-                                  "* Closing your account is a permanent and irreversible action",
-                                 // "What's causing you to step away?",
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400),
+                                TextWidget.subText(
+                                  text:
+                                      "* Closing your account is a permanent and irreversible action",
+                                  theme: theme.isDarkMode,
                                 ),
+
+                                // Text(
+                                //   "* Closing your account is a permanent and irreversible action",
+                                //  // "What's causing you to step away?",
+                                //   style: TextStyle(
+                                //       fontSize: 14,
+                                //       fontWeight: FontWeight.w400),
+                                // ),
                                 // SizedBox(height: 20),
 
                                 // DropdownButton<String>(
@@ -407,8 +479,11 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                                       flex: 1,
                                       child: ElevatedButton(
                                         onPressed: () async {
-                                           await context.read(fundProvider).fetchHstoken(context);
-                                           Navigator.pushNamed(context, Routes.profileWebViewApp,
+                                          await context
+                                              .read(fundProvider)
+                                              .fetchHstoken(context);
+                                          Navigator.pushNamed(
+                                              context, Routes.profileWebViewApp,
                                               arguments: "closure");
                                           // profileprovider.clearProfilePop(
                                           //     context, 'accclose');
@@ -422,7 +497,9 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                                         },
                                         style: ElevatedButton.styleFrom(
                                           elevation: 0,
-                                          backgroundColor: colors.colorBlack,
+                                          backgroundColor: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 12, horizontal: 12),
                                           shape: RoundedRectangleBorder(
@@ -430,7 +507,10 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                                                 BorderRadius.circular(25),
                                           ),
                                         ),
-                                        child: Text('Close Account'),
+                                        child: TextWidget.subText(
+                                            text: 'Close Account',
+                                            theme: !theme.isDarkMode,
+                                            fw: 1),
                                       ),
                                     ),
                                   ],
@@ -1417,25 +1497,31 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
 
 class UserInfoCard extends StatelessWidget {
   final ProfileProvider profileprovider;
+  final ThemesProvider theme;
 
-  const UserInfoCard({super.key, required this.profileprovider});
+  const UserInfoCard(
+      {super.key, required this.profileprovider, required this.theme});
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 0,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Personal Details",
-                    style:
-                        TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                TextWidget.titleText(
+                    text: "Personal Details", theme: theme.isDarkMode, fw: 1),
+
+                // const Text("Personal Details",
+                //     style:
+                //         TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
                 InkWell(
                   onTap: () async {
                     await context.read(fundProvider).fetchHstoken(context);
@@ -1454,7 +1540,7 @@ class UserInfoCard extends StatelessWidget {
             // const Text("Personal Details",
             //     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
             SizedBox(
-              height: 10,
+              height: 8,
             ),
             Row(
               children: [
@@ -1463,13 +1549,15 @@ class UserInfoCard extends StatelessWidget {
                         label: "PAN",
                         value: profileprovider
                                 .clientAllDetails.clientData?.pANNO ??
-                            "")),
+                            "",
+                        theme: theme)),
                 Flexible(
                   child: UserInfoColumn(
                       label: "Mobile",
                       value: profileprovider
                               .clientAllDetails.clientData?.mOBILENO ??
                           "",
+                      theme: theme,
                       editable: false),
                 ),
               ],
@@ -1479,18 +1567,22 @@ class UserInfoCard extends StatelessWidget {
                 value:
                     profileprovider.clientAllDetails.clientData?.cLIENTIDMAIL ??
                         "",
+                theme: theme,
                 editable: false),
             UserInfoColumn(
-                label: "Address",
-                value:
-                    "${profileprovider.clientAllDetails.clientData?.cLRESIADD1?.toLowerCase()}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD2?.toLowerCase()}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD3?.toLowerCase()}",
-                editable: false,
-                expandable: true,),
+              label: "Address",
+              value:
+                  "${profileprovider.clientAllDetails.clientData?.cLRESIADD1?.toLowerCase()}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD2?.toLowerCase()}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD3?.toLowerCase()}",
+              theme: theme,
+              editable: false,
+              expandable: true,
+            ),
             UserInfoColumn(
                 label: "Annual Income",
                 value:
                     profileprovider.clientAllDetails.clientData?.aNNUALINCOME ??
                         "",
+                theme: theme,
                 section: "annualincome",
                 editable: false)
           ],
@@ -1502,12 +1594,15 @@ class UserInfoCard extends StatelessWidget {
 
 class UserNomineeInfoCard extends StatelessWidget {
   final ProfileProvider profileprovider;
+  final ThemesProvider theme;
 
-  const UserNomineeInfoCard({super.key, required this.profileprovider});
+  const UserNomineeInfoCard(
+      {super.key, required this.profileprovider, required this.theme});
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 0,
       child: Padding(
@@ -1553,13 +1648,18 @@ class UserNomineeInfoCard extends StatelessWidget {
                               : colors.colorBlack,
                         ),
                       ),
-                      child: Text("Add Nominee",
-                          style: textStyle(
-                              !context.read(themeProvider).isDarkMode
-                                  ? colors.colorBlack
-                                  : colors.colorWhite,
-                              16,
-                              FontWeight.w500)),
+                      child: TextWidget.titleText(
+                        text: "Add Nominee",
+                        theme: theme.isDarkMode,
+                      ),
+
+                      // Text("Add Nominee",
+                      //     style: textStyle(
+                      //         !context.read(themeProvider).isDarkMode
+                      //             ? colors.colorBlack
+                      //             : colors.colorWhite,
+                      //         16,
+                      //         FontWeight.w500)),
                     ),
                   ],
                 ),
@@ -1571,9 +1671,14 @@ class UserNomineeInfoCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Nominee Details",
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                  TextWidget.titleText(
+                    text: "Nominee Details",
+                    theme: theme.isDarkMode,
+                  ),
+
+                  // const Text("Nominee Details",
+                  //     style:
+                  //         TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
                   InkWell(
                     onTap: () async {
                       await context.read(fundProvider).fetchHstoken(context);
@@ -1606,13 +1711,15 @@ class UserNomineeInfoCard extends StatelessWidget {
                               label: "Nominee Name",
                               value: profileprovider.clientAllDetails.clientData
                                       ?.nomineeName ??
-                                  "")),
+                                  "",
+                              theme: theme)),
                       Flexible(
                         child: UserInfoColumn(
                             label: "Nominee Relation",
                             value: profileprovider.clientAllDetails.clientData
                                     ?.nomineeRelation ??
                                 "",
+                            theme: theme,
                             editable: false),
                       ),
                     ],
@@ -1624,13 +1731,15 @@ class UserNomineeInfoCard extends StatelessWidget {
                               label: "Nominee DOB",
                               value: profileprovider.clientAllDetails.clientData
                                       ?.nomineeDOB ??
-                                  "")),
+                                  "",
+                              theme: theme)),
                       Flexible(
                         child: UserInfoColumn(
                             label: "Nominee Percentage",
                             value: profileprovider
                                     .clientAllDetails.clientData?.nomineeDOB ??
                                 "",
+                            theme: theme,
                             editable: false),
                       ),
                     ],
@@ -1667,7 +1776,10 @@ class UserNomineeInfoCard extends StatelessWidget {
 
 class DematDetailsCard extends StatelessWidget {
   final ProfileProvider profileprovider;
-  const DematDetailsCard({super.key, required this.profileprovider});
+  final ThemesProvider theme;
+
+  const DematDetailsCard(
+      {super.key, required this.profileprovider, required this.theme});
 
   @override
   Widget build(BuildContext context) {
@@ -1675,203 +1787,204 @@ class DematDetailsCard extends StatelessWidget {
     bool POAActive = profileprovider.clientAllDetails.clientData!.pOA == 'Y';
 
     return Card(
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 0,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // const Text("Demat (CDSL)",
-            //     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-            
-            
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Demat (CDSL)",
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                      Row(
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 3),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(2),
-                              color: context.read(themeProvider).isDarkMode
-                                  ? DDPIActive
-                                      ? const Color.fromARGB(255, 9, 163, 17)
-                                      : const Color(0xffF1F3F8)
-                                  : DDPIActive
-                                      ? Color.fromARGB(255, 9, 255, 0)
-                                          .withOpacity(.1)
-                                      : const Color(0xff666666).withOpacity(.1),
-                            ),
-                            child: Text("DDPI",
-                                overflow: TextOverflow.ellipsis,
-                                // maxLines: 1,
-                                style: textStyle(
-                                    context.read(themeProvider).isDarkMode
-                                        ? const Color(0xffFFFFFF)
-                                        : const Color(0xff666666),
-                                    10,
-                                    FontWeight.w500)),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 3),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(2),
-                              color: context.read(themeProvider).isDarkMode
-                                  ? POAActive
-                                      ? const Color.fromARGB(255, 9, 163, 17)
-                                      : const Color(0xffF1F3F8)
-                                  : POAActive
-                                      ? Color.fromARGB(255, 9, 255, 0)
-                                          .withOpacity(.1)
-                                      : const Color(0xff666666).withOpacity(.1),
-                            ),
-                            child: Text("POA",
-                                overflow: TextOverflow.ellipsis,
-                                // maxLines: 1,
-                                style: textStyle(
-                                    context.read(themeProvider).isDarkMode
-                                        ? const Color(0xffFFFFFF)
-                                        : const Color(0xff666666),
-                                    10,
-                                    FontWeight.w500)),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(
-              height: 10,
-            ),
-            Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // const Text("Demat (CDSL)",
+          //     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Flexible(
-                  child: UserInfoColumn(
-                      label: "DP ID",
-                      value: profileprovider
-                              .clientAllDetails.clientData?.cLIENTDPCODE!
-                              .substring(0, 8) ??
-                          ""),
-                ),
-                Flexible(
-                  child: UserInfoColumn(
-                      label: "BO ID",
-                      value: profileprovider
-                              .clientAllDetails.clientData?.cLIENTDPCODE!
-                              .substring(8) ??
-                          ""),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextWidget.titleText(
+                        text: "Demat (CDSL)", theme: theme.isDarkMode, fw: 1),
+                    // const Text("Demat (CDSL)",
+                    //         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                    Row(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: context.read(themeProvider).isDarkMode
+                                ? DDPIActive
+                                    ? const Color.fromARGB(255, 9, 163, 17)
+                                    : const Color(0xffF1F3F8)
+                                : DDPIActive
+                                    ? Color.fromARGB(255, 9, 255, 0)
+                                        .withOpacity(.1)
+                                    : const Color(0xff666666).withOpacity(.1),
+                          ),
+                          child: Text("DDPI",
+                              overflow: TextOverflow.ellipsis,
+                              // maxLines: 1,
+                              style: textStyle(
+                                  context.read(themeProvider).isDarkMode
+                                      ? const Color(0xffFFFFFF)
+                                      : const Color(0xff666666),
+                                  10,
+                                  FontWeight.w500)),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: context.read(themeProvider).isDarkMode
+                                ? POAActive
+                                    ? const Color.fromARGB(255, 9, 163, 17)
+                                    : const Color(0xffF1F3F8)
+                                : POAActive
+                                    ? Color.fromARGB(255, 9, 255, 0)
+                                        .withOpacity(.1)
+                                    : const Color(0xff666666).withOpacity(.1),
+                          ),
+                          child: Text("POA",
+                              overflow: TextOverflow.ellipsis,
+                              // maxLines: 1,
+                              style: textStyle(
+                                  context.read(themeProvider).isDarkMode
+                                      ? const Color(0xffFFFFFF)
+                                      : const Color(0xff666666),
+                                  10,
+                                  FontWeight.w500)),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(vertical: 10.0),
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       Row(
-            //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //         children: [
-            //           Text("DP Name".toUpperCase(),
-            //               style: const TextStyle(
-            //                   fontWeight: FontWeight.w400, fontSize: 12)),
-            //           Row(
-            //             children: [
-            //               Container(
-            //                 margin: const EdgeInsets.symmetric(horizontal: 4),
-            //                 padding: const EdgeInsets.symmetric(
-            //                     horizontal: 6, vertical: 3),
-            //                 decoration: BoxDecoration(
-            //                   borderRadius: BorderRadius.circular(2),
-            //                   color: context.read(themeProvider).isDarkMode
-            //                       ? DDPIActive
-            //                           ? const Color.fromARGB(255, 9, 163, 17)
-            //                           : const Color(0xffF1F3F8)
-            //                       : DDPIActive
-            //                           ? Color.fromARGB(255, 9, 255, 0)
-            //                               .withOpacity(.1)
-            //                           : const Color(0xff666666).withOpacity(.1),
-            //                 ),
-            //                 child: Text("DDPI",
-            //                     overflow: TextOverflow.ellipsis,
-            //                     // maxLines: 1,
-            //                     style: textStyle(
-            //                         context.read(themeProvider).isDarkMode
-            //                             ? const Color(0xffFFFFFF)
-            //                             : const Color(0xff666666),
-            //                         10,
-            //                         FontWeight.w500)),
-            //               ),
-            //               Container(
-            //                 margin: const EdgeInsets.symmetric(horizontal: 4),
-            //                 padding: const EdgeInsets.symmetric(
-            //                     horizontal: 6, vertical: 3),
-            //                 decoration: BoxDecoration(
-            //                   borderRadius: BorderRadius.circular(2),
-            //                   color: context.read(themeProvider).isDarkMode
-            //                       ? POAActive
-            //                           ? const Color.fromARGB(255, 9, 163, 17)
-            //                           : const Color(0xffF1F3F8)
-            //                       : POAActive
-            //                           ? Color.fromARGB(255, 9, 255, 0)
-            //                               .withOpacity(.1)
-            //                           : const Color(0xff666666).withOpacity(.1),
-            //                 ),
-            //                 child: Text("POA",
-            //                     overflow: TextOverflow.ellipsis,
-            //                     // maxLines: 1,
-            //                     style: textStyle(
-            //                         context.read(themeProvider).isDarkMode
-            //                             ? const Color(0xffFFFFFF)
-            //                             : const Color(0xff666666),
-            //                         10,
-            //                         FontWeight.w500)),
-            //               ),
-            //             ],
-            //           ),
-            //         ],
-            //       ),
-            //       TextFormField(
-            //         initialValue:
-            //             profileprovider.clientAllDetails.clientData?.dPNAME ??
-            //                 "",
-            //         readOnly: true,
-            //         decoration: const InputDecoration(
-            //           enabled: false,
-            //           isDense: true,
-            //         ),
-            //         style: TextStyle(
-            //           color: context.read(themeProvider).isDarkMode
-            //               ? colors.colorWhite
-            //               : colors.colorBlack,
-            //           fontSize: 15,
-            //           fontWeight: FontWeight.w600,
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            UserInfoColumn(
-                label: "DP Name",
-                value:
-                    profileprovider.clientAllDetails.clientData?.dPNAME ?? ""),
-          ],
-        ),
+          ),
+
+          // const SizedBox(
+          //   height: 10,
+          // ),
+          Row(
+            children: [
+              Flexible(
+                child: UserInfoColumn(
+                    label: "DP ID",
+                    value: profileprovider
+                            .clientAllDetails.clientData?.cLIENTDPCODE!
+                            .substring(0, 8) ??
+                        "",
+                    theme: theme),
+              ),
+              Flexible(
+                child: UserInfoColumn(
+                    label: "BO ID",
+                    value: profileprovider
+                            .clientAllDetails.clientData?.cLIENTDPCODE!
+                            .substring(8) ??
+                        "",
+                    theme: theme),
+              ),
+            ],
+          ),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(vertical: 10.0),
+          //   child: Column(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     children: [
+          //       Row(
+          //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //         children: [
+          //           Text("DP Name".toUpperCase(),
+          //               style: const TextStyle(
+          //                   fontWeight: FontWeight.w400, fontSize: 12)),
+          //           Row(
+          //             children: [
+          //               Container(
+          //                 margin: const EdgeInsets.symmetric(horizontal: 4),
+          //                 padding: const EdgeInsets.symmetric(
+          //                     horizontal: 6, vertical: 3),
+          //                 decoration: BoxDecoration(
+          //                   borderRadius: BorderRadius.circular(2),
+          //                   color: context.read(themeProvider).isDarkMode
+          //                       ? DDPIActive
+          //                           ? const Color.fromARGB(255, 9, 163, 17)
+          //                           : const Color(0xffF1F3F8)
+          //                       : DDPIActive
+          //                           ? Color.fromARGB(255, 9, 255, 0)
+          //                               .withOpacity(.1)
+          //                           : const Color(0xff666666).withOpacity(.1),
+          //                 ),
+          //                 child: Text("DDPI",
+          //                     overflow: TextOverflow.ellipsis,
+          //                     // maxLines: 1,
+          //                     style: textStyle(
+          //                         context.read(themeProvider).isDarkMode
+          //                             ? const Color(0xffFFFFFF)
+          //                             : const Color(0xff666666),
+          //                         10,
+          //                         FontWeight.w500)),
+          //               ),
+          //               Container(
+          //                 margin: const EdgeInsets.symmetric(horizontal: 4),
+          //                 padding: const EdgeInsets.symmetric(
+          //                     horizontal: 6, vertical: 3),
+          //                 decoration: BoxDecoration(
+          //                   borderRadius: BorderRadius.circular(2),
+          //                   color: context.read(themeProvider).isDarkMode
+          //                       ? POAActive
+          //                           ? const Color.fromARGB(255, 9, 163, 17)
+          //                           : const Color(0xffF1F3F8)
+          //                       : POAActive
+          //                           ? Color.fromARGB(255, 9, 255, 0)
+          //                               .withOpacity(.1)
+          //                           : const Color(0xff666666).withOpacity(.1),
+          //                 ),
+          //                 child: Text("POA",
+          //                     overflow: TextOverflow.ellipsis,
+          //                     // maxLines: 1,
+          //                     style: textStyle(
+          //                         context.read(themeProvider).isDarkMode
+          //                             ? const Color(0xffFFFFFF)
+          //                             : const Color(0xff666666),
+          //                         10,
+          //                         FontWeight.w500)),
+          //               ),
+          //             ],
+          //           ),
+          //         ],
+          //       ),
+          //       TextFormField(
+          //         initialValue:
+          //             profileprovider.clientAllDetails.clientData?.dPNAME ??
+          //                 "",
+          //         readOnly: true,
+          //         decoration: const InputDecoration(
+          //           enabled: false,
+          //           isDense: true,
+          //         ),
+          //         style: TextStyle(
+          //           color: context.read(themeProvider).isDarkMode
+          //               ? colors.colorWhite
+          //               : colors.colorBlack,
+          //           fontSize: 15,
+          //           fontWeight: FontWeight.w600,
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          UserInfoColumn(
+              label: "DP Name",
+              value: profileprovider.clientAllDetails.clientData?.dPNAME ?? "",
+              theme: theme),
+        ],
       ),
     );
   }
@@ -1883,24 +1996,32 @@ class DematDetailsCard extends StatelessWidget {
 
 class TradingPreferencesCard extends StatelessWidget {
   final ProfileProvider profileprovider;
-  const TradingPreferencesCard({super.key, required this.profileprovider});
+  final ThemesProvider theme;
+
+  const TradingPreferencesCard(
+      {super.key, required this.profileprovider, required this.theme});
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 0,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Trading Preferences",
-                    style:
-                        TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                TextWidget.titleText(
+                    text: "Trading Preferences",
+                    theme: theme.isDarkMode,
+                    fw: 1),
+                // const Text("Trading Preferences",
+                //     style:
+                //         TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
                 InkWell(
                   onTap: () async {
                     await context.read(fundProvider).fetchHstoken(context);
@@ -1916,7 +2037,7 @@ class TradingPreferencesCard extends StatelessWidget {
               ],
             ),
             const SizedBox(
-              height: 10,
+              height: 8,
             ),
             CustomTFExchBadge(
                 label: "Equities",
@@ -1950,6 +2071,7 @@ class TradingPreferencesCard extends StatelessWidget {
 }
 
 class UserInfoColumn extends StatelessWidget {
+  final ThemesProvider theme;
   final String section;
   final String label;
   final String value;
@@ -1957,6 +2079,7 @@ class UserInfoColumn extends StatelessWidget {
   final bool expandable;
   const UserInfoColumn(
       {super.key,
+      required this.theme,
       required this.label,
       required this.value,
       this.section = "profile",
@@ -1970,9 +2093,14 @@ class UserInfoColumn extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label.toUpperCase(),
-              style:
-                  const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
+          TextWidget.paraText(
+            text: label.toUpperCase(),
+            theme: theme.isDarkMode,
+          ),
+
+          // Text(label.toUpperCase(),
+          //     style:
+          //         const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
           // Text(value, softWrap: true, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
 
           TextFormField(
@@ -1984,13 +2112,13 @@ class UserInfoColumn extends StatelessWidget {
             // minLines:null,
             minLines: 1,
             maxLines: 4,
-            
+
             //  maxLines: null,
             // keyboardType: TextInputType.text,
 
             decoration: InputDecoration(
               enabled: editable ? true : false,
-              isDense: true,
+              // isDense: true,
               // suffix: editable
               //     ? InkWell(
               //         onTap: () async {
@@ -2010,7 +2138,7 @@ class UserInfoColumn extends StatelessWidget {
               color: context.read(themeProvider).isDarkMode
                   ? colors.colorWhite
                   : colors.colorBlack,
-              fontSize: 15,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -2033,8 +2161,9 @@ class CustomTFExchBadge extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400)),
+          TextWidget.paraText(text: label, theme: theme.isDarkMode),
+          // Text(label,
+          //     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400)),
           Row(
               children: exch.map((segment) {
             bool isactive = false;
@@ -2065,7 +2194,7 @@ class CustomTFExchBadge extends StatelessWidget {
                           ? const Color(0xffFFFFFF)
                           : const Color(0xff666666),
                       10,
-                      FontWeight.w500)),
+                      FontWeight.w400)),
             );
           }).toList()),
         ],
