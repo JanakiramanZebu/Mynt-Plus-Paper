@@ -15,6 +15,7 @@ import '../../provider/api_key_provider.dart';
 import '../../provider/thems.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/functions.dart';
+import 'topt_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -49,16 +50,28 @@ class SettingsScreen extends ConsumerWidget {
                     copyToClipboard("${apikeys.apikeyres!.apikey}",
                         apikeys.apikeyres!.apistatus, context);
                   } else if (index == 1) {
+                   await apikeys.fetchTotp();
+                    showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        isDismissible: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10),
+                          ),
+                        ),
+                        builder: (_) => TotpScreen(secretKey: context.read(apikeyprovider).totpkey!.pwd));
+                  } else if (index == 2) {
                     context.read(changePasswordProvider).userIdController.text =
                         "${pref.clientId}";
                     Navigator.pushNamed(context, Routes.changePass,
                         arguments: "Yes");
-                  } else if (index == 3) {
-                    apikeys.fetchTotp();
+                  } else if (index == 4) {
                     // String pwd = apikeys.totpkey!.pwd;
                     // _showAlertDialog(context, pwd, theme);
                     Navigator.pushNamed(context, Routes.logError);
-                  } else if (index == 2) {
+                  } else if (index == 3) {
                     showDialog(
                         context: context,
                         builder: (BuildContext context) {
@@ -165,7 +178,7 @@ class SettingsScreen extends ConsumerWidget {
                                     ])),
                           );
                         });
-                  } else if (index == 4) {
+                  } else if (index == 5) {
                     Navigator.pushNamed(context, Routes.orderPrefer);
                   }
                 },

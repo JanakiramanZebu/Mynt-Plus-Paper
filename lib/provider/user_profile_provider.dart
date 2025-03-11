@@ -171,6 +171,12 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "trailing": "assets/profile/greater_arrow.svg"
       },
       {
+        "title": "TOTP",
+        "subTitle": "TOTP",
+        "leading": "assets/icon/key-01.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
+      {
         "title": "Change Password",
         "subTitle": "Change Password",
         "leading": "assets/icon/key-01.svg",

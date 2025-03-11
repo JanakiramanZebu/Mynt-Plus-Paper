@@ -21,6 +21,7 @@ import '../../../provider/webview_chart_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
+
 class ChartScreenWebView extends StatefulWidget {
   final ChartArgs chartArgs;
   final double cHeight;
@@ -100,77 +101,66 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         final chartUpdate = context.read(chartUpdateProvider);
         bool transbtn = tvChart.getQuotes?.instname != "UNDIND" &&
             tvChart.getQuotes?.instname != "COM";
-        return Expanded(
-          child: SingleChildScrollView(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  _buildTopBar(tvChart, theme, userProfile, chartUpdate),
-                  _buildWebView(tvChart, theme, userProfile.showchartof,
-                      chartUpdate, context),
-                  const SizedBox(height: 4),
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                    child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                              child: InkWell(
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            _buildTopBar(tvChart, theme, userProfile, chartUpdate),
+            _buildWebView(
+                tvChart, theme, userProfile.showchartof, chartUpdate, context),
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                        child: InkWell(
+                      onTap: () async {
+                        if (transbtn) {
+                          userProfile.setChartdialog(false);
+                          await placeOrderInput(
+                              tvChart, context, tvChart.getQuotes!, true);
+                        }
+                      },
+                      child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                              color: transbtn
+                                  ? colors.ltpgreen
+                                  : colors.ltpgreen.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(60)),
+                          child: Center(
+                              child: Text("BUY",
+                                  style: textStyle(const Color(0XFFFFFFFF), 16,
+                                      FontWeight.w600)))),
+                    )),
+                    const SizedBox(width: 18),
+                    Expanded(
+                        child: InkWell(
                             onTap: () async {
                               if (transbtn) {
                                 userProfile.setChartdialog(false);
-                                await placeOrderInput(
-                                    tvChart, context, tvChart.getQuotes!, true);
+                                await placeOrderInput(tvChart, context,
+                                    tvChart.getQuotes!, false);
                               }
                             },
                             child: Container(
                                 height: 40,
                                 decoration: BoxDecoration(
                                     color: transbtn
-                                        ? colors.ltpgreen
-                                        : colors.ltpgreen.withOpacity(0.2),
+                                        ? colors.darkred
+                                        : colors.darkred.withOpacity(0.2),
                                     borderRadius: BorderRadius.circular(60)),
                                 child: Center(
-                                    child: Text("BUY",
+                                    child: Text("SELL",
                                         style: textStyle(
                                             const Color(0XFFFFFFFF),
                                             16,
-                                            FontWeight.w600)))),
-                          )),
-                          const SizedBox(width: 18),
-                          Expanded(
-                              child: InkWell(
-                                  onTap: () async {
-                                    if (transbtn) {
-                                      userProfile.setChartdialog(false);
-                                      await placeOrderInput(tvChart, context,
-                                          tvChart.getQuotes!, false);
-                                    }
-                                  },
-                                  child: Container(
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                          color: transbtn
-                                              ? colors.darkred
-                                              : colors.darkred.withOpacity(0.2),
-                                          borderRadius:
-                                              BorderRadius.circular(60)),
-                                      child: Center(
-                                          child: Text("SELL",
-                                              style: textStyle(
-                                                  const Color(0XFFFFFFFF),
-                                                  16,
-                                                  FontWeight.w600))))))
-                        ]),
-                  )
-                ],
-              ),
-            ),
-          ),
+                                            FontWeight.w600))))))
+                  ]),
+            )
+          ],
         );
       },
     );
@@ -228,13 +218,17 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
           (TargetPlatform.iOS == defaultTargetPlatform ? 160 : 108)),
       child: InAppWebView(
         gestureRecognizers: {
-          Factory<VerticalDragGestureRecognizer>(
-              () => VerticalDragGestureRecognizer()),
-          Factory<HorizontalDragGestureRecognizer>(
-              () => HorizontalDragGestureRecognizer()),
-          Factory<ScaleGestureRecognizer>(() => ScaleGestureRecognizer()),
-          Factory<LongPressGestureRecognizer>(
-              () => LongPressGestureRecognizer()),
+          // Factory<VerticalDragGestureRecognizer>(
+          //     () => VerticalDragGestureRecognizer()),
+          // Factory<HorizontalDragGestureRecognizer>(
+          //     () => HorizontalDragGestureRecognizer()),
+          // Factory<ScaleGestureRecognizer>(() => ScaleGestureRecognizer()),
+          // Factory<LongPressGestureRecognizer>(
+          //     () => LongPressGestureRecognizer()),
+
+          Factory<OneSequenceGestureRecognizer>(
+            () => EagerGestureRecognizer(),
+          ),
         },
         initialUrlRequest: URLRequest(
           url: WebUri(
@@ -244,7 +238,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
           ),
         ),
         onConsoleMessage: (controller, consoleMessage) {
-          if (consoleMessage.message.contains(":|=|:")) {String tsym = consoleMessage.message.split(":|=|:")[1];
+          if (consoleMessage.message.contains(":|=|:")) {
+            String tsym = consoleMessage.message.split(":|=|:")[1];
             if (tsym.split("|")[1] !=
                 context.read(marketWatchProvider).getQuotes?.token.toString()) {
               ConstantName.webViewController!.evaluateJavascript(
@@ -273,7 +268,6 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       ),
     );
   }
-
 
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {

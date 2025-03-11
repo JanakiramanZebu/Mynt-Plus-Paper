@@ -276,7 +276,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                   ? widget.orderArg.holdQty!.replaceAll("-", "")
                   : widget.orderArg.lotSize!.replaceAll("-", ""));
 
-      qtyCtrl.text = defaultparams
+      qtyCtrl.text = !widget.orderArg.isExit && defaultparams
           ? (int.parse(qtyCtrl.text) * int.parse(localdata['qty'])).toString()
           : qtyCtrl.text;
 
