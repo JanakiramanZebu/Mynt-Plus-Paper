@@ -209,7 +209,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                 //   padding: EdgeInsets.symmetric(horizontal: 16.0),
                 //   child:
                 // ),
-                if (!DDPIActive && !POAActive)
+                
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16.0, vertical: 16.0),
@@ -218,6 +218,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                       children: [
                         DematDetailsCard(
                             profileprovider: profileprovider, theme: theme),
+                      if (!DDPIActive && !POAActive)
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1528,9 +1529,9 @@ class UserInfoCard extends StatelessWidget {
                     Navigator.pushNamed(context, Routes.profileWebViewApp,
                         arguments: "profile");
                   },
-                  child: const Icon(
+                  child: Icon(
                     Icons.edit,
-                    color: Color(0xFF0037B7),
+                    color:  theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
                     size: 17,
                   ),
                 ),
@@ -1547,9 +1548,8 @@ class UserInfoCard extends StatelessWidget {
                 Flexible(
                     child: UserInfoColumn(
                         label: "PAN",
-                        value: profileprovider
-                                .clientAllDetails.clientData?.pANNO ??
-                            "",
+                        value: '*******${profileprovider
+                                .clientAllDetails.clientData?.pANNO?.substring(7)}' ,
                         theme: theme)),
                 Flexible(
                   child: UserInfoColumn(
@@ -1685,9 +1685,9 @@ class UserNomineeInfoCard extends StatelessWidget {
                       Navigator.pushNamed(context, Routes.profileWebViewApp,
                           arguments: "nominee");
                     },
-                    child: const Icon(
+                    child:  Icon(
                       Icons.edit,
-                      color: Color(0xFF0037B7),
+                      color:  theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
                       size: 17,
                     ),
                   ),
@@ -1819,7 +1819,7 @@ class DematDetailsCard extends StatelessWidget {
                             color: context.read(themeProvider).isDarkMode
                                 ? DDPIActive
                                     ? const Color.fromARGB(255, 9, 163, 17)
-                                    : const Color(0xffF1F3F8)
+                                    : colors.colorGrey
                                 : DDPIActive
                                     ? Color.fromARGB(255, 9, 255, 0)
                                         .withOpacity(.1)
@@ -1832,8 +1832,8 @@ class DematDetailsCard extends StatelessWidget {
                                   context.read(themeProvider).isDarkMode
                                       ? const Color(0xffFFFFFF)
                                       : const Color(0xff666666),
-                                  10,
-                                  FontWeight.w500)),
+                                  12,
+                                  FontWeight.w600)),
                         ),
                         Container(
                           margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -1844,7 +1844,7 @@ class DematDetailsCard extends StatelessWidget {
                             color: context.read(themeProvider).isDarkMode
                                 ? POAActive
                                     ? const Color.fromARGB(255, 9, 163, 17)
-                                    : const Color(0xffF1F3F8)
+                                    : colors.colorGrey
                                 : POAActive
                                     ? Color.fromARGB(255, 9, 255, 0)
                                         .withOpacity(.1)
@@ -1857,8 +1857,8 @@ class DematDetailsCard extends StatelessWidget {
                                   context.read(themeProvider).isDarkMode
                                       ? const Color(0xffFFFFFF)
                                       : const Color(0xff666666),
-                                  10,
-                                  FontWeight.w500)),
+                                  12,
+                                  FontWeight.w600)),
                         ),
                       ],
                     ),
@@ -2028,9 +2028,9 @@ class TradingPreferencesCard extends StatelessWidget {
                     Navigator.pushNamed(context, Routes.profileWebViewApp,
                         arguments: "segment");
                   },
-                  child: const Icon(
+                  child:Icon(
                     Icons.edit,
-                    color: Color(0xFF0037B7),
+                    color: theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
                     size: 17,
                   ),
                 ),
@@ -2126,9 +2126,9 @@ class UserInfoColumn extends StatelessWidget {
               //           Navigator.pushNamed(context, Routes.profileWebViewApp,
               //               arguments: section);
               //         },
-              //         child: const Icon(
+              //         child:  Icon(
               //           Icons.edit,
-              //           color: Color(0xFF0037B7),
+              //           color:  theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
               //           size: 17,
               //         ),
               //       )
@@ -2178,7 +2178,7 @@ class CustomTFExchBadge extends StatelessWidget {
                 color: theme.isDarkMode
                     ? isactive
                         ? const Color.fromARGB(255, 9, 163, 17)
-                        : const Color(0xffF1F3F8)
+                        : colors.colorGrey
                     : isactive
                         ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
                         : const Color(0xff666666).withOpacity(.1),
@@ -2193,8 +2193,8 @@ class CustomTFExchBadge extends StatelessWidget {
                       theme.isDarkMode
                           ? const Color(0xffFFFFFF)
                           : const Color(0xff666666),
-                      10,
-                      FontWeight.w400)),
+                      12,
+                      FontWeight.w600)),
             );
           }).toList()),
         ],
