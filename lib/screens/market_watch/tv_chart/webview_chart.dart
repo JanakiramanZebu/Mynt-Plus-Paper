@@ -177,50 +177,42 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         padding: const EdgeInsets.symmetric(horizontal: 6),
         height: 32,
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    IconButton(
-                      padding: const EdgeInsets.all(0),
-                      icon: SvgPicture.asset(assets.backArrow,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack), // Back icon
-                      onPressed: () async {
-                        userProfile.setChartdialog(false);
-                        await ConstantName.webViewController!.evaluateJavascript(
-                            source:
-                                "window.changeScript('ABC:ABCD',0123, '${theme.isDarkMode ? 'Y' : 'N'}')");
-                        ConstantName.webViewController!.evaluateJavascript(
-                            source:
-                                'window.localStorage.removeItem("tick_tick")');
-                        chartUpdate
-                            .startChartUpdateTimer(userProfile.showchartof);
-                            chartUpdate.changeOrientation('portrait');
-                      },
-                    ),
-                    IconButton(
-                      padding: const EdgeInsets.all(0),
-                      icon: Icon(Icons.screen_rotation,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack), // Back icon
-                      onPressed: () async {
-                        if(chartUpdate.orientation == 'portrait'){
-                        chartUpdate.changeOrientation('landscape');
-                        }
-                        else{
-                          chartUpdate.changeOrientation('portrait');
-                        }
-                      },
-                    )
-                  ],
-                ),
-              ),
+            IconButton(
+              padding: const EdgeInsets.all(0),
+              icon: SvgPicture.asset(assets.backArrow,
+                  color: theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.colorBlack), // Back icon
+              onPressed: () async {
+                userProfile.setChartdialog(false);
+                await ConstantName.webViewController!.evaluateJavascript(
+                    source:
+                        "window.changeScript('ABC:ABCD',0123, '${theme.isDarkMode ? 'Y' : 'N'}')");
+                ConstantName.webViewController!.evaluateJavascript(
+                    source:
+                        'window.localStorage.removeItem("tick_tick")');
+                chartUpdate
+                    .startChartUpdateTimer(userProfile.showchartof);
+                    chartUpdate.changeOrientation('portrait');
+              },
             ),
+            IconButton(
+              padding: const EdgeInsets.all(0),
+              icon: Icon(Icons.screen_rotation,
+                  color: theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.colorBlack), // Back icon
+              onPressed: () async {
+                if(chartUpdate.orientation == 'portrait'){
+                chartUpdate.changeOrientation('landscape');
+                }
+                else{
+                  chartUpdate.changeOrientation('portrait');
+                }
+              },
+            )
           ],
         ),
       ),
