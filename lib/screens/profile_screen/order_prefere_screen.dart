@@ -103,7 +103,7 @@ class _OrderPreference extends State<OrderPreference> {
       },
     ];
 
-    expriceTypes = ["Limit", "Market"].contains(localdata['expos'])
+    expriceType = ["Limit", "Market"].contains(localdata['expos'])
         ? localdata['expos']
         : 'Market';
 
