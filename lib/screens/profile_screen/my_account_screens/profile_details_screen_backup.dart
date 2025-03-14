@@ -284,7 +284,7 @@ void _submit() {
                            padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8.0),
                            child: Row(
                             // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            spacing:50,
+                            // spacing:50,
                             children: [
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

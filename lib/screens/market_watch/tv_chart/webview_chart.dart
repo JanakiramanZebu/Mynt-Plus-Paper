@@ -199,8 +199,24 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                                 'window.localStorage.removeItem("tick_tick")');
                         chartUpdate
                             .startChartUpdateTimer(userProfile.showchartof);
+                            chartUpdate.changeOrientation('portrait');
                       },
                     ),
+                    IconButton(
+                      padding: const EdgeInsets.all(0),
+                      icon: Icon(Icons.screen_rotation,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack), // Back icon
+                      onPressed: () async {
+                        if(chartUpdate.orientation == 'portrait'){
+                        chartUpdate.changeOrientation('landscape');
+                        }
+                        else{
+                          chartUpdate.changeOrientation('portrait');
+                        }
+                      },
+                    )
                   ],
                 ),
               ),
