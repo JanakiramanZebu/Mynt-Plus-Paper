@@ -28,6 +28,8 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
 
   bool active = false;
   bool nomineeActive = false;
+  bool mtfActive = false;
+  bool formDownActive = false;
 
   var _formKey = GlobalKey<FormState>();
 
@@ -209,15 +211,16 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                 //   padding: EdgeInsets.symmetric(horizontal: 16.0),
                 //   child:
                 // ),
-                if (!DDPIActive && !POAActive)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        DematDetailsCard(
-                            profileprovider: profileprovider, theme: theme),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DematDetailsCard(
+                          profileprovider: profileprovider, theme: theme),
+                      if (!DDPIActive && !POAActive)
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -279,9 +282,9 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                    ],
                   ),
+                ),
                 // const SizedBox(height: 8),
                 Divider(
                     thickness: 4,
@@ -300,6 +303,39 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                         ? colors.darkColorDivider
                         : colors.colorDivider),
                 // const SizedBox(height: 8),
+
+                // MTF section
+                ExpansionPanelList(
+                  elevation: 0,
+                  expandIconColor:
+                      !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  expansionCallback: (panelIndex, expanded) {
+                    mtfActive = !mtfActive;
+                    setState(() {});
+                  },
+                  children: [
+                    ExpansionPanel(
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        headerBuilder: (context, isExpanded) {
+                          return ListTile(
+                            title: TextWidget.titleText(
+                                text: "Margin Trading Facility (MTF)", theme: theme.isDarkMode, fw: 1),
+
+                            // Text("Nominee",
+                            //     style: TextStyle(
+                            //         fontSize: 15, fontWeight: FontWeight.w500)),
+                          );
+                        },
+                        body: MTFSection(
+                          profileprovider: profileprovider,
+                          theme: theme,
+                        ),
+                        isExpanded: mtfActive,
+                        canTapOnHeader: true),
+                  ],
+                ),
 
                 // Nominee section
                 ExpansionPanelList(
@@ -336,6 +372,53 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                   ],
                 ),
 
+                // Form Download section
+                ExpansionPanelList(
+                  elevation: 0,
+                  expandIconColor:
+                      !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  expansionCallback: (panelIndex, expanded) async {
+                    await context.read(fundProvider).fetchHstoken(context);
+                    Navigator.pushNamed(context, Routes.profileWebViewApp,arguments: "formdownload");
+                    // formDownActive = !formDownActive;
+                    // setState(() {});
+                  },
+                  children: [
+                    ExpansionPanel(
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        headerBuilder: (context, isExpanded) {
+                          return ListTile(
+                            title: TextWidget.titleText(
+                                text: "Form Download",
+                                theme: theme.isDarkMode,
+                                fw: 1),
+
+                            // Text("Nominee",
+                            //     style: TextStyle(
+                            //         fontSize: 15, fontWeight: FontWeight.w500)),
+                          );
+                        },
+                        body: 
+                        // Container(
+                        //   child:ElevatedButton(
+                        //     onPressed: (){
+                        //      profileprovider.downloadFile("https://rekycbe.mynt.in/report/static/cmr/2025-03-13/1208040000444330.pdf");
+                        //     },
+                        //     child: Text("Download"),),
+                        // ),
+                        
+                        
+                        UserNomineeInfoCard(
+                          profileprovider: profileprovider,
+                          theme: theme,
+                        ),
+                        isExpanded: formDownActive,
+                        canTapOnHeader: true),
+                  ],
+                ),
+
                 // Account Closure
                 ExpansionPanelList(
                   expandIconColor:
@@ -353,11 +436,11 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                         headerBuilder: (context, isExpanded) {
                           return ListTile(
                             title: TextWidget.titleText(
-                                text: "Account Closure",
+                                text: "Closure",
                                 theme: theme.isDarkMode,
                                 fw: 1),
 
-                            // const Text("Account Closure",
+                            // const Text("Closure",
                             //     style: TextStyle(
                             //         fontSize: 15, fontWeight: FontWeight.w500)),
                           );
@@ -1528,9 +1611,11 @@ class UserInfoCard extends StatelessWidget {
                     Navigator.pushNamed(context, Routes.profileWebViewApp,
                         arguments: "profile");
                   },
-                  child: const Icon(
+                  child: Icon(
                     Icons.edit,
-                    color: Color(0xFF0037B7),
+                    color: theme.isDarkMode
+                        ? colors.colorLightBlue
+                        : colors.colorBlue,
                     size: 17,
                   ),
                 ),
@@ -1547,9 +1632,8 @@ class UserInfoCard extends StatelessWidget {
                 Flexible(
                     child: UserInfoColumn(
                         label: "PAN",
-                        value: profileprovider
-                                .clientAllDetails.clientData?.pANNO ??
-                            "",
+                        value:profileprovider.formateDataToDisplay(profileprovider.clientAllDetails.clientData?.pANNO??"",0,3),
+                            // '*******${profileprovider.clientAllDetails.clientData?.pANNO?.substring(7)}',
                         theme: theme)),
                 Flexible(
                   child: UserInfoColumn(
@@ -1601,6 +1685,14 @@ class UserNomineeInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<String> formatPart = profileprovider
+            .clientAllDetails.clientData?.nomineeDOB
+            ?.split(" ")[0]
+            .split("-") ??
+        [];
+    String nomineeDOB = formatPart.length == 3
+        ? '${formatPart[2]}-${formatPart[1]}-${formatPart[0]}'
+        : "";
     return Card(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1685,9 +1777,11 @@ class UserNomineeInfoCard extends StatelessWidget {
                       Navigator.pushNamed(context, Routes.profileWebViewApp,
                           arguments: "nominee");
                     },
-                    child: const Icon(
+                    child: Icon(
                       Icons.edit,
-                      color: Color(0xFF0037B7),
+                      color: theme.isDarkMode
+                          ? colors.colorLightBlue
+                          : colors.colorBlue,
                       size: 17,
                     ),
                   ),
@@ -1729,16 +1823,12 @@ class UserNomineeInfoCard extends StatelessWidget {
                       Flexible(
                           child: UserInfoColumn(
                               label: "Nominee DOB",
-                              value: profileprovider.clientAllDetails.clientData
-                                      ?.nomineeDOB ??
-                                  "",
+                              value: nomineeDOB,
                               theme: theme)),
                       Flexible(
                         child: UserInfoColumn(
                             label: "Nominee Percentage",
-                            value: profileprovider
-                                    .clientAllDetails.clientData?.nomineeDOB ??
-                                "",
+                            value: "",
                             theme: theme,
                             editable: false),
                       ),
@@ -1798,69 +1888,62 @@ class DematDetailsCard extends StatelessWidget {
 
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                TextWidget.titleText(
+                    text: "Demat (CDSL)", theme: theme.isDarkMode, fw: 1),
+                // const Text("Demat (CDSL)",
+                //         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    TextWidget.titleText(
-                        text: "Demat (CDSL)", theme: theme.isDarkMode, fw: 1),
-                    // const Text("Demat (CDSL)",
-                    //         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                    Row(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 3),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(2),
-                            color: context.read(themeProvider).isDarkMode
-                                ? DDPIActive
-                                    ? const Color.fromARGB(255, 9, 163, 17)
-                                    : const Color(0xffF1F3F8)
-                                : DDPIActive
-                                    ? Color.fromARGB(255, 9, 255, 0)
-                                        .withOpacity(.1)
-                                    : const Color(0xff666666).withOpacity(.1),
-                          ),
-                          child: Text("DDPI",
-                              overflow: TextOverflow.ellipsis,
-                              // maxLines: 1,
-                              style: textStyle(
-                                  context.read(themeProvider).isDarkMode
-                                      ? const Color(0xffFFFFFF)
-                                      : const Color(0xff666666),
-                                  10,
-                                  FontWeight.w500)),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 3),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(2),
-                            color: context.read(themeProvider).isDarkMode
-                                ? POAActive
-                                    ? const Color.fromARGB(255, 9, 163, 17)
-                                    : const Color(0xffF1F3F8)
-                                : POAActive
-                                    ? Color.fromARGB(255, 9, 255, 0)
-                                        .withOpacity(.1)
-                                    : const Color(0xff666666).withOpacity(.1),
-                          ),
-                          child: Text("POA",
-                              overflow: TextOverflow.ellipsis,
-                              // maxLines: 1,
-                              style: textStyle(
-                                  context.read(themeProvider).isDarkMode
-                                      ? const Color(0xffFFFFFF)
-                                      : const Color(0xff666666),
-                                  10,
-                                  FontWeight.w500)),
-                        ),
-                      ],
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        color: context.read(themeProvider).isDarkMode
+                            ? DDPIActive
+                                ? const Color.fromARGB(255, 9, 163, 17)
+                                : colors.colorGrey
+                            : DDPIActive
+                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                : const Color(0xff666666).withOpacity(.1),
+                      ),
+                      child: Text("DDPI",
+                          overflow: TextOverflow.ellipsis,
+                          // maxLines: 1,
+                          style: textStyle(
+                              context.read(themeProvider).isDarkMode
+                                  ? const Color(0xffFFFFFF)
+                                  : const Color(0xff666666),
+                              12,
+                              FontWeight.w600)),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        color: context.read(themeProvider).isDarkMode
+                            ? POAActive
+                                ? const Color.fromARGB(255, 9, 163, 17)
+                                : colors.colorGrey
+                            : POAActive
+                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                : const Color(0xff666666).withOpacity(.1),
+                      ),
+                      child: Text("POA",
+                          overflow: TextOverflow.ellipsis,
+                          // maxLines: 1,
+                          style: textStyle(
+                              context.read(themeProvider).isDarkMode
+                                  ? const Color(0xffFFFFFF)
+                                  : const Color(0xff666666),
+                              12,
+                              FontWeight.w600)),
                     ),
                   ],
                 ),
@@ -2028,9 +2111,11 @@ class TradingPreferencesCard extends StatelessWidget {
                     Navigator.pushNamed(context, Routes.profileWebViewApp,
                         arguments: "segment");
                   },
-                  child: const Icon(
+                  child: Icon(
                     Icons.edit,
-                    color: Color(0xFF0037B7),
+                    color: theme.isDarkMode
+                        ? colors.colorLightBlue
+                        : colors.colorBlue,
                     size: 17,
                   ),
                 ),
@@ -2126,9 +2211,9 @@ class UserInfoColumn extends StatelessWidget {
               //           Navigator.pushNamed(context, Routes.profileWebViewApp,
               //               arguments: section);
               //         },
-              //         child: const Icon(
+              //         child:  Icon(
               //           Icons.edit,
-              //           color: Color(0xFF0037B7),
+              //           color:  theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
               //           size: 17,
               //         ),
               //       )
@@ -2178,7 +2263,7 @@ class CustomTFExchBadge extends StatelessWidget {
                 color: theme.isDarkMode
                     ? isactive
                         ? const Color.fromARGB(255, 9, 163, 17)
-                        : const Color(0xffF1F3F8)
+                        : colors.colorGrey
                     : isactive
                         ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
                         : const Color(0xff666666).withOpacity(.1),
@@ -2193,8 +2278,8 @@ class CustomTFExchBadge extends StatelessWidget {
                       theme.isDarkMode
                           ? const Color(0xffFFFFFF)
                           : const Color(0xff666666),
-                      10,
-                      FontWeight.w400)),
+                      12,
+                      FontWeight.w600)),
             );
           }).toList()),
         ],
@@ -2205,4 +2290,219 @@ class CustomTFExchBadge extends StatelessWidget {
   // TextStyle textStyle(Color color, double fontSize, fWeight) {
   //   return TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize);
   // }
+}
+
+class MTFSection extends StatelessWidget {
+  final ProfileProvider profileprovider;
+  final ThemesProvider theme;
+
+  const MTFSection(
+      {super.key, required this.profileprovider, required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.read(themeProvider);
+    bool DDPIActive = profileprovider.clientAllDetails.clientData!.dDPI == 'Y';
+    bool POAActive = profileprovider.clientAllDetails.clientData!.pOA == 'Y';
+    bool mtfCl = profileprovider.clientAllDetails.clientData!.mTFCl == 'Y';
+    bool mtfClAuto =
+        profileprovider.clientAllDetails.clientData!.mTFClAuto == "Y";
+
+    return Card(
+      elevation: 0,
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // const Text(""),
+                // TextWidget.titleText(
+                //     text: "Margin Trading Facility (MTF)",
+                //     theme: theme.isDarkMode,
+                //     fw: 1),
+                Row(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        color: context.read(themeProvider).isDarkMode
+                            ? DDPIActive
+                                ? const Color.fromARGB(255, 9, 163, 17)
+                                : colors.colorGrey
+                            : DDPIActive
+                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                : const Color(0xff666666).withOpacity(.1),
+                      ),
+                      child: Text("DDPI",
+                          overflow: TextOverflow.ellipsis,
+                          // maxLines: 1,
+                          style: textStyle(
+                              context.read(themeProvider).isDarkMode
+                                  ? const Color(0xffFFFFFF)
+                                  : const Color(0xff666666),
+                              12,
+                              FontWeight.w600)),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        color: context.read(themeProvider).isDarkMode
+                            ? POAActive
+                                ? const Color.fromARGB(255, 9, 163, 17)
+                                : colors.colorGrey
+                            : POAActive
+                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                : const Color(0xff666666).withOpacity(.1),
+                      ),
+                      child: Text("POA",
+                          overflow: TextOverflow.ellipsis,
+                          // maxLines: 1,
+                          style: textStyle(
+                              context.read(themeProvider).isDarkMode
+                                  ? const Color(0xffFFFFFF)
+                                  : const Color(0xff666666),
+                              12,
+                              FontWeight.w600)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            // Padding(
+            //   padding: const EdgeInsets.only(top: 16),
+            //   child: TextWidget.subText(
+            //           text:" Would you like to activate Margin Trading Facility (MTF) on your account ",
+            //             theme: theme.isDarkMode,
+            //         ),
+            // ),
+            // const SizedBox(
+            //   height: 16,
+            // ),
+            if (!DDPIActive && !POAActive)
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: TextWidget.subText(
+                    text:"You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
+                    theme: theme.isDarkMode,
+                    fw: 1,
+                    color: colors.kColorRedText),
+              ),
+
+            if ((mtfCl && mtfClAuto)) ...[
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // const SizedBox(height: 16,),
+                  Padding(
+                   padding: const EdgeInsets.only(top: 16.0),
+                    child: TextWidget.subText(
+                        text:
+                            "You have activated the Margin Trading Facility (MTF) on your account ",
+                        theme: theme.isDarkMode,
+                        ),
+                  ),
+                  Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: Chip(
+                          label: TextWidget.subText(
+                              text: 'MTF Enabled',
+                              theme: theme.isDarkMode,
+                              fw: 1),
+                              // labelPadding:EdgeInsets.symmetric(horizontal: 8,vertical: 5),
+                          backgroundColor: context.read(themeProvider).isDarkMode
+                              ? mtfCl && mtfClAuto
+                                  ? const Color.fromARGB(255, 9, 163, 17)
+                                  : colors.colorGrey
+                              : mtfCl && mtfClAuto
+                                  ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                  : const Color(0xff666666)
+                                      .withOpacity(.1), // Color(0xffecf8f1),
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              color: context.read(themeProvider).isDarkMode
+                                  ? colors.colorBlack
+                                  : colors.colorWhite, // Color(0xffc1e7ba),
+                            ),
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+
+            if ((profileprovider.clientAllDetails.clientData!.mTFCl == 'N' &&
+                    profileprovider.clientAllDetails.clientData!.mTFClAuto ==
+                        'N') &&
+                (profileprovider.clientAllDetails.clientData!.dDPI == 'Y' ||
+                    profileprovider.clientAllDetails.clientData!.pOA == "Y"))
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                        text:
+                            "Would you like to activate Margin Trading Facility (MTF) on your account ",
+                        theme: theme.isDarkMode,
+                        ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await context.read(fundProvider).fetchHstoken(context);
+                          Navigator.pushNamed(context, Routes.profileWebViewApp,
+                              arguments: "mtf");
+                        },
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          
+                          backgroundColor: context.read(themeProvider).isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
+                          shape:
+                             
+                              RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          side: BorderSide(
+                            width: 1,
+                            color: context.read(themeProvider).isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                          ),
+                        ),
+                        child: TextWidget.subText(
+                            text: "Enable MTF",
+                            theme: theme.isDarkMode,
+                            fw: 1),
+                      
+                      ),
+                    ),
+                  ],
+                ),
+
+             
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }

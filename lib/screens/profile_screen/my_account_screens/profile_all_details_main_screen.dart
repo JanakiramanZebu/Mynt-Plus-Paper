@@ -116,12 +116,13 @@ class _ProfileDetailsMainScreenState extends State<ProfileDetailsMainScreen>
               // const CustomDragHandler(),
               Container(
                 // width: MediaQuery.of(context).size.width,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                       padding: const EdgeInsets.symmetric(horizontal: 8),
                 // decoration: BoxDecoration(
                 //     border: Border(
-                //         top: BorderSide(
-                //             color: theme.isDarkMode
+                            //         top: BorderSide(
+                //             color: theme.isDarkMode 
                 //                 ? colors.darkColorDivider
+                
                 //                 : colors.colorDivider,
                 //             width: 0.4),
                 //         bottom: BorderSide(
@@ -131,7 +132,9 @@ class _ProfileDetailsMainScreenState extends State<ProfileDetailsMainScreen>
                 //             width: 0.4))),
                 // height: 60,
                 child: TabBar(
-                  labelPadding:const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                  // labelPadding:const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  labelPadding:const EdgeInsets.only(left:8,right: 4, bottom: 0,top:0),
+
                   // padding : EdgeInsets.symmetric(horizontal: 8),
                   tabAlignment: TabAlignment.start,
                   indicatorColor: Colors.transparent,
@@ -192,7 +195,7 @@ class _ProfileDetailsMainScreenState extends State<ProfileDetailsMainScreen>
         },
         style: ElevatedButton.styleFrom(
             elevation: 0,
-            // padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5), //  bottom: 0, left: 15, top: 2
             backgroundColor: theme.isDarkMode
                 ? tab == activeTab
                     ? const Color(0xffffffff)
@@ -219,7 +222,7 @@ class _ProfileDetailsMainScreenState extends State<ProfileDetailsMainScreen>
               //       : Color(tab == activeTab ? 0xffffffff : 0xff000000),
               // ),
               // const SizedBox(width: 8),
-              TextWidget.titleText(text:title,theme: theme.isDarkMode,
+              TextWidget.subText(text:title,theme: theme.isDarkMode,
               color: theme.isDarkMode
                           ? Color(tab == activeTab ? 0xff000000 : 0xffffffff)
                           : Color(tab == activeTab ? 0xffffffff : 0xff000000),
