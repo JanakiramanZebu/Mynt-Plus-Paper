@@ -8,6 +8,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/routes/app_routes.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../locator/constant.dart';
@@ -57,7 +58,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
   void initState() {
     regtoken = widget.wlValue.token;
     setState(() {
-    print("basket ${widget.isBasket}");
+      print("basket ${widget.isBasket}");
 
       initSize = (widget.wlValue.instname != "UNDIND" &&
               widget.wlValue.instname != "COM")
@@ -444,6 +445,16 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                     "Chart") {
                                                   Navigator.pop(context);
 
+                                                  if (currentRouteName ==
+                                                      Routes.searchScrip) {
+                                                    scripInfo.requestMWScrip(
+                                                        context: context,
+                                                        isSubscribe: true);
+                                                    scripInfo.searchClear();
+                                                    scripInfo.setpageName("");
+                                                    Navigator.pop(context);
+                                                  }
+
                                                   userProfile
                                                       .setChartdialog(true);
                                                   await ConstantName
@@ -452,7 +463,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                           source:
                                                               "window.changeScript('${widget.wlValue.exch}:${widget.wlValue.tsym}',${widget.wlValue.token}, '${theme.isDarkMode ? 'Y' : 'N'}')");
                                                   chartUpdate
-                                                      .startChartUpdateTimer(userProfile
+                                                      .startChartUpdateTimer(
+                                                          userProfile
                                                               .showchartof);
 
                                                   // "window.tvWidget.activeChart().setSymbol('${widget.wlValue.exch}:${widget.wlValue.tsym}')");
