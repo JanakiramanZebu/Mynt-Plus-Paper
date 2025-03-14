@@ -90,7 +90,7 @@ class _OrderPreference extends State<OrderPreference> {
       },
     ];
 
-     expriceTypes = [
+    expriceTypes = [
       {
         "type": "Limit",
         "key": context.read(showcaseProvide).limitprctype,
@@ -102,6 +102,10 @@ class _OrderPreference extends State<OrderPreference> {
         "case": "Click here to set your order type to Market."
       },
     ];
+
+    expriceTypes = ["Limit", "Market"].contains(localdata['expos'])
+        ? localdata['expos']
+        : 'Market';
 
     super.initState();
   }
@@ -379,7 +383,6 @@ class _OrderPreference extends State<OrderPreference> {
                               14,
                               FontWeight.w500))
                     ]),
-
                     if (QtyPrefer == OrdQtyPref.mktlot) ...[
                       Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -433,7 +436,6 @@ class _OrderPreference extends State<OrderPreference> {
                           ])),
                       const SizedBox(height: 14),
                     ],
-
                     const SizedBox(height: 10),
                     Padding(
                         padding: const EdgeInsets.only(left: 16, bottom: 12),
@@ -494,9 +496,10 @@ class _OrderPreference extends State<OrderPreference> {
                                   ),
                                   textAlign: TextAlign.start))
                         ])),
-                            Padding(
+                    Padding(
                         padding: const EdgeInsets.only(left: 16, top: 16),
-                        child: headerTitleText("Position exit", theme)),
+                        child: headerTitleText(
+                            "Position exit ${expriceType}", theme)),
                     const SizedBox(height: 10),
                     Padding(
                         padding: const EdgeInsets.only(left: 16),
@@ -508,7 +511,8 @@ class _OrderPreference extends State<OrderPreference> {
                                   return ElevatedButton(
                                       onPressed: () {
                                         setState(() {
-                                          expriceType = expriceTypes[index]['type'];
+                                          expriceType =
+                                              expriceTypes[index]['type'];
                                         });
                                         FocusScope.of(context).unfocus();
                                       },
@@ -518,11 +522,13 @@ class _OrderPreference extends State<OrderPreference> {
                                               horizontal: 12, vertical: 0),
                                           backgroundColor: !theme.isDarkMode
                                               ? expriceType !=
-                                                      expriceTypes[index]['type']
+                                                      expriceTypes[index]
+                                                          ['type']
                                                   ? const Color(0xffF1F3F8)
                                                   : colors.colorBlack
                                               : expriceType !=
-                                                      expriceTypes[index]['type']
+                                                      expriceTypes[index]
+                                                          ['type']
                                                   ? colors.darkGrey
                                                   : colors.colorbluegrey,
                                           shape: const StadiumBorder()),
@@ -541,7 +547,8 @@ class _OrderPreference extends State<OrderPreference> {
                                                       : colors.colorBlack,
                                               14,
                                               expriceType ==
-                                                      expriceTypes[index]['type']
+                                                      expriceTypes[index]
+                                                          ['type']
                                                   ? FontWeight.w600
                                                   : FontWeight.w500)));
                                 },
@@ -622,7 +629,7 @@ class _OrderPreference extends State<OrderPreference> {
       "qty": qtyCtrl.text,
       "validity": validity,
       "mrkprot": mktProtCtrl.text,
-      "expos" : expriceType
+      "expos": expriceType
     };
     String jsonString = jsonEncode(local);
     await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
