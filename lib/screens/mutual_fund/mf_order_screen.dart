@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import '../../models/mf_model/mf_lumpsum_order.dart';
+import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
@@ -45,81 +46,273 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
       final theme = watch(themeProvider);
       // final fund = watch(fundProvider);
       final mfOrder = watch(mfProvider);
-      
+      // print(mfOrder.orderseltab);
       return Scaffold(
           appBar: AppBar(
+              toolbarHeight: 150,
               leadingWidth: 41,
               centerTitle: false,
               titleSpacing: 0,
-              elevation: .4,
-              leading: const CustomBackBtn(),
+              elevation: 0,
+              leading: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios,
+                    color: theme.isDarkMode
+                        ? colors.colorWhite
+                        : colors.colorBlack,
+                    size: 18,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
               title: Padding(
                 padding: const EdgeInsets.only(right: 14),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    CircleAvatar(
-                        backgroundImage: NetworkImage(
-                            "https://v3.mynt.in/mf/static/images/mf/${widget.mfData.aMCCode}.png")),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text("${widget.mfData.fSchemeName}",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  16,
-                                  FontWeight.w500)),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            height: 18,
-                            child: ListView(
-                              shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                CustomExchBadge(
-                                    exch: widget.mfData.schemeName!
-                                            .contains("GROWTH")
-                                        ? "GROWTH"
-                                        : widget.mfData.schemeName!
-                                                .contains("IDCW PAYOUT")
-                                            ? "IDCW PAYOUT"
-                                            : widget.mfData.schemeName!
-                                                    .contains(
-                                                        "IDCW REINVESTMENT")
-                                                ? "IDCW REINVESTMENT"
-                                                : widget.mfData.schemeName!
-                                                        .contains("IDCW")
-                                                    ? "IDCW"
-                                                    : "NORMAL"),
-                          const SizedBox(width: 7),
-                                CustomExchBadge(
-                                    exch: "${widget.mfData.schemeType}"),
-                          const SizedBox(width: 7),
-                                CustomExchBadge(
-                                    exch: widget.mfData.sCHEMESUBCATEGORY!
-                                        .replaceAll("Fund", '')
-                                        .replaceAll("Hybrid", "")
-                                        .toUpperCase()),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  // children: [
+                  //   CircleAvatar(
+                  //       backgroundImage: NetworkImage(
+                  //           "https://v3.mynt.in/mf/static/images/mf/${widget.mfData.aMCCode}.png")),
+                  //   const SizedBox(width: 8),
+                  //   Expanded(
+                  //     child: Column(
+                  //       crossAxisAlignment: CrossAxisAlignment.start,
+                  //       mainAxisAlignment: MainAxisAlignment.start,
+                  //       children: [
+                  //         Text("${widget.mfData.fSchemeName}",
+                  //             maxLines: 1,
+                  //             overflow: TextOverflow.ellipsis,
+                  //             style: textStyle(
+                  //                 theme.isDarkMode
+                  //                     ? colors.colorWhite
+                  //                     : colors.colorBlack,
+                  //                 16,
+                  //                 FontWeight.w500)),
+                  //         const SizedBox(height: 10),
+                  //         SizedBox(
+                  //           height: 18,
+                  //           child: ListView(
+                  //             shrinkWrap: true,
+                  //             scrollDirection: Axis.horizontal,
+                  //             children: [
+                  //               CustomExchBadge(
+                  //                   exch: widget.mfData.schemeName!
+                  //                           .contains("GROWTH")
+                  //                       ? "GROWTH"
+                  //                       : widget.mfData.schemeName!
+                  //                               .contains("IDCW PAYOUT")
+                  //                           ? "IDCW PAYOUT"
+                  //                           : widget.mfData.schemeName!
+                  //                                   .contains(
+                  //                                       "IDCW REINVESTMENT")
+                  //                               ? "IDCW REINVESTMENT"
+                  //                               : widget.mfData.schemeName!
+                  //                                       .contains("IDCW")
+                  //                                   ? "IDCW"
+                  //                                   : "NORMAL"),
+                  //         const SizedBox(width: 7),
+                  //               CustomExchBadge(
+                  //                   exch: "${widget.mfData.schemeType}"),
+                  //         const SizedBox(width: 7),
+                  //               CustomExchBadge(
+                  //                   exch: widget.mfData.sCHEMESUBCATEGORY!
+                  //                       .replaceAll("Fund", '')
+                  //                       .replaceAll("Hybrid", "")
+                  //                       .toUpperCase()),
+                  //             ],
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ],
                 ),
               ),
               bottom: PreferredSize(
                   preferredSize: const Size.fromHeight(50),
                   child: Column(children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        color: const Color.fromARGB(255, 250, 251, 255),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  CircleAvatar(
+                                    backgroundImage: NetworkImage(
+                                      "https://v3.mynt.in/mf/static/images/mf/${widget.mfData.aMCCode}.png",
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "${widget.mfData.fSchemeName}",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: textStyle(
+                                            theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                            17,
+                                            FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        SizedBox(
+                                          height: 18,
+                                          child: ListView(
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.horizontal,
+                                            children: [
+                                              // CustomExchBadge(
+                                              //   exch: widget.mfData.schemeName!.contains("GROWTH")
+                                              //       ? "GROWTH"
+                                              //       : widget.mfData.schemeName!.contains("IDCW PAYOUT")
+                                              //           ? "IDCW PAYOUT"
+                                              //           : widget.mfData.schemeName!.contains("IDCW REINVESTMENT")
+                                              //               ? "IDCW REINVESTMENT"
+                                              //               : widget.mfData.schemeName!.contains("IDCW")
+                                              //                   ? "IDCW"
+                                              //                   : "NORMAL",
+                                              // ),
+                                              const SizedBox(width: 5),
+                                              CustomExchBadge(
+                                                  exch:
+                                                      "${widget.mfData.schemeType}"),
+                                              const SizedBox(width: 5),
+                                              CustomExchBadge(
+                                                exch: widget
+                                                    .mfData.sCHEMESUBCATEGORY!
+                                                    .replaceAll("Fund", '')
+                                                    .replaceAll("Hybrid", "")
+                                                    .toUpperCase(),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 7),
+                                      Text(
+                                        "AUM (CR)",
+                                        style: textStyle(
+                                            const Color(0xff999999),
+                                            12,
+                                            FontWeight.w500),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        (double.parse(widget.mfData.aUM!.isEmpty
+                                                ? "0.00"
+                                                : widget.mfData.aUM!))
+                                            .toStringAsFixed(2),
+                                        style: textStyle(colors.colorBlack, 14,
+                                            FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        "NAV",
+                                        style: textStyle(
+                                            const Color(0xff999999),
+                                            12,
+                                            FontWeight.w500),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        widget.mfData.nETASSETVALUE!.isEmpty
+                                            ? "0.00"
+                                            : widget.mfData.nETASSETVALUE!,
+                                        style: textStyle(colors.colorBlack, 14,
+                                            FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        "MIN. INV",
+                                        style: textStyle(
+                                            const Color(0xff999999),
+                                            12,
+                                            FontWeight.w500),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        widget.mfData.minimumPurchaseAmount!
+                                                .isEmpty
+                                            ? "0.00"
+                                            : widget
+                                                .mfData.minimumPurchaseAmount!,
+                                        style: textStyle(colors.colorBlack, 14,
+                                            FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        "5YR CAGR",
+                                        style: textStyle(
+                                            const Color(0xff999999),
+                                            12,
+                                            FontWeight.w500),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        widget.mfData.fIVEYEARDATA?.isEmpty ??
+                                                true
+                                            ? "0.00"
+                                            : "${widget.mfData.fIVEYEARDATA}%",
+                                        style: textStyle(colors.colorBlack, 14,
+                                            FontWeight.w600),
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                     Container(
                         height: 46,
                         decoration: BoxDecoration(
@@ -175,48 +368,62 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                 : 1))
                   ]))),
           body: TransparentLoaderScreen(
-                    isLoading:  mfOrder.investloader,
+            isLoading: mfOrder.investloader,
             child: ListView(padding: const EdgeInsets.all(16), children: [
               if (mfOrder.mfOrderTpye != "Lumpsum") ...[
                 Text("Mandates",
                     style: textStyle(
-                        theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
                         16,
                         FontWeight.w600)),
                 const SizedBox(height: 4),
                 if (mfOrder.mandateData!.isNotEmpty) ...[
                   DropdownButtonHideUnderline(
-                      child: DropdownButton2(
-                          menuItemStyleData: MenuItemStyleData(
-                              customHeights: mfOrder.mandateHeight()),
-                          buttonStyleData: ButtonStyleData(
-                              padding: const EdgeInsets.only(top: 4, left: 16),
-                              height: 50,
-                              width: MediaQuery.of(context).size.width,
-                              decoration: const BoxDecoration(
-                                  color: Color(0xffF1F3F8),
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(32)))),
-                          dropdownStyleData: DropdownStyleData(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(4)),
-                              offset: const Offset(0, 1)),
-                          isExpanded: true,
-                          style: textStyle(
-                              const Color(0XFF000000), 13, FontWeight.w500),
-                          hint: Text(mfOrder.mandateId,
-                              style: textStyle(
-                                  const Color(0XFF000000), 13, FontWeight.w500)),
-                          items: mfOrder.mandateDividers(),
-                          // customItemsHeights: actionTrade.getCustomItemsHeight(),
-                          value: mfOrder.mandateId,
-                          onChanged: (value) async {
-                            mfOrder.chngMandate("$value");
-                          })),
+                    child: DropdownButton2(
+                      menuItemStyleData: MenuItemStyleData(
+                        customHeights: mfOrder.mandateHeight(),
+                      ),
+                      buttonStyleData: ButtonStyleData(
+                        padding: const EdgeInsets.only(top: 4, left: 16),
+                        height: 50,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: const BoxDecoration(
+                          color: Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.all(Radius.circular(32)),
+                        ),
+                      ),
+                      dropdownStyleData: DropdownStyleData(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4)),
+                        offset: const Offset(0, 1),
+                      ),
+                      isExpanded: true,
+                      style: textStyle(
+                          const Color(0XFF000000), 13, FontWeight.w500),
+                      hint: Text(
+                        mfOrder.mandateId ?? "Select a Mandate",
+                        style: textStyle(
+                            const Color(0XFF000000), 13, FontWeight.w500),
+                      ),
+                      items: mfOrder.mandateDividers(),
+                      value: mfOrder
+                              .mandateDividers()
+                              .any((item) => item.value == mfOrder.mandateId)
+                          ? mfOrder.mandateId
+                          : null, // Prevent error if value is not found
+                      onChanged: (value) async {
+                        if (value != null) {
+                          mfOrder.chngMandate("$value");
+                        }
+                      },
+                    ),
+                  ),
                   const SizedBox(height: 8),
                 ],
-                  const SizedBox(height: 8),
-            
+                const SizedBox(height: 8),
+
                 ElevatedButton(
                     onPressed: () async {
                       showDialog(
@@ -227,10 +434,10 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor:colors.colorBlack,
+                        backgroundColor: colors.colorBlack,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50))),
-                    child: Text("Create mandate",
+                    child:  Text("Create mandate",
                         style: GoogleFonts.inter(
                             textStyle: textStyle(
                                 !theme.isDarkMode
@@ -238,7 +445,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                     : colors.colorBlack,
                                 14,
                                 FontWeight.w500)))),
-              
+
                 // Row(
                 //   children: [
                 //     IconButton(
@@ -272,7 +479,9 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                           hintText: '${widget.mfData.minimumPurchaseAmount}',
                           hintStyle: textStyle(
                               const Color(0xff666666), 15, FontWeight.w400),
-                          inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                          inputFormate: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
                           style: textStyle(
                               theme.isDarkMode
                                   ? colors.colorWhite
@@ -314,20 +523,20 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                           //             ? assets.darkAdd
                           //             : assets.addIcon,
                           //         fit: BoxFit.scaleDown)),
-                          
+
                           textCtrl: mfOrder.invAmt,
                           onChanged: (value) {
                             mfOrder.isValidUpiId(widget.mfData);
                           })),
-                          if(mfOrder.invAmtError != null) ...[
-                            const SizedBox(height: 6),
-                Text("${mfOrder.invAmtError}",
-                    style: textStyle(colors.kColorRedText, 10, FontWeight.w500)),
-                
-              ],
+                if (mfOrder.invAmtError != null) ...[
+                  const SizedBox(height: 6),
+                  Text("${mfOrder.invAmtError}",
+                      style:
+                          textStyle(colors.kColorRedText, 10, FontWeight.w500)),
+                ],
                 const SizedBox(height: 8)
               ],
-                    const SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                   mfOrder.mfOrderTpye == "Lumpsum"
                       ? "Investment amount"
@@ -336,8 +545,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       16,
                       FontWeight.w600)),
-                    const SizedBox(height: 7),
-            
+              const SizedBox(height: 7),
               Container(
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   height: 44,
@@ -349,8 +557,8 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                       hintText: mfOrder.mfOrderTpye == "Lumpsum"
                           ? '${widget.mfData.minimumPurchaseAmount}'
                           : '${widget.mfData.faceValue}',
-                      hintStyle:
-                          textStyle(const Color(0xff666666), 15, FontWeight.w400),
+                      hintStyle: textStyle(
+                          const Color(0xff666666), 15, FontWeight.w400),
                       inputFormate: [FilteringTextInputFormatter.digitsOnly],
                       style: textStyle(
                           theme.isDarkMode
@@ -358,54 +566,54 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                               : colors.colorBlack,
                           16,
                           FontWeight.w600),
-                //       prefixIcon: InkWell(
-                //         onTap: () {
-                //           setState(() {
-                //             if (mfOrder.mfOrderTpye == "Lumpsum") {
-                //               if (fund.invAmt.text.isNotEmpty) {
-                //                 if (double.parse(fund.invAmt.text) > invAmt) {
-                //                   if((double.parse(fund.invAmt.text) - invAmt) < invAmt){
-                //                       ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                // context, "Installment Amount should not be less than ${mfOrder.insAmt}"));
-                //                     }
-                //                     else{
-                //                   fund.invAmt.text =
-                //                       (double.parse(fund.invAmt.text) - invAmt)
-                //                           .toString();
-                //                     }
-                //                 }
-                //               } else {
-                //                 fund.invAmt.text = (invAmt).toString();
-                //               }
-                //             } else {
-                //               if (mfOrder.installmentAmt.text.isNotEmpty) {
-                //                 if (double.parse(mfOrder.installmentAmt.text) >
-                //                     double.parse(mfOrder.insAmt)) {
-                //                       if((double.parse(mfOrder.installmentAmt.text) -
-                //                     double.parse(mfOrder.insAmt)) < double.parse(mfOrder.insAmt)){
-                //                       ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                // context, "Installment Amount should not be less than ${mfOrder.insAmt}"));
-                //                     }
-                //                     else{
-                //                   mfOrder.installmentAmt.text =
-                //                       (double.parse(mfOrder.installmentAmt.text) -
-                //                               double.parse(mfOrder.insAmt))
-                //                           .toString();
-                //                 }
-                //                     }
-                //               } else {
-                //                 mfOrder.installmentAmt.text = mfOrder.insAmt;
-                //               }
-                //             }
-                //           });
-                //         },
-                //         child: SvgPicture.asset(
-                //             theme.isDarkMode
-                //                 ? assets.darkCMinus
-                //                 : assets.minusIcon,
-                //             fit: BoxFit.scaleDown),
-                //       ),
-                //       // suffixIcon: InkWell(
+                      //       prefixIcon: InkWell(
+                      //         onTap: () {
+                      //           setState(() {
+                      //             if (mfOrder.mfOrderTpye == "Lumpsum") {
+                      //               if (fund.invAmt.text.isNotEmpty) {
+                      //                 if (double.parse(fund.invAmt.text) > invAmt) {
+                      //                   if((double.parse(fund.invAmt.text) - invAmt) < invAmt){
+                      //                       ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                      // context, "Installment Amount should not be less than ${mfOrder.insAmt}"));
+                      //                     }
+                      //                     else{
+                      //                   fund.invAmt.text =
+                      //                       (double.parse(fund.invAmt.text) - invAmt)
+                      //                           .toString();
+                      //                     }
+                      //                 }
+                      //               } else {
+                      //                 fund.invAmt.text = (invAmt).toString();
+                      //               }
+                      //             } else {
+                      //               if (mfOrder.installmentAmt.text.isNotEmpty) {
+                      //                 if (double.parse(mfOrder.installmentAmt.text) >
+                      //                     double.parse(mfOrder.insAmt)) {
+                      //                       if((double.parse(mfOrder.installmentAmt.text) -
+                      //                     double.parse(mfOrder.insAmt)) < double.parse(mfOrder.insAmt)){
+                      //                       ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                      // context, "Installment Amount should not be less than ${mfOrder.insAmt}"));
+                      //                     }
+                      //                     else{
+                      //                   mfOrder.installmentAmt.text =
+                      //                       (double.parse(mfOrder.installmentAmt.text) -
+                      //                               double.parse(mfOrder.insAmt))
+                      //                           .toString();
+                      //                 }
+                      //                     }
+                      //               } else {
+                      //                 mfOrder.installmentAmt.text = mfOrder.insAmt;
+                      //               }
+                      //             }
+                      //           });
+                      //         },
+                      //         child: SvgPicture.asset(
+                      //             theme.isDarkMode
+                      //                 ? assets.darkCMinus
+                      //                 : assets.minusIcon,
+                      //             fit: BoxFit.scaleDown),
+                      //       ),
+                      //       // suffixIcon: InkWell(
                       //     onTap: () {
                       //       if (mfOrder.mfOrderTpye == "Lumpsum") {
                       //         if (fund.invAmt.text.isNotEmpty) {
@@ -429,26 +637,27 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                       //     child: SvgPicture.asset(
                       //         theme.isDarkMode ? assets.darkAdd : assets.addIcon,
                       //         fit: BoxFit.scaleDown)),
-                      
+
                       textCtrl: mfOrder.mfOrderTpye == "Lumpsum"
                           ? mfOrder.invAmt
                           : mfOrder.installmentAmt,
                       onChanged: (value) {
                         mfOrder.isValidUpiId(widget.mfData);
                       })),
-              if(mfOrder.mfOrderTpye == "Lumpsum")...[
-              if (mfOrder.invAmtError != null) ...[
-                Text("${mfOrder.invAmtError}",
-                    style: textStyle(colors.kColorRedText, 10, FontWeight.w500)),
-                const SizedBox(height: 6)
-              ],
-              ]
-              else...[
-              if (mfOrder.installmentAmtError != null) ...[
-                Text("${mfOrder.installmentAmtError}",
-                    style: textStyle(colors.kColorRedText, 10, FontWeight.w500)),
-                const SizedBox(height: 6)
-              ],
+              if (mfOrder.mfOrderTpye == "Lumpsum") ...[
+                if (mfOrder.invAmtError != null) ...[
+                  Text("${mfOrder.invAmtError}",
+                      style:
+                          textStyle(colors.kColorRedText, 10, FontWeight.w500)),
+                  const SizedBox(height: 6)
+                ],
+              ] else ...[
+                if (mfOrder.installmentAmtError != null) ...[
+                  Text("${mfOrder.installmentAmtError}",
+                      style:
+                          textStyle(colors.kColorRedText, 10, FontWeight.w500)),
+                  const SizedBox(height: 6)
+                ],
               ],
               Text(
                   "Min. ₹${widget.mfData.minimumPurchaseAmount} (multiple of ${widget.mfData.purchaseAmountMultiplier})",
@@ -544,8 +753,8 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                   onChanged: mfOrder.dates == "DAILY"
                                       ? null
                                       : (value) async {
-                                        mfOrder.changeStartDate(value);
-                                      })),
+                                          mfOrder.changeStartDate(value);
+                                        })),
                         ],
                       ),
                     ),
@@ -564,8 +773,8 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                             FontWeight.w600)),
                     Text(
                         "${mfOrder.invDuration.text} ${mfOrder.freqName == "DAILY" ? "Days" : mfOrder.freqName == "MONTHLY" ? "Months" : "Qtrs"}",
-                        style:
-                            textStyle(colors.kColorRedText, 16, FontWeight.w600)),
+                        style: textStyle(
+                            colors.kColorRedText, 16, FontWeight.w600)),
                   ],
                 ),
                 Container(
@@ -590,234 +799,244 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         onChanged: (value) {
                           mfOrder.isValidUpiId(widget.mfData);
                         })),
-                        if (mfOrder.invDurationError != null) ...[
-                Text("${mfOrder.invDurationError}",
-                    style: textStyle(colors.kColorRedText, 10, FontWeight.w500)),
-                const SizedBox(height: 6)
-              ]
+                if (mfOrder.invDurationError != null) ...[
+                  Text("${mfOrder.invDurationError}",
+                      style:
+                          textStyle(colors.kColorRedText, 10, FontWeight.w500)),
+                  const SizedBox(height: 6)
+                ]
               ],
-                   
-              if(mfOrder.isInitalPay && mfOrder.mfOrderTpye != "Lumpsum")...[
-              const SizedBox(height: 9),
-              Text("Payment method",
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      16,
-                      FontWeight.w600)),
-              const SizedBox(height: 14),
-              DropdownButtonHideUnderline(
-                  child: DropdownButton2(
-                      menuItemStyleData: MenuItemStyleData(
-                          customHeights: mfOrder.getCustItemsHeight()),
-                      buttonStyleData: ButtonStyleData(
-                          height: 36,
-                          width: MediaQuery.of(context).size.width,
-                          decoration: const BoxDecoration(
-                              color: Color(0xffF1F3F8),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(32)))),
-                      dropdownStyleData: DropdownStyleData(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        offset: const Offset(0, 8),
-                      ),
-                      isExpanded: true,
-                      style:
-                          textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                      hint: Text(mfOrder.paymentName,
-                          style: textStyle(
-                              const Color(0XFF000000), 13, FontWeight.w500)),
-                      items: mfOrder.addDividers(),
-                      value: mfOrder.paymentName,
-                      onChanged: (value) async {
-                        mfOrder.chngPayName("$value");
-                      })),
-              const SizedBox(height: 17),
-              Text("Bank account",
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      16,
-                      FontWeight.w600)),
-              const SizedBox(height: 12),
-              DropdownButtonHideUnderline(
-                  child: DropdownButton2(
-                      menuItemStyleData: MenuItemStyleData(
-                          customHeights: mfOrder.getBankCustItemsHeight()),
-                      buttonStyleData: ButtonStyleData(
-                          padding: const EdgeInsets.only(top: 4, left: 16),
-                          height: 50,
-                          width: MediaQuery.of(context).size.width,
-                          decoration: const BoxDecoration(
-                              color: Color(0xffF1F3F8),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(32)))),
-                      dropdownStyleData: DropdownStyleData(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(4)),
-                          offset: const Offset(0, 1)),
-                      isExpanded: true,
-                      style:
-                          textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                      hint: Text(mfOrder.accNum,
-                          style: textStyle(
-                              const Color(0XFF000000), 13, FontWeight.w500)),
-                      items: mfOrder.addBankDividers(),
-                      // customItemsHeights: actionTrade.getCustomItemsHeight(),
-                      value: mfOrder.accNum,
-                      onChanged: (value) async {
-                        mfOrder.chngBankAcc("$value");
-                      })),
-              const SizedBox(height: 8),
-              if (mfOrder.paymentName == "UPI") ...[
-                const SizedBox(height: 12),
-                Text("UPI ID (Virtual payment address)",
+              if (mfOrder.isInitalPay && mfOrder.mfOrderTpye != "Lumpsum") ...[
+                const SizedBox(height: 9),
+                Text("Payment method",
                     style: textStyle(
-                        theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
                         16,
                         FontWeight.w600)),
-              const SizedBox(height: 8),
-            
-                Container(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    height: 44,
-                    child: CustomTextFormField(
-                        textAlign: TextAlign.start,
-                        fillColor: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
-                        hintText: 'exmaple@upi',
-                        hintStyle: textStyle(
-                            const Color(0xff666666), 14, FontWeight.w400),
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            14,
-                            FontWeight.w600),
-                        textCtrl: mfOrder.upiId,
-                        onChanged: (value) {
-                          mfOrder.isValidUpiId(widget.mfData);
-                        })),
-                if (mfOrder.upiError != null) ...[
-                  Text("${mfOrder.upiError}",
-                      style:
-                          textStyle(colors.kColorRedText, 10, FontWeight.w500)),
-                  const SizedBox(height: 6)
-                ]
-              ],
-              ]
-              else if(mfOrder.mfOrderTpye == "Lumpsum")...[
-                   const SizedBox(height: 14),
-                Text("Payment method",
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      16,
-                      FontWeight.w600)),
-              const SizedBox(height: 14),
-              DropdownButtonHideUnderline(
-                  child: DropdownButton2(
-                      menuItemStyleData: MenuItemStyleData(
-                          customHeights: mfOrder.getCustItemsHeight()),
-                      buttonStyleData: ButtonStyleData(
-                          height: 36,
-                          width: MediaQuery.of(context).size.width,
-                          decoration: const BoxDecoration(
-                              color: Color(0xffF1F3F8),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(32)))),
-                      dropdownStyleData: DropdownStyleData(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        offset: const Offset(0, 8),
-                      ),
-                      isExpanded: true,
-                      style:
-                          textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                      hint: Text(mfOrder.paymentName,
-                          style: textStyle(
-                              const Color(0XFF000000), 13, FontWeight.w500)),
-                      items: mfOrder.investloader == false  ? mfOrder.addDividers() : [],
-                      value: mfOrder.paymentName,
-                      onChanged: (value) async {
-                        mfOrder.chngPayName("$value");
-                      })),
-              const SizedBox(height: 18),
-              Text("Bank account",
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      16,
-                      FontWeight.w600)),
-              const SizedBox(height: 12),
-              DropdownButtonHideUnderline(
-                  child: DropdownButton2(
-                      menuItemStyleData: MenuItemStyleData(
-                          customHeights: mfOrder.getBankCustItemsHeight()),
-                      buttonStyleData: ButtonStyleData(
-                          padding: const EdgeInsets.only(top: 4, left: 16),
-                          height: 50,
-                          width: MediaQuery.of(context).size.width,
-                          decoration: const BoxDecoration(
-                              color: Color(0xffF1F3F8),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(32)))),
-                      dropdownStyleData: DropdownStyleData(
+                const SizedBox(height: 14),
+                DropdownButtonHideUnderline(
+                    child: DropdownButton2(
+                        menuItemStyleData: MenuItemStyleData(
+                            customHeights: mfOrder.getCustItemsHeight()),
+                        buttonStyleData: ButtonStyleData(
+                            height: 36,
+                            width: MediaQuery.of(context).size.width,
+                            decoration: const BoxDecoration(
+                                color: Color(0xffF1F3F8),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(32)))),
+                        dropdownStyleData: DropdownStyleData(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
                           decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(4)),
-                          offset: const Offset(0, 1)),
-                      isExpanded: true,
-                      style:
-                          textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                      hint: Text(mfOrder.accNum,
-                          style: textStyle(
-                              const Color(0XFF000000), 13, FontWeight.w500)),
-                      items: mfOrder.addBankDividers(),
-                      // customItemsHeights: actionTrade.getCustomItemsHeight(),
-                      value: mfOrder.accNum,
-                      onChanged: (value) async {
-                        mfOrder.chngBankAcc("$value");
-                      })),
-              const SizedBox(height: 8),
-              if (mfOrder.paymentName == "UPI") ...[
-                const SizedBox(height: 12),
-                Text("UPI ID (Virtual payment address)",
-                    style: textStyle(
-                        theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                        15,
-                        FontWeight.w600)),
-              const SizedBox(height: 4
-              ),
-                Container(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    height: 44,
-                    child: CustomTextFormField(
-                        textAlign: TextAlign.start,
-                        fillColor: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
-                        hintText: 'exmaple@upi',
-                        hintStyle: textStyle(
-                            const Color(0xff666666), 14, FontWeight.w400),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          offset: const Offset(0, 8),
+                        ),
+                        isExpanded: true,
                         style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            14,
-                            FontWeight.w600),
-                        textCtrl: mfOrder.upiId,
-                        onChanged: (value) {
-                          mfOrder.isValidUpiId(widget.mfData);
+                            const Color(0XFF000000), 13, FontWeight.w500),
+                        hint: Text(mfOrder.paymentName,
+                            style: textStyle(
+                                const Color(0XFF000000), 13, FontWeight.w500)),
+                        items: mfOrder.addDividers(),
+                        value: mfOrder.paymentName,
+                        onChanged: (value) async {
+                          mfOrder.chngPayName("$value");
                         })),
-                if (mfOrder.upiError != null) ...[
-                  Text("${mfOrder.upiError}",
-                      style:
-                          textStyle(colors.kColorRedText, 10, FontWeight.w500)),
-                  const SizedBox(height: 6)
+                const SizedBox(height: 17),
+                Text("Bank account",
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        16,
+                        FontWeight.w600)),
+                const SizedBox(height: 14),
+                DropdownButtonHideUnderline(
+                    child: DropdownButton2(
+                        menuItemStyleData: MenuItemStyleData(
+                            customHeights: mfOrder.getBankCustItemsHeight()),
+                        buttonStyleData: ButtonStyleData(
+                            padding: const EdgeInsets.only(top: 4, left: 16),
+                            height: 50,
+                            width: MediaQuery.of(context).size.width,
+                            decoration: const BoxDecoration(
+                                color: Color(0xffF1F3F8),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(32)))),
+                        dropdownStyleData: DropdownStyleData(
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(4)),
+                            offset: const Offset(0, 1)),
+                        isExpanded: true,
+                        style: textStyle(
+                            const Color(0XFF000000), 13, FontWeight.w500),
+                        hint: Text(mfOrder.accNum,
+                            style: textStyle(
+                                const Color(0XFF000000), 13, FontWeight.w500)),
+                        items: mfOrder.addBankDividers(),
+                        value: mfOrder.accNum,
+                        onChanged: (value) async {
+                          mfOrder.chngBankAcc("$value");
+                        })),
+                const SizedBox(height: 8),
+                if (mfOrder.paymentName == "UPI") ...[
+                  const SizedBox(height: 12),
+                  Text("UPI ID (Virtual payment address)",
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          16,
+                          FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      height: 44,
+                      child: CustomTextFormField(
+                          textAlign: TextAlign.start,
+                          fillColor: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
+                          hintText: 'exmaple@upi',
+                          hintStyle: textStyle(
+                              const Color(0xff666666), 14, FontWeight.w400),
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              14,
+                              FontWeight.w600),
+                          textCtrl: mfOrder.upiId,
+                          onChanged: (value) {
+                            mfOrder.isValidUpiId(widget.mfData);
+                          })),
+                  if (mfOrder.upiError != null) ...[
+                    Text("${mfOrder.upiError}",
+                        style: textStyle(
+                            colors.kColorRedText, 10, FontWeight.w500)),
+                    const SizedBox(height: 6)
+                  ]
+                ],
+              ] else if (mfOrder.mfOrderTpye == "Lumpsum") ...[
+                const SizedBox(height: 14),
+                Text("Payment method",
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        16,
+                        FontWeight.w600)),
+                const SizedBox(height: 14),
+                DropdownButtonHideUnderline(
+                    child: DropdownButton2(
+                        menuItemStyleData: MenuItemStyleData(
+                            customHeights: mfOrder.getCustItemsHeight()),
+                        buttonStyleData: ButtonStyleData(
+                            height: 36,
+                            width: MediaQuery.of(context).size.width,
+                            decoration: const BoxDecoration(
+                                color: Color(0xffF1F3F8),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(32)))),
+                        dropdownStyleData: DropdownStyleData(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          offset: const Offset(0, 8),
+                        ),
+                        isExpanded: true,
+                        style: textStyle(
+                            const Color(0XFF000000), 13, FontWeight.w500),
+                        hint: Text(mfOrder.paymentName,
+                            style: textStyle(
+                                const Color(0XFF000000), 13, FontWeight.w500)),
+                        items: mfOrder.investloader == false
+                            ? mfOrder.addDividers()
+                            : [],
+                        value: mfOrder.paymentName,
+                        onChanged: (value) async {
+                          mfOrder.chngPayName("$value");
+                        })),
+                const SizedBox(height: 18),
+                Text("Bank account",
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        16,
+                        FontWeight.w600)),
+                const SizedBox(height: 12),
+                DropdownButtonHideUnderline(
+                    child: DropdownButton2(
+                        menuItemStyleData: MenuItemStyleData(
+                            customHeights: mfOrder.getBankCustItemsHeight()),
+                        buttonStyleData: ButtonStyleData(
+                            padding: const EdgeInsets.only(top: 10, left: 16),
+                            height: 50,
+                            width: MediaQuery.of(context).size.width,
+                            decoration: const BoxDecoration(
+                                color: Color(0xffF1F3F8),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(32)))),
+                        dropdownStyleData: DropdownStyleData(
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(4)),
+                            offset: const Offset(0, 1)),
+                        isExpanded: true,
+                        style: textStyle(
+                            const Color(0XFF000000), 13, FontWeight.w500),
+                        hint: Text(mfOrder.accNum,
+                            style: textStyle(
+                                const Color(0XFF000000), 13, FontWeight.w500)),
+                        items: mfOrder.addBankDividers(),
+                        // customItemsHeights: actionTrade.getCustomItemsHeight(),
+                        value: mfOrder.accNum,
+                        onChanged: (value) async {
+                          mfOrder.chngBankAcc("$value");
+                        })),
+                const SizedBox(height: 8),
+                if (mfOrder.paymentName == "UPI") ...[
+                  const SizedBox(height: 12),
+                  Text("UPI ID (Virtual payment address)",
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          15,
+                          FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      height: 44,
+                      child: CustomTextFormField(
+                          textAlign: TextAlign.start,
+                          fillColor: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
+                          hintText: 'exmaple@upi',
+                          hintStyle: textStyle(
+                              const Color(0xff666666), 14, FontWeight.w400),
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              14,
+                              FontWeight.w600),
+                          textCtrl: mfOrder.upiId,
+                          onChanged: (value) {
+                            mfOrder.isValidUpiId(widget.mfData);
+                          })),
+                  if (mfOrder.upiError != null) ...[
+                    Text("${mfOrder.upiError}",
+                        style: textStyle(
+                            colors.kColorRedText, 10, FontWeight.w500)),
+                    const SizedBox(height: 6)
+                  ]
                 ]
-              ]
               ],
               const SizedBox(height: 11),
               Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -825,7 +1044,8 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                 Expanded(
                     child: Text(
                         " NAV will be allotted on the day funds are realised at the clearing corporation.",
-                        style: textStyle(colors.colorBlue, 13, FontWeight.w500)))
+                        style:
+                            textStyle(colors.colorBlue, 13, FontWeight.w500)))
               ]),
               const SizedBox(
                 height: 100,
@@ -838,121 +1058,132 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                      height: 36,
-                      decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xfffafbff),
-                          border: Border(
-                              top: BorderSide(
-                                  color: theme.isDarkMode
-                                      ? colors.darkColorDivider
-                                      : colors.colorDivider),
-                              bottom: BorderSide(
-                                  color: theme.isDarkMode
-                                      ? colors.darkColorDivider
-                                      : colors.colorDivider))),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(children: [
-                              Text("AUM: ",
-                                  style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
-                                      FontWeight.w500)),
-                              Text(
-                                  "₹${(double.parse(widget.mfData.aUM!.isEmpty ? "0.00" : widget.mfData.aUM!) / 10000000).toStringAsFixed(2)}",
-                                  style: textStyle(
-                                      !theme.isDarkMode
-                                          ? colors.colorBlue
-                                          : colors.colorLightBlue,
-                                      12,
-                                      FontWeight.w600)),
-                              Text(" Cr.",
-                                  style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
-                                      FontWeight.w500))
-                            ]),
-                            Row(children: [
-                              Text("NAV: ",
-                                  style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
-                                      FontWeight.w500)),
-                              Text("₹${widget.mfData.nETASSETVALUE}",
-                                  style: textStyle(
-                                      !theme.isDarkMode
-                                          ? colors.colorBlue
-                                          : colors.colorLightBlue,
-                                      12,
-                                      FontWeight.w600))
-                            ]),
-                          ])),
+                  // Container(
+                  //     height: 36,
+                  //     decoration: BoxDecoration(
+                  //         color: theme.isDarkMode
+                  //             ? colors.darkGrey
+                  //             : const Color(0xfffafbff),
+                  //         border: Border(
+                  //             top: BorderSide(
+                  //                 color: theme.isDarkMode
+                  //                     ? colors.darkColorDivider
+                  //                     : colors.colorDivider),
+                  //             bottom: BorderSide(
+                  //                 color: theme.isDarkMode
+                  //                     ? colors.darkColorDivider
+                  //                     : colors.colorDivider))),
+                  //     padding: const EdgeInsets.symmetric(horizontal: 16),
+                  //     child:
+                  //      Row(
+                  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //         children: [
+                  //           Row(children: [
+                  //             Text("AUM'': ",
+                  //                 style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
+                  //                     FontWeight.w500)),
+                  //             Text(
+                  //                 "₹${(double.parse(widget.mfData.aUM!.isEmpty ? "0.00" : widget.mfData.aUM!) / 10000000).toStringAsFixed(2)}",
+                  //                 style: textStyle(
+                  //                     !theme.isDarkMode
+                  //                         ? colors.colorBlue
+                  //                         : colors.colorLightBlue,
+                  //                     12,
+                  //                     FontWeight.w600)),
+                  //             Text(" Cr.",
+                  //                 style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
+                  //                     FontWeight.w500))
+                  //           ]),
+                  //           Row(children: [
+                  //             Text("NAV: ",
+                  //                 style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
+                  //                     FontWeight.w500)),
+                  //             Text("₹${widget.mfData.nETASSETVALUE}",
+                  //                 style: textStyle(
+                  //                     !theme.isDarkMode
+                  //                         ? colors.colorBlue
+                  //                         : colors.colorLightBlue,
+                  //                     12,
+                  //                     FontWeight.w600))
+                  //           ]),
+                  //         ])),
+
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(
-                        onPressed: () async {
+                        onPressed: () async { 
+                          if(mfOrder.loading == false){
                           print(mfOrder.invAmtError);
                           print(mfOrder.upiError);
 
                           print(mfOrder.installmentAmtError);
                           print(mfOrder.invDurationError);
 
-                          if(mfOrder.invAmtError == "" &&
-        mfOrder.upiError == "" &&
-        mfOrder.installmentAmtError == "" && mfOrder.invDurationError == ""){
-
-                          if (mfOrder.mfOrderTpye == "Lumpsum") {
-                            print(mfOrder.isValidUpiId(widget.mfData));
-                            print(widget.mfData);
-                            if(mfOrder.isValidUpiId(widget.mfData) == true){
-                              
-                            mfPlaceorder(widget.mfData, mfOrder, context);
+                          if (mfOrder.invAmtError == "" &&
+                              mfOrder.upiError == "" &&
+                              mfOrder.installmentAmtError == "" &&
+                              mfOrder.invDurationError == "") {
+                            if (mfOrder.mfOrderTpye == "Lumpsum") {
+                              print(mfOrder.isValidUpiId(widget.mfData));
+                              print(widget.mfData);
+                              if (mfOrder.isValidUpiId(widget.mfData) == true) {
+                                mfPlaceorder(widget.mfData, mfOrder, context);
+                              } else if (mfOrder.paymentName != "UPI") {
+                                mfPlaceorder(widget.mfData, mfOrder, context);
+                              }
+                            } else {
+                              if (mfOrder.mandateStatus != "APPROVED") {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    successMessage(context,
+                                        "Mandate is not Approved yet"));
+                              } else {
+                                mfOrder.fetchXsipPlaceOrder(
+                                    context,
+                                    "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
+                                    mfOrder.freqName == "Daily"
+                                        ? "0"
+                                        : mfOrder.dates,
+                                    mfOrder.freqName,
+                                    mfOrder.installmentAmt.text,
+                                    mfOrder.invDuration.text,
+                                    mfOrder.freqName == "Daily"
+                                        ? "0"
+                                        : mfOrder.endDate,
+                                    mfOrder.mandateId);
+                              }
                             }
-                            else if(mfOrder.paymentName != "UPI"){
-                              mfPlaceorder(widget.mfData, mfOrder, context);
-                            }
-
-                          } 
-                          
-                          else {
-                            if(mfOrder.mandateStatus != "APPROVED"){
-          ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "Mandate is not Approved yet"));
-        }
-        else{
-                            mfOrder.fetchXsipPlaceOrder(
-                                context,
-                                "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
-                                mfOrder.freqName == "Daily"
-                                    ? "0"
-                                    : mfOrder.dates,
-                                mfOrder.freqName,
-                                mfOrder.installmentAmt.text,
-                                mfOrder.invDuration.text,
-                                mfOrder.freqName == "Daily"
-                                    ? "0"
-                                    : mfOrder.endDate,
-                                mfOrder.mandateId);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                successMessage(context,
+                                    "Please check if you have entered all Data Correctly"));
                           }
                           }
-        }
-        
-        else{
-          ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "Please check if you have entered all Data Correctly"));
-        }
                         },
                         style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             backgroundColor: mfOrder.invAmtError == null &&
                                     mfOrder.upiError == null
-                                ? colors.ltpgreen
-                                : colors.ltpgreen.withOpacity(.7),
+                                ? colors.colorBlack
+                                : colors.colorBlack,
                             shape: const StadiumBorder()),
-                        child: Text("Invest",
-                                style: textStyle(const Color(0xffffffff), 14,
-                                    FontWeight.w600))),
+                        child: mfOrder.loading == true
+    ? const SizedBox(
+        height: 15, 
+        width: 15,
+        child: CircularProgressIndicator(
+          strokeWidth: 2.0, 
+          valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(99, 48, 48, 48)), 
+          backgroundColor: Color.fromARGB(255, 255, 255, 255),
+        ),
+      )
+    :  Text(
+                            mfOrder.mfOrderTpye == "SIP"
+                                ? "SIP"
+                                : mfOrder.mfOrderTpye,
+                            style: textStyle(
+                                const Color(0xffffffff), 14, FontWeight.w600))),
                   ),
                   if (defaultTargetPlatform == TargetPlatform.iOS)
                     const SizedBox(height: 18)
@@ -975,8 +1206,10 @@ mfPlaceorder(
     buyselltype: "FRESH",
     dptxn: "C",
     amount: double.parse(mfOrder.mfOrderTpye == "Lumpsum"
-                        ? mfOrder.invAmt.text
-                        : mfOrder.installmentAmt.text).toInt().toString(),
+            ? mfOrder.invAmt.text
+            : mfOrder.installmentAmt.text)
+        .toInt()
+        .toString(),
     allredeem: "N",
     kycstatus: "Y",
     qty: "0",
@@ -984,12 +1217,11 @@ mfPlaceorder(
     minredeem: "N",
     dpc: "Y",
   );
-  if(mfOrder.paymentName == "UPI"){
+  if (mfOrder.paymentName == "UPI") {
     mfOrder.fetchVerifyUpi(context, mfOrder.upiId.text, input);
-  }
-  else{
+  } else {
     mfOrder.fetchVerifyUpi(context, "", input);
   }
-  
+
   print("object $input");
 }

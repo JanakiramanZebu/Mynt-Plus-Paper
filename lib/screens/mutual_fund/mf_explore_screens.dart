@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/screens/mutual_fund/mf_order_book_screen.dart';
 // import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/loader_ui.dart';
 // import '../../provider/mf_provider.dart';
 import '../../provider/mf_provider.dart';
+import 'mf_sip_screen.dart';
 import 'mf_watchlist.dart';
 import 'mutual_fund_screen_new.dart';
 
@@ -36,6 +38,18 @@ class _ExploreScreensState extends State<MFExploreScreens>
       "imgpath": assets.bookmarkLineIcon,
       "title": "Watchlist",
       "index": 1,
+    },
+    {
+      "Aimgpath": "",
+      "imgpath": assets.bookmarkLineIcon,
+      "title": "Portfolio",
+      "index": 2,
+    },
+     {
+      "Aimgpath": "",
+      "imgpath": assets.bookmarkLineIcon,
+      "title": "SIP",
+      "index": 3,
     }
   ];
 
@@ -69,7 +83,7 @@ class _ExploreScreensState extends State<MFExploreScreens>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    _tabController = TabController(length: 4, vsync: this, initialIndex: 0);
   }
 
   @override
@@ -91,40 +105,45 @@ class _ExploreScreensState extends State<MFExploreScreens>
                   padding: const EdgeInsets.only(bottom: 0, left: 15, top: 2),
                   decoration: BoxDecoration(
                       border: Border(
-                          
                           bottom: BorderSide(
                               color: widget.theme.isDarkMode
                                   ? colors.darkColorDivider
                                   : colors.colorDivider,
-                              width: 0.4))),
+                              width: 0),
+                              )),
                   // height: 60,
                   child: TabBar(
-                      labelPadding: const EdgeInsets.only(right: 16, bottom: 0),
+                      labelPadding: const EdgeInsets.only(right: 8, bottom: 8),
                       tabAlignment: TabAlignment.start,
-                      indicatorColor: Colors.transparent,
+                      indicatorColor: const Color.fromARGB(255, 255, 255, 255),
                       controller: _tabController,
                       isScrollable: true,
                       tabs: List.generate(
                           tablistitems.length,
                           (tab) => tabConstruce(
-                              tablistitems[tab]['imgpath'].toString(),
+                              // tablistitems[tab]['imgpath'].toString(),
                               tablistitems[tab]['title'].toString(),
+                              
                               theme,
                               tab,
                               () {},
                               mfData)))),
               Expanded(
                 child: TabBarView(
+                
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _tabController,
                   children: [
                     MutualFundNewScreen(
                       tabController: _tabController,
                     ),
-                    MFWatchlistScreen()
+                    const MFWatchlistScreen(),
+                    const MfOrderBookScreen(),
+                    const MFSipdetScreen()
                   ],
                 ),
               ),
+              
             ],
           ),
         );
@@ -132,7 +151,7 @@ class _ExploreScreensState extends State<MFExploreScreens>
     );
   }
 
-  Widget tabConstruce(String icon, String title, ThemesProvider theme, int tab,
+  Widget tabConstruce( String title, ThemesProvider theme, int tab,
       VoidCallback onPressed, mfData) {
     return ElevatedButton(
         onPressed: () {
@@ -142,29 +161,41 @@ class _ExploreScreensState extends State<MFExploreScreens>
           _tabController.animateTo(tab);
           print("object act tab $tab");
         },
+        
         style: ElevatedButton.styleFrom(
+          
             elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             backgroundColor: theme.isDarkMode
                 ? tab == mfData.activeTab
                     ? colors.colorbluegrey
-                    : const Color(0xffB5C0CF).withOpacity(.15)
+                    : const Color.fromARGB(255, 255, 255, 255).withOpacity(.15)
                 : tab == mfData.activeTab
                     ? const Color(0xff000000)
-                    : const Color(0xffF1F3F8),
-            shape: const StadiumBorder()),
+                    : const Color.fromARGB(255, 255, 255, 255),
+                    
+      shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(18), 
+      side: const BorderSide( 
+        color: Colors.black, 
+        width: 1, 
+      ),
+    ),
+            
+             minimumSize: const Size(0, 30),
+            ),
         child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SvgPicture.asset(
-                icon,
-                color: theme.isDarkMode
-                    ? Color(tab == mfData.activeTab ? 0xff000000 : 0xffffffff)
-                    : Color(tab == mfData.activeTab ? 0xffffffff : 0xff000000),
-              ),
-              const SizedBox(width: 8),
+              // SvgPicture.asset(
+              //   icon,
+              //   color: theme.isDarkMode
+              //       ? Color(tab == mfData.activeTab ? 0xff000000 : 0xffffffff)
+              //       : Color(tab == mfData.activeTab ? 0xffffffff : 0xff000000),
+              // ),
+              // const SizedBox(width: 8),
               Text(title,
                   style: textStyle(
                       theme.isDarkMode
@@ -173,9 +204,11 @@ class _ExploreScreensState extends State<MFExploreScreens>
                           : Color(tab == mfData.activeTab
                               ? 0xffffffff
                               : 0xff000000),
-                      14,
+                      13,
                       FontWeight.w500))
             ]));
+            
+ 
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {

@@ -1,5 +1,13 @@
 import 'dart:developer';
 
+
+import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_hold_singlepage_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_holding_new_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_order_det_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_sip_single_page_provider.dart';
+import 'package:mynt_plus/models/mf_model/sip_mf_list_model.dart';
+
 import '../api/core/api_core.dart';
 import '../models/mf_model/best_mf_list_model.dart';
 import '../models/mf_model/best_mf_model.dart';
@@ -172,8 +180,32 @@ String convertNumber(num value) {
           }));
 
       final json = jsonDecode((res.body));
-
+ print("MF orderBook ==>${json}");
       // log("MF orderBook ==>${json}");
+
+      return MFOrderBookModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  redemptioncancelapi(orderno) async {
+      // print("object",orderno);
+    try {
+      print("object");
+      print("${orderno}");
+
+      final uri = Uri.parse(apiLinks.redemptioncancel);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({
+            "client_code": "${prefs.clientId}",
+            "order_number":orderno
+          }));
+
+      final json = jsonDecode((res.body));
+
+      print("MF orderBook ==>${json}");
 
       return MFOrderBookModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -396,6 +428,23 @@ String convertNumber(num value) {
     }
   }
 
+
+   Future<BestmfNewlist> getnewMFBestListData() async {
+     try {
+      final uri = Uri.parse(apiLinks.newbestMf);
+      final res = await apiClient.get(uri, headers: defaultHeaders);
+
+      final json = jsonDecode((res.body));
+
+      print("Best MF @@@@@@@@1111==>$json");
+
+      return BestmfNewlist.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+
   Future<MFCategoryType> getMFCategoryTypes() async {
     try {
       final uri = Uri.parse(apiLinks.mfCategoryTypes);
@@ -430,6 +479,8 @@ String convertNumber(num value) {
   Future<MFWatchlistModel> getMFWatchlistsearch(
       String isin, String isAdd) async {
     try {
+         print("watttadd");
+      print("watttadd${isin},${isAdd}");
       final uri = Uri.parse(apiLinks.mfWatchlist);
       Map payload = {"client_code": "${prefs.clientId}", "type": isin == "" ? "View" : isAdd};
 
@@ -576,4 +627,115 @@ String convertNumber(num value) {
       rethrow;
     }
   }
+
+
+  Future<Sip_list_data> getSiplist() async {
+    try {
+      final uri = Uri.parse(apiLinks.mfsiplist);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({"client_code": "${prefs.clientId}"}));
+
+      final json = jsonDecode((res.body));
+
+      print("mflisttt Type MF ==>$json");
+      // print("mflisttt Type MF ==>$json.total_sip_amount");
+
+
+      return Sip_list_data.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+    Future<Sip_single_page> getSipsinglepage(String value) async {
+    try {
+      final uri = Uri.parse(apiLinks.mfsinglepage);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({"client_code": "${prefs.clientId}","sipregnno":"${value}"}));
+          // body: jsonEncode({"client_code": "ZE1A40","sipregnno":"126150781"}));
+
+
+      final json = jsonDecode((res.body));
+
+      print("mflisttt Type MF ==>$json");
+      // print("mflisttt Type MF ==>$json.total_sip_amount");
+
+
+      return Sip_single_page.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+   Future<mf_order_sig_det> getsingleortderapi(String value,String bs , String type , String status,String sipno , String orderStatus ) async {
+    try {
+      final uri = Uri.parse(apiLinks.mfsingleorder);
+      
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({"ordernumber": "${value}","buysell":"${bs}","ordertype" : "${type}" ,"orderstatus":"${status}" ,"sipregnno" : "${sipno}" , "register_cancel":"${orderStatus == "usercancel" ? "" :  orderStatus}" }));
+          // body: jsonEncode({"client_code": "ZE1A40","sipregnno":"126150781"}));
+
+
+      final json = jsonDecode((res.body));
+
+      print("mfsingle orfderrrrrr$json");
+      // print("mflisttt Type MF ==>$json.total_sip_amount");
+
+
+      return mf_order_sig_det.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+   Future<mf_holding_sig_det> getholdsinglepage(String value ) async {
+    try {
+      final uri = Uri.parse(apiLinks.mfholdsinlepageapi);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({"client_code":"${prefs.clientId}","isin": "${value}" }));
+          // body: jsonEncode({"client_code": "ZE1A40","sipregnno":"126150781"}));
+
+
+      final json = jsonDecode((res.body));
+print("client_code||||${prefs.clientId}");
+
+print("valuee||||${value}");
+      print("mfholdddddd$json");
+      // print("mflisttt Type MF ==>$json.total_sip_amount");
+
+
+      return mf_holding_sig_det.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+     Future<mf_holdoing_new> getmfholdnewapi( ) async {
+    try {
+      final uri = Uri.parse(apiLinks.mfholdnewapi);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({"client_code":"${prefs.clientId}" }));
+          // body: jsonEncode({"client_code": "ZE1A40","sipregnno":"126150781"}));
+
+
+      final json = jsonDecode((res.body));
+print("client_code||||${prefs.clientId}");
+
+// print("valuee||||${value}");
+      print("mfholdddddd$json");
+      // print("mflisttt Type MF ==>$json.total_sip_amount");
+
+
+      return mf_holdoing_new.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+
 }

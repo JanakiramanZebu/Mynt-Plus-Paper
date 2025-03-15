@@ -27,6 +27,7 @@ class MFOrderBookModel {
 class Data {
   String? amount;
   String? buysell;
+   String? amcCode;
   String? clientcode;
   String? date;
   String? dateTime;
@@ -44,6 +45,7 @@ class Data {
 
   Data(
       {this.amount,
+       this.amcCode,
       this.buysell,
       this.clientcode,
       this.date,
@@ -63,6 +65,7 @@ class Data {
   Data.fromJson(Map<String, dynamic> json) {
     amount = json['amount'];
     buysell = json['buysell'];
+    amcCode = json['amc_code'];
     clientcode = json['clientcode'];
     date = json['date'];
     dateTime = json['date_time'];
@@ -83,6 +86,7 @@ class Data {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['amount'] = amount;
     data['buysell'] = buysell;
+    data['amc_code'] = amcCode;
     data['clientcode'] = clientcode;
     data['date'] = date;
     data['date_time'] = dateTime;

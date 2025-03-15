@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:readmore/readmore.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+import '../../../models/mf_model/mf_factsheet_graph.dart';
 import '../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
@@ -15,6 +18,9 @@ class MFPerformance extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = watch(themeProvider);
     final mfData = watch(mfProvider);
+    final mfDataprofile = watch(mfProvider).factSheetDataModel?.data!;
+    // final navGraph = watch(mfProvider).navGraph;
+    final mfProvide = watch(mfProvider);
     if (mfData.sheetGraph != null) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -82,7 +82,12 @@ class MutualFundList {
   String? schemeMinimumAmount;
   String? fSchemeName;
   String? nAVSchemeType;
+  String? type;
+  String? subtype;
+  String? corpos;
   bool? isAdd;
+  String? schemegroupName;
+
 
   MutualFundList(
       {this.uniqueNo,
@@ -141,9 +146,13 @@ class MutualFundList {
       this.sCHEMESUBCATEGORY,
       this.schemeMinimumAmount,
       this.fSchemeName,
-      this.nAVSchemeType,this.isAdd});
+      this.type,
+      this.subtype,
+      this.corpos,
+      this.nAVSchemeType,this.isAdd,this.schemegroupName});
 
   MutualFundList.fromJson(Map<String, dynamic> json) {
+    print("xxxxxx:: $json");
     uniqueNo = json['Unique_No'];
     schemeCode = json['Scheme_Code'];
     rTASchemeCode = json['RTA_Scheme_Code'];
@@ -201,6 +210,10 @@ class MutualFundList {
     schemeMinimumAmount = json['Scheme_Minimum_Amount'];
     fSchemeName = json['f_scheme_name'];
     nAVSchemeType = json['NAV_Scheme_Type'];
+    schemegroupName = json['schemeGroupName'];
+    type = json['Type'];
+    subtype = json['SubType'];
+     corpos = json["corpus"];
     isAdd=json['isAdd']??false;
   }
 
@@ -263,6 +276,10 @@ class MutualFundList {
     data['Scheme_Minimum_Amount'] = schemeMinimumAmount;
     data['f_scheme_name'] = fSchemeName;
     data['NAV_Scheme_Type'] = nAVSchemeType;
+    data['schemeGroupName'] = schemegroupName;
+    data['Type'] = type;
+    data['SubType'] = subtype;
+    data['corpus'] = corpos;
     data['isAdd']=isAdd;
     return data;
   }

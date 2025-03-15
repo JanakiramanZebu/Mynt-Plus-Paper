@@ -49,6 +49,7 @@ class Assets {
   final String volumeIcon = "assets/icon/volume.svg";
   final String optChainIcon = "assets/icon/option_chain.svg";
   final String exportIcon = "assets/icon/exploreicon.svg";
+  final String balanceicon = "assets/icon/balancehy.svg";
   final String bookmarkLineIcon = "assets/icon/bookmarkLineIcon.svg";
   final String bookmarkedIcon = "assets/icon/watchlistIcon/bookmark_plus.svg";
   final String bookmarkIcon = "assets/icon/watchlistIcon/bookmark.svg";
@@ -171,6 +172,10 @@ class Assets {
   final String percentage = "assets/icon/percentage.svg";
   final String lowRisk = "assets/icon/low_risk.svg";
   final String highRisk = "assets/icon/high_risk.svg";
+  // --
+  final String hybridimg = "assets/icon/balancehy.svg";
+  final String sectorical = "assets/icon/sectorical.svg";
+  final String growthnew = "assets/icon/growthnew.svg";
 
   // payment icons
   final String upiIcon = "assets/icon/icons8-bhim.svg";

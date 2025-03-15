@@ -1,6 +1,9 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
+import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
+import 'package:mynt_plus/screens/mutual_fund/mf_sip_details_screen.dart';
+import 'package:mynt_plus/screens/mutual_fund/order_single_page.dart';
 import 'package:mynt_plus/screens/profile_screen/app_webview/ipo_webview.dart';
 import '../screens/authentication/login/login_banner_screen.dart';
 import '../screens/authentication/login/login_screen.dart';
@@ -1122,6 +1125,63 @@ class AppRoutes {
             );
           },
         );
+         case Routes.mfSipdetScren:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const mfSipdetScren(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+        case Routes.mfholdsinlepage:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const mfholdsinlepage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+ case Routes.mforderdetscreen:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const mforderdetscreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
       case Routes.iposearchscreen:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>

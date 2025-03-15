@@ -101,6 +101,9 @@ mixin PortfolioAPI on ApiCore {
           var raw = [
             {"stat": "no data"}
           ];
+            print("holdingres");
+
+          print(json);
           if (json.toString() == '[]') {
             data.add(MFHoldingsModel.fromJson(raw as Map<String, dynamic>));
           } else if (json['stat'] == 'Not_Ok') {

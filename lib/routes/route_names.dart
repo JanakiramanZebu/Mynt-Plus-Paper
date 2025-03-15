@@ -161,7 +161,9 @@ class Routes {
   static const String bestMfScreen = "bestMfScreen";
 
   static const String mfOrderbookscreen = 'mfOrderbook';
-
+  static const String mfSipdetScren = 'mfSipdetScren';
+   static const String mfholdsinlepage = 'mfholdsinlepage';
+  static const String mforderdetscreen = 'mforderdetscreen';
   static const String mfsearchscreen = 'mfsearchscreen';
 
   static const String mfnfoscreen = 'mfnfoscreen';

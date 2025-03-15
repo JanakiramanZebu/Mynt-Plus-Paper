@@ -1,10 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:vertical_scrollable_tabview/vertical_scrollable_tabview.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import '../../models/mf_model/mutual_fundmodel.dart';
+import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
@@ -19,8 +23,13 @@ import 'widget/performance.dart';
 import 'widget/scheme.dart';
 
 class MFStockDetailScreen extends StatefulWidget {
+
   final MutualFundList mfStockData;
+
+  // final TaxSaving mfStockData;
+  //  final mfData = mfProvider;
   const MFStockDetailScreen({super.key, required this.mfStockData});
+
 
 //    final MutualFundList mfStockData1;
 //  MFStockDetailScreen({super.key, required this.mfStockData1});
@@ -65,46 +74,60 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final theme = watch(themeProvider);
+      final fund = watch(fundProvider);
       final mfData = watch(mfProvider);
 
       return Scaffold(
         backgroundColor: Colors.white,
         bottomSheet: Container(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                width: MediaQuery.of(context).size.width,
-                child: ElevatedButton(
-                  onPressed: () { 
-                    if (widget.mfStockData.sIPFLAG == "Y") {
-                      mfData.invertfun("${widget.mfStockData.iSIN}",
-                          "${widget.mfStockData.schemeCode}");
-                    }
+  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  child: Row(
+    children: [
+      Expanded(
+        child: ElevatedButton(
+          onPressed: () async{
+            if (widget.mfStockData.sIPFLAG == "Y") {
+               await mfData.invertfun("${widget.mfStockData.iSIN}",
+                  "${widget.mfStockData.schemeCode}");
+            }
+            Navigator.pushNamed(context, Routes.mforderScreen,
+                arguments: widget.mfStockData);
+                mfData.orderchangetitle("Lumpsum");
 
-                    // await mfData.fetchTopSchemes();
-                    Navigator.pushNamed(context, Routes.mforderScreen,
-                        arguments: widget.mfStockData);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    backgroundColor: colors.colorBlack,
-                    shape: const StadiumBorder(),
-                  ),
-                  child: Text("Invest",
-                      style: textStyle(
-                          const Color(0xffffffff), 14, FontWeight.w600)),
-                ),
-              ),
-              if (defaultTargetPlatform == TargetPlatform.iOS)
-                const SizedBox(height: 18),
-            ],
+                mfData.chngOrderType("Lumpsum");
+          },
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            backgroundColor: colors.colorBlack,
+            shape: const StadiumBorder(),
           ),
+          child: Text("Lumpsum",
+              style: textStyle(const Color(0xffffffff), 14, FontWeight.w600)),
         ),
+      ),
+      const SizedBox(width: 10), // Space between buttons
+      Expanded(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.pushNamed(context, Routes.mforderScreen,
+                arguments: widget.mfStockData);
+                  mfData.orderchangetitle("SIP");
+                  mfData.chngOrderType("SIP");
+          },
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            backgroundColor: colors.colorBlack,
+            shape: const StadiumBorder(),
+          ),
+          child: Text("SIP",
+              style: textStyle(const Color(0xffffffff), 14, FontWeight.w600)),
+        ),
+      ),
+    ],
+  ),
+),
+
         body: TransparentLoaderScreen(
           isLoading: mfData.singleloader!,
           child: VerticalScrollableTabView(
@@ -114,11 +137,20 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
               slivers: [
                 SliverAppBar(
                   pinned: true,
-                  elevation: .2,
+                  elevation: 0,
                   leadingWidth: 41,
                   centerTitle: false,
                   titleSpacing: 2,
-                  leading: const CustomBackBtn(),
+       leading: Padding(
+             padding: const EdgeInsets.only(left:8.0),
+             child: IconButton(
+                 icon: Icon(Icons.arrow_back_ios, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack), 
+                 onPressed: () {
+             
+                  Navigator.pop(context);
+                 },
+               ),
+           ),
                   shadowColor: const Color(0xffECEFF3),
                   title: Padding(
                     padding: const EdgeInsets.only(right: 14),
@@ -167,28 +199,29 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                                             shrinkWrap: true,
                                             scrollDirection: Axis.horizontal,
                                             children: [
-                                              CustomExchBadge(
-                                                exch: widget
-                                                        .mfStockData.schemeName!
-                                                        .contains("GROWTH")
-                                                    ? "GROWTH"
-                                                    : widget.mfStockData
-                                                            .schemeName!
-                                                            .contains(
-                                                                "IDCW PAYOUT")
-                                                        ? "IDCW PAYOUT"
-                                                        : widget.mfStockData
-                                                                .schemeName!
-                                                                .contains(
-                                                                    "IDCW REINVESTMENT")
-                                                            ? "IDCW REINVESTMENT"
-                                                            : widget.mfStockData
-                                                                    .schemeName!
-                                                                    .contains(
-                                                                        "IDCW")
-                                                                ? "IDCW"
-                                                                : "NORMAL",
-                                              ),
+                                              // CustomExchBadge(
+                                              //   exch: widget
+                                              //           .mfStockData.schemeName!
+                                              //           .contains("GROWTH")
+                                              //       ? "GROWTH"
+                                              //       : widget.mfStockData
+                                              //               .schemeName!
+                                              //               .contains(
+                                              //                   "IDCW PAYOUT")
+                                              //           ? "IDCW PAYOUT"
+                                              //           : widget.mfStockData
+                                              //                   .schemeName!
+                                              //                   .contains(
+                                              //                       "IDCW REINVESTMENT")
+                                              //               ? "IDCW REINVESTMENT"
+                                              //               : widget.mfStockData
+                                              //                       .schemeName!
+                                              //                       .contains(
+                                              //                           "IDCW")
+                                              //                   ? "IDCW"
+                                              //                   : "NORMAL",
+                                              // ),
+                                             
                                               const SizedBox(width: 5),
                                               CustomExchBadge(
                                                   exch:
@@ -234,8 +267,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                                         (double.parse(widget.mfStockData.aUM!
                                                         .isEmpty
                                                     ? "0.00"
-                                                    : widget.mfStockData.aUM!) /
-                                                10000000)
+                                                    : widget.mfStockData.aUM!))
                                             .toStringAsFixed(2),
                                         style: textStyle(colors.colorBlack, 14,
                                             FontWeight.w600),
@@ -346,6 +378,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
               }),
         ),
       );
+  
     });
   }
 }

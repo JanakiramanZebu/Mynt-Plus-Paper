@@ -183,9 +183,17 @@ class ApiLinks {
 
 // Mutual Fund
   String get bestMf => "$dashBoardURL/mf/z_data_1";
+   String get newbestMf => "$dashBoardURL/mf/getMfBaskets";
   String get mfCategoryList => "$dashBoardURL/mf/getCategoryschemes";
   String get mfCategoryListData => "$dashBoardURL/mf/get_title_values";
   String get mfCategoryTypes => "$dashBoardURL/mf/getCategoryType";
+   String get mfsiplist => "$dashBoardURL/mf/client_approved_sips";
+   String get mfsinglepage => "$dashBoardURL/mf/single_page_sip";
+     String get mfsingleorder => "$dashBoardURL/mf/single_page_order_book";
+    //  String get mfsingleorder => "$dashBoardURL/mf/single_page_order_book";
+     String get mfholdsinlepageapi => "$dashBoardURL/mf/holdings_single_page";
+     String get mfholdnewapi => "$dashBoardURL/mf/GetHoldings_mob";
+       String get redemptioncancel => "$dashBoardURL/mf/lumsum_redemption_cancel";
   String get masterMF => "$dashBoardURL/mf/master_file_datas";
   String get nfoMF => "https://v3.mynt.in/mf/NFO_datas";
   String get searchMF => "https://v3.mynt.in/mf/mfsearch";

@@ -4,6 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_hold_singlepage_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_holding_new_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_order_det_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_sip_single_page_provider.dart';
+import 'package:mynt_plus/models/mf_model/sip_mf_list_model.dart';
+import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
@@ -23,6 +30,7 @@ import '../models/mf_model/mf_nav_graph_model.dart';
 import '../models/mf_model/mf_nfo_model.dart';
 import '../models/mf_model/mf_orderbook_lumpsum_model.dart';
 import '../models/mf_model/mf_scheme_peers_model.dart';
+import '../models/mf_model/mf_search_model.dart';
 import '../models/mf_model/mf_sip_model.dart';
 import '../models/mf_model/mf_watch_list.dart';
 import '../models/mf_model/mf_x_sip_order_responces.dart';
@@ -42,6 +50,7 @@ final mfProvider = ChangeNotifierProvider((ref) => MFProvider(ref.read));
 class MFProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
+
   final Reader ref;
   MFProvider(this.ref);
 
@@ -63,14 +72,38 @@ class MFProvider extends DefaultChangeNotifier {
   BestMFModel? _bestMFModel;
   BestMFModel? get bestMFModel => _bestMFModel;
 
+  BestmfNewlist? _newbestmodel;
+  BestmfNewlist? get newbestmodel => _newbestmodel;
+
   MFCategoryList? _mfCategoryList;
   MFCategoryList? get mfCategoryList => _mfCategoryList;
 
   BestMFListModel? _bestMFList;
   BestMFListModel? get bestMFList => _bestMFList;
 
+  TaxSaving? _bestMFListnew;
+  TaxSaving? get bestMFListnew => _bestMFListnew;
+
   MFCategoryType? _mfCategoryTypes;
   MFCategoryType? get mfCategoryTypes => _mfCategoryTypes;
+
+  Sip_list_data? _mfsiporderlist;
+  Sip_list_data? get mfsiporderlist => _mfsiporderlist;
+
+
+  Sip_single_page? _mfsinglepageres;
+  Sip_single_page? get mfsinglepageres => _mfsinglepageres;
+
+  
+  mf_order_sig_det? _mforderdet;
+  mf_order_sig_det? get mforderdet => _mforderdet;
+
+  mf_holding_sig_det  ? _mfholdsingepage;
+  mf_holding_sig_det? get mfholdsingepage => _mfholdsingepage;
+
+  mf_holdoing_new   ? _mfholdingnew;
+  mf_holdoing_new ? get mfholdingnew => _mfholdingnew;
+
 
   bool _mforderloader = false;
   bool get mforderloader => _mforderloader;
@@ -110,6 +143,9 @@ class MFProvider extends DefaultChangeNotifier {
 
   List<MutualFundList>? _mfWatchlist = [];
   List<MutualFundList>? get mfWatchlist => _mfWatchlist;
+
+  List<Xsip>? _mfsiplistview = [];
+  List<Xsip>? get mfsiplistview => _mfsiplistview;
 
   List<MutualFundList>? _topmutualfund = [];
   List<MutualFundList>? get topmutualfund => _topmutualfund;
@@ -158,6 +194,12 @@ class MFProvider extends DefaultChangeNotifier {
   bool? _singleloader = false;
   bool? get singleloader => _singleloader;
 
+  String _selechip = "";
+  String get selctedchip => _selechip;
+
+    String _orderseltab = "";
+  String get orderseltab => _orderseltab;
+
   bool? _bestmfloader = false;
   bool? get bestmfloader => _bestmfloader;
 
@@ -182,8 +224,33 @@ class MFProvider extends DefaultChangeNotifier {
   int? _activeTab = 0;
   int? get activeTab => _activeTab;
 
+  String _namechange = "";
+  String get namechange => _namechange;
+
+changename(String name){
+  _namechange = name;
+   notifyListeners();
+}
+
+loaderfun(){
+  _bestmfloader = true;
+  print("ttttttttttt");
+    notifyListeners();
+}
+
+
   mfExTabchange(int tab) {
     _activeTab = tab;
+    notifyListeners();
+  }
+
+  changetitle(String title) {
+    _selechip = title;
+    notifyListeners();
+  }
+
+    orderchangetitle(String title) {
+    _orderseltab = title;
     notifyListeners();
   }
 
@@ -194,7 +261,7 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  String _paymentName = "";
+  String _paymentName = "UPI";
 
   String get paymentName => _paymentName;
   BankDetailsModel? _bankDetailsModel;
@@ -236,6 +303,9 @@ class MFProvider extends DefaultChangeNotifier {
 
   String _bestmfselected = "";
   String get bestmfselected => _bestmfselected;
+
+  String _redemtionres = "";
+  String get redemtionres => _redemtionres;
 
   MFWatchlistModel? _mfWatchlistModel;
   MFWatchlistModel? get mfWatchlistModel => _mfWatchlistModel;
@@ -306,6 +376,54 @@ class MFProvider extends DefaultChangeNotifier {
 
   List get bestMFListStatic => _bestMFListStatic;
 
+  final List _bestMFListStaticnew = [
+    {
+      "funds": "46 funds",
+      "image": "assets/explore/loan.svg",
+      "subtitle": "Build wealth and save taxes",
+      "title": "Tax Saving",
+      "titlekey": "taxSaving"
+    },
+    {
+      "funds": "90 funds", 
+      "image": "assets/explore/growthnew.svg",
+      "subtitle": "Maximize returns with high growth",
+      "title": "High Growth Equity",
+      "titlekey": "highGrowthEquity"
+    },
+    {
+      "funds": "56 funds",
+      "image": "assets/explore/goldcoin.svg",
+      "subtitle": "Stable income and growth",
+      "title": "Stable Debt",
+      "titlekey": "stableDebt"
+    },
+    {
+      "funds": "120 funds",
+      "image": "assets/explore/transactions.svg",
+      "subtitle": "Focused investments in key sectors",
+      "title": "Sectoral Thematic",
+      "titlekey": "sectoralThematic"
+    },
+    {
+      "funds": "56 funds",
+      "image": "assets/explore/globe.svg",
+      "subtitle": "Diversify your portfolio globally",
+      "title": "International  Exposure",
+      "titlekey": "internationalExposure"
+    },
+    {
+      "funds": "120 funds",
+      "image": "assets/explore/balancehybrid.svg",
+      "subtitle": "Stability and growth combined",
+      "title": "Balanced Hybrid",
+      "titlekey": "balancedHybrid"
+    }
+  ];
+
+  List get bestMFListStaticnew => _bestMFListStaticnew;
+  // List get bestmfnewlist => _bestMFListnew;
+
   final List _mFCategoryTypesStatic = [
     {
       "dataIcon": 'assets/explore/equity.png',
@@ -344,6 +462,8 @@ class MFProvider extends DefaultChangeNotifier {
   ];
 
   List get mFCategoryTypesStatic => _mFCategoryTypesStatic;
+
+ 
 
   // makefalse(String isn) {
   //   int index = _topmutualfund!.indexWhere((element) => element.iSIN == isn);
@@ -484,7 +604,7 @@ class MFProvider extends DefaultChangeNotifier {
   String _insAmt = "0.00";
   String get insAmt => _insAmt;
 
-  List mfOrderTpyes = ["Lumpsum", "Monthly SIP"]; //["Lumpsum"];
+  List mfOrderTpyes = ["Lumpsum", "SIP"]; //["Lumpsum"];
   String _mfOrderTpye = "Lumpsum";
   String get mfOrderTpye => _mfOrderTpye;
 
@@ -926,6 +1046,7 @@ class MFProvider extends DefaultChangeNotifier {
               .forEach((m) => m['funds'] = watchListMf.counts);
         }
       }
+      print("{{{{{{{{{{}}}}}}}}}}${_bestMFModel}");
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
@@ -957,8 +1078,139 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
+  Future<void> fetchnewMFBestList() async {
+    print("tryoutcalll");
+
+    try {
+       _bestmfloader = true;
+      print("@@@tryyinnn");
+
+      _newbestmodel = await api.getnewMFBestListData();
+
+      for (var watchListMf in _newbestmodel!.basketsLength!) {
+        _bestMFListStaticnew
+            .where((m) => m['title'] == watchListMf.title)
+            .forEach((m) => m['funds'] = watchListMf.count);
+      }
+
+      print("--------------mfbest ${_newbestmodel}");
+      print(_newbestmodel);
+
+      notifyListeners();
+    } catch (e, stackTrace) {
+      debugPrint("Error fetching MF Best List: $e\n$stackTrace");
+    }finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchmfsiplist() async {
+    try {
+      _mfsiporderlist = await api.getSiplist();
+      print("sipppppres${_mfsiporderlist?.toJson()}");
+      notifyListeners();
+    } catch (e, stackTrace) {
+      debugPrint("Error fetching siplist: $e\n$stackTrace");
+    }finally{
+_bestmfloader = false;
+       notifyListeners();
+    }
+  }
+
+  Future<void> fetchmfsipsinglepage(String value) async {
+    try {
+         _bestmfloader = true;
+      _mfsinglepageres = await api.getSipsinglepage(value);
+      print("themffffff${value}");
+      print("nwewwwww${_mfsinglepageres?.invList.toString()}");
+
+      notifyListeners();
+    } catch (e, stackTrace) {
+       _bestmfloader = false;
+      debugPrint("Error fetching siplist: $e\n$stackTrace");
+      print("apii errror");
+    }finally {
+      _bestmfloader = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchorderdetails(String value,String bs , String type , String status,String sipno,String remarks) async {
+    try {
+         _bestmfloader = true;
+     
+      print("1111${value},${type},${bs},${status},${sipno},${remarks}");
+      print("nwewwwww${_mforderdet.toString()}");
+
+       String orderStatus = checkOrderRemarks(remarks);
+      print("payload${value},${type},${bs},${status},${sipno},${orderStatus == 'usercancel' ? "" : orderStatus}");
+
+ _mforderdet = await api.getsingleortderapi(value , bs , type , status ,sipno ,  orderStatus);
+       print("11111@@${orderStatus}");
+return 
+      notifyListeners();
+    } catch (e, stackTrace) {
+       _bestmfloader = false;
+      debugPrint("Error fetching siplist: $e\n$stackTrace");
+      print("apii errror");
+    }finally {
+      _bestmfloader = false;
+      notifyListeners();
+    }
+  }
+
+String checkOrderRemarks(String orderremarks) {
+  if (orderremarks.contains("HAS BEEN REGISTERED")) {
+    return "REGISTERED";
+  } else if (orderremarks.contains("CANCELLED SUCCESSFULLY")) {
+    return "CANCELLED";
+  } else {
+    return "usercancel";
+  }
+}
+
+    Future<void> fetchmfholdsinglelist(String value) async {
+    try {
+         _bestmfloader = true;
+      _mfholdsingepage = await api.getholdsinglepage(value);
+      print("themffffff${value}");
+      print("nwewwwww${_mfholdsingepage.toString()}");
+
+      notifyListeners();
+    } catch (e, stackTrace) {
+       _bestmfloader = false;
+      debugPrint("Error fetching siplist: $e\n$stackTrace");
+      print("apii errror");
+    }finally {
+      _bestmfloader = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchmfholdingnew() async {
+    try {
+        //  _bestmfloader = true;
+      _mfholdingnew = await api.getmfholdnewapi();
+      // print("themffffff${value}");
+      print("holdinglist${_mfholdingnew?.toJson()}");
+
+      notifyListeners();
+    } catch (e, stackTrace) {
+       _bestmfloader = false;
+      debugPrint("Error fetching mfliiist: $e\n$stackTrace");
+      print("apii errror");
+    }finally {
+      // _bestmfloader = false;
+      notifyListeners();
+    }
+  }
+
+
+
+
   Future fetchMFCategoryList(String type, String subtype) async {
     try {
+      _bestmfloader = true;
       _mfCategoryList = await api.getMFCategoryList(type, subtype);
       if (_mfCategoryList != null) {
         _mfCategoryList!.data!.sort((a, b) {
@@ -982,7 +1234,11 @@ class MFProvider extends DefaultChangeNotifier {
       // }
       notifyListeners();
     } catch (e) {
+       _bestmfloader = false;
       debugPrint("$e");
+    } finally {
+      _bestmfloader = false;
+      notifyListeners();
     }
   }
 
@@ -1000,12 +1256,13 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future fetchFactSheet(String isin) async {
     try {
-      _singleloader = true;
+        _bestmfloader = true;
       Map trailingReturns = {};
       _mfReturnsGridview = [];
       _comYear = "10 Years";
       var stopwatch = Stopwatch()..start();
-      _factSheetDataModel = await api.getMFFactSheetData(isin);
+       _factSheetDataModel = await api.getMFFactSheetData(isin);
+      _bestmfloader = false;
       stopwatch.stop(); // Stop timer
 
       log('Time taken 1: ${stopwatch.elapsedMilliseconds} ms');
@@ -1109,7 +1366,8 @@ class MFProvider extends DefaultChangeNotifier {
     } catch (e) {
       debugPrint("$e");
     } finally {
-      _singleloader = false;
+      toggleLoadingOn(false);
+       _bestmfloader = false;
     }
 
     notifyListeners();
@@ -1286,6 +1544,11 @@ class MFProvider extends DefaultChangeNotifier {
     } catch (e) {
       debugPrint("rererer $e");
       toggleLoadingOn(false);
+    }finally {
+       toggleLoadingOn(false);
+      _bestmfloader = false;
+
+      notifyListeners();
     }
   }
 
@@ -1404,6 +1667,40 @@ class MFProvider extends DefaultChangeNotifier {
       _mforderloader = false;
       notifyListeners();
     }
+  }
+
+  Future cancelredumorder(BuildContext context, orderno) async {
+    try {
+      _mforderloader = true;
+
+      try {
+        _mfLumpSumOrderbook = await api.redemptioncancelapi(orderno);
+        print("@@@1111111111111111$_mfLumpSumOrderbook");
+        fetchMfOrderbook(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Your Request to Cancel Order  is confirmed"));
+        // if (_createMandateModel?.mandate == null) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //       warningMessage(context, "${_createMandateModel!.error}"));
+        // }
+        //else {
+        //   fetchMFMandateDetail();
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //       successMessage(context, "${_createMandateModel!.resp}"));
+        // }
+      } catch (e) {
+        log("Failed to Create Mandate :: ${e.toString()}");
+        notifyListeners();
+      }
+    } catch (e) {
+      log("Failed to fetchMfOrderbook :: ${e.toString()}");
+      notifyListeners();
+    }
+    // finally {
+    //   _mforderloader = false;
+    //   notifyListeners();
+    // }
   }
 
   Future fetchVerifyUpi(
@@ -1594,17 +1891,18 @@ class MFProvider extends DefaultChangeNotifier {
     } else if (_allPaymentMfModel?.stat == "Ok") {
       if (_allPaymentMfModel?.type == "UPI") {
         ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_allPaymentMfModel!.payment_msg}"));
+            successMessage(context, "${_allPaymentMfModel!.msg}"));
+            print("${_allPaymentMfModel!.payment_msg} Payment message");
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_allPaymentMfModel!.msg}"));
-        Navigator.pushNamed(
-          context,
-          Routes.mf,
-        );
+            print("${_allPaymentMfModel!.payment_msg} Payment message 2");
+print("+++++${_allPaymentMfModel?.toJson()}");
+        Navigator.pop(context);
       }
     }
+    togglefundLoadingOn(false);
     fetchMfOrderbook(context);
   }
 
@@ -1855,15 +2153,16 @@ class MFProvider extends DefaultChangeNotifier {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("${item.bankName}",
+                    Text(
+                        "${item.bankName} - ****${item.bankAcNo!.substring(8)}",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style:
                             textStyle(colors.colorBlack, 14, FontWeight.w500)),
                     const SizedBox(height: 2),
-                    Text("*******${item.bankAcNo!.substring(8)}",
-                        style:
-                            textStyle(colors.colorGrey, 12, FontWeight.w500)),
+                    // Text("*******${item.bankAcNo!.substring(8)}",
+                    //     style:
+                    //         textStyle(colors.colorGrey, 12, FontWeight.w500)),
                   ],
                 ),
               )),
