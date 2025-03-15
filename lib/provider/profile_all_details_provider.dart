@@ -1,7 +1,3 @@
-
-
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/api/core/api_export.dart';
@@ -182,11 +178,23 @@ validateChnageEmail(){
 
 
 
+formateDataToDisplay(String data,int firstPart,int lastPart){
+ if( data.length>1){
+  int remaining = data.length - lastPart;
+  return "${data.substring(0,firstPart)} ********* ${data.substring(remaining)}";
+ }else{
+  return "";
+ }
+  // profileprovider.clientAllDetails.bankData![index].bankAcNo?.length - 4 ;
+}
 
 
 
-
-
+// void downloadFile(String url) {
+//    html.AnchorElement anchorElement =  new html.AnchorElement(href: url);
+//    anchorElement.download = url;
+//    anchorElement.click();
+// }
 
 
 

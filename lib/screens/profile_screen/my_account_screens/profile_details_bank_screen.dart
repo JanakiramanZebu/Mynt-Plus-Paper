@@ -82,168 +82,139 @@ class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
           //           14,
           //           FontWeight.w600)),
           // ),
-          body: Container(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // const Divider(color: Color(0xffDDDDDD)),
-                Card(
-                  color:
-                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    // side: const BorderSide(
-                    //     color: Color.fromARGB(255, 255, 255, 255),
-                    //     width: 1),
-                    borderRadius: BorderRadius.circular(8), // Rounded corners
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget.titleText(
-                          text: "Bank Accounts Linked",
-                          theme: theme.isDarkMode,
-                          fw: 1),
-                      // Text(
-                      //   "Bank Accounts Linked",
-                      //   style: textStyle(
-                      //     theme.isDarkMode
-                      //         ? colors.colorWhite
-                      //         : colors.colorBlack,
-                      //     16,
-                      //     FontWeight.w600,
-                      //   ),
-                      // ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: TextWidget.subText(
-                            text: "View bank details and add new banks.",
-                            theme: theme.isDarkMode),
-                        // Text(
-                        //   "View bank details and add new banks.",
-                        //   style: textStyle(const Color(0xff666666), 14,
-                        //       FontWeight.w500),
-                        // ),
+                TextWidget.titleText(
+                    text: "Bank Accounts Linked",
+                    theme: theme.isDarkMode,
+                    fw: 1),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: TextWidget.subText(
+                      text: "View bank details and add new banks.",
+                      theme: theme.isDarkMode),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  // physics: NeverScrollableScrollPhysics(),
+                  itemCount:
+                      profileprovider.clientAllDetails.bankData?.length ?? 0,
+                  itemBuilder: (BuildContext context, int index) {
+                    // var bankData = profileprovider.clientAllDetails!.bankData![index];
+                    // print(index);
+                    
+
+                    // String firstPart= profileprovider.clientAllDetails.bankData![index].bankAcNo?.substring(0, 2);
+                    // String lastPart= profileprovider.clientAllDetails.bankData![index].bankAcNo?.substring(0, 2);
+                    // String bankAccDisplay = 'A/C No: ${firstPart} ********* ${lastPart}';
+                   
+                    return Card(
+                      color: theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorWhite,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                        side: const BorderSide(
+                          color: Color.fromARGB(255, 214, 214, 214),
+                        ),
                       ),
-                      // const Padding(
-                      //   padding: EdgeInsets.only(bottom: 5),
-                      //   child: Divider(color: Color(0xffDDDDDD)),
-                      // ),
+                      elevation: 0,
+                      clipBehavior: Clip.hardEdge,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Bank Name and Primary Label
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // CircleAvatar(
+                                //   backgroundColor: Colors.white,
+                                //   radius: 20,
+                                //   backgroundImage: NetworkImage(
+                                //     "https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails!.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg&t=${DateTime.now().millisecondsSinceEpoch}",
+                                //   ),
+                                //   onBackgroundImageError: (exception, stackTrace) {
+                                //     debugPrint("Error loading bank logo: $exception");
+                                //     debugPrint("Image URL: https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails!.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg");
+                                //   },
+                                // ),
 
-                      // Text("${profileprovider.clientAllDetails?.bankData}"),
-                      // Text("${jsonEncode(profileprovider.clientAllDetails?.bankData)}"),
+                                // const CircleAvatar(
+                                //   backgroundColor: const Color
+                                //       .fromARGB(255, 255, 255,
+                                //       255), // Placeholder for logo
+                                //   child: Icon(Icons.account_balance,
+                                //       color: const Color.fromARGB(
+                                //           255, 119, 115, 115)),
+                                // ),
 
-                      // https://rekycbe.mynt.in/autho/banklogo?bank=utib&type=svg
+                                // SizedBox(width: 10),
 
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount:
-                            profileprovider.clientAllDetails.bankData?.length ??
-                                0,
-                        itemBuilder: (BuildContext context, int index) {
-                          // var bankData = profileprovider.clientAllDetails!.bankData![index];
+                                // CircleAvatar(
+                                //       minRadius: 24,
+                                //       backgroundColor: theme.isDarkMode
+                                //           ? colors.colorbluegrey
+                                //           : const Color(0xffF1F3F8),
+                                //       child: TextWidget.custmText(
+                                //           text: profileprovider
+                                //                       .clientAllDetails.clientData?.panName !=
+                                //                   null
+                                //               ? '${profileprovider.clientAllDetails.clientData?.panName![0]}'
+                                //               : "",
+                                //           textOverflow: TextOverflow.ellipsis,
+                                //           theme: theme.isDarkMode,
+                                //           fs: 24,
+                                //           fw: 1),
+                                //     ),
+                                // SizedBox(width: 8,),
 
-                          return Card(
-                            color: theme.isDarkMode
-                                ? colors.colorBlack
-                                : colors.colorWhite,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5.0),
-                              side: const BorderSide(
-                                color: Color.fromARGB(255, 214, 214, 214),
-                              ),
-                            ),
-                            elevation: 0,
-                            clipBehavior: Clip.hardEdge,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Bank Name and Primary Label
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      //                  CircleAvatar(
-                                      //   backgroundColor: Colors.white,
-                                      //   radius: 20,
-                                      //   backgroundImage: NetworkImage(
-                                      //     "https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails!.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg&t=${DateTime.now().millisecondsSinceEpoch}",
-                                      //   ),
-                                      //   onBackgroundImageError: (exception, stackTrace) {
-                                      //     debugPrint("Error loading bank logo: $exception");
-                                      //     debugPrint("Image URL: https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails!.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg");
-                                      //   },
-                                      // ),
-
-                                      // const CircleAvatar(
-                                      //   backgroundColor: const Color
-                                      //       .fromARGB(255, 255, 255,
-                                      //       255), // Placeholder for logo
-                                      //   child: Icon(Icons.account_balance,
-                                      //       color: const Color.fromARGB(
-                                      //           255, 119, 115, 115)),
-                                      // ),
-
-                                      // SizedBox(width: 10),
-
-                                      // CircleAvatar(
-                                      //       minRadius: 24,
-                                      //       backgroundColor: theme.isDarkMode
-                                      //           ? colors.colorbluegrey
-                                      //           : const Color(0xffF1F3F8),
-                                      //       child: TextWidget.custmText(
-                                      //           text: profileprovider
-                                      //                       .clientAllDetails.clientData?.panName !=
-                                      //                   null
-                                      //               ? '${profileprovider.clientAllDetails.clientData?.panName![0]}'
-                                      //               : "",
-                                      //           textOverflow: TextOverflow.ellipsis,
-                                      //           theme: theme.isDarkMode,
-                                      //           fs: 24,
-                                      //           fw: 1),
-                                      //     ),
-                                      // SizedBox(width: 8,),
-
-                                      Row(
-                                        children: [
-                                          CircleAvatar(
-                                            backgroundColor: colors.colorGrey,
-                                            radius: 20.5,
-                                            child: CircleAvatar(
-                                              backgroundColor: colors.colorWhite,
-                                              radius: 20,
-                                              child: SvgPicture.network(
-                                                "https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails!.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg&t=${DateTime.now().millisecondsSinceEpoch}",
-                                                fit: BoxFit.contain,
-                                                // width:150,
-                                                height: 25,
-                                                alignment: Alignment.center,
-                                                placeholderBuilder: (BuildContext
-                                                        context) =>
-                                                    const CircularProgressIndicator(),
-                                              ),
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: colors.colorGrey,
+                                      radius: 20.5,
+                                      child: CircleAvatar(
+                                        backgroundColor: colors.colorWhite,
+                                        radius: 20,
+                                        child: SvgPicture.network(
+                                          "https://rekycbe.mynt.in/autho/banklogo?bank=${(profileprovider.clientAllDetails!.bankData![index].iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg&t=${DateTime.now().millisecondsSinceEpoch}",
+                                          fit: BoxFit.contain,
+                                          // width:150,
+                                          height: 25,
+                                          alignment: Alignment.center,
+                                          placeholderBuilder: (BuildContext
+                                                  context) =>
+                                              const CircularProgressIndicator(),
+                                        ),
+                                      ),
+                                    ),
+                                   const SizedBox(
+                                      width: 8,
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            TextWidget.subText(
+                                                text:
+                                                    "${profileprovider.clientAllDetails.bankData![index].bankName}",
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 1),
+                                            const SizedBox(
+                                              width: 8,
                                             ),
-                                          ),
-                                           SizedBox(
-                                                width: 8,
-                                              ),
-                                          Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              TextWidget.subText(
-                                                  text:
-                                                      "${profileprovider.clientAllDetails!.bankData![index].bankName}",
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1),
-                                             const SizedBox(width: 8,),
+                                            if ("${profileprovider.clientAllDetails.bankData![index].defaultAc}" ==
+                                                "Yes")
                                               Container(
                                                 padding:
                                                     const EdgeInsets.symmetric(
@@ -256,632 +227,557 @@ class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
                                                   borderRadius:
                                                       BorderRadius.circular(8),
                                                 ),
-                                                child: TextWidget.paraText(
+                                                child: TextWidget.captionText(
                                                     text: 'PRIMARY',
                                                     theme: theme.isDarkMode,
                                                     fw: 1),
                                               ),
-                                            ],
-                                          ),
-                                          // Text("${(profileprovider.clientAllDetails.bankData![index].bankAcNo?.length?? 0) }") ,
-                                          TextWidget.paraText(
-                                            text:
-                                                'A/C No: ${profileprovider.clientAllDetails.bankData![index].bankAcNo?.substring(0,2)} ********* ${profileprovider.clientAllDetails!.bankData![index].bankAcNo?.substring(11)}',
-                                            theme: theme.isDarkMode,
-                                          ),
-                                        ],
-                                      ),
-
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      ),
-
-                                      
-                                      if ("${profileprovider.clientAllDetails!.bankData![index].defaultAc}" ==
-                                          "Yes")
-                                        InkWell(
-                                          onTap: () async {
-                                            await context
-                                                .read(fundProvider)
-                                                .fetchHstoken(context);
-                                            Navigator.pushNamed(context,
-                                                Routes.profileWebViewApp,
-                                                arguments: "bank");
-                                          },
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.edit,
-                                                color: theme.isDarkMode
-                                                    ? colors.colorLightBlue
-                                                    : colors.colorBlue,
-                                                size: 17,
-                                                // Blue color for the icon
-                                              ),
-                                              // Text(
-                                              //   'EDIT',
-                                              //   style: TextStyle(
-                                              //     color: Color(
-                                              //         0xFF0037B7), // Blue color for the text
-                                              //     fontSize:
-                                              //         15, // You can adjust the size as needed
-                                              //     fontWeight:
-                                              //         FontWeight.w500,
-                                              //   ),
-                                              // ),
-                                            ],
-                                          ),
+                                          ],
                                         ),
-                                    ],
+                                        // Text("${(profileprovider.clientAllDetails.bankData![index].bankAcNo?.length?? 0) }") ,
+                                        TextWidget.paraText(
+                                          text:'A/C No: ${profileprovider.formateDataToDisplay(profileprovider.clientAllDetails.bankData![index].bankAcNo??"",2,4)}',
+                                              // 'A/C No: ${profileprovider.clientAllDetails.bankData![index].bankAcNo?.substring(0, 2)} ********* ${profileprovider.clientAllDetails!.bankData![index].bankAcNo?.substring(11)}',
+                                          theme: theme.isDarkMode,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  width: 8,
+                                ),
+
+                                if ("${profileprovider.clientAllDetails!.bankData![index].defaultAc}" ==
+                                    "Yes")
+                                  InkWell(
+                                    onTap: () async {
+                                      await context
+                                          .read(fundProvider)
+                                          .fetchHstoken(context);
+                                      Navigator.pushNamed(
+                                          context, Routes.profileWebViewApp,
+                                          arguments: "bank");
+                                    },
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.edit,
+                                          color: theme.isDarkMode
+                                              ? colors.colorLightBlue
+                                              : colors.colorBlue,
+                                          size: 17,
+                                        ),
+                                      ],
+                                    ),
                                   ),
-
-                                  // TextButton.icon(
-                                  //   icon:const Icon(
-                                  //     Icons.edit,
-                                  //     color: Color(0xFF0037B7),
-                                  //     size: 17,
-                                  //   ),
-                                  //   label:const Text(
-                                  //     'Edit',
-                                  //     style: TextStyle(
-                                  //       color: Color(0xFF0037B7),
-                                  //       fontSize: 15,
-                                  //       fontWeight: FontWeight.w500,
-                                  //     ),
-                                  //   ),
-                                  //   onPressed: () {
-                                  //     // Menu action
-                                  //   },
-                                  // )
-                                  // ],
-                                  // ),
-
-                                  const SizedBox(height: 4),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.colorbluegrey
-                                          : colors.colorDivider),
-                                  const SizedBox(height: 4),
-
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          TextWidget.paraText(
-                                              text: 'IFSC CODE',
-                                              theme: theme.isDarkMode),
-                                          // const Text(
-                                          //   'IFSC CODE',
-                                          //   style: TextStyle(
-                                          //     fontSize: 12,
-                                          //     fontWeight: FontWeight.w500,
-                                          //     color: Colors.black54,
-                                          //   ),
-                                          // ),
-                                          // SizedBox(height: 2),
-                                          SizedBox(height: 8),
-                                          TextWidget.subText(
-                                              text:
-                                                  "${profileprovider.clientAllDetails!.bankData![index].iFSCCode}",
-                                              theme: theme.isDarkMode,
-                                              fw: 1),
-                                          // Text(
-                                          //   "${profileprovider.clientAllDetails!.bankData![index].iFSCCode}",
-                                          //   style: TextStyle(
-                                          //       fontSize: 15,
-                                          //       color: Colors.black),
-                                          // ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          TextWidget.paraText(
-                                              text: 'A/C Type',
-                                              theme: theme.isDarkMode),
-                                          // Text(
-                                          //   'A/C Type',
-                                          //   style: TextStyle(
-                                          //     fontSize: 12,
-                                          //     fontWeight: FontWeight.w500,
-                                          //     color: Colors.black54,
-                                          //   ),
-                                          // ),
-                                          // SizedBox(height: 2),
-                                          SizedBox(height: 8),
-                                          TextWidget.subText(
-                                              text:
-                                                  '${profileprovider.clientAllDetails!.bankData![index].bANKACCTYPE}',
-                                              theme: theme.isDarkMode,
-                                              fw: 1),
-                                          // Text(
-                                          //   '${profileprovider.clientAllDetails!.bankData![index].bANKACCTYPE}', // Static for now, replace dynamically if needed
-                                          //   style: TextStyle(
-                                          //       fontSize: 15,
-                                          //       color: Colors.black),
-                                          // ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                              ],
                             ),
-                          );
-                        },
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 15),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              profileprovider.clearProfilePop(
-                                  context, 'bankifsc');
 
-                              await context
-                                  .read(fundProvider)
-                                  .fetchHstoken(context);
-                              Navigator.pushNamed(
-                                  context, Routes.profileWebViewApp,
-                                  arguments: "bank");
+                            const SizedBox(height: 4),
+                            Divider(
+                                color: theme.isDarkMode
+                                    ? colors.colorbluegrey
+                                    : colors.colorDivider),
+                            const SizedBox(height: 4),
 
-                              // showModalBottomSheet(
-                              //   context: context,
-                              //   isDismissible: false,
-                              //   enableDrag: false,
-                              //   isScrollControlled: true,
-                              //   shape: RoundedRectangleBorder(
-                              //     borderRadius: BorderRadius.vertical(
-                              //         top: Radius.circular(20.0)),
-                              //   ),
-                              //   builder: (context) {
-                              //     return Consumer(
-                              //       builder: (context, watch, _) {
-                              //         // final selectedbankchin =
-                              //         //     watch(selectedbankchipprovi);
-                              //         // final popproprv = watch(profileProvider);
-
-                              //         // final selectedDropdownValue =
-                              //         //     watch(dropdownProvider).state;
-                              //         // final isActive =
-                              //         //     watch(radioButtonProvider).state;
-                              //         return Container(
-                              //           padding: EdgeInsets.all(16),
-                              //           child: Column(
-                              //             crossAxisAlignment:
-                              //                 CrossAxisAlignment.start,
-                              //             children: [
-                              //               SizedBox(height: 40),
-
-                              //               const Text(
-                              //                 '  Bank change request  ',
-                              //                 style: TextStyle(
-                              //                     fontSize: 20,
-                              //                     fontWeight:
-                              //                         FontWeight.bold),
-                              //               ),
-                              //               SizedBox(height: 20),
-                              //               Row(
-                              //                 children: [
-                              //                   Wrap(
-                              //                     spacing:
-                              //                         10, // Horizontal space between chips
-                              //                     runSpacing:
-                              //                         10, // Vertical space between chips
-                              //                     children: List.generate(
-                              //                         bankchip.length,
-                              //                         (index) {
-                              //                       return ChoiceChip(
-                              //                         label: Text(
-                              //                             bankchip[
-                              //                                 index]),
-                              //                         selected: true,
-                              //                         // selectedbankchin ==
-                              //                         //     index,
-                              //                         onSelected:
-                              //                             (isSelected) {
-                              //                           // context
-                              //                           //     .read(
-                              //                           //         selectedbankchipprovi
-                              //                           //             .notifier)
-                              //                           //     .selectedchipba(
-                              //                           //         isSelected
-                              //                           //             ? index
-                              //                           //             : -1);
-                              //                         },
-                              //                         selectedColor: Colors
-                              //                             .black, // Selected background color
-                              //                         backgroundColor: Colors
-                              //                                 .grey[
-                              //                             300], // Unselected background color
-                              //                         labelStyle:
-                              //                             TextStyle(
-                              //                           color: true
-                              //                               // selectedbankchin ==
-                              //                               //         index
-                              //                               ? Colors.white
-                              //                               : Colors
-                              //                                   .black,
-                              //                         ),
-                              //                       );
-                              //                     }),
-                              //                   ),
-                              //                 ],
-                              //               ),
-                              //               SizedBox(height: 15),
-                              //               Text(" Bank A/C No *",
-                              //                   style: textStyle(
-                              //                       const Color.fromARGB(
-                              //                           255, 0, 0, 0),
-                              //                       15,
-                              //                       FontWeight.w600)),
-                              //               TextFormField(
-                              //                 controller: profileprovider
-                              //                     .newBankAccController,
-                              //                 onChanged: (value) {
-                              //                   // context
-                              //                   //         .read(bankifscprov)
-                              //                   //         .state =
-                              //                   //     value; // Update state
-                              //                 },
-                              //                 decoration:
-                              //                     const InputDecoration(
-                              //                   hintText:
-                              //                       'Enter Bank A/C no',
-                              //                   border:
-                              //                       UnderlineInputBorder(),
-                              //                 ),
-                              //               ),
-
-                              //               SizedBox(height: 20),
-                              //               Text("IFSC Code *",
-                              //                   style: textStyle(
-                              //                       const Color.fromARGB(
-                              //                           255, 0, 0, 0),
-                              //                       15,
-                              //                       FontWeight.w600)),
-                              //               TextFormField(
-                              //                 controller: profileprovider
-                              //                     .newBankIFSCController,
-                              //                 onChanged: (value) {
-                              //                   // context
-                              //                   //     .read(
-                              //                   //         bankaccnoprov.notifier)
-                              //                   //     .state = value;
-
-                              //                   // String bankisfctext = context
-                              //                   //     .read(newaddprov.notifier)
-                              //                   //     .state;
-
-                              //                   profileprovider
-                              //                       .ifscapiporov(value);
-                              //                 },
-                              //                 decoration:
-                              //                     const InputDecoration(
-                              //                   hintText:
-                              //                       'Enter  IFSC  code',
-                              //                   border:
-                              //                       UnderlineInputBorder(),
-                              //                 ),
-                              //               ),
-
-                              //               SizedBox(height: 5),
-                              //               Text(
-                              //                   "${profileprovider.ifsccoderess}"),
-
-                              //               SizedBox(height: 0),
-                              //               Text("Proof Type *",
-                              //                   style: textStyle(
-                              //                       const Color.fromARGB(
-                              //                           255, 0, 0, 0),
-                              //                       15,
-                              //                       FontWeight.w600)),
-                              //               Padding(
-                              //                 padding: const EdgeInsets
-                              //                     .symmetric(
-                              //                     vertical: 15.0),
-                              //                 child:
-                              //                     DropdownButtonFormField<
-                              //                         String>(
-                              //                   value: profileprovider
-                              //                       .selectedBankProofTypeValue,
-                              //                   hint: const Text(
-                              //                       "Select Bank Proof"),
-                              //                   items: [
-                              //                     "Passbook",
-                              //                     "Latest Statement",
-                              //                     "Cancelled Cheque",
-                              //                   ].map((String value) {
-                              //                     return DropdownMenuItem<
-                              //                         String>(
-                              //                       value: value,
-                              //                       child: Text(value),
-                              //                     );
-                              //                   }).toList(),
-                              //                   onChanged: (newValue) {
-                              //                     // Use context.read instead of watch to update the state
-                              //                     // context
-                              //                     //         .read(dropdownProvider
-                              //                     //             .notifier)
-                              //                     //         .state =
-                              //                     //     newValue; // Correct way to update state
-                              //                   },
-                              //                   decoration:
-                              //                       const InputDecoration(
-                              //                     border:
-                              //                         UnderlineInputBorder(
-                              //                       // Only bottom border
-                              //                       borderSide: BorderSide(
-                              //                           color: Colors
-                              //                               .black), // Customize the color if needed
-                              //                     ),
-                              //                   ),
-                              //                 ),
-                              //               ),
-
-                              //               ElevatedButton(
-                              //                 child: Text('UPLOAD FILE'),
-                              //                 onPressed: () async {
-                              //                   var picked =
-                              //                       await FilePicker
-                              //                           .platform
-                              //                           .pickFiles();
-
-                              //                   if (picked != null &&
-                              //                       picked.files.first
-                              //                               .path !=
-                              //                           null) {
-                              //                     String filePath = picked
-                              //                         .files.first.path!;
-                              //                     String fileName = picked
-                              //                         .files.first.name;
-
-                              //                     print(
-                              //                         "Selected File: $fileName");
-                              //                     print(
-                              //                         "File Path: $filePath");
-
-                              //                     // Store file path in provider
-                              //                     // context
-                              //                     //     .read(filePathProvider)
-                              //                     //     .state = filePath;
-                              //                   }
-
-                              //                   Text("elseee");
-                              //                 },
-                              //                 style: ElevatedButton
-                              //                     .styleFrom(
-                              //                   elevation: 0,
-                              //                   backgroundColor:
-                              //                       colors.colorBlack,
-                              //                   padding: const EdgeInsets
-                              //                       .symmetric(
-                              //                       vertical: 12,
-                              //                       horizontal: 12),
-                              //                   shape:
-                              //                       RoundedRectangleBorder(
-                              //                     borderRadius:
-                              //                         BorderRadius
-                              //                             .circular(25),
-                              //                   ),
-                              //                 ),
-                              //               ),
-                              //               Row(
-                              //                 children: [
-                              //                   Radio<bool>(
-                              //                     value: false,
-                              //                     groupValue: profileprovider
-                              //                         .selectedBankTypeValue,
-                              //                     onChanged: (value) {
-                              //                       // Toggle the value between true and false
-                              //                       // context
-                              //                       //         .read(
-                              //                       //             radioButtonProvider
-                              //                       //                 .notifier)
-                              //                       //         .state =
-                              //                       //     !isActive; // Toggle state on each click
-                              //                     },
-                              //                     activeColor:
-                              //                         Colors.black,
-                              //                   ),
-                              //                   const Text(
-                              //                       "Set As Primary"),
-                              //                 ],
-                              //               ),
-                              //               const SizedBox(height: 20),
-                              //               // Display current selection
-                              //               // Text(
-                              //               //   "Primary is: ${isActive ? 'True' : 'False'}",
-                              //               //   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                              //               // ),
-
-                              //               // // Display Selected Dropdown Value
-                              //               // Padding(
-                              //               //   padding: const EdgeInsets.only(top: 10),
-                              //               //   child: Text(
-                              //               //     "Selected: $selectedDropdownValue",
-                              //               //     style: textStyle(const Color(0xff000000), 16, FontWeight.w500),
-                              //               //   ),
-                              //               // ),
-
-                              //               const Divider(
-                              //                   color: Color(0xffDDDDDD)),
-                              //               SizedBox(height: 30),
-                              //               Row(
-                              //                 children: [
-                              //                   Expanded(
-                              //                     flex:
-                              //                         1, // Takes 50% width
-                              //                     child: OutlinedButton(
-                              //                       onPressed: () {
-                              //                         Navigator.pop(
-                              //                             context);
-                              //                       },
-                              //                       style: OutlinedButton
-                              //                           .styleFrom(
-                              //                         side: BorderSide(
-                              //                             color: colors
-                              //                                 .colorBlack), // Border color
-                              //                         backgroundColor: Colors
-                              //                             .white, // Background color
-                              //                         padding:
-                              //                             const EdgeInsets
-                              //                                 .symmetric(
-                              //                                 vertical:
-                              //                                     12,
-                              //                                 horizontal:
-                              //                                     12),
-                              //                         shape:
-                              //                             RoundedRectangleBorder(
-                              //                           borderRadius:
-                              //                               BorderRadius
-                              //                                   .circular(
-                              //                                       25),
-                              //                         ),
-                              //                       ),
-                              //                       child: Text(
-                              //                         'Close',
-                              //                         style: TextStyle(
-                              //                             color: colors
-                              //                                 .colorBlack), // Text color
-                              //                       ),
-                              //                     ),
-                              //                   ),
-
-                              //                   SizedBox(
-                              //                       width:
-                              //                           10), // Adds spacing between buttons
-                              //                   Expanded(
-                              //                     flex:
-                              //                         1, // Takes 50% width
-                              //                     child: ElevatedButton(
-                              //                       onPressed: () {
-                              //                         // String bankisfctext =
-                              //                         //     context
-                              //                         //         .read(
-                              //                         //             bankifscprov)
-                              //                         //         .state;
-                              //                         // String bankacctext =
-                              //                         //     context
-                              //                         //         .read(
-                              //                         //             bankaccnoprov)
-                              //                         //         .state;
-
-                              //                         // String filePath = context
-                              //                         //     .read(
-                              //                         //         filePathProvider)
-                              //                         //     .state;
-
-                              //                         // if (filePath.isEmpty) {
-                              //                         //   ScaffoldMessenger.of(
-                              //                         //           context)
-                              //                         //       .showSnackBar(
-                              //                         //     SnackBar(
-                              //                         //         content: Text(
-                              //                         //             "Please select a file first!")),
-                              //                         //   );
-                              //                         //   return;
-                              //                         // }
-                              //                         // String
-                              //                         //     finalDropdownValue =
-                              //                         //     selectedDropdownValue ??
-                              //                         //         'Default Value';
-                              //                         // String isActiveString =
-                              //                         //     isActive
-                              //                         //         ? 'True'
-                              //                         //         : 'False';
-                              //                         // profileprovider
-                              //                         //     .addbankprovui(
-                              //                         //   bankisfctext,
-                              //                         //   bankacctext,
-                              //                         //   filePath,
-                              //                         //   finalDropdownValue,
-                              //                         //   isActiveString,
-                              //                         //   bankchip[
-                              //                         //       selectedbankchin],
-                              //                         //   (profileprovider.clientAllDetails
-                              //                         //       .clientData),
-                              //                         //   jsonEncode(profileprovider.clientAllDetails
-                              //                         //           .bankData ??
-                              //                         //       []),
-                              //                         // );
-                              //                       },
-                              //                       style: ElevatedButton
-                              //                           .styleFrom(
-                              //                         elevation: 0,
-                              //                         backgroundColor:
-                              //                             colors
-                              //                                 .colorBlack,
-                              //                         padding:
-                              //                             const EdgeInsets
-                              //                                 .symmetric(
-                              //                                 vertical:
-                              //                                     12,
-                              //                                 horizontal:
-                              //                                     12),
-                              //                         shape:
-                              //                             RoundedRectangleBorder(
-                              //                           borderRadius:
-                              //                               BorderRadius
-                              //                                   .circular(
-                              //                                       25),
-                              //                         ),
-                              //                       ),
-                              //                       child: Text('Submit'),
-                              //                     ),
-                              //                   ),
-                              //                 ],
-                              //               ),
-                              //             ],
-                              //           ),
-                              //         );
-                              //       },
-                              //     );
-                              //   },
-                              // );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              padding: const EdgeInsets.symmetric(vertical: 13),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    TextWidget.paraText(
+                                        text: 'IFSC CODE',
+                                        theme: theme.isDarkMode),
+                                    SizedBox(height: 8),
+                                    TextWidget.subText(
+                                        text:
+                                            "${profileprovider.clientAllDetails!.bankData![index].iFSCCode}",
+                                        theme: theme.isDarkMode,
+                                        fw: 1),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    TextWidget.paraText(
+                                        text: 'A/C Type',
+                                        theme: theme.isDarkMode),
+                                    SizedBox(height: 8),
+                                    TextWidget.subText(
+                                        text:
+                                            '${profileprovider.clientAllDetails!.bankData![index].bANKACCTYPE}',
+                                        theme: theme.isDarkMode,
+                                        fw: 1),
+                                  ],
+                                ),
+                              ],
                             ),
-                            child: TextWidget.subText(
-                                text: "Add Bank Account",
-                                theme: !theme.isDarkMode,
-                                fw: 1),
-
-                            // Text("Add Bank Account",
-                            //     style: textStyles.btnText),
-                          ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 16),
-                      TextWidget.paraText(
-                          text:
-                              "*As per the regulation, you can have upto 5 bank a/c linked to trading a/c",
-                          theme: theme.isDarkMode),
-                      // Text(
-                      //   "*As per the regulation, you can have upto 5 bank a/c linked to trading a/c",
-                      //   style: textStyle(
-                      //       const Color(0xff666666), 12, FontWeight.w400),
-                      // ),
-                    ],
+                    );
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 15),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        profileprovider.clearProfilePop(context, 'bankifsc');
+
+                        await context.read(fundProvider).fetchHstoken(context);
+                        Navigator.pushNamed(context, Routes.profileWebViewApp,
+                            arguments: "bank");
+
+                        // showModalBottomSheet(
+                        //   context: context,
+                        //   isDismissible: false,
+                        //   enableDrag: false,
+                        //   isScrollControlled: true,
+                        //   shape: RoundedRectangleBorder(
+                        //     borderRadius: BorderRadius.vertical(
+                        //         top: Radius.circular(20.0)),
+                        //   ),
+                        //   builder: (context) {
+                        //     return Consumer(
+                        //       builder: (context, watch, _) {
+                        //         // final selectedbankchin =
+                        //         //     watch(selectedbankchipprovi);
+                        //         // final popproprv = watch(profileProvider);
+
+                        //         // final selectedDropdownValue =
+                        //         //     watch(dropdownProvider).state;
+                        //         // final isActive =
+                        //         //     watch(radioButtonProvider).state;
+                        //         return Container(
+                        //           padding: EdgeInsets.all(16),
+                        //           child: Column(
+                        //             crossAxisAlignment:
+                        //                 CrossAxisAlignment.start,
+                        //             children: [
+                        //               SizedBox(height: 40),
+
+                        //               const Text(
+                        //                 '  Bank change request  ',
+                        //                 style: TextStyle(
+                        //                     fontSize: 20,
+                        //                     fontWeight:
+                        //                         FontWeight.bold),
+                        //               ),
+                        //               SizedBox(height: 20),
+                        //               Row(
+                        //                 children: [
+                        //                   Wrap(
+                        //                     spacing:
+                        //                         10, // Horizontal space between chips
+                        //                     runSpacing:
+                        //                         10, // Vertical space between chips
+                        //                     children: List.generate(
+                        //                         bankchip.length,
+                        //                         (index) {
+                        //                       return ChoiceChip(
+                        //                         label: Text(
+                        //                             bankchip[
+                        //                                 index]),
+                        //                         selected: true,
+                        //                         // selectedbankchin ==
+                        //                         //     index,
+                        //                         onSelected:
+                        //                             (isSelected) {
+                        //                           // context
+                        //                           //     .read(
+                        //                           //         selectedbankchipprovi
+                        //                           //             .notifier)
+                        //                           //     .selectedchipba(
+                        //                           //         isSelected
+                        //                           //             ? index
+                        //                           //             : -1);
+                        //                         },
+                        //                         selectedColor: Colors
+                        //                             .black, // Selected background color
+                        //                         backgroundColor: Colors
+                        //                                 .grey[
+                        //                             300], // Unselected background color
+                        //                         labelStyle:
+                        //                             TextStyle(
+                        //                           color: true
+                        //                               // selectedbankchin ==
+                        //                               //         index
+                        //                               ? Colors.white
+                        //                               : Colors
+                        //                                   .black,
+                        //                         ),
+                        //                       );
+                        //                     }),
+                        //                   ),
+                        //                 ],
+                        //               ),
+                        //               SizedBox(height: 15),
+                        //               Text(" Bank A/C No *",
+                        //                   style: textStyle(
+                        //                       const Color.fromARGB(
+                        //                           255, 0, 0, 0),
+                        //                       15,
+                        //                       FontWeight.w600)),
+                        //               TextFormField(
+                        //                 controller: profileprovider
+                        //                     .newBankAccController,
+                        //                 onChanged: (value) {
+                        //                   // context
+                        //                   //         .read(bankifscprov)
+                        //                   //         .state =
+                        //                   //     value; // Update state
+                        //                 },
+                        //                 decoration:
+                        //                     const InputDecoration(
+                        //                   hintText:
+                        //                       'Enter Bank A/C no',
+                        //                   border:
+                        //                       UnderlineInputBorder(),
+                        //                 ),
+                        //               ),
+
+                        //               SizedBox(height: 20),
+                        //               Text("IFSC Code *",
+                        //                   style: textStyle(
+                        //                       const Color.fromARGB(
+                        //                           255, 0, 0, 0),
+                        //                       15,
+                        //                       FontWeight.w600)),
+                        //               TextFormField(
+                        //                 controller: profileprovider
+                        //                     .newBankIFSCController,
+                        //                 onChanged: (value) {
+                        //                   // context
+                        //                   //     .read(
+                        //                   //         bankaccnoprov.notifier)
+                        //                   //     .state = value;
+
+                        //                   // String bankisfctext = context
+                        //                   //     .read(newaddprov.notifier)
+                        //                   //     .state;
+
+                        //                   profileprovider
+                        //                       .ifscapiporov(value);
+                        //                 },
+                        //                 decoration:
+                        //                     const InputDecoration(
+                        //                   hintText:
+                        //                       'Enter  IFSC  code',
+                        //                   border:
+                        //                       UnderlineInputBorder(),
+                        //                 ),
+                        //               ),
+
+                        //               SizedBox(height: 5),
+                        //               Text(
+                        //                   "${profileprovider.ifsccoderess}"),
+
+                        //               SizedBox(height: 0),
+                        //               Text("Proof Type *",
+                        //                   style: textStyle(
+                        //                       const Color.fromARGB(
+                        //                           255, 0, 0, 0),
+                        //                       15,
+                        //                       FontWeight.w600)),
+                        //               Padding(
+                        //                 padding: const EdgeInsets
+                        //                     .symmetric(
+                        //                     vertical: 15.0),
+                        //                 child:
+                        //                     DropdownButtonFormField<
+                        //                         String>(
+                        //                   value: profileprovider
+                        //                       .selectedBankProofTypeValue,
+                        //                   hint: const Text(
+                        //                       "Select Bank Proof"),
+                        //                   items: [
+                        //                     "Passbook",
+                        //                     "Latest Statement",
+                        //                     "Cancelled Cheque",
+                        //                   ].map((String value) {
+                        //                     return DropdownMenuItem<
+                        //                         String>(
+                        //                       value: value,
+                        //                       child: Text(value),
+                        //                     );
+                        //                   }).toList(),
+                        //                   onChanged: (newValue) {
+                        //                     // Use context.read instead of watch to update the state
+                        //                     // context
+                        //                     //         .read(dropdownProvider
+                        //                     //             .notifier)
+                        //                     //         .state =
+                        //                     //     newValue; // Correct way to update state
+                        //                   },
+                        //                   decoration:
+                        //                       const InputDecoration(
+                        //                     border:
+                        //                         UnderlineInputBorder(
+                        //                       // Only bottom border
+                        //                       borderSide: BorderSide(
+                        //                           color: Colors
+                        //                               .black), // Customize the color if needed
+                        //                     ),
+                        //                   ),
+                        //                 ),
+                        //               ),
+
+                        //               ElevatedButton(
+                        //                 child: Text('UPLOAD FILE'),
+                        //                 onPressed: () async {
+                        //                   var picked =
+                        //                       await FilePicker
+                        //                           .platform
+                        //                           .pickFiles();
+
+                        //                   if (picked != null &&
+                        //                       picked.files.first
+                        //                               .path !=
+                        //                           null) {
+                        //                     String filePath = picked
+                        //                         .files.first.path!;
+                        //                     String fileName = picked
+                        //                         .files.first.name;
+
+                        //                     print(
+                        //                         "Selected File: $fileName");
+                        //                     print(
+                        //                         "File Path: $filePath");
+
+                        //                     // Store file path in provider
+                        //                     // context
+                        //                     //     .read(filePathProvider)
+                        //                     //     .state = filePath;
+                        //                   }
+
+                        //                   Text("elseee");
+                        //                 },
+                        //                 style: ElevatedButton
+                        //                     .styleFrom(
+                        //                   elevation: 0,
+                        //                   backgroundColor:
+                        //                       colors.colorBlack,
+                        //                   padding: const EdgeInsets
+                        //                       .symmetric(
+                        //                       vertical: 12,
+                        //                       horizontal: 12),
+                        //                   shape:
+                        //                       RoundedRectangleBorder(
+                        //                     borderRadius:
+                        //                         BorderRadius
+                        //                             .circular(25),
+                        //                   ),
+                        //                 ),
+                        //               ),
+                        //               Row(
+                        //                 children: [
+                        //                   Radio<bool>(
+                        //                     value: false,
+                        //                     groupValue: profileprovider
+                        //                         .selectedBankTypeValue,
+                        //                     onChanged: (value) {
+                        //                       // Toggle the value between true and false
+                        //                       // context
+                        //                       //         .read(
+                        //                       //             radioButtonProvider
+                        //                       //                 .notifier)
+                        //                       //         .state =
+                        //                       //     !isActive; // Toggle state on each click
+                        //                     },
+                        //                     activeColor:
+                        //                         Colors.black,
+                        //                   ),
+                        //                   const Text(
+                        //                       "Set As Primary"),
+                        //                 ],
+                        //               ),
+                        //               const SizedBox(height: 20),
+                        //               // Display current selection
+                        //               // Text(
+                        //               //   "Primary is: ${isActive ? 'True' : 'False'}",
+                        //               //   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        //               // ),
+
+                        //               // // Display Selected Dropdown Value
+                        //               // Padding(
+                        //               //   padding: const EdgeInsets.only(top: 10),
+                        //               //   child: Text(
+                        //               //     "Selected: $selectedDropdownValue",
+                        //               //     style: textStyle(const Color(0xff000000), 16, FontWeight.w500),
+                        //               //   ),
+                        //               // ),
+
+                        //               const Divider(
+                        //                   color: Color(0xffDDDDDD)),
+                        //               SizedBox(height: 30),
+                        //               Row(
+                        //                 children: [
+                        //                   Expanded(
+                        //                     flex:
+                        //                         1, // Takes 50% width
+                        //                     child: OutlinedButton(
+                        //                       onPressed: () {
+                        //                         Navigator.pop(
+                        //                             context);
+                        //                       },
+                        //                       style: OutlinedButton
+                        //                           .styleFrom(
+                        //                         side: BorderSide(
+                        //                             color: colors
+                        //                                 .colorBlack), // Border color
+                        //                         backgroundColor: Colors
+                        //                             .white, // Background color
+                        //                         padding:
+                        //                             const EdgeInsets
+                        //                                 .symmetric(
+                        //                                 vertical:
+                        //                                     12,
+                        //                                 horizontal:
+                        //                                     12),
+                        //                         shape:
+                        //                             RoundedRectangleBorder(
+                        //                           borderRadius:
+                        //                               BorderRadius
+                        //                                   .circular(
+                        //                                       25),
+                        //                         ),
+                        //                       ),
+                        //                       child: Text(
+                        //                         'Close',
+                        //                         style: TextStyle(
+                        //                             color: colors
+                        //                                 .colorBlack), // Text color
+                        //                       ),
+                        //                     ),
+                        //                   ),
+
+                        //                   SizedBox(
+                        //                       width:
+                        //                           10), // Adds spacing between buttons
+                        //                   Expanded(
+                        //                     flex:
+                        //                         1, // Takes 50% width
+                        //                     child: ElevatedButton(
+                        //                       onPressed: () {
+                        //                         // String bankisfctext =
+                        //                         //     context
+                        //                         //         .read(
+                        //                         //             bankifscprov)
+                        //                         //         .state;
+                        //                         // String bankacctext =
+                        //                         //     context
+                        //                         //         .read(
+                        //                         //             bankaccnoprov)
+                        //                         //         .state;
+
+                        //                         // String filePath = context
+                        //                         //     .read(
+                        //                         //         filePathProvider)
+                        //                         //     .state;
+
+                        //                         // if (filePath.isEmpty) {
+                        //                         //   ScaffoldMessenger.of(
+                        //                         //           context)
+                        //                         //       .showSnackBar(
+                        //                         //     SnackBar(
+                        //                         //         content: Text(
+                        //                         //             "Please select a file first!")),
+                        //                         //   );
+                        //                         //   return;
+                        //                         // }
+                        //                         // String
+                        //                         //     finalDropdownValue =
+                        //                         //     selectedDropdownValue ??
+                        //                         //         'Default Value';
+                        //                         // String isActiveString =
+                        //                         //     isActive
+                        //                         //         ? 'True'
+                        //                         //         : 'False';
+                        //                         // profileprovider
+                        //                         //     .addbankprovui(
+                        //                         //   bankisfctext,
+                        //                         //   bankacctext,
+                        //                         //   filePath,
+                        //                         //   finalDropdownValue,
+                        //                         //   isActiveString,
+                        //                         //   bankchip[
+                        //                         //       selectedbankchin],
+                        //                         //   (profileprovider.clientAllDetails
+                        //                         //       .clientData),
+                        //                         //   jsonEncode(profileprovider.clientAllDetails
+                        //                         //           .bankData ??
+                        //                         //       []),
+                        //                         // );
+                        //                       },
+                        //                       style: ElevatedButton
+                        //                           .styleFrom(
+                        //                         elevation: 0,
+                        //                         backgroundColor:
+                        //                             colors
+                        //                                 .colorBlack,
+                        //                         padding:
+                        //                             const EdgeInsets
+                        //                                 .symmetric(
+                        //                                 vertical:
+                        //                                     12,
+                        //                                 horizontal:
+                        //                                     12),
+                        //                         shape:
+                        //                             RoundedRectangleBorder(
+                        //                           borderRadius:
+                        //                               BorderRadius
+                        //                                   .circular(
+                        //                                       25),
+                        //                         ),
+                        //                       ),
+                        //                       child: Text('Submit'),
+                        //                     ),
+                        //                   ),
+                        //                 ],
+                        //               ),
+                        //             ],
+                        //           ),
+                        //         );
+                        //       },
+                        //     );
+                        //   },
+                        // );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                      ),
+                      child: TextWidget.subText(
+                          text: "Add Bank Account",
+                          theme: !theme.isDarkMode,
+                          fw: 1),
+
+                      // Text("Add Bank Account",
+                      //     style: textStyles.btnText),
+                    ),
                   ),
                 ),
+                SizedBox(height: 16),
+                TextWidget.paraText(
+                    text:
+                        "*As per the regulation, you can have upto 5 bank a/c linked to trading a/c",
+                    theme: theme.isDarkMode),
+                // Text(
+                //   "*As per the regulation, you can have upto 5 bank a/c linked to trading a/c",
+                //   style: textStyle(
+                //       const Color(0xff666666), 12, FontWeight.w400),
+                // ),
               ],
             ),
           ),

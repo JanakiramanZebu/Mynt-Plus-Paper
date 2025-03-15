@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/locator/constant.dart';
 import 'package:mynt_plus/provider/core/default_change_notifier.dart';
@@ -15,6 +16,7 @@ class ChartUpdateNotifier extends DefaultChangeNotifier {
   SharedPreferences? sharedPrefs;
   final Reader ref;
   ChartUpdateNotifier(this.ref);
+  String orientation = 'portrait';
 
   void startChartUpdateTimer(showchartof) {
     initializePreferences();
@@ -55,6 +57,23 @@ class ChartUpdateNotifier extends DefaultChangeNotifier {
   void stopChartUpdateTimer() {
     chartUpdateTimer?.cancel();
     chartUpdateTimer = null;
+    notifyListeners();
+  }
+
+  void changeOrientation(String orientationData){
+    if(orientationData == 'landscape'){
+    SystemChrome.setPreferredOrientations([
+                              DeviceOrientation.landscapeLeft,
+                          ]);
+      orientation = 'landscape';
+    }
+    else{
+      SystemChrome.setPreferredOrientations([
+                              DeviceOrientation.portraitUp,
+                          ]);
+      orientation = 'portrait';
+      
+    }
     notifyListeners();
   }
 

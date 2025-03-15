@@ -230,7 +230,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
               ? InvestType.delivery
               : rep && res['prd'] == "I"
                   ? InvestType.intraday
-                  : defaultparams
+                  : !widget.orderArg.isExit && defaultparams
                       ? localdata['prd'] == "Intraday"
                           ? InvestType.intraday
                           : (localdata['prd'] == "Delivery" &&
