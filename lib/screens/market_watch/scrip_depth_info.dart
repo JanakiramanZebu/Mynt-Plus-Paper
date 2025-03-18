@@ -18,7 +18,6 @@ import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
-import '../../provider/webview_chart_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
@@ -124,8 +123,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
           context: context);
 
       if (context.read(marketWatchProvider).actDeptBtn == "Chart") {
-        ConstantName.webViewController!.evaluateJavascript(
-            source: 'window.localStorage.removeItem("tick_tick")');
+//  
       }
 
       return true;
@@ -135,7 +133,6 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
       final socketDatas = watch(websocketProvider).socketDatas;
       final theme = context.read(themeProvider);
       final userProfile = watch(userProfileProvider);
-      final chartUpdate = context.read(chartUpdateProvider);
       // print("single page loader ${scripInfo.scripDepthloader}");
 
       // This scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the scrip details.
@@ -461,11 +458,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                       .webViewController!
                                                       .evaluateJavascript(
                                                           source:
-                                                              "window.changeScript('${widget.wlValue.exch}:${widget.wlValue.tsym}',${widget.wlValue.token}, '${theme.isDarkMode ? 'Y' : 'N'}')");
-                                                  chartUpdate
-                                                      .startChartUpdateTimer(
-                                                          userProfile
-                                                              .showchartof);
+                                                              "window.changeScript([{exch: '${widget.wlValue.exch}', token: '${widget.wlValue.token}', tsym: '${widget.wlValue.tsym}'}], '${theme.isDarkMode}')");
 
                                                   // "window.tvWidget.activeChart().setSymbol('${widget.wlValue.exch}:${widget.wlValue.tsym}')");
                                                   // userProfile.setChartdialog(true);

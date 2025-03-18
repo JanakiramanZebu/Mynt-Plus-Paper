@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +15,6 @@ import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/user_profile_provider.dart';
-import '../../../provider/websocket_provider.dart';
 import '../../../provider/webview_chart_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
@@ -24,12 +22,10 @@ import '../../../sharedWidget/functions.dart';
 
 class ChartScreenWebView extends StatefulWidget {
   final ChartArgs chartArgs;
-  final double cHeight;
 
   const ChartScreenWebView({
     super.key,
     required this.chartArgs,
-    required this.cHeight,
   });
 
   @override
@@ -38,56 +34,16 @@ class ChartScreenWebView extends StatefulWidget {
 
 class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   double progress = 0;
-  late ContextMenu contextMenu;
   final Preferences prefs = locator<Preferences>();
-  Timer? chartUpdateTimer;
   SharedPreferences? sharedPrefs;
 
   @override
   void initState() {
     super.initState();
-    setupContextMenu();
-    _initializePreferences();
-  }
-
-  void setupContextMenu() {
-    contextMenu = ContextMenu(
-      menuItems: [
-        ContextMenuItem(
-          androidId: 1,
-          iosId: "1",
-          title: "Special",
-          action: () async {
-            await ConstantName.webViewController?.evaluateJavascript(
-                source: "window.tvWidget.activeChart().setChartType(1)");
-          },
-        ),
-      ],
-    );
-  }
-
-  Future<void> _initializePreferences() async {
-    sharedPrefs = await SharedPreferences.getInstance();
-    _loadSavedChartData();
-  }
-
-  void _loadSavedChartData() {
-    if (sharedPrefs != null) {
-      final savedData = sharedPrefs!.getString("chartData");
-      if (savedData != null) {
-        final json = jsonDecode(savedData);
-
-        // Apply saved data to the WebView
-        ConstantName.webViewController?.evaluateJavascript(
-            source:
-                'window.localStorage.setItem("tick_tick",\'${jsonEncode(json)}\')');
-      }
-    }
   }
 
   @override
   void dispose() {
-    chartUpdateTimer?.cancel();
     super.dispose();
   }
 
@@ -189,12 +145,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                 userProfile.setChartdialog(false);
                 await ConstantName.webViewController!.evaluateJavascript(
                     source:
-                        "window.changeScript('ABC:ABCD',0123, '${theme.isDarkMode ? 'Y' : 'N'}')");
-                ConstantName.webViewController!.evaluateJavascript(
-                    source:
-                        'window.localStorage.removeItem("tick_tick")');
-                chartUpdate
-                    .startChartUpdateTimer(userProfile.showchartof);
+                        "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${theme.isDarkMode}')");
                     chartUpdate.changeOrientation('portrait');
               },
             ),
@@ -223,7 +174,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       chartUpdate, BuildContext context) {
     return SizedBox(
       height: (MediaQuery.of(context).size.height -
-          (TargetPlatform.iOS == defaultTargetPlatform ? 160 : 108)),
+          (TargetPlatform.iOS == defaultTargetPlatform ? 160 : 120)),
       child: InAppWebView(
         gestureRecognizers: {
           // Factory<VerticalDragGestureRecognizer>(
@@ -240,33 +191,20 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         },
         initialUrlRequest: URLRequest(
           url: WebUri(
-            "https://global-grammar-349410.web.app/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
-            "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
-            "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}&showseries=Y",
+            "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}"
+            // "https://global-grammar-349410.web.app/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
+            // "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
+            // "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}&showseries=Y",
           ),
         ),
         onConsoleMessage: (controller, consoleMessage) {
-          if (consoleMessage.message.contains(":|=|:")) {
-            String tsym = consoleMessage.message.split(":|=|:")[1];
-            if (tsym.split("|")[1] !=
-                context.read(marketWatchProvider).getQuotes?.token.toString()) {
-              ConstantName.webViewController!.evaluateJavascript(
-                  source: 'window.localStorage.removeItem("tick_tick")');
-              chartUpdate.startChartUpdateTimer(false);
-              context.read(websocketProvider).establishConnection(
-                  channelInput: tsym, task: "t", context: context);
-              context.read(marketWatchProvider).fetchScripQuoteIndex(
-                  tsym.split("|")[1], tsym.split("|")[0], context);
-              chartUpdate.startChartUpdateTimer(true);
-            }
-          }
+          // 
         },
         initialOptions: InAppWebViewGroupOptions(
           crossPlatform: InAppWebViewOptions(transparentBackground: true),
         ),
         onWebViewCreated: (controller) {
           ConstantName.webViewController = controller;
-          chartUpdate.startChartUpdateTimer(showchartof);
         },
         onProgressChanged: (_, progress) {
           setState(() {
