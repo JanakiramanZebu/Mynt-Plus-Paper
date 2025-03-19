@@ -61,6 +61,7 @@ class ScripInfoBtns extends ConsumerWidget {
                       marketwatch.singlePageloader(true);
 
                       if (marketwatch.depthBtns[index]['btnName'] != "Chart") {
+                        
                         DepthInputArgs depthArgs = DepthInputArgs(
                             exch: exch,
                             token: token,
@@ -69,6 +70,7 @@ class ScripInfoBtns extends ConsumerWidget {
                             symbol: '${marketwatch.getQuotes!.symbol}',
                             expDate: '${marketwatch.getQuotes!.expDate}',
                             option: '${marketwatch.getQuotes!.option}');
+                        Navigator.pop(context);
 
                         showModalBottomSheet(
                             barrierColor: Colors.transparent,
