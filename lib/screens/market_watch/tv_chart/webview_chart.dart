@@ -173,7 +173,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       chartUpdate, BuildContext context) {
     return SizedBox(
       height: (MediaQuery.of(context).size.height -
-          (TargetPlatform.iOS == defaultTargetPlatform ? 160 : 150)),
+          (TargetPlatform.iOS == defaultTargetPlatform ? 160 : 140)),
       child: InAppWebView(
         gestureRecognizers: {
           // Factory<VerticalDragGestureRecognizer>(

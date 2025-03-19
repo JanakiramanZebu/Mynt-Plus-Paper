@@ -96,26 +96,26 @@ class UserAccountScreen extends ConsumerWidget {
                           // launch(
                           //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                         } else if (acttitle == "Mutual Fund") {
-                          mf.loaderfun();
-                          mf.mfExTabchange(0);
-                          await mf.fetchnewMFBestList();
-                          // await mf.fetchBestMF();
-                          await mf.fetchMfOrderbook(context);
-                          await portfolio.fetchMFHoldings(context);
-                          await mf.fetchMFCategoryType();
-                          // await mf.fetchmfNFO(context);
-                          await mf.fetchmfholdingnew();
-                          await mf.fetchMFWatchlist("", "", context, true, "");
-                          await mf.fetchmfsiplist();
-                          Navigator.pushNamed(context, Routes.mfmainscreen);
+                          // mf.loaderfun();
+                          // mf.mfExTabchange(0);
+                          // await mf.fetchnewMFBestList();
+                          // // await mf.fetchBestMF();
+                          // await mf.fetchMfOrderbook(context);
+                          // await portfolio.fetchMFHoldings(context);
+                          // await mf.fetchMFCategoryType();
+                          // // await mf.fetchmfNFO(context);
+                          // await mf.fetchmfholdingnew();
+                          // await mf.fetchMFWatchlist("", "", context, true, "");
+                          // await mf.fetchmfsiplist();
+                          // Navigator.pushNamed(context, Routes.mfmainscreen);
                           // await mf.fetchBestMF();
                           // await portfolio.fetchMFHoldings(context);
                           // await mf.fetchMFCategoryType();
                           // // await mf.fetchmfNFO(context);
                           // await mf.fetchMFWatchlist("", "", context, true, "");
                           // Navigator.pushNamed(context, Routes.mfmainscreen);
-                          // launch(
-                          //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                          launch(
+                              "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                         } else if (acttitle == "OptionZ") {
                           funds.optionZ(context);
                         } else if (acttitle == "Refer") {
@@ -483,7 +483,7 @@ class UserAccountScreen extends ConsumerWidget {
             Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text("Version 3.0.2 Build 1.0.69(01) Released on 14 Mar",
+                child: Text("Version 3.0.2 Build 1.0.70(04) Released on 19 Mar",
                     style: textStyle(
                         const Color(0xff666666), 11, FontWeight.w500)))
           ]
