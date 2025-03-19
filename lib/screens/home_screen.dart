@@ -18,6 +18,7 @@ import '../provider/thems.dart';
 import '../provider/user_profile_provider.dart';
 import '../provider/version_provider.dart';
 import '../provider/websocket_provider.dart';
+import '../provider/webview_chart_provider.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
@@ -199,6 +200,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           body: NoInternetScreen(),
                         )
                       : Scaffold(
+                          resizeToAvoidBottomInset: userProfile.showchartof ? false : true,
                           body: Stack(
                             children: [
                               Scaffold(
@@ -1418,7 +1420,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (context.read(userProfileProvider).showchartof) {
       setState(() {
         context.read(userProfileProvider).setChartdialog(false);
+        context.read(chartUpdateProvider).changeOrientation('portrait');
       });
+      await ConstantName.webViewController!.evaluateJavascript(
+          source:
+              "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${context.read(themeProvider).isDarkMode}')");
       return false; // Prevent back navigation when chart is visible
     } else {
       return await showDialog(

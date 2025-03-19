@@ -146,7 +146,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                 await ConstantName.webViewController!.evaluateJavascript(
                     source:
                         "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${theme.isDarkMode}')");
-                    chartUpdate.changeOrientation('portrait');
+                chartUpdate.changeOrientation('portrait');
               },
             ),
             IconButton(
@@ -156,10 +156,9 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                       ? colors.colorWhite
                       : colors.colorBlack), // Back icon
               onPressed: () async {
-                if(chartUpdate.orientation == 'portrait'){
-                chartUpdate.changeOrientation('landscape');
-                }
-                else{
+                if (chartUpdate.orientation == 'portrait') {
+                  chartUpdate.changeOrientation('landscape');
+                } else {
                   chartUpdate.changeOrientation('portrait');
                 }
               },
@@ -174,7 +173,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       chartUpdate, BuildContext context) {
     return SizedBox(
       height: (MediaQuery.of(context).size.height -
-          (TargetPlatform.iOS == defaultTargetPlatform ? 160 : 120)),
+          (TargetPlatform.iOS == defaultTargetPlatform ? 160 : 150)),
       child: InAppWebView(
         gestureRecognizers: {
           // Factory<VerticalDragGestureRecognizer>(
@@ -191,14 +190,14 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         },
         initialUrlRequest: URLRequest(
           url: WebUri(
-            "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}"
-            // "https://global-grammar-349410.web.app/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
-            // "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
-            // "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}&showseries=Y",
-          ),
+              "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}"
+              // "https://global-grammar-349410.web.app/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
+              // "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
+              // "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}&showseries=Y",
+              ),
         ),
         onConsoleMessage: (controller, consoleMessage) {
-          // 
+          //
         },
         initialOptions: InAppWebViewGroupOptions(
           crossPlatform: InAppWebViewOptions(transparentBackground: true),
