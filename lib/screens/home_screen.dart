@@ -126,18 +126,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
         final scriptInfo = context.read(marketWatchProvider).getQuotes;
         final theme = context.read(themeProvider);
-        final chartUpdate = context.read(chartUpdateProvider);
 
         if (userProfile.showchartof) {
           if (scriptInfo?.exch != null) {
             await ConstantName.webViewController!.evaluateJavascript(
                 source:
-                    "window.changeScript('${scriptInfo?.exch}:${scriptInfo?.tsym}',${scriptInfo?.token}, '${theme.isDarkMode ? 'Y' : 'N'}')");
-            chartUpdate.startChartUpdateTimer(userProfile.showchartof);
-            await context.read(websocketProvider).establishConnection(
-                channelInput: "${scriptInfo?.exch}|${scriptInfo?.token}",
-                task: "d",
-                context: context);
+                    "window.changeScript([{exch: '${scriptInfo?.exch}', token: '${scriptInfo?.token}', tsym: '${scriptInfo?.tsym}'}], '${theme.isDarkMode}')");
+            // await context.read(websocketProvider).establishConnection(
+            //     channelInput: "${scriptInfo?.exch}|${scriptInfo?.token}",
+            //     task: "d",
+            //     context: context);
           } else {
             userProfile.setChartdialog(false);
           }
@@ -202,6 +200,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           body: NoInternetScreen(),
                         )
                       : Scaffold(
+                          resizeToAvoidBottomInset: userProfile.showchartof ? false : true,
                           body: Stack(
                             children: [
                               Scaffold(
@@ -1381,8 +1380,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             chartArgs: ChartArgs(
                                                 exch: 'ABC',
                                                 tsym: 'ABCD',
-                                                token: '0123'),
-                                            cHeight: 1.3),
+                                                token: '0123')),
                                       ],
                                     ),
                                   ),
@@ -1419,12 +1417,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
 // If an application asks for user confirmation before you can exit it, do so.
   Future<bool> showExitPopup() async {
-    // if (context.read(userProfileProvider).showchartof) {
-    //   setState(() {
-    //     context.read(userProfileProvider).setChartdialog(false);
-    //   });
-    //   return false; // Prevent back navigation when chart is visible
-    // } else {
+    if (context.read(userProfileProvider).showchartof) {
+      setState(() {
+        context.read(userProfileProvider).setChartdialog(false);
+        context.read(chartUpdateProvider).changeOrientation('portrait');
+      });
+      await ConstantName.webViewController!.evaluateJavascript(
+          source:
+              "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${context.read(themeProvider).isDarkMode}')");
+      return false; // Prevent back navigation when chart is visible
+    } else {
       return await showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -1479,7 +1481,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ]);
               }) ??
           false;
-    // }
+    }
   }
 
   String truncateText(String text, {int maxLength = 12}) {

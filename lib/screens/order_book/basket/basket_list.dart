@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
+import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
@@ -29,86 +30,93 @@ class BasketList extends ConsumerWidget {
             itemBuilder: (BuildContext context, int index) {
               return ListTile(
                   onLongPress: () {
-                       showDialog(
-                      context: context,
-                      builder: (BuildContext context) { return
-                    AlertDialog(
-                      backgroundColor: theme.isDarkMode
-                          ? const Color.fromARGB(255, 18, 18, 18)
-                          : colors.colorWhite,
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      scrollable: true,
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 16),
-                      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-                      titlePadding: const EdgeInsets.all(0),
-                      title: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child:
-                            SvgPicture.asset("assets/icon/ipo_cancel_icon.svg"),
-                      ),
-                      content: Column(
-                        children: [
-                          Text(
-                              "Are you sure you want to delete this basket ${basket.bsktList[index]['bsketName'].toString().toUpperCase()}",
-                              textAlign: TextAlign.center,
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  16,
-                                  FontWeight.w600))
-                        ],
-                      ),
-                      actions: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      backgroundColor: const Color(0xffF1F3F8),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(50),
-                                      )),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text("No",
-                                      style: textStyle(colors.colorGrey, 12,
-                                          FontWeight.w600))),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      backgroundColor: theme.isDarkMode
-                                          ? colors.colorbluegrey
-                                          : colors.colorBlack,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(50),
-                                      )),
-                                  onPressed: () async {
-                                    await basket.removeBasket(index);
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text("Yes",
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                              backgroundColor: theme.isDarkMode
+                                  ? const Color.fromARGB(255, 18, 18, 18)
+                                  : colors.colorWhite,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10))),
+                              scrollable: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              insetPadding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              titlePadding: const EdgeInsets.all(0),
+                              title: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: SvgPicture.asset(
+                                    "assets/icon/ipo_cancel_icon.svg"),
+                              ),
+                              content: Column(
+                                children: [
+                                  Text(
+                                      "Are you sure you want to delete this basket ${basket.bsktList[index]['bsketName'].toString().toUpperCase()}",
+                                      textAlign: TextAlign.center,
                                       style: textStyle(
                                           theme.isDarkMode
-                                              ? colors.colorBlack
-                                              : colors.colorWhite,
-                                          12,
-                                          FontWeight.w600)))
-                            )
-                          ]
-                        )
-                      ]
-                    );
-                    } ); },
-                  
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          16,
+                                          FontWeight.w600))
+                                ],
+                              ),
+                              actions: [
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                                elevation: 0,
+                                                backgroundColor:
+                                                    const Color(0xffF1F3F8),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(50),
+                                                )),
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            child: Text("No",
+                                                style: textStyle(
+                                                    colors.colorGrey,
+                                                    12,
+                                                    FontWeight.w600))),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                          child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                  elevation: 0,
+                                                  backgroundColor:
+                                                      theme.isDarkMode
+                                                          ? colors.colorbluegrey
+                                                          : colors.colorBlack,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            50),
+                                                  )),
+                                              onPressed: () async {
+                                                await basket
+                                                    .removeBasket(index);
+                                                Navigator.pop(context);
+                                              },
+                                              child: Text("Yes",
+                                                  style: textStyle(
+                                                      theme.isDarkMode
+                                                          ? colors.colorBlack
+                                                          : colors.colorWhite,
+                                                      12,
+                                                      FontWeight.w600))))
+                                    ])
+                              ]);
+                        });
+                  },
                   onTap: () {
                     basket.chngBsktName(
                         basket.bsktList[index]['bsketName'], context);
@@ -250,6 +258,17 @@ class BasketScripList extends ConsumerWidget {
                               ])
                         ])
                   ])),
+          Container(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              decoration: BoxDecoration(
+                  color: const Color(0xffe3f2fd),
+                  borderRadius: BorderRadius.circular(6)),
+              child:
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
+                Text(" On Script Tap to edit / long press to delete.",
+                    style: textStyle(colors.colorBlue, 12, FontWeight.w500))
+              ])),
           Expanded(
               child: basket.bsktScripList.isEmpty
                   ? const NoDataFound()
@@ -292,91 +311,156 @@ class BasketScripList extends ConsumerWidget {
                         }
 
                         return InkWell(
-                          onLongPress: ()async{
-
- showDialog(
-                      context: context,
-                      builder: (BuildContext context) { return
-                    AlertDialog(
-                      backgroundColor: theme.isDarkMode
-                          ? const Color.fromARGB(255, 18, 18, 18)
-                          : colors.colorWhite,
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      scrollable: true,
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 16),
-                      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-                      titlePadding: const EdgeInsets.all(0),
-                      title: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child:
-                            SvgPicture.asset("assets/icon/ipo_cancel_icon.svg"),
-                      ),
-                      content: Column(
-                        children: [
-                          Text(
-                              "Are you sure you want to delete this basket Scrip ${basket.bsktScripList[index]['symbol'] }",
-                              textAlign: TextAlign.center,
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  16,
-                                  FontWeight.w600))
-                        ],
-                      ),
-                      actions: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      backgroundColor: const Color(0xffF1F3F8),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(50),
-                                      )),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text("No",
-                                      style: textStyle(colors.colorGrey, 12,
-                                          FontWeight.w600))),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      elevation: 0,
+                          onLongPress: () async {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
                                       backgroundColor: theme.isDarkMode
-                                          ? colors.colorbluegrey
-                                          : colors.colorBlack,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(50),
-                                      )),
-                                  onPressed: () async {
-                                    await basket.removeBsktScrip(index, bsktName);
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text("Yes",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorBlack
-                                              : colors.colorWhite,
-                                          12,
-                                          FontWeight.w600)))
-                            )
-                          ]
-                        )
-                      ]
-                    );
-                    } ); 
+                                          ? const Color.fromARGB(
+                                              255, 18, 18, 18)
+                                          : colors.colorWhite,
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(10))),
+                                      scrollable: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 16),
+                                      insetPadding: const EdgeInsets.symmetric(
+                                          horizontal: 24),
+                                      titlePadding: const EdgeInsets.all(0),
+                                      title: Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: SvgPicture.asset(
+                                            "assets/icon/ipo_cancel_icon.svg"),
+                                      ),
+                                      content: Column(
+                                        children: [
+                                          Text(
+                                              "Are you sure you want to delete this basket Scrip ${basket.bsktScripList[index]['symbol']}",
+                                              textAlign: TextAlign.center,
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  16,
+                                                  FontWeight.w600))
+                                        ],
+                                      ),
+                                      actions: [
+                                        Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Expanded(
+                                                child: ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                            elevation: 0,
+                                                            backgroundColor:
+                                                                const Color(
+                                                                    0xffF1F3F8),
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50),
+                                                            )),
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: Text("No",
+                                                        style: textStyle(
+                                                            colors.colorGrey,
+                                                            12,
+                                                            FontWeight.w600))),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                  child: ElevatedButton(
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                              elevation: 0,
+                                                              backgroundColor: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .colorbluegrey
+                                                                  : colors
+                                                                      .colorBlack,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                              )),
+                                                      onPressed: () async {
+                                                        await basket
+                                                            .removeBsktScrip(
+                                                                index,
+                                                                bsktName);
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: Text("Yes",
+                                                          style: textStyle(
+                                                              theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorBlack
+                                                                  : colors
+                                                                      .colorWhite,
+                                                              12,
+                                                              FontWeight
+                                                                  .w600))))
+                                            ])
+                                      ]);
+                                });
                           },
-                          // onTap: () async {
-                          //   await basket.removeBsktScrip(index, bsktName);
-                          // },
+                          onTap: () async {
+                            await context
+                                .read(marketWatchProvider)
+                                .fetchScripInfo(
+                                    "${basket.bsktScripList[index]['token']}",
+                                    '${basket.bsktScripList[index]['exch']}',
+                                    context);
+                            basket.bsktScripList[index]['index'] = index;
+                            basket.bsktScripList[index]['prctyp'] =
+                                basket.bsktScripList[index]['prctype'];
+                            OrderScreenArgs orderArgs = OrderScreenArgs(
+                                exchange:
+                                    '${basket.bsktScripList[index]['exch']}',
+                                tSym: '${basket.bsktScripList[index]['tsym']}',
+                                isExit: false,
+                                token:
+                                    "${basket.bsktScripList[index]['token']}",
+                                transType: basket.bsktScripList[index]
+                                            ['trantype'] ==
+                                        'B'
+                                    ? true
+                                    : false,
+                                lotSize: context
+                                    .read(marketWatchProvider)
+                                    .scripInfoModel
+                                    ?.ls
+                                    .toString(),
+                                ltp: basket.bsktScripList[index]['lp'],
+                                perChange: basket.bsktScripList[index]['pc'],
+                                orderTpye: '',
+                                holdQty: '',
+                                isModify: true,
+                                raw: basket.bsktScripList[index]);
+                            Navigator.pushNamed(
+                                context, Routes.placeOrderScreen,
+                                arguments: {
+                                  "orderArg": orderArgs,
+                                  "scripInfo": context
+                                      .read(marketWatchProvider)
+                                      .scripInfoModel!,
+                                  "isBskt": 'BasketEdit'
+                                });
+                            // await basket.removeBsktScrip(index, bsktName);
+                          },
                           child: Container(
                               padding: const EdgeInsets.all(16),
                               child: Column(

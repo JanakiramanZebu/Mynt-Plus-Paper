@@ -262,7 +262,7 @@ class _OptionStrategeyState extends State<OptionStrategey> {
                 ]),
               ),
             ] else ...[
-              ChartScreenWebView(chartArgs: optStrgy.chartArgs!, cHeight: 1.9),
+              ChartScreenWebView(chartArgs: optStrgy.chartArgs!),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

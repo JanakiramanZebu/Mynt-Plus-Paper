@@ -126,7 +126,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
     if (pref.showOrderpref != null) {
       getlocal = pref.showOrderpref!;
     }
-    if (getlocal != "") {
+    if (getlocal != "" && !widget.orderArg.isModify) {
       localdata = jsonDecode(getlocal);
       defaultparams = true;
     }
@@ -152,7 +152,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       {"type": "Bracket"}
     ];
 
-    if (widget.isBasket != "Basket") {
+    if (widget.isBasket != "Basket" && widget.isBasket != "BasketEdit") {
       if (widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE") {
         if (context.read(userProfileProvider).userDetailModel != null &&
             context.read(userProfileProvider).userDetailModel!.stat == "Ok") {
@@ -182,25 +182,26 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         });
       }
     }
+    // print("object ${res['prctyp']} ${res['prctyp'] == "SL-LMT"} ${priceType}");
 
     priceType = widget.orderArg.isExit &&
             ["Limit", "Market"].contains(localdata['expos'])
         ? localdata['expos']
-        : ["Limit", "Market"].contains(localdata['prc'])
-            ? localdata['prc']
-            : defaultparams
-                ? (localdata['prc'] == "SL MKT" && orderType != "Regular")
+        : defaultparams
+            ? ["Limit", "Market"].contains(localdata['prc'])
+                ? localdata['prc']
+                : (localdata['prc'] == "SL MKT" && orderType != "Regular")
                     ? 'Limit'
                     : localdata['prc']
-                : rep
-                    ? res['prctyp'] == "MKT"
-                        ? "Market"
-                        : res['prctyp'] == "SL-LMT"
-                            ? "SL Limit"
-                            : res['prctyp'] == "SL-MKT"
-                                ? "SL MKT"
-                                : "Limit"
-                    : "Limit";
+            : rep
+                ? res['prctyp'] == "MKT"
+                    ? "Market"
+                    : res['prctyp'] == "SL-LMT"
+                        ? "SL Limit"
+                        : res['prctyp'] == "SL-MKT"
+                            ? "SL MKT"
+                            : "Limit"
+                : "Limit";
     priceTypes = [
       {
         "type": "Limit",
@@ -300,7 +301,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
 
     final quote = context.read(marketWatchProvider).getQuotes?.ordMsg;
 
-    if (widget.isBasket == "Basket" || quote == null) {
+    if (widget.isBasket == "Basket" ||
+        widget.isBasket == "BasketEdit" ||
+        quote == null) {
       isAvbSecu = false;
       isSecu = true;
     } else {
@@ -4228,8 +4231,11 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                 color: Color(0xffffffff)),
                                           )
                                         : Text(
-                                            widget.isBasket == "Basket"
-                                                ? "Add to Basket"
+                                            (widget.isBasket == "Basket" ||
+                                                    widget.isBasket ==
+                                                        "BasketEdit")
+                                                ? widget.isBasket ==
+                                                        "BasketEdit" ? "Edit to Basket" : "Add to Basket"
                                                 : orderType == "SIP"
                                                     ? "Create SIP"
                                                     : isBuy!
@@ -4350,8 +4356,13 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
   placeOrder(OrderInputProvider orderInput, bool isSliceOrd,
       ThemesProvider theme) async {
     String bsktName = context.read(orderProvider).selectedBsktName;
-    if (widget.isBasket == "Basket") {
-      addBasketScrip(orderInput, bsktName);
+    if (widget.isBasket == "Basket" || widget.isBasket == "BasketEdit") {
+      if (widget.isBasket == "BasketEdit") {
+        await context
+            .read(orderProvider)
+            .removeBsktScrip(widget.orderArg.raw['index'], bsktName);
+      }
+      addBasketScrip(orderInput, bsktName, widget.isBasket == "Basket");
     } else {
       if (!isSliceOrd) {
         bool placeorder = true;
@@ -4824,7 +4835,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
     await context.read(orderProvider).fetchOCOPlaceOrder(input, context);
   }
 
-  addBasketScrip(OrderInputProvider orderInput, String bsktName) async {
+  addBasketScrip(
+      OrderInputProvider orderInput, String bsktName, bool stay) async {
     Map<String, dynamic> data = {};
     String curDate = convDateWithTime();
     data = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
@@ -4876,6 +4888,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
 
     await context.read(orderProvider).fetchBasketMargin();
     Navigator.pop(context);
-    Navigator.pop(context);
+    if (stay) {
+      Navigator.pop(context);
+    }
   }
 }

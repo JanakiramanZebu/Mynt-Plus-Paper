@@ -65,6 +65,16 @@ class FutureScreen extends ConsumerWidget {
               "${socketDatas["${future.fut![index].token}"]['pc']}";
         }
         return InkWell(
+          onLongPress: () async {
+             await future.addDelMarketScrip(
+                    future.wlName,
+                    "${future.fut![index].exch}|${future.fut![index].token}",
+                    context,
+                    true,
+                    true,
+                    false,
+                    true);
+          },
             onTap: () async {
               Navigator.pop(context);
               await watch(marketWatchProvider)

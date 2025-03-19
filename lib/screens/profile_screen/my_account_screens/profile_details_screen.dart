@@ -29,6 +29,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
   bool active = false;
   bool nomineeActive = false;
   bool mtfActive = false;
+  bool tradingPreferenceActive = false;
   bool formDownActive = false;
 
   var _formKey = GlobalKey<FormState>();
@@ -292,19 +293,8 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                         ? colors.darkColorDivider
                         : colors.colorDivider),
                 // const SizedBox(height: 8),
-
-                TradingPreferencesCard(
-                    profileprovider: profileprovider, theme: theme),
-
-                // const SizedBox(height: 8),
-                Divider(
-                    thickness: 4,
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider),
-                // const SizedBox(height: 8),
-
-                // MTF section
+                
+                 // MTF section
                 ExpansionPanelList(
                   elevation: 0,
                   expandIconColor:
@@ -337,6 +327,54 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                   ],
                 ),
 
+
+                // Trading Prefference section
+                ExpansionPanelList(
+                  elevation: 0,
+                  expandIconColor:
+                      !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  expansionCallback: (panelIndex, expanded) {
+                    tradingPreferenceActive = !tradingPreferenceActive;
+                    setState(() {});
+                  },
+                  children: [
+                    ExpansionPanel(
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        headerBuilder: (context, isExpanded) {
+                          return ListTile(
+                            title: TextWidget.titleText(
+                                text: "Trading Preferences",
+                                theme: theme.isDarkMode,
+                                fw: 1),
+
+                            // Text("Nominee",
+                            //     style: TextStyle(
+                            //         fontSize: 15, fontWeight: FontWeight.w500)),
+                          );
+                        },
+                        body: TradingPreferencesCard(
+                          profileprovider: profileprovider,
+                          theme: theme,
+                        ),
+                        isExpanded: tradingPreferenceActive,
+                        canTapOnHeader: true),
+                  ],
+                ),
+
+                // TradingPreferencesCard(
+                //     profileprovider: profileprovider, theme: theme),
+
+                // const SizedBox(height: 8),
+                // Divider(
+                //     thickness: 4,
+                //     color: theme.isDarkMode
+                //         ? colors.darkColorDivider
+                //         : colors.colorDivider),
+                // const SizedBox(height: 8),
+
+               
                 // Nominee section
                 ExpansionPanelList(
                   elevation: 0,
@@ -1605,20 +1643,41 @@ class UserInfoCard extends StatelessWidget {
                 // const Text("Personal Details",
                 //     style:
                 //         TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                InkWell(
-                  onTap: () async {
-                    await context.read(fundProvider).fetchHstoken(context);
-                    Navigator.pushNamed(context, Routes.profileWebViewApp,
-                        arguments: "profile");
-                  },
-                  child: Icon(
-                    Icons.edit,
-                    color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
-                    size: 17,
-                  ),
+
+                IconButton(
+                  visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                  iconSize: 17,
+                  splashRadius: 20,
+                    onPressed: () async {
+                      await context.read(fundProvider).fetchHstoken(context);
+                      Navigator.pushNamed(context, Routes.profileWebViewApp,
+                          arguments: "profile");
+                    },
+                    icon: Icon(
+                      Icons.edit,
+                      color: theme.isDarkMode
+                          ? colors.colorLightBlue
+                          : colors.colorBlue,
+                      
+                    ),
+                 
                 ),
+
+
+                // InkWell(
+                //   onTap: () async {
+                //     await context.read(fundProvider).fetchHstoken(context);
+                //     Navigator.pushNamed(context, Routes.profileWebViewApp,
+                //         arguments: "profile");
+                //   },
+                //   child: Icon(
+                //     Icons.edit,
+                //     color: theme.isDarkMode
+                //         ? colors.colorLightBlue
+                //         : colors.colorBlue,
+                //     size: 17,
+                //   ),
+                // ),
               ],
             ),
 
@@ -1771,20 +1830,42 @@ class UserNomineeInfoCard extends StatelessWidget {
                   // const Text("Nominee Details",
                   //     style:
                   //         TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                  InkWell(
-                    onTap: () async {
-                      await context.read(fundProvider).fetchHstoken(context);
+
+            IconButton(
+                  visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                  iconSize: 17,
+                  splashRadius: 20,
+                    onPressed: () async {
+                     await context.read(fundProvider).fetchHstoken(context);
                       Navigator.pushNamed(context, Routes.profileWebViewApp,
                           arguments: "nominee");
                     },
-                    child: Icon(
+                    icon: Icon(
                       Icons.edit,
                       color: theme.isDarkMode
                           ? colors.colorLightBlue
                           : colors.colorBlue,
-                      size: 17,
+                      
                     ),
-                  ),
+                 
+                ),
+
+
+
+                  // InkWell(
+                  //   onTap: () async {
+                  //     await context.read(fundProvider).fetchHstoken(context);
+                  //     Navigator.pushNamed(context, Routes.profileWebViewApp,
+                  //         arguments: "nominee");
+                  //   },
+                  //   child: Icon(
+                  //     Icons.edit,
+                  //     color: theme.isDarkMode
+                  //         ? colors.colorLightBlue
+                  //         : colors.colorBlue,
+                  //     size: 17,
+                  //   ),
+                  // ),
                 ],
               ),
 
@@ -1793,51 +1874,50 @@ class UserNomineeInfoCard extends StatelessWidget {
             const SizedBox(
               height: 10,
             ),
-            Column(children: [
-              // profileprovider.clientAllDetails.nomineeData!.map((nominee){
-              // return
-              Column(
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                          child: UserInfoColumn(
-                              label: "Nominee Name",
-                              value: profileprovider.clientAllDetails.clientData
-                                      ?.nomineeName ??
-                                  "",
-                              theme: theme)),
-                      Flexible(
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      // fit: FlexFit.tight,
                         child: UserInfoColumn(
-                            label: "Nominee Relation",
+                            label: "Nominee Name",
                             value: profileprovider.clientAllDetails.clientData
-                                    ?.nomineeRelation ??
+                                    ?.nomineeName ??
                                 "",
                             theme: theme,
-                            editable: false),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Flexible(
-                          child: UserInfoColumn(
-                              label: "Nominee DOB",
-                              value: nomineeDOB,
-                              theme: theme)),
-                      Flexible(
+                            expandable: true),),
+                       const SizedBox(width: 10,),
+                    Flexible(
+                      child: UserInfoColumn(
+                          label: "Nominee Relation",
+                          value: profileprovider.clientAllDetails.clientData
+                                  ?.nomineeRelation ??
+                              "",
+                          theme: theme,
+                          editable: false),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Flexible(
                         child: UserInfoColumn(
-                            label: "Nominee Percentage",
-                            value: "",
-                            theme: theme,
-                            editable: false),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              // }).toList()
-            ]),
+                            label: "Nominee DOB",
+                            value: nomineeDOB,
+                            theme: theme)),
+                     const SizedBox(width: 10,),
+                    Flexible(
+                      child: UserInfoColumn(
+                          label: "Nominee Percentage",
+                          value: "",
+                          theme: theme,
+                          editable: false),
+                    ),
+                  ],
+                ),
+              ],
+            ),
 
             // UserInfoColumn(
             //     label: "Email",
@@ -2066,7 +2146,9 @@ class DematDetailsCard extends StatelessWidget {
           UserInfoColumn(
               label: "DP Name",
               value: profileprovider.clientAllDetails.clientData?.dPNAME ?? "",
-              theme: theme),
+              theme: theme,
+              expandable: true,
+              ),
         ],
       ),
     );
@@ -2091,7 +2173,7 @@ class TradingPreferencesCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 0,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+        padding: EdgeInsets.symmetric(horizontal: 16.0), // , vertical: 16.0
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2099,26 +2181,47 @@ class TradingPreferencesCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextWidget.titleText(
-                    text: "Trading Preferences",
+                    text: "Segments", //Trading Preferences
                     theme: theme.isDarkMode,
                     fw: 1),
                 // const Text("Trading Preferences",
                 //     style:
                 //         TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                InkWell(
-                  onTap: () async {
-                    await context.read(fundProvider).fetchHstoken(context);
+                IconButton(
+                  visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                  iconSize: 17,
+                  splashRadius: 20,
+                    onPressed: () async {
+                     await context.read(fundProvider).fetchHstoken(context);
                     Navigator.pushNamed(context, Routes.profileWebViewApp,
                         arguments: "segment");
-                  },
-                  child: Icon(
-                    Icons.edit,
-                    color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
-                    size: 17,
-                  ),
+                    },
+                    icon: Icon(
+                      Icons.edit,
+                      color: theme.isDarkMode
+                          ? colors.colorLightBlue
+                          : colors.colorBlue,
+                      
+                    ),
+                 
                 ),
+
+
+
+                // InkWell(
+                //   onTap: () async {
+                //     await context.read(fundProvider).fetchHstoken(context);
+                //     Navigator.pushNamed(context, Routes.profileWebViewApp,
+                //         arguments: "segment");
+                //   },
+                //   child: Icon(
+                //     Icons.edit,
+                //     color: theme.isDarkMode
+                //         ? colors.colorLightBlue
+                //         : colors.colorBlue,
+                //     size: 17,
+                //   ),
+                // ),
               ],
             ),
             const SizedBox(
@@ -2192,17 +2295,18 @@ class UserInfoColumn extends StatelessWidget {
             initialValue: value,
             // keyboardType:expandable?TextInputType.text:TextInputType.multiline,
             readOnly: true,
-            // maxLines: expandable ? null : 1,
+            maxLines: expandable ? 4 : 1,
             // expands:expandable,
             // minLines:null,
             minLines: 1,
-            maxLines: 4,
+            // maxLines: 4,
 
             //  maxLines: null,
             // keyboardType: TextInputType.text,
 
             decoration: InputDecoration(
               enabled: editable ? true : false,
+              
               // isDense: true,
               // suffix: editable
               //     ? InkWell(
@@ -2220,6 +2324,7 @@ class UserInfoColumn extends StatelessWidget {
               //     : null,
             ),
             style: TextStyle(
+              overflow: TextOverflow.ellipsis,
               color: context.read(themeProvider).isDarkMode
                   ? colors.colorWhite
                   : colors.colorBlack,

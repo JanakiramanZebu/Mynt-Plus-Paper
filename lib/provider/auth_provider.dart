@@ -995,25 +995,25 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(transcationProvider).fetchc(context);
 
 // IPOs
-        await ref(ipoProvide).getDashboardIpos();
-        await ref(ipoProvide).getSmeIpo();
-        await ref(ipoProvide).getmainstreamipo();
-        await ref(ipoProvide).getipoperfomance(currentYear);
-        await ref(ipoProvide).mergemainsme();
-        await ref(ipoProvide).fetchIpoPreClose();
+         ref(ipoProvide).getDashboardIpos();
+         ref(ipoProvide).getSmeIpo();
+         ref(ipoProvide).getmainstreamipo();
+         ref(ipoProvide).getipoperfomance(currentYear);
+         ref(ipoProvide).mergemainsme();
+         ref(ipoProvide).fetchIpoPreClose();
 
         await FirebaseAnalytics.instance.setUserId(id: pref.clientId);
 // Explore
-        await ref(stocksProvide)
-            .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
-        await ref(indexListProvider).fetchStockTopIndex();
+        // await ref(stocksProvide)
+        //     .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
+        // await ref(indexListProvider).fetchStockTopIndex();
 
         // await ref(stocksProvide).fetchCorporateAction();
-        await ref(stocksProvide).fetchCAevents();
+        // await ref(stocksProvide).fetchCAevents();
         // await ref(stocksProvide).defaultSectorThemematicData();
-        await ref(stocksProvide).getNews();
-        await ref(stocksProvide).chngTradeAct("Equity");
-        await ref(profileAllDetailsProvider).fetchClientProfileAllDetails();
+        // await ref(stocksProvide).getNews();
+        // await ref(stocksProvide).chngTradeAct("Equity");
+         ref(profileAllDetailsProvider).fetchClientProfileAllDetails();
 
         // ref(mfProvider).fetchcommonsearchWadd(null, "", context, false);
         // ref(mfProvider).fetchmfCommonsearch("Z", context);

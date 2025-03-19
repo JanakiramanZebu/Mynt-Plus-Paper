@@ -304,7 +304,7 @@ class HoldingDetailScreen extends ConsumerWidget {
                               const SizedBox(height: 2),
                               Text(
                                 (int.parse("${holdingData.currentQty ?? 0}") *
-                                        double.parse("${exchTsym.lp ?? 00}"))
+                                        double.parse(exchTsym.lp?.toString() ?? "0.0"))
                                     .toStringAsFixed(2),
                                 style: textStyle(
                                     theme.isDarkMode
