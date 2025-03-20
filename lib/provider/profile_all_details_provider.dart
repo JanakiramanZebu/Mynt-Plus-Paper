@@ -6,6 +6,8 @@ import 'package:mynt_plus/locator/preference.dart';
 import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_model.dart';
 import 'package:mynt_plus/models/client_profile_all_details/details_change_current_status_model.dart';
 import 'package:mynt_plus/provider/core/default_change_notifier.dart';
+import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 final profileAllDetailsProvider = ChangeNotifierProvider((ref) => ProfileProvider(ref.read));
 
@@ -197,7 +199,17 @@ formateDataToDisplay(String data,int firstPart,int lastPart){
 // }
 
 
-
+void openInWebURL(BuildContext context,String urlArgs) async {
+   await context.read(fundProvider).fetchHstoken(context);
+  debugPrint('$urlArgs  ==== ${pref.clientId} =====  ${context.read(fundProvider).fundHstoken!.hstk}');
+    Uri uri = Uri.parse('https://profile.mynt.in/${urlArgs}/?sAccountId=${pref.clientId}&sToken=${context.read(fundProvider).fundHstoken!.hstk}&src=app');
+    // debugPrint('$uri');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch $uri';
+    }
+  }
 
 
   Future getDetailsChangeCurrentStatus() async {
