@@ -28,17 +28,30 @@ class IpoCommonSearch extends ConsumerWidget {
           leadingWidth: 41,
           centerTitle: false,
           titleSpacing: 6,
-          leading: InkWell(
-              onTap: () {
+          leading: Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8)
+    
+    ,
+    child: InkWell(
+                  onTap: () {
                 ipo.clearCommonIpoSearch();
                 Navigator.pop(context);
               },
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 9),
-                  child: SvgPicture.asset(assets.backArrow,
-                      color: theme.isDarkMode
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 9),
+                    child:Icon(
+                              Icons.arrow_back_ios,
+                              color: theme.isDarkMode
                           ? colors.colorWhite
-                          : colors.colorBlack))),
+                          : colors.colorBlack,
+                              size: 22,
+                            ),
+    
+                  ),
+                ),
+  ),
+          
+          
           shadowColor: const Color(0xffECEFF3),
           title: Container(
               height: 62,
@@ -48,15 +61,15 @@ class IpoCommonSearch extends ConsumerWidget {
                 controller: ipo.ipocommonsearchcontroller,
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w600),
+                    14,
+                    FontWeight.w500),
                 decoration: InputDecoration(
                     fillColor: theme.isDarkMode
                         ? colors.darkGrey
                         : const Color(0xffF1F3F8),
                     filled: true,
                     hintStyle:
-                        textStyle(const Color(0xff69758F), 15, FontWeight.w500),
+                        textStyle(const Color(0xff69758F), 14, FontWeight.w500),
                     prefixIconColor: const Color(0xff586279),
                     prefixIcon: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -65,16 +78,31 @@ class IpoCommonSearch extends ConsumerWidget {
                           fit: BoxFit.contain,
                           width: 20),
                     ),
-                    suffixIcon: InkWell(
-                      onTap: () async {
-                        ipo.clearCommonIpoSearch();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: SvgPicture.asset(assets.removeIcon,
-                            fit: BoxFit.scaleDown, width: 20),
-                      ),
-                    ),
+                    // if()
+                    suffixIcon: 
+                    
+                     ValueListenableBuilder<TextEditingValue>(
+  valueListenable: ipo.ipocommonsearchcontroller,
+  builder: (context, value, child) {
+    return value.text.isNotEmpty
+        ? InkWell(
+            onTap: () {
+              ipo.clearCommonIpoSearch(); 
+            },
+            borderRadius: BorderRadius.circular(50),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: SvgPicture.asset(
+                assets.removeIcon,
+                fit: BoxFit.scaleDown,
+                width: 20,
+              ),
+            ),
+          )
+        : const SizedBox.shrink(); 
+  },
+),
+
                     enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide.none,
                         borderRadius: BorderRadius.circular(20)),

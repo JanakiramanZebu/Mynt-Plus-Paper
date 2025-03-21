@@ -161,9 +161,9 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                           !theme.isDarkMode
                                               ? colors.colorBlack
                                               : colors.colorWhite,
-                                          15,
+                                          16,
                                           FontWeight.w600)),
-                                  const SizedBox(height: 10),
+                                  const SizedBox(height: 8),
                                   Row(
                                     children: [
                                       Container(
@@ -210,7 +210,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                           child: Text(widget.ipotype,
                                               style: textStyle(
                                                   const Color(0xff666666),
-                                                  9,
+                                                  10,
                                                   FontWeight.w500))),
                                     ],
                                   ),
@@ -219,7 +219,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                             ),
                           ),
                           const SizedBox(
-                            height: 15,
+                            height: 16,
                           ),
                           Expanded(
                             child: ListView(
@@ -244,19 +244,19 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                       //       16,
                                       //       FontWeight.w500),
                                       // ),
-                                      const SizedBox(
-                                        height: 4,
-                                      ),
+                                      // const SizedBox(
+                                      //   height: 4,
+                                      // ),
                                       Text("IPO Details",
                                           style: textStyle(
                                               theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors
                                                       .colorBlack, // Fixes the logic
-                                              15,
+                                              14,
                                               FontWeight.w600)),
                                       const SizedBox(
-                                        height: 12,
+                                        height: 16,
                                       ),
                                       // rowOfInfoData(
                                       //     "Lot Size",
@@ -341,7 +341,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                                       style: textStyle(
                                                           const Color(
                                                               0xff666666),
-                                                          10,
+                                                          12,
                                                           FontWeight.w400)),
                                                   const SizedBox(height: 4),
                                                   Text(
@@ -366,14 +366,14 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                                                   .colorBlack,
                                                           14,
                                                           FontWeight.w600)),
-                                                  const SizedBox(height: 2),
+                                                  // const SizedBox(height: 2),
                                                   Divider(
                                                       color: theme.isDarkMode
                                                           ? colors
                                                               .darkColorDivider
                                                           : colors.colorDivider)
                                                 ])),
-                                            const SizedBox(width: 18),
+                                            const SizedBox(width: 16),
                                             if (singlepage.iposinglepage!
                                                         .data!['IpoDetails']
                                                     ['RHP'] !=
@@ -387,47 +387,22 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                                         style: textStyle(
                                                             const Color(
                                                                 0xff666666),
-                                                            10,
+                                                            12,
                                                             FontWeight.w400)),
                                                     const SizedBox(height: 4),
-                                                    TextButton(
-                                                      onPressed: () =>
-                                                          _launchURL(singlepage
-                                                                  .iposinglepage!
-                                                                  .data![
-                                                              'IpoDetails']['RHP']),
+                                                   InkWell(
+  onTap: () => _launchURL(singlepage.iposinglepage!.data!['IpoDetails']['RHP']),
+  child: Text(
+    "Download",
+    style: textStyle(
+      theme.isDarkMode ? colors.colorBlue : colors.colorBlue,
+      14,
+      FontWeight.w600,
+    ),
+  ),
+),
 
-                                                      // Add your onPressed callback here
-                                                      style:
-                                                          TextButton.styleFrom(
-                                                        minimumSize:
-                                                            Size(0, 20),
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                          right: 16,
-                                                          top: 0,
-                                                          bottom: 0,
-                                                        ),
-                                                        tapTargetSize:
-                                                            MaterialTapTargetSize
-                                                                .shrinkWrap, // Apply padding here
-                                                        alignment: Alignment
-                                                            .topLeft, // Align text to the left
-                                                      ),
-                                                      child: Text(
-                                                        "Download",
-                                                        style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors.colorBlue
-                                                              : colors
-                                                                  .colorBlue,
-                                                          14,
-                                                          FontWeight.w600,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 2),
+                                                    // const SizedBox(height: 2),
                                                     Divider(
                                                         color: theme.isDarkMode
                                                             ? colors
@@ -443,7 +418,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                 ),
                                 Padding(
                                   padding:
-                                      const EdgeInsets.symmetric(vertical: 10),
+                                      const EdgeInsets.symmetric(vertical: 8),
                                   child: Divider(
                                     color: theme.isDarkMode
                                         ? colors.darkColorDivider
@@ -475,10 +450,10 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                                         ? colors.colorWhite
                                                         : colors
                                                             .colorBlack, // Fixes the logic
-                                                    15,
+                                                    14,
                                                     FontWeight.w600)),
                                             const SizedBox(
-                                              height: 3,
+                                              height: 4,
                                             ),
                                             Text(
                                               "The IPO has been subscribed ${singlepage.iposinglepage!.data['tlSub']['Subscription (times)']} times",
@@ -490,7 +465,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                                   FontWeight.w500),
                                             ),
                                             const SizedBox(
-                                              height: 20,
+                                              height: 16,
                                             ),
                                             ListView.separated(
                                               shrinkWrap: true,
@@ -502,7 +477,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                                   (context, index) => Padding(
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                        vertical: 3),
+                                                        vertical: 4),
                                                 child: Divider(
                                                   color: theme.isDarkMode
                                                       ? colors.darkColorDivider
@@ -528,9 +503,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                                 );
                                               },
                                             ),
-                                            const SizedBox(
-                                              height: 10,
-                                            )
+                                           
                                           ]);
                                     },
                                   ),
@@ -551,7 +524,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
 
                                       return Padding(
                                         padding: const EdgeInsets.symmetric(
-                                            vertical: 10),
+                                            vertical: 8),
                                         child: Divider(
                                           color: theme.isDarkMode
                                               ? colors.darkColorDivider
@@ -568,7 +541,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       const SizedBox(
-                                        height: 10,
+                                        height: 8,
                                       ),
                                       Text(
                                         "IPO TimeLine",
@@ -576,7 +549,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                             !theme.isDarkMode
                                                 ? colors.colorBlack
                                                 : colors.colorWhite,
-                                            15,
+                                            14,
                                             FontWeight.w600),
                                       ),
                                       ListView.builder(
@@ -625,7 +598,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                       theme.isDarkMode
                                           ? colors.colorWhite
                                           : colors.colorBlack,
-                                      15,
+                                      14,
                                       FontWeight.w600,
                                     ),
                                   ),
@@ -635,7 +608,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(
-                                      left: 16, right: 16, top: 10, bottom: 1),
+                                      left: 16, right: 16, top: 8, bottom: 0),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -644,7 +617,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                         singlepage.iposinglepage!.data['about'],
                                         textAlign: TextAlign.justify,
                                         style: const TextStyle(
-                                          fontSize: 14,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.w400,
                                           height: 1.7,
                                         ),
@@ -656,7 +629,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                             : TextOverflow
                                                 .ellipsis, // Show ellipsis when text is truncated
                                       ),
-                                      const SizedBox(height: 0),
+                                    
                                       TextButton(
                                         style: TextButton.styleFrom(
                                           minimumSize: Size(0, 0),
@@ -672,9 +645,9 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                               ? 'Read Less'
                                               : 'Read More', // Toggle the button text
                                           style: const TextStyle(
-                                              fontSize: 15,
+                                              fontSize: 14,
                                               color: Color(0xFF0037B7),
-                                              fontWeight: FontWeight.w600),
+                                              fontWeight: FontWeight.w500),
                                         ),
                                       ),
                                     ],
@@ -1373,7 +1346,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                         }
                                       },
                                       child: Text(
-                                        "Apply Now!",
+                                        "Apply for IPO",
                                         style: textStyle(
                                           theme.isDarkMode
                                               ? colors.colorBlack
@@ -1511,7 +1484,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                   children: [
                 Text(title1,
                     style: textStyle(
-                        const Color(0xff666666), 10, FontWeight.w400)),
+                        const Color(0xff666666), 12, FontWeight.w400)),
                 const SizedBox(height: 4),
                 Text(value1,
                     style: textStyle(
@@ -1520,20 +1493,20 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                             : colors.colorBlack,
                         14,
                         FontWeight.w600)),
-                const SizedBox(height: 2),
+                // const SizedBox(height: 2),
                 Divider(
                     color: theme.isDarkMode
                         ? colors.darkColorDivider
                         : colors.colorDivider)
               ])),
-          const SizedBox(width: 18),
+          const SizedBox(width: 16),
           Expanded(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                 Text(title2,
                     style: textStyle(
-                        const Color(0xff666666), 10, FontWeight.w400)),
+                        const Color(0xff666666), 12, FontWeight.w400)),
                 const SizedBox(height: 4),
                 Text(
                   value2,
@@ -1542,7 +1515,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                       14,
                       FontWeight.w600),
                 ),
-                const SizedBox(height: 2),
+                // const SizedBox(height: 2),
                 Divider(
                     color: theme.isDarkMode
                         ? colors.darkColorDivider

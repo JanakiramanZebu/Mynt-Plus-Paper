@@ -557,57 +557,57 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                     ),
                   )
                 : Container(),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              // height: 300,
-              width: MediaQuery.of(context).size.width,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(0xFFFFFFFF), // #FFFFFF at 0%
-                    Color(0xFFF1F3F8), // #F1F3F8 at 100%
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 70),
-                  SvgPicture.asset("assets/icon/zebulogo.svg",
-                      color: colors.logoColor,
-                      // height: 50,
-                      width: 100,
-                      fit: BoxFit.contain),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL: 12080400",
-                    style: TextStyle(
-                      color: Color(0xff666666),
-                      fontSize: 10,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "SEBI Registration No : INZ00174634 | AMFI ARN: 113118",
-                    style: TextStyle(
-                      color: Color(0xff666666),
-                      fontSize: 10,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "Research Analyst : INH200006044",
-                    style: TextStyle(
-                      color: Color(0xff666666),
-                      fontSize: 10,
-                    ),
-                  )
-                ],
-              ),
-            )
+            // Container(
+            //   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            //   // height: 300,
+            //   width: MediaQuery.of(context).size.width,
+            //   decoration: const BoxDecoration(
+            //     gradient: LinearGradient(
+            //       colors: [
+            //         Color(0xFFFFFFFF), // #FFFFFF at 0%
+            //         Color(0xFFF1F3F8), // #F1F3F8 at 100%
+            //       ],
+            //       begin: Alignment.topCenter,
+            //       end: Alignment.bottomCenter,
+            //     ),
+            //   ),
+            //   child: Column(
+            //     mainAxisAlignment: MainAxisAlignment.end,
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       const SizedBox(height: 70),
+            //       SvgPicture.asset("assets/icon/zebulogo.svg",
+            //           color: colors.logoColor,
+            //           // height: 50,
+            //           width: 100,
+            //           fit: BoxFit.contain),
+            //       const SizedBox(height: 16),
+            //       const Text(
+            //         "NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL: 12080400",
+            //         style: TextStyle(
+            //           color: Color(0xff666666),
+            //           fontSize: 10,
+            //         ),
+            //       ),
+            //       const SizedBox(height: 4),
+            //       const Text(
+            //         "SEBI Registration No : INZ00174634 | AMFI ARN: 113118",
+            //         style: TextStyle(
+            //           color: Color(0xff666666),
+            //           fontSize: 10,
+            //         ),
+            //       ),
+            //       const SizedBox(height: 4),
+            //       const Text(
+            //         "Research Analyst : INH200006044",
+            //         style: TextStyle(
+            //           color: Color(0xff666666),
+            //           fontSize: 10,
+            //         ),
+            //       )
+            //     ],
+            //   ),
+            // )
           ],
         ),
       );

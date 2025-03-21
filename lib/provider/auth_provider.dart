@@ -1061,6 +1061,7 @@ class AuthProvider extends DefaultChangeNotifier {
     await ref(ipoProvide).getDashboardIpos();
     await ref(ipoProvide).getSmeIpo();
     await ref(ipoProvide).getmainstreamipo();
+    await ref(ipoProvide).getUpcomingIpoModel();
     await ref(ipoProvide).getipoperfomance(currentYear);
     await ref(ipoProvide).mergemainsme();
     await ref(ipoProvide).fetchIpoPreClose();

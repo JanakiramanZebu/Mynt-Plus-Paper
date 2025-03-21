@@ -179,6 +179,7 @@ class ApiLinks {
   String get ipoorderbook => "${ipourlendpoint}orderbookIPODetails";
   String get iposinglepage => "${ipourlendpoint}get_single_ipo_data_new";
   String get ipoprecloseurl => "${ipourlendpoint}precloseipo";
+  String get ipoupcomingurl => "${ipourlendpoint}getupcomingdetails";
 
 
 // Mutual Fund

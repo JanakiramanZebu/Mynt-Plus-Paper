@@ -54,7 +54,7 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
                         FontWeight.w600)),
               ),
               const SizedBox(
-                height: 10,
+                height: 16,
               ),
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -87,7 +87,7 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
                     setState(() {
                       upiid.upiid.text = value;
                       if (upiid.upiid.text.isEmpty) {
-                        upierrortext = "* UPI ID cannot be empty";
+                        upierrortext = "UPI ID cannot be empty";
                         ipo.setisMainIPOPlaceOrderBtnActiveValue = false;
                       } else if (!RegExp(r'^[\w.-]+@[\w]+$')
                           .hasMatch(upiid.upiid.text = value)) {
@@ -104,7 +104,7 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
               if (upiid.upiid.text.isEmpty ||
                   !RegExp(r'^[\w.-]+@[\w]+$').hasMatch(upiid.upiid.text)) ...[
                 const SizedBox(
-                  height: 6,
+                  height: 8,
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -120,7 +120,7 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
                         errorName: ipo.upierror,
                       ))
                   : Container(),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
 
               Padding(
                 padding:
@@ -143,7 +143,7 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                       warningMessage(context,
-                                          "can't able place Order with current selected combination of Bids"));
+                                          "Can't able place Order with current selected combination of Bids"));
                                   // ischecked = false;
                                   ipo.setisMainIPOPlaceOrderBtnActiveValue =
                                       false;
@@ -175,7 +175,8 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 16
+              ),
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -21,6 +21,7 @@ class IpoCloseOrder extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListView.separated(
+            
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: ipo.closeorder!.length,
@@ -32,9 +33,8 @@ class IpoCloseOrder extends ConsumerWidget {
                 },
                 child: Column(
                   children: [
-                    Container(
-                      padding:
-                          const EdgeInsets.only(left: 16, right: 16, top: 4),
+                    Padding(
+                      padding:  EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -47,9 +47,10 @@ class IpoCloseOrder extends ConsumerWidget {
                                           ? colors.colorWhite
                                           : colors.colorBlack)),
                               const SizedBox(
-                                height: 10,
+                                height: 8,
                               ),
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SvgPicture.asset(
                                       ipo.closeorder![index].reponseStatus ==
@@ -57,7 +58,7 @@ class IpoCloseOrder extends ConsumerWidget {
                                           ? "assets/icon/failed.svg"
                                           : "assets/icon/failed.svg"),
                                   const SizedBox(
-                                    width: 4,
+                                    width: 5,
                                   ),
                                   Text(
                                     ipo.closeorder![index].reponseStatus ==
@@ -68,11 +69,11 @@ class IpoCloseOrder extends ConsumerWidget {
                                         theme.isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                        13,
+                                        14,
                                         FontWeight.w600),
                                   ),
                                   const SizedBox(
-                                    width: 10,
+                                    width: 8,
                                   ),
                                   Text(
                                     "BID Qty: ",
@@ -85,7 +86,7 @@ class IpoCloseOrder extends ConsumerWidget {
                                         theme.isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                        13,
+                                        14,
                                         FontWeight.w600),
                                   )
                                 ],
@@ -104,12 +105,10 @@ class IpoCloseOrder extends ConsumerWidget {
                               : const Color(0xffECEDEE),
                           thickness: 1.2),
                     ),
-                    const SizedBox(
-                      height: 7,
-                    ),
+                    
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 16,vertical: 10
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -130,7 +129,7 @@ class IpoCloseOrder extends ConsumerWidget {
                                     theme.isDarkMode
                                         ? colors.colorWhite
                                         : colors.colorBlack,
-                                    13,
+                                    14,
                                     FontWeight.w600),
                               ),
                               const SizedBox(
@@ -162,7 +161,7 @@ class IpoCloseOrder extends ConsumerWidget {
                                     theme.isDarkMode
                                         ? colors.colorWhite
                                         : colors.colorBlack,
-                                    13,
+                                    14,
                                     FontWeight.w600),
                               ),
                               const SizedBox(
@@ -178,9 +177,7 @@ class IpoCloseOrder extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(
-                      height: 15,
-                    ),
+                    
                   ],
                 ),
               );

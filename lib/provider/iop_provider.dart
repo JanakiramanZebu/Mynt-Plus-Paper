@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_details_model.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_pre_close_model.dart';
+import 'package:mynt_plus/models/ipo_model/ipo_upcoming_model.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
@@ -36,6 +37,8 @@ class IPOProvider extends DefaultChangeNotifier {
 
   bool _isSMEPlaceOrderBtnActive = false;
   bool get isSMEPlaceOrderBtnActive => _isSMEPlaceOrderBtnActive;
+
+  
 
   set setisSMEPlaceOrderBtnActiveValue(bool value) {
     _isSMEPlaceOrderBtnActive = value;
@@ -114,6 +117,8 @@ class IPOProvider extends DefaultChangeNotifier {
   SmeIpoModel? _smeIpoModel;
   SmeIpoModel? get smeIpoModel => _smeIpoModel;
 
+ 
+
   DashbordIposIPOS? _dashboardIpoModel;
   DashbordIposIPOS? get dashboardIpoModel => _dashboardIpoModel;
 
@@ -173,6 +178,10 @@ class IPOProvider extends DefaultChangeNotifier {
   String _upierror = "";
   String get upierror => _upierror;
 
+  
+
+  
+
   mergemainsme() {
     _mainsme = [];
     _ipoCommonSearchAllIpos = [];
@@ -206,11 +215,12 @@ class IPOProvider extends DefaultChangeNotifier {
         return dateA.compareTo(dateB);
       });
 
-      return _mainsme = mainsme;
+      return _mainsme = mainsme;     
       //return _mainsme;
     } catch (e) {
       print("Error in mergemainsme: $e");
     }
+     print(' main sme :::::::::::::::::::::::: "  : $_mainsme');
   }
 
   IpoSinglePage? _ipoSinglePage;
@@ -657,12 +667,12 @@ class IPOProvider extends DefaultChangeNotifier {
     for (IpoDetails singleIpo in addIpo) {
       if (singleIpo.requriedprice > maxUPIAmt) {
         singleIpo.qualityerrortext =
-            "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
+            "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} ";
         setisMainIPOPlaceOrderBtnActiveValue = false;
         setisSMEPlaceOrderBtnActiveValue = false;
       } else if (selectedChip == "HNI" && singleIpo.requriedprice < 200000) {
         singleIpo.qualityerrortext =
-            "Minimum investment for HNI is above ₹200000 ";
+            "Minimum investment for HNI is above ₹200000";
         setisMainIPOPlaceOrderBtnActiveValue = false;
         setisSMEPlaceOrderBtnActiveValue = false;
       } else {
@@ -1247,6 +1257,8 @@ class IPOProvider extends DefaultChangeNotifier {
 
     notifyListeners();
   }
+ Upcoming_ipo? _upcomingModel;
+  Upcoming_ipo? get upcomingModel => _upcomingModel;
 
 //// API CALLS
   Future getipoorderbookmodel1(bool isTrue) async {
@@ -1263,6 +1275,23 @@ class IPOProvider extends DefaultChangeNotifier {
       _displayload = false;
     }
   }
+
+   Future getUpcomingIpoModel() async {
+    try {
+      _displayload = true;
+      _upcomingModel = await api.fetchIpoUpcomingApi();
+      ordersplit();
+      //  print("IPO RES ORDERBOOK ::: ${_ipoOrderBookModel![0].bidDetail![0].amount}");
+      notifyListeners();
+      print('upcoming data ::::::::::::::    $upcomingModel');
+      return _upcomingModel;
+    } catch (e) {
+      print("IPOs Upcoming error:: $e");
+    } finally {
+      _displayload = false;
+    }
+  }
+
 
   Future getipoorderbookmodel(bool isTrue) async {
     try {

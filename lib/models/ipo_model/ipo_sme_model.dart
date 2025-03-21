@@ -70,6 +70,8 @@ class SMEIPO {
   String? updateIpoDate;
   String? key;
   String? ipostatus;
+  String? imageLink;
+  String? totalsub;
 
 
   SMEIPO(
@@ -116,6 +118,8 @@ class SMEIPO {
       this.tplusmodificationto,
       this.type,
       this.updateIpoDate,
+      this.imageLink,
+      this.totalsub,
       this.key});
 
   SMEIPO.fromJson(Map<String, dynamic> json) {
@@ -173,6 +177,8 @@ class SMEIPO {
     type = json['type'].toString();
     updateIpoDate = json['update_ipo_date'].toString();
     key = json['key'].toString();
+    totalsub = json["total_sub"];
+    imageLink = json["image_link"];
     ipostatus="Live";
 
   }
@@ -228,6 +234,8 @@ class SMEIPO {
     data['tplusmodificationto'] = tplusmodificationto;
     data['type'] = type;
     data['update_ipo_date'] = updateIpoDate;
+    data['totalsub'] = totalsub;
+    data['imageLink'] = imageLink;
     data['key'] = key;
     return data;
   }

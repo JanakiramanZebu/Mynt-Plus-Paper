@@ -4,6 +4,7 @@ class IpoPreCloseModel {
   IpoPreCloseModel({required this.msg});
 
   IpoPreCloseModel.fromJson(Map<String, dynamic> json) {
+    print("precloseresp:: $json");
     if (json['msg'] != "no data") {
       msg = <Msg>[];
       json['msg'].forEach((v) {
@@ -50,6 +51,7 @@ class Msg {
   String? scriptData;
   String? year;
   String? ipostatus;
+  String? totalsub;
 
 
   Msg(
@@ -76,6 +78,7 @@ class Msg {
       this.name,
       this.nsesymbol,
       this.scriptData,
+      this.totalsub,
       this.year});
 
   Msg.fromJson(Map<String, dynamic> json) {
@@ -103,6 +106,7 @@ class Msg {
     nsesymbol = json['nsesymbol'];
     scriptData = json['script_data'];
     year = json['year'];
+    totalsub = json['total_sub'];
     ipostatus="Closed";
   }
 
@@ -132,6 +136,7 @@ class Msg {
     data['nsesymbol'] = nsesymbol;
     data['script_data'] = scriptData;
     data['year'] = year;
+    data['totalsub'] = totalsub;
     return data;
   }
 

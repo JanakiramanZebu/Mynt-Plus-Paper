@@ -154,9 +154,9 @@ class IpoOpenOrder extends ConsumerWidget {
                       },
                       child: Column(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.only(
-                                left: 16, right: 16, top: 4),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -172,7 +172,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                                     ? colors.colorWhite
                                                     : colors.colorBlack)),
                                     const SizedBox(
-                                      height: 10,
+                                      height: 8,
                                     ),
                                     Row(
                                       children: [
@@ -182,7 +182,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                             ? "assets/icon/success.svg"
                                             : "assets/icon/pendingicon.svg"),
                                         const SizedBox(
-                                          width: 4,
+                                          width: 5,
                                         ),
                                         Text(
                                           ipo.openorder![index]
@@ -194,11 +194,11 @@ class IpoOpenOrder extends ConsumerWidget {
                                               theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack,
-                                              13,
+                                              14,
                                               FontWeight.w600),
                                         ),
                                         const SizedBox(
-                                          width: 10,
+                                          width: 8,
                                         ),
                                         Text(
                                           "BID Qty: ",
@@ -211,7 +211,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                               theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack,
-                                              13,
+                                              14,
                                               FontWeight.w600),
                                         )
                                       ],
@@ -230,12 +230,10 @@ class IpoOpenOrder extends ConsumerWidget {
                                     : const Color(0xffECEDEE),
                                 thickness: 1.2),
                           ),
-                          const SizedBox(
-                            height: 7,
-                          ),
+                          
                           Padding(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
+                              horizontal: 16, vertical: 10
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -256,7 +254,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                           theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          13,
+                                          14,
                                           FontWeight.w600),
                                     ),
                                     const SizedBox(
@@ -281,7 +279,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                           theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          13,
+                                          14,
                                           FontWeight.w600),
                                     ),
                                     const SizedBox(
@@ -297,9 +295,7 @@ class IpoOpenOrder extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          const SizedBox(
-                            height: 15,
-                          ),
+                          
                         ],
                       ),
                     );
@@ -326,9 +322,8 @@ class IpoOpenOrder extends ConsumerWidget {
                       },
                       child: Column(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.only(
-                                left: 16, right: 16, top: 4),
+                          Padding( padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -344,7 +339,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                                     ? colors.colorWhite
                                                     : colors.colorBlack)),
                                     const SizedBox(
-                                      height: 10,
+                                      height: 8,
                                     ),
                                     Row(
                                       children: [
@@ -354,7 +349,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                             ? "assets/icon/success.svg"
                                             : "assets/icon/pendingicon.svg"),
                                         const SizedBox(
-                                          width: 4,
+                                          width: 5,
                                         ),
                                         Text(
                                           ipo.iposearch![index]
@@ -366,11 +361,11 @@ class IpoOpenOrder extends ConsumerWidget {
                                               theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack,
-                                              13,
+                                              14,
                                               FontWeight.w600),
                                         ),
                                         const SizedBox(
-                                          width: 10,
+                                          width: 8,
                                         ),
                                         Text(
                                           "BID Qty: ",
@@ -383,7 +378,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                               theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack,
-                                              13,
+                                              14,
                                               FontWeight.w600),
                                         )
                                       ],
@@ -423,7 +418,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                           theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          13,
+                                          14,
                                           FontWeight.w600),
                                     ),
                                     const SizedBox(
@@ -451,7 +446,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                           theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          13,
+                                          14,
                                           FontWeight.w600),
                                     ),
                                     const SizedBox(
@@ -467,9 +462,7 @@ class IpoOpenOrder extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          const SizedBox(
-                            height: 15,
-                          ),
+                         
                         ],
                       ),
                     );

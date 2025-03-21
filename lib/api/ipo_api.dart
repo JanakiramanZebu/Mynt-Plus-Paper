@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:mynt_plus/models/ipo_model/ipo_pre_close_model.dart';
+import 'package:mynt_plus/models/ipo_model/ipo_upcoming_model.dart';
 
 import '../models/ipo_model/ipo_db_model.dart';
 import '../models/ipo_model/ipo_mainstream_model.dart';
@@ -194,6 +195,19 @@ mixin IPOApi on ApiCore {
       final json = jsonDecode(res.body);
       // log("fetchipopreclose :: ${res.body}");
       IpoPreCloseModel ipoModel = IpoPreCloseModel.fromJson(json);
+      return ipoModel;
+    } catch (e) {
+      print("fetchipopreclose ::  $e");
+      rethrow;
+    }
+  }
+  Future<Upcoming_ipo> fetchIpoUpcomingApi() async {
+    try {
+      final uri = Uri.parse(apiLinks.ipoupcomingurl);
+      final res = await apiClient.post(uri, headers: defaultHeaders);
+      final json = jsonDecode(res.body);
+      // log("fetchipopreclose :: ${res.body}");
+      Upcoming_ipo ipoModel = Upcoming_ipo.fromJson(json);
       return ipoModel;
     } catch (e) {
       print("fetchipopreclose ::  $e");

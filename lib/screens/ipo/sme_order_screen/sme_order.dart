@@ -92,84 +92,101 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
           if (ipo.checkForErrorsInSMEPlaceOrder(addIpo)) {
             ipo.setisSMEPlaceOrderBtnActiveValue = true;
           }
-           ipo.setsmePlaceOrderRequiredMaxPrice = addIpo;
+          ipo.setsmePlaceOrderRequiredMaxPrice = addIpo;
 
           return Scaffold(
               appBar: AppBar(
                 elevation: .2,
                 centerTitle: false,
-                leadingWidth: 38,
-                titleSpacing: 1,
-                leading: InkWell(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 9),
-                    child: SvgPicture.asset(assets.backArrow,
+                // leadingWidth: 40,
+                titleSpacing: -8,
+                leading: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Icon(
+                        Icons.arrow_back_ios,
                         color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack),
+                            ? const Color(0xffBDBDBD)
+                            : colors.colorGrey,
+                        size: 22,
+                      ),
+                    ),
                   ),
                 ),
                 backgroundColor:
                     theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                 shadowColor: const Color(0xffECEFF3),
-                title: ListTile(
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 8, top: 10),
-                    child: Text("${widget.smeipo.name}",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            15,
-                            FontWeight.w600)),
-                  ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(bottom: 13),
-                    child: Row(
-                      children: [
-                        Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                                color: widget.smeipo.key == "SME"
-                                    ? theme.isDarkMode
-                                        ? colors.colorGrey.withOpacity(.1)
-                                        : const Color.fromARGB(
-                                            255, 243, 242, 174)
-                                    : theme.isDarkMode
-                                        ? colors.colorGrey.withOpacity(.1)
-                                        : const Color.fromARGB(
-                                            255, 251, 215, 148), //(0xffF1F3F8),
-                                borderRadius: BorderRadius.circular(4)),
-                            child: Text("${widget.smeipo.key}",
-                                style: textStyle(const Color(0xff666666), 9,
-                                    FontWeight.w500))),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                                color: theme.isDarkMode
-                                    ? const Color(0xffECF8F1).withOpacity(.3)
-                                    : const Color(0xffECF8F1),
-                                borderRadius: BorderRadius.circular(4)),
-                            child: Text("Open",
-                                style: textStyle(
-                                    Color(0xff43A833), 11, FontWeight.w500))),
-                      ],
-                    ),
+                title: Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: 250,
+                        child: Text(
+  widget.smeipo.name!
+      .split(" ")
+      .map((word) => word.isNotEmpty 
+          ? word[0].toUpperCase() + word.substring(1).toLowerCase() 
+          : "")
+      .join(" "), // Formatting applied inline
+  style: textStyle(
+      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+      16,
+      FontWeight.w600),
+  softWrap: true,
+  overflow: TextOverflow.visible,
+),
+
+                      ),
+                      Column(
+                        children: [
+                          Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 4),
+                              decoration: BoxDecoration(
+                                  color: widget.smeipo.key == "SME"
+                                      ? theme.isDarkMode
+                                          ? colors.colorGrey.withOpacity(.1)
+                                          : const Color.fromARGB(
+                                              255, 243, 242, 174)
+                                      : theme.isDarkMode
+                                          ? colors.colorGrey.withOpacity(.1)
+                                          : const Color.fromARGB(255, 251, 215,
+                                              148), //(0xffF1F3F8),
+                                  borderRadius: BorderRadius.circular(4)),
+                              child: Text("${widget.smeipo.key}",
+                                  style: textStyle(const Color(0xff666666), 10,
+                                      FontWeight.w500))),
+                          // SizedBox(
+                          //   height: 4,
+                          // ),
+                          // Container(
+                          //     padding: const EdgeInsets.symmetric(
+                          //         horizontal: 8, vertical: 4),
+                          //     decoration: BoxDecoration(
+                          //         color: theme.isDarkMode
+                          //             ? const Color(0xffECF8F1).withOpacity(.3)
+                          //             : const Color(0xffECF8F1),
+                          //         borderRadius: BorderRadius.circular(4)),
+                          //     child: Text("Open",
+                          //         style: textStyle(
+                          //             Color(0xff43A833), 10, FontWeight.w500))),
+                        ],
+                      )
+                    ],
                   ),
                 ),
               ),
               body: ListView(
                 // crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                 
                   // Container(
                   //   decoration: BoxDecoration(
                   //     color: theme.isDarkMode
@@ -329,13 +346,8 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                   // ),
 
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12), // Added `const` for better performance
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -475,9 +487,6 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const SizedBox(
-                                height: 10,
-                              ),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -499,7 +508,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                   removeItem(index);
                                                 },
                                           child: Padding(
-                                            padding: const EdgeInsets.all(5),
+                                            padding: const EdgeInsets.all(0),
                                             child: Row(
                                               children: [
                                                 SvgPicture.asset(
@@ -520,7 +529,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                 ],
                               ),
                               const SizedBox(
-                                height: 10,
+                                height: 8,
                               ),
                               Row(
                                 children: [
@@ -536,7 +545,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                     : colors.colorBlack,
                                                 14,
                                                 FontWeight.w600)),
-                                        const SizedBox(height: 10),
+                                        const SizedBox(height: 8),
                                         SizedBox(
                                           height: 44,
                                           child: TextFormField(
@@ -645,7 +654,8 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                   addIpo[index],
                                                   widget.smeipo,
                                                   ipo.isSMEPlaceOrderBtnActive,
-                                                  ipo.maxUPIAmt,selectedChip);
+                                                  ipo.maxUPIAmt,
+                                                  selectedChip);
                                               setState(() {
                                                 ipo.setsmePlaceOrderRequiredMaxPrice =
                                                     addIpo;
@@ -662,7 +672,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                     ),
                                   ),
                                   const SizedBox(
-                                    width: 10,
+                                    width: 8,
                                   ),
                                   Expanded(
                                       child: Column(
@@ -682,7 +692,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                                       : colors.colorBlack,
                                               14,
                                               FontWeight.w600)),
-                                      const SizedBox(height: 10),
+                                      const SizedBox(height: 8),
                                       SizedBox(
                                         height: 44,
                                         child: TextFormField(
@@ -836,20 +846,20 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                               if (addIpo[index]
                                   .qualityerrortext
                                   .isNotEmpty) ...[
-                                const SizedBox(
-                                  height: 6,
-                                ),
                                 IpoErrorBadge(
                                   errorName: addIpo[index].qualityerrortext,
-                                )
+                                ),
+                                const SizedBox(
+                                  height: 8,
+                                ),
                               ],
                               if (addIpo[index].biderrortext.isNotEmpty) ...[
-                                const SizedBox(
-                                  height: 6,
-                                ),
                                 IpoErrorBadge(
                                   errorName: addIpo[index].biderrortext,
-                                )
+                                ),
+                                const SizedBox(
+                                  height: 8,
+                                ),
                               ],
                             ]),
                       );
@@ -866,10 +876,10 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                 : () {
                                     addNewItem();
                                     ipo.categoryOnChange(
-                                    addIpo,
-                                    ipo.maxUPIAmt,
-                                    ipo.isSMEPlaceOrderBtnActive,
-                                    selectedChip);
+                                        addIpo,
+                                        ipo.maxUPIAmt,
+                                        ipo.isSMEPlaceOrderBtnActive,
+                                        selectedChip);
                                   },
                             icon: SvgPicture.asset(
                               assets.add,
@@ -886,7 +896,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(60))),
                             ),
-                            label: Text("Add another bid",
+                            label: Text("Add another",
                                 style: textStyle(
                                     theme.isDarkMode
                                         ? colors.colorWhite
@@ -895,7 +905,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                     FontWeight.w600)),
                           ),
                         ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   // Padding(
                   //   padding: const EdgeInsets.only(left: 16),
                   //   child: Text("UPI ID (Virtual payment adress)",
@@ -1200,27 +1210,27 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                             }
                           : () {},
                       style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(145, 37),
+                        minimumSize: const Size(155, 40),
                         backgroundColor: !theme.isDarkMode
-                          ? ipo.isSMEPlaceOrderBtnActive == false
-                              ? const Color(0xfff5f5f5)
-                              : colors.colorBlack
-                          : ipo.isSMEPlaceOrderBtnActive == false
-                              ? colors.darkGrey
-                              : colors.colorbluegrey,
+                            ? ipo.isSMEPlaceOrderBtnActive == false
+                                ? const Color(0xfff5f5f5)
+                                : colors.colorBlack
+                            : ipo.isSMEPlaceOrderBtnActive == false
+                                ? colors.darkGrey
+                                : colors.colorbluegrey,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(32),
                         ),
                       ),
                       child: Text("Continue",
                           style: textStyle(
-                             !theme.isDarkMode
-                                ? ipo.isSMEPlaceOrderBtnActive == false
-                                    ? const Color(0xff999999)
-                                    : colors.colorWhite
-                                : ipo.isSMEPlaceOrderBtnActive == false
-                                    ? colors.darkGrey
-                                    : colors.colorBlack,
+                              !theme.isDarkMode
+                                  ? ipo.isSMEPlaceOrderBtnActive == false
+                                      ? const Color(0xff999999)
+                                      : colors.colorWhite
+                                  : ipo.isSMEPlaceOrderBtnActive == false
+                                      ? colors.darkGrey
+                                      : colors.colorBlack,
                               14,
                               FontWeight.w500)),
                     ),

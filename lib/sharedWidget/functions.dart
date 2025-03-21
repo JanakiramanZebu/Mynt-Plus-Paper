@@ -111,7 +111,7 @@ modifyButtonStatus(String startdate, String enddate) {
   final currentDate = DateTime(now.year, now.month, now.day);
   String status = "";
   if (currentDate.isBefore(startDate)) {
-    status = "Upcoming";
+    status = "Pre-open";
   } else if (endDate.isBefore(currentDate)) {
     status = "Closed";
   } else {
@@ -325,7 +325,7 @@ ipostartdate(String startdate, String enddate) {
   final currentDate = DateTime(now.year, now.month, now.day);
   String status = "";
   if (currentDate.isBefore(startDate)) {
-    status = "Upcoming";
+    status = "Pre-open";
   } else if (endDate.isBefore(currentDate)) {
     status = "Closed";
   } else {

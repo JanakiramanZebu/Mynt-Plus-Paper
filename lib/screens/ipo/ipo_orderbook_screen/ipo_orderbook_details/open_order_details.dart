@@ -21,38 +21,52 @@ class IpoOpenOrderDetails extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = watch(themeProvider);
     return Scaffold(
-       
       appBar: AppBar(
           elevation: .2,
           centerTitle: false,
-          leadingWidth: 41,
-          titleSpacing: 6,
-          leading: InkWell(
-            onTap: () {
-              Navigator.pop(context);
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 9),
-              child: SvgPicture.asset(
-                assets.backArrow,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              ),
-            ),
-          ),
+          // leadingWidth: 40,
+          titleSpacing: -8,
+          leading:  Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8)
+    
+    ,
+    child: InkWell(
+                  onTap: () { 
+                    Navigator.pop(context);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child:Icon(
+                              Icons.arrow_back_ios,
+                              color: theme.isDarkMode
+                                  ? const Color(0xffBDBDBD)
+                                  : colors.colorGrey,
+                              size: 22,
+                            ),
+    
+                  ),
+                ),
+  ),
           backgroundColor:
               theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           shadowColor: const Color(0xffECEFF3),
-          title: Text("Order Details",
-              style: textStyles.appBarTitleTxt.copyWith(
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack))),
+          title: 
+
+                      Text(
+                "Order Details",
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    16,
+                    FontWeight.w600),
+              ),
+                      
+                      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -66,7 +80,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                   const SizedBox(height: 5),
                   Text(ipodetails.symbol.toString(),
                       style: textStyles.scripExchTxtStyle),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -74,9 +88,9 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Order",
+                            "Order Id : ${ipodetails.bidReferenceNumber != "" ? ipodetails.bidReferenceNumber.toString() : " - "}",
                             style: textStyle(
-                                colors.colorGrey, 13, FontWeight.w600),
+                                colors.colorGrey, 14, FontWeight.w600),
                           ),
                           // Text(
                           //   ipodetails.reponseStatus == "new success"
@@ -89,15 +103,6 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                           //       14,
                           //       FontWeight.w600),
                           // )
-                          Text(
-                        'Id : ${ipodetails.bidReferenceNumber != ""?ipodetails.bidReferenceNumber.toString():" - "}',
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            14,
-                            FontWeight.w600),
-                      )
                         ],
                       ),
                       Row(
@@ -107,7 +112,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                                   ? "assets/icon/success.svg"
                                   : "assets/icon/pendingicon.svg"),
                           const SizedBox(
-                            width: 4,
+                            width: 5,
                           ),
                           Text(
                             ipodetails.reponseStatus == "new success"
@@ -125,7 +130,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(
-                    height: 15,
+                    height: 16,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -136,7 +141,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                           Text(
                             "Payment",
                             style: textStyle(
-                                colors.colorGrey, 13, FontWeight.w600),
+                                colors.colorGrey, 14, FontWeight.w600),
                           ),
                           // Text(
                           //   ipodetails.upiPaymentStatus == ""
@@ -157,7 +162,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                               ? "assets/icon/pendingicon.svg"
                               : "assets/icon/success.svg"),
                           const SizedBox(
-                            width: 4,
+                            width: 5,
                           ),
                           Text(
                             ipodetails.upiPaymentStatus == ""
@@ -187,23 +192,30 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             // ),
 
             Padding(
-              padding: const EdgeInsets.only(top: 8, left: 16, bottom: 5),
-              child: Text(
-                "Reason",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 2, left: 16, bottom: 10),
-              child: Text(
-                ipodetails.failReason=="" ? "Order placed successfully" :ipodetails.failReason.toString(),
-                style: textStyle(colors.colorGrey, 13, FontWeight.w500),
-              ),
-            ),
-
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Reason",
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w600),
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    Text(
+                      ipodetails.failReason == ""
+                          ? "Order placed successfully"
+                          : ipodetails.failReason.toString(),
+                      style: textStyle(colors.colorGrey, 14, FontWeight.w500),
+                    ),
+                  ],
+                )),
 
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -255,60 +267,58 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             //   ),
             // ),
             const SizedBox(
-              height: 10,
+              height: 8,
             ),
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
-              // child: Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //   children: [
-              //     Column(
-              //       crossAxisAlignment: CrossAxisAlignment.start,
-              //       children: [
-              //         Text(
-              //           "Order Id",
-              //           style: textStyle(colors.colorGrey, 13, FontWeight.w600),
-              //         ),
-              //         Text(
-              //           ipodetails.bidReferenceNumber != ""?ipodetails.bidReferenceNumber.toString():" - ",
-              //           style: textStyle(
-              //               theme.isDarkMode
-              //                   ? colors.colorWhite
-              //                   : colors.colorBlack,
-              //               14,
-              //               FontWeight.w600),
-              //         )
-              //       ],
-              //     ),
-              //     Row(
-              //       children: [
-              //         SvgPicture.asset(ipodetails.upiPaymentStatus == ""
-              //             ? "assets/icon/pendingicon.svg"
-              //             : "assets/icon/success.svg"),
-              //         const SizedBox(
-              //           width: 4,
-              //         ),
-              //         Text(
-              //           ipodetails.upiPaymentStatus == ""
-              //               ? "Pending"
-              //               : ipodetails.upiPaymentStatus.toString(),
-              //           style: textStyle(
-              //               theme.isDarkMode
-              //                   ? colors.colorWhite
-              //                   : colors.colorBlack,
-              //               14,
-              //               FontWeight.w600),
-              //         ),
-              //       ],
-              //     ),
-              //   ],
-              // ),
+            // child: Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Text(
+            //           "Order Id",
+            //           style: textStyle(colors.colorGrey, 13, FontWeight.w600),
+            //         ),
+            //         Text(
+            //           ipodetails.bidReferenceNumber != ""?ipodetails.bidReferenceNumber.toString():" - ",
+            //           style: textStyle(
+            //               theme.isDarkMode
+            //                   ? colors.colorWhite
+            //                   : colors.colorBlack,
+            //               14,
+            //               FontWeight.w600),
+            //         )
+            //       ],
+            //     ),
+            //     Row(
+            //       children: [
+            //         SvgPicture.asset(ipodetails.upiPaymentStatus == ""
+            //             ? "assets/icon/pendingicon.svg"
+            //             : "assets/icon/success.svg"),
+            //         const SizedBox(
+            //           width: 4,
+            //         ),
+            //         Text(
+            //           ipodetails.upiPaymentStatus == ""
+            //               ? "Pending"
+            //               : ipodetails.upiPaymentStatus.toString(),
+            //           style: textStyle(
+            //               theme.isDarkMode
+            //                   ? colors.colorWhite
+            //                   : colors.colorBlack,
+            //               14,
+            //               FontWeight.w600),
+            //         ),
+            //       ],
+            //     ),
+            //   ],
+            // ),
             // ),
             // const SizedBox(
             //   height: 10,
             // ),
-
-
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -323,45 +333,45 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                   //         ) ==
                   //         "Closed"
                   //     ? Container()
-                  //     : 
-                      // Expanded(
-                      //     child: OutlinedButton(
-                      //         onPressed: () async {
-                      //           await upi.fetchupiIdView(
-                      //             upi.bankdetails!.dATA![upi.indexss][1],
-                      //             upi.bankdetails!.dATA![upi.indexss][2]);
-                      //           await context
-                      //               .read(ipoProvide)
-                      //               .modifyipocategory();
-                      //           Navigator.pushNamed(
-                      //             context,
-                      //             Routes.modifyipoorder,
-                      //             arguments: ipodetails,
-                      //           );
-                      //         },
-                      //         style: OutlinedButton.styleFrom(
-                      //             side: BorderSide(
-                      //                 width: 1.4,
-                      //                 color: theme.isDarkMode
-                      //                     ? colors.colorGrey
-                      //                     : colors.colorBlack),
-                      //             padding: const EdgeInsets.symmetric(
-                      //                 vertical: 10.5),
-                      //             shape: const RoundedRectangleBorder(
-                      //                 borderRadius: BorderRadius.all(
-                      //                     Radius.circular(30)))),
-                      //         child: Padding(
-                      //           padding:
-                      //               const EdgeInsets.symmetric(horizontal: 20),
-                      //           child: Text("Modify Order",
-                      //               style: textStyle(
-                      //                   theme.isDarkMode
-                      //                       ? colors.colorWhite
-                      //                       : colors.colorBlack,
-                      //                   14,
-                      //                   FontWeight.w600)),
-                      //         )),
-                      //   ),
+                  //     :
+                  // Expanded(
+                  //     child: OutlinedButton(
+                  //         onPressed: () async {
+                  //           await upi.fetchupiIdView(
+                  //             upi.bankdetails!.dATA![upi.indexss][1],
+                  //             upi.bankdetails!.dATA![upi.indexss][2]);
+                  //           await context
+                  //               .read(ipoProvide)
+                  //               .modifyipocategory();
+                  //           Navigator.pushNamed(
+                  //             context,
+                  //             Routes.modifyipoorder,
+                  //             arguments: ipodetails,
+                  //           );
+                  //         },
+                  //         style: OutlinedButton.styleFrom(
+                  //             side: BorderSide(
+                  //                 width: 1.4,
+                  //                 color: theme.isDarkMode
+                  //                     ? colors.colorGrey
+                  //                     : colors.colorBlack),
+                  //             padding: const EdgeInsets.symmetric(
+                  //                 vertical: 10.5),
+                  //             shape: const RoundedRectangleBorder(
+                  //                 borderRadius: BorderRadius.all(
+                  //                     Radius.circular(30)))),
+                  //         child: Padding(
+                  //           padding:
+                  //               const EdgeInsets.symmetric(horizontal: 20),
+                  //           child: Text("Modify Order",
+                  //               style: textStyle(
+                  //                   theme.isDarkMode
+                  //                       ? colors.cololorBlack,
+                  //                   14,rWhite
+                  //                       : colors.co
+                  //                   FontWeight.w600)),
+                  //         )),
+                  //   ),
                   // SizedBox(
                   //     width: modifyButtonStatus(
                   //               ipodetails.biddingstartdate.toString(),
@@ -373,7 +383,6 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                   //         ? 0
                   //         : 20),
 
-                  
                   Expanded(
                     child: OutlinedButton(
                         onPressed: () async {
@@ -389,26 +398,23 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                                 color: theme.isDarkMode
                                     ? colors.colorGrey
                                     : colors.colorBlack),
-                            padding: const EdgeInsets.symmetric(vertical: 10.5),
+                            padding: const EdgeInsets.symmetric(vertical: 9),
                             shape: const RoundedRectangleBorder(
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(30)))),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Text("Cancel Order",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  14,
-                                  FontWeight.w600)),
-                        )),
+                        child: Text("Cancel Order",
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w600))),
                   ),
                 ],
               ),
             ),
             const SizedBox(
-              height: 10,
+              height: 16,
             ),
             Divider(
               color: theme.isDarkMode
@@ -419,8 +425,9 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                 "App no",
                 ipodetails.type == "BSE"
                     ? "-"
-                    : 
-                    ipodetails.respBid!=null ?  ipodetails.respBid![0].bidReferenceNumber.toString():" - ",
+                    : ipodetails.respBid != null
+                        ? ipodetails.respBid![0].bidReferenceNumber.toString()
+                        : " - ",
                 theme),
             data("Quantity", ipodetails.bidDetail![0].quantity.toString(),
                 theme),
@@ -435,7 +442,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             data(
                 "Total amount",
                 ipodetails.type == "BSE"
-                    ?"₹${getFormatter(noDecimal: true,v4d: false,value: double.parse(ipodetails.bidDetail![0].rate!) * double.parse(ipodetails.bidDetail![0].quantity!)).toString()}"
+                    ? "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(ipodetails.bidDetail![0].rate!) * double.parse(ipodetails.bidDetail![0].quantity!)).toString()}"
                     : "₹${getFormatter(
                         noDecimal: true,
                         v4d: false,
@@ -443,9 +450,9 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                             .toDouble(),
                       )}",
                 theme),
-            
+
             Padding(
-              padding: const EdgeInsets.only(left: 16, top: 15, bottom: 5),
+              padding: const EdgeInsets.only(left: 16, top: 16),
               child: Text(
                 ipodetails.bidDetail!.length == 1
                     ? "Single bid order"
@@ -458,142 +465,216 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                     FontWeight.w600),
               ),
             ),
-            ListView.builder(
-                itemCount: ipodetails.bidDetail!.length,
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "bid ${index + 1}",
-                          style:
-                              textStyle(colors.colorGrey, 13, FontWeight.w500),
-                        ),
-                        const SizedBox(
-                          height: 2,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  ipodetails.type == "BSE"
-                                      ? "₹${getFormatter(
-                                          noDecimal: true,
-                                          v4d: false,
-                                          value: (double.parse(ipodetails.bidDetail![index].rate!) * double.parse(ipodetails.bidDetail![index].quantity!))
-                                          )}"
-                                      : "₹${getFormatter(
-                                          noDecimal: true,
-                                          v4d: false,
-                                          value: double.parse(ipodetails
-                                                  .bidDetail![index].amount!)
-                                              .toDouble(),
-                                        )}",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w600),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  "Amount",
-                                  style: textStyle(
-                                      colors.colorGrey, 13, FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  ipodetails.type == "BSE"
-                                      ? ipodetails.bidDetail![index].rate
-                                          .toString()
-                                      : "${double.parse(ipodetails.bidDetail![index].price.toString()).toInt()}",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w600),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  "Price",
-                                  style: textStyle(
-                                      colors.colorGrey, 13, FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  ipodetails.bidDetail![index].quantity!
-                                      .toString(),
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w600),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  "Quantity",
-                                  style: textStyle(
-                                      colors.colorGrey, 13, FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  ipodetails.type == "BSE"
-                                      ? ipodetails.bidDetail![index].cuttoffflag
-                                          .toString()
-                                      : ipodetails.bidDetail![index].atCutOff
-                                          .toString(),
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w600),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  "Cut off",
-                                  style: textStyle(
-                                      colors.colorGrey, 13, FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Divider(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                        )
-                      ],
-                    ),
-                  );
-                }),
+            // ListView.builder(
+            //     itemCount: ipodetails.bidDetail!.length,
+            //     physics: const NeverScrollableScrollPhysics(),
+            //     shrinkWrap: true,
+            //     itemBuilder: (context, index) {
+            //       return Padding(
+            //         padding:
+            //             const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            //         child: Column(
+            //           crossAxisAlignment: CrossAxisAlignment.start,
+            //           children: [
+            //             Row(
+            //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //               children: [
+            //                 Column(
+            //                   crossAxisAlignment: CrossAxisAlignment.center,
+            //                   children: [
+            //                     Text(
+            //                       "bid ${index + 1}",
+            //                       style: textStyle(
+            //                           colors.colorGrey, 14, FontWeight.w500),
+            //                     ),
+            //                   ],
+            //                 ),
+            //                 Column(
+            //                   crossAxisAlignment: CrossAxisAlignment.start,
+            //                   children: [
+            //                     Text(
+            //                       ipodetails.type == "BSE"
+            //                           ? "₹${getFormatter(noDecimal: true, v4d: false, value: (double.parse(ipodetails.bidDetail![index].rate!) * double.parse(ipodetails.bidDetail![index].quantity!)))}"
+            //                           : "₹${getFormatter(
+            //                               noDecimal: true,
+            //                               v4d: false,
+            //                               value: double.parse(ipodetails
+            //                                       .bidDetail![index].amount!)
+            //                                   .toDouble(),
+            //                             )}",
+            //                       style: textStyle(
+            //                           theme.isDarkMode
+            //                               ? colors.colorWhite
+            //                               : colors.colorBlack,
+            //                           14,
+            //                           FontWeight.w600),
+            //                     ),
+            //                     const SizedBox(height: 2),
+            //                     Text(
+            //                       "Amount",
+            //                       style: textStyle(
+            //                           colors.colorGrey, 14, FontWeight.w500),
+            //                     ),
+            //                   ],
+            //                 ),
+            //                 Column(
+            //                   crossAxisAlignment: CrossAxisAlignment.start,
+            //                   children: [
+            //                     Text(
+            //                       ipodetails.type == "BSE"
+            //                           ? ipodetails.bidDetail![index].rate
+            //                               .toString()
+            //                           : "${double.parse(ipodetails.bidDetail![index].price.toString()).toInt()}",
+            //                       style: textStyle(
+            //                           theme.isDarkMode
+            //                               ? colors.colorWhite
+            //                               : colors.colorBlack,
+            //                           14,
+            //                           FontWeight.w600),
+            //                     ),
+            //                     const SizedBox(height: 2),
+            //                     Text(
+            //                       "Price",
+            //                       style: textStyle(
+            //                           colors.colorGrey, 14, FontWeight.w500),
+            //                     ),
+            //                   ],
+            //                 ),
+            //                 Column(
+            //                   crossAxisAlignment: CrossAxisAlignment.start,
+            //                   children: [
+            //                     Text(
+            //                       ipodetails.bidDetail![index].quantity!
+            //                           .toString(),
+            //                       style: textStyle(
+            //                           theme.isDarkMode
+            //                               ? colors.colorWhite
+            //                               : colors.colorBlack,
+            //                           14,
+            //                           FontWeight.w600),
+            //                     ),
+            //                     const SizedBox(height: 2),
+            //                     Text(
+            //                       "Quantity",
+            //                       style: textStyle(
+            //                           colors.colorGrey, 14, FontWeight.w500),
+            //                     ),
+            //                   ],
+            //                 ),
+
+
+
+            //                 Column(
+            //                   crossAxisAlignment: CrossAxisAlignment.start,
+            //                   children: [
+            //                     Text(
+            //                       ipodetails.type == "BSE"
+            //                           ? ipodetails.bidDetail![index].cuttoffflag
+            //                               .toString()
+            //                           : ipodetails.bidDetail![index].atCutOff
+            //                               .toString(),
+            //                       style: textStyle(
+            //                           theme.isDarkMode
+            //                               ? colors.colorWhite
+            //                               : colors.colorBlack,
+            //                           14,
+            //                           FontWeight.w600),
+            //                     ),
+            //                     const SizedBox(height: 2),
+            //                     Text(
+            //                       "Cut off",
+            //                       style: textStyle(
+            //                           colors.colorGrey, 14, FontWeight.w500),
+            //                     ),
+            //                   ],
+            //                 ),
+            //               ],
+            //             ),
+            //             const SizedBox(
+            //               height: 8,
+            //             ),
+            //             Divider(
+            //               color: theme.isDarkMode
+            //                   ? colors.darkColorDivider
+            //                   : colors.colorDivider,
+            //             )
+            //           ],
+            //         ),
+            //       );
+            //     }),
+
+
+
+
+SizedBox(
+   width: double.infinity,
+  child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: DataTable(
+      columnSpacing: 16.0,
+      horizontalMargin: 0,
+      columns: [
+        DataColumn(
+          label: Align(
+            alignment: Alignment.centerLeft,
+            child: Text("Bid"),
+          ),
+        ),
+         DataColumn(label: Text("Qty")),
+        DataColumn(label: Text("Price")),
+        DataColumn(label: Text("Amount")),       
+        DataColumn(label: Text("Cut off")),
+      ],
+      rows: List<DataRow>.generate(
+        ipodetails.bidDetail!.length,
+        (index) {
+          final bid = ipodetails.bidDetail![index];
+          final isCutOff = ipodetails.type == "BSE"
+              ? (bid.cuttoffflag! != "0")
+              : bid.atCutOff!;
+          return DataRow(cells: [
+            DataCell(Align(
+              alignment: Alignment.centerLeft,
+              child: Text("${index + 1}"),
+            )),
+            DataCell(Text(bid.quantity!)),
+           
+            DataCell(Text(
+              ipodetails.type == "BSE" 
+                  ? bid.rate.toString() 
+                  : "${double.parse(bid.price.toString()).toInt()}"
+            )),
+             DataCell(Text(
+              ipodetails.type == "BSE"
+                  ? "₹${getFormatter(
+                      noDecimal: true,
+                      v4d: false,
+                      value: (double.parse(bid.rate!) * double.parse(bid.quantity!))
+                  )}"
+                  : "₹${getFormatter(
+                      noDecimal: true,
+                      v4d: false,
+                      value: double.parse(bid.amount!).toDouble()
+                  )}"
+            )),
+            
+            DataCell(Center(
+              child: Icon(
+                isCutOff ? Icons.check_circle : Icons.cancel,
+                color: isCutOff ? Colors.green : Colors.red,
+              ),
+            )),
+          ]);
+        },
+      ),
+    ),
+  ),
+)
+
+
+
+
+
+
             // Padding(
             //   padding: const EdgeInsets.only(top: 8, left: 16, bottom: 5),
             //   child: Text(
@@ -624,9 +705,6 @@ class IpoOpenOrderDetails extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          const SizedBox(
-            height: 12,
-          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -647,7 +725,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             ],
           ),
           const SizedBox(
-            height: 4,
+            height: 5,
           ),
           Divider(
             color: theme.isDarkMode

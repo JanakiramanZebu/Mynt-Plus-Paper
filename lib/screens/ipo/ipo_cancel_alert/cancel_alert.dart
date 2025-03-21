@@ -23,23 +23,26 @@ class IpoCancelAlert extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(10))),
       scrollable: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
       titlePadding: const EdgeInsets.all(0),
       title: Padding(
         padding: const EdgeInsets.all(10),
         child: SvgPicture.asset("assets/icon/ipo_cancel_icon.svg"),
       ),
-      content: Column(
-        children: [
-          Text(
-              "Are you sure you want to cancel the (${ipocancel.symbol} order)",
-              textAlign: TextAlign.center,
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w600))
-        ],
+      content: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          children: [
+            Text(
+                "Are you sure you want to cancel the (${ipocancel.symbol} order)",
+                textAlign: TextAlign.center,
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    16,
+                    FontWeight.w600))
+          ],
+        ),
       ),
       actions: [
         Row(
@@ -48,6 +51,7 @@ class IpoCancelAlert extends ConsumerWidget {
             Expanded(
               child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(155, 40),
                       elevation: 0,
                       backgroundColor: const Color(0xffF1F3F8),
                       shape: RoundedRectangleBorder(
@@ -57,12 +61,13 @@ class IpoCancelAlert extends ConsumerWidget {
                     Navigator.pop(context);
                   },
                   child: Text("No",
-                      style: textStyle(colors.colorGrey, 12, FontWeight.w600))),
+                      style: textStyle(colors.colorGrey, 12, FontWeight.w500))),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(155, 40),
                       elevation: 0,
                       backgroundColor: theme.isDarkMode
                           ? colors.colorbluegrey
@@ -95,7 +100,7 @@ class IpoCancelAlert extends ConsumerWidget {
                               ? colors.colorBlack
                               : colors.colorWhite,
                           12,
-                          FontWeight.w600))),
+                          FontWeight.w500))),
             )
           ],
         ),
