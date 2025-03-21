@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
-import 'package:mynt_plus/provider/portfolio_provider.dart';
+// import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
@@ -36,7 +36,7 @@ class UserAccountScreen extends ConsumerWidget {
     final theme = watch(themeProvider);
     final trancation = watch(transcationProvider);
      final mf = watch(mfProvider);
-    final portfolio = watch(portfolioProvider);
+    // final portfolio = watch(portfolioProvider);
 
     //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
@@ -483,13 +483,10 @@ class UserAccountScreen extends ConsumerWidget {
             Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text("Version 3.0.2 Build 1.0.70(04) Released on 19 Mar",
+                child: Text("Version 3.0.2 Build 1.0.71(02) Released on 21 Mar",
                     style: textStyle(
                         const Color(0xff666666), 11, FontWeight.w500)))
           ]
-          
-          
-          
           )
   
          );

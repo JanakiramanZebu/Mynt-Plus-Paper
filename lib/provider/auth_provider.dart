@@ -41,7 +41,6 @@ import 'iop_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
-import 'stocks_provider.dart';
 import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
 
@@ -993,15 +992,8 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(transcationProvider).fetchcwithdraw(context);
         ref(transcationProvider).fetchfundbank(context);
         ref(transcationProvider).fetchc(context);
-
 // IPOs
-         ref(ipoProvide).getDashboardIpos();
-         ref(ipoProvide).getSmeIpo();
-         ref(ipoProvide).getmainstreamipo();
-         ref(ipoProvide).getipoperfomance(currentYear);
-         ref(ipoProvide).mergemainsme();
-         ref(ipoProvide).fetchIpoPreClose();
-
+        setIposAPicalls();
         await FirebaseAnalytics.instance.setUserId(id: pref.clientId);
 // Explore
         // await ref(stocksProvide)
@@ -1013,7 +1005,6 @@ class AuthProvider extends DefaultChangeNotifier {
         // await ref(stocksProvide).defaultSectorThemematicData();
         // await ref(stocksProvide).getNews();
         // await ref(stocksProvide).chngTradeAct("Equity");
-         ref(profileAllDetailsProvider).fetchClientProfileAllDetails();
 
         // ref(mfProvider).fetchcommonsearchWadd(null, "", context, false);
         // ref(mfProvider).fetchmfCommonsearch("Z", context);
@@ -1021,7 +1012,7 @@ class AuthProvider extends DefaultChangeNotifier {
         // ref(mfProvider).fetchBestMF();
 
         // ref(mfProvider).fetchMfOrderbook(context);
-
+        setProfileAPicalls();
 // End Explore
         if (s.isEmpty) {
           Navigator.pushNamedAndRemoveUntil(
@@ -1055,6 +1046,19 @@ class AuthProvider extends DefaultChangeNotifier {
     } finally {
       initLaod(false);
     }
+  }
+
+  setIposAPicalls() async {
+    await ref(ipoProvide).getDashboardIpos();
+    await ref(ipoProvide).getSmeIpo();
+    await ref(ipoProvide).getmainstreamipo();
+    await ref(ipoProvide).getipoperfomance(currentYear);
+    await ref(ipoProvide).mergemainsme();
+    await ref(ipoProvide).fetchIpoPreClose();
+  }
+
+  setProfileAPicalls() async {
+    await ref(profileAllDetailsProvider).fetchClientProfileAllDetails();
   }
 
 // This method calls and returns to the login screen whenever the client session expires.

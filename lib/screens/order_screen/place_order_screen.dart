@@ -315,7 +315,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
     if (rep) {
       isBuy = res['trantype'] == 'S' ? false : true;
       addStoploss = (res['prd'] == "B" || res['prd'] == "H") ? true : false;
-      addValidity = res['ret'].toUpperCase() == 'IOC' ||
+      addValidity = res['ret']?.toUpperCase() == 'IOC' ||
               (res['dscqty'] != null && int.parse(res['dscqty']) > 0)
           ? true
           : false;
@@ -327,7 +327,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           : res['qty'] ?? "1";
       stopLossCtrl.text = res['blprc'] ?? "0";
       targetCtrl.text = res['bpprc'] ?? "0";
-      validityType = res['ret'];
+      validityType = res['ret'] ?? '';
       triggerPriceCtrl.text = res['trgprc'] ?? "0";
       mktProtCtrl.text = res['mkt_protection'] ?? "0";
     }

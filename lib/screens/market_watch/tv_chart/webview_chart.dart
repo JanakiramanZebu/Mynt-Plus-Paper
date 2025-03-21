@@ -19,6 +19,7 @@ import '../../../provider/webview_chart_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
+import '../scrip_depth_info.dart';
 
 class ChartScreenWebView extends StatefulWidget {
   final ChartArgs chartArgs;
@@ -143,6 +144,34 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                       : colors.colorBlack), // Back icon
               onPressed: () async {
                 userProfile.setChartdialog(false);
+                tvChart.chngDephBtn("Overview");
+                        tvChart.singlePageloader(true);
+
+                        DepthInputArgs depthArgs = DepthInputArgs(
+                            exch: '${tvChart.getQuotes?.exch}',
+                            token: '${tvChart.getQuotes?.token}',
+                            tsym: '${tvChart.getQuotes?.tsym}',
+                            instname: tvChart.getQuotes?.instname ?? "",
+                            symbol: '${tvChart.getQuotes?.symbol}',
+                            expDate: '${tvChart.getQuotes?.expDate}',
+                            option: '${tvChart.getQuotes?.option}');
+
+                        showModalBottomSheet(
+                            isScrollControlled: true,
+                            useSafeArea: true,
+                            isDismissible: true,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16))),
+                            context: context,
+                            builder: (context) => Container(
+                                padding: EdgeInsets.only(
+                                  bottom:
+                                      MediaQuery.of(context).viewInsets.bottom,
+                                ),
+                                child: ScripDepthInfo(
+                                    wlValue: depthArgs, isBasket: '')));
+                        tvChart.singlePageloader(false);
                 await ConstantName.webViewController!.evaluateJavascript(
                     source:
                         "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${theme.isDarkMode}')");

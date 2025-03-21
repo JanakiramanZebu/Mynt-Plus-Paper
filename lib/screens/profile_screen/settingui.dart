@@ -15,6 +15,7 @@ import '../../provider/api_key_provider.dart';
 import '../../provider/thems.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/functions.dart';
+import '../../sharedWidget/snack_bar.dart';
 import 'topt_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -50,7 +51,7 @@ class SettingsScreen extends ConsumerWidget {
                     copyToClipboard("${apikeys.apikeyres!.apikey}",
                         apikeys.apikeyres!.apistatus, context);
                   } else if (index == 1) {
-                   await apikeys.fetchTotp();
+                    await apikeys.fetchTotp();
                     showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
@@ -61,7 +62,9 @@ class SettingsScreen extends ConsumerWidget {
                             topRight: Radius.circular(10),
                           ),
                         ),
-                        builder: (_) => TotpScreen(secretKey: context.read(apikeyprovider).totpkey!.pwd));
+                        builder: (_) => TotpScreen(
+                            secretKey:
+                                context.read(apikeyprovider).totpkey!.pwd));
                   } else if (index == 2) {
                     context.read(changePasswordProvider).userIdController.text =
                         "${pref.clientId}";
@@ -315,6 +318,9 @@ class SettingsScreen extends ConsumerWidget {
                                   await context
                                       .read(apikeyprovider)
                                       .fetchapikey(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      successMessage(context,
+                                          'API Key as been ${apikeys.generateApikey?.status}'));
                                 },
                                 child: Text("API Key",
                                     textAlign: TextAlign.center,

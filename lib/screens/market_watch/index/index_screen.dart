@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/res.dart';
 
+import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/index_list_provider.dart';
 
 import '../../../provider/market_watch_provider.dart';
@@ -41,6 +42,25 @@ class DefaultIndexList extends ConsumerWidget {
           }
           return InkWell(
             onTap: () async {
+              await context.read(marketWatchProvider).fetchScripQuoteIndex(
+                  indexProvide.defaultIndexList!.indValues![index].token.toString(),
+                  indexProvide.defaultIndexList!.indValues![index].exch.toString(),
+                  context);
+
+              final quots = context.read(marketWatchProvider).getQuotes;
+              DepthInputArgs depthArgs = DepthInputArgs(
+                  exch: quots!.exch.toString(),
+                  token: quots.token.toString(),
+                  tsym: quots.tsym.toString(),
+                  instname: quots.instname.toString(),
+                  symbol: quots.symbol.toString(),
+                  expDate: quots.expDate.toString(),
+                  option: quots.option.toString());
+              await context
+                  .read(marketWatchProvider)
+                  .calldepthApis(context, depthArgs, "");
+            },
+            onLongPress: () async {
               await context
                   .read(indexListProvider)
                   .fetchIndexList("NSE", context);
@@ -54,7 +74,8 @@ class DefaultIndexList extends ConsumerWidget {
                       topRight: Radius.circular(10),
                     ),
                   ),
-                  builder: (_) => IndexBottomSheet(defaultIndex: index, src: src));
+                  builder: (_) =>
+                      IndexBottomSheet(defaultIndex: index, src: src));
               await indexProvide.fetchIndexList("exit", context);
               await context
                   .read(marketWatchProvider)
@@ -78,8 +99,8 @@ class DefaultIndexList extends ConsumerWidget {
                 width: MediaQuery.of(context).size.width * 0.46,
                 child: src
                     ? Column(
-                      // mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        // mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             indexProvide
