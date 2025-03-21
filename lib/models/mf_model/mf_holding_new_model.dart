@@ -1,17 +1,33 @@
 class mf_holdoing_new {
-  List<Data>? data;
+  List<DataMod>? data;
   String? stat;
+  String? msg;
+  String? purchaseValue;
+  String? currentValue;
+  String? gainOrLoss;
+  String? percentage;
 
-  mf_holdoing_new({this.data, this.stat});
+
+  mf_holdoing_new({this.data, this.stat, this.msg,
+   this.purchaseValue,
+      this.currentValue,
+      this.gainOrLoss,
+      this.percentage
+  });
 
   mf_holdoing_new.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null) {
-      data = <Data>[];
+      data = <DataMod>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(new DataMod.fromJson(v));
       });
     }
     stat = json['stat'];
+    msg = json['msg'];
+    purchaseValue = json['purchase_value'];
+    currentValue = json['current_value'];
+    gainOrLoss = json['gain_or_loss'];
+    percentage = json['percentage'];
   }
 
   Map<String, dynamic> toJson() {
@@ -20,11 +36,16 @@ class mf_holdoing_new {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
     data['stat'] = this.stat;
+    data['msg'] = this.msg;
+     data['purchase_value'] = this.purchaseValue;
+    data['current_value'] = this.currentValue;
+    data['gain_or_loss'] = this.gainOrLoss;
+    data['percentage'] = this.percentage;
     return data;
   }
-}
+} 
 
-class Data {
+class DataMod {
   String? cLIENTCODE;
   String? iSIN;
   String? sCRIPNAME;
@@ -51,8 +72,11 @@ class Data {
   String? sCHEMEPLAN;
   String? sCHEMENAME;
   String? aMCCODE;
+  String? avgQty;
+  String? bought;
+  String? buyPrice;
 
-  Data(
+  DataMod(
       {this.cLIENTCODE,
       this.iSIN,
       this.sCRIPNAME,
@@ -78,9 +102,12 @@ class Data {
       this.sCHEMECODE,
       this.sCHEMEPLAN,
       this.sCHEMENAME,
-      this.aMCCODE});
+      this.aMCCODE,
+      this.avgQty,
+      this.bought,
+      this.buyPrice});
 
-  Data.fromJson(Map<String, dynamic> json) {
+  DataMod.fromJson(Map<String, dynamic> json) {
     cLIENTCODE = json['CLIENTCODE'];
     iSIN = json['ISIN'];
     sCRIPNAME = json['SCRIP_NAME'];
@@ -107,6 +134,9 @@ class Data {
     sCHEMEPLAN = json['SCHEME_PLAN'];
     sCHEMENAME = json['SCHEME_NAME'];
     aMCCODE = json['AMC_CODE'];
+    avgQty = json['avg_qty'];
+    bought = json['bought'];
+    buyPrice = json['buy_price'];
   }
 
   Map<String, dynamic> toJson() {
@@ -137,6 +167,9 @@ class Data {
     data['SCHEME_PLAN'] = this.sCHEMEPLAN;
     data['SCHEME_NAME'] = this.sCHEMENAME;
     data['AMC_CODE'] = this.aMCCODE;
+    data['avg_qty'] = this.avgQty;
+    data['bought'] = this.bought;
+    data['buy_price'] = this.buyPrice;
     return data;
   }
 }

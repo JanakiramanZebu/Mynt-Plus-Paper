@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/portfolio_provider.dart';
 
 import '../../provider/mf_provider.dart';
 import '../../res/res.dart';
@@ -14,6 +15,7 @@ class MutualFundNewScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final mfData = watch(mfProvider);
+    final portfolio = watch(portfolioProvider);
     // final theme = watch(themeProvider);
     return SingleChildScrollView(
       child: Column(
@@ -21,8 +23,210 @@ class MutualFundNewScreen extends ConsumerWidget {
         children: [
           // const SizedBox(height: 8),
 
+          // if (portfolio.mfTotInveest > 0) ...[
+          
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                    color: Color(0xFFE0E0E0),
+                    width: 1), // Black border with 2px width
+                borderRadius:
+                    BorderRadius.circular(8), // Optional: rounded corners
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: 
+                SizedBox(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // const Text(
+                      //   "Mutual funds",
+                      //   style: TextStyle(
+                      //     fontSize: 20,
+                      //     color: Color(0xFF2F3A9F),
+                      //     fontWeight: FontWeight.w500,
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 8),
+
+                      // const SizedBox(height: 5),
+                      // const Center(
+                      // const Text(
+                      //   "Current Value",
+                      //   style: TextStyle(
+                      //     color: Color(0xFF666666),
+                      //     fontSize: 14,
+                      //     fontWeight: FontWeight.w500,
+                      //   ),
+                      // ),
+
+                      // const SizedBox(height: 5),
+
+                      // Text(
+                      //   portfolio.mfTotCurrentVal != null
+                      //       ? portfolio.mfTotCurrentVal.toStringAsFixed(2)
+                      //       : "0.00",
+                      //   style: const TextStyle(
+                      //     fontSize: 28,
+                      //     fontWeight: FontWeight.w600,
+                      //     color: Colors.black,
+                      //   ),
+                      // ),
+                      // // ),
+
+                      // const SizedBox(height: 6),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Purchase ",
+                                style: TextStyle(
+                                  color: Color(0xFF666666),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                "${(mfData.mfholdingnew?.purchaseValue == "" || mfData.mfholdingnew?.purchaseValue == null) ? "0.00" : mfData.mfholdingnew?.purchaseValue}",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: (double.tryParse(mfData.mfholdingnew
+                                                      ?.purchaseValue ??
+                                                  "0") ??
+                                              0) >=
+                                          0
+                                      ? const Color.fromARGB(255, 0, 0, 0)
+                                      : const Color.fromARGB(255, 0, 0, 0),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                "Gain / Loss",
+                                style: TextStyle(
+                                  color: Color(0xFF666666),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                "${(mfData.mfholdingnew?.gainOrLoss == "" ||mfData.mfholdingnew?.gainOrLoss == null) ? "0.00" : mfData.mfholdingnew?.gainOrLoss}",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: (double.tryParse(mfData.mfholdingnew
+                                                      ?.gainOrLoss ??
+                                                  "0") ??
+                                              0) >=
+                                          0
+                                      ? Colors.green
+                                      : Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      // const Divider(
+                      //   color: Color.fromARGB(255, 216, 212, 212),
+                      //   thickness: 0.5,
+                      // ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Current",
+                                style: TextStyle(
+                                  color: Color(0xFF666666),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                "${(mfData.mfholdingnew?.currentValue == "" || mfData.mfholdingnew?.currentValue == null) ? "0.00" : mfData.mfholdingnew?.currentValue}",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: (double.tryParse(mfData.mfholdingnew
+                                                      ?.currentValue ??
+                                                  "0") ??
+                                              0) >=
+                                          0
+                                      ? const Color.fromARGB(255, 0, 0, 0)
+                                      : const Color.fromARGB(255, 0, 0, 0),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                "Abs Returns %",
+                                style: TextStyle(
+                                  color: Color(0xFF666666),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+  "${mfData.mfholdingnew?.percentage?.toString() ?? "0"}%", // Ensures percentage is always a valid string
+  style: TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    color: (double.tryParse(mfData.mfholdingnew?.percentage?.toString() ?? "0") ?? 0) >= 0
+        ? Colors.green
+        : const Color(0xFFFF1717), // Red color for negative values
+  ),
+),
+
+                            ],
+                          ),
+                        ],
+                      ),
+                  
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // ],
+
           buildSlidingPanelContent(mfData.bestMFListStaticnew, mfData),
           const SizedBox(height: 16),
+
+          const Padding(
+            padding: EdgeInsets.only(left: 16, top: 10, bottom: 0),
+            child: Text(
+              "Quick Invest",
+              style: TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF181B19),
+              ),
+            ),
+          ),
           Column(
             children: [
               nfoCard(context, mfData),
@@ -90,12 +294,12 @@ class MutualFundNewScreen extends ConsumerWidget {
               //         ),
               //       ],
               //     ),
-              
+
               //   ),
               // )
             ],
           ),
-        
+
           Container(
             padding: const EdgeInsets.all(0),
             // margin: EdgeInsets.only(bottom: 300),
@@ -105,7 +309,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                 const Padding(
                   padding: EdgeInsets.only(left: 16, top: 10, bottom: 8),
                   child: Text(
-                    "All Categories",
+                    "Categories",
                     style: TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w600,
@@ -115,12 +319,13 @@ class MutualFundNewScreen extends ConsumerWidget {
                 ),
                 // const SizedBox(height: 12),
                 Padding(
-                  padding: const EdgeInsets.only(left:16,right: 16,top:8),
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
                   child: ListView.separated(
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     itemBuilder: (BuildContext context, int index) {
-                      return buildCategoryCard(context:context,
+                      return buildCategoryCard(
+                          context: context,
                           dataIcon: mfData.mFCategoryTypesStatic[index]
                               ['dataIcon'],
                           title: mfData.mFCategoryTypesStatic[index]['title'],
@@ -135,9 +340,9 @@ class MutualFundNewScreen extends ConsumerWidget {
                     itemCount: mfData.mFCategoryTypesStatic.length,
                   ),
                 ),
- const SizedBox(
-                                                  height: 20,
-                                                ),
+                const SizedBox(
+                  height: 20,
+                ),
                 // Container(
                 //   padding:
                 //       const EdgeInsets.only(left: 20.0,bottom: 20.0),
@@ -190,7 +395,6 @@ class MutualFundNewScreen extends ConsumerWidget {
                 //     ],
                 //   ),
                 // )
-            
               ],
             ),
           ),
@@ -242,7 +446,7 @@ class MutualFundNewScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Best mutual funds",
+                "Collections",
                 style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.w600,
@@ -253,112 +457,122 @@ class MutualFundNewScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           const Text(
             "Find the right mutual fund across these asset classes",
-            style: TextStyle(color: Color(0xFF666666), fontSize: 14,fontWeight:  FontWeight.w500),
+            style: TextStyle(
+                color: Color(0xFF666666),
+                fontSize: 14,
+                fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 24),
-   SingleChildScrollView(
-  child: Column(
-    children: [
-      Builder(
-        builder: (context) {
-          double screenWidth = MediaQuery.of(context).size.width;
-          double screenHeight = MediaQuery.of(context).size.height;
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                Builder(
+                  builder: (context) {
+                    double screenWidth = MediaQuery.of(context).size.width;
+                    double screenHeight = MediaQuery.of(context).size.height;
 
-          int crossAxisCount = screenWidth > 600 ? 3 : 2;
-          double childAspectRatio = screenWidth / (screenHeight / 2.0);
+                    int crossAxisCount = screenWidth > 600 ? 3 : 2;
+                    double childAspectRatio =
+                        screenWidth / (screenHeight / 2.0);
 
-          return Padding(
-            padding: const EdgeInsets.all(0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SizedBox(
-                  width: constraints.maxWidth,
-                  child: GridView.builder(
-                    shrinkWrap: true, // Allow GridView to take only required space
-                    physics: const NeverScrollableScrollPhysics(), // Disable GridView's scrolling
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: screenWidth * 0.04,
-                      mainAxisSpacing: screenHeight * 0.02,
-                      childAspectRatio: childAspectRatio,
-                    ),
-                    itemCount: bestMFList.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return GestureDetector(
-                        onTap: () async {
-                          mfData.changetitle(bestMFList[index]['title']);
-                          Navigator.pushNamed(
-                            context,
-                            Routes.bestMfScreen,
-                            arguments: bestMFList[index]['title'],
+                    return Padding(
+                      padding: const EdgeInsets.all(0),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SizedBox(
+                            width: constraints.maxWidth,
+                            child: GridView.builder(
+                              shrinkWrap:
+                                  true, // Allow GridView to take only required space
+                              physics:
+                                  const NeverScrollableScrollPhysics(), // Disable GridView's scrolling
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                crossAxisSpacing: screenWidth * 0.04,
+                                mainAxisSpacing: screenHeight * 0.02,
+                                childAspectRatio: childAspectRatio,
+                              ),
+                              itemCount: bestMFList.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return GestureDetector(
+                                  onTap: () async {
+                                    mfData.changetitle(
+                                        bestMFList[index]['title']);
+                                    Navigator.pushNamed(
+                                      context,
+                                      Routes.bestMfScreen,
+                                      arguments: bestMFList[index]['title'],
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16, horizontal: 16),
+                                    decoration: BoxDecoration(
+                                      color: colors.colorWhite,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        SvgPicture.asset(
+                                          bestMFList[index]['image'],
+                                          height: 50,
+                                          width: 60,
+                                        ),
+                                        Text(
+                                          bestMFList[index]['title'],
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: textStyle(colors.colorBlack,
+                                              19, FontWeight.w600),
+                                        ),
+                                        Text(
+                                          "${bestMFList[index]['subtitle']}",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: textStyle(
+                                              const Color(0xff666666),
+                                              14,
+                                              FontWeight.w500),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           );
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: colors.colorWhite,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SvgPicture.asset(
-                                bestMFList[index]['image'],
-                                height: 50,
-                                width: 60,
-                              ),
-                              Text(
-                                bestMFList[index]['title'],
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: textStyle(colors.colorBlack, 19, FontWeight.w600),
-                              ),
-                              Text(
-                                "${bestMFList[index]['subtitle']}",
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: textStyle(const Color(0xff666666), 14, FontWeight.w500),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
-          );
-        },
-      ),
-    ],
-  ),
-)
-
-
-        
+          )
         ],
       ),
-   
     );
   }
 
   Widget buildCategoryCard(
       {required String dataIcon,
-       required BuildContext context,
+      required BuildContext context,
       required String title,
       required String description,
-      required List<String> chips,
+      required List<dynamic> chips,
       required ScopedReader watch}) {
     final mfData = watch(mfProvider);
     return InkWell(
-       onTap: () async {
-                         mfData.fetchMFCategoryList(title, chips[0]);
-                          mfData.changetitle(chips[0]);
-                        Navigator.pushNamed(context, Routes.mfCategoryList,
-                            arguments: title);
-                      },
+      onTap: () async {
+        mfData.fetchcatdatanew(title, chips[0]);
+        mfData.changetitle(chips[0]);
+        Navigator.pushNamed(context, Routes.mfCategoryList, arguments: title);
+      },
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -389,10 +603,9 @@ class MutualFundNewScreen extends ConsumerWidget {
             Text(
               description,
               style: const TextStyle(
-                color: Color(0xff666666),
-                fontSize: 14,
-               fontWeight:   FontWeight.w500
-              ),
+                  color: Color(0xff666666),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -405,8 +618,8 @@ class MutualFundNewScreen extends ConsumerWidget {
                     padding: const EdgeInsets.only(right: 8.0),
                     child: GestureDetector(
                       onTap: () async {
-                         mfData.fetchMFCategoryList(title, chips[index]);
-                          mfData.changetitle(chips[index]);
+                        mfData.fetchcatdatanew(title, chips[index]);
+                        mfData.changetitle(chips[index]);
                         Navigator.pushNamed(context, Routes.mfCategoryList,
                             arguments: title);
                       },
@@ -423,7 +636,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                         shape: const StadiumBorder(),
                         backgroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12.0, vertical: 4.0),
+                            horizontal: 2.0, vertical: 2.0),
                         side: const BorderSide(
                           color: Color(0xFF666666),
                           width: 1.0,
@@ -443,7 +656,7 @@ class MutualFundNewScreen extends ConsumerWidget {
   Widget nfoCard(context, mf) {
     return GestureDetector(
       onTap: () async {
-         mf.fetchmfNFO(context);
+        //  mf.fetchmfNFO(context);
         Navigator.pushNamed(context, Routes.mfnfoscreen);
       },
       child: Container(
@@ -461,20 +674,16 @@ class MutualFundNewScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(bottom : 0),
+                      padding: EdgeInsets.only(bottom: 0),
                       child: Text(
                         "INVEST IN",
                         style: TextStyle(
-                          
                           color: Color(0xFF0037B7),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -483,13 +692,13 @@ class MutualFundNewScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                        "Ongoing new fund offerings",
-                        style: TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
+                      "New Fund Offer (NFO)",
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
                       ),
+                    ),
                   ],
                 ),
                 SvgPicture.asset(
@@ -499,16 +708,12 @@ class MutualFundNewScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            
-                
-              
-          
             const SizedBox(height: 10),
             const Text(
               "A new fund offer (NFO) is the first subscription for any new fund by an investment company.",
               style: TextStyle(
                 fontSize: 14,
-                   fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w500,
                 color: Color(0xFF666666),
               ),
             ),

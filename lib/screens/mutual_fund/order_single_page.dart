@@ -239,7 +239,8 @@ class _mforderdetscreen extends State<mforderdetscreen>
                if(mfdata.mforderdet!.data?.orderstatus != "VALID")...[
           //  const SizedBox(height: 16),
               Text(
-                "Rejected Reason",
+                "${mfdata.mforderdet!.data?.orderstatus ==
+                                        'PENDING' ? 'Pending' : mfdata.mforderdet!.data?.orderstatus == "INVALID" ? "Reject" : mfdata.mforderdet!.data?.orderstatus} Reason",
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                     16,

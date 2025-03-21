@@ -194,6 +194,7 @@ class ApiLinks {
      String get mfholdsinlepageapi => "$dashBoardURL/mf/holdings_single_page";
      String get mfholdnewapi => "$dashBoardURL/mf/GetHoldings_mob";
        String get redemptioncancel => "$dashBoardURL/mf/lumsum_redemption_cancel";
+       String get mfallcatnewendpoit => "$dashBoardURL/mf/getCategoryschemes_new";
   String get masterMF => "$dashBoardURL/mf/master_file_datas";
   String get nfoMF => "https://v3.mynt.in/mf/NFO_datas";
   String get searchMF => "https://v3.mynt.in/mf/mfsearch";

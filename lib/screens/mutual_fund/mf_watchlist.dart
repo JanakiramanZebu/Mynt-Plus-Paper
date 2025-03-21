@@ -78,7 +78,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                               mfData.loaderfun();
                               await mfData.fetchFactSheet(
                                   mfData.mfWatchlist![index].iSIN!);
-
+ mfData.fetchmatchisan(mfData.mfWatchlist![index].iSIN!);
                               Navigator.pushNamed(
                                 context,
                                 Routes.mfStockDetail,
@@ -119,7 +119,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                                           children: [
                                             Text(
                                               mfData.mfWatchlist![index]
-                                                  .fSchemeName!,
+                                                  .schemegroupName!,
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
                                               style: textStyles.scripNameTxtStyle
@@ -137,33 +137,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                                                   scrollDirection: Axis.horizontal,
                                                   children: [
                                                     CustomExchBadge(
-                                                      exch: mfData
-                                                              .mfWatchlist![index]
-                                                              .schemeName!
-                                                              .contains("GROWTH")
-                                                          ? "GROWTH"
-                                                          : mfData
-                                                                  .mfWatchlist![
-                                                                      index]
-                                                                  .schemeName!
-                                                                  .contains(
-                                                                      "IDCW PAYOUT")
-                                                              ? "IDCW PAYOUT"
-                                                              : mfData
-                                                                      .mfWatchlist![
-                                                                          index]
-                                                                      .schemeName!
-                                                                      .contains(
-                                                                          "IDCW REINVESTMENT")
-                                                                  ? "IDCW REINVESTMENT"
-                                                                  : mfData
-                                                                          .mfWatchlist![
-                                                                              index]
-                                                                          .schemeName!
-                                                                          .contains(
-                                                                              "IDCW")
-                                                                      ? "IDCW"
-                                                                      : "NORMAL",
+                                                      exch: "${mfData.mfWatchlist![index].type}"
                                                     ),
                                                      Padding(
                                                       padding:

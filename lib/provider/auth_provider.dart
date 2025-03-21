@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
@@ -657,7 +658,7 @@ class AuthProvider extends DefaultChangeNotifier {
     } finally {
       toggleLoadingOn(false);
     }
-  }
+  } 
 
 // Fetching data from the api and stored in a variable
   fetchMobileOtp(BuildContext context, String otp) async {
@@ -1003,6 +1004,14 @@ class AuthProvider extends DefaultChangeNotifier {
         await ref(ipoProvide).fetchIpoPreClose();
 
         await FirebaseAnalytics.instance.setUserId(id: pref.clientId);
+
+
+
+// mf
+        ref(mfProvider).fetchnewMFBestList();
+        ref(mfProvider).fetchmfallcatnew();
+        ref(mfProvider).fetchmfNFO(context);
+
 // Explore
         await ref(stocksProvide)
             .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");

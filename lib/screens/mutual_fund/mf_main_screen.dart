@@ -50,23 +50,47 @@ class _MfmainScreenState extends State<MfmainScreen> {
             titleSpacing: 6,
             // leading: const CustomBackBtn(),
             shadowColor: const Color(0xffECEFF3),
-             title: Text(
-              "Mutual Fund",
-              style: textStyles.appBarTitleTxt.copyWith(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              ),
-            ),
-            actions: [
-    IconButton(
-      icon: Icon(Icons.search, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-      onPressed: () {
-           Navigator.pushNamed(context, Routes.mfsearchscreen);
- 
-      },
+             title: Row(
+            children: [
+              // SvgPicture.asset(
+              //   assets.myntnewLogo,
+              //   width: 46,
+              //   height: 46,
+              // ),
+              // const SizedBox(width: 10),
+             Expanded(
+  child: Container(
+    height: 40,
+    decoration: BoxDecoration(
+      color: const Color(0xFFF1F3F8),
+      borderRadius: BorderRadius.circular(25),
     ),
-  ],
+    child: InkWell( // Wrap with InkWell to capture taps
+      borderRadius: BorderRadius.circular(25),
+      onTap: () {
+        Navigator.pushNamed(context, Routes.mfsearchscreen);
+      },
+      child: AbsorbPointer( // Prevents user input but allows onTap
+        child: SearchBar(
+          hintText: "Search Mutual Fund",
+          backgroundColor: WidgetStateProperty.all(
+              colors.kColorLightGrey), // Gray background
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(50), // Rounded corners
+              side: BorderSide.none, // No border
+            ),
+          ),
+          elevation: WidgetStateProperty.all(0), // No shadow
+          leading: const Icon(Icons.search, color: Colors.black54), // Prefix icon
+        ),
+      ),
+    ),
+  ),
+),
+
+            ],
+          ),
           // centerTitle: false,
           // title: Row(
           //   children: [

@@ -96,18 +96,20 @@ class UserAccountScreen extends ConsumerWidget {
                           // launch(
                           //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                         } else if (acttitle == "Mutual Fund") {
-                          mf.loaderfun();
+                          // mf.loaderfun();
                           mf.mfExTabchange(0);
-                          await mf.fetchnewMFBestList();
+                          // await mf.fetchnewMFBestList();
                           // await mf.fetchBestMF();
+                          Navigator.pushNamed(context, Routes.mfmainscreen);
+
                           await mf.fetchMfOrderbook(context);
+                          // await mf.fetchmfallcatnew();
                           await portfolio.fetchMFHoldings(context);
-                          await mf.fetchMFCategoryType();
+                          // await mf.fetchMFCategoryType();
                           // await mf.fetchmfNFO(context);
                           await mf.fetchmfholdingnew();
                           await mf.fetchMFWatchlist("", "", context, true, "");
                           await mf.fetchmfsiplist();
-                          Navigator.pushNamed(context, Routes.mfmainscreen);
                           // await mf.fetchBestMF();
                           // await portfolio.fetchMFHoldings(context);
                           // await mf.fetchMFCategoryType();

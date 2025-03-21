@@ -74,7 +74,7 @@ class StockScreen extends StatelessWidget {
                           "assets/profileimage/prd-mf.svg",
                           theme, () async {
                         // await portfolio.fetchMFHoldings(context);
-                        await mf.fetchMFCategoryType();
+                        // await mf.fetchMFCategoryType();
                         // await mf.fetchmfNFO(context);
                         await mf.fetchMFWatchlist("", "", context, true, "");
                         Navigator.pushNamed(context, Routes.mfmainscreen);

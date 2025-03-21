@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:mynt_plus/models/mf_model/all_category_new_model.dart';
+import 'package:mynt_plus/models/mf_model/allcatlistviewmodel.dart';
 import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_hold_singlepage_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_holding_new_model.dart';
@@ -90,20 +92,17 @@ class MFProvider extends DefaultChangeNotifier {
   Sip_list_data? _mfsiporderlist;
   Sip_list_data? get mfsiporderlist => _mfsiporderlist;
 
-
   Sip_single_page? _mfsinglepageres;
   Sip_single_page? get mfsinglepageres => _mfsinglepageres;
 
-  
   mf_order_sig_det? _mforderdet;
   mf_order_sig_det? get mforderdet => _mforderdet;
 
-  mf_holding_sig_det  ? _mfholdsingepage;
+  mf_holding_sig_det? _mfholdsingepage;
   mf_holding_sig_det? get mfholdsingepage => _mfholdsingepage;
 
-  mf_holdoing_new   ? _mfholdingnew;
-  mf_holdoing_new ? get mfholdingnew => _mfholdingnew;
-
+  mf_holdoing_new? _mfholdingnew;
+  mf_holdoing_new? get mfholdingnew => _mfholdingnew;
 
   bool _mforderloader = false;
   bool get mforderloader => _mforderloader;
@@ -197,11 +196,14 @@ class MFProvider extends DefaultChangeNotifier {
   String _selechip = "";
   String get selctedchip => _selechip;
 
-    String _orderseltab = "";
+  String _orderseltab = "";
   String get orderseltab => _orderseltab;
 
   bool? _bestmfloader = false;
   bool? get bestmfloader => _bestmfloader;
+
+   bool? _watchbatchval = false;
+  bool? get watchbatchval => _watchbatchval;
 
   RangeValues _currentRangeValues = const RangeValues(0, 11);
   RangeValues get currentRangeValues => _currentRangeValues;
@@ -227,17 +229,24 @@ class MFProvider extends DefaultChangeNotifier {
   String _namechange = "";
   String get namechange => _namechange;
 
-changename(String name){
-  _namechange = name;
-   notifyListeners();
-}
+    String _orderpagetitle = "";
+  String get orderpagetitle => _orderpagetitle;
 
-loaderfun(){
-  _bestmfloader = true;
-  print("ttttttttttt");
+  orderpagetite(String name) {
+    _orderpagetitle = name;
     notifyListeners();
-}
+  }
 
+  changename(String name) {
+    _namechange = name;
+    notifyListeners();
+  }
+
+  loaderfun() {
+    _bestmfloader = true;
+    print("ttttttttttt");
+    notifyListeners();
+  }
 
   mfExTabchange(int tab) {
     _activeTab = tab;
@@ -249,7 +258,7 @@ loaderfun(){
     notifyListeners();
   }
 
-    orderchangetitle(String title) {
+  orderchangetitle(String title) {
     _orderseltab = title;
     notifyListeners();
   }
@@ -313,6 +322,13 @@ loaderfun(){
   MFOrderBookModel? _mfLumpSumOrderbook;
   MFOrderBookModel? get mflumpsumorderbook => _mfLumpSumOrderbook;
 
+  mf_catge_newlist? _mfallcatnewlist;
+  mf_catge_newlist? get mfallcatnewlist => _mfallcatnewlist;
+
+  
+  final_list_model? _mfcatlistview;
+  final_list_model? get mfcatlistview => _mfcatlistview;
+
   MfCreateMandateModel? _createMandateModel;
   MfCreateMandateModel? get createMandateModel => _createMandateModel;
 
@@ -331,6 +347,13 @@ loaderfun(){
 
   List<MutualFundList>? _bestmfFilter = [];
   List<MutualFundList>? get bestmfFilter => _bestmfFilter;
+
+
+   List<Fund>? _catnewlist = [];
+  List<Fund>? get catnewlist => _catnewlist;
+
+     List<DataMod>? _holssinglelist = [];
+  List<DataMod>? get holssinglelist => _holssinglelist;
 
   // List<MutualFundList>? _bestmfList = [];
   // List<MutualFundList>? get bestmfList => _bestmfList;
@@ -385,7 +408,7 @@ loaderfun(){
       "titlekey": "taxSaving"
     },
     {
-      "funds": "90 funds", 
+      "funds": "90 funds",
       "image": "assets/explore/growthnew.svg",
       "subtitle": "Maximize returns with high growth",
       "title": "High Growth Equity",
@@ -439,19 +462,20 @@ loaderfun(){
       "title": "Fixed Income",
       "sub": []
     },
-    {
-      "dataIcon": 'assets/explore/hybrid.png',
-      "description": "Mix of equity and debt to balance risk and return.",
-      "title": "Hybrid",
-      "sub": []
-    },
-    {
+     {
       "dataIcon": 'assets/explore/gold.png',
       "description":
           "Invest in gold and related securities. Hedge against inflation.",
       "title": "Gold",
       "sub": []
     },
+    {
+      "dataIcon": 'assets/explore/hybrid.png',
+      "description": "Mix of equity and debt to balance risk and return.",
+      "title": "Hybrid",
+      "sub": []
+    },
+   
     {
       "dataIcon": 'assets/explore/solution.png',
       "description":
@@ -462,8 +486,6 @@ loaderfun(){
   ];
 
   List get mFCategoryTypesStatic => _mFCategoryTypesStatic;
-
- 
 
   // makefalse(String isn) {
   //   int index = _topmutualfund!.indexWhere((element) => element.iSIN == isn);
@@ -604,8 +626,8 @@ loaderfun(){
   String _insAmt = "0.00";
   String get insAmt => _insAmt;
 
-  List mfOrderTpyes = ["Lumpsum", "SIP"]; //["Lumpsum"];
-  String _mfOrderTpye = "Lumpsum";
+  List mfOrderTpyes = ["One-time", "SIP"]; //["Lumpsum"];
+  String _mfOrderTpye = "One-time";
   String get mfOrderTpye => _mfOrderTpye;
 
   List mfOrderbookfilters = ["All", "Lumpsum", "X-SIP", "Redeem"];
@@ -1082,7 +1104,7 @@ loaderfun(){
     print("tryoutcalll");
 
     try {
-       _bestmfloader = true;
+      _bestmfloader = true;
       print("@@@tryyinnn");
 
       _newbestmodel = await api.getnewMFBestListData();
@@ -1099,89 +1121,93 @@ loaderfun(){
       notifyListeners();
     } catch (e, stackTrace) {
       debugPrint("Error fetching MF Best List: $e\n$stackTrace");
-    }finally {
+    } finally {
+       _bestmfloader = false;
       notifyListeners();
     }
   }
 
   Future<void> fetchmfsiplist() async {
     try {
+       _bestmfloader = true;
       _mfsiporderlist = await api.getSiplist();
       print("sipppppres${_mfsiporderlist?.toJson()}");
       notifyListeners();
     } catch (e, stackTrace) {
       debugPrint("Error fetching siplist: $e\n$stackTrace");
-    }finally{
-_bestmfloader = false;
-       notifyListeners();
+    } finally {
+      _bestmfloader = false;
+      notifyListeners();
     }
   }
 
   Future<void> fetchmfsipsinglepage(String value) async {
     try {
-         _bestmfloader = true;
+      _bestmfloader = true;
       _mfsinglepageres = await api.getSipsinglepage(value);
       print("themffffff${value}");
       print("nwewwwww${_mfsinglepageres?.invList.toString()}");
 
       notifyListeners();
     } catch (e, stackTrace) {
-       _bestmfloader = false;
+      _bestmfloader = false;
       debugPrint("Error fetching siplist: $e\n$stackTrace");
       print("apii errror");
-    }finally {
+    } finally {
       _bestmfloader = false;
       notifyListeners();
     }
   }
 
-  Future<void> fetchorderdetails(String value,String bs , String type , String status,String sipno,String remarks) async {
+  Future<void> fetchorderdetails(String value, String bs, String type,
+      String status, String sipno, String remarks) async {
     try {
-         _bestmfloader = true;
-     
+      _bestmfloader = true;
+
       print("1111${value},${type},${bs},${status},${sipno},${remarks}");
       print("nwewwwww${_mforderdet.toString()}");
 
-       String orderStatus = checkOrderRemarks(remarks);
-      print("payload${value},${type},${bs},${status},${sipno},${orderStatus == 'usercancel' ? "" : orderStatus}");
+      String orderStatus = checkOrderRemarks(remarks);
+      print(
+          "payload${value},${type},${bs},${status},${sipno},${orderStatus == 'usercancel' ? "" : orderStatus}");
 
- _mforderdet = await api.getsingleortderapi(value , bs , type , status ,sipno ,  orderStatus);
-       print("11111@@${orderStatus}");
-return 
-      notifyListeners();
+      _mforderdet = await api.getsingleortderapi(
+          value, bs, type, status, sipno, orderStatus);
+      print("11111@@${orderStatus}");
+      return notifyListeners();
     } catch (e, stackTrace) {
-       _bestmfloader = false;
+      _bestmfloader = false;
       debugPrint("Error fetching siplist: $e\n$stackTrace");
       print("apii errror");
-    }finally {
+    } finally {
       _bestmfloader = false;
       notifyListeners();
     }
   }
 
-String checkOrderRemarks(String orderremarks) {
-  if (orderremarks.contains("HAS BEEN REGISTERED")) {
-    return "REGISTERED";
-  } else if (orderremarks.contains("CANCELLED SUCCESSFULLY")) {
-    return "CANCELLED";
-  } else {
-    return "usercancel";
+  String checkOrderRemarks(String orderremarks) {
+    if (orderremarks.contains("HAS BEEN REGISTERED")) {
+      return "REGISTERED";
+    } else if (orderremarks.contains("CANCELLED SUCCESSFULLY")) {
+      return "CANCELLED";
+    } else {
+      return "usercancel";
+    }
   }
-}
 
-    Future<void> fetchmfholdsinglelist(String value) async {
+  Future<void> fetchmfholdsinglelist(String value) async {
     try {
-         _bestmfloader = true;
+      _bestmfloader = true;
       _mfholdsingepage = await api.getholdsinglepage(value);
       print("themffffff${value}");
       print("nwewwwww${_mfholdsingepage.toString()}");
 
       notifyListeners();
     } catch (e, stackTrace) {
-       _bestmfloader = false;
+      _bestmfloader = false;
       debugPrint("Error fetching siplist: $e\n$stackTrace");
       print("apii errror");
-    }finally {
+    } finally {
       _bestmfloader = false;
       notifyListeners();
     }
@@ -1189,23 +1215,37 @@ String checkOrderRemarks(String orderremarks) {
 
   Future<void> fetchmfholdingnew() async {
     try {
-        //  _bestmfloader = true;
+      //  _bestmfloader = true;
       _mfholdingnew = await api.getmfholdnewapi();
       // print("themffffff${value}");
+      
       print("holdinglist${_mfholdingnew?.toJson()}");
 
       notifyListeners();
     } catch (e, stackTrace) {
-       _bestmfloader = false;
+      _bestmfloader = false;
       debugPrint("Error fetching mfliiist: $e\n$stackTrace");
       print("apii errror");
-    }finally {
+    } finally {
       // _bestmfloader = false;
       notifyListeners();
     }
   }
 
+ void fetchmfholdsingpage(String isin) async {
+  print("qqqq|${isin}---");
 
+  for (var item in _mfholdingnew?.data ?? []) {
+    if (isin == item.iSIN) {
+      print("ininin");
+      
+      // Ensure item is not null before adding it to the list
+      _holssinglelist = item != null ? [item] : [];
+      
+      print("ttttttt$_holssinglelist");
+    }
+  }
+}
 
 
   Future fetchMFCategoryList(String type, String subtype) async {
@@ -1234,7 +1274,7 @@ String checkOrderRemarks(String orderremarks) {
       // }
       notifyListeners();
     } catch (e) {
-       _bestmfloader = false;
+      _bestmfloader = false;
       debugPrint("$e");
     } finally {
       _bestmfloader = false;
@@ -1242,26 +1282,26 @@ String checkOrderRemarks(String orderremarks) {
     }
   }
 
-  Future fetchMFCategoryType() async {
-    _mfCategoryTypes = await api.getMFCategoryTypes();
-    //  print("_mfCategoryTypes ${_mfCategoryTypes!.data![0]}");
-    for (var watchListMf in _mfCategoryTypes!.data!) {
-      _mFCategoryTypesStatic
-          .where((m) => m['title'] == watchListMf.type)
-          .forEach((m) => m['sub'] = watchListMf.sub);
-    }
-    print("_mfCategoryTypes $_mFCategoryTypesStatic");
-    notifyListeners();
-  }
+  // Future fetchMFCategoryType() async {
+  //   _mfCategoryTypes = await api.getMFCategoryTypes();
+  //   print("_mfCategoryTypes ${_mfCategoryTypes!.data![0]}");
+  //   for (var watchListMf in _mfCategoryTypes!.data!) {
+  //     _mFCategoryTypesStatic
+  //         .where((m) => m['title'] == watchListMf.type)
+  //         .forEach((m) => m['sub'] = watchListMf.sub);
+  //   }
+  //   print("_mfCategoryTypes $_mFCategoryTypesStatic");
+  //   notifyListeners();
+  // }
 
   Future fetchFactSheet(String isin) async {
     try {
-        _bestmfloader = true;
+      _bestmfloader = true;
       Map trailingReturns = {};
       _mfReturnsGridview = [];
       _comYear = "10 Years";
       var stopwatch = Stopwatch()..start();
-       _factSheetDataModel = await api.getMFFactSheetData(isin);
+      _factSheetDataModel = await api.getMFFactSheetData(isin);
       _bestmfloader = false;
       stopwatch.stop(); // Stop timer
 
@@ -1326,6 +1366,10 @@ String checkOrderRemarks(String orderremarks) {
               .toStringAsFixed(2)
         });
 
+
+
+
+
         for (var element in _mfReturnsGridview) {
           for (var returns in trailingReturns.entries) {
             if (element['duration'] == returns.key) {
@@ -1342,15 +1386,17 @@ String checkOrderRemarks(String orderremarks) {
       }
       stopwatch.stop(); // Stop timer
 
-      log('Time taken 2: ${stopwatch.elapsedMilliseconds} ms');
-      stopwatch = Stopwatch()..start();
-      await fetchFactSheetGraph(isin);
-      stopwatch.stop(); // Stop timer
+      // log('Time taken 2: ${stopwatch.elapsedMilliseconds} ms');
+      // stopwatch = Stopwatch()..start();
+      // await fetchFactSheetGraph(isin);
+      // stopwatch.stop(); // Stop timer
 
-      log('Time taken 3: ${stopwatch.elapsedMilliseconds} ms');
-      stopwatch = Stopwatch()..start();
-      await fetchSchemePeer(isin, "10Year");
-      stopwatch.stop(); // Stop timer
+      // log('Time taken 3: ${stopwatch.elapsedMilliseconds} ms');
+      // stopwatch = Stopwatch()..start();
+      // await fetchSchemePeer(isin, "10Year");
+      // stopwatch.stop(); // Stop timer
+
+      
 
       log('Time taken 4: ${stopwatch.elapsedMilliseconds} ms');
       stopwatch = Stopwatch()..start();
@@ -1367,7 +1413,7 @@ String checkOrderRemarks(String orderremarks) {
       debugPrint("$e");
     } finally {
       toggleLoadingOn(false);
-       _bestmfloader = false;
+      _bestmfloader = false;
     }
 
     notifyListeners();
@@ -1453,6 +1499,8 @@ String checkOrderRemarks(String orderremarks) {
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+    }finally{
+      notifyListeners();
     }
   }
 
@@ -1544,8 +1592,8 @@ String checkOrderRemarks(String orderremarks) {
     } catch (e) {
       debugPrint("rererer $e");
       toggleLoadingOn(false);
-    }finally {
-       toggleLoadingOn(false);
+    } finally {
+      toggleLoadingOn(false);
       _bestmfloader = false;
 
       notifyListeners();
@@ -1652,14 +1700,14 @@ String checkOrderRemarks(String orderremarks) {
     try {
       _mforderloader = true;
       _mfLumpSumOrderbook = await api.getorderbook();
-      if (_mfLumpSumOrderbook != null) {
-        _mfLumpSumOrderbook!.data!.sort((a, b) {
-          final DateFormat dateFormat = DateFormat("dd/MM/yyyy");
-          DateTime dateA = dateFormat.parse(a.date.toString());
-          DateTime dateB = dateFormat.parse(b.date.toString());
-          return dateB.compareTo(dateA);
-        }); // Sor
-      }
+      // if (_mfLumpSumOrderbook != null) {
+      //   _mfLumpSumOrderbook!.data!.sort((a, b) {
+      //     final DateFormat dateFormat = DateFormat("dd/MM/yyyy");
+      //     DateTime dateA = dateFormat.parse(a.date.toString());
+      //     DateTime dateB = dateFormat.parse(b.date.toString());
+      //     return dateB.compareTo(dateA);
+      //   }); // Sor
+      // }
     } catch (e) {
       log("Failed to fetchMfOrderbook :: ${e.toString()}");
       notifyListeners();
@@ -1702,6 +1750,114 @@ String checkOrderRemarks(String orderremarks) {
     //   notifyListeners();
     // }
   }
+
+  Future<void> fetchmfallcatnew() async {
+    try {
+      // Fetch data from API
+      _mfallcatnewlist = await api.mfallcatnewapi();
+      // print("object@@${newres?.toJson()}");
+
+      print("valuesss${_mfallcatnewlist!.data![0].values![0].name}");
+      print("#######${_mfallcatnewlist?.toJson()}");
+
+      for (var i = 0; i < _mfallcatnewlist!.data![0].values!.length; i++) {
+        _mFCategoryTypesStatic[0]['sub']
+            .add(_mfallcatnewlist!.data![0].values![i].name);
+      }
+
+      for (var i = 0; i < _mfallcatnewlist!.data![1].values!.length; i++) {
+        _mFCategoryTypesStatic[1]['sub']
+            .add(_mfallcatnewlist!.data![1].values![i].name);
+      }
+
+      for (var i = 0; i < _mfallcatnewlist!.data![2].values!.length; i++) {
+        _mFCategoryTypesStatic[2]['sub']
+            .add(_mfallcatnewlist!.data![2].values![i].name);
+      }
+
+      for (var i = 0; i < _mfallcatnewlist!.data![3].values!.length; i++) {
+        _mFCategoryTypesStatic[3]['sub']
+            .add(_mfallcatnewlist!.data![3].values![i].name);
+      }
+
+      for (var i = 0; i < _mfallcatnewlist!.data![5].values!.length; i++) {
+        _mFCategoryTypesStatic[4]['sub']
+            .add(_mfallcatnewlist!.data![5].values![i].name);
+        
+      }
+
+
+      print("Transformed Data: ");
+    } catch (e) {
+      log("Failed to fetch data: ${e.toString()}");
+      notifyListeners();
+    }
+  }
+
+void fetchcatdatanew(String tit, String chi) {
+  print("qqqq|${tit}----${chi}");
+
+  // Define mapping of title to index dynamically
+  Map<String, int> categoryIndex = {
+    'Equity': 0,
+    'Fixed Income': 1,
+    'Gold': 2,
+    'Hybrid': 3,
+    'Solution': 5
+  };
+
+  // Check if the category exists in the map
+  if (!categoryIndex.containsKey(tit)) {
+    print("Invalid category or missing data.");
+    return;
+  }
+
+  int index = categoryIndex[tit]!; // Get the correct index
+
+  // Null safety checks
+  if (_mfallcatnewlist?.data == null || _mfallcatnewlist!.data!.length <= index) {
+    print("otherr or null data");
+    return;
+  }
+
+  // Iterate through values and find matching `chi`
+  for (var item in _mfallcatnewlist!.data![index].values ?? []) {
+    print("nameee ${item.name}");
+
+    if (chi == item.name) {
+      print("statisfyyy ${item.values}");
+
+      // Assign values safely
+      _catnewlist = List<Fund>.from(item.values ?? []);
+
+      // Notify listeners AFTER updating _catnewlist
+      notifyListeners();
+      return;
+    }
+  }
+
+  print("No matching data found.");
+}
+
+// void fetchmatchisan(String isin) {
+//   final watchlistIsins = _mfWatchlist!.map((item) => item.iSIN).toSet();
+
+//   if (_factSheetDataModel!.data!. == isin) {
+//     _factSheetDataModel!.data!.isAdd = watchlistIsins.contains(isin);
+//   }
+// }
+void fetchmatchisan(String isin) {
+  bool isMatch = _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == isin);
+
+//  if(isMatch == true)
+    _watchbatchval = isMatch;
+    print("Updated isAdd to: ${_watchbatchval}");
+notifyListeners();
+}
+
+
+
+
 
   Future fetchVerifyUpi(
     BuildContext context,
@@ -1764,11 +1920,19 @@ String checkOrderRemarks(String orderremarks) {
       String noofinstallment,
       String enddate,
       String mandateId) async {
+        
     try {
+      print("welcoooo");
+    toggleLoadingOn(true);
+print("okokok11ttt${loading}");
+ 
       _xsipOrderResponces = await api.getXsipPurchase(schemecode, startDate,
           freqtype, amt, noofinstallment, endDate, mandateId);
-
+print("okokok11${loading}");
       if (_xsipOrderResponces?.stat == 'OK') {
+         toggleLoadingOn(false);
+         
+        // toggleLoad(false);
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_xsipOrderResponces!.responseMessage}"));
         fetchAllPayment(
@@ -1783,13 +1947,26 @@ String checkOrderRemarks(String orderremarks) {
             "",
             upiId.text,
             schemecode);
+             Navigator.pop(context);
       } else {
+        toggleLoadingOn(false);
         ScaffoldMessenger.of(context).showSnackBar(
             warningMessage(context, "${_xsipOrderResponces!.responseMessage}"));
+            Navigator.pop(context);
       }
+       fetchmfsiplist();
+          fetchMfOrderbook(context);
       print("object ${_xsipOrderResponces!.responseMessage} ");
     } catch (e) {
       log("Failed to Place X-sip :: ${e.toString()}");
+      toggleLoadingOn(false);
+      notifyListeners();
+       ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "Network Error"));
+            Navigator.pop(context);
+    
+    }finally{
+       toggleLoadingOn(false);
       notifyListeners();
     }
   }
@@ -1883,7 +2060,8 @@ String checkOrderRemarks(String orderremarks) {
         schemeCode);
     if (_allPaymentMfModel?.stat == "Not Ok") {
       ScaffoldMessenger.of(context)
-          .showSnackBar(warningMessage(context, "${_allPaymentMfModel!.emsg}"));
+          .showSnackBar(warningMessage(context, "${_allPaymentMfModel!.response_message}"));
+           Navigator.pop(context);
     } else if (_allPaymentMfModel?.stat == "Ok" &&
         _allPaymentMfModel?.type == "NET BANKING") {
       Navigator.pop(context);
@@ -1892,13 +2070,13 @@ String checkOrderRemarks(String orderremarks) {
       if (_allPaymentMfModel?.type == "UPI") {
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_allPaymentMfModel!.msg}"));
-            print("${_allPaymentMfModel!.payment_msg} Payment message");
+        print("${_allPaymentMfModel!.payment_msg} Payment message");
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_allPaymentMfModel!.msg}"));
-            print("${_allPaymentMfModel!.payment_msg} Payment message 2");
-print("+++++${_allPaymentMfModel?.toJson()}");
+        print("${_allPaymentMfModel!.payment_msg} Payment message 2");
+        print("+++++${_allPaymentMfModel?.toJson()}");
         Navigator.pop(context);
       }
     }

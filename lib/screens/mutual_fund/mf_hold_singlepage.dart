@@ -33,7 +33,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
       final theme = watch(themeProvider);
       final mfdata = watch(mfProvider);
       // print("11111111111111111${mfdata.mfsinglepageres!.invList}");
-
+// print("13434312${mfdata.holssinglelist![0].sCHEMECODE}");
       return Scaffold(
         appBar: AppBar(
           elevation: 0,
@@ -102,7 +102,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                                       children: [
                                         // const SizedBox(height: 4), // Now it's correctly placed
                                         Text(
-                                          "${mfdata.mfholdsingepage!.data?.sCHEMENAME}",
+                                          "${mfdata.holssinglelist![0]?.sCHEMENAME}",
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: textStyles.scripNameTxtStyle
@@ -165,15 +165,15 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                 Column(
                   children: [
                     Text(
-                      "₹ ${(((double.tryParse(mfdata.mfholdsingepage!.data?.sCRIPVALUE ?? '0') ?? 0) * 
-                            (double.tryParse(mfdata.mfholdsingepage!.data?.nET ?? '0') ?? 0)) - 
-                           ((double.tryParse(mfdata.mfholdsingepage!.data?.bUYPRICE ?? '0') ?? 0) * 
-                            (double.tryParse(mfdata.mfholdsingepage!.data?.nET ?? '0') ?? 0))).toStringAsFixed(2)} ",
+                      "₹ ${(((double.tryParse(mfdata.holssinglelist![0]?.sCRIPVALUE ?? '0') ?? 0) * 
+                            (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0)) - 
+                           ((double.tryParse(mfdata.holssinglelist![0]?.buyPrice ?? '0') ?? 0) * 
+                            (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0))).toStringAsFixed(2)} ",
                       style: textStyle(
-                        (((double.tryParse(mfdata.mfholdsingepage!.data?.sCRIPVALUE ?? '0') ?? 0) * 
-                          (double.tryParse(mfdata.mfholdsingepage!.data?.nET ?? '0') ?? 0)) - 
-                         ((double.tryParse(mfdata.mfholdsingepage!.data?.bUYPRICE ?? '0') ?? 0) * 
-                          (double.tryParse(mfdata.mfholdsingepage!.data?.nET ?? '0') ?? 0))) >= 0 
+                        (((double.tryParse(mfdata.holssinglelist![0]?.sCRIPVALUE ?? '0') ?? 0) * 
+                          (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0)) - 
+                         ((double.tryParse(mfdata.holssinglelist![0]?.buyPrice ?? '0') ?? 0) * 
+                          (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0))) >= 0 
                           ? Colors.green 
                           : Colors.red, // Dynamic color change
                         14,
@@ -181,15 +181,15 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                       ),
                     ),
                     Text(
-                      "(${(((double.tryParse(mfdata.mfholdsingepage!.data?.sCRIPVALUE ?? '0') ?? 0) - 
-                           (double.tryParse(mfdata.mfholdsingepage!.data?.bUYPRICE ?? '0') ?? 0)) /
-                           (double.tryParse(mfdata.mfholdsingepage!.data?.bUYPRICE ?? '1') ?? 1) * 100)
+                      "(${(((double.tryParse(mfdata.holssinglelist![0]?.sCRIPVALUE ?? '0') ?? 0) - 
+                           (double.tryParse(mfdata.holssinglelist![0]?.buyPrice ?? '0') ?? 0)) /
+                           (double.tryParse(mfdata.holssinglelist![0]?.buyPrice ?? '1') ?? 1) * 100)
                            .toStringAsFixed(2)}%)",
                       style: textStyle(
-                        (((double.tryParse(mfdata.mfholdsingepage!.data?.sCRIPVALUE ?? '0') ?? 0) * 
-                          (double.tryParse(mfdata.mfholdsingepage!.data?.nET ?? '0') ?? 0)) - 
-                         ((double.tryParse(mfdata.mfholdsingepage!.data?.bUYPRICE ?? '0') ?? 0) * 
-                          (double.tryParse(mfdata.mfholdsingepage!.data?.nET ?? '0') ?? 0))) >= 0 
+                        (((double.tryParse(mfdata.holssinglelist![0]?.sCRIPVALUE ?? '0') ?? 0) * 
+                          (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0)) - 
+                         ((double.tryParse(mfdata.holssinglelist![0]?.buyPrice ?? '0') ?? 0) * 
+                          (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0))) >= 0 
                           ? Colors.green 
                           : Colors.red, // Dynamic color change
                         14,
@@ -221,35 +221,36 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
  const SizedBox(height: 16),
  rowOfInfoData(
                            "Invested",
-                            "₹ ${((double.tryParse(mfdata.mfholdsingepage!.data?.bUYPRICE ?? '0') ?? 0) * 
-        (double.tryParse(mfdata.mfholdsingepage!.data?.nET ?? '0') ?? 0))
+                            "₹ ${((double.tryParse(mfdata.holssinglelist![0]?.buyPrice ?? '0') ?? 0) * 
+        (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0))
         .toStringAsFixed(2)}",
                           "Current",
-                            "₹ ${((double.tryParse(mfdata.mfholdsingepage!.data?.sCRIPVALUE ?? '0') ?? 0) * 
-        (double.tryParse(mfdata.mfholdsingepage!.data?.nET ?? '0') ?? 0))
+                            "₹ ${((double.tryParse(mfdata.holssinglelist![0]?.sCRIPVALUE ?? '0') ?? 0) * 
+        (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0))
         .toStringAsFixed(2)}",
                           theme),
                            const SizedBox(height: 16),
                       rowOfInfoData(
                           "Net Qty",
-                         "${mfdata.mfholdsingepage!.data?.nET}",
+                         "${mfdata.holssinglelist![0]?.nET}",
                           "Current NAV",
-                           "${mfdata.mfholdsingepage!.data?.sCRIPVALUE}",
+                           "${mfdata.holssinglelist![0]?.sCRIPVALUE}",
                           theme),
                            const SizedBox(height: 16),
                       rowOfInfoData(
                           "Avg Price",
-                         "${mfdata.mfholdsingepage!.data?.bOUGHT}",
+                        "${(double.tryParse(mfdata.holssinglelist?[0]?.bought ?? '0') ?? 0).toStringAsFixed(2)}",
+
                       "Pledged Qty",
-                      "${(double.tryParse(mfdata.mfholdsingepage!.data?.pLEDGEQTY ?? '0') ?? 0).toStringAsFixed(2)}",
+                      "${(double.tryParse(mfdata.holssinglelist![0]?.pLEDGEQTY ?? '0') ?? 0).toStringAsFixed(2)}",
                           theme),
                            const SizedBox(height: 16),
 
                              rowOfInfoData(
                           "Minimun Redemption Qty",
-                         "${mfdata.mfholdsingepage!.data?.mINIMUMREDEMPTIONQTY}",
-                      "Purchase Date & Time",
-                      "${mfdata.mfholdsingepage!.data?.pURDATE}",
+                         "${mfdata.holssinglelist![0]?.mINIMUMREDEMPTIONQTY}",
+                      "",
+                      "",
                           theme),
               
 

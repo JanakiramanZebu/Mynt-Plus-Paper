@@ -16,29 +16,33 @@ class MFAllocation extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = watch(themeProvider);
-    final mfData = watch(mfProvider).factSheetDataModel!.data!;
+final mfData = watch(mfProvider).factSheetDataModel?.data;
+if (mfData == null) {
+  return const SizedBox(); // Or show a loader/message
+}
+
     final showMoreSectors = watch(showMoreSectorsProvider).state;
     final showMoreHoldings = watch(showMoreHoldingsProvider).state;
 
-    final List<ChartData> donutChart = [
-      if (mfData.vEquity != "0")
-        ChartData('Equity', double.parse(mfData.vEquity ?? "0.00"),
-            const Color(0xff2e8564)),
-      if (mfData.vDebt != "0")
-        ChartData('Debt', double.parse(mfData.vDebt ?? "0.00"),
-            const Color(0xff7cd36f)),
-      if (mfData.goldPercent != "0")
-        ChartData('Gold', double.parse(mfData.goldPercent ?? "0.00"),
-            const Color(0xfff7cd6c)),
-      if (mfData.globalEquityPercent != "0")
-        ChartData(
-            'Global Equity',
-            double.parse(mfData.globalEquityPercent ?? "0.00"),
-            const Color(0XFFfbebc4)),
-      if (mfData.vOther != "0")
-        ChartData('Others', double.parse(mfData.vOther ?? "0.00"),
-            const Color(0XFFdedede))
-    ];
+    // final List<ChartData> donutChart = [
+    //   if (mfData.vEquity != "0")
+    //     ChartData('Equity', double.parse(mfData.vEquity ?? "0.00"),
+    //         const Color(0xff2e8564)),
+    //   if (mfData.vDebt != "0")
+    //     ChartData('Debt', double.parse(mfData.vDebt ?? "0.00"),
+    //         const Color(0xff7cd36f)),
+    //   if (mfData.goldPercent != "0")
+    //     ChartData('Gold', double.parse(mfData.goldPercent ?? "0.00"),
+    //         const Color(0xfff7cd6c)),
+    //   if (mfData.globalEquityPercent != "0")
+    //     ChartData(
+    //         'Global Equity',
+    //         double.parse(mfData.globalEquityPercent ?? "0.00"),
+    //         const Color(0XFFfbebc4)),
+    //   if (mfData.vOther != "0")
+    //     ChartData('Others', double.parse(mfData.vOther ?? "0.00"),
+    //         const Color(0XFFdedede))
+    // ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -150,14 +154,14 @@ class MFAllocation extends ConsumerWidget {
       ]),
       const SizedBox(height: 10),
       LinearPercentIndicator(
-          lineHeight: 10.0,
-          barRadius: const Radius.circular(4),
-          backgroundColor: color1.withOpacity(.3),
-          percent: (double.parse(val) / 100).isNegative
-              ? 0.00
-              : double.parse(val) / 100,
-          padding: EdgeInsets.zero,
-          progressColor: color1)
+  lineHeight: 10.0,
+  barRadius: const Radius.circular(4),
+  backgroundColor: color1.withOpacity(.3),
+  percent: (double.parse(val) / 100).clamp(0.0, 1.0), // Ensures value is between 0 and 1
+  padding: EdgeInsets.zero,
+  progressColor: color1,
+)
+
     ]);
   }
 }

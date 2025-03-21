@@ -238,7 +238,7 @@ class UserAccountScreen extends ConsumerWidget {
                     theme, () async {
                       await mf.fetchBestMF();
                   await portfolio.fetchMFHoldings(context);
-                  await mf.fetchMFCategoryType();
+                  // await mf.fetchMFCategoryType();
                   // await mf.fetchmfNFO(context);
                   await mf.fetchMFWatchlist("", "", context, true, "");
                   Navigator.pushNamed(context, Routes.mfmainscreen);

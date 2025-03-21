@@ -47,7 +47,7 @@ class CustomTextFormField extends StatelessWidget {
         controller: textCtrl,
         style: style,
         readOnly: isReadable ?? false,
-        keyboardType: keyboardType ?? const TextInputType.numberWithOptions(decimal: true),
+        // keyboardType: keyboardType ?? const TextInputType.numberWithOptions(decimal: true),
         textAlign: textAlign,
         inputFormatters: inputFormate,
         decoration: InputDecoration(

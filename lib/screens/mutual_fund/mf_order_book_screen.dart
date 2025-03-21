@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/routes/route_names.dart';
+import 'package:mynt_plus/screens/mutual_fund/mf_hold_new_screen.dart';
+import 'package:mynt_plus/screens/mutual_fund/mf_sip_screen.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
@@ -88,14 +90,14 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                       physics: const NeverScrollableScrollPhysics(),
                       controller: _tabController1,
                       children: [
-                        const MFHoldingScreen(),
+                        const MfHoldNewScreen(),
                         TransparentLoaderScreen(
                           isLoading: mforderbook.mforderloader,
                           child: SingleChildScrollView(
                             child: Column(
                               children: [
                                 mforderbook.mfOrderbookfilter == "All"
-                                    ? mforderbook.mflumpsumorderbook == null
+                                    ? (mforderbook.mflumpsumorderbook == null || mforderbook.mflumpsumorderbook?.stat == "Not Ok")
                                         ? const Padding(
                                             padding: EdgeInsets.only(top: 280),
                                             child: Center(child: NoDataFound()),
@@ -145,18 +147,21 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                               padding:
                                                                   const EdgeInsets
                                                                       .only(right: 1.0),
-                                                              child: Text(
-                                                                "${mforderbook.mflumpsumorderbook!.data![index].schemename}",
-                                                                maxLines: 2,
-                                                                style: textStyles
-                                                                    .scripNameTxtStyle
-                                                                    .copyWith(
-                                                                  color: theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .colorWhite
-                                                                      : colors
-                                                                          .colorBlack,
+                                                              child: SizedBox(
+                                                                 width: MediaQuery.of(context).size.width * 0.4,
+                                                                child: Text(
+                                                                  "${mforderbook.mflumpsumorderbook!.data![index].schemename}",
+                                                                  maxLines: 2,
+                                                                  style: textStyles
+                                                                      .scripNameTxtStyle
+                                                                      .copyWith(
+                                                                    color: theme
+                                                                            .isDarkMode
+                                                                        ? colors
+                                                                            .colorWhite
+                                                                        : colors
+                                                                            .colorBlack,
+                                                                  ),
                                                                 ),
                                                               ),
                                                             ),
@@ -202,7 +207,10 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                                       ? 'Success'
                                                                       : mforderbook.mflumpsumorderbook!.data![index].orderstatus ==
                                                                               'PENDING'
-                                                                          ? 'Pending'
+                                                                          ? 'Pending' 
+                                                                           : mforderbook.mflumpsumorderbook!.data![index].orderstatus ==
+                                                                              'INVALID'
+                                                                          ? 'Invalid'
                                                                           : mforderbook
                                                                               .mflumpsumorderbook!
                                                                               .data![index]

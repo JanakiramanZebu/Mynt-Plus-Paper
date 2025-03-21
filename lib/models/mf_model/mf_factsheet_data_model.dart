@@ -88,6 +88,7 @@ class Data {
   String? weekLow;
   String? weekLowDate;
   String? ytm;
+  bool?isAdd;
 
   Data(
       {this.d10Year,
@@ -157,7 +158,7 @@ class Data {
       this.weekLowDate,
       this.ytm,
       this.overview1,
-      this.overview2});
+      this.overview2,this.isAdd});
 
   Data.fromJson(Map<String, dynamic> json) {
     d10Year = json['10Year'].toString();
@@ -255,6 +256,7 @@ class Data {
     weekLow = json['weekLow'].toString();
     weekLowDate = json['weekLowDate'].toString();
     ytm = json['ytm'].toString();
+     isAdd=json['isAdd']??false;
   }
 
   Map<String, dynamic> toJson() {
@@ -343,6 +345,7 @@ class Data {
     data['weekLow'] = weekLow;
     data['weekLowDate'] = weekLowDate;
     data['ytm'] = ytm;
+        data['isAdd']=isAdd;
     return data;
   }
 }

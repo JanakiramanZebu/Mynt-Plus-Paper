@@ -82,21 +82,25 @@ class MFSipdetScreen extends ConsumerWidget {
                                                       Padding(
                                                         padding:
                                                             const EdgeInsets
-                                                                .only(left: 8.0),
-                                                        child: Text(
-                                                          "${mfData.mfsiporderlist?.xsip?[index].schemeName}",
-                                                          maxLines: 2,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style: textStyles
-                                                              .scripNameTxtStyle
-                                                              .copyWith(
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
+                                                                .only(left: 0),
+                                                        child: SizedBox(
+                                                                width: MediaQuery.of(context).size.width * 0.7,
+
+                                                          child: Text(
+                                                            "${mfData.mfsiporderlist?.xsip?[index].schemeName}",
+                                                            maxLines: 2,
+                                                            overflow: TextOverflow
+                                                                .ellipsis,
+                                                            style: textStyles
+                                                                .scripNameTxtStyle
+                                                                .copyWith(
+                                                              color: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack,
+                                                            ),
                                                           ),
                                                         ),
                                                       ),

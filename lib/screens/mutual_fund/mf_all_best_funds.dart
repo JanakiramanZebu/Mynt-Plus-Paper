@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
@@ -62,7 +63,9 @@ class SaveTaxesScreen extends ConsumerWidget {
           leading: Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: IconButton(
-              icon: Icon(Icons.arrow_back_ios, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+              icon: Icon(Icons.arrow_back_ios,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -106,59 +109,102 @@ class SaveTaxesScreen extends ConsumerWidget {
                                   },
                                   onTap: () async {
                                     mf.loaderfun();
-                                    await mf.fetchFactSheet(newlisst[index].iSIN!);
+                                    await mf
+                                        .fetchFactSheet(newlisst[index].iSIN!);
+                                        mf.fetchmatchisan(newlisst[index].iSIN!);
+                                    if (mf.factSheetDataModel?.stat !=
+                                        "Not Ok") {
+                                      Map<String, dynamic> jsonData =
+                                          newlisst[index].toJson();
+                                      MutualFundList bInstance =
+                                          MutualFundList.fromJson(jsonData);
+                                      Navigator.pushNamed(
+                                          context, Routes.mfStockDetail,
+                                          arguments: bInstance);
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(successMessage(
+                                              context, "No Single Page Data"));
+                                      final jsondata = MutualFundList.fromJson(
+                                          newlisst[index].toJson());
+                                      Navigator.pushNamed(
+                                          context, Routes.mforderScreen,
+                                          arguments: jsondata);
+                                               mf.orderchangetitle("One-time");
 
-                                    Map<String, dynamic> jsonData = newlisst[index].toJson();
-                                    MutualFundList bInstance = MutualFundList.fromJson(jsonData);
-                                    Navigator.pushNamed(context, Routes.mfStockDetail, arguments: bInstance);
+                mf.chngOrderType("One-time");
+                                    }
                                   },
                                   child: Container(
                                     decoration: BoxDecoration(
                                       border: Border.symmetric(
                                         vertical: BorderSide(
-                                          color: theme.isDarkMode ? colors.darkGrey : Color(0xffEEF0F2),
+                                          color: theme.isDarkMode
+                                              ? colors.darkGrey
+                                              : Color(0xffEEF0F2),
                                           width: 0,
                                         ),
                                       ),
                                     ),
                                     padding: const EdgeInsets.all(8),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Expanded(
                                               child: Row(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   CircleAvatar(
-                                                    backgroundImage: NetworkImage(
+                                                    backgroundImage:
+                                                        NetworkImage(
                                                       "https://v3.mynt.in/mf/static/images/mf/${newlisst[index].aMCCode}.png",
                                                     ),
                                                   ),
                                                   const SizedBox(width: 16),
                                                   Expanded(
                                                     child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
                                                       children: [
-                                                        Text(
-                                                          "${newlisst[index].schemeGroupName}",
-                                                          maxLines: 2,
-                                                          overflow: TextOverflow.ellipsis,
-                                                          style: textStyles.scripNameTxtStyle.copyWith(
-                                                            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(height: 8),
+                                                      Row(
+  children: [
+    SizedBox(
+      width: MediaQuery.of(context).size.width * 0.6,
+      child: Text(
+        "${newlisst[index].schemeGroupName}",
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: textStyles.scripNameTxtStyle.copyWith(
+          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        ),
+      ),
+    ),
+  ],
+),
+  const SizedBox(
+                                                            height: 8),
                                                         SizedBox(
                                                           height: 16,
                                                           child: ListView(
-                                                            scrollDirection: Axis.horizontal,
+                                                            scrollDirection:
+                                                                Axis.horizontal,
                                                             children: [
-                                                              CustomExchBadge(exch: "${newlisst[index].type}"),
-                                                              const SizedBox(width: 5),
-                                                              CustomExchBadge(exch: newlisst[index].subType),
+                                                              CustomExchBadge(
+                                                                  exch:
+                                                                      "${newlisst[index].type}"),
+                                                              const SizedBox(
+                                                                  width: 5),
+                                                              CustomExchBadge(
+                                                                  exch: newlisst[
+                                                                          index]
+                                                                      .subType),
                                                             ],
                                                           ),
                                                         ),
@@ -173,7 +219,15 @@ class SaveTaxesScreen extends ConsumerWidget {
                                               style: textStyle(
                                                 theme.isDarkMode
                                                     ? colors.colorWhite
-                                                    : (double.tryParse(newlisst[index].tHREEYEARDATA!.isEmpty ? "0.00" : newlisst[index].tHREEYEARDATA!)! >= 0
+                                                    : (double.tryParse(newlisst[
+                                                                        index]
+                                                                    .tHREEYEARDATA!
+                                                                    .isEmpty
+                                                                ? "0.00"
+                                                                : newlisst[
+                                                                        index]
+                                                                    .tHREEYEARDATA!)! >=
+                                                            0
                                                         ? Colors.green
                                                         : Colors.red),
                                                 14,
@@ -184,7 +238,9 @@ class SaveTaxesScreen extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: 8),
                                         Divider(
-                                          color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                                          color: theme.isDarkMode
+                                              ? colors.darkColorDivider
+                                              : colors.colorDivider,
                                           thickness: 1.0,
                                         ),
                                       ],
@@ -211,37 +267,45 @@ class SaveTaxesScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Wrap(
-              spacing: 0,
-              children: bestMFList.map<Widget>((mf) {
-                return GestureDetector(
-                  onTap: () => mfData.changetitle(mf['title']),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Chip(
-                      label: Padding(
-                        padding: const EdgeInsets.all(2.0),
-                        child: Text(
-                          mf['title'],
-                          style: textStyle(
-                            mf['title'] == mfData.selctedchip ? colors.colorWhite : colors.colorBlack,
-                            12,
-                            FontWeight.w500,
+          Padding(
+            padding: const EdgeInsets.only(left:8.0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Wrap(
+                spacing: 0,
+                children: bestMFList.map<Widget>((mf) {
+                  return GestureDetector(
+                          onTap: () => mfData.changetitle(mf['title']),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Chip(
+                        label: Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Text(
+                            mf['title'],
+                            style: textStyle(
+                              mf['title'] == mfData.selctedchip
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              12,
+                              FontWeight.w500,
+                            ),
                           ),
                         ),
+                        backgroundColor: mf['title'] == mfData.selctedchip
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(color: colors.colorBlack, width: 1),
+                        ),
+                        labelPadding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: -2),
                       ),
-                      backgroundColor: mf['title'] == mfData.selctedchip ? colors.colorBlack : colors.colorWhite,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(color: colors.colorBlack, width: 1),
-                      ),
-                      labelPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: -2),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
           const SizedBox(height: 10),

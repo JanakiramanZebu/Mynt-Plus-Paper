@@ -65,6 +65,7 @@ class MFNFOScreen extends ConsumerWidget {
                           mf.chngMandate("Lumpsum");
                           await mf.fetchUpiDetail();
                           await mf.fetchBankDetail();
+                        
                           if (mf.mfNFOList!.nfoList![index].sIPFLAG == "Y") {
                             await mf.fetchMFSipData(
                               mf.mfNFOList!.nfoList![index].iSIN!,
@@ -72,6 +73,7 @@ class MFNFOScreen extends ConsumerWidget {
                             );
                             await mf.fetchMFMandateDetail();
                           }
+                            mf.orderpagetite("NFO");
                           Navigator.pushNamed(
                             context,
                             Routes.mforderScreen,
@@ -104,14 +106,22 @@ class MFNFOScreen extends ConsumerWidget {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          mf.mfNFOList!.nfoList![index].fSchemeName ?? "",
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: textStyles.scripNameTxtStyle.copyWith(
-                                            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                          ),
-                                        ),
+                                             Row(
+  children: [
+    SizedBox(
+      width: MediaQuery.of(context).size.width * 0.65, // 75% of screen width
+      child: Text(
+        "${mf.mfNFOList!.nfoList![index].fSchemeName ?? ""}",
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: textStyles.scripNameTxtStyle.copyWith(
+          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        ),
+      ),
+    ),
+  ],
+),
+
                                         const SizedBox(height: 8),
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,

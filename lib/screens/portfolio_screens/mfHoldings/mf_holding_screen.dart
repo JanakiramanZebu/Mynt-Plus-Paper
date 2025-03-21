@@ -106,6 +106,14 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
                 ],
               ),
             ),
+         
+         
+         
+         
+         
+         
+         
+         
             if (mfHolding.mfHoldingsModel!.length > 1)
               Container(
                 decoration: BoxDecoration(
@@ -290,26 +298,26 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
                               shrinkWrap: true,
                               itemBuilder: (BuildContext context, int index) {
                                 return InkWell(
-                                  onTap: () async {
-                                    mforderbook.loaderfun();
-                                    await mforderbook.fetchmfholdsinglelist(
-                                      "${mfHolding.mfHoldingsModel![index].exchTsym![0].isin}",
-                                    );
+                                  // onTap: () async {
+                                  //   mforderbook.loaderfun();
+                                  //   await mforderbook.fetchmfholdsinglelist(
+                                  //     "${mfHolding.mfHoldingsModel![index].exchTsym![0].isin}",
+                                  //   );
 
-                                    if (mforderbook.mfholdsingepage?.stat ==
-                                        "Ok") {
-                                      Navigator.pushNamed(
-                                        context,
-                                        Routes.mfholdsinlepage,
-                                      );
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        successMessage(
-                                            context, "Error In Server"),
-                                      );
-                                    }
-                                  },
+                                  //   if (mforderbook.mfholdsingepage?.stat ==
+                                  //       "Ok") {
+                                  //     Navigator.pushNamed(
+                                  //       context,
+                                  //       Routes.mfholdsinlepage,
+                                  //     );
+                                  //   } else {
+                                  //     ScaffoldMessenger.of(context)
+                                  //         .showSnackBar(
+                                  //       successMessage(
+                                  //           context, "No Single Page Data Found"),
+                                  //     );
+                                  //   }
+                                  // },
                                  child: Container(
   padding: const EdgeInsets.all(0), // Set even padding
   child: Column(
@@ -322,10 +330,10 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.5, // 70% of the screen width
               child: Text(
-                 mfHolding.mfHoldingsModel![index].exchTsym![0].cname!
+                 "${mfHolding.mfHoldingsModel![index].exchTsym![0].cname!
       .split(' ')
       .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : '')
-      .join(' '),
+      .join(' ')}",
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 softWrap: true,

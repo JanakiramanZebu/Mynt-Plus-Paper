@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 
+import 'package:mynt_plus/models/mf_model/all_category_new_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_hold_singlepage_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_holding_new_model.dart';
@@ -208,6 +209,28 @@ String convertNumber(num value) {
       print("MF orderBook ==>${json}");
 
       return MFOrderBookModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  mfallcatnewapi() async {
+      // print("object",orderno);
+    try {
+
+
+      final uri = Uri.parse(apiLinks.mfallcatnewendpoit);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({
+           
+          }));
+
+      final json = jsonDecode((res.body));
+
+      print("MF top cat neww${json}");
+
+      return mf_catge_newlist.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
@@ -522,21 +545,25 @@ String convertNumber(num value) {
     }
   }
 
-  Future<MFFactSheetDataModel> getMFFactSheetData(String isin) async {
-    try {
-      final uri = Uri.parse("${apiLinks.factSheetData}?ISIN=$isin");
+Future<MFFactSheetDataModel?> getMFFactSheetData(String isin) async {
+  try {
+    final uri = Uri.parse("${apiLinks.factSheetData}?ISIN=$isin");
+    final res = await apiClient.post(uri, headers: defaultHeaders);
 
-      final res = await apiClient.post(uri, headers: defaultHeaders);
-
-      final json = jsonDecode((res.body));
-
-      // log("Fact Sheet  => $json");
-
+    if (res.statusCode == 200) {
+      final json = jsonDecode(res.body);
       return MFFactSheetDataModel.fromJson(json as Map<String, dynamic>);
-    } catch (e) {
-      rethrow;
+    } else {
+      print("API Error: ${res.statusCode} - ${res.body}");
+      return null; // Return null in case of an error
     }
+  } catch (e) {
+    print("Exception: $e");
+    return null; // Return null if an exception occurs
   }
+}
+
+
 
   Future<MFFactSheetGraph> getMFFactSheetGraph(String isin) async {
     try {
@@ -727,8 +754,8 @@ print("valuee||||${value}");
 print("client_code||||${prefs.clientId}");
 
 // print("valuee||||${value}");
-      print("mfholdddddd$json");
-      // print("mflisttt Type MF ==>$json.total_sip_amount");
+      print("neww hold${json.toString()}");
+      // print("mflisttt Tmfholddddddype MF ==>$json.total_sip_amount");
 
 
       return mf_holdoing_new.fromJson(json);

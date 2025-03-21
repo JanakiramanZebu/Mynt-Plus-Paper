@@ -88,7 +88,7 @@ class MFSchemeInfo extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("${mfData.managerDesignation}",
+                          Text("${mfData.managerDesignation == "" ? "----" : mfData.managerDesignation}",
                               style: textStyle(
                                   theme.isDarkMode
                                       ? colors.colorWhite
@@ -96,14 +96,15 @@ class MFSchemeInfo extends ConsumerWidget {
                                   12,
                                   FontWeight.w500)),
                           const SizedBox(height: 2),
-                          Text(
-                              "₹${double.parse(mfData.managerActiveFundsAumSum ?? "0.00").toStringAsFixed(2)} Cr",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  14,
-                                  FontWeight.w500)),
+                        Text(
+  "₹${(double.tryParse(mfData.managerActiveFundsAumSum?.trim() ?? "0.00") ?? 0.00).toStringAsFixed(2)} Cr",
+  style: textStyle(
+    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+    14,
+    FontWeight.w500,
+  ),
+),
+
                         ],
                       ),
                       const SizedBox(height: 2),
@@ -116,9 +117,10 @@ class MFSchemeInfo extends ConsumerWidget {
                               style: textStyle(const Color(0xff999999), 14,
                                   FontWeight.w500)),
                           Text(
-                              "${double.parse(mfData.managerNumberOfActiveFunds ?? "0.00").ceil()} funds managed",
-                              style: textStyle(const Color(0xff999999), 12,
-                                  FontWeight.w500)),
+  "${(double.tryParse(mfData.managerNumberOfActiveFunds?.trim() ?? "0.0") ?? 0.0).ceil()} funds managed",
+  style: textStyle(const Color(0xff999999), 12, FontWeight.w500),
+),
+
                         ],
                       ),
                     ],
@@ -130,6 +132,7 @@ class MFSchemeInfo extends ConsumerWidget {
           ),
           const SizedBox(height: 
           8),
+          if(mfData.managerDetailedDescription != "")...[
            Text("Manager Description",
                               style: textStyle(
                                   theme.isDarkMode
@@ -157,8 +160,13 @@ class MFSchemeInfo extends ConsumerWidget {
               trimExpandedText: ' Read less'),
           const SizedBox(height: 
           47),
-        Text("")
-        
+          Text("")
+       ],    
+        if(mfData.managerDetailedDescription == "")...[
+             const SizedBox(height: 
+          47),
+          Text("")
+        ]
           // const SizedBox(height: 13),
           // rowOfInfoData(
           //     "LAUNCHED",

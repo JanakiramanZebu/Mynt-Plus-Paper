@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
@@ -23,80 +25,144 @@ class MfCommonSearch extends ConsumerWidget {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        appBar: AppBar(
-          elevation: .2,
-          leadingWidth: 41,
-          centerTitle: false,
-          titleSpacing: 6,
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: IconButton(
-              icon: Icon(Icons.arrow_back_ios, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          title: Text(
-            "Search",
-            style: textStyles.appBarTitleTxt.copyWith(
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            ),
-          ),
-        ),
+appBar: AppBar(
+  elevation: 0.2,
+  leadingWidth: 38,
+  centerTitle: false,
+  titleSpacing: 0,
+  leading: Padding(
+    padding: const EdgeInsets.only(left: 8.0),
+    child: IconButton(
+      icon: Icon(
+        Icons.arrow_back_ios,
+        color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+      ),
+      onPressed: () => Navigator.pop(context),
+    ),
+  ),
+  title: Padding(
+    padding: const EdgeInsets.only(right:18.0),
+    child: Container(  
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+      child: TextFormField(
+  controller: mfData.mfsearchcontroller,
+  style: textStyle(
+    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+    16,
+    FontWeight.w600,
+  ),
+  decoration: InputDecoration(
+    fillColor: theme.isDarkMode ? colors.darkGrey : colors.kColorLightGrey,
+    filled: true,
+    hintStyle: textStyle(const Color.fromARGB(255, 0, 0, 0), 14, FontWeight.w600),
+    prefixIconColor: const Color(0xff586279),
+    prefixIconConstraints: const BoxConstraints(
+      minWidth: 0,
+    ),
+    prefixIcon: const Padding(
+      padding: EdgeInsets.only(left: 8, right: 8),
+      child: Icon(Icons.search, color: Colors.black54),
+    ),
+    suffixIcon: ValueListenableBuilder<TextEditingValue>(
+      valueListenable: mfData.mfsearchcontroller,
+      builder: (context, value, child) {
+        return value.text.isNotEmpty
+            ? InkWell(
+                onTap: () {
+                  mfData.mfsearchcontroller.clear();
+                  mfData.fetchmfCommonsearch("", context);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: SvgPicture.asset(
+                    assets.removeIcon,
+                    fit: BoxFit.scaleDown,
+                    width: 20,
+                  ),
+                ),
+              )
+            : const SizedBox.shrink();
+      },
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderSide: BorderSide.none,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderSide: BorderSide.none,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    hintText: "Search Mutual Fund",
+    contentPadding: const EdgeInsets.only(top: 20),
+  ),
+  onChanged: (value) async => mfData.fetchmfCommonsearch(value, context),
+),
+
+    ),
+  ),
+),
+
         body: TransparentLoaderScreen(
           isLoading: mfData.bestmfloader!,
           child: SingleChildScrollView(
             child: Column(
               children: [
                 // Search Bar
-                Container(
-                  height: 62,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: TextFormField(
-                    controller: mfData.mfsearchcontroller,
-                    style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      16,
-                      FontWeight.w600,
-                    ),
-                    decoration: InputDecoration(
-                      fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                      filled: true,
-                      hintStyle: textStyle(const Color(0xff69758F), 15, FontWeight.w500),
-                      prefixIconColor: const Color(0xff586279),
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: SvgPicture.asset(
-                          assets.searchIcon,
-                          color: const Color(0xff586279),
-                          fit: BoxFit.contain,
-                          width: 20,
-                        ),
-                      ),
-                      suffixIcon: InkWell(
-                        onTap: () async => mfData.commonsearch(),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: SvgPicture.asset(
-                            assets.removeIcon,
-                            fit: BoxFit.scaleDown,
-                            width: 20,
-                          ),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      hintText: "Search",
-                      contentPadding: const EdgeInsets.only(top: 20),
-                    ),
-                    onChanged: (value) async => mfData.fetchmfCommonsearch(value, context),
-                  ),
-                ),
+                // Container(
+                //   height: 62,
+                //   padding:
+                //       const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                //   child: TextFormField(
+                //     controller: mfData.mfsearchcontroller,
+                //     style: textStyle(
+                //       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                //       16,
+                //       FontWeight.w600,
+                //     ),
+                //     decoration: InputDecoration(
+                //       fillColor: theme.isDarkMode
+                //           ? colors.darkGrey
+                //           : const Color(0xffF1F3F8),
+                //       filled: true,
+                //       hintStyle: textStyle(
+                //           const Color(0xff69758F), 15, FontWeight.w500),
+                //       prefixIconColor: const Color(0xff586279),
+                //       prefixIcon: Padding(
+                //         padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                //         child: SvgPicture.asset(
+                //           assets.searchIcon,
+                //           color: const Color(0xff586279),
+                //           fit: BoxFit.contain,
+                //           width: 20,
+                //         ),
+                //       ),
+                //       suffixIcon: InkWell(
+                //         onTap: () async => mfData.commonsearch(),
+                //         child: Padding(
+                //           padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                //           child: SvgPicture.asset(
+                //             assets.removeIcon,
+                //             fit: BoxFit.scaleDown,
+                //             width: 20,
+                //           ),
+                //         ),
+                //       ),
+                //       enabledBorder: OutlineInputBorder(
+                //         borderSide: BorderSide.none,
+                //         borderRadius: BorderRadius.circular(20),
+                //       ),
+                //       focusedBorder: OutlineInputBorder(
+                //         borderSide: BorderSide.none,
+                //         borderRadius: BorderRadius.circular(20),
+                //       ),
+                //       hintText: "Search",
+                //       contentPadding: const EdgeInsets.only(top: 20),
+                //     ),
+                //     onChanged: (value) async =>
+                //         mfData.fetchmfCommonsearch(value, context),
+                //   ),
+                // ),
 
                 // List of Funds
                 mfData.mutualFundsearchdata!.isNotEmpty
@@ -111,32 +177,58 @@ class MfCommonSearch extends ConsumerWidget {
                               InkWell(
                                 onTap: () async {
                                   mfData.loaderfun();
-                                  await mfData.fetchFactSheet(mfData.mutualFundsearchdata![index].iSIN!);
-                                  Navigator.pushNamed(
-                                    context,
-                                    Routes.mfStockDetail,
-                                    arguments: mfData.mutualFundsearchdata![index],
-                                  );
+                                  await mfData.fetchFactSheet(mfData
+                                      .mutualFundsearchdata![index].iSIN!);
+                                       mfData.fetchmatchisan(mfData.mutualFundsearchdata![index].iSIN!);
+                                  if (mfData.factSheetDataModel?.stat !=
+                                      "Not Ok") {
+                                    Navigator.pushNamed(
+                                      context,
+                                      Routes.mfStockDetail,
+                                      arguments:
+                                          mfData.mutualFundsearchdata![index],
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        successMessage(
+                                            context, "No Single Page Data"));
+                                    final jsondata = MutualFundList.fromJson(
+                                        mfData.mutualFundsearchdata![index]
+                                            .toJson());
+
+                                    Navigator.pushNamed(
+                                        context, Routes.mforderScreen,
+                                        arguments: jsondata);
+                                    mfData.orderchangetitle("One-time");
+
+                                    mfData.chngOrderType("One-time");
+                                  }
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
                                     border: Border.symmetric(
                                       horizontal: BorderSide(
-                                        color: theme.isDarkMode ? colors.darkGrey : Colors.white,
+                                        color: theme.isDarkMode
+                                            ? colors.darkGrey
+                                            : Colors.white,
                                         width: 1.5,
                                       ),
                                       vertical: BorderSide(
-                                        color: theme.isDarkMode ? colors.darkGrey : const Color(0xffEEF0F2),
-                                        width: 1.5,
+                                        color: theme.isDarkMode
+                                            ? colors.darkGrey
+                                            : const Color(0xffEEF0F2),
+                                        width: 0,
                                       ),
                                     ),
                                   ),
                                   padding: const EdgeInsets.all(8),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           CircleAvatar(
                                             backgroundImage: NetworkImage(
@@ -146,25 +238,50 @@ class MfCommonSearch extends ConsumerWidget {
                                           const SizedBox(width: 10),
                                           Expanded(
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
-                                                Text(
-                                                  mfData.mutualFundsearchdata![index].schemegroupName ?? "",
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: textStyles.scripNameTxtStyle.copyWith(
-                                                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                SizedBox(
+                                                   width: MediaQuery.of(context).size.width * 0.6,
+                                                  child: Text(
+                                                    
+                                                    mfData
+                                                            .mutualFundsearchdata![
+                                                                index]
+                                                            .schemegroupName ??
+                                                        "",
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: textStyles
+                                                        .scripNameTxtStyle
+                                                        .copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
+                                                    ),
                                                   ),
                                                 ),
                                                 const SizedBox(height: 8),
                                                 SizedBox(
                                                   height: 18,
                                                   child: ListView(
-                                                    scrollDirection: Axis.horizontal,
+                                                    scrollDirection:
+                                                        Axis.horizontal,
                                                     children: [
-                                                      CustomExchBadge(exch: mfData.mutualFundsearchdata![index].type ?? ""),
+                                                      CustomExchBadge(
+                                                          exch: mfData
+                                                                  .mutualFundsearchdata![
+                                                                      index]
+                                                                  .type ??
+                                                              ""),
                                                       const SizedBox(width: 5),
-                                                      CustomExchBadge(exch: mfData.mutualFundsearchdata![index].subtype ?? ""),
+                                                      CustomExchBadge(
+                                                          exch: mfData
+                                                                  .mutualFundsearchdata![
+                                                                      index]
+                                                                  .subtype ??
+                                                              ""),
                                                     ],
                                                   ),
                                                 ),
@@ -174,23 +291,40 @@ class MfCommonSearch extends ConsumerWidget {
                                           IconButton(
                                             splashRadius: 20,
                                             onPressed: () async {
-                                              await mfData.fetchcommonsearchWadd(
-                                                mfData.mutualFundsearchdata![index].iSIN!,
-                                                mfData.mutualFundsearchdata![index].isAdd! ? "delete" : "add",
+                                              await mfData
+                                                  .fetchcommonsearchWadd(
+                                                mfData
+                                                    .mutualFundsearchdata![
+                                                        index]
+                                                    .iSIN!,
+                                                mfData.mutualFundsearchdata![
+                                                            index]
+                                                        .isAdd!
+                                                    ? "delete"
+                                                    : "add",
                                                 context,
                                                 false,
                                               );
                                             },
                                             icon: SvgPicture.asset(
-                                              color: mfData.mutualFundsearchdata![index].isAdd! ? colors.colorBlue : colors.colorGrey,
-                                              mfData.mutualFundsearchdata![index].isAdd! ? assets.bookmarkIcon : assets.bookmarkedIcon,
+                                              color: mfData.watchbatchval == true
+                                                  ? colors.colorBlue
+                                                  : colors.colorBlue,
+                                              mfData
+                                                      .mutualFundsearchdata![
+                                                          index]
+                                                      .isAdd!
+                                                  ? assets.bookmarkIcon
+                                                  : assets.bookmarkedIcon,
                                             ),
                                           ),
                                         ],
                                       ),
                                       const SizedBox(height: 8),
                                       Divider(
-                                        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                                        color: theme.isDarkMode
+                                            ? colors.darkColorDivider
+                                            : colors.colorDivider,
                                         thickness: 1.0,
                                       ),
                                     ],
@@ -202,7 +336,7 @@ class MfCommonSearch extends ConsumerWidget {
                         },
                       )
                     : const Padding(
-                        padding: EdgeInsets.only(top: 250),
+                        padding: EdgeInsets.only(top: 250,left: 100,right:100),
                         child: NoDataFound(),
                       ),
               ],
