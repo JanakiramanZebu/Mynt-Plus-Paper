@@ -679,7 +679,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                       orderTpye: '',
                                       holdQty: '${positionList.netqty}',
                                       isModify: false,
-                                      raw: {});
+                                      raw: positionList.toJson());
 
                                   Navigator.pushNamed(
                                       context, Routes.placeOrderScreen,

@@ -12,6 +12,9 @@ import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import '../../../res/res.dart';
 
+import 'dart:io' show Platform;
+
+
 class ProfileInfoDetails extends StatefulWidget {
   const ProfileInfoDetails({super.key});
 
@@ -29,6 +32,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
   bool active = false;
   bool nomineeActive = false;
   bool mtfActive = false;
+  bool tradingPreferenceActive = false;
   bool formDownActive = false;
 
   var _formKey = GlobalKey<FormState>();
@@ -240,13 +244,18 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                               //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                               //   backgroundColor: Colors.black,
                               // ),
-                              onPressed: () async {
-                                await context
-                                    .read(fundProvider)
-                                    .fetchHstoken(context);
-                                Navigator.pushNamed(
-                                    context, Routes.profileWebViewApp,
-                                    arguments: "deposltory");
+                              onPressed: () async{
+                                // if (Platform.isAndroid) {
+                                //     await context.read(fundProvider).fetchHstoken(context);
+                                //       Navigator.pushNamed(
+                                //           context, Routes.profileWebViewApp,
+                                //           arguments: "deposltory");
+
+                                  // } else {
+                                    profileprovider.openInWebURL(context,"deposltory");
+                                  // }
+                                
+                                 
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
@@ -292,19 +301,8 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                         ? colors.darkColorDivider
                         : colors.colorDivider),
                 // const SizedBox(height: 8),
-
-                TradingPreferencesCard(
-                    profileprovider: profileprovider, theme: theme),
-
-                // const SizedBox(height: 8),
-                Divider(
-                    thickness: 4,
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider),
-                // const SizedBox(height: 8),
-
-                // MTF section
+                
+                 // MTF section
                 ExpansionPanelList(
                   elevation: 0,
                   expandIconColor:
@@ -337,6 +335,54 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                   ],
                 ),
 
+
+                // Trading Prefference section
+                ExpansionPanelList(
+                  elevation: 0,
+                  expandIconColor:
+                      !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  expansionCallback: (panelIndex, expanded) {
+                    tradingPreferenceActive = !tradingPreferenceActive;
+                    setState(() {});
+                  },
+                  children: [
+                    ExpansionPanel(
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        headerBuilder: (context, isExpanded) {
+                          return ListTile(
+                            title: TextWidget.titleText(
+                                text: "Trading Preferences",
+                                theme: theme.isDarkMode,
+                                fw: 1),
+
+                            // Text("Nominee",
+                            //     style: TextStyle(
+                            //         fontSize: 15, fontWeight: FontWeight.w500)),
+                          );
+                        },
+                        body: TradingPreferencesCard(
+                          profileprovider: profileprovider,
+                          theme: theme,
+                        ),
+                        isExpanded: tradingPreferenceActive,
+                        canTapOnHeader: true),
+                  ],
+                ),
+
+                // TradingPreferencesCard(
+                //     profileprovider: profileprovider, theme: theme),
+
+                // const SizedBox(height: 8),
+                // Divider(
+                //     thickness: 4,
+                //     color: theme.isDarkMode
+                //         ? colors.darkColorDivider
+                //         : colors.colorDivider),
+                // const SizedBox(height: 8),
+
+               
                 // Nominee section
                 ExpansionPanelList(
                   elevation: 0,
@@ -378,8 +424,21 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                   expandIconColor:
                       !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   expansionCallback: (panelIndex, expanded) async {
-                    await context.read(fundProvider).fetchHstoken(context);
-                    Navigator.pushNamed(context, Routes.profileWebViewApp,arguments: "formdownload");
+                              //  if (Platform.isAndroid) {
+                              //       await context.read(fundProvider).fetchHstoken(context);
+                              //         Navigator.pushNamed(
+                              //             context, Routes.profileWebViewApp,
+                              //             arguments: "formdownload");
+                              //     } else {
+                                    profileprovider.openInWebURL(context,"formdownload");
+                                  // }
+                                
+
+
+
+                    // await context.read(fundProvider).fetchHstoken(context);
+                    // Navigator.pushNamed(context, Routes.profileWebViewApp,arguments: "formdownload");
+                    //  profileprovider.openInWebURL(context,"formdownload");
                     // formDownActive = !formDownActive;
                     // setState(() {});
                   },
@@ -562,12 +621,27 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                                       flex: 1,
                                       child: ElevatedButton(
                                         onPressed: () async {
-                                          await context
-                                              .read(fundProvider)
-                                              .fetchHstoken(context);
-                                          Navigator.pushNamed(
-                                              context, Routes.profileWebViewApp,
-                                              arguments: "closure");
+
+                                // if (Platform.isAndroid) {
+                                //     await context.read(fundProvider).fetchHstoken(context);
+                                //       Navigator.pushNamed(
+                                //           context, Routes.profileWebViewApp,
+                                //           arguments: "closure");
+
+                                //   } else {
+                                    profileprovider.openInWebURL(context,"closure");
+                                  // }
+                                
+
+
+                                          // await context
+                                          //     .read(fundProvider)
+                                          //     .fetchHstoken(context);
+                                          // Navigator.pushNamed(
+                                          //     context, Routes.profileWebViewApp,
+                                          //     arguments: "closure");
+                                          // profileprovider.openInWebURL(context,"closure");
+
                                           // profileprovider.clearProfilePop(
                                           //     context, 'accclose');
 
@@ -1576,6 +1650,10 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
 //                                             ),
 //                                           );
 //       }
+
+
+
+
 }
 
 class UserInfoCard extends StatelessWidget {
@@ -1605,20 +1683,56 @@ class UserInfoCard extends StatelessWidget {
                 // const Text("Personal Details",
                 //     style:
                 //         TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                InkWell(
-                  onTap: () async {
-                    await context.read(fundProvider).fetchHstoken(context);
-                    Navigator.pushNamed(context, Routes.profileWebViewApp,
-                        arguments: "profile");
-                  },
-                  child: Icon(
-                    Icons.edit,
-                    color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
-                    size: 17,
-                  ),
+
+                IconButton(
+                  visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                  iconSize: 17,
+                  splashRadius: 20,
+                    onPressed: () async {
+                            // if (Platform.isAndroid) {
+                                    // await context.read(fundProvider).fetchHstoken(context);
+                                    //   Navigator.pushNamed(
+                                    //       context, Routes.profileWebViewApp,
+                                    //       arguments: "profile");
+
+                                  // } else {
+                                    profileprovider.openInWebURL(context,"profile");
+                                  // }
+                                
+
+
+
+                      // await context.read(fundProvider).fetchHstoken(context);
+                      // Navigator.pushNamed(context, Routes.profileWebViewApp,
+                      //     arguments: "profile");
+                      // profileprovider.openInWebURL(context,"profile");
+
+                    },
+                    icon: Icon(
+                      Icons.edit,
+                      color: theme.isDarkMode
+                          ? colors.colorLightBlue
+                          : colors.colorBlue,
+                      
+                    ),
+                 
                 ),
+
+
+                // InkWell(
+                //   onTap: () async {
+                //     await context.read(fundProvider).fetchHstoken(context);
+                //     Navigator.pushNamed(context, Routes.profileWebViewApp,
+                //         arguments: "profile");
+                //   },
+                //   child: Icon(
+                //     Icons.edit,
+                //     color: theme.isDarkMode
+                //         ? colors.colorLightBlue
+                //         : colors.colorBlue,
+                //     size: 17,
+                //   ),
+                // ),
               ],
             ),
 
@@ -1718,9 +1832,23 @@ class UserNomineeInfoCard extends StatelessWidget {
                       //   backgroundColor: Colors.black,
                       // ),
                       onPressed: () async {
-                        await context.read(fundProvider).fetchHstoken(context);
-                        Navigator.pushNamed(context, Routes.profileWebViewApp,
-                            arguments: "nominee");
+                        //  if (Platform.isAndroid) {
+                        //             await context.read(fundProvider).fetchHstoken(context);
+                        //               Navigator.pushNamed(
+                        //                   context, Routes.profileWebViewApp,
+                        //                   arguments: "nominee");
+
+                        //           } else {
+                                    profileprovider.openInWebURL(context,"nominee");
+                                  // }
+                                
+
+
+
+                        // profileprovider.openInWebURL(context,"nominee");
+                        // await context.read(fundProvider).fetchHstoken(context);
+                        // Navigator.pushNamed(context, Routes.profileWebViewApp,
+                        //     arguments: "nominee");
                       },
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
@@ -1771,20 +1899,55 @@ class UserNomineeInfoCard extends StatelessWidget {
                   // const Text("Nominee Details",
                   //     style:
                   //         TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                  InkWell(
-                    onTap: () async {
-                      await context.read(fundProvider).fetchHstoken(context);
-                      Navigator.pushNamed(context, Routes.profileWebViewApp,
-                          arguments: "nominee");
+
+            IconButton(
+                  visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                  iconSize: 17,
+                  splashRadius: 20,
+                    onPressed: () async {
+
+                      //  if (Platform.isAndroid) {
+                      //               await context.read(fundProvider).fetchHstoken(context);
+                      //                 Navigator.pushNamed(
+                      //                     context, Routes.profileWebViewApp,
+                      //                     arguments: "nominee");
+
+                      //             } else {
+                                    profileprovider.openInWebURL(context,"nominee");
+                                  // }
+                                
+
+                    //  await context.read(fundProvider).fetchHstoken(context);
+                    //   Navigator.pushNamed(context, Routes.profileWebViewApp,
+                    //       arguments: "nominee");
+                    //  profileprovider.openInWebURL(context,"nominee");
                     },
-                    child: Icon(
+                    icon: Icon(
                       Icons.edit,
                       color: theme.isDarkMode
                           ? colors.colorLightBlue
                           : colors.colorBlue,
-                      size: 17,
+                      
                     ),
-                  ),
+                 
+                ),
+
+
+
+                  // InkWell(
+                  //   onTap: () async {
+                  //     await context.read(fundProvider).fetchHstoken(context);
+                  //     Navigator.pushNamed(context, Routes.profileWebViewApp,
+                  //         arguments: "nominee");
+                  //   },
+                  //   child: Icon(
+                  //     Icons.edit,
+                  //     color: theme.isDarkMode
+                  //         ? colors.colorLightBlue
+                  //         : colors.colorBlue,
+                  //     size: 17,
+                  //   ),
+                  // ),
                 ],
               ),
 
@@ -1793,51 +1956,50 @@ class UserNomineeInfoCard extends StatelessWidget {
             const SizedBox(
               height: 10,
             ),
-            Column(children: [
-              // profileprovider.clientAllDetails.nomineeData!.map((nominee){
-              // return
-              Column(
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                          child: UserInfoColumn(
-                              label: "Nominee Name",
-                              value: profileprovider.clientAllDetails.clientData
-                                      ?.nomineeName ??
-                                  "",
-                              theme: theme)),
-                      Flexible(
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      // fit: FlexFit.tight,
                         child: UserInfoColumn(
-                            label: "Nominee Relation",
+                            label: "Nominee Name",
                             value: profileprovider.clientAllDetails.clientData
-                                    ?.nomineeRelation ??
+                                    ?.nomineeName ??
                                 "",
                             theme: theme,
-                            editable: false),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Flexible(
-                          child: UserInfoColumn(
-                              label: "Nominee DOB",
-                              value: nomineeDOB,
-                              theme: theme)),
-                      Flexible(
+                            expandable: true),),
+                       const SizedBox(width: 10,),
+                    Flexible(
+                      child: UserInfoColumn(
+                          label: "Nominee Relation",
+                          value: profileprovider.clientAllDetails.clientData
+                                  ?.nomineeRelation ??
+                              "",
+                          theme: theme,
+                          editable: false),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Flexible(
                         child: UserInfoColumn(
-                            label: "Nominee Percentage",
-                            value: "",
-                            theme: theme,
-                            editable: false),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              // }).toList()
-            ]),
+                            label: "Nominee DOB",
+                            value: nomineeDOB,
+                            theme: theme)),
+                     const SizedBox(width: 10,),
+                    Flexible(
+                      child: UserInfoColumn(
+                          label: "Nominee Percentage",
+                          value: "",
+                          theme: theme,
+                          editable: false),
+                    ),
+                  ],
+                ),
+              ],
+            ),
 
             // UserInfoColumn(
             //     label: "Email",
@@ -2066,7 +2228,9 @@ class DematDetailsCard extends StatelessWidget {
           UserInfoColumn(
               label: "DP Name",
               value: profileprovider.clientAllDetails.clientData?.dPNAME ?? "",
-              theme: theme),
+              theme: theme,
+              expandable: true,
+              ),
         ],
       ),
     );
@@ -2091,7 +2255,7 @@ class TradingPreferencesCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 0,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+        padding: EdgeInsets.symmetric(horizontal: 16.0), // , vertical: 16.0
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2099,26 +2263,60 @@ class TradingPreferencesCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextWidget.titleText(
-                    text: "Trading Preferences",
+                    text: "Segments", //Trading Preferences
                     theme: theme.isDarkMode,
                     fw: 1),
                 // const Text("Trading Preferences",
                 //     style:
                 //         TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                InkWell(
-                  onTap: () async {
-                    await context.read(fundProvider).fetchHstoken(context);
-                    Navigator.pushNamed(context, Routes.profileWebViewApp,
-                        arguments: "segment");
-                  },
-                  child: Icon(
-                    Icons.edit,
-                    color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
-                    size: 17,
-                  ),
+                IconButton(
+                  visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                  iconSize: 17,
+                  splashRadius: 20,
+                    onPressed: () async {
+
+                      //  if (Platform.isAndroid) {
+                      //               await context.read(fundProvider).fetchHstoken(context);
+                      //                 Navigator.pushNamed(
+                      //                     context, Routes.profileWebViewApp,
+                      //                     arguments: "segment");
+
+                      //             } else {
+                                    profileprovider.openInWebURL(context,"segment");
+                                  // }
+                                
+
+                    //  await context.read(fundProvider).fetchHstoken(context);
+                    // Navigator.pushNamed(context, Routes.profileWebViewApp,
+                    //     arguments: "segment");
+                    //  profileprovider.openInWebURL(context,"segment");
+                    },
+                    icon: Icon(
+                      Icons.edit,
+                      color: theme.isDarkMode
+                          ? colors.colorLightBlue
+                          : colors.colorBlue,
+                      
+                    ),
+                 
                 ),
+
+
+
+                // InkWell(
+                //   onTap: () async {
+                //     await context.read(fundProvider).fetchHstoken(context);
+                //     Navigator.pushNamed(context, Routes.profileWebViewApp,
+                //         arguments: "segment");
+                //   },
+                //   child: Icon(
+                //     Icons.edit,
+                //     color: theme.isDarkMode
+                //         ? colors.colorLightBlue
+                //         : colors.colorBlue,
+                //     size: 17,
+                //   ),
+                // ),
               ],
             ),
             const SizedBox(
@@ -2192,17 +2390,18 @@ class UserInfoColumn extends StatelessWidget {
             initialValue: value,
             // keyboardType:expandable?TextInputType.text:TextInputType.multiline,
             readOnly: true,
-            // maxLines: expandable ? null : 1,
+            maxLines: expandable ? 4 : 1,
             // expands:expandable,
             // minLines:null,
             minLines: 1,
-            maxLines: 4,
+            // maxLines: 4,
 
             //  maxLines: null,
             // keyboardType: TextInputType.text,
 
             decoration: InputDecoration(
               enabled: editable ? true : false,
+              
               // isDense: true,
               // suffix: editable
               //     ? InkWell(
@@ -2220,6 +2419,7 @@ class UserInfoColumn extends StatelessWidget {
               //     : null,
             ),
             style: TextStyle(
+              overflow: TextOverflow.ellipsis,
               color: context.read(themeProvider).isDarkMode
                   ? colors.colorWhite
                   : colors.colorBlack,
@@ -2466,9 +2666,22 @@ class MTFSection extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 16.0),
                       child: ElevatedButton(
                         onPressed: () async {
-                          await context.read(fundProvider).fetchHstoken(context);
-                          Navigator.pushNamed(context, Routes.profileWebViewApp,
-                              arguments: "mtf");
+
+                          //  if (Platform.isAndroid) {
+                          //           await context.read(fundProvider).fetchHstoken(context);
+                          //             Navigator.pushNamed(
+                          //                 context, Routes.profileWebViewApp,
+                          //                 arguments: "mtf");
+
+                          //         } else {
+                                    profileprovider.openInWebURL(context,"mtf");
+                                  // }
+                                
+
+                          // await context.read(fundProvider).fetchHstoken(context);
+                          // Navigator.pushNamed(context, Routes.profileWebViewApp,
+                          //     arguments: "mtf");
+                          //  profileprovider.openInWebURL(context,"mtf");
                         },
                         style: ElevatedButton.styleFrom(
                           elevation: 0,

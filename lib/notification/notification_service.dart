@@ -161,7 +161,8 @@ class NotificationService extends ChangeNotifier {
         category: category,
         payload: payload,
         bigPicture: bigPicture,
-        icon: "resource://drawable/res_notification_app_icon"
+        icon: "resource://drawable/res_notification_app_icon",
+        color:Colors.blue.shade900
       ),
       actionButtons: actionButtons,
       schedule: scheduled

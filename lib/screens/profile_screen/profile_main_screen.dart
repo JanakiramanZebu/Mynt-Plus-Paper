@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
-import 'package:mynt_plus/provider/portfolio_provider.dart';
+// import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
@@ -36,7 +36,7 @@ class UserAccountScreen extends ConsumerWidget {
     final theme = watch(themeProvider);
     final trancation = watch(transcationProvider);
      final mf = watch(mfProvider);
-    final portfolio = watch(portfolioProvider);
+    // final portfolio = watch(portfolioProvider);
 
     //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
@@ -97,27 +97,25 @@ class UserAccountScreen extends ConsumerWidget {
                           //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                         } else if (acttitle == "Mutual Fund") {
                           // mf.loaderfun();
-                          mf.mfExTabchange(0);
+                          // mf.mfExTabchange(0);
                           // await mf.fetchnewMFBestList();
-                          // await mf.fetchBestMF();
-                          Navigator.pushNamed(context, Routes.mfmainscreen);
-
-                          await mf.fetchMfOrderbook(context);
-                          // await mf.fetchmfallcatnew();
-                          await portfolio.fetchMFHoldings(context);
+                          // // await mf.fetchBestMF();
+                          // await mf.fetchMfOrderbook(context);
+                          // await portfolio.fetchMFHoldings(context);
                           // await mf.fetchMFCategoryType();
-                          // await mf.fetchmfNFO(context);
-                          await mf.fetchmfholdingnew();
-                          await mf.fetchMFWatchlist("", "", context, true, "");
-                          await mf.fetchmfsiplist();
+                          // // await mf.fetchmfNFO(context);
+                          // await mf.fetchmfholdingnew();
+                          // await mf.fetchMFWatchlist("", "", context, true, "");
+                          // await mf.fetchmfsiplist();
+                          // Navigator.pushNamed(context, Routes.mfmainscreen);
                           // await mf.fetchBestMF();
                           // await portfolio.fetchMFHoldings(context);
                           // await mf.fetchMFCategoryType();
                           // // await mf.fetchmfNFO(context);
                           // await mf.fetchMFWatchlist("", "", context, true, "");
                           // Navigator.pushNamed(context, Routes.mfmainscreen);
-                          // launch(
-                          //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                          launch(
+                              "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                         } else if (acttitle == "OptionZ") {
                           funds.optionZ(context);
                         } else if (acttitle == "Refer") {
@@ -485,13 +483,10 @@ class UserAccountScreen extends ConsumerWidget {
             Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text("Version 3.0.2 Build 1.0.69(01) Released on 14 Mar",
+                child: Text("Version 3.0.2 Build 1.0.71(02) Released on 21 Mar",
                     style: textStyle(
                         const Color(0xff666666), 11, FontWeight.w500)))
           ]
-          
-          
-          
           )
   
          );

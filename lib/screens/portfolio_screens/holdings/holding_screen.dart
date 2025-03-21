@@ -486,15 +486,15 @@ class HoldingScreen extends ConsumerWidget {
                                                         .exchTsym![0]
                                                         .exch ==
                                                     "BSE")) {
-                                              context
-                                                  .read(marketWatchProvider)
-                                                  .depthBtns
-                                                  .add({
-                                                "btnName": "Fundamental",
-                                                "imgPath": assets.dInfo,
-                                                "case":
-                                                    "Click here to view fundamental data."
-                                              });
+                                              // context
+                                              //     .read(marketWatchProvider)
+                                              //     .depthBtns
+                                              //     .add({
+                                              //   "btnName": "Fundamental",
+                                              //   "imgPath": assets.dInfo,
+                                              //   "case":
+                                              //       "Click here to view fundamental data."
+                                              // });
 
                                               await context
                                                   .read(marketWatchProvider)

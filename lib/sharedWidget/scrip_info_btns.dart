@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/provider/webview_chart_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
@@ -31,7 +30,6 @@ class ScripInfoBtns extends ConsumerWidget {
     final marketwatch = watch(marketWatchProvider);
     final userProfile = watch(userProfileProvider);
     final theme = context.read(themeProvider);
-    final chartUpdate = context.read(chartUpdateProvider);
     return Container(
         padding: const EdgeInsets.only(left: 14, top: 8, bottom: 8),
         height: 50,
@@ -63,6 +61,7 @@ class ScripInfoBtns extends ConsumerWidget {
                       marketwatch.singlePageloader(true);
 
                       if (marketwatch.depthBtns[index]['btnName'] != "Chart") {
+                        
                         DepthInputArgs depthArgs = DepthInputArgs(
                             exch: exch,
                             token: token,
@@ -71,6 +70,7 @@ class ScripInfoBtns extends ConsumerWidget {
                             symbol: '${marketwatch.getQuotes!.symbol}',
                             expDate: '${marketwatch.getQuotes!.expDate}',
                             option: '${marketwatch.getQuotes!.option}');
+                        Navigator.pop(context);
 
                         showModalBottomSheet(
                             barrierColor: Colors.transparent,
@@ -133,9 +133,7 @@ class ScripInfoBtns extends ConsumerWidget {
                         userProfile.setChartdialog(true);
                         await ConstantName.webViewController!.evaluateJavascript(
                             source:
-                                "window.changeScript('$exch:$tsym',$token, '${theme.isDarkMode ? 'Y' : 'N'}')");
-                        chartUpdate
-                            .startChartUpdateTimer(userProfile.showchartof);
+                                "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${theme.isDarkMode}')");
                       }
 
                       marketwatch

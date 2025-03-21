@@ -35,14 +35,14 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         ? NotificationService.showNotification(
             title: message.notification!.title,
             body: message.notification!.body,
-            summary: "Mynt",
+            // summary: "Mynt",
             notificationLayout: NotificationLayout.BigPicture,
             bigPicture: message.data["imageUrl"],
             payload: {"navigate": "true", "url": message.data["url"]})
         : NotificationService.showNotification(
             title: message.notification!.title,
             body: message.notification!.body,
-            summary: "Mynt",
+            // summary: "Mynt",
             notificationLayout: NotificationLayout.Default,
           );
   }
@@ -111,14 +111,14 @@ void main() async {
         ? NotificationService.showNotification(
             title: message.notification!.title,
             body: message.notification!.body,
-            summary: "Mynt+",
+            // summary: "Mynt",
             notificationLayout: NotificationLayout.BigPicture,
             bigPicture: message.data["imageUrl"],
             payload: {"navigate": "true", "url": message.data["url"]})
         : NotificationService.showNotification(
             title: message.notification!.title,
             body: message.notification!.body,
-            summary: "Mynt+",
+            // summary: "Mynt",
             notificationLayout: NotificationLayout.Default);
 
     // NotificationService().showNotification(

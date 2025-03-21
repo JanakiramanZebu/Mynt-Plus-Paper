@@ -42,7 +42,6 @@ import 'iop_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
-import 'stocks_provider.dart';
 import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
 
@@ -994,15 +993,8 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(transcationProvider).fetchcwithdraw(context);
         ref(transcationProvider).fetchfundbank(context);
         ref(transcationProvider).fetchc(context);
-
 // IPOs
-        await ref(ipoProvide).getDashboardIpos();
-        await ref(ipoProvide).getSmeIpo();
-        await ref(ipoProvide).getmainstreamipo();
-        await ref(ipoProvide).getipoperfomance(currentYear);
-        await ref(ipoProvide).mergemainsme();
-        await ref(ipoProvide).fetchIpoPreClose();
-
+        setIposAPicalls();
         await FirebaseAnalytics.instance.setUserId(id: pref.clientId);
 
 
@@ -1013,16 +1005,15 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(mfProvider).fetchmfNFO(context);
 
 // Explore
-        await ref(stocksProvide)
-            .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
-        await ref(indexListProvider).fetchStockTopIndex();
+        // await ref(stocksProvide)
+        //     .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
+        // await ref(indexListProvider).fetchStockTopIndex();
 
         // await ref(stocksProvide).fetchCorporateAction();
-        await ref(stocksProvide).fetchCAevents();
+        // await ref(stocksProvide).fetchCAevents();
         // await ref(stocksProvide).defaultSectorThemematicData();
-        await ref(stocksProvide).getNews();
-        await ref(stocksProvide).chngTradeAct("Equity");
-        await ref(profileAllDetailsProvider).fetchClientProfileAllDetails();
+        // await ref(stocksProvide).getNews();
+        // await ref(stocksProvide).chngTradeAct("Equity");
 
         // ref(mfProvider).fetchcommonsearchWadd(null, "", context, false);
         // ref(mfProvider).fetchmfCommonsearch("Z", context);
@@ -1030,7 +1021,7 @@ class AuthProvider extends DefaultChangeNotifier {
         // ref(mfProvider).fetchBestMF();
 
         // ref(mfProvider).fetchMfOrderbook(context);
-
+        setProfileAPicalls();
 // End Explore
         if (s.isEmpty) {
           Navigator.pushNamedAndRemoveUntil(
@@ -1064,6 +1055,19 @@ class AuthProvider extends DefaultChangeNotifier {
     } finally {
       initLaod(false);
     }
+  }
+
+  setIposAPicalls() async {
+    await ref(ipoProvide).getDashboardIpos();
+    await ref(ipoProvide).getSmeIpo();
+    await ref(ipoProvide).getmainstreamipo();
+    await ref(ipoProvide).getipoperfomance(currentYear);
+    await ref(ipoProvide).mergemainsme();
+    await ref(ipoProvide).fetchIpoPreClose();
+  }
+
+  setProfileAPicalls() async {
+    await ref(profileAllDetailsProvider).fetchClientProfileAllDetails();
   }
 
 // This method calls and returns to the login screen whenever the client session expires.
