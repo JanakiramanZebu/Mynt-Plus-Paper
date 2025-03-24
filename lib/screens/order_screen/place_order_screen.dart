@@ -280,7 +280,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
 
       qtyCtrl = TextEditingController(
           text: widget.orderArg.exchange == "MCX"
-              ? "1"
+              ? widget.orderArg.isExit ? widget.orderArg.lotSize!.replaceAll("-", "") : "1"
               : widget.orderArg.isExit
                   ? widget.orderArg.holdQty!.replaceAll("-", "")
                   : widget.orderArg.lotSize!.replaceAll("-", ""));
@@ -290,7 +290,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           : qtyCtrl.text;
 
       multiplayer = int.parse(
-          (widget.orderArg.exchange == "MCX" ? "1" : widget.orderArg.lotSize)
+          (widget.orderArg.exchange == "MCX" ? "1" : widget.orderArg.isExit ? widget.scripInfo.ls : widget.orderArg.lotSize)
               .toString());
 
       mktProtCtrl = TextEditingController(
@@ -339,6 +339,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       qtyCtrl.text = widget.scripInfo.exch == 'MCX'
           ? (int.parse(res['qty'] ?? lotSize) / lotSize).toStringAsFixed(0)
           : res['qty'] ?? "1";
+   
+          
       stopLossCtrl.text = res['blprc'] ?? "0";
       targetCtrl.text = res['bpprc'] ?? "0";
       validityType = res['ret'] ?? '';
@@ -347,7 +349,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           (double.tryParse(res['mkt_protection']?.toString() ?? '5')?.toInt() ??
                   5)
               .toString();
-    }super.initState();
+    } else {
+   print("positionList.netqty s ${ widget.scripInfo.exch == 'MCX'
+          ? '1'
+          : '2'}");
+    }
+    
+  
+    super.initState();
     anibuildctrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
