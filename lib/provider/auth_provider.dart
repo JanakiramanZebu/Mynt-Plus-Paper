@@ -1075,8 +1075,8 @@ class AuthProvider extends DefaultChangeNotifier {
     if (!(getlocal.isNotEmpty && getlocal.contains("expos"))) {
       Map<String, String> local = {
         "prc": "Limit",
-        "prd": '"Intraday',
-        "qtypref": 'qty',
+        "prd": "Intraday",
+        "qtypref": "qty",
         "qty": "1",
         "validity": "DAY",
         "mrkprot": "1",
