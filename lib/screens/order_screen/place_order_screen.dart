@@ -322,6 +322,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       isAvbSecu = true;
       isSecu = false;
     }
+    addStoploss = orderType != "Regular" ? true : false;
 
     if (rep) {
       isBuy = res['trantype'] == 'S' ? false : true;
@@ -334,7 +335,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       priceCtrl.text = priceType == "Market" || priceType == "SL MKT"
           ? "Market"
           : res['prc'] ?? "0";
-      ordPrice = res['prc'] ?? "0";
+      ordPrice = priceType == "Market" || priceType == "SL MKT" ? ordPrice : res['prc'] ?? "0";
       qtyCtrl.text = widget.scripInfo.exch == 'MCX'
           ? (int.parse(res['qty'] ?? lotSize) / lotSize).toStringAsFixed(0)
           : res['qty'] ?? "1";
@@ -346,8 +347,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           (double.tryParse(res['mkt_protection']?.toString() ?? '5')?.toInt() ??
                   5)
               .toString();
-    }
-    super.initState();
+    }super.initState();
     anibuildctrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -3471,7 +3471,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                           qtyCtrl.text == "0"
                                                               ? "Quantity can not be 0"
                                                               : "Price can not be 0"));
-                                                } else if ((double.parse(ordPrice) <
+                                                } else if ((priceType == "Limit" ||
+                                                        priceType == "SL Limit") && (double.parse(ordPrice) <
                                                         double.parse(
                                                             "${widget.scripInfo.lc ?? 0.00}")) ||
                                                     (double.parse(ordPrice) >
