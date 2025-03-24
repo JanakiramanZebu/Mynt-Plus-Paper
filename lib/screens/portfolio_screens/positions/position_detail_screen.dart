@@ -670,6 +670,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                           int.parse(positionList.netqty!) < 0
                                               ? true
                                               : false,
+                                      prd: '${positionList.prd}',
                                       // change: depthData.chng,
                                       // close: depthData.c,
                                       lotSize: positionList.netqty,
@@ -679,7 +680,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                       orderTpye: '',
                                       holdQty: '${positionList.netqty}',
                                       isModify: false,
-                                      raw: positionList.toJson());
+                                      raw: {});
 
                                   Navigator.pushNamed(
                                       context, Routes.placeOrderScreen,

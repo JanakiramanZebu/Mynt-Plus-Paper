@@ -261,7 +261,7 @@ class OrderScreenArgs {
   String tSym, orderTpye;
   bool transType;
   bool isExit;
-  String? ltp, perChange, lotSize, holdQty;
+  String? prd, ltp, perChange, lotSize, holdQty;
   bool isModify;
   Map raw;
 
@@ -269,6 +269,7 @@ class OrderScreenArgs {
       {required this.exchange,
       required this.token,
       required this.tSym,
+      this.prd,
       required this.transType,
       required this.perChange,
       required this.lotSize,

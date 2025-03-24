@@ -225,22 +225,27 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       },
     ];
 
+    bool prdcheck = widget.orderArg.prd?.isNotEmpty ?? false;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read(ordInputProvider).chngInvesType(
-          rep && res['prd'] == "C"
+          prdcheck && widget.orderArg.prd == "C"
               ? InvestType.delivery
-              : rep && res['prd'] == "I"
+              : prdcheck && widget.orderArg.prd == "I"
                   ? InvestType.intraday
-                  : !widget.orderArg.isExit && defaultparams
-                      ? localdata['prd'] == "Intraday"
+                  : rep && res['prd'] == "C"
+                      ? InvestType.delivery
+                      : rep && res['prd'] == "I"
                           ? InvestType.intraday
-                          : (localdata['prd'] == "Delivery" &&
-                                  widget.scripInfo.seg == "EQT")
-                              ? InvestType.delivery
-                              : InvestType.carryForward
-                      : widget.scripInfo.seg == "EQT"
-                          ? InvestType.delivery
-                          : InvestType.carryForward,
+                          : !widget.orderArg.isExit && defaultparams
+                              ? localdata['prd'] == "Intraday"
+                                  ? InvestType.intraday
+                                  : localdata['prd'] == "Delivery" &&
+                                          widget.scripInfo.seg == "EQT"
+                                      ? InvestType.delivery
+                                      : InvestType.carryForward
+                              : widget.scripInfo.seg == "EQT"
+                                  ? InvestType.delivery
+                                  : InvestType.carryForward,
           "PlcOrder");
 
       context
@@ -295,7 +300,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           .containsKey(widget.scripInfo.token)) {
         ordPrice =
             "${context.read(websocketProvider).socketDatas["${widget.scripInfo.token}"]['lp']}";
-        priceCtrl.text = ordPrice;
+
+        priceCtrl.text = priceType == "Market" || priceType == "SL MKT"
+            ? priceCtrl.text = "Market"
+            : ordPrice;
       }
     });
 
@@ -329,7 +337,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       targetCtrl.text = res['bpprc'] ?? "0";
       validityType = res['ret'] ?? '';
       triggerPriceCtrl.text = res['trgprc'] ?? "0";
-      mktProtCtrl.text = res['mkt_protection'] ?? "0";
+      mktProtCtrl.text = int.parse(res['mkt_protection']).toString();
     }
     super.initState();
     anibuildctrl = AnimationController(
@@ -4235,7 +4243,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                     widget.isBasket ==
                                                         "BasketEdit")
                                                 ? widget.isBasket ==
-                                                        "BasketEdit" ? "Edit to Basket" : "Add to Basket"
+                                                        "BasketEdit"
+                                                    ? "Edit to Basket"
+                                                    : "Add to Basket"
                                                 : orderType == "SIP"
                                                     ? "Create SIP"
                                                     : isBuy!
@@ -4392,7 +4402,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
               "Quantity should be multiple of lot size $lotSize => $q"));
         }
 
-        if (mktProtCtrl.text.isEmpty || int.parse(mktProtCtrl.text) > 20) {
+        if (mktProtCtrl.text.isEmpty ||
+            int.parse(mktProtCtrl.text.toString()) > 20) {
           placeorder = false;
           ScaffoldMessenger.of(context).showSnackBar(
               warningMessage(context, "Market Protection between 1% to 20%"));
