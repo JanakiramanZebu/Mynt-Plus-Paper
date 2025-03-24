@@ -232,20 +232,22 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
               ? InvestType.delivery
               : prdcheck && widget.orderArg.prd == "I"
                   ? InvestType.intraday
-                  : rep && res['prd'] == "C"
-                      ? InvestType.delivery
-                      : rep && res['prd'] == "I"
-                          ? InvestType.intraday
-                          : !widget.orderArg.isExit && defaultparams
-                              ? localdata['prd'] == "Intraday"
-                                  ? InvestType.intraday
-                                  : localdata['prd'] == "Delivery" &&
-                                          widget.scripInfo.seg == "EQT"
+                  : prdcheck && widget.orderArg.prd == "M"
+                      ? InvestType.carryForward
+                      : rep && res['prd'] == "C"
+                          ? InvestType.delivery
+                          : rep && res['prd'] == "I"
+                              ? InvestType.intraday
+                              : !widget.orderArg.isExit && defaultparams
+                                  ? localdata['prd'] == "Intraday"
+                                      ? InvestType.intraday
+                                      : localdata['prd'] == "Delivery" &&
+                                              widget.scripInfo.seg == "EQT"
+                                          ? InvestType.delivery
+                                          : InvestType.carryForward
+                                  : widget.scripInfo.seg == "EQT"
                                       ? InvestType.delivery
-                                      : InvestType.carryForward
-                              : widget.scripInfo.seg == "EQT"
-                                  ? InvestType.delivery
-                                  : InvestType.carryForward,
+                                      : InvestType.carryForward,
           "PlcOrder");
 
       context
@@ -337,7 +339,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       targetCtrl.text = res['bpprc'] ?? "0";
       validityType = res['ret'] ?? '';
       triggerPriceCtrl.text = res['trgprc'] ?? "0";
-      mktProtCtrl.text = (double.tryParse(res['mkt_protection']?.toString() ?? '5')?.toInt() ?? 5).toString();
+      mktProtCtrl.text =
+          (double.tryParse(res['mkt_protection']?.toString() ?? '5')?.toInt() ??
+                  5)
+              .toString();
     }
     super.initState();
     anibuildctrl = AnimationController(

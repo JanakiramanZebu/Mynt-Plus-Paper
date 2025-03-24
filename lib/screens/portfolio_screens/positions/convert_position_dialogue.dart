@@ -32,6 +32,8 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
     setState(() {
       maxQty = TextEditingController(
           text: widget.convertPosition.netqty!.replaceAll("-", ""));
+          qty = TextEditingController(
+          text: maxQty.text);
     });
   }
 
