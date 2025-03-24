@@ -625,7 +625,7 @@ class _OrderPreference extends State<OrderPreference> {
     Map<String, dynamic> local = {
       "prc": priceType,
       "prd": orderType,
-      "qtypref": QtyPrefer == OrdQtyPref.mktlot ? 'lot' : ' qty',
+      "qtypref": QtyPrefer == OrdQtyPref.mktlot ? 'lot' : 'qty',
       "qty": qtyCtrl.text,
       "validity": validity,
       "mrkprot": mktProtCtrl.text,

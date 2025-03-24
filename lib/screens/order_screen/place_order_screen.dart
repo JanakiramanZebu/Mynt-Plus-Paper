@@ -337,7 +337,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       targetCtrl.text = res['bpprc'] ?? "0";
       validityType = res['ret'] ?? '';
       triggerPriceCtrl.text = res['trgprc'] ?? "0";
-      mktProtCtrl.text = int.parse(res['mkt_protection']).toString();
+      mktProtCtrl.text = (double.tryParse(res['mkt_protection']?.toString() ?? '5')?.toInt() ?? 5).toString();
     }
     super.initState();
     anibuildctrl = AnimationController(

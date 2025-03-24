@@ -546,6 +546,7 @@ class PositionGroupDetail extends ConsumerWidget {
                                   isExit: false,
                                   token: "${positionData['token']}",
                                   transType: true,
+                                  prd: "${positionData['prd']}",
                                   // change: depthData['chng'],
                                   // close: depthData.c,
                                   lotSize: positionData['netqty'],
