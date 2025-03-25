@@ -98,16 +98,18 @@ class UserAccountScreen extends ConsumerWidget {
                         } else if (acttitle == "Mutual Fund") {
                           // mf.loaderfun();
                           mf.mfExTabchange(0);
+                          mf.fetchsiprejreasn();
                           // await mf.fetchnewMFBestList();
                           // await mf.fetchBestMF();
                           Navigator.pushNamed(context, Routes.mfmainscreen);
+                          // await mf.fetchsiprejreasin();
+                          await mf.fetchmfholdingnew();
 
                           await mf.fetchMfOrderbook(context);
                           // await mf.fetchmfallcatnew();
                           await portfolio.fetchMFHoldings(context);
                           // await mf.fetchMFCategoryType();
                           // await mf.fetchmfNFO(context);
-                          await mf.fetchmfholdingnew();
                           await mf.fetchMFWatchlist("", "", context, true, "");
                           await mf.fetchmfsiplist();
                           // await mf.fetchBestMF();

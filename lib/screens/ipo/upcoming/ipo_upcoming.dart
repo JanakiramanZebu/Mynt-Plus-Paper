@@ -34,38 +34,33 @@ class UpcomingIpo extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding:
-                  const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 0),
-              child: Text(
-                "Upcoming",
-                style: textStyle(
-                    theme.isDarkMode
-                        ? colors.colorWhite.withOpacity(0.3)
-                        : colors.colorBlack.withOpacity(0.3),
-                    16,
-                    FontWeight.w600),
-              ),
-            ),
+            // Padding(
+            //   padding:
+            //       const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 0),
+            //   child: Text(
+            //     "Upcoming",
+            //     style: textStyle(
+            //         theme.isDarkMode
+            //             ? colors.colorWhite.withOpacity(0.3)
+            //             : colors.colorBlack.withOpacity(0.3),
+            //         16,
+            //         FontWeight.w600),
+            //   ),
+            // ),
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemBuilder: (context, index) {
-                return InkWell(
-                  onTap: () {},
-                  child: Column(
-                    children: [
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 16),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          // crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-
-                            Row(
-                              children: [
-
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        // crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
                               //    ClipOval(
                               //   child: Container(
                               //     color: colors.colorDivider.withOpacity(.3),
@@ -75,38 +70,60 @@ class UpcomingIpo extends StatelessWidget {
                               //       padding: const EdgeInsets.all(3),
                               //       child: Image.network(
                               //       ipos.upcomingModel!.upcoming![index].imageLink!,
-                                      
+                
                               //       ),
                               //     ),
                               //   ),
                               // ),
-
+                
                               // SizedBox(width: 8),
-                            SizedBox(
-                              width: 280,
-                              child: Text(
-                                  ipos.upcomingModel!.upcoming![index]
-                                      .companyName!
-                                      .split(" ")
-                                      .map((word) => word.isNotEmpty
-                                          ? word[0].toUpperCase() +
-                                              word.substring(1).toLowerCase()
-                                          : "")
-                                      .join(" "),
-                                      overflow: TextOverflow.ellipsis,
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w600)),
-                            ),
-
-                              ],
-                            )
-                           ,
-                            
-                            GestureDetector(
+                              Column(
+                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width: 280,
+                                    child: Text(
+                                        ipos.upcomingModel!.upcoming![index]
+                                            .companyName!,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: textStyle(
+                                            theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                            14,
+                                            FontWeight.w600)),
+                                  ),
+                                   SizedBox(height: 4,),
+                                  Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                          color: ipos.upcomingModel!.upcoming![index].ipoType == "SME"
+                                              ? theme.isDarkMode
+                                                  ? colors.colorGrey
+                                                      .withOpacity(.1)
+                                                  : const Color.fromARGB(
+                                                      255, 243, 242, 174)
+                                              : theme.isDarkMode
+                                                  ? colors.colorGrey
+                                                      .withOpacity(.1)
+                                                  : const Color.fromARGB(
+                                                      255,
+                                                      251,
+                                                      215,
+                                                      148), //(0xffF1F3F8),
+                                          borderRadius:
+                                              BorderRadius.circular(4)),
+                                      child: Text("${ipos.upcomingModel!.upcoming![index].ipoType}",
+                                          style: textStyle(
+                                              const Color(0xff666666),
+                                              10,
+                                              FontWeight.w500))),
+                                ],
+                              ),
+                            ],
+                          ),
+                         GestureDetector(
   onTap: () {
     final String? drhpUrl = ipos.upcomingModel!.upcoming![index].drhp;
     if (drhpUrl != null && drhpUrl.isNotEmpty) {
@@ -115,43 +132,42 @@ class UpcomingIpo extends StatelessWidget {
       debugPrint("DRHP link is missing.");
     }
   },
-  child:Row(
-  mainAxisSize: MainAxisSize.min,
-  children: [
-    Icon(
-      Icons.open_in_new, // External link icon
-      size: 14,
-      color: Color(0xFF0037B7),
-    ),
-    SizedBox(width: 2), // Spacing between icon and text
-    Text(
-      'DRHP',
-      style: textStyle(
-        const Color(0xFF0037B7),
-        12,
-        FontWeight.w600,
+  behavior: HitTestBehavior.translucent, // Ensures the entire area is tappable
+  child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(
+        Icons.open_in_new,
+        size: 14,
+        color: Color(0xFF0037B7),
       ),
-    ),
-  ],
+      SizedBox(width: 2),
+      Text(
+        'DRHP',
+        style: textStyle(
+          const Color(0xFF0037B7),
+          12,
+          FontWeight.w600,
+        ),
+      ),
+    ],
+  ),
 )
 
-)
-
-                          ],
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 );
               },
               itemCount: ipos.upcomingModel!.upcoming!.length,
               separatorBuilder: (context, index) {
-                return Container(
-                  height: 7,
-                  color: theme.isDarkMode
-                      ? colors.darkColorDivider
-                      : const Color(0xffF1F3F8),
-                );
+                return Divider(
+                    height: 0,
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : const Color(0xffECEDEE),
+                    thickness: 1.2);
               },
             ),
           ],

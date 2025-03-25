@@ -130,54 +130,35 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                         width: 250,
                         child: Text(
   widget.smeipo.name!
-      .split(" ")
-      .map((word) => word.isNotEmpty 
-          ? word[0].toUpperCase() + word.substring(1).toLowerCase() 
-          : "")
-      .join(" "), // Formatting applied inline
+     ,
   style: textStyle(
       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
       16,
       FontWeight.w600),
   softWrap: true,
-  overflow: TextOverflow.visible,
+  overflow: TextOverflow.ellipsis
 ),
 
                       ),
-                      Column(
-                        children: [
-                          Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 4),
-                              decoration: BoxDecoration(
-                                  color: widget.smeipo.key == "SME"
-                                      ? theme.isDarkMode
-                                          ? colors.colorGrey.withOpacity(.1)
-                                          : const Color.fromARGB(
-                                              255, 243, 242, 174)
-                                      : theme.isDarkMode
-                                          ? colors.colorGrey.withOpacity(.1)
-                                          : const Color.fromARGB(255, 251, 215,
-                                              148), //(0xffF1F3F8),
-                                  borderRadius: BorderRadius.circular(4)),
-                              child: Text("${widget.smeipo.key}",
-                                  style: textStyle(const Color(0xff666666), 10,
-                                      FontWeight.w500))),
-                          // SizedBox(
-                          //   height: 4,
-                          // ),
-                          // Container(
-                          //     padding: const EdgeInsets.symmetric(
-                          //         horizontal: 8, vertical: 4),
-                          //     decoration: BoxDecoration(
-                          //         color: theme.isDarkMode
-                          //             ? const Color(0xffECF8F1).withOpacity(.3)
-                          //             : const Color(0xffECF8F1),
-                          //         borderRadius: BorderRadius.circular(4)),
-                          //     child: Text("Open",
-                          //         style: textStyle(
-                          //             Color(0xff43A833), 10, FontWeight.w500))),
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 4),
+                            decoration: BoxDecoration(
+                                color: widget.smeipo.key == "SME"
+                                    ? theme.isDarkMode
+                                        ? colors.colorGrey.withOpacity(.1)
+                                        : const Color.fromARGB(
+                                            255, 243, 242, 174)
+                                    : theme.isDarkMode
+                                        ? colors.colorGrey.withOpacity(.1)
+                                        : const Color.fromARGB(255, 251, 215,
+                                            148), //(0xffF1F3F8),
+                                borderRadius: BorderRadius.circular(4)),
+                            child: Text("${widget.smeipo.key}",
+                                style: textStyle(const Color(0xff666666), 10,
+                                    FontWeight.w500))),
                       )
                     ],
                   ),

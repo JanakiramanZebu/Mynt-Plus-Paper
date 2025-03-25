@@ -208,123 +208,171 @@ class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
                                               "${preClose.ipoPreClose!.msg[index].ipoType}",
                                           ipodetails: "")));
                             },
-                            child: Column(
-                              children: [
-                                ListTile(
-                                     contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                                    // leading: ClipOval(
-                                    //   child: Container(
-                                    //     color:
-                                    //         colors.colorDivider.withOpacity(.3),
-                                    //     width: 50,
-                                    //     height: 50,
-                                    //     child: Container(
-                                    //       padding: EdgeInsets.all(8),
-                                    //       child: Image.network(
-                                    //         context
-                                    //                 .read(ipoProvide)
-                                    //                 .api
-                                    //                 .apiLinks
-                                    //                 .ipourlendpoint +
-                                    //             ipo.imageLink.toString(),
-                                    //       ),
-                                    //     ),
-                                    //   ),
-                                    // ),
-                                    title: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                children: [
+                                  // leading: ClipOval(
+                                  //   child: Container(
+                                  //     color:
+                                  //         colors.colorDivider.withOpacity(.3),
+                                  //     width: 50,
+                                  //     height: 50,
+                                  //     child: Container(
+                                  //       padding: EdgeInsets.all(8),
+                                  //       child: Image.network(
+                                  //         context
+                                  //                 .read(ipoProvide)
+                                  //                 .api
+                                  //                 .apiLinks
+                                  //                 .ipourlendpoint +
+                                  //             ipo.imageLink.toString(),
+                                  //       ),
+                                  //     ),
+                                  //   ),
+                                  // ),
+                                  Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-
-                                        Row(
+                                        Column(
+                                          crossAxisAlignment:
+                                               CrossAxisAlignment.start,
                                           children: [
-                              //                ClipOval(
-                              //   child: Container(
-                              //     color: colors.colorDivider.withOpacity(.3),
-                              //     width: 40,
-                              //     height: 40,
-                              //     child: Container(
-                              //       padding: const EdgeInsets.all(3),
-                              //       child: Image.network(
-                              //       ipo.imageLink!
-                                      
-                              //       ),
-                              //     ),
-                              //   ),
-                              // ),
+                                            //                ClipOval(
+                                            //   child: Container(
+                                            //     color: colors.colorDivider.withOpacity(.3),
+                                            //     width: 40,
+                                            //     height: 40,
+                                            //     child: Container(
+                                            //       padding: const EdgeInsets.all(3),
+                                            //       child: Image.network(
+                                            //       ipo.imageLink!
 
-                              // SizedBox(width: 8),
+                                            //       ),
+                                            //     ),
+                                            //   ),
+                                            // ),
 
-                               Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                      
+                                            // SizedBox(width: 8),
+
+                                            Text(ipo.companyName!,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: textStyle(
+                                                    theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    14,
+                                                    FontWeight.w600)),
+
+                                            const SizedBox(
+                                              height: 4,
+                                            ),
+
+                                            Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                                color: ipo.ipoType == "SME"
+                                                    ? theme.isDarkMode
+                                                        ? colors.colorGrey
+                                                            .withOpacity(.1)
+                                                        : const Color.fromARGB(
+                                                            255, 243, 242, 174)
+                                                    : theme.isDarkMode
+                                                        ? colors.colorGrey
+                                                            .withOpacity(.1)
+                                                        : const Color.fromARGB(
+                                                            255,
+                                                            251,
+                                                            215,
+                                                            148), //(0xffF1F3F8),
+                                                borderRadius:
+                                                    BorderRadius.circular(4)),
+                                            child: Text("${ipo.ipoType}",
+                                                style: textStyle(
+                                                    const Color(0xff666666),
+                                                    10,
+                                                    FontWeight.w500))),
+                                          ],
+                                        ),
+                                              preClose.ipoPreClose!.msg[index].totalsub != ''
+                                           ?
+                                         Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          
-                                          //title
+
                                           Text(
-                                              ipo.companyName!
-                                                  .split(" ")
-                                                  .map((word) => word
-                                                          .isNotEmpty
-                                                      ? word[0]
-                                                              .toUpperCase() +
-                                                          word
-                                                              .substring(1)
-                                                              .toLowerCase()
-                                                      : "")
-                                                  .join(" "),
-                                              overflow: TextOverflow.ellipsis,
+                                              "${preClose.ipoPreClose!.msg[index].totalsub}x",
                                               style: textStyle(
                                                   theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
                                                   14,
-                                                  FontWeight.w600)),
+                                                  FontWeight.w500)),
+                                         
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
 
-                                                   const SizedBox(
-                                          height: 4,
-                                        ),
-                                      
-                                          // sme container
-                                      
-                                          Container(
-                                            
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                  color: ipo.ipoType == "SME"
-                                                      ? theme.isDarkMode
-                                                          ? colors.colorGrey
-                                                              .withOpacity(.1)
-                                                          : const Color.fromARGB(
-                                                              255, 243, 242, 174)
-                                                      : theme.isDarkMode
-                                                          ? colors.colorGrey
-                                                              .withOpacity(.1)
-                                                          : const Color.fromARGB(
-                                                              255,
-                                                              251,
-                                                              215,
-                                                              148), //(0xffF1F3F8),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          4)),
-                                              child: Text("${ipo.ipoType}",
-                                                  style: textStyle(
-                                                      const Color(0xff666666),
-                                                      10,
-                                                      FontWeight.w500))),
+                                           Text("Subscription",
+                                              style: textStyle(
+                                                  const Color(0xff666666),
+                                                  10,
+                                                  FontWeight.w500)),
+                                          
                                         ],
-                                      ),
-                                          ],
-                                        )
-                                      
-                                     ,
-                                      Column(
+                                      ) : SizedBox.shrink(),
                                         
-                                           crossAxisAlignment:
-                                          CrossAxisAlignment.end,
+                                      ]),
+
+                                      SizedBox(height: 8,),
+                                  Row(
+                                    // crossAxisAlignment:
+                                    // CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      // const SizedBox(height: 4),
+                                      // Container(
+                                      //   margin: const EdgeInsets.symmetric(
+                                      //       horizontal: 4),
+                                      //   padding: const EdgeInsets.symmetric(
+                                      //       horizontal: 8, vertical: 4),
+                                      //   decoration: BoxDecoration(
+                                      //       color: ipo.ipoType != "MAIN_IPO"
+                                      //           ? theme.isDarkMode
+                                      //               ? colors.colorGrey
+                                      //                   .withOpacity(.1)
+                                      //               : const Color.fromARGB(
+                                      //                   255, 251, 215, 148)
+                                      //           : theme.isDarkMode
+                                      //               ? colors.colorGrey
+                                      //                   .withOpacity(.1)
+                                      //               : const Color.fromARGB(
+                                      //                   255,
+                                      //                   243,
+                                      //                   242,
+                                      //                   174), //(0xffF1F3F8),
+                                      //       borderRadius:
+                                      //           BorderRadius.circular(4)),
+                                      //   child: Text(
+                                      //     ipo.ipoType != "MAIN_IPO"
+                                      //         ? 'MAIN'
+                                      //         : 'SME',
+                                      //     style: textStyle(
+                                      //         const Color(0xff666666),
+                                      //         9,
+                                      //         FontWeight.w500),
+                                      //   ),
+                                      // ),
+                                  
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Text("Subscription",
+                                          Text("Listed on",
                                               style: textStyle(
                                                   const Color(0xff666666),
                                                   10,
@@ -332,7 +380,8 @@ class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
                                           const SizedBox(
                                             height: 4,
                                           ),
-                                          Text("${preClose.ipoPreClose!.msg[index].totalsub}x",
+                                          Text(
+                                              "${ipo.listingDate!.substring(4, 6)} ${ipo.listingDate!.substring(0, 3)}",
                                               style: textStyle(
                                                   theme.isDarkMode
                                                       ? colors.colorWhite
@@ -341,240 +390,173 @@ class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
                                                   FontWeight.w500)),
                                         ],
                                       ),
-                                    ]),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.only(top: 8),
-                                      child: Row(
-                                        // crossAxisAlignment:
-                                        // CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          // const SizedBox(height: 4),
-                                          // Container(
-                                          //   margin: const EdgeInsets.symmetric(
-                                          //       horizontal: 4),
-                                          //   padding: const EdgeInsets.symmetric(
-                                          //       horizontal: 8, vertical: 4),
-                                          //   decoration: BoxDecoration(
-                                          //       color: ipo.ipoType != "MAIN_IPO"
-                                          //           ? theme.isDarkMode
-                                          //               ? colors.colorGrey
-                                          //                   .withOpacity(.1)
-                                          //               : const Color.fromARGB(
-                                          //                   255, 251, 215, 148)
-                                          //           : theme.isDarkMode
-                                          //               ? colors.colorGrey
-                                          //                   .withOpacity(.1)
-                                          //               : const Color.fromARGB(
-                                          //                   255,
-                                          //                   243,
-                                          //                   242,
-                                          //                   174), //(0xffF1F3F8),
-                                          //       borderRadius:
-                                          //           BorderRadius.circular(4)),
-                                          //   child: Text(
-                                          //     ipo.ipoType != "MAIN_IPO"
-                                          //         ? 'MAIN'
-                                          //         : 'SME',
-                                          //     style: textStyle(
-                                          //         const Color(0xff666666),
-                                          //         9,
-                                          //         FontWeight.w500),
-                                          //   ),
-                                          // ),
+                                  
+                                     
+                                  
+                                      Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                              color: theme.isDarkMode
+                                                  ? const Color(0xffFFF6E6)
+                                                      .withOpacity(.3)
+                                                  : const Color(0xffFFF6E6),
+                                              borderRadius:
+                                                  BorderRadius.circular(4)),
+                                          child: Text("Closed",
+                                              style: textStyle(
+                                                  const Color(0xffB37702),
+                                                  10,
+                                                  FontWeight.w500))),
+                                    ],
+                                  )
 
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text("Listed on",
-                                                  style: textStyle(
-                                                      const Color(0xff666666),
-                                                      10,
-                                                      FontWeight.w500)),
-                                              const SizedBox(
-                                                height: 4,
-                                              ),
-                                              Text(
-                                                  "${ipo.listingDate!.substring(4, 6)} ${ipo.listingDate!.substring(0, 3)}",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      14,
-                                                      FontWeight.w500)),
-                                            ],
-                                          ),
+                                  // Divider(
+                                  //     color: theme.isDarkMode
+                                  //         ? colors.darkColorDivider
+                                  //         : const Color(0xffECEDEE)),
+                                  // Padding(
+                                  //   padding: const EdgeInsets.symmetric(
+                                  //       horizontal: 16,
+                                  //       vertical: 8),
+                                  //   child: Row(
+                                  //     mainAxisAlignment:
+                                  //         MainAxisAlignment.spaceBetween,
+                                  //     children: [
+                                  //       Column(
+                                  //         crossAxisAlignment:
+                                  //             CrossAxisAlignment.start,
+                                  //         children: [
+                                  //           Text("Price Range",
+                                  //               style: GoogleFonts.inter(
+                                  //                   textStyle: textStyle(
+                                  //                       const Color(0xff666666),
+                                  //                       10,
+                                  //                       FontWeight.w500))),
+                                  //           const SizedBox(height: 4),
+                                  //           Text("₹ ${ipo.priceRange}",
+                                  //               style: textStyle(
+                                  //                   theme.isDarkMode
+                                  //                       ? colors.colorWhite
+                                  //                       : colors.colorBlack,
+                                  //                   15,
+                                  //                   FontWeight.w500)),
+                                  //         ],
+                                  //       ),
 
-                                          Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 4),
-                                              decoration: BoxDecoration(
-                                                  color: theme.isDarkMode
-                                                      ? const Color(0xffFFF6E6)
-                                                          .withOpacity(.3)
-                                                      : const Color(0xffFFF6E6),
-                                                  borderRadius:
-                                                      BorderRadius.circular(4)),
-                                              child: Text("Closed",
-                                                  style: textStyle(
-                                                      const Color(0xffB37702),
-                                                      10,
-                                                      FontWeight.w500))),
-                                        ],
-                                      ),
-                                    )),
-                                // Divider(
-                                //     color: theme.isDarkMode
-                                //         ? colors.darkColorDivider
-                                //         : const Color(0xffECEDEE)),
-                                // Padding(
-                                //   padding: const EdgeInsets.symmetric(
-                                //       horizontal: 16,
-                                //       vertical: 8), 
-                                //   child: Row(
-                                //     mainAxisAlignment:
-                                //         MainAxisAlignment.spaceBetween,
-                                //     children: [
-                                //       Column(
-                                //         crossAxisAlignment:
-                                //             CrossAxisAlignment.start,
-                                //         children: [
-                                //           Text("Price Range",
-                                //               style: GoogleFonts.inter(
-                                //                   textStyle: textStyle(
-                                //                       const Color(0xff666666),
-                                //                       10,
-                                //                       FontWeight.w500))),
-                                //           const SizedBox(height: 4),
-                                //           Text("₹ ${ipo.priceRange}",
-                                //               style: textStyle(
-                                //                   theme.isDarkMode
-                                //                       ? colors.colorWhite
-                                //                       : colors.colorBlack,
-                                //                   15,
-                                //                   FontWeight.w500)),
-                                //         ],
-                                //       ),
+                                  //       Column(
+                                  //         crossAxisAlignment:
+                                  //             CrossAxisAlignment.start,
+                                  //         children: [
+                                  //           Text("Min Amount",
+                                  //               style: textStyle(
+                                  //                   const Color(0xff666666),
+                                  //                   10,
+                                  //                   FontWeight.w500)),
+                                  //           const SizedBox(
+                                  //             height: 4,
+                                  //           ),
+                                  //           Text(
+                                  //               "₹ ${convertCurrencyINRStandard(mininv(ipo.minPrice!.toDouble(), ipo.minBidQu!.toInt()).toInt())}",
+                                  //               style: textStyle(
+                                  //                   theme.isDarkMode
+                                  //                       ? colors.colorWhite
+                                  //                       : colors.colorBlack,
+                                  //                   15,
+                                  //                   FontWeight.w500))
+                                  //         ],
+                                  //       ),
 
-                                //       Column(
-                                //         crossAxisAlignment:
-                                //             CrossAxisAlignment.start,
-                                //         children: [
-                                //           Text("Min Amount",
-                                //               style: textStyle(
-                                //                   const Color(0xff666666),
-                                //                   10,
-                                //                   FontWeight.w500)),
-                                //           const SizedBox(
-                                //             height: 4,
-                                //           ),
-                                //           Text(
-                                //               "₹ ${convertCurrencyINRStandard(mininv(ipo.minPrice!.toDouble(), ipo.minBidQu!.toInt()).toInt())}",
-                                //               style: textStyle(
-                                //                   theme.isDarkMode
-                                //                       ? colors.colorWhite
-                                //                       : colors.colorBlack,
-                                //                   15,
-                                //                   FontWeight.w500))
-                                //         ],
-                                //       ),
-
-                                //       // Column(
-                                //       //   crossAxisAlignment:
-                                //       //       CrossAxisAlignment.start,
-                                //       //   children: [
-                                //       //     Text("Price range",
-                                //       //         style: textStyle(
-                                //       //             const Color(0xff666666),
-                                //       //             13,
-                                //       //             FontWeight.w500)),
-                                //       //     const SizedBox(height: 4),
-                                //       //     Text("₹ ${ipo.priceRange}",
-                                //       //         style: textStyle(
-                                //       //             theme.isDarkMode
-                                //       //                 ? colors.colorWhite
-                                //       //                 : colors.colorBlack,
-                                //       //             15,
-                                //       //             FontWeight.w500)),
-                                //       //   ],
-                                //       // ),
-                                //       // Column(
-                                //       //   crossAxisAlignment:
-                                //       //       CrossAxisAlignment.start,
-                                //       //   children: [
-                                //       //     Text("Gain/Loss",
-                                //       //         style: GoogleFonts.inter(
-                                //       //             textStyle: textStyle(
-                                //       //                 const Color(0xff666666),
-                                //       //                 13,
-                                //       //                 FontWeight.w500))),
-                                //       //     const SizedBox(height: 4),
-                                //       //     Text("₹${ipo.listingGain}",
-                                //       //         style: textStyle(
-                                //       //             perfomance
-                                //       //                     .ipoPerformanceModel!
-                                //       //                     .data![index]
-                                //       //                     .listingGain!
-                                //       //                     .toStringAsFixed(2)
-                                //       //                     .startsWith("-")
-                                //       //                 ? colors.darkred
-                                //       //                 : colors.ltpgreen,
-                                //       //             15,
-                                //       //             FontWeight.w500)),
-                                //       //   ],
-                                //       // ),
-                                //       // Column(
-                                //       //   crossAxisAlignment:
-                                //       //       CrossAxisAlignment.start,
-                                //       //   children: [
-                                //       //     Text("Lisiting Gain",
-                                //       //         style: textStyle(
-                                //       //             const Color(0xff666666),
-                                //       //             13,
-                                //       //             FontWeight.w500)),
-                                //       //     const SizedBox(height: 4),
-                                //       //     Text("${ipo.listingGainPer}%",
-                                //       //         style: textStyle(
-                                //       //             perfomance
-                                //       //                     .ipoPerformanceModel!
-                                //       //                     .data![index]
-                                //       //                     .listingGainPer!
-                                //       //                     .toStringAsFixed(2)
-                                //       //                     .startsWith("-")
-                                //       //                 ? colors.darkred
-                                //       //                 : colors.ltpgreen,
-                                //       //             15,
-                                //       //             FontWeight.w500)),
-                                //       //   ],
-                                //       // ),
-                                //     ],
-                                //   ),
-                                // )
-                              ],
+                                  //       // Column(
+                                  //       //   crossAxisAlignment:
+                                  //       //       CrossAxisAlignment.start,
+                                  //       //   children: [
+                                  //       //     Text("Price range",
+                                  //       //         style: textStyle(
+                                  //       //             const Color(0xff666666),
+                                  //       //             13,
+                                  //       //             FontWeight.w500)),
+                                  //       //     const SizedBox(height: 4),
+                                  //       //     Text("₹ ${ipo.priceRange}",
+                                  //       //         style: textStyle(
+                                  //       //             theme.isDarkMode
+                                  //       //                 ? colors.colorWhite
+                                  //       //                 : colors.colorBlack,
+                                  //       //             15,
+                                  //       //             FontWeight.w500)),
+                                  //       //   ],
+                                  //       // ),
+                                  //       // Column(
+                                  //       //   crossAxisAlignment:
+                                  //       //       CrossAxisAlignment.start,
+                                  //       //   children: [
+                                  //       //     Text("Gain/Loss",
+                                  //       //         style: GoogleFonts.inter(
+                                  //       //             textStyle: textStyle(
+                                  //       //                 const Color(0xff666666),
+                                  //       //                 13,
+                                  //       //                 FontWeight.w500))),
+                                  //       //     const SizedBox(height: 4),
+                                  //       //     Text("₹${ipo.listingGain}",
+                                  //       //         style: textStyle(
+                                  //       //             perfomance
+                                  //       //                     .ipoPerformanceModel!
+                                  //       //                     .data![index]
+                                  //       //                     .listingGain!
+                                  //       //                     .toStringAsFixed(2)
+                                  //       //                     .startsWith("-")
+                                  //       //                 ? colors.darkred
+                                  //       //                 : colors.ltpgreen,
+                                  //       //             15,
+                                  //       //             FontWeight.w500)),
+                                  //       //   ],
+                                  //       // ),
+                                  //       // Column(
+                                  //       //   crossAxisAlignment:
+                                  //       //       CrossAxisAlignment.start,
+                                  //       //   children: [
+                                  //       //     Text("Lisiting Gain",
+                                  //       //         style: textStyle(
+                                  //       //             const Color(0xff666666),
+                                  //       //             13,
+                                  //       //             FontWeight.w500)),
+                                  //       //     const SizedBox(height: 4),
+                                  //       //     Text("${ipo.listingGainPer}%",
+                                  //       //         style: textStyle(
+                                  //       //             perfomance
+                                  //       //                     .ipoPerformanceModel!
+                                  //       //                     .data![index]
+                                  //       //                     .listingGainPer!
+                                  //       //                     .toStringAsFixed(2)
+                                  //       //                     .startsWith("-")
+                                  //       //                 ? colors.darkred
+                                  //       //                 : colors.ltpgreen,
+                                  //       //             15,
+                                  //       //             FontWeight.w500)),
+                                  //       //   ],
+                                  //       // ),
+                                  //     ],
+                                  //   ),
+                                  // )
+                                ],
+                              ),
                             ),
                           );
                         },
                         separatorBuilder: (context, index) {
-                          return Container(
-                            height: 7,
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : const Color(0xffF1F3F8),
-                          );
+                          return Divider(
+                              height: 0,
+                              color: theme.isDarkMode
+                                  ? colors.darkColorDivider
+                                  : const Color(0xffECEDEE),
+                              thickness: 1.2);
                         },
                         itemCount: showAll
                             ? ipoList.length
                             : ipoList.length < 5
                                 ? ipoList.length
                                 : 5),
-
-                                
                   )
-                  
                 :
                 //  ListView.separated(
                 //     shrinkWrap: true,
@@ -751,15 +733,9 @@ class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
                 Container(
                     height: devHeight - 600,
                     child: const Center(child: NoDataFound())),
-
-            
           ],
-
-
-          
         ),
 
-        
         // ),
         // ),
       );

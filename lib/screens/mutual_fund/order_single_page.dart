@@ -255,9 +255,116 @@ class _mforderdetscreen extends State<mforderdetscreen>
                     13,
                     FontWeight.w500),
               ),
-            ]
+
+
+
+
+              
+            ],
+
+const SizedBox( height: 20),
+if (mfdata.mforderdet?.data?.ordertype == "NRM" && mfdata.mforderdet?.data?.buysell == "R" &&
+    mfdata.mforderdet?.data?.orderstatus == "PENDING") ...[
+ SizedBox(
+  width: double.infinity, // Makes the button full width
+  child: ElevatedButton(
+    onPressed: () async {
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return MfCancelAlert(mfcancel: mfdata.mforderdet!.data!,message: "order") ;
+          },
+        );
+      // if (mfdata.mforderdet?.data != null) {
+        // await showDialog(
+        //   context: context,
+        //   builder: (BuildContext context) {
+        //     return MfCancelAlert(mfcancel: mfdata.mforderdet!.data!) ;
+        //   },
+        // );
+      // }
+    },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.white, // White background
+      foregroundColor: const Color.fromARGB(255, 0, 0, 0), // Text and icon color
+      side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0), width: 1.5), // Outlined border
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20), // Optional: rounded corners
+      ),
+    ),
+    child: const Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Icon(
+        //   Icons.cancel,
+        //   color: Color.fromARGB(255, 0, 0, 0),
+        //   size: 18,
+        // ),
+        // SizedBox(width: 6),
+        Text(
+          "Cancel Order",
+          style: TextStyle(
+            color: Color.fromARGB(255, 0, 0, 0),
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
+  ),
+)
+
+    ]
+
+                                                                  //   .mflumpsumorderbook!
+                                                                  //     .data![index]
+                                                                  //     .ordertype ==
+                                                                  // "NRM" &&
+                                                          //     mfdata.mforderdet!.data?.buysell ==
+                                                          //         "R" &&
+                                                          //    mfdata.mforderdet!.data?.orderstatus ==
+                                                          //         "PENDING"
+                                                          // ? TextButton(
+                                                          //     onPressed: () async {
+                                                          //       showDialog(
+                                                          //           context: context,
+                                                          //           builder:
+                                                          //               (BuildContext
+                                                          //                   context) {
+                                                          //             return MfCancelAlert(
+                                                          //                 mfcancel:  mfdata.mforderdet!.data);
+                                                          //           });
+                                                          //     },
+                                                          //     child: const Row(
+                                                          //       mainAxisSize:
+                                                          //           MainAxisSize.min,
+                                                          //       children: [
+                                                          //         Icon(
+                                                          //           Icons.cancel,
+                                                          //           color: Color(
+                                                          //               0xff0037B7),
+                                                          //           size: 18,
+                                                          //         ),
+                                                          //         SizedBox(width: 6),
+                                                          //         Text(
+                                                          //           "Cancel Order",
+                                                          //           style: TextStyle(
+                                                          //             color: Color(
+                                                          //                 0xff0037B7),
+                                                          //             fontSize: 14,
+                                                          //             fontWeight:
+                                                          //                 FontWeight
+                                                          //                     .w600,
+                                                          //           ),
+                                                          //         ),
+                                                          //       ],
+                                                          //     ),
+                                                          //   )
+
+
          
             ])),
+
      
      
      

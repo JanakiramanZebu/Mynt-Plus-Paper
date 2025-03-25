@@ -259,6 +259,9 @@ class IPOProvider extends DefaultChangeNotifier {
   bool _displayload = true;
   bool get displayload => _displayload;
 
+  bool _myBidsload = true;
+  bool get myBidsload => _myBidsload;
+
   final List _inIPOTabNameBtns = [
     {"btnName": "Live / Pre Open", "imgPath": assets.liveorpre},
     {"btnName": "Closed", "imgPath": assets.closed},
@@ -1278,7 +1281,7 @@ class IPOProvider extends DefaultChangeNotifier {
 
    Future getUpcomingIpoModel() async {
     try {
-      _displayload = true;
+      // _displayload = true;
       _upcomingModel = await api.fetchIpoUpcomingApi();
       ordersplit();
       //  print("IPO RES ORDERBOOK ::: ${_ipoOrderBookModel![0].bidDetail![0].amount}");
@@ -1288,14 +1291,14 @@ class IPOProvider extends DefaultChangeNotifier {
     } catch (e) {
       print("IPOs Upcoming error:: $e");
     } finally {
-      _displayload = false;
+      // _displayload = false;
     }
   }
 
 
   Future getipoorderbookmodel(bool isTrue) async {
     try {
-      togglefundLoadingOn(isTrue ? true : false);
+      _myBidsload = true;
       _ipoOrderBookModel = await api.fetchipoorderbook();
       ordersplit();
       //  print("IPO RES ORDERBOOK ::: ${_ipoOrderBookModel![0].bidDetail![0].amount}");
@@ -1304,7 +1307,7 @@ class IPOProvider extends DefaultChangeNotifier {
     } catch (e) {
       print("IPOs ORDERBOOK error:: $e");
     } finally {
-      togglefundLoadingOn(false);
+      _myBidsload = false;
     }
   }
 

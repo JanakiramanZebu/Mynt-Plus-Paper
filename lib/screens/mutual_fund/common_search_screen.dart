@@ -21,7 +21,7 @@ class MfCommonSearch extends ConsumerWidget {
     final mfData = watch(mfProvider);
     final theme = watch(themeProvider);
     final fund = watch(fundProvider);
-
+final dev_height = MediaQuery.of(context).size.height;
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -335,10 +335,19 @@ appBar: AppBar(
                           );
                         },
                       )
-                    : const Padding(
-                        padding: EdgeInsets.only(top: 250,left: 100,right:100),
-                        child: NoDataFound(),
+                    : Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 225),
+                        child: Container(
+                          height: dev_height - 140,
+                          child: Column(
+                            children: [
+                              NoDataFound(),
+                            ],
+                          ),
+                        ),
                       ),
+                    )
               ],
             ),
           ),

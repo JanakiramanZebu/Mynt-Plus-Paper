@@ -25,37 +25,35 @@ class IpoCommonSearch extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           elevation: .2,
-          leadingWidth: 41,
+          leadingWidth: 40,
           centerTitle: false,
-          titleSpacing: 6,
+          titleSpacing: -8,
           leading: Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 8)
-    
-    ,
-    child: InkWell(
-                  onTap: () {
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: InkWell(
+              onTap: () {
                 ipo.clearCommonIpoSearch();
                 Navigator.pop(context);
               },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 9),
-                    child:Icon(
-                              Icons.arrow_back_ios,
-                              color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                              size: 22,
-                            ),
-    
-                  ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Icon(
+                  Icons.arrow_back_ios,
+                  color:
+                      theme.isDarkMode
+                    ? const Color(0xffBDBDBD)
+                    : colors.colorGrey,
+                  size: 22,
                 ),
-  ),
-          
-          
+              ),
+            ),
+          ),
+
           shadowColor: const Color(0xffECEFF3),
           title: Container(
               height: 62,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               child: TextFormField(
                 autofocus: true,
                 controller: ipo.ipocommonsearchcontroller,
@@ -68,8 +66,8 @@ class IpoCommonSearch extends ConsumerWidget {
                         ? colors.darkGrey
                         : const Color(0xffF1F3F8),
                     filled: true,
-                    hintStyle:
-                        textStyle(const Color(0xff69758F), 14, FontWeight.w500),
+                    hintStyle: textStyle(
+                        const Color(0xff69758F), 14, FontWeight.w500),
                     prefixIconColor: const Color(0xff586279),
                     prefixIcon: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -79,30 +77,28 @@ class IpoCommonSearch extends ConsumerWidget {
                           width: 20),
                     ),
                     // if()
-                    suffixIcon: 
-                    
-                     ValueListenableBuilder<TextEditingValue>(
-  valueListenable: ipo.ipocommonsearchcontroller,
-  builder: (context, value, child) {
-    return value.text.isNotEmpty
-        ? InkWell(
-            onTap: () {
-              ipo.clearCommonIpoSearch(); 
-            },
-            borderRadius: BorderRadius.circular(50),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: SvgPicture.asset(
-                assets.removeIcon,
-                fit: BoxFit.scaleDown,
-                width: 20,
-              ),
-            ),
-          )
-        : const SizedBox.shrink(); 
-  },
-),
-
+                    suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: ipo.ipocommonsearchcontroller,
+                      builder: (context, value, child) {
+                        return value.text.isNotEmpty
+                            ? InkWell(
+                                onTap: () {
+                                  ipo.clearCommonIpoSearch();
+                                },
+                                borderRadius: BorderRadius.circular(50),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12.0),
+                                  child: SvgPicture.asset(
+                                    assets.removeIcon,
+                                    fit: BoxFit.scaleDown,
+                                    width: 20,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink();
+                      },
+                    ),
                     enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide.none,
                         borderRadius: BorderRadius.circular(20)),
@@ -110,7 +106,7 @@ class IpoCommonSearch extends ConsumerWidget {
                     focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide.none,
                         borderRadius: BorderRadius.circular(20)),
-                    hintText: "Search IPOs",
+                    hintText: "Search IPO",
                     contentPadding: const EdgeInsets.only(top: 20),
                     border: OutlineInputBorder(
                         borderSide: BorderSide.none,
@@ -155,12 +151,16 @@ class IpoCommonSearch extends ConsumerWidget {
                           String ipotype = "";
 
                           if (checkIpoStatus == "Listed") {
-                            var listdata = ipo.ipoCommonSearchList[index].toJson();
-                            listdata['exch'] = ipo.ipoCommonSearchList[index].exchange;
+                            var listdata =
+                                ipo.ipoCommonSearchList[index].toJson();
+                            listdata['exch'] =
+                                ipo.ipoCommonSearchList[index].exchange;
                             listdata['expDate'] = "";
                             listdata['option'] = "";
                             listdata['instname'] = "";
-                            listdata['tsym'] = ipo.ipoCommonSearchList[index].symbol.split(":")[1];
+                            listdata['tsym'] = ipo
+                                .ipoCommonSearchList[index].symbol
+                                .split(":")[1];
                             await market.calldepthApis(context, listdata, "");
                           } else if (checkIpoStatus == "Live") {
                             await ipo.getIpoSinglePage(

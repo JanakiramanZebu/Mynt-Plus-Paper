@@ -66,7 +66,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -112,7 +112,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                                   ? "assets/icon/success.svg"
                                   : "assets/icon/pendingicon.svg"),
                           const SizedBox(
-                            width: 5,
+                            width: 4,
                           ),
                           Text(
                             ipodetails.reponseStatus == "new success"
@@ -162,7 +162,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                               ? "assets/icon/pendingicon.svg"
                               : "assets/icon/success.svg"),
                           const SizedBox(
-                            width: 5,
+                            width: 4,
                           ),
                           Text(
                             ipodetails.upiPaymentStatus == ""
@@ -183,6 +183,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
               ),
             ),
             Divider(
+               height: 0,
               color: theme.isDarkMode
                   ? colors.darkColorDivider
                   : colors.colorDivider,
@@ -192,7 +193,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             // ),
 
             Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
+                padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -266,9 +267,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             //     ],
             //   ),
             // ),
-            const SizedBox(
-              height: 8,
-            ),
+           
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
             // child: Row(
@@ -321,7 +320,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             // ),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 0 ),
               child: Row(
                 // mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -417,10 +416,12 @@ class IpoOpenOrderDetails extends ConsumerWidget {
               height: 16,
             ),
             Divider(
+               height: 0,
               color: theme.isDarkMode
                   ? colors.darkColorDivider
                   : colors.colorDivider,
             ),
+            SizedBox(height: 8,),
             data(
                 "App no",
                 ipodetails.type == "BSE"
@@ -449,6 +450,17 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                         value: double.parse(ipodetails.bidDetail![0].amount!)
                             .toDouble(),
                       )}",
+                theme),
+
+                 data(
+                "Bid Date & Time",
+                ipodetails.
+responseDatetime  .toString() ==
+                                              ""
+                                          ? "----"
+                                          : ipodateres(ipodetails
+                                              .responseDatetime
+                                              .toString()),
                 theme),
 
             Padding(
@@ -657,7 +669,9 @@ SizedBox(
                   )}"
             )),
             
-            DataCell(Center(
+            
+            DataCell(Padding(
+             padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Icon(
                 isCutOff ? Icons.check_circle : Icons.cancel,
                 color: isCutOff ? Colors.green : Colors.red,
@@ -701,7 +715,7 @@ SizedBox(
   Padding data(String name, String value, ThemesProvider theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: 16,
+        horizontal: 16,vertical: 8
       ),
       child: Column(
         children: [
@@ -725,9 +739,10 @@ SizedBox(
             ],
           ),
           const SizedBox(
-            height: 5,
+            height: 8,
           ),
           Divider(
+             height: 0,
             color: theme.isDarkMode
                 ? colors.darkColorDivider
                 : colors.colorDivider,

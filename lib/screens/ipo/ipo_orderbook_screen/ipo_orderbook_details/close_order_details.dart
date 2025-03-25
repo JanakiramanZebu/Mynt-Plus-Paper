@@ -27,65 +27,55 @@ class IpoCloseOrderDetails extends ConsumerWidget {
     final theme = watch(themeProvider);
     return Scaffold(
       appBar: AppBar(
-          elevation: .2,
-          centerTitle: false,
-          // leadingWidth: 40,
-          titleSpacing: -8,
-          leading: Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 8)
-    
-    ,
-    child: InkWell(
-                  onTap: () { 
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child:Icon(
-                              Icons.arrow_back_ios,
-                              color: theme.isDarkMode
-                                  ? const Color(0xffBDBDBD)
-                                  : colors.colorGrey,
-                              size: 22,
-                            ),
-    
-                  ),
-                ),
-  ),
-
-         
-
-          backgroundColor:
-              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          shadowColor: const Color(0xffECEFF3),
-          title: 
-
-                       Text(
-                "Order Details",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w600),
+        elevation: .2,
+        centerTitle: false,
+        // leadingWidth: 40,
+        titleSpacing: -8,
+        leading: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: InkWell(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Icon(
+                Icons.arrow_back_ios,
+                color: theme.isDarkMode
+                    ? const Color(0xffBDBDBD)
+                    : colors.colorGrey,
+                size: 22,
               ),
-                      
-                      
-                      ),
+            ),
+          ),
+        ),
+
+        backgroundColor:
+            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        shadowColor: const Color(0xffECEFF3),
+        title: Text(
+          "Order Details",
+          style: textStyle(
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              16,
+              FontWeight.w600),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                       
                         children: [
                           Text(
                             ipoclose.companyName.toString(),
@@ -94,7 +84,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                                     ? colors.colorWhite
                                     : colors.colorBlack),
                           ),
-                          const SizedBox(height: 5),
+                          const SizedBox(height: 4),
                           Text(ipoclose.symbol.toString(),
                               style: textStyles.scripExchTxtStyle),
                           const SizedBox(height: 16),
@@ -121,7 +111,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Order Id : ${ipoclose.bidReferenceNumber != ""?ipoclose.bidReferenceNumber.toString():" - "}",
+                            "Order Id : ${ipoclose.bidReferenceNumber != "" ? ipoclose.bidReferenceNumber.toString() : " - "}",
                             style: textStyle(
                                 colors.colorGrey, 14, FontWeight.w600),
                           ),
@@ -138,7 +128,6 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                           //       14,
                           //       FontWeight.w600),
                           // )
-                          
                         ],
                       ),
                       Row(
@@ -147,7 +136,8 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                           SvgPicture.asset(
                               ipoclose.reponseStatus == "cancel success"
                                   ? "assets/icon/failed.svg"
-                                  : ipoclose.reponseStatus == "new failed"|| ipoclose.reponseStatus == "failed"
+                                  : ipoclose.reponseStatus == "new failed" ||
+                                          ipoclose.reponseStatus == "failed"
                                       ? "assets/icon/failed.svg"
                                       : "assets/icon/pendingicon.svg"),
                           const SizedBox(
@@ -156,7 +146,8 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                           Text(
                             ipoclose.reponseStatus == "cancel success"
                                 ? "Cancelled"
-                                : ipoclose.reponseStatus == "new failed" || ipoclose.reponseStatus == "failed"
+                                : ipoclose.reponseStatus == "new failed" ||
+                                        ipoclose.reponseStatus == "failed"
                                     ? "Failed"
                                     : "Pending",
                             style: textStyle(
@@ -203,7 +194,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                               ? "assets/icon/failed.svg"
                               : "assets/icon/success.svg"),
                           const SizedBox(
-                            width: 5,
+                            width: 4,
                           ),
                           Text(
                             ipoclose.upiPaymentStatus == ""
@@ -224,35 +215,39 @@ class IpoCloseOrderDetails extends ConsumerWidget {
               ),
             ),
             Divider(
+              height: 0,
               color: theme.isDarkMode
                   ? colors.darkColorDivider
                   : colors.colorDivider,
             ),
 
             Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                "Reason",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600),
-              ),
-              SizedBox(height: 8,),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Reason",
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w600),
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    Text(
+                      ipoclose.failReason == ""
+                          ? " - "
+                          : ipoclose.failReason
+                              .toString(), //Order cancelled successfully
+                      style: textStyle(colors.colorGrey, 14, FontWeight.w500),
+                    ),
+                  ],
+                )),
 
-              Text(
-                  ipoclose.failReason == ""? " - " :ipoclose.failReason.toString() , //Order cancelled successfully 
-                style: textStyle(colors.colorGrey, 14, FontWeight.w500),
-              ),
-
-
-                ],
-              )
-            ),
-           
             // const SizedBox(
             //   height: 10,
             // ),
@@ -321,7 +316,8 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                         "dd-mm-yyyy")) ==
                 true) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   // mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -341,8 +337,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                                   color: theme.isDarkMode
                                       ? colors.colorGrey
                                       : colors.colorBlack),
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               shape: const RoundedRectangleBorder(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(30)))),
@@ -359,13 +354,14 @@ class IpoCloseOrderDetails extends ConsumerWidget {
               ),
             ],
 
-            const SizedBox(
-              height: 16,
-            ),
             Divider(
+              height: 0,
               color: theme.isDarkMode
                   ? colors.darkColorDivider
                   : colors.colorDivider,
+            ),
+            SizedBox(
+              height: 8,
             ),
             data("App no", ipoclose.applicationNumber.toString(), theme),
             data("Quantity", ipoclose.bidDetail![0].quantity.toString(), theme),
@@ -387,6 +383,12 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                         value: double.parse(ipoclose.bidDetail![0].amount!)
                             .toDouble(),
                       )}",
+                theme),
+            data(
+                "Bid Date & Time",
+                ipoclose.responseDatetime.toString() == ""
+                    ? "----"
+                    : ipodateres(ipoclose.responseDatetime.toString()),
                 theme),
 
             Padding(
@@ -414,7 +416,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
             //         child: Column(
             //           crossAxisAlignment: CrossAxisAlignment.start,
             //           children: [
-                       
+
             //             Row(
             //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
             //               children: [
@@ -427,8 +429,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
             //               style:
             //                   textStyle(colors.colorGrey, 14, FontWeight.w500),
             //             ),
-                       
-                                
+
             //                   ],
             //                 ),
             //                 Column(
@@ -544,57 +545,49 @@ class IpoCloseOrderDetails extends ConsumerWidget {
             //       );
             //     }),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: DataTable(
-                      columnSpacing: 16.0,
-                       horizontalMargin: 0,
-                      
-                      columns: const [
-                        
-                        DataColumn(label: Text("Bid")),
-                        DataColumn(label: Text("Qty")),
-                        DataColumn(label: Text("Price")),                        
-                        DataColumn(label: Text("Amount")),
-                        DataColumn(label: Text("Cut off")),
-                      ],
-                      rows: List<DataRow>.generate(
-                        ipoclose.bidDetail!.length,
-                        (index) {
-                          final bid = ipoclose.bidDetail![index];
-                           final isCutOff = ipoclose.type == "BSE"
-                            ? (bid.cuttoffflag! != "0")
-                            : bid.atCutOff!;
-                          return DataRow(cells: [
-                            DataCell(Text("${index + 1}")),
-                            DataCell(Text(bid.quantity!)),
-                           
-                            DataCell(Text(ipoclose.type == "BSE" ? bid.rate! : bid.price!)),
-                             DataCell(Text(
-                              ipoclose.type == "BSE"
-                                  ? "₹${getFormatter(noDecimal: true, v4d: false, value: (double.parse(bid.rate!) * double.parse(bid.quantity!)))}"
-                                  : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(bid.amount!).toDouble())}"
-                            )),
-                            
-                            DataCell(Center(
-                              child: Icon(
-                              isCutOff ? Icons.check_circle : Icons.cancel,
-                              color: isCutOff ? Colors.green : Colors.red,
-                                                        ),
-                            )),
-                          ]);
-                        },
-                      ),
-                    ),
+            SizedBox(
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: DataTable(
+                  columnSpacing: 16.0,
+                  horizontalMargin: 0,
+                  columns: const [
+                    DataColumn(label: Text("Bid")),
+                    DataColumn(label: Text("Qty")),
+                    DataColumn(label: Text("Price")),
+                    DataColumn(label: Text("Amount")),
+                    DataColumn(label: Text("Cut off")),
+                  ],
+                  rows: List<DataRow>.generate(
+                    ipoclose.bidDetail!.length,
+                    (index) {
+                      final bid = ipoclose.bidDetail![index];
+                      final isCutOff = ipoclose.type == "BSE"
+                          ? (bid.cuttoffflag! != "0")
+                          : bid.atCutOff!;
+                      return DataRow(cells: [
+                        DataCell(Text("${index + 1}")),
+                        DataCell(Text(bid.quantity!)),
+                        DataCell(Text(
+                            ipoclose.type == "BSE" ? bid.rate! : bid.price!)),
+                        DataCell(Text(ipoclose.type == "BSE"
+                            ? "₹${getFormatter(noDecimal: true, v4d: false, value: (double.parse(bid.rate!) * double.parse(bid.quantity!)))}"
+                            : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(bid.amount!).toDouble())}")),
+                        DataCell(Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Icon(
+                            isCutOff ? Icons.check_circle : Icons.cancel,
+                            color: isCutOff ? Colors.green : Colors.red,
+                          ),
+                        )),
+                      ]);
+                    },
                   ),
-                )
+                ),
+              ),
+            )
 
-
-
-
-               
             // Padding(
             //   padding: const EdgeInsets.only(top: 8, left: 16, bottom: 5),
             //   child: Text(
@@ -620,12 +613,9 @@ class IpoCloseOrderDetails extends ConsumerWidget {
 
   Padding data(String name, String value, ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
         children: [
-          
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -646,9 +636,10 @@ class IpoCloseOrderDetails extends ConsumerWidget {
             ],
           ),
           const SizedBox(
-            height: 5,
+            height: 8,
           ),
           Divider(
+            height: 0,
             color: theme.isDarkMode
                 ? colors.darkColorDivider
                 : colors.colorDivider,

@@ -8,6 +8,7 @@ class Sip_single_page {
    String? liveCancel;
     String? schemename;
      String? Msg;
+  String? internalrefernumber;
 
   Sip_single_page(
       {this.clientCode,
@@ -18,11 +19,13 @@ class Sip_single_page {
       this.sipregnno,
        this.schemename,
       this.stat,
+      this.internalrefernumber,
       this.Msg,});
 
   Sip_single_page.fromJson(Map<String, dynamic> json) {
     clientCode = json['client_code'];
     installmentAmount = json['installment_amount'];
+    internalrefernumber = json['internalrefernumber'];
     if (json['inv_list'] != null) {
       invList =json['inv_list'];
       };
@@ -38,6 +41,7 @@ class Sip_single_page {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['client_code'] = this.clientCode;
     data['installment_amount'] = this.installmentAmount;
+    data['internalrefernumber'] = this.internalrefernumber;
     if (this.invList != null) {
       data['inv_list'] = this.invList!.map((v) => v.toJson()).toList();
     }

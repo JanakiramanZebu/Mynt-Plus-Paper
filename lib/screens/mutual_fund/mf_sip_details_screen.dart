@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/screens/mutual_fund/mf_cancel_sip_alert.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_timeline.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/ipo_time_line.dart';
@@ -252,8 +253,109 @@ const SizedBox(height: 8),
                     13,
                     FontWeight.w500),
               ),
-            ]
+            ],
          
+         const SizedBox(height: 20),
+
+if( mfdata.mfsinglepageres?.liveCancel == "LIVE") ... [
+
+          Row(
+  children: [
+    Expanded(
+      flex: 6, // Takes 6 columns
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () async {
+          await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return MfSipCancelalert(mfcancels: mfdata.mfsinglepageres!.schemename ?? "", mforderno: mfdata.mfsinglepageres!.sipregnno ?? "", mfreferno: mfdata.mfsinglepageres!.internalrefernumber ?? "", message: "sip",) ;
+          },
+        );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white, // White background
+            foregroundColor: const Color.fromARGB(255, 0, 0, 0), // Text and icon color
+            side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0), width: 1), // Outlined border
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20), // Optional: rounded corners
+            ),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon(
+              //   Icons.cancel,
+              //   color: Color.fromARGB(255, 0, 0, 0),
+              //   size: 18,
+              // ),
+              // SizedBox(width: 6),
+              Text(
+                "Cancel SIP",
+                style: TextStyle(
+                  color: Color.fromARGB(255, 0, 0, 0),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+    const SizedBox(width: 10), // Space between buttons
+    if( mfdata.mfsinglepageres?.liveCancel == "LIVE" ||  mfdata.mfsinglepageres?.liveCancel != "PAUSE") ... [
+    Expanded(
+      flex: 6, // Takes 6 columns
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () async{
+            // Your second button logic
+             await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return MfSipCancelalert(mfcancels: mfdata.mfsinglepageres!.schemename ?? "", mforderno: mfdata.mfsinglepageres!.sipregnno ?? "", mfreferno: mfdata.mfsinglepageres!.internalrefernumber ?? "", message: "pause",) ;
+          },
+        );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+            side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0), width: 1),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon(
+              //   Icons.check_circle,
+              //   color: Color.fromARGB(255, 0, 0, 0),
+              //   size: 18,
+              // ),
+              // SizedBox(width: 6),
+              Text(
+                "Pause SIP",
+                style: TextStyle(
+                  color: Color.fromARGB(255, 0, 0, 0),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+    ]
+  ],
+)
+
+]
+          
             ])
 
 //           Column(

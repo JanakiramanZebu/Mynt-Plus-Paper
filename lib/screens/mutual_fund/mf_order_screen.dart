@@ -718,6 +718,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                   onChanged: (value) async {
                                     mfOrder.chngFrequency("$value");
                                   })),
+                       
                         ],
                       ),
                     ),

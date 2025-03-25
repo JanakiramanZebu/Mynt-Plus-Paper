@@ -7,6 +7,7 @@ import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/routes/route_names.dart';
+import 'package:mynt_plus/screens/mutual_fund/redemption_bottomsheet_mf.dart';
 import 'package:mynt_plus/screens/portfolio_screens/mfHoldings/filter_scrip_bottom_sheet.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
@@ -318,6 +319,12 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
                                   //     );
                                   //   }
                                   // },
+                                   onTap: () async {
+                                   _showBottomSheet(
+                                        context,
+                                        RedemptionBottomScreen(mfHoldingData:mfHolding.mfHoldingsModel![index]),
+                                      );
+                                   },
                                  child: Container(
   padding: const EdgeInsets.all(0), // Set even padding
   child: Column(
@@ -620,5 +627,20 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
         ),
       );
     });
+  }
+    void _showBottomSheet(BuildContext context, Widget BottomSheet) {
+    showModalBottomSheet(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        useSafeArea: true,
+        isDismissible: true,
+        backgroundColor: Colors.white,
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: BottomSheet));
   }
 }

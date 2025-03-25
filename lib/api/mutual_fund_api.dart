@@ -6,7 +6,10 @@ import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_hold_singlepage_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_holding_new_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_order_det_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_sip_cancel_mess_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_sip_reject_reason.dart';
 import 'package:mynt_plus/models/mf_model/mf_sip_single_page_provider.dart';
+import 'package:mynt_plus/models/mf_model/pause_sip_model.dart';
 import 'package:mynt_plus/models/mf_model/sip_mf_list_model.dart';
 
 import '../api/core/api_core.dart';
@@ -72,6 +75,24 @@ mixin MutualFundApi on ApiCore {
       // log("MF Master ==>$json");
 
       return NFODataModel.fromJson({"data":json});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+   Future<mf_sip_reject_res> getsiprejreason() async {
+    try {
+      final uri = Uri.parse(apiLinks.nfoMF);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({
+          }));
+
+      final json = jsonDecode((res.body));
+
+      // log("MF Master ==>$json");
+
+      return mf_sip_reject_res.fromJson(json);
     } catch (e) {
       rethrow;
     }
@@ -213,6 +234,93 @@ String convertNumber(num value) {
       rethrow;
     }
   }
+
+
+  cancelsipapi(orderno,siprefno,droupreason,retext) async {
+      print("ordermo ${orderno} ,siprefno ${siprefno} , droupreason ${droupreason} ");
+    try {
+      print("object");
+      print("${orderno}");
+
+      final uri = Uri.parse(apiLinks.sipcancelapiend);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({
+            "client_code": "${prefs.clientId}",
+            "xsip_reg_no":orderno,
+            "internal_refer_no":siprefno,
+            "case_no":droupreason,
+            "remarks": droupreason == "13" ? "${retext}" : ""
+          }));
+
+      final json = jsonDecode((res.body));
+
+      print("MF cansipp resss ==>${json}");
+
+      return mf_sip_cancel_message.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+    pausesipapi(orderno,notext) async {
+      print("pausee ordermo ${orderno} ,siprefno ${notext}");
+    try {
+      print("object pausee");
+      print("${orderno}");
+
+      final uri = Uri.parse(apiLinks.pausesipendpoint);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({
+            "client_code": "${prefs.clientId}",
+            "xsip_reg_no":orderno,
+            "installments": notext
+          }));
+
+      final json = jsonDecode((res.body));
+
+      print("pause res p resss ==>${json}");
+
+      return pause_spi_res.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      print("${"error in pause ${e}"}");
+      rethrow;
+    }
+  }
+
+//  pausesipapi(orderno, notext) async {
+//   print("pause ordermo: $orderno, siprefno: $notext");
+
+//   try {
+//     final uri = Uri.parse(apiLinks.pausesipendpoint);
+//     final res = await apiClient.post(
+//       uri,
+//       headers: defaultHeaders,
+//       body: jsonEncode({
+//         "client_code": prefs.clientId,
+//         "xsip_reg_no": orderno,
+//         "installments": notext
+//       }),
+//     );
+
+//     print("Raw Response: ${res.body}");
+
+//     // Check for non-200 response
+//     if (res.statusCode != 200) {
+//       print("HTTP Error: ${res.statusCode}");
+//       throw Exception("API Error: ${res.statusCode} - ${res.body}");
+//     }
+
+//     final json = jsonDecode(res.body);
+//     print("Parsed JSON Response: $json");
+
+//     return pause_spi_res.fromJson(json as Map<String, dynamic>);
+//   } catch (e) {
+//     print("Error in pause: $e");
+//     rethrow;
+//   }
+// }
 
   mfallcatnewapi() async {
       // print("object",orderno);

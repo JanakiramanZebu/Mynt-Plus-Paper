@@ -7,6 +7,7 @@ import '../../provider/mf_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/functions.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class MutualFundNewScreen extends ConsumerWidget {
   TabController tabController;
@@ -39,174 +40,179 @@ class MutualFundNewScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: 
                 SizedBox(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // const Text(
-                      //   "Mutual funds",
-                      //   style: TextStyle(
-                      //     fontSize: 20,
-                      //     color: Color(0xFF2F3A9F),
-                      //     fontWeight: FontWeight.w500,
-                      //   ),
-                      // ),
-                      // const SizedBox(height: 8),
-
-                      // const SizedBox(height: 5),
-                      // const Center(
-                      // const Text(
-                      //   "Current Value",
-                      //   style: TextStyle(
-                      //     color: Color(0xFF666666),
-                      //     fontSize: 14,
-                      //     fontWeight: FontWeight.w500,
-                      //   ),
-                      // ),
-
-                      // const SizedBox(height: 5),
-
-                      // Text(
-                      //   portfolio.mfTotCurrentVal != null
-                      //       ? portfolio.mfTotCurrentVal.toStringAsFixed(2)
-                      //       : "0.00",
-                      //   style: const TextStyle(
-                      //     fontSize: 28,
-                      //     fontWeight: FontWeight.w600,
-                      //     color: Colors.black,
-                      //   ),
-                      // ),
-                      // // ),
-
-                      // const SizedBox(height: 6),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Purchase ",
-                                style: TextStyle(
-                                  color: Color(0xFF666666),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                "${(mfData.mfholdingnew?.purchaseValue == "" || mfData.mfholdingnew?.purchaseValue == null) ? "0.00" : mfData.mfholdingnew?.purchaseValue}",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: (double.tryParse(mfData.mfholdingnew
-                                                      ?.purchaseValue ??
-                                                  "0") ??
-                                              0) >=
-                                          0
-                                      ? const Color.fromARGB(255, 0, 0, 0)
-                                      : const Color.fromARGB(255, 0, 0, 0),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              const Text(
-                                "Gain / Loss",
-                                style: TextStyle(
-                                  color: Color(0xFF666666),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                "${(mfData.mfholdingnew?.gainOrLoss == "" ||mfData.mfholdingnew?.gainOrLoss == null) ? "0.00" : mfData.mfholdingnew?.gainOrLoss}",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: (double.tryParse(mfData.mfholdingnew
-                                                      ?.gainOrLoss ??
-                                                  "0") ??
-                                              0) >=
-                                          0
-                                      ? Colors.green
-                                      : Colors.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-
-                      // const Divider(
-                      //   color: Color.fromARGB(255, 216, 212, 212),
-                      //   thickness: 0.5,
-                      // ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Current",
-                                style: TextStyle(
-                                  color: Color(0xFF666666),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                "${(mfData.mfholdingnew?.currentValue == "" || mfData.mfholdingnew?.currentValue == null) ? "0.00" : mfData.mfholdingnew?.currentValue}",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: (double.tryParse(mfData.mfholdingnew
-                                                      ?.currentValue ??
-                                                  "0") ??
-                                              0) >=
-                                          0
-                                      ? const Color.fromARGB(255, 0, 0, 0)
-                                      : const Color.fromARGB(255, 0, 0, 0),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              const Text(
-                                "Abs Returns %",
-                                style: TextStyle(
-                                  color: Color(0xFF666666),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-  "${mfData.mfholdingnew?.percentage?.toString() ?? "0"}%", // Ensures percentage is always a valid string
-  style: TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w500,
-    color: (double.tryParse(mfData.mfholdingnew?.percentage?.toString() ?? "0") ?? 0) >= 0
-        ? Colors.green
-        : const Color(0xFFFF1717), // Red color for negative values
-  ),
-),
-
-                            ],
-                          ),
-                        ],
-                      ),
+                  child:
                   
-                    ],
-                  ),
+                   Skeletonizer(
+                    enabled : mfData.holdstatload!,
+                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // const Text(
+                        //   "Mutual funds",
+                        //   style: TextStyle(
+                        //     fontSize: 20,
+                        //     color: Color(0xFF2F3A9F),
+                        //     fontWeight: FontWeight.w500,
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 8),
+                     
+                        // const SizedBox(height: 5),
+                        // const Center(
+                        // const Text(
+                        //   "Current Value",
+                        //   style: TextStyle(
+                        //     color: Color(0xFF666666),
+                        //     fontSize: 14,
+                        //     fontWeight: FontWeight.w500,
+                        //   ),
+                        // ),
+                     
+                        // const SizedBox(height: 5),
+                     
+                        // Text(
+                        //   portfolio.mfTotCurrentVal != null
+                        //       ? portfolio.mfTotCurrentVal.toStringAsFixed(2)
+                        //       : "0.00",
+                        //   style: const TextStyle(
+                        //     fontSize: 28,
+                        //     fontWeight: FontWeight.w600,
+                        //     color: Colors.black,
+                        //   ),
+                        // ),
+                        // // ),
+                     
+                        // const SizedBox(height: 6),
+                     
+                     
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Purchase ",
+                                  style: TextStyle(
+                                    color: Color(0xFF666666),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  "${(mfData.mfholdingnew?.purchaseValue == "" || mfData.mfholdingnew?.purchaseValue == null) ? "0.00" : mfData.mfholdingnew?.purchaseValue}",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: (double.tryParse(mfData.mfholdingnew
+                                                        ?.purchaseValue ??
+                                                    "0") ??
+                                                0) >=
+                                            0
+                                        ? const Color.fromARGB(255, 0, 0, 0)
+                                        : const Color.fromARGB(255, 0, 0, 0),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  "Gain / Loss",
+                                  style: TextStyle(
+                                    color: Color(0xFF666666),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  "${(mfData.mfholdingnew?.gainOrLoss == "" ||mfData.mfholdingnew?.gainOrLoss == null) ? "0.00" : mfData.mfholdingnew?.gainOrLoss}",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: (double.tryParse(mfData.mfholdingnew
+                                                        ?.gainOrLoss ??
+                                                    "0") ??
+                                                0) >=
+                                            0
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Current",
+                                  style: TextStyle(
+                                    color: Color(0xFF666666),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  "${(mfData.mfholdingnew?.currentValue == "" || mfData.mfholdingnew?.currentValue == null) ? "0.00" : mfData.mfholdingnew?.currentValue}",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: (double.tryParse(mfData.mfholdingnew
+                                                        ?.currentValue ??
+                                                    "0") ??
+                                                0) >=
+                                            0
+                                        ? const Color.fromARGB(255, 0, 0, 0)
+                                        : const Color.fromARGB(255, 0, 0, 0),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  "Abs Returns %",
+                                  style: TextStyle(
+                                    color: Color(0xFF666666),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                       "${mfData.mfholdingnew?.percentage?.toString() ?? "0"}%", // Ensures percentage is always a valid string
+                       style: TextStyle(
+                         fontSize: 18,
+                         fontWeight: FontWeight.w500,
+                         color: (double.tryParse(mfData.mfholdingnew?.percentage?.toString() ?? "0") ?? 0) >= 0
+                             ? Colors.green
+                             : const Color(0xFFFF1717), // Red color for negative values
+                       ),
+                     ),
+                     
+                              ],
+                            ),
+                          ],
+                        ),
+                     
+                      ],
+                                      
+                                       ),
+                   ),
+
+
+                
                 ),
               ),
             ),
@@ -219,7 +225,7 @@ class MutualFundNewScreen extends ConsumerWidget {
           const Padding(
             padding: EdgeInsets.only(left: 16, top: 10, bottom: 0),
             child: Text(
-              "Quick Invest",
+              "Quick Access",
               style: TextStyle(
                 fontSize: 19,
                 fontWeight: FontWeight.w600,

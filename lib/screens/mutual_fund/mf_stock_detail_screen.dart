@@ -109,7 +109,11 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
               const SizedBox(width: 10), // Space between buttons
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async{
+                    if (widget.mfStockData.sIPFLAG == "Y") {
+                      await mfData.invertfun("${widget.mfStockData.iSIN}",
+                          "${widget.mfStockData.schemeCode}");
+                    }
                     Navigator.pushNamed(context, Routes.mforderScreen,
                         arguments: widget.mfStockData);
                     mfData.orderchangetitle("SIP");
@@ -156,8 +160,10 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
       },
     ),
   ),
-  actions: [
-    IconButton(
+ actions: [
+  Padding(
+    padding: EdgeInsets.only(right: 8), // Adjust spacing
+    child: IconButton(
       icon: SvgPicture.asset(
         mfData.watchbatchval == true ? assets.bookmarkIcon : assets.bookmarkedIcon,
         fit: BoxFit.contain,
@@ -174,7 +180,10 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
         mfData.fetchmatchisan(widget.mfStockData.iSIN!);
       },
     ),
-  ],
+  ),
+],
+
+
                   bottom: PreferredSize(
                     preferredSize: Size.fromHeight(100),
                     child: Padding(

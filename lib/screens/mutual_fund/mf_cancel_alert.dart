@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/models/mf_model/mf_orderbook_lumpsum_model.dart';
-import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
+// import 'package:mynt_plus/models/fund_model_testing_copy/fund_direct_payment_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_order_det_model.dart';
+// import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 // import '../../../models/ipo_model/ipo_place_order_model.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
@@ -13,7 +14,8 @@ import '../../res/res.dart';
 
 class MfCancelAlert extends ConsumerWidget {
   final Data mfcancel;
-  const MfCancelAlert({super.key, required this.mfcancel});
+  final String message; 
+  const MfCancelAlert({super.key, required this.mfcancel,required this.message});
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = watch(themeProvider);
@@ -75,7 +77,7 @@ class MfCancelAlert extends ConsumerWidget {
                   onPressed: () async{
                 
                         await mfData.cancelredumorder(context, mfcancel.ordernumber);
-                        ;
+                        
                      Navigator.pop(context);
                   },
                   child: Text("Yes",

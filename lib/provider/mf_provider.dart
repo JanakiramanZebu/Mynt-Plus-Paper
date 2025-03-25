@@ -10,7 +10,10 @@ import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_hold_singlepage_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_holding_new_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_order_det_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_sip_cancel_mess_model.dart';
+import 'package:mynt_plus/models/mf_model/mf_sip_reject_reason.dart';
 import 'package:mynt_plus/models/mf_model/mf_sip_single_page_provider.dart';
+import 'package:mynt_plus/models/mf_model/pause_sip_model.dart';
 import 'package:mynt_plus/models/mf_model/sip_mf_list_model.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -100,6 +103,9 @@ class MFProvider extends DefaultChangeNotifier {
 
   mf_holding_sig_det? _mfholdsingepage;
   mf_holding_sig_det? get mfholdsingepage => _mfholdsingepage;
+
+    mf_sip_reject_res? _mfsiprejreason;
+  mf_sip_reject_res? get mfsiprejreason => _mfsiprejreason;
 
   mf_holdoing_new? _mfholdingnew;
   mf_holdoing_new? get mfholdingnew => _mfholdingnew;
@@ -196,6 +202,9 @@ class MFProvider extends DefaultChangeNotifier {
   String _selechip = "";
   String get selctedchip => _selechip;
 
+    String _droupreason = "";
+  String get droupreason => _droupreason;
+
   String _orderseltab = "";
   String get orderseltab => _orderseltab;
 
@@ -205,6 +214,9 @@ class MFProvider extends DefaultChangeNotifier {
    bool? _watchbatchval = false;
   bool? get watchbatchval => _watchbatchval;
 
+  bool? _holdstatload = false;
+  bool? get holdstatload => _holdstatload;
+
   RangeValues _currentRangeValues = const RangeValues(0, 11);
   RangeValues get currentRangeValues => _currentRangeValues;
 
@@ -213,6 +225,9 @@ class MFProvider extends DefaultChangeNotifier {
   TextEditingController installmentAmt = TextEditingController();
   TextEditingController redemptionQty = TextEditingController();
   TextEditingController redemptionAmount = TextEditingController();
+   TextEditingController rejectsip = TextEditingController();
+   TextEditingController pausesip = TextEditingController();
+
   String? invAmtError,
       upiError,
       installmentAmtError,
@@ -236,6 +251,17 @@ class MFProvider extends DefaultChangeNotifier {
     _orderpagetitle = name;
     notifyListeners();
   }
+
+
+    orderrejectupdate(String name) {
+    _droupreason = name;
+    print("djfj${_droupreason}");
+    notifyListeners();
+  }
+
+cleartext(){
+  _droupreason = "";
+}
 
   changename(String name) {
     _namechange = name;
@@ -341,6 +367,12 @@ class MFProvider extends DefaultChangeNotifier {
   XsipOrderCancleResponces? _xsipOrderCancleResponces;
   XsipOrderCancleResponces? get xsipOrderCancleResponces =>
       _xsipOrderCancleResponces;
+
+        mf_sip_cancel_message? _mfsipcancelmess;
+  mf_sip_cancel_message? get mfsipcancelmess => _mfsipcancelmess;
+
+   pause_spi_res ? _mfsippause;
+  pause_spi_res? get mfsippause => _mfsippause;
 
   AllPaymentMfModel? _allPaymentMfModel;
   AllPaymentMfModel? get allPaymentMfModel => _allPaymentMfModel;
@@ -487,6 +519,65 @@ class MFProvider extends DefaultChangeNotifier {
 
   List get mFCategoryTypesStatic => _mFCategoryTypesStatic;
 
+final List _mfrejectsiplist = [
+        {
+            "id": "1",
+            "reason_name": "Non availability of Funds"
+        },
+        {
+            "id": "2",
+            "reason_name": "Scheme not performing"
+        },
+        {
+            "id": "3",
+            "reason_name": "Service issue"
+        },
+        {
+            "id": "4",
+            "reason_name": "Load Revised"
+        },
+        {
+            "id": "5",
+            "reason_name": "Wish to invest in other schemes"
+        },
+        {
+            "id": "6",
+            "reason_name": "Change in Fund Manager"
+        },
+        {
+            "id": "7",
+            "reason_name": "Goal Achieved"
+        },
+        {
+            "id": "8",
+            "reason_name": "Not comfortable with market volatility"
+        },
+        {
+            "id": "9",
+            "reason_name": "Will be restarting SIP after few months"
+        },
+        {
+            "id": "10",
+            "reason_name": "Modifications in bank/mandate/date etc"
+        },
+        {
+            "id": "11",
+            "reason_name": "I have decided to invest elsewhere"
+        },
+        {
+            "id": "12",
+            "reason_name": "This is not the right time to invest"
+        },
+        {
+            "id": "13",
+            "reason_name": "Others (pls specify the reason)"
+        }
+    ];
+
+List? get mfrejectsiplist => _mfrejectsiplist;
+
+
+
   // makefalse(String isn) {
   //   int index = _topmutualfund!.indexWhere((element) => element.iSIN == isn);
   //   if (index != -1) {
@@ -613,6 +704,9 @@ class MFProvider extends DefaultChangeNotifier {
   String _freqName = "";
   String _dates = "1";
   String get freqName => _freqName;
+  String _sipreason = "";
+  String get sipreason => _sipreason;
+
   String get dates => _dates;
 
   String _xsipvalue = "";
@@ -938,6 +1032,19 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
+  Future fetchsiprejreasn() async {
+    try {
+      // _investloader = true;
+      _mfsiprejreason = await api.getsiprejreason();
+      print("sip reject list${_mfsiprejreason?.toJson()}");
+      notifyListeners();
+    } catch (e) {
+      print("NFO sippp error :: $e");
+    } finally {
+      // _investloader = false;
+    }
+  }
+
   Future fetchTopSchemes() async {
     try {
       _investloader = true;
@@ -1145,7 +1252,7 @@ class MFProvider extends DefaultChangeNotifier {
     try {
       _bestmfloader = true;
       _mfsinglepageres = await api.getSipsinglepage(value);
-      print("themffffff${value}");
+      print("themffffff//${value}");
       print("nwewwwww${_mfsinglepageres?.invList.toString()}");
 
       notifyListeners();
@@ -1215,7 +1322,7 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future<void> fetchmfholdingnew() async {
     try {
-      //  _bestmfloader = true;
+       _holdstatload = true;
       _mfholdingnew = await api.getmfholdnewapi();
       // print("themffffff${value}");
       
@@ -1223,11 +1330,11 @@ class MFProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e, stackTrace) {
-      _bestmfloader = false;
+      _holdstatload = false;
       debugPrint("Error fetching mfliiist: $e\n$stackTrace");
       print("apii errror");
     } finally {
-      // _bestmfloader = false;
+      _holdstatload = false;
       notifyListeners();
     }
   }
@@ -1719,11 +1826,13 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future cancelredumorder(BuildContext context, orderno) async {
     try {
-      _mforderloader = true;
-
+      // _mforderloader = true;
+toggleLoadingOn(true);
       try {
+        toggleLoadingOn(true);
         _mfLumpSumOrderbook = await api.redemptioncancelapi(orderno);
         print("@@@1111111111111111$_mfLumpSumOrderbook");
+          Navigator.pop(context);
         fetchMfOrderbook(context);
 
         ScaffoldMessenger.of(context).showSnackBar(warningMessage(
@@ -1738,18 +1847,153 @@ class MFProvider extends DefaultChangeNotifier {
         //       successMessage(context, "${_createMandateModel!.resp}"));
         // }
       } catch (e) {
+        toggleLoadingOn(false);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Something Went Wrong"));
         log("Failed to Create Mandate :: ${e.toString()}");
         notifyListeners();
       }
     } catch (e) {
+       toggleLoadingOn(false);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Something Went Wrong"));
       log("Failed to fetchMfOrderbook :: ${e.toString()}");
       notifyListeners();
     }
-    // finally {
-    //   _mforderloader = false;
-    //   notifyListeners();
-    // }
+    finally {
+              toggleLoadingOn(false);
+      // _mforderloader = false;
+      notifyListeners();
+    }
   }
+
+
+Future cancelsiporder(BuildContext context, orderno,siprefno  ) async {
+  print("WWWWWW{${orderno},1111${siprefno},22222222!!${droupreason}!!,33333333${rejectsip.text}}");
+  if( droupreason != ""){
+    toggleLoadingOn(true);
+    try {
+          toggleLoadingOn(true);
+      try {
+    toggleLoadingOn(true);
+
+        _mfsipcancelmess = await api.cancelsipapi(orderno,siprefno,droupreason,rejectsip.text);
+        print("@@@1111111111111111$_mfLumpSumOrderbook");
+          // Navigator.pop(context);
+        fetchmfsiplist();
+if(_mfsipcancelmess?.stat == "Not Ok") {
+  toggleLoadingOn(false);
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "${_mfsipcancelmess?.emsg}"));
+            Navigator.pop(context);
+      }
+      if(_mfsipcancelmess?.stat == "Ok") {
+  toggleLoadingOn(false);
+            Navigator.pop(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Sip su ${_mfsipcancelmess?.msg}"));
+            Navigator.pop(context);
+      }
+       
+      } catch (e) {
+         toggleLoadingOn(false);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Something Went Wrong"));
+        log("Failed to Create Mandate :: ${e.toString()}");
+        notifyListeners();
+
+      }
+    } catch (e) {
+       toggleLoadingOn(false);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Something Went Wrong"));
+      log("Failed to fetchMfOrderbook :: ${e.toString()}");
+      notifyListeners();
+
+    }
+    finally {
+        toggleLoadingOn(false);
+      // _mforderloader = false;
+      notifyListeners();
+      // Navigator.pop(context);
+    }
+  }else{
+     ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "SIP Reject Reason Is Required*"));
+  }
+  rejectsip.text = "";
+  pausesip.text = "";
+  cleartext();
+  }
+
+
+
+  Future pausesiporder(BuildContext context, orderno  ) async {
+
+  print("@@@@@@@@{${orderno},${pausesip.text}}");
+  if( pausesip.text != ""){
+        toggleLoadingOn(true);
+    try {
+       toggleLoadingOn(true);
+
+      try {
+            toggleLoadingOn(true);
+        _mfsippause = await api.pausesipapi(orderno,pausesip.text);
+        print("pausee sip$_mfsippause");
+          Navigator.pop(context);
+        fetchmfsiplist();
+if(_mfsippause?.stat == "Not Ok") {
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "${_mfsipcancelmess?.msg}"));
+            Navigator.pop(context);
+      }
+      if(_mfsippause?.stat == "Ok") {
+        fetchmfsiplist();
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Sip su ${_mfsippause?.msg}"));
+            Navigator.pop(context);
+      }
+       
+      } catch (e) {
+          toggleLoadingOn(false);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Something Went Wrong"));
+        log("Failed to Create Mandate :: ${e.toString()}");
+        notifyListeners();
+        // Navigator.pop(context);
+      }
+    } catch (e) {
+        toggleLoadingOn(false);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Something Went Wrong"));
+      log("Failed to fetchMfOrderbook :: ${e.toString()}");
+      notifyListeners();
+      // Navigator.pop(context);
+    }
+    finally {
+           toggleLoadingOn(false);
+
+      notifyListeners();
+      Navigator.pop(context);
+    }
+  }else{
+     ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "No of installments is Required*"));
+  }
+    rejectsip.text = "";
+  pausesip.text = "";
+  cleartext();
+  }
+
+
+
 
   Future<void> fetchmfallcatnew() async {
     try {
@@ -2469,7 +2713,8 @@ print("okokok11${loading}");
     print("Change made");
     final RegExp upiRegex =
         RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
-    if (mfOrderTpye == "Lumpsum") {
+        print("mfOrderTpye${mfOrderTpye}");
+    if (mfOrderTpye == "One-time") {
       if (invAmt.text.isEmpty) {
         invAmtError = "Please enter Investment amount";
       } else if (double.parse(invAmt.text) <

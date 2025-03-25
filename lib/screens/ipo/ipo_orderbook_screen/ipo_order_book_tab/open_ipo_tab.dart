@@ -22,31 +22,31 @@ class IpoOpenOrder extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // if (ipo.openorder!.length > 4)
-            // Container(
-            //   alignment: Alignment.centerRight,
-            //   width: MediaQuery.of(context).size.width,
-            //   padding: const EdgeInsets.symmetric(vertical: 8),
-            //   decoration: BoxDecoration(
-            //       border: Border(
-            //           bottom: BorderSide(
-            //               color: theme.isDarkMode
-            //                   ? colors.darkGrey
-            //                   : const Color(0xffF1F3F8),
-            //               width: 6))),
-            //   child: InkWell(
-            //     onTap: () {
-            //       // ipo.showOpenSearch(true);
-            //     },
-            //     child: Padding(
-            //       padding: const EdgeInsets.only(right: 12, left: 10),
-            //       child: SvgPicture.asset(assets.searchIcon,
-            //           width: 19,
-            //           color: theme.isDarkMode
-            //               ? Color(0xffBDBDBD)
-            //               : colors.colorGrey),
-            //     ),
-            //   ),
-            // ),
+          // Container(
+          //   alignment: Alignment.centerRight,
+          //   width: MediaQuery.of(context).size.width,
+          //   padding: const EdgeInsets.symmetric(vertical: 8),
+          //   decoration: BoxDecoration(
+          //       border: Border(
+          //           bottom: BorderSide(
+          //               color: theme.isDarkMode
+          //                   ? colors.darkGrey
+          //                   : const Color(0xffF1F3F8),
+          //               width: 6))),
+          //   child: InkWell(
+          //     onTap: () {
+          //       // ipo.showOpenSearch(true);
+          //     },
+          //     child: Padding(
+          //       padding: const EdgeInsets.only(right: 12, left: 10),
+          //       child: SvgPicture.asset(assets.searchIcon,
+          //           width: 19,
+          //           color: theme.isDarkMode
+          //               ? Color(0xffBDBDBD)
+          //               : colors.colorGrey),
+          //     ),
+          //   ),
+          // ),
           if (ipo.showSearch)
             Container(
               height: 62,
@@ -138,107 +138,90 @@ class IpoOpenOrder extends ConsumerWidget {
                     for (var i = 0;
                         i < ipo.openorder![index].bidDetail!.length;
                         i++) {
-                      stringList.add( ipo.openorder![index].type== "BSE" ? (double.parse(ipo.openorder![index].bidDetail![i].rate!) * double.parse(ipo.openorder![index].bidDetail![i].quantity!)).toString() : ipo.openorder![index].bidDetail![i].amount.toString());
+                      stringList.add(ipo.openorder![index].type == "BSE"
+                          ? (double.parse(ipo
+                                      .openorder![index].bidDetail![i].rate!) *
+                                  double.parse(ipo.openorder![index]
+                                      .bidDetail![i].quantity!))
+                              .toString()
+                          : ipo.openorder![index].bidDetail![i].amount
+                              .toString());
                       bidqty.add(ipo.openorder![index].bidDetail![i].quantity
                           .toString());
                     }
-                    String maxValue = stringList.reduce((curr, next) =>
-                        double.parse(curr) > double.parse(next) ? curr : next).toString();
-                    String bidmaxvalue = bidqty.reduce((curr, next) =>
-                        double.parse(curr) > double.parse(next) ? curr : next).toString();
+                    String maxValue = stringList
+                        .reduce((curr, next) =>
+                            double.parse(curr) > double.parse(next)
+                                ? curr
+                                : next)
+                        .toString();
+                    String bidmaxvalue = bidqty
+                        .reduce((curr, next) =>
+                            double.parse(curr) > double.parse(next)
+                                ? curr
+                                : next)
+                        .toString();
                     return InkWell(
                       onTap: () {
                         Navigator.pushNamed(
                             context, Routes.ipoopendetailsscreen,
                             arguments: ipo.openorder![index]);
                       },
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            child: Row(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                        ipo.openorder![index].symbol
-                                            .toString(),
-                                        style: textStyles.scripNameTxtStyle
-                                            .copyWith(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack)),
-                                    const SizedBox(
-                                      height: 8,
-                                    ),
-                                    Row(
-                                      children: [
-                                        SvgPicture.asset(ipo.openorder![index]
-                                                    .reponseStatus ==
-                                                "new success"
-                                            ? "assets/icon/success.svg"
-                                            : "assets/icon/pendingicon.svg"),
-                                        const SizedBox(
-                                          width: 5,
-                                        ),
-                                        Text(
-                                          ipo.openorder![index]
-                                                      .reponseStatus ==
-                                                  "new success"
-                                              ? "Success"
-                                              : "Pending",
-                                          style: textStyle(
-                                              theme.isDarkMode
+                                SizedBox(
+                                  width: 250,
+                                  child: Text(
+                                      ipo.openorder![index].companyName
+                                          .toString(),
+                                      style: textStyles.scripNameTxtStyle
+                                          .copyWith(
+                                              color: theme.isDarkMode
                                                   ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              14,
-                                              FontWeight.w600),
-                                        ),
-                                        const SizedBox(
-                                          width: 8,
-                                        ),
-                                        Text(
-                                          "BID Qty: ",
-                                          style: textStyle(colors.colorGrey, 12,
-                                              FontWeight.w500),
-                                        ),
-                                        Text(
-                                          bidmaxvalue,
-                                          style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              14,
-                                              FontWeight.w600),
-                                        )
-                                      ],
-                                    ),
-                                  ],
+                                                  : colors.colorBlack),
+                                      overflow: TextOverflow.ellipsis),
                                 ),
-                                SvgPicture.asset(assets.rightArrowIcon)
+                                // const SizedBox(
+                                //   height: 8,
+                                // ),
+
+                                Text(
+                                  // ipo.openorder![index].type == "BSE"
+                                  //     ? "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}"
+                                  // :
+                                  "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}",
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
+                                      FontWeight.w600),
+                                ),
+                                
+                                // SvgPicture.asset(assets.rightArrowIcon)
                               ],
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Divider(
-                                color: theme.isDarkMode
-                                    ? colors.darkColorDivider
-                                    : const Color(0xffECEDEE),
-                                thickness: 1.2),
-                          ),
-                          
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10
+                            SizedBox(
+                              height: 16,
                             ),
-                            child: Row(
+                            // Padding(
+                            //   padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+                            //   child: Divider(
+                            //     height: 0,
+                            //       color: theme.isDarkMode
+                            //           ? colors.darkColorDivider
+                            //           : const Color(0xffECEDEE),
+                            //       thickness: 1.2),
+                            // ),
+
+                            Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -251,62 +234,67 @@ class IpoOpenOrder extends ConsumerWidget {
                                               .responseDatetime
                                               .toString()),
                                       style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
+                                         const Color(0xff666666),
+                                          12,
                                           FontWeight.w600),
                                     ),
-                                    const SizedBox(
-                                      height: 2,
-                                    ),
-                                    Text(
-                                      "Bid Date & time",
-                                      style: textStyle(colors.colorGrey, 12,
-                                          FontWeight.w500),
-                                    )
+                                    // const SizedBox(
+                                    //   height: 2,
+                                    // ),
+                                    // Text(
+                                    //   "Bid Date & time",
+                                    //   style: textStyle(colors.colorGrey, 12,
+                                    //       FontWeight.w500),
+                                    // )
                                   ],
                                 ),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text(
-                                      // ipo.openorder![index].type == "BSE"
-                                      //     ? "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}"
-                                      // : 
-                                          "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600),
-                                    ),
-                                    const SizedBox(
-                                      height: 2,
-                                    ),
-                                    Text(
-                                      "Invested amount",
-                                      style: textStyle(colors.colorGrey, 12,
-                                          FontWeight.w500),
+                                    Row(
+                                      children: [
+                                        SvgPicture.asset(ipo.openorder![index]
+                                                    .reponseStatus ==
+                                                "new success"
+                                            ? "assets/icon/success.svg"
+                                            : "assets/icon/pendingicon.svg"),
+                                        const SizedBox(
+                                          width: 5,
+                                        ),
+                                        Text(
+                                          ipo.openorder![index].reponseStatus ==
+                                                  "new success"
+                                              ? "Success"
+                                              : "Pending",
+                                          style: textStyle(
+                                              theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              14,
+                                              FontWeight.w600),
+                                        ),
+                                      ],
                                     )
+
+                                    // const SizedBox(
+                                    //   height: 2,
+                                    // ),
                                   ],
                                 )
                               ],
                             ),
-                          ),
-                          
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
                   separatorBuilder: (BuildContext context, int index) {
-                    return Container(
-                      color: theme.isDarkMode
-                          ? colors.darkColorDivider
-                          : const Color(0xffF1F3F8),
-                      height: 7,
-                    );
+                    return Divider(
+                  height: 0,
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : const Color(0xffECEDEE),
+                    thickness: 1.2);
                   },
                 )
               : ListView.separated(
@@ -320,19 +308,18 @@ class IpoOpenOrder extends ConsumerWidget {
                             context, Routes.ipoopendetailsscreen,
                             arguments: ipo.iposearch![index]);
                       },
-                      child: Column(
-                        children: [
-                          Padding( padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            child: Row(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                        ipo.iposearch![index].symbol
-                                            .toString(),
+                                        ipo.iposearch![index].symbol.toString(),
                                         style: textStyles.scripNameTxtStyle
                                             .copyWith(
                                                 color: theme.isDarkMode
@@ -349,11 +336,10 @@ class IpoOpenOrder extends ConsumerWidget {
                                             ? "assets/icon/success.svg"
                                             : "assets/icon/pendingicon.svg"),
                                         const SizedBox(
-                                          width: 5,
+                                          width: 4,
                                         ),
                                         Text(
-                                          ipo.iposearch![index]
-                                                      .reponseStatus ==
+                                          ipo.iposearch![index].reponseStatus ==
                                                   "new success"
                                               ? "Success"
                                               : "Pending",
@@ -388,23 +374,17 @@ class IpoOpenOrder extends ConsumerWidget {
                                 SvgPicture.asset(assets.rightArrowIcon)
                               ],
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Divider(
-                                color: theme.isDarkMode
-                                    ? colors.darkColorDivider
-                                    : const Color(0xffECEDEE),
-                                thickness: 1.2),
-                          ),
-                          const SizedBox(
-                            height: 7,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 0, vertical: 16),
+                              child: Divider(
+                                  height: 0,
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : const Color(0xffECEDEE),
+                                  thickness: 1.2),
                             ),
-                            child: Row(
+                            Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Column(
@@ -412,7 +392,7 @@ class IpoOpenOrder extends ConsumerWidget {
                                   children: [
                                     Text(
                                       ipo.iposearch![index].type == "BSE"
-                                          ? "₹${getFormatter(noDecimal: true,v4d: false,value: double.parse(ipo.iposearch![index].bidDetail![0].rate!) * double.parse(ipo.iposearch![index].bidDetail![0].quantity!)).toString()}" 
+                                          ? "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(ipo.iposearch![index].bidDetail![0].rate!) * double.parse(ipo.iposearch![index].bidDetail![0].quantity!)).toString()}"
                                           : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(ipo.iposearch![index].bidDetail![0].amount.toString()))}",
                                       style: textStyle(
                                           theme.isDarkMode
@@ -421,14 +401,14 @@ class IpoOpenOrder extends ConsumerWidget {
                                           14,
                                           FontWeight.w600),
                                     ),
-                                    const SizedBox(
-                                      height: 2,
-                                    ),
-                                    Text(
-                                      "Invested amount",
-                                      style: textStyle(colors.colorGrey, 12,
-                                          FontWeight.w500),
-                                    )
+                                    // const SizedBox(
+                                    //   height: 2,
+                                    // ),
+                                    // Text(
+                                    //   "Invested amount",
+                                    //   style: textStyle(colors.colorGrey, 12,
+                                    //       FontWeight.w500),
+                                    // )
                                   ],
                                 ),
                                 Column(
@@ -449,21 +429,20 @@ class IpoOpenOrder extends ConsumerWidget {
                                           14,
                                           FontWeight.w600),
                                     ),
-                                    const SizedBox(
-                                      height: 2,
-                                    ),
-                                    Text(
-                                      "Bid Date & time",
-                                      style: textStyle(colors.colorGrey, 12,
-                                          FontWeight.w500),
-                                    )
+                                    // const SizedBox(
+                                    //   height: 2,
+                                    // ),
+                                    // Text(
+                                    //   "Bid Date & time",
+                                    //   style: textStyle(colors.colorGrey, 12,
+                                    //       FontWeight.w500),
+                                    // )
                                   ],
                                 )
                               ],
                             ),
-                          ),
-                         
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },

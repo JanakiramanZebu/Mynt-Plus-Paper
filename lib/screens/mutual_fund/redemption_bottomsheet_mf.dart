@@ -310,7 +310,7 @@ Row(
                               ),
                             ),
                             child: Text("Redeem",
-                                style: textStyle(const Color(0xff999999), 14,
+                                style: textStyle(const Color.fromARGB(255, 255, 255, 255), 14,
                                     FontWeight.w500)),
                           ),
                         ),

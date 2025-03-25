@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../res/res.dart';
@@ -21,8 +22,8 @@ class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_){
-context.read(ipoProvide).getipoorderbookmodel(true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read(ipoProvide).getipoorderbookmodel(true);
     });
   }
 
@@ -73,61 +74,62 @@ context.read(ipoProvide).getipoorderbookmodel(true);
         //     ),
         //   ),
         // ),
-        body: ipo.fundisLoad == true ?Center(child: CircularProgressIndicator()): (ipo.openorder?.isEmpty ?? true) && (ipo.closeorder?.isEmpty ?? true)  ?
-        
-         Center(
-           child: Padding(
+        body: TransparentLoaderScreen(
+          isLoading: ipo.myBidsload!,
+          child: (ipo.openorder?.isEmpty ?? true) &&
+                      (ipo.closeorder?.isEmpty ?? true)
+                  ? Center(
+                      child: Padding(
                         padding: const EdgeInsets.only(top: 225),
                         child: Container(
-                   height: dev_height - 140,
-                   child: Column(
-            children: [
-              NoDataFound(),
-            ],
-                   ),
+                          height: dev_height - 140,
+                          child: Column(
+                            children: [
+                              NoDataFound(),
+                            ],
+                          ),
                         ),
                       ),
-         )
-        
-                :
-                SingleChildScrollView(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                        if (ipo.openorder!.isNotEmpty) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 8),
-                            child: Text(
-                              "Open Orders",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite.withOpacity(0.3)
-                                      : colors.colorBlack.withOpacity(0.3),
-                                  16,
-                                  FontWeight.w600),
-                            ),
-                          ),
-                          const IpoOpenOrder(),
-                        ],
-                        if (ipo.closeorder!.isNotEmpty) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 8),
-                            child: Text(
-                              "Closed Orders",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite.withOpacity(0.3)
-                                      : colors.colorBlack.withOpacity(0.3),
-                                  16,
-                                  FontWeight.w600),
-                            ),
-                          ),
-                          const IpoCloseOrder(),
-                        ],
-                      ]),
-              ),
+                    )
+                  : SingleChildScrollView(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (ipo.openorder!.isNotEmpty) ...[
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0, vertical: 8),
+                                child: Text(
+                                  "Open Orders",
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite.withOpacity(0.3)
+                                          : colors.colorBlack.withOpacity(0.3),
+                                      16,
+                                      FontWeight.w600),
+                                ),
+                              ),
+                              const IpoOpenOrder(),
+                            ],
+                            if (ipo.closeorder!.isNotEmpty) ...[
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0, vertical: 8),
+                                child: Text(
+                                  "Closed Orders",
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite.withOpacity(0.3)
+                                          : colors.colorBlack.withOpacity(0.3),
+                                      16,
+                                      FontWeight.w600),
+                                ),
+                              ),
+                              const IpoCloseOrder(),
+                            ],
+                          ]),
+                    ),
+        ),
       );
 
       // return SingleChildScrollView(
