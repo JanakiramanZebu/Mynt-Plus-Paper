@@ -304,7 +304,8 @@ class HoldingDetailScreen extends ConsumerWidget {
                               const SizedBox(height: 2),
                               Text(
                                 (int.parse("${holdingData.currentQty ?? 0}") *
-                                        double.parse(exchTsym.lp?.toString() ?? "0.0"))
+                                        double.parse(
+                                            exchTsym.lp?.toString() ?? "0.0"))
                                     .toStringAsFixed(2),
                                 style: textStyle(
                                     theme.isDarkMode
@@ -407,6 +408,7 @@ class HoldingDetailScreen extends ConsumerWidget {
                               tSym: '${exchTsym.tsym}',
                               token: '',
                               transType: true,
+                              prd: '${holdingData.prd}',
                               lotSize: '${exchTsym.ls}',
                               orderTpye: "${holdingData.sPrdtAli}",
                               isExit: false,

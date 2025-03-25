@@ -13,6 +13,7 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'package:uuid/uuid.dart';
+import '../api/core/api_core.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
@@ -657,7 +658,7 @@ class AuthProvider extends DefaultChangeNotifier {
     } finally {
       toggleLoadingOn(false);
     }
-  } 
+  }
 
 // Fetching data from the api and stored in a variable
   fetchMobileOtp(BuildContext context, String otp) async {
@@ -997,8 +998,6 @@ class AuthProvider extends DefaultChangeNotifier {
         setIposAPicalls();
         await FirebaseAnalytics.instance.setUserId(id: pref.clientId);
 
-
-
 // mf
         ref(mfProvider).fetchnewMFBestList();
         ref(mfProvider).fetchmfallcatnew();
@@ -1022,6 +1021,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
         // ref(mfProvider).fetchMfOrderbook(context);
         setProfileAPicalls();
+        setPrefOrderPrefer();
 // End Explore
         if (s.isEmpty) {
           Navigator.pushNamedAndRemoveUntil(
@@ -1065,6 +1065,26 @@ class AuthProvider extends DefaultChangeNotifier {
     await ref(ipoProvide).getipoperfomance(currentYear);
     await ref(ipoProvide).mergemainsme();
     await ref(ipoProvide).fetchIpoPreClose();
+  }
+
+  setPrefOrderPrefer() async {
+    String getlocal = "";
+    if (pref.showOrderpref != null) {
+      getlocal = pref.showOrderpref!;
+    }
+    if (!(getlocal.isNotEmpty && getlocal.contains("expos"))) {
+      Map<String, String> local = {
+        "prc": "Limit",
+        "prd": "Intraday",
+        "qtypref": "qty",
+        "qty": "1",
+        "validity": "DAY",
+        "mrkprot": "1",
+        "expos": "Market"
+      };
+      String jsonString = jsonEncode(local);
+      await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
+    }
   }
 
   setProfileAPicalls() async {

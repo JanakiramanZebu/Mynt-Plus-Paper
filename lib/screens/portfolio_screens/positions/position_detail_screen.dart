@@ -605,8 +605,11 @@ class PositionDetailScreen extends ConsumerWidget {
                                   .read(marketWatchProvider)
                                   .fetchScripInfo("${positionList.token}",
                                       '${positionList.exch}', context);
-                                        int lotsize = int.parse(context
-                                      .read(marketWatchProvider).scripInfoModel!.ls.toString());
+                              int lotsize = int.parse(context
+                                  .read(marketWatchProvider)
+                                  .scripInfoModel!
+                                  .ls
+                                  .toString());
                               Navigator.pop(context);
                               OrderScreenArgs orderArgs = OrderScreenArgs(
                                   exchange: '${positionList.exch}',
@@ -614,8 +617,9 @@ class PositionDetailScreen extends ConsumerWidget {
                                   isExit: false,
                                   token: "${positionList.token}",
                                   transType: int.parse(positionList.netqty!) > 0
-                                              ? true
-                                              : false,
+                                      ? true
+                                      : false,
+                                  prd: '${positionList.prd}',
                                   // change: depthData.chng,
                                   // close: depthData.c,
                                   lotSize: lotsize.toString(),
@@ -670,6 +674,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                           int.parse(positionList.netqty!) < 0
                                               ? true
                                               : false,
+                                      prd: '${positionList.prd}',
                                       // change: depthData.chng,
                                       // close: depthData.c,
                                       lotSize: positionList.netqty,
@@ -679,7 +684,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                       orderTpye: '',
                                       holdQty: '${positionList.netqty}',
                                       isModify: false,
-                                      raw: positionList.toJson());
+                                      raw: {});
 
                                   Navigator.pushNamed(
                                       context, Routes.placeOrderScreen,
