@@ -103,7 +103,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                                   .loggedMobile[index].clientId,
                                               "switchAc",
                                               loggedUser
-                                                  .loggedMobile[index].imei);
+                                                  .loggedMobile[index].imei, true);
                                       portfolio.clearAllportfolio();
                                       orders.clearAllorders();
                                       userProfile.profilePageloader(false);

@@ -142,19 +142,41 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text("Verify OTP",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    21,
-                                    FontWeight.w900)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("Verify ${auth.totp ? 'TOTP' : 'OTP'}",
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        21,
+                                        FontWeight.w900)),
+                                InkWell(
+                                  onTap: () {
+                                    auth.setChangetotp(!auth.totp);
+                                    // Navigator.pop(context);
+                                    auth.submitLogin(context, true);
+                                  },
+                                  child: Text(
+                                      auth.totp ? 'Get OTP' : 'Enter TOTP',
+                                      style: textStyles.resendOtpstyle.copyWith(
+                                          color: theme.isDarkMode
+                                              ? colors.colorLightBlue
+                                              : colors.colorBlue)),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 15),
-                            Text("OTP sent to registered Mobile no and Email",
+                            Text(
+                                auth.totp
+                                    ? "Enter the TOTP code from the authenticator app"
+                                    : "OTP sent to registered Mobile no and Email",
                                 style: textStyle(const Color(0xff666666), 12,
                                     FontWeight.w500)),
                             const SizedBox(height: 15),
-                            Text("4 digit OTP",
+                            Text(
+                                "${auth.totp ? '6' : '4'} digit ${auth.totp ? 'TOTP' : 'OTP'}",
                                 style: textStyle(
                                     theme.isDarkMode
                                         ? colors.colorWhite
@@ -181,23 +203,24 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                                 separatorBuilder: (index) =>
                                     const SizedBox(width: 25),
                                 controller: otpController,
+                                length: auth.totp ? 6 : 4,
                                 defaultPinTheme: defaultPinThemes,
                                 focusedPinTheme: focusedPinTheme,
-                                errorPinTheme:
-                                    auth.optError == "Invalid / wrong OTP"
-                                        ? errorPinTheme
-                                        : null,
-                                submittedPinTheme:
-                                    auth.optError == "Invalid / wrong OTP"
-                                        ? errorPinTheme
-                                        : submittedPinTheme,
+                                errorPinTheme: auth.optError ==
+                                        "Invalid / wrong ${auth.totp ? 'TOTP' : 'OTP'}"
+                                    ? errorPinTheme
+                                    : null,
+                                submittedPinTheme: auth.optError ==
+                                        "Invalid / wrong ${auth.totp ? 'TOTP' : 'OTP'}"
+                                    ? errorPinTheme
+                                    : submittedPinTheme,
                                 pinputAutovalidateMode:
                                     PinputAutovalidateMode.onSubmit,
                                 onChanged: (value) {
                                   auth.validateOtp(otpController.text);
                                   auth.activeBtnOtp(otpController.text);
-                                  if(value.isNotEmpty && value.length == 4) {
-                                  auth.submitOtp(context, otpController.text);
+                                  if (value.isNotEmpty && value.length == (auth.totp ? 6 : 4)) {
+                                    auth.submitOtp(context, otpController.text);
                                   }
                                 },
                               ),
@@ -209,13 +232,16 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                         Padding(
                           padding: const EdgeInsets.only(left: 16, top: 10),
                           child: Text(
-                            otpController.length <= 3 ||
-                                    auth.optError == "Invalid / wrong OTP" ||
-                                    auth.optError == "OTP Verified"
+                            otpController.length <= (auth.totp ? 5 : 3) ||
+                                    auth.optError ==
+                                        "Invalid / wrong ${auth.totp ? 'TOTP' : 'OTP'}" ||
+                                    auth.optError ==
+                                        "${auth.totp ? 'TOTP' : 'OTP'} Verified"
                                 ? "${auth.optError}"
                                 : "",
                             style: textStyle(
-                                auth.optError == "OTP Verified"
+                                auth.optError ==
+                                        "${auth.totp ? 'TOTP' : 'OTP'} Verified"
                                     ? colors.ltpgreen
                                     : colors.kColorRedText,
                                 10,
@@ -236,7 +262,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                         ),
                         child: Row(
                           children: [
-                            if (_start == 0)
+                            if (!auth.totp && _start == 0)
                               InkWell(
                                 onTap:
                                     //  internet
@@ -259,13 +285,14 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                                             ? colors.colorLightBlue
                                             : colors.colorBlue)),
                               ),
-                            Text(" $resendTime",
-                                style: textStyles.resendOtpstyle.copyWith(
-                                    color: resendTime == "00 : 00"
-                                        ? Colors.transparent
-                                        : theme.isDarkMode
-                                            ? colors.colorLightBlue
-                                            : colors.colorBlue))
+                            if (!auth.totp)
+                              Text(" $resendTime",
+                                  style: textStyles.resendOtpstyle.copyWith(
+                                      color: resendTime == "00 : 00"
+                                          ? Colors.transparent
+                                          : theme.isDarkMode
+                                              ? colors.colorLightBlue
+                                              : colors.colorBlue))
                           ],
                         ),
                       ),
@@ -281,18 +308,18 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                           style: ElevatedButton.styleFrom(
                               elevation: 0,
                               backgroundColor: !theme.isDarkMode
-                                  ? otpController.length <= 3 ||
+                                  ? otpController.length <= (auth.totp ? 5 : 3) ||
                                           otpController.text.isEmpty
                                       ? const Color(0xfff5f5f5)
                                       : colors.colorBlack
-                                  : otpController.length <= 3 ||
+                                  : otpController.length <= (auth.totp ? 5 : 3) ||
                                           otpController.text.isEmpty
                                       ? colors.darkGrey
                                       : colors.colorbluegrey,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               )),
-                          onPressed: otpController.length <= 3 ||
+                          onPressed: otpController.length <= (auth.totp ? 5 : 3) ||
                                   otpController.text.isEmpty
                               //         ||
                               //     internet.connectionStatus ==
@@ -314,11 +341,11 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                               : Text("Verify",
                                   style: textStyle(
                                       !theme.isDarkMode
-                                          ? otpController.length <= 3 ||
+                                          ? otpController.length <= (auth.totp ? 5 : 3) ||
                                                   otpController.text.isEmpty
                                               ? const Color(0xff999999)
                                               : colors.colorWhite
-                                          : otpController.length <= 3 ||
+                                          : otpController.length <= (auth.totp ? 5 : 3) ||
                                                   otpController.text.isEmpty
                                               ? colors.darkGrey
                                               : colors.colorBlack,

@@ -81,7 +81,7 @@ class _SplashScreenState extends State<SplashScreen> {
         pref.setMobileLogin(true);
         await context
             .read(authProvider)
-            .fetchMobileLogin(context, "", pref.clientId!, "", pref.imei!);
+            .fetchMobileLogin(context, "", pref.clientId!, "", pref.imei!, true);
       }
     } catch (e) {
       ScaffoldMessenger.of(context)

@@ -457,7 +457,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 HapticFeedback.heavyImpact();
                                 SystemSound.play(SystemSoundType.click);
                                 auth.optError = "";
-                                auth.submitLogin(context);
+                                auth.submitLogin(context, false);
                               },
                         child: auth.loading
                             ? const SizedBox(
