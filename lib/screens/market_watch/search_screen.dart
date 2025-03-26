@@ -43,14 +43,17 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
       final searchScrip = watch(marketWatchProvider);
       final internet = watch(networkStateProvider);
       final theme = context.read(themeProvider);
-      return WillPopScope(
-          onWillPop: () async {
+      return PopScope(
+          canPop: true, // Allows back navigation
+          onPopInvokedWithResult: (didPop, result) async {
+            if (didPop) return; // If system handled back, do nothing
+
             context
                 .read(marketWatchProvider)
                 .requestMWScrip(context: context, isSubscribe: true);
             await searchScrip.searchClear();
 
-            return true;
+            Navigator.of(context).pop(); // Proceed with back navigation
           },
           child: GestureDetector(
               onTap: () => FocusManager.instance.primaryFocus!.unfocus(),

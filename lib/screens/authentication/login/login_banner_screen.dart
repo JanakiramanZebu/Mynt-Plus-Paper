@@ -18,9 +18,11 @@ class LoginBannerScreen extends StatefulWidget {
 class _LoginBannerScreenState extends State<LoginBannerScreen> {
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        // Show an alert dialog
+    return PopScope(
+      canPop: false, // Prevent default back behavior
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return; // If system handled back, do nothing
+
         final shouldPop = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -43,8 +45,9 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
           ),
         );
 
-        // Return true to allow pop, false to cancel it
-        return shouldPop ?? false;
+        if (shouldPop == true) {
+          Navigator.of(context).pop(); // Go back if user confirms
+        }
       },
       child: Consumer(
         builder: (context, watch, child) {

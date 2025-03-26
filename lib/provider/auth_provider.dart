@@ -461,7 +461,7 @@ class AuthProvider extends DefaultChangeNotifier {
     if (validateLogin()) {
       fetchMobileLogin(context, passCtrl.text, loginMethCtrl.text.toUpperCase(),
           navi ? "pop" : "", imieJson(loginMethCtrl.text.toUpperCase()), _totp);
-    } 
+    }
   }
 
 // Call this method while clicking if the OTP validation process is successful.
@@ -500,7 +500,7 @@ class AuthProvider extends DefaultChangeNotifier {
       }
 
       if (_mobileLogin!.stat == "Ok" &&
-          (totp && _mobileLogin!.msg != null  ||
+          (totp && _mobileLogin!.msg != null ||
               (_mobileLogin!.msg == "otp sended" ||
                   _mobileLogin!.msg ==
                       "otp sended, already logged in another device"))) {
@@ -522,9 +522,10 @@ class AuthProvider extends DefaultChangeNotifier {
           showDragHandle: false,
           useSafeArea: false,
           isScrollControlled: true,
-          builder: (context) => WillPopScope(
-              onWillPop: () async {
-                return false;
+          builder: (context) => PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
               },
               child: BottomSheetContent()),
         );
@@ -1055,10 +1056,11 @@ class AuthProvider extends DefaultChangeNotifier {
                 isScrollControlled: true,
                 context: context,
                 builder: (BuildContext context) {
-                  return WillPopScope(
-                      onWillPop: () async {
-                        return false;
-                      },
+                  return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
+              },
                       child: const RiskDisclousreBottomSheet());
                 });
           }

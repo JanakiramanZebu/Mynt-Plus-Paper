@@ -960,10 +960,13 @@ class _FundScreenState extends State<FundScreen> {
                                                                     builder:
                                                                         (BuildContext
                                                                             context) {
-                                                                      return WillPopScope(
-                                                                          onWillPop:
-                                                                              () async {
-                                                                            return false;
+                                                                      return PopScope(
+                                                                          canPop:
+                                                                              true, // Allows default back navigation
+                                                                          onPopInvokedWithResult: (didPop,
+                                                                              result) {
+                                                                            if (didPop)
+                                                                              return; // If system handled back, do nothing
                                                                           },
                                                                           child:
                                                                               const UPIIDPaymentCancelAlert());
@@ -1398,9 +1401,10 @@ class _FundScreenState extends State<FundScreen> {
         isScrollControlled: true,
         context: context,
         builder: (BuildContext context) {
-          return WillPopScope(
-              onWillPop: () async {
-                return false;
+          return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
               },
               child: RazorpayFailedUi(
                   acco: widget.dd.accno,
@@ -1426,9 +1430,10 @@ class _FundScreenState extends State<FundScreen> {
         isScrollControlled: true,
         context: context,
         builder: (BuildContext context) {
-          return WillPopScope(
-              onWillPop: () async {
-                return false;
+          return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
               },
               child: RazorpaySuccessUi(
                 amount: context.read(transcationProvider).amount.text,

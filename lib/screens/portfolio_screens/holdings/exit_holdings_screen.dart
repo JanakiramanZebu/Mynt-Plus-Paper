@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/portfolio_provider.dart';
-import '../../../provider/thems.dart'; 
+import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
-import '../../../sharedWidget/custom_exch_badge.dart'; 
+import '../../../sharedWidget/custom_exch_badge.dart';
 
 class ExitHoldingsScreen extends ConsumerWidget {
   const ExitHoldingsScreen({super.key});
@@ -18,10 +18,13 @@ class ExitHoldingsScreen extends ConsumerWidget {
     final theme = context.read(themeProvider);
     final holdings = watch(portfolioProvider);
     // final socketDatas = watch(websocketProvider).socketDatas;
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: true, // Allows back navigation
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return; // If system handled back, do nothing
+
         holdings.selectExitAllPosition(false);
-        return true;
+        Navigator.of(context).pop(); // Proceed with back navigation
       },
       child: Scaffold(
         appBar: AppBar(
@@ -86,14 +89,16 @@ class ExitHoldingsScreen extends ConsumerWidget {
             if (holdings.sealableHoldings.isNotEmpty) ...[
               Container(
                 decoration: BoxDecoration(
-                    color:
-                        theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                    color: theme.isDarkMode
+                        ? colors.darkGrey
+                        : const Color(0xffF1F3F8),
                     border: holdings.sealableHoldings[0].isExitHoldings!
                         ? Border(
                             bottom:
                                 BorderSide(color: colors.colorWhite, width: 6))
                         : null),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Text(
                     "Sellable Holdings(${holdings.sealableHoldings.length})",
                     style: textStyles.appBarTitleTxt.copyWith(
@@ -244,10 +249,8 @@ class ExitHoldingsScreen extends ConsumerWidget {
                                     Text(
                                         "₹${holdings.sealableHoldings[index].exchTsym![0].profitNloss}",
                                         style: textStyle(
-                                           holdings
-                                                    .sealableHoldings[index]
-                                                    .exchTsym![0]
-                                                    .profitNloss!
+                                            holdings.sealableHoldings[index]
+                                                    .exchTsym![0].profitNloss!
                                                     .startsWith("-")
                                                 ? colors.darkred
                                                 : colors.ltpgreen,
@@ -256,10 +259,8 @@ class ExitHoldingsScreen extends ConsumerWidget {
                                     Text(
                                         " (${holdings.sealableHoldings[index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdings.sealableHoldings[index].exchTsym![0].pNlChng}%)",
                                         style: textStyle(
-                                           holdings
-                                                    .sealableHoldings[index]
-                                                    .exchTsym![0]
-                                                    .pNlChng!
+                                            holdings.sealableHoldings[index]
+                                                    .exchTsym![0].pNlChng!
                                                     .startsWith("-")
                                                 ? colors.darkred
                                                 : holdings
@@ -364,208 +365,227 @@ class ExitHoldingsScreen extends ConsumerWidget {
                   // }
                   return InkWell(
                       onTap: () {
- showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    useSafeArea: true,
-                                    isDismissible: true,
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(16))),
-                                    context: context,
-                                    builder: (context) => Container(
-                                        padding: EdgeInsets.only(
-                                          bottom: MediaQuery.of(context)
-                                              .viewInsets
-                                              .bottom,
-                                        ),
-                                        child:  
+                        showModalBottomSheet(
+                            isScrollControlled: true,
+                            useSafeArea: true,
+                            isDismissible: true,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16))),
+                            context: context,
+                            builder: (context) => Container(
+                                padding: EdgeInsets.only(
+                                  bottom:
+                                      MediaQuery.of(context).viewInsets.bottom,
+                                ),
+                                child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        color: theme.isDarkMode
+                                            ? colors.colorBlack
+                                            : colors.colorWhite,
+                                        boxShadow: const [
+                                          BoxShadow(
+                                              color: Color(0xff999999),
+                                              blurRadius: 4.0,
+                                              offset: Offset(2.0, 0.0))
+                                        ]),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const CustomDragHandler(),
+                                          Text('Verify Holdings',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  16,
+                                                  FontWeight.w600)),
+                                          Column(children: [
+                                            const SizedBox(height: 12),
+                                            Text(
+                                                holdings
+                                                                .nonSealableHoldings[
+                                                                    index]
+                                                                .brkcolqty ==
+                                                            null ||
+                                                        holdings
+                                                                .nonSealableHoldings[
+                                                                    index]
+                                                                .brkcolqty ==
+                                                            "0"
+                                                    ? "You are unable to exit because there are no sealable quantity. Kindly do E-DIS."
+                                                    : "You are unable to exit because the stock is pledged. Kindly unpledge and do E-DIS.",
+                                                style: textStyle(
+                                                    theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    12,
+                                                    FontWeight.w500)),
+                                            const SizedBox(height: 12)
+                                          ]),
+                                          SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: ElevatedButton(
+                                                  onPressed: () async {
+                                                    if (holdings
+                                                                .nonSealableHoldings[
+                                                                    index]
+                                                                .brkcolqty ==
+                                                            null ||
+                                                        holdings
+                                                                .nonSealableHoldings[
+                                                                    index]
+                                                                .brkcolqty ==
+                                                            "0") {
+                                                      await context
+                                                          .read(fundProvider)
+                                                          .fetchHstoken(
+                                                              context);
 
-Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Color(0xff999999),
-                        blurRadius: 4.0,
-                        offset: Offset(2.0, 0.0))
-                  ]),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-             const CustomDragHandler(),
-             
-              Text('Verify Holdings',
-                    overflow: TextOverflow.ellipsis,
-                    style:
-                        textStyle( theme.isDarkMode?colors.colorWhite:colors.colorBlack, 16, FontWeight.w600))
-             
-           ,   Column(children: [
-                const SizedBox(height: 12),
-               
-                  Text(
-                    
-                    holdings.nonSealableHoldings[index]
-                                                      .brkcolqty ==
-                                                  null ||
-                                              holdings
-                                                      .nonSealableHoldings[
-                                                          index]
-                                                      .brkcolqty ==
-                                                  "0"?
-                      "You are unable to exit because there are no sealable quantity. Kindly do E-DIS.":"You are unable to exit because the stock is pledged. Kindly unpledge and do E-DIS.",
-                      style: textStyle(
-                          theme.isDarkMode?colors.colorWhite:colors.colorBlack, 12, FontWeight.w500))
-             ,
-               
-                const SizedBox(height: 12)
-              ]),
-              SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: ElevatedButton(
-                      onPressed: () async {
-                       if (holdings
-                                                      .nonSealableHoldings[
-                                                          index]
-                                                      .brkcolqty ==
-                                                  null ||
-                                              holdings
-                                                      .nonSealableHoldings[
-                                                          index]
-                                                      .brkcolqty ==
-                                                  "0") {
-                                            await context
-                                                .read(fundProvider)
-                                                .fetchHstoken(context);
+                                                      Navigator.pop(context);
+                                                      await context
+                                                          .read(fundProvider)
+                                                          .eDis(context);
+                                                    } else {
+                                                      await context
+                                                          .read(fundProvider)
+                                                          .fetchHstoken(
+                                                              context);
+                                                      Navigator.pop(context);
+                                                      Navigator.pushNamed(
+                                                          context,
+                                                          Routes
+                                                              .reportWebViewApp,
+                                                          arguments: "pledge");
+                                                    }
+                                                  },
+                                                  style: ElevatedButton.styleFrom(
+                                                      elevation: 0,
+                                                      backgroundColor: theme
+                                                              .isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50))),
+                                                  child: Text("Continue",
+                                                      style: textStyle(
+                                                          !theme.isDarkMode
+                                                              ? colors.colorWhite
+                                                              : colors.colorBlack,
+                                                          14,
+                                                          FontWeight.w500)))),
+                                          const SizedBox(height: 14)
+                                        ]))));
 
-                                            Navigator.pop(context);
-                                            await context
-                                                .read(fundProvider)
-                                                .eDis(context);
-                                          } else {
-                                              await context
-                                .read(fundProvider)
-                                .fetchHstoken(context);   Navigator.pop(context);
-                            Navigator.pushNamed(
-                                context, Routes.reportWebViewApp,
-                                arguments: "pledge");
-                                         
-                                          }
-                       
+                        //  showDialog(
+                        //             context: context,
+                        //             builder: (BuildContext context) {
+                        //               return AlertDialog(
+                        //                 backgroundColor:
+                        //                     context.read(themeProvider).isDarkMode
+                        //                         ? const Color.fromARGB(255, 18, 18, 18)
+                        //                         : colors.colorWhite,
+                        //                 titleTextStyle: textStyles.appBarTitleTxt
+                        //                     .copyWith(
+                        //                         color: context
+                        //                                 .read(themeProvider)
+                        //                                 .isDarkMode
+                        //                             ? colors.colorWhite
+                        //                             : colors.colorBlack),
+                        //                 contentTextStyle: textStyles.menuTxt,
+                        //                 titlePadding: const EdgeInsets.symmetric(
+                        //                     horizontal: 14, vertical: 12),
+                        //                 shape: const RoundedRectangleBorder(
+                        //                     borderRadius:
+                        //                         BorderRadius.all(Radius.circular(14))),
+                        //                 scrollable: true,
+                        //                 contentPadding: const EdgeInsets.symmetric(
+                        //                   horizontal: 14,
+                        //                 ),
+                        //                 insetPadding:
+                        //                     const EdgeInsets.symmetric(horizontal: 20),
+                        //                 title: const Text("Verify Holdings"),
+                        //                 content: SizedBox(
+                        //                   width: MediaQuery.of(context).size.width,
+                        //                   child: Column(
+                        //                     crossAxisAlignment:
+                        //                         CrossAxisAlignment.start,
+                        //                     children: [
+                        //                       Text(holdings.nonSealableHoldings[index]
+                        //                                       .brkcolqty ==
+                        //                                   null ||
+                        //                               holdings
+                        //                                       .nonSealableHoldings[
+                        //                                           index]
+                        //                                       .brkcolqty ==
+                        //                                   "0"
+                        //                           ? "Did not done E-Dis"
+                        //                           : "This Stock was Pledged!")
+                        //                     ],
+                        //                   ),
+                        //                 ),
+                        //                 actions: [
+                        //                   SizedBox(
+                        //                     width: MediaQuery.of(context).size.width,
+                        //                     child: ElevatedButton(
+                        //                         onPressed: () async {
+                        //                           if (holdings
+                        //                                       .nonSealableHoldings[
+                        //                                           index]
+                        //                                       .brkcolqty ==
+                        //                                   null ||
+                        //                               holdings
+                        //                                       .nonSealableHoldings[
+                        //                                           index]
+                        //                                       .brkcolqty ==
+                        //                                   "0") {
+                        //                             await context
+                        //                                 .read(fundProvider)
+                        //                                 .fetchHstoken(context);
 
-                    
-                      },
-                      style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor:  theme.isDarkMode?colors.colorWhite:colors.colorBlack,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50))),
-                      child: Text("Continue",
-                          style: textStyle(
-                              ! theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)))),
-              const SizedBox(height: 14)
-            ]))
-
-                ));       
-                
-                //  showDialog(
-                //             context: context,
-                //             builder: (BuildContext context) {
-                //               return AlertDialog(
-                //                 backgroundColor:
-                //                     context.read(themeProvider).isDarkMode
-                //                         ? const Color.fromARGB(255, 18, 18, 18)
-                //                         : colors.colorWhite,
-                //                 titleTextStyle: textStyles.appBarTitleTxt
-                //                     .copyWith(
-                //                         color: context
-                //                                 .read(themeProvider)
-                //                                 .isDarkMode
-                //                             ? colors.colorWhite
-                //                             : colors.colorBlack),
-                //                 contentTextStyle: textStyles.menuTxt,
-                //                 titlePadding: const EdgeInsets.symmetric(
-                //                     horizontal: 14, vertical: 12),
-                //                 shape: const RoundedRectangleBorder(
-                //                     borderRadius:
-                //                         BorderRadius.all(Radius.circular(14))),
-                //                 scrollable: true,
-                //                 contentPadding: const EdgeInsets.symmetric(
-                //                   horizontal: 14,
-                //                 ),
-                //                 insetPadding:
-                //                     const EdgeInsets.symmetric(horizontal: 20),
-                //                 title: const Text("Verify Holdings"),
-                //                 content: SizedBox(
-                //                   width: MediaQuery.of(context).size.width,
-                //                   child: Column(
-                //                     crossAxisAlignment:
-                //                         CrossAxisAlignment.start,
-                //                     children: [
-                //                       Text(holdings.nonSealableHoldings[index]
-                //                                       .brkcolqty ==
-                //                                   null ||
-                //                               holdings
-                //                                       .nonSealableHoldings[
-                //                                           index]
-                //                                       .brkcolqty ==
-                //                                   "0"
-                //                           ? "Did not done E-Dis"
-                //                           : "This Stock was Pledged!")
-                //                     ],
-                //                   ),
-                //                 ),
-                //                 actions: [
-                //                   SizedBox(
-                //                     width: MediaQuery.of(context).size.width,
-                //                     child: ElevatedButton(
-                //                         onPressed: () async {
-                //                           if (holdings
-                //                                       .nonSealableHoldings[
-                //                                           index]
-                //                                       .brkcolqty ==
-                //                                   null ||
-                //                               holdings
-                //                                       .nonSealableHoldings[
-                //                                           index]
-                //                                       .brkcolqty ==
-                //                                   "0") {
-                //                             await context
-                //                                 .read(fundProvider)
-                //                                 .fetchHstoken(context);
-
-                //                             Navigator.pop(context);
-                //                             await context
-                //                                 .read(fundProvider)
-                //                                 .eDis(context);
-                //                           } else {
-                //                             Navigator.pop(context);
-                //                           }
-                //                         },
-                //                         style: ElevatedButton.styleFrom(
-                //                             elevation: 0,
-                //                             backgroundColor:
-                //                                 const Color(0xff000000),
-                //                             shape: RoundedRectangleBorder(
-                //                               borderRadius:
-                //                                   BorderRadius.circular(50),
-                //                             )),
-                //                         child: Text("Ok",
-                //                             style: textStyle(
-                //                                 !context
-                //                                         .read(themeProvider)
-                //                                         .isDarkMode
-                //                                     ? colors.colorWhite
-                //                                     : colors.colorBlack,
-                //                                 14,
-                //                                 FontWeight.w500))),
-                //                   ),
-                //                 ],
-                //               );
-                //             });
+                        //                             Navigator.pop(context);
+                        //                             await context
+                        //                                 .read(fundProvider)
+                        //                                 .eDis(context);
+                        //                           } else {
+                        //                             Navigator.pop(context);
+                        //                           }
+                        //                         },
+                        //                         style: ElevatedButton.styleFrom(
+                        //                             elevation: 0,
+                        //                             backgroundColor:
+                        //                                 const Color(0xff000000),
+                        //                             shape: RoundedRectangleBorder(
+                        //                               borderRadius:
+                        //                                   BorderRadius.circular(50),
+                        //                             )),
+                        //                         child: Text("Ok",
+                        //                             style: textStyle(
+                        //                                 !context
+                        //                                         .read(themeProvider)
+                        //                                         .isDarkMode
+                        //                                     ? colors.colorWhite
+                        //                                     : colors.colorBlack,
+                        //                                 14,
+                        //                                 FontWeight.w500))),
+                        //                   ),
+                        //                 ],
+                        //               );
+                        //             });
                       },
                       child: Container(
                         color: theme.isDarkMode
@@ -621,10 +641,8 @@ Container(
                                 Text(
                                     " (${holdings.nonSealableHoldings[index].exchTsym![0].perChange}%)",
                                     style: textStyle(
-                                       holdings
-                                                .nonSealableHoldings[index]
-                                                .exchTsym![0]
-                                                .perChange!
+                                        holdings.nonSealableHoldings[index]
+                                                .exchTsym![0].perChange!
                                                 .startsWith("-")
                                             ? colors.darkred
                                             : holdings
@@ -681,10 +699,8 @@ Container(
                                     Text(
                                         "₹${holdings.nonSealableHoldings[index].exchTsym![0].profitNloss}",
                                         style: textStyle(
-                                            holdings
-                                                    .nonSealableHoldings[index]
-                                                    .exchTsym![0]
-                                                    .profitNloss!
+                                            holdings.nonSealableHoldings[index]
+                                                    .exchTsym![0].profitNloss!
                                                     .startsWith("-")
                                                 ? colors.darkred
                                                 : colors.ltpgreen,
@@ -693,10 +709,8 @@ Container(
                                     Text(
                                         " (${holdings.nonSealableHoldings[index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdings.nonSealableHoldings[index].exchTsym![0].pNlChng}%)",
                                         style: textStyle(
-                                            holdings
-                                                    .nonSealableHoldings[index]
-                                                    .exchTsym![0]
-                                                    .pNlChng!
+                                            holdings.nonSealableHoldings[index]
+                                                    .exchTsym![0].pNlChng!
                                                     .startsWith("-")
                                                 ? colors.darkred
                                                 : holdings

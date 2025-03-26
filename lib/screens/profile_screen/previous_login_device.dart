@@ -33,8 +33,13 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
   final Preferences pref = locator<Preferences>();
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: showExitPopup,
+    return PopScope(
+      canPop: false, // Prevents default back behavior
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return; // If system handled back, do nothing
+
+        await showExitPopup(); // Call the exit popup function
+      },
       child: Consumer(builder: (context, ScopedReader watch, _) {
         final loggedUser = watch(authProvider);
         // final user = watch(userProfileProvider);

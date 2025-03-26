@@ -97,9 +97,10 @@ class _BarcodeScannerWithScanWindowState
         context: context,
         builder: (context) {
           // ignore: deprecated_member_use
-          return WillPopScope(
-              onWillPop: () async {
-                return false;
+          return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
               },
               child: QrDetails(details: qrdata, camera: controller));
         },
@@ -117,9 +118,10 @@ class _BarcodeScannerWithScanWindowState
         context: context,
         builder: (context) {
           // ignore: deprecated_member_use
-          return WillPopScope(
-              onWillPop: () async {
-                return false;
+          return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
               },
               child: InValidQRui(camera: controller));
         },

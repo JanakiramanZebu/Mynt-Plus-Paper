@@ -86,9 +86,10 @@ class _RepeatOrderState extends State<RepeatOrder> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return true;
+    return PopScope(
+      canPop: true, // Allows back navigation
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return; // If system handled back, do nothing
       },
       child: Consumer(builder: (context, ScopedReader watch, _) {
         final orderProvide = watch(orderProvider);

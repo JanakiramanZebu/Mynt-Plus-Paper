@@ -3,6 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/screens/dashboard_screen.dart';
@@ -175,8 +176,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     //   messages: MyUpgraderMessages(),
     // );
 
-    return WillPopScope(
-        onWillPop: showExitPopup,
+    return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+          bool shouldExit = await showExitPopup();
+          if (shouldExit) {
+            SystemNavigator.pop();
+          }
+        },
         child: Consumer(builder: (context, ScopedReader watch, _) {
           final marketWatchList = watch(marketWatchProvider);
           // final explore = watch(authProvider);
@@ -200,7 +208,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           body: NoInternetScreen(),
                         )
                       : Scaffold(
-                          resizeToAvoidBottomInset: userProfile.showchartof ? false : true,
+                          resizeToAvoidBottomInset:
+                              userProfile.showchartof ? false : true,
                           body: Stack(
                             children: [
                               Scaffold(

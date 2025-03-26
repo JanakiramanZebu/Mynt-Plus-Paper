@@ -366,10 +366,11 @@ class TranctionProvider extends DefaultChangeNotifier {
             isScrollControlled: true,
             context: context,
             builder: (BuildContext context) {
-              return WillPopScope(
-                  onWillPop: () async {
-                    return false;
-                  },
+              return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
+              },
                   child: const UPIAppsPaymentSuccessAlert());
             });
       }
@@ -573,10 +574,11 @@ class TranctionProvider extends DefaultChangeNotifier {
           isScrollControlled: true,
           context: context,
           builder: (BuildContext context) {
-            return WillPopScope(
-                onWillPop: () async {
-                  return false;
-                },
+            return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
+              },
                 child: const PaymentCancelAlert());
           });
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -614,10 +616,11 @@ class TranctionProvider extends DefaultChangeNotifier {
             isScrollControlled: true,
             context: context,
             builder: (BuildContext context) {
-              return WillPopScope(
-                  onWillPop: () async {
-                    return false;
-                  },
+              return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
+              },
                   child: const UpiIdSucessorFaliureScreen());
             });
       }

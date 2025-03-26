@@ -27,12 +27,16 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
         final auth = watch(authProvider);
         final theme = watch(themeProvider);
         double screenWidth = MediaQuery.of(context).size.width;
-        return WillPopScope(
-          onWillPop: () async {
+        return PopScope(
+          canPop: true, // Allows back navigation
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return; // If system handled back, do nothing
+
             FocusScope.of(context).unfocus();
             authForgetpassword.clearTextField();
-            return true;
+            Navigator.of(context).pop(); // Proceed with back navigation
           },
+
           child: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: Scaffold(

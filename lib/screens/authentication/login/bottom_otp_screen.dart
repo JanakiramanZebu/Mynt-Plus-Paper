@@ -97,9 +97,10 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
         border: Border.all(color: colors.ltpgreen, width: 2),
       );
       return auth.initLoad
-          ? WillPopScope(
-              onWillPop: () async {
-                return false;
+          ? PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
               },
               child: Container(
                   decoration: BoxDecoration(

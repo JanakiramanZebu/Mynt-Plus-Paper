@@ -43,10 +43,11 @@ class _LoginScreenState extends State<LoginScreen> {
           FocusScope.of(context).unfocus();
         },
         child: auth.initLoad
-            ? WillPopScope(
-                onWillPop: () async {
-                  return false;
-                },
+            ? PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
+              },
                 child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
