@@ -341,7 +341,7 @@ class TradeBook extends ConsumerWidget {
                                                   14,
                                                   FontWeight.w500)),
                                           Text(
-                                              "${tradeBook[itemIndex].flqty ?? 0}",
+                                              "${((int.tryParse(tradeBook[itemIndex].flqty.toString()) ?? 0) / (tradeBook[itemIndex].exch == 'MCX' ? (int.tryParse(tradeBook[itemIndex].ls.toString()) ?? 1) : 1)).toInt()}",
                                               style: textStyle(
                                                   theme.isDarkMode
                                                       ? colors.colorWhite

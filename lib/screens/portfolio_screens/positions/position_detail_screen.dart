@@ -283,7 +283,8 @@ class PositionDetailScreen extends ConsumerWidget {
                                       14,
                                       FontWeight.w600)),
                               const SizedBox(height: 2),
-                              Text("${positionList.netqty ?? 0}",
+                              Text(
+                                  "${((int.tryParse(positionList.netqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
                                   style: textStyle(
                                       theme.isDarkMode
                                           ? colors.colorWhite
@@ -300,7 +301,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                       FontWeight.w500)),
                               const SizedBox(height: 2),
                               Text(
-                                "${positionList.daybuyqty ?? 0}",
+                                "${((int.tryParse(positionList.daybuyqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
                                 style: textStyle(
                                     theme.isDarkMode
                                         ? colors.colorWhite
@@ -356,7 +357,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                       FontWeight.w500)),
                               const SizedBox(height: 2),
                               Text(
-                                "${positionList.daysellqty ?? 0}",
+                                "${((int.tryParse(positionList.daysellqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
                                 style: textStyle(
                                     theme.isDarkMode
                                         ? colors.colorWhite
@@ -412,7 +413,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                       FontWeight.w500)),
                               const SizedBox(height: 2),
                               Text(
-                                "${positionList.cfbuyqty ?? 0}",
+                                "${((int.tryParse(positionList.cfbuyqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
                                 style: textStyle(
                                     theme.isDarkMode
                                         ? colors.colorWhite
@@ -468,7 +469,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                       FontWeight.w500)),
                               const SizedBox(height: 2),
                               Text(
-                                "${positionList.cfsellqty ?? 0}",
+                                "${((int.tryParse(positionList.cfsellqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
                                 style: textStyle(
                                     theme.isDarkMode
                                         ? colors.colorWhite

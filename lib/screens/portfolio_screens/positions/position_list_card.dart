@@ -62,7 +62,6 @@ class PositionListCard extends ConsumerWidget {
                                   : const Color(0xff666666),
                               10,
                               FontWeight.w500))),
-
                   const SizedBox(width: 9),
                   Container(
                       padding: const EdgeInsets.symmetric(
@@ -86,9 +85,7 @@ class PositionListCard extends ConsumerWidget {
                               FontWeight.w500))),
                 ])
               ]),
-
               const SizedBox(height: 4),
-
               Divider(
                   color: theme.isDarkMode
                       ? colors.darkGrey
@@ -101,7 +98,8 @@ class PositionListCard extends ConsumerWidget {
                   Text("Qty: ",
                       style: textStyle(
                           const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                  Text("${positionList.qty}",
+                  Text(
+                      "${((int.tryParse(positionList.qty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
                       style: textStyle(
                           theme.isDarkMode
                               ? colors.colorWhite
@@ -110,8 +108,7 @@ class PositionListCard extends ConsumerWidget {
                           FontWeight.w500))
                 ]),
                 positions.isNetPnl
-                    ? Text(
-                        "₹${positionList.profitNloss ?? positionList.rpnl}",
+                    ? Text("₹${positionList.profitNloss ?? positionList.rpnl}",
                         style: textStyle(
                             positionList.profitNloss != null
                                 ? positionList.profitNloss!.startsWith("-")
