@@ -39,10 +39,7 @@ class IpoCommonSearch extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Icon(
                   Icons.arrow_back_ios,
-                  color:
-                      theme.isDarkMode
-                    ? const Color(0xffBDBDBD)
-                    : colors.colorGrey,
+                 color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   size: 22,
                 ),
               ),

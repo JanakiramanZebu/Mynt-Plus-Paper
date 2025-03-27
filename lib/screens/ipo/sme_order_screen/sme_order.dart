@@ -307,7 +307,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                           "IPO window is open from ${widget.smeipo.dailyStartTime} till ${widget.smeipo.dailyEndTime} on trading days.",
                           style: textStyle(
                               theme.isDarkMode
-                                  ? colors.colorWhite
+                                  ? colors.colorBlack
                                   : colors.colorBlack,
                               10,
                               FontWeight.w600)),
@@ -344,23 +344,23 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                   fontWeight: FontWeight.w500,
                                   color: theme.isDarkMode
                                       ? Color(selectedChip == chip
-                                          ? 0xff000000
-                                          : 0xffffffff)
+                                          ? (0xff000000)
+                                          : 0xff000000)
                                       : Color(selectedChip == chip
-                                          ? 0xffffffff
+                                          ? 0xFFFFFFFF
                                           : 0xff000000),
                                 ),
                               ),
                               shape: const StadiumBorder(),
                               backgroundColor: theme.isDarkMode
-                                  ? selectedChip == chip
+                                  ? selectedChip == chip 
                                       ? colors.colorbluegrey
                                       : const Color(0xffB5C0CF).withOpacity(.15)
                                   : selectedChip == chip
                                       ? const Color(0xff000000)
                                       : const Color(0xffF1F3F8),
                               selectedColor: theme.isDarkMode
-                                  ? const Color(0xffF1F3F8)
+                                  ? colors.colorbluegrey
                                   : const Color(
                                       0xff000000), // Color when selected
                               padding: const EdgeInsets.symmetric(

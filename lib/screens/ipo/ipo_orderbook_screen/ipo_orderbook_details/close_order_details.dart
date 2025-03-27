@@ -41,9 +41,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Icon(
                 Icons.arrow_back_ios,
-                color: theme.isDarkMode
-                    ? const Color(0xffBDBDBD)
-                    : colors.colorGrey,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                 size: 22,
               ),
             ),
@@ -549,40 +547,91 @@ class IpoCloseOrderDetails extends ConsumerWidget {
               width: double.infinity,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: DataTable(
-                  columnSpacing: 16.0,
-                  horizontalMargin: 0,
-                  columns: const [
-                    DataColumn(label: Text("Bid")),
-                    DataColumn(label: Text("Qty")),
-                    DataColumn(label: Text("Price")),
-                    DataColumn(label: Text("Amount")),
-                    DataColumn(label: Text("Cut off")),
-                  ],
-                  rows: List<DataRow>.generate(
-                    ipoclose.bidDetail!.length,
-                    (index) {
-                      final bid = ipoclose.bidDetail![index];
-                      final isCutOff = ipoclose.type == "BSE"
-                          ? (bid.cuttoffflag! != "0")
-                          : bid.atCutOff!;
-                      return DataRow(cells: [
-                        DataCell(Text("${index + 1}")),
-                        DataCell(Text(bid.quantity!)),
-                        DataCell(Text(
-                            ipoclose.type == "BSE" ? bid.rate! : bid.price!)),
-                        DataCell(Text(ipoclose.type == "BSE"
-                            ? "₹${getFormatter(noDecimal: true, v4d: false, value: (double.parse(bid.rate!) * double.parse(bid.quantity!)))}"
-                            : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(bid.amount!).toDouble())}")),
-                        DataCell(Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Icon(
-                            isCutOff ? Icons.check_circle : Icons.cancel,
-                            color: isCutOff ? Colors.green : Colors.red,
-                          ),
-                        )),
-                      ]);
-                    },
+                child: Theme(
+
+                   data: Theme.of(context).copyWith(
+        cardColor: Colors.transparent, // To ensure background matches
+        textTheme: TextTheme(bodyMedium: TextStyle(color: Colors.white)),
+        dataTableTheme: const DataTableThemeData(
+          headingTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          dataTextStyle: TextStyle(color: Colors.white),
+          
+          
+          dividerThickness: 1.0,
+          
+           
+        ),
+      ),
+                  child: DataTable(
+                    columnSpacing: 16.0,
+                    horizontalMargin: 0,
+                     border: TableBorder(
+          horizontalInside: BorderSide(color: Colors.white54, width: 0.8), // Horizontal lines
+        ),
+                   columns: [
+          DataColumn(
+            label: Align(
+              alignment: Alignment.centerLeft,
+              child: Text("Bid", style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600,)),
+            ),
+          ),
+          DataColumn(label: Text("Qty", style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600,))),
+          DataColumn(label: Text("Price", style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600,))),
+          DataColumn(label: Text("Amount", style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600,))),       
+          DataColumn(label: Text("Cut off", style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600,))),
+        ],
+                    rows: List<DataRow>.generate(
+                      ipoclose.bidDetail!.length,
+                      (index) {
+                        final bid = ipoclose.bidDetail![index];
+                        final isCutOff = ipoclose.type == "BSE"
+                            ? (bid.cuttoffflag! != "0")
+                            : bid.atCutOff!;
+                        return DataRow(cells: [
+                          DataCell(Text("${index + 1}" , style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    12,
+                    FontWeight.w500,))),
+                          DataCell(Text(bid.quantity!,  style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    12,
+                    FontWeight.w500,))),
+                          DataCell(Text(
+                              ipoclose.type == "BSE" ? bid.rate! : bid.price! , style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    12,
+                    FontWeight.w500,))),
+                          DataCell(Text(ipoclose.type == "BSE"
+                              ? "₹${getFormatter(noDecimal: true, v4d: false, value: (double.parse(bid.rate!) * double.parse(bid.quantity!)))}"
+                              : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(bid.amount!).toDouble())}" , style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    12,
+                    FontWeight.w500,))),
+                          DataCell(Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Icon(
+                              isCutOff ? Icons.check_circle : Icons.cancel,
+                              color: isCutOff ? Colors.green : Colors.red,
+                            ),
+                          )),
+                        ]);
+                      },
+                    ),
                   ),
                 ),
               ),

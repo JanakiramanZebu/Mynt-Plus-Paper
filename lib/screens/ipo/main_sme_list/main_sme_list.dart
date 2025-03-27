@@ -47,7 +47,7 @@ class MainSmeListCard extends StatelessWidget {
     int month = int.parse(parts[1]);
     int year = int.parse(parts[2]);
   DateTime parsedDate = DateTime(year,month,day);
-  return DateFormat('d MMM').format(parsedDate); // Converts to "25-Mar"
+  return DateFormat('d MMM').format(parsedDate); 
 }
 
       return ((openIpos.isEmpty) &&
@@ -83,7 +83,6 @@ class MainSmeListCard extends StatelessWidget {
                       //   ),
                       // ),
                       ListView.separated(
-                        padding: const EdgeInsets.only(bottom: 0),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {
@@ -197,13 +196,13 @@ class MainSmeListCard extends StatelessWidget {
                                                              ? theme.isDarkMode
                                                                  ? colors.colorGrey
                                                                      .withOpacity(
-                                                                         .1)
+                                                                         .3)
                                                                  : const Color.fromARGB(
                                                                      255, 243, 242, 174)
                                                              : theme.isDarkMode
                                                                  ? colors.colorGrey
                                                                      .withOpacity(
-                                                                         .1)
+                                                                         .3)
                                                                  : const Color.fromARGB(
                                                                      255,
                                                                      251,
@@ -656,7 +655,6 @@ class MainSmeListCard extends StatelessWidget {
                       // ),
 
                       ListView.separated(
-                        padding: const EdgeInsets.only(bottom: 0),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {
@@ -749,13 +747,13 @@ class MainSmeListCard extends StatelessWidget {
                                                  ? theme.isDarkMode
                                                      ? colors.colorGrey
                                                          .withOpacity(
-                                                             .1)
+                                                             .3)
                                                      : const Color.fromARGB(
                                                          255, 243, 242, 174)
                                                  : theme.isDarkMode
                                                      ? colors.colorGrey
                                                          .withOpacity(
-                                                             .1)
+                                                             .3)
                                                      : const Color.fromARGB(
                                                          255,
                                                          251,
