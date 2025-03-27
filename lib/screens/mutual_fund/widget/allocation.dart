@@ -44,7 +44,10 @@ if (mfData == null) {
     //         const Color(0XFFdedede))
     // ];
 
-    return Padding(
+    return 
+     Container(
+      color: theme.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : const Color.fromARGB(255, 255, 255, 255), // Background color
+      child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,8 +133,9 @@ if (mfData == null) {
             ),
         ],
       ),
-    );
-  }
+    )
+     );
+ }
 
   Column progressBar(
       String name, String val, Color color1, ThemesProvider theme) {

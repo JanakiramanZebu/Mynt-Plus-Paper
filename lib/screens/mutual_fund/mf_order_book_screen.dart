@@ -353,8 +353,8 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
         backgroundColor: theme.isDarkMode
             ? tab == activeTab
-                ? colors.colorbluegrey
-                : const Color.fromARGB(255, 255, 255, 255).withOpacity(.15)
+                ? colors.colorBlack
+                : const Color.fromARGB(255, 0, 0, 0).withOpacity(.15)
             : tab == activeTab
                 ? const Color.fromARGB(255, 255, 255, 255)
                 : const Color.fromARGB(255, 255, 255, 255),
@@ -369,7 +369,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
             title,
             style: textStyle(
               theme.isDarkMode
-                  ? Color(tab == activeTab ? 0xff000000 : 0xff000000)
+                  ? Color(tab == activeTab ? 0xFFFFFFFF : 0xff5E6B7D)
                   : Color(tab == activeTab ? 0xff000000 : 0xff000000),
               15,
               FontWeight.w600,

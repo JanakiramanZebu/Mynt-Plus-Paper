@@ -304,53 +304,54 @@ if( mfdata.mfsinglepageres?.liveCancel == "LIVE") ... [
         ),
       ),
     ),
-    const SizedBox(width: 10), // Space between buttons
-    if( mfdata.mfsinglepageres?.liveCancel == "LIVE" ||  mfdata.mfsinglepageres?.liveCancel != "PAUSE") ... [
-    Expanded(
-      flex: 6, // Takes 6 columns
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () async{
-            // Your second button logic
-             await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return MfSipCancelalert(mfcancels: mfdata.mfsinglepageres!.schemename ?? "", mforderno: mfdata.mfsinglepageres!.sipregnno ?? "", mfreferno: mfdata.mfsinglepageres!.internalrefernumber ?? "", message: "pause",) ;
-          },
-        );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-            side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0), width: 1),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icon(
-              //   Icons.check_circle,
-              //   color: Color.fromARGB(255, 0, 0, 0),
-              //   size: 18,
-              // ),
-              // SizedBox(width: 6),
-              Text(
-                "Pause SIP",
-                style: TextStyle(
-                  color: Color.fromARGB(255, 0, 0, 0),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-    ]
+    // const SizedBox(width: 10), // Space between buttons
+    // if( mfdata.mfsinglepageres?.liveCancel == "LIVE" ||  mfdata.mfsinglepageres?.liveCancel != "PAUSE") ... [
+    // Expanded(
+    //   flex: 6, // Takes 6 columns
+    //   child: SizedBox(
+    //     width: double.infinity,
+    //     child: ElevatedButton(
+    //       onPressed: () async{
+    //         // Your second button logic
+    //          await showDialog(
+    //       context: context,
+    //       builder: (BuildContext context) {
+    //         return MfSipCancelalert(mfcancels: mfdata.mfsinglepageres!.schemename ?? "", mforderno: mfdata.mfsinglepageres!.sipregnno ?? "", mfreferno: mfdata.mfsinglepageres!.internalrefernumber ?? "", message: "pause",) ;
+    //       },
+    //     );
+    //       },
+    //       style: ElevatedButton.styleFrom(
+    //         backgroundColor: Colors.white,
+    //         foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+    //         side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0), width: 1),
+    //         shape: RoundedRectangleBorder(
+    //           borderRadius: BorderRadius.circular(20),
+    //         ),
+    //       ),
+    //       child: const Row(
+    //         mainAxisSize: MainAxisSize.min,
+    //         children: [
+    //           // Icon(
+    //           //   Icons.check_circle,
+    //           //   color: Color.fromARGB(255, 0, 0, 0),
+    //           //   size: 18,
+    //           // ),
+    //           // SizedBox(width: 6),
+    //           Text(
+    //             "Pause SIP",
+    //             style: TextStyle(
+    //               color: Color.fromARGB(255, 0, 0, 0),
+    //               fontSize: 14,
+    //               fontWeight: FontWeight.w600,
+    //             ),
+    //           ),
+    //         ],
+    //       ),
+    //     ),
+    //   ),
+    // ),
+    // ]
+ 
   ],
 )
 

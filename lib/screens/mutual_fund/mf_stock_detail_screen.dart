@@ -98,12 +98,12 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: colors.colorBlack,
+                    backgroundColor: theme.isDarkMode ? colors.colorbluegrey: colors.colorBlack,
                     shape: const StadiumBorder(),
                   ),
                   child: Text("One-time",
                       style: textStyle(
-                          const Color(0xffffffff), 14, FontWeight.w600)),
+                          theme.isDarkMode ? colors.colorBlack: const Color(0xffffffff), 14, FontWeight.w600)),
                 ),
               ),
               const SizedBox(width: 10), // Space between buttons
@@ -122,12 +122,12 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: colors.colorBlack,
+                    backgroundColor:  theme.isDarkMode ? colors.colorbluegrey: colors.colorBlack,
                     shape: const StadiumBorder(),
                   ),
                   child: Text("SIP",
                       style: textStyle(
-                          const Color(0xffffffff), 14, FontWeight.w600)),
+                          theme.isDarkMode ? colors.colorBlack: const Color(0xffffffff), 14, FontWeight.w600)),
                 ),
               ),
             ],
@@ -147,7 +147,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                   centerTitle: false,
                   titleSpacing: 2,
                     
-  toolbarHeight:65,
+  toolbarHeight:68,
                   leading: Padding(
     padding: const EdgeInsets.only(left: 8.0),
     child: IconButton(
@@ -163,22 +163,32 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
  actions: [
   Padding(
     padding: EdgeInsets.only(right: 8), // Adjust spacing
-    child: IconButton(
-      icon: SvgPicture.asset(
-        mfData.watchbatchval == true ? assets.bookmarkIcon : assets.bookmarkedIcon,
-        fit: BoxFit.contain,
-        color: mfData.watchbatchval == true ? colors.colorBlue : colors.colorGrey,
+    child: Container(
+      height: 30, // Set fixed height
+      width: 30, // Ensure a square size for the icon
+      child: IconButton(
+        padding: EdgeInsets.zero, // Remove default padding
+        constraints: BoxConstraints(
+          minHeight: 25,
+          minWidth: 25,
+        ),
+        icon: SvgPicture.asset(
+          mfData.watchbatchval == true ? assets.bookmarkIcon : assets.bookmarkedIcon,
+          fit: BoxFit.contain,
+          color: mfData.watchbatchval == true ? colors.colorBlue : colors.colorGrey,
+          height: 25, // Ensure icon height matches the button
+        ),
+        onPressed: () async {
+          await mfData.fetchMFWatchlist(
+            widget.mfStockData.iSIN!,
+            mfData.watchbatchval == true ? "delete" : "add",
+            context,
+            false,
+            "watch",
+          );
+          mfData.fetchmatchisan(widget.mfStockData.iSIN!);
+        },
       ),
-      onPressed: () async {
-        await mfData.fetchMFWatchlist(
-          widget.mfStockData.iSIN!,
-          mfData.watchbatchval == true ? "delete" : "add",
-          context,
-          false,
-          "watch",
-        );
-        mfData.fetchmatchisan(widget.mfStockData.iSIN!);
-      },
     ),
   ),
 ],
@@ -191,7 +201,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                       child: Column(
                         children: [
                           Container(
-                            color: const Color.fromARGB(255, 250, 251, 255),
+                            color:theme.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : const Color.fromARGB(255, 250, 251, 255),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Column(
@@ -281,7 +291,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                                                     ? "0.00"
                                                     : widget.mfStockData.aUM!))
                                                 .toStringAsFixed(2),
-                                            style: textStyle(colors.colorBlack,
+                                            style: textStyle(theme.isDarkMode ? colors.colorWhite: colors.colorBlack,
                                                 14, FontWeight.w600),
                                           ),
                                         ],
@@ -305,7 +315,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                                                 ? "0.00"
                                                 : widget
                                                     .mfStockData.nETASSETVALUE!,
-                                            style: textStyle(colors.colorBlack,
+                                            style: textStyle(theme.isDarkMode ? colors.colorWhite:colors.colorBlack,
                                                 14, FontWeight.w600),
                                           ),
                                         ],
@@ -331,7 +341,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                                                 ? "0.00"
                                                 : widget.mfStockData
                                                     .minimumPurchaseAmount!,
-                                            style: textStyle(colors.colorBlack,
+                                            style: textStyle(theme.isDarkMode ? colors.colorWhite:colors.colorBlack,
                                                 14, FontWeight.w600),
                                           ),
                                         ],
@@ -355,7 +365,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                                                     true
                                                 ? "0.00"
                                                 : "${widget.mfStockData.fIVEYEARDATA}%",
-                                            style: textStyle(colors.colorBlack,
+                                            style: textStyle(theme.isDarkMode ? colors.colorWhite:colors.colorBlack,
                                                 14, FontWeight.w600),
                                           ),
                                         ],

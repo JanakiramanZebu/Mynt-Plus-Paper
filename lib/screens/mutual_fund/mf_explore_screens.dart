@@ -113,9 +113,10 @@ class _ExploreScreensState extends State<MFExploreScreens>
                               )),
                   // height: 60,
                   child: TabBar(
+                    indicator: BoxDecoration(),
                       labelPadding: const EdgeInsets.only(right: 8, bottom: 8),
                       tabAlignment: TabAlignment.start,
-                      indicatorColor: const Color.fromARGB(255, 255, 255, 255),
+                      indicatorColor: theme.isDarkMode ? colors.colorBlack :const Color.fromARGB(255, 255, 255, 255),
                       controller: _tabController,
                       isScrollable: true,
                       tabs: List.generate(

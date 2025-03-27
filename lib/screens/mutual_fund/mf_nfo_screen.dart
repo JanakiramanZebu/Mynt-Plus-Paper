@@ -138,10 +138,10 @@ class MFNFOScreen extends ConsumerWidget {
                                               padding: const EdgeInsets.only(right: 8.0),
                                               child: Text(
                                                 "Closing ${mf.mfNFOList!.nfoList![index].endDate!}",
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w400,
-                                                  color: Colors.black,
+                                                  color:theme.isDarkMode ? colors.colorWhite : Colors.black,
                                                 ),
                                               ),
                                             ),

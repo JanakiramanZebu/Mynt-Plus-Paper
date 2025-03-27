@@ -999,10 +999,8 @@ class AuthProvider extends DefaultChangeNotifier {
         await FirebaseAnalytics.instance.setUserId(id: pref.clientId);
 
 // mf
-        ref(mfProvider).fetchnewMFBestList();
-        ref(mfProvider).fetchmfallcatnew();
+        setmfapicalls();
         ref(mfProvider).fetchmfNFO(context);
-
 // Explore
         // await ref(stocksProvide)
         //     .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
@@ -1065,6 +1063,13 @@ class AuthProvider extends DefaultChangeNotifier {
     await ref(ipoProvide).getipoperfomance(currentYear);
     await ref(ipoProvide).mergemainsme();
     await ref(ipoProvide).fetchIpoPreClose();
+  }
+
+  setmfapicalls() async {
+      ref(mfProvider).fetchnewMFBestList();
+      ref(mfProvider).fetchmfallcatnew();
+      // ref(mfProvider).fetchmfNFO(context);
+
   }
 
   setPrefOrderPrefer() async {

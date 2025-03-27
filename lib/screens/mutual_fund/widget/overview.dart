@@ -55,7 +55,11 @@ class MFOverview extends ConsumerWidget {
       borderColor: colors.colorBlue,
       textStyle: TextStyle(color: Colors.white), 
     );
-    return Padding(
+    return Container(
+      color: theme.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : const Color.fromARGB(255, 255, 255, 255), // Background color
+      child:
+    
+     Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,15 +76,15 @@ Container(
      
   width: MediaQuery.of(context).size.width,
   decoration: BoxDecoration(
-    color: Colors.white, 
+    color: theme.isDarkMode ? colors.colorBlack: Colors.white, 
     border: Border.all(
-      color: Colors.transparent, 
+      color: theme.isDarkMode ? colors.colorBlack: Colors.transparent, 
     ),
   ),
   child: SfCartesianChart(
  
   margin: const EdgeInsets.symmetric(horizontal: 0),
-  backgroundColor: Colors.white, 
+  backgroundColor:  theme.isDarkMode ? colors.colorBlack: const Color.fromARGB(255, 255, 255, 255), 
   borderWidth: 0, 
    plotAreaBorderWidth: 0,
   primaryXAxis: CategoryAxis(
@@ -119,9 +123,9 @@ Container(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Colors.white.withOpacity(1),
-          Colors.white.withOpacity(1),
-          Colors.white.withOpacity(1),
+        theme.isDarkMode ? colors.colorBlack:   Colors.white.withOpacity(1),
+         theme.isDarkMode ? colors.colorBlack:  Colors.white.withOpacity(1),
+         theme.isDarkMode ? colors.colorBlack:  Colors.white.withOpacity(1),
         ],
         stops: const [0.0, 0.5, 1.0],
       ),
@@ -273,11 +277,14 @@ Container(
                 List.generate(mfProvide.mfReturnsGridview.length, (index) {
               return Container(
                 decoration: BoxDecoration(
-                    color: Color(mfProvide.mfReturnsGridview[index]['value']
-                            .toString()
-                            .startsWith("-")
-                        ? 0xffFFFCFB
-                        : 0xffFBFFFA),
+                   color: theme.isDarkMode 
+    ? Color(0xFF2A2A2A) 
+    : Color(mfProvide.mfReturnsGridview[index]['value']
+            .toString()
+            .startsWith("-")
+        ? 0xffFFFCFB
+        : 0xffFBFFFA),
+
                     borderRadius: BorderRadius.circular(10),
                     border:
                         Border.all(color: const Color(0xff999999), width: .2)),
@@ -304,7 +311,7 @@ Container(
                             const SizedBox(height: 3),
                             Text(
                                 "${mfProvide.mfReturnsGridview[index]['durName']}",
-                                style: textStyle(const Color(0xff666666), 12,
+                                style: textStyle(theme.isDarkMode ? colors.colorWhite:const Color(0xff666666), 12,
                                     FontWeight.w500)),
                             const SizedBox(height: 3),
 
@@ -406,7 +413,9 @@ Container(
        
         ],
       ),
+    )
     );
+ 
   }
 
   Row rowOfInfoData(String title1, String value1, String title2, String value2,
