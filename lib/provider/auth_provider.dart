@@ -59,7 +59,7 @@ class AuthProvider extends DefaultChangeNotifier {
   final TextEditingController passCtrl = TextEditingController();
   final TextEditingController otpCtrl = TextEditingController();
 
-  bool _totp = true;
+  bool _totp = false;
   bool get totp => _totp;
 
   late TabController exploreTab;
@@ -453,7 +453,8 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // Call this method while clicking if the login validation process is successful.
 
-  submitLogin(BuildContext context, bool navi) {
+  submitLogin(BuildContext context, bool navi) async {
+    _loggedMobile = await getLocalData();
     // if (routeTo == "deviceLogin") {
     //   _isMobileLogin = true;
     // }
@@ -1055,10 +1056,10 @@ class AuthProvider extends DefaultChangeNotifier {
                 context: context,
                 builder: (BuildContext context) {
                   return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+                      canPop: false,
+                      onPopInvokedWithResult: (didPop, result) async {
+                        if (didPop) return;
+                      },
                       child: const RiskDisclousreBottomSheet());
                 });
           }
