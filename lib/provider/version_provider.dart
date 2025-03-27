@@ -48,9 +48,10 @@ class VersionProvider extends DefaultChangeNotifier {
           showDragHandle: false,
           useSafeArea: false,
           isScrollControlled: true,
-          builder: (context) => WillPopScope(
-              onWillPop: () async {
-                return false;
+          builder: (context) => PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
               },
               child: VersionBottomSheet()),
         );

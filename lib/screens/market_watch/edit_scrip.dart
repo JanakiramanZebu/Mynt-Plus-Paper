@@ -1,13 +1,13 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart'; 
+import 'package:flutter_svg/svg.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../res/res.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/thems.dart';
 import '../../sharedWidget/functions.dart';
-import '../../sharedWidget/no_internet_widget.dart'; 
+import '../../sharedWidget/no_internet_widget.dart';
 
 class EditScrip extends StatefulWidget {
   final String wlName;
@@ -37,14 +37,18 @@ class _EditScripState extends State<EditScrip> {
       final theme = context.read(themeProvider);
       final internet = watch(networkStateProvider);
 
-      return WillPopScope(
-          onWillPop: () async {
+      return PopScope(
+          canPop: true, // Allows back navigation
+          onPopInvokedWithResult: (didPop, result) async {
+            if (didPop) return; // If system handled back, do nothing
+
             marketwatch.setpageName("");
-            context
+            await context
                 .read(marketWatchProvider)
                 .requestMWScrip(context: context, isSubscribe: true);
             marketwatch.delQty();
-            return true;
+
+            Navigator.of(context).pop(); // Proceed with back navigation
           },
           child: Scaffold(
             appBar: AppBar(
@@ -117,15 +121,14 @@ class _EditScripState extends State<EditScrip> {
                 marketwatch.loading
                     ? const Center(child: CircularProgressIndicator())
                     : Theme(
-                      data: ThemeData(
-                        canvasColor: theme.isDarkMode
-                        ? const Color(0xffFFFFFF).withOpacity(.3)
-                        :const Color(0xff000000).withOpacity(.3)
-                      ),
-                      child: ReorderableListView.builder(
+                        data: ThemeData(
+                            canvasColor: theme.isDarkMode
+                                ? const Color(0xffFFFFFF).withOpacity(.3)
+                                : const Color(0xff000000).withOpacity(.3)),
+                        child: ReorderableListView.builder(
                           physics: const BouncingScrollPhysics(),
                           // shrinkWrap: true,
-                      
+
                           // buildDefaultDragHandles: false,
                           itemBuilder: (_, int i) => Container(
                             // padding: const EdgeInsets.on(horizontal: 16),
@@ -178,7 +181,8 @@ class _EditScripState extends State<EditScrip> {
                                     Text("${marketwatch.scrips[i]['option']}",
                                         style: textStyles.scripNameTxtStyle
                                             .copyWith(
-                                                color: const Color(0xff666666))),
+                                                color:
+                                                    const Color(0xff666666))),
                                 ],
                               ),
                               subtitle: Column(
@@ -216,7 +220,7 @@ class _EditScripState extends State<EditScrip> {
                             }
                           },
                         ),
-                    ),
+                      ),
                 if (internet.connectionStatus == ConnectivityResult.none) ...[
                   const NoInternetWidget()
                 ]
@@ -225,6 +229,4 @@ class _EditScripState extends State<EditScrip> {
           ));
     });
   }
-
-   
 }

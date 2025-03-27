@@ -19,11 +19,14 @@ class ExitOrderScreen extends ConsumerWidget {
     final theme = context.read(themeProvider);
     final Orders = watch(orderProvider);
     final socketDatas = watch(websocketProvider).socketDatas;
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: true, // Allows back navigation
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return; // If system handled back, do nothing
+
         Orders.selectExitAllOrders(false);
-        return true;
       },
+
       child: Scaffold(
         appBar: AppBar(
           elevation: .2,

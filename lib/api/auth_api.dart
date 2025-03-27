@@ -19,6 +19,7 @@ mixin AuthApi on ApiCore {
       required String mobileRclient,
       required String password,
       required String imei,
+      required bool totp,
       required BuildContext context}) async {
     try {
       final uri = Uri.parse(apiLinks.mobileLogin);
@@ -27,13 +28,15 @@ mixin AuthApi on ApiCore {
           ? {
               "mobile_unique": uniqueId,
               getInputType(mobileRclient): mobileRclient,
-              "imei": imei
+              "imei": imei,
+              "TOTP": totp ? "TRUE" : ""
             }
           : {
               "mobile_unique": uniqueId,
               getInputType(mobileRclient): mobileRclient,
               "password": password,
-              "imei": imei
+              "imei": imei,
+              "TOTP": totp ? "TRUE" : ""
             };
 
       final res = await apiClient.post(uri,
@@ -109,8 +112,6 @@ mixin AuthApi on ApiCore {
       rethrow;
     }
   }
-
- 
 
 // Forgot password
 

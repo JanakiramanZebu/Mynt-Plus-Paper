@@ -62,9 +62,10 @@ class _UPIIDPaymentCancelAlertState extends State<UPIIDPaymentCancelAlert> {
     final theme = context.read(themeProvider);
     // final upiId = context.read(transcationProvider);
 
-    return WillPopScope(
-        onWillPop: () async {
-          return false;
+    return PopScope(
+        canPop: true, // Allows default back navigation
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return; // If system handled back, do nothing
         },
         child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),

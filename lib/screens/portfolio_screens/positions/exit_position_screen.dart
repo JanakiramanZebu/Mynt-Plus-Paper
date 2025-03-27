@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
@@ -17,10 +17,13 @@ class ExitPositionScreen extends ConsumerWidget {
     final theme = context.read(themeProvider);
     final positions = watch(portfolioProvider);
     final socketDatas = watch(websocketProvider).socketDatas;
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: true, // Allows back navigation
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return; // If system handled back, do nothing
+
         positions.selectExitAllPosition(false);
-        return true;
+        Navigator.of(context).pop(); // Proceed with back navigation
       },
       child: Scaffold(
         appBar: AppBar(
@@ -247,8 +250,7 @@ class ExitPositionScreen extends ConsumerWidget {
                                             Text(
                                                 "₹${exitPositionList[index].profitNloss ?? exitPositionList[index].rpnl}",
                                                 style: textStyle(
-                                                    exitPositionList[
-                                                                    index]
+                                                    exitPositionList[index]
                                                                 .profitNloss !=
                                                             null
                                                         ? exitPositionList[
@@ -261,7 +263,8 @@ class ExitPositionScreen extends ConsumerWidget {
                                                                         .profitNloss ==
                                                                     "0.00"
                                                                 ? colors.ltpgrey
-                                                                : colors.ltpgreen
+                                                                : colors
+                                                                    .ltpgreen
                                                         : exitPositionList[
                                                                     index]
                                                                 .rpnl!
@@ -272,7 +275,8 @@ class ExitPositionScreen extends ConsumerWidget {
                                                                         .rpnl ==
                                                                     "0.00"
                                                                 ? colors.ltpgrey
-                                                                : colors.ltpgreen,
+                                                                : colors
+                                                                    .ltpgreen,
                                                     15,
                                                     FontWeight.w600)),
                                           ],
@@ -287,8 +291,7 @@ class ExitPositionScreen extends ConsumerWidget {
                                             Text(
                                                 "₹${exitPositionList[index].mTm}",
                                                 style: textStyle(
-                                                    exitPositionList[
-                                                                index]
+                                                    exitPositionList[index]
                                                             .mTm!
                                                             .startsWith("-")
                                                         ? colors.darkred

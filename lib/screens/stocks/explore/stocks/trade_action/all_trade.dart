@@ -73,12 +73,16 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final theme = context.read(themeProvider);
     final tradeAcrion = context.read(stocksProvide);
-    return WillPopScope(
-      onWillPop: () async {
-        await context.read(stocksProvide).defaultSectorThemematicData();
-        // await context.read(stocksProvide).fetchIndicesAdvdec();
-        return true;
-      },
+    return PopScope(
+  canPop: true, // Allows the default back behavior
+  onPopInvokedWithResult: (didPop, result) async {
+    if (didPop) return; // If system handled back, do nothing
+
+    await context.read(stocksProvide).defaultSectorThemematicData();
+    // await context.read(stocksProvide).fetchIndicesAdvdec(); // Uncomment if needed
+
+    Navigator.of(context).pop(); // Allow back navigation
+  },
       child: Scaffold(
         appBar: AppBar(
             leadingWidth: 41,

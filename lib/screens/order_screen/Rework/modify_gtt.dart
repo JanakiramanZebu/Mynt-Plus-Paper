@@ -88,14 +88,15 @@ class _ModifyGTTState extends State<ModifyGTT> {
   @override
   Widget build(BuildContext context) {
     final theme = context.read(themeProvider);
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: true, // Allows back navigation
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return; // If system handled back, do nothing
+
         context.read(ordInputProvider).clearTextField();
         await context
             .read(marketWatchProvider)
             .requestMWScrip(context: context, isSubscribe: true);
-
-        return true;
       },
       child: Consumer(builder: (context, ScopedReader watch, _) {
         final orderInput = watch(ordInputProvider);
@@ -234,9 +235,9 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                       15,
                                                       FontWeight.w400),
                                                   inputFormate: [
-                                                          FilteringTextInputFormatter
-                                                              .digitsOnly
-                                                        ],
+                                                    FilteringTextInputFormatter
+                                                        .digitsOnly
+                                                  ],
                                                   style: textStyle(
                                                       theme.isDarkMode
                                                           ? colors.colorWhite
@@ -689,9 +690,9 @@ class _ModifyGTTState extends State<ModifyGTT> {
                                                         15,
                                                         FontWeight.w400),
                                                     inputFormate: [
-                                                            FilteringTextInputFormatter
-                                                                .digitsOnly
-                                                          ],
+                                                      FilteringTextInputFormatter
+                                                          .digitsOnly
+                                                    ],
                                                     style: textStyle(
                                                         theme.isDarkMode
                                                             ? colors.colorWhite

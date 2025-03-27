@@ -37,10 +37,11 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return false;
-      },
+    return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
+              },
       child: Consumer(
         builder: (context, watch, child) {
           //  final fund = watch(transcationProvider);

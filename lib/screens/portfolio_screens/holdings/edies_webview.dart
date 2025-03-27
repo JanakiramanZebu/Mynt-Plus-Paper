@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:flutter_svg/flutter_svg.dart'; 
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../locator/constant.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
@@ -22,10 +22,13 @@ class _EdisWebviewState extends State<EdisWebview> {
   @override
   Widget build(BuildContext context) {
     final theme = context.read(themeProvider);
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: true, // Allows back navigation
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return; // If system handled back, do nothing
+
         await context.read(portfolioProvider).fetchHoldings(context, "Refresh");
-        return true;
+        Navigator.of(context).pop(); // Proceed with back navigation
       },
       child: Scaffold(
           appBar: AppBar(

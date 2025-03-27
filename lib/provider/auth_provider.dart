@@ -59,10 +59,17 @@ class AuthProvider extends DefaultChangeNotifier {
   final TextEditingController passCtrl = TextEditingController();
   final TextEditingController otpCtrl = TextEditingController();
 
+  bool _totp = true;
+  bool get totp => _totp;
+
   late TabController exploreTab;
 
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
+
+  setChangetotp(bool value) {
+    _totp = value;
+  }
 
   removeUsers(user, i, context) {
     print("object $user $i");
@@ -431,30 +438,29 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // Validate OTP
   bool validateOtp(String otp) {
-    if (otp == 'wrong') {
+    if (otp == 'wrong' || otp == 'TOTP') {
       print(" otp is not a valid $otp");
-      optError = "Invalid / wrong OTP";
-    } else if (otp.length <= 3 || otp.isEmpty) {
-      optError = "Please enter 4 digit OTP";
+      optError = "Invalid / wrong ${otp == 'TOTP' ? 'TOTP' : 'OTP'}";
+    } else if (otp.length <= (_totp ? 5 : 3) || otp.isEmpty) {
+      optError = "Please enter ${_totp ? 6 : 4} digit OTP";
     } else if (otp == 'success') {
       optError = "OTP Verified";
     } else {
       optError = null;
     }
-
     return optError == null;
   }
 
 // Call this method while clicking if the login validation process is successful.
 
-  submitLogin(BuildContext context) {
+  submitLogin(BuildContext context, bool navi) {
     // if (routeTo == "deviceLogin") {
     //   _isMobileLogin = true;
     // }
 
     if (validateLogin()) {
       fetchMobileLogin(context, passCtrl.text, loginMethCtrl.text.toUpperCase(),
-          "", imieJson(loginMethCtrl.text.toUpperCase()));
+          navi ? "pop" : "", imieJson(loginMethCtrl.text.toUpperCase()), _totp);
     }
   }
 
@@ -473,7 +479,7 @@ class AuthProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
 
   fetchMobileLogin(BuildContext context, String password, String mobileRclint,
-      String s, String imei) async {
+      String s, String imei, bool totp) async {
     try {
       print('def $imei');
       pref.setImei(imei);
@@ -484,21 +490,26 @@ class AuthProvider extends DefaultChangeNotifier {
           mobileRclient: mobileRclint,
           password: password,
           context: context,
-          imei: imei);
+          imei: imei,
+          totp: totp);
       // final localstorage = await SharedPreferences.getInstance();
 
-      if (_mobileLogin!.stat == "Ok" && s.isNotEmpty) {
+      if ((_mobileLogin!.stat == "Ok" && s.isNotEmpty) || s == "pop") {
         Navigator.pop(context);
+        validateOtp("");
       }
 
       if (_mobileLogin!.stat == "Ok" &&
-          (_mobileLogin!.msg == "otp sended" ||
-              _mobileLogin!.msg ==
-                  "otp sended, already logged in another device")) {
+          (totp && _mobileLogin!.msg != null ||
+              (_mobileLogin!.msg == "otp sended" ||
+                  _mobileLogin!.msg ==
+                      "otp sended, already logged in another device"))) {
         otpCtrl.clear();
         mobile_client = mobileRclint;
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'The OTP is sent via email and SMS'));
+        if (!totp) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, 'The OTP is sent via email and SMS'));
+        }
         _isDisableBtn = true;
         pref.setRiskDiscloser(false);
         showModalBottomSheet(
@@ -511,9 +522,10 @@ class AuthProvider extends DefaultChangeNotifier {
           showDragHandle: false,
           useSafeArea: false,
           isScrollControlled: true,
-          builder: (context) => WillPopScope(
-              onWillPop: () async {
-                return false;
+          builder: (context) => PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
               },
               child: BottomSheetContent()),
         );
@@ -635,7 +647,8 @@ class AuthProvider extends DefaultChangeNotifier {
           mobileRclient: mobileRclint,
           password: password,
           context: context,
-          imei: pref.imei!);
+          imei: pref.imei!,
+          totp: _totp);
 
       print('def ${pref.imei!}');
       otpCtrl.clear();
@@ -713,6 +726,9 @@ class AuthProvider extends DefaultChangeNotifier {
       if (_mobileOtp?.emsg == "otp not valid") {
         validateOtp('wrong');
       }
+      if (_mobileOtp?.emsg == "Invalid Input : Invalid OTP") {
+        validateOtp('TOTP');
+      }
     } finally {
       toggleLoadingOn(false);
     }
@@ -770,12 +786,12 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(indexListProvider).bottomMenu(1, context);
         loginMethCtrl.text = pref.clientId!;
         notifyListeners();
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'Logged out'));
+        // ScaffoldMessenger.of(context)
+        //     .showSnackBar(warningMessage(context, 'Logged out'));
 
-        Navigator.of(context).pop();
+        Navigator.pop(context);
         ref(websocketProvider).closeSocket();
-        ref(websocketProvider).websockConn(false);
+        // ref(websocketProvider).websockConn(false);
         if (currentRouteName != Routes.loginScreen) {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.loginScreen, (route) => false);
@@ -1038,10 +1054,11 @@ class AuthProvider extends DefaultChangeNotifier {
                 isScrollControlled: true,
                 context: context,
                 builder: (BuildContext context) {
-                  return WillPopScope(
-                      onWillPop: () async {
-                        return false;
-                      },
+                  return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
+              },
                       child: const RiskDisclousreBottomSheet());
                 });
           }

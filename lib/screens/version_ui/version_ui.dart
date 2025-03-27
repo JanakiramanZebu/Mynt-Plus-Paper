@@ -17,10 +17,11 @@ class VersionBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = watch(themeProvider);
     final version = watch(versionProvider);
-    return WillPopScope(
-      onWillPop: () async {
-        return false;
-      },
+    return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
+              },
       child: Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),

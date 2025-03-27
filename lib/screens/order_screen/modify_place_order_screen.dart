@@ -164,10 +164,12 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return true;
+    return PopScope(
+      canPop: true, // Allows back navigation
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return; // If system handled back, do nothing
       },
+
       child: Consumer(builder: (context, ScopedReader watch, _) {
         final orderProvide = watch(orderProvider);
         final internet = watch(networkStateProvider);
@@ -404,10 +406,10 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         const Color(0xff666666),
                                                         15,
                                                         FontWeight.w400),
-                                                    inputFormate:[
-                                                            FilteringTextInputFormatter
-                                                                .digitsOnly
-                                                          ],
+                                                    inputFormate: [
+                                                      FilteringTextInputFormatter
+                                                          .digitsOnly
+                                                    ],
                                                     style: textStyle(
                                                         theme.isDarkMode
                                                             ? colors.colorWhite
@@ -1261,21 +1263,21 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         suffixIcon: InkWell(
                                                           onTap: () {
                                                             setState(() {
-                                                                 int number =
-                                                                int.parse(
-                                                                    discQtyCtrl
-                                                                        .text);
+                                                              int number =
+                                                                  int.parse(
+                                                                      discQtyCtrl
+                                                                          .text);
                                                               if (discQtyCtrl
                                                                   .text
                                                                   .isNotEmpty) {
-                                                                     if (number <
-                                                                  999999) {
-                                                                discQtyCtrl
-                                                                        .text =
-                                                                    (int.parse(discQtyCtrl.text) +
-                                                                            1)
-                                                                        .toString(); 
-                                                                        }
+                                                                if (number <
+                                                                    999999) {
+                                                                  discQtyCtrl
+                                                                          .text =
+                                                                      (int.parse(discQtyCtrl.text) +
+                                                                              1)
+                                                                          .toString();
+                                                                }
                                                               } else {
                                                                 discQtyCtrl
                                                                     .text = "0";

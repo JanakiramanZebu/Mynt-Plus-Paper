@@ -83,6 +83,7 @@ class MainSmeListCard extends StatelessWidget {
                       //   ),
                       // ),
                       ListView.separated(
+                        padding: const EdgeInsets.only(bottom: 0),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {
@@ -655,6 +656,7 @@ class MainSmeListCard extends StatelessWidget {
                       // ),
 
                       ListView.separated(
+                        padding: const EdgeInsets.only(bottom: 0),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {

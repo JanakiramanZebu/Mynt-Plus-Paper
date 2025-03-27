@@ -18,10 +18,14 @@ class MFWatchlistScreen extends ConsumerWidget {
     final theme = watch(themeProvider);
     final fund = watch(fundProvider);
     final mfData = watch(mfProvider);
-    return WillPopScope(
-      onWillPop: () async {
-        //await mfData.chngMFCategory(mfData.mfCategory);
-        return true;
+    return PopScope(
+      canPop: true, // Allows back navigation
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return; // If system handled back, do nothing
+
+        // await mfData.chngMFCategory(mfData.mfCategory);
+
+        Navigator.of(context).pop(); // Proceed with back navigation
       },
       child: Scaffold(
         appBar: AppBar(
@@ -101,8 +105,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                                             children: [
                                               CustomExchBadge(
                                                   exch: mfData
-                                                          .mfWatchlist![
-                                                              index]
+                                                          .mfWatchlist![index]
                                                           .schemeName!
                                                           .contains("GROWTH")
                                                       ? "GROWTH"
@@ -147,15 +150,15 @@ class MFWatchlistScreen extends ConsumerWidget {
                                   IconButton(
                                       splashRadius: 20,
                                       onPressed: () async {
-                                        
                                         await mfData.fetchMFWatchlist(
                                             mfData.mfWatchlist![index].iSIN!,
-                                               "delete",
+                                            "delete",
                                             context,
-                                            true,"watch");
-                                            // await mfData.makefalse(mfData
-                                            //     .mfWatchlist![index].iSIN ??
-                                            // "".toString());
+                                            true,
+                                            "watch");
+                                        // await mfData.makefalse(mfData
+                                        //     .mfWatchlist![index].iSIN ??
+                                        // "".toString());
                                       },
                                       icon: SvgPicture.asset(
                                         color: colors.colorBlue,
@@ -181,14 +184,12 @@ class MFWatchlistScreen extends ConsumerWidget {
                                               FontWeight.w500)),
                                       Text(
                                           (double.parse(mfData
-                                                          .mfWatchlist![
-                                                              index]
+                                                          .mfWatchlist![index]
                                                           .aUM!
                                                           .isEmpty
                                                       ? "0.00"
                                                       : mfData
-                                                          .mfWatchlist![
-                                                              index]
+                                                          .mfWatchlist![index]
                                                           .aUM!) /
                                                   10000000)
                                               .toStringAsFixed(2),
@@ -263,31 +264,27 @@ class MFWatchlistScreen extends ConsumerWidget {
                         ),
                       ),
                       InkWell(
-                        onTap: ()async {
+                        onTap: () async {
                           mfData.chngMandate("Lumpsum");
-                            await fund.fetchUpiDetail();
-                            await fund.fetchBankDetail();
-                            if (mfData
-                                                  .mfWatchlist![index].sIPFLAG == "Y") {
-                              await mfData.fetchMFSipData(
-                                  "${mfData
-                                                  .mfWatchlist![index].iSIN}",
-                                  "${mfData
-                                                  .mfWatchlist![index].schemeCode}");
+                          await fund.fetchUpiDetail();
+                          await fund.fetchBankDetail();
+                          if (mfData.mfWatchlist![index].sIPFLAG == "Y") {
+                            await mfData.fetchMFSipData(
+                                "${mfData.mfWatchlist![index].iSIN}",
+                                "${mfData.mfWatchlist![index].schemeCode}");
 
-                              await mfData.fetchMFMandateDetail();
-                            }
+                            await mfData.fetchMFMandateDetail();
+                          }
 
-                            // showDialog(
-                            //     context: context,
-                            //     builder: (BuildContext context) {
-                            //       return MFOrderScreen(
-                            //           mfData: mfData.topmutualfund![index]);
-                            //     });
+                          // showDialog(
+                          //     context: context,
+                          //     builder: (BuildContext context) {
+                          //       return MFOrderScreen(
+                          //           mfData: mfData.topmutualfund![index]);
+                          //     });
 
-                            Navigator.pushNamed(context, Routes.mforderScreen,
-                                arguments: mfData
-                                                  .mfWatchlist![index]);
+                          Navigator.pushNamed(context, Routes.mforderScreen,
+                              arguments: mfData.mfWatchlist![index]);
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 6),

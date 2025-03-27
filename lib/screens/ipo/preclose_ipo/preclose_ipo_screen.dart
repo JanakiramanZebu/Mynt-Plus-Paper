@@ -163,6 +163,8 @@ class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
                 ? Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 0),
                     child: ListView.separated(
+                        padding: const EdgeInsets.only(bottom: 0),
+
                         shrinkWrap: true,
                         physics: const ScrollPhysics(),
                         itemBuilder: (context, index) {
@@ -254,16 +256,26 @@ class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
                                             //   ),
                                             // ),
 
-                                            // SizedBox(width: 8),
+                                           SizedBox(
+                                              width: 250,
+                                              child: Text(ipo.companyName!,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: textStyle(
+                                                      theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
+                                                      14,
+                                                      FontWeight.w600)),
+                                            ),
 
-                                            Text(ipo.companyName!,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    14,
-                                                    FontWeight.w600)),
+                                            // Text(ipo.companyName!,
+                                            //     overflow: TextOverflow.ellipsis,
+                                            //     style: textStyle(
+                                            //         theme.isDarkMode
+                                            //             ? colors.colorWhite
+                                            //             : colors.colorBlack,
+                                            //         14,
+                                            //         FontWeight.w600)),
 
                                             const SizedBox(
                                               height: 4,
