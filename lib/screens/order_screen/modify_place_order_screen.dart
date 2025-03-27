@@ -79,10 +79,12 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
       prcType == 'SL-LMT' ? true : false,
       prcType == 'SL-MKT' ? true : false
     ];
-    frezQty = int.parse(widget.scripInfo.frzqty ?? "0");
+    int sfq = int.tryParse(widget.scripInfo.frzqty?.toString() ?? '1') ?? 1;
+    lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
+
+    frezQty = ((sfq / lotSize).floor() * lotSize);
 
     setState(() {
-      lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
       multiplayer = int.parse((widget.orderArg.exchange == "MCX"
               ? widget.scripInfo.prcqqty
               : widget.orderArg.lotSize)
@@ -90,6 +92,9 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
       isBuy = widget.modifyOrderArgs.trantype == "B" ? true : false;
       priceCtrl = TextEditingController(text: widget.modifyOrderArgs.prc);
       qtyCtrl = TextEditingController(text: widget.modifyOrderArgs.qty);
+      if (widget.orderArg.exchange == "MCX") {
+        qtyCtrl.text = (int.parse(qtyCtrl.text) / lotSize).toInt().toString();
+      }
       mktProtCtrl = TextEditingController(
           text: widget.modifyOrderArgs.mktProtection == null
               ? "5"
@@ -135,29 +140,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
               widget.modifyOrderArgs.sPrdtAli == "CO"
           ? true
           : false;
-      OrderMarginInput input = OrderMarginInput(
-          exch: "${widget.scripInfo.exch}",
-          prc: priceCtrl.text,
-          prctyp: prcType,
-          prd: widget.modifyOrderArgs.prd!,
-          qty: qtyCtrl.text,
-          rorgprc: '0',
-          rorgqty: '0',
-          trantype: widget.modifyOrderArgs.trantype!,
-          tsym: "${widget.scripInfo.tsym}",
-          blprc: '',
-          trgprc: isActivePrice[2] || isActivePrice[3]
-              ? triggerPriceCtrl.text
-              : "");
-      context.read(orderProvider).fetchOrderMargin(input, context);
-      BrokerageInput brokerageInput = BrokerageInput(
-          exch: "${widget.scripInfo.exch}",
-          prc: priceCtrl.text,
-          prd: widget.modifyOrderArgs.prd!,
-          qty: "${widget.scripInfo.ls}",
-          trantype: widget.modifyOrderArgs.trantype!,
-          tsym: "${widget.scripInfo.tsym}");
-      context.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
+      marginUpdate();
     });
     super.initState();
   }
@@ -436,42 +419,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             qtyCtrl.text =
                                                                 "$multiplayer";
                                                           }
-                                                          OrderMarginInput input = OrderMarginInput(
-                                                              exch:
-                                                                  "${widget.scripInfo.exch}",
-                                                              prc: isActivePrice[
-                                                                          1] ||
-                                                                      isActivePrice[
-                                                                          3]
-                                                                  ? price
-                                                                  : priceCtrl
-                                                                      .text,
-                                                              prctyp: prcType,
-                                                              prd: widget
-                                                                  .modifyOrderArgs
-                                                                  .prd!,
-                                                              qty: qtyCtrl.text,
-                                                              rorgprc: '0',
-                                                              rorgqty: '0',
-                                                              trantype: widget
-                                                                  .modifyOrderArgs
-                                                                  .trantype!,
-                                                              tsym:
-                                                                  "${widget.scripInfo.tsym}",
-                                                              blprc: '',
-                                                              trgprc: isActivePrice[
-                                                                          2] ||
-                                                                      isActivePrice[
-                                                                          3]
-                                                                  ? triggerPriceCtrl
-                                                                      .text
-                                                                  : "");
-                                                          context
-                                                              .read(
-                                                                  orderProvider)
-                                                              .fetchOrderMargin(
-                                                                  input,
-                                                                  context);
+                                                          marginUpdate();
                                                         });
                                                       },
                                                       child: SvgPicture.asset(
@@ -507,42 +455,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             qtyCtrl.text =
                                                                 "$multiplayer";
                                                           }
-                                                          OrderMarginInput input = OrderMarginInput(
-                                                              exch:
-                                                                  "${widget.scripInfo.exch}",
-                                                              prc: isActivePrice[
-                                                                          1] ||
-                                                                      isActivePrice[
-                                                                          3]
-                                                                  ? price
-                                                                  : priceCtrl
-                                                                      .text,
-                                                              prctyp: prcType,
-                                                              prd: widget
-                                                                  .modifyOrderArgs
-                                                                  .prd!,
-                                                              qty: qtyCtrl.text,
-                                                              rorgprc: '0',
-                                                              rorgqty: '0',
-                                                              trantype: widget
-                                                                  .modifyOrderArgs
-                                                                  .trantype!,
-                                                              tsym:
-                                                                  "${widget.scripInfo.tsym}",
-                                                              blprc: '',
-                                                              trgprc: isActivePrice[
-                                                                          2] ||
-                                                                      isActivePrice[
-                                                                          3]
-                                                                  ? triggerPriceCtrl
-                                                                      .text
-                                                                  : "");
-                                                          context
-                                                              .read(
-                                                                  orderProvider)
-                                                              .fetchOrderMargin(
-                                                                  input,
-                                                                  context);
+                                                          marginUpdate();
                                                         });
                                                       },
                                                       child: SvgPicture.asset(
@@ -582,40 +495,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                     .length),
                                                           );
                                                         }
-                                                        OrderMarginInput input = OrderMarginInput(
-                                                            exch:
-                                                                "${widget.scripInfo.exch}",
-                                                            prc: isActivePrice[
-                                                                        1] ||
-                                                                    isActivePrice[
-                                                                        3]
-                                                                ? price
-                                                                : priceCtrl
-                                                                    .text,
-                                                            prctyp: prcType,
-                                                            prd: widget
-                                                                .modifyOrderArgs
-                                                                .prd!,
-                                                            qty: qtyCtrl.text,
-                                                            rorgprc: '0',
-                                                            rorgqty: '0',
-                                                            trantype: widget
-                                                                .modifyOrderArgs
-                                                                .trantype!,
-                                                            tsym:
-                                                                "${widget.scripInfo.tsym}",
-                                                            blprc: '',
-                                                            trgprc: isActivePrice[
-                                                                        2] ||
-                                                                    isActivePrice[
-                                                                        3]
-                                                                ? triggerPriceCtrl
-                                                                    .text
-                                                                : "");
-                                                        context
-                                                            .read(orderProvider)
-                                                            .fetchOrderMargin(
-                                                                input, context);
+                                                        marginUpdate();
                                                       }
                                                     },
                                                   ))
@@ -702,43 +582,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           }
                                                           setState(() {
                                                             price = value;
-                                                            OrderMarginInput input = OrderMarginInput(
-                                                                exch:
-                                                                    "${widget.scripInfo.exch}",
-                                                                prc: isActivePrice[
-                                                                            1] ||
-                                                                        isActivePrice[
-                                                                            3]
-                                                                    ? price
-                                                                    : priceCtrl
-                                                                        .text,
-                                                                prctyp: prcType,
-                                                                prd: widget
-                                                                    .modifyOrderArgs
-                                                                    .prd!,
-                                                                qty: qtyCtrl
-                                                                    .text,
-                                                                rorgprc: '0',
-                                                                rorgqty: '0',
-                                                                trantype: widget
-                                                                    .modifyOrderArgs
-                                                                    .trantype!,
-                                                                tsym:
-                                                                    "${widget.scripInfo.tsym}",
-                                                                blprc: '',
-                                                                trgprc: isActivePrice[
-                                                                            2] ||
-                                                                        isActivePrice[
-                                                                            3]
-                                                                    ? triggerPriceCtrl
-                                                                        .text
-                                                                    : "");
-                                                            context
-                                                                .read(
-                                                                    orderProvider)
-                                                                .fetchOrderMargin(
-                                                                    input,
-                                                                    context);
+                                                            marginUpdate();
                                                           });
                                                         }
                                                       },
@@ -1438,40 +1282,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         ConnectivityResult.none
                                                     ? () {}
                                                     : () {
-                                                        OrderMarginInput input = OrderMarginInput(
-                                                            exch:
-                                                                "${widget.scripInfo.exch}",
-                                                            prc: isActivePrice[
-                                                                        1] ||
-                                                                    isActivePrice[
-                                                                        3]
-                                                                ? price
-                                                                : priceCtrl
-                                                                    .text,
-                                                            prctyp: prcType,
-                                                            prd: widget
-                                                                .modifyOrderArgs
-                                                                .prd!,
-                                                            qty: qtyCtrl.text,
-                                                            rorgprc: '0',
-                                                            rorgqty: '0',
-                                                            trantype: widget
-                                                                .modifyOrderArgs
-                                                                .trantype!,
-                                                            tsym:
-                                                                "${widget.scripInfo.tsym}",
-                                                            blprc: '',
-                                                            trgprc: isActivePrice[
-                                                                        2] ||
-                                                                    isActivePrice[
-                                                                        3]
-                                                                ? triggerPriceCtrl
-                                                                    .text
-                                                                : "");
-                                                        context
-                                                            .read(orderProvider)
-                                                            .fetchOrderMargin(
-                                                                input, context);
+                                                        marginUpdate();
+
                                                         showModalBottomSheet(
                                                             useSafeArea: true,
                                                             isScrollControlled:
@@ -1518,27 +1330,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                               .none
                                                       ? () {}
                                                       : () {
-                                                          BrokerageInput brokerageInput = BrokerageInput(
-                                                              exch:
-                                                                  "${widget.scripInfo.exch}",
-                                                              prc: priceCtrl
-                                                                  .text,
-                                                              prd: widget
-                                                                  .modifyOrderArgs
-                                                                  .prd!,
-                                                              qty:
-                                                                  "${widget.scripInfo.ls}",
-                                                              trantype: widget
-                                                                  .modifyOrderArgs
-                                                                  .trantype!,
-                                                              tsym:
-                                                                  "${widget.scripInfo.tsym}");
-                                                          context
-                                                              .read(
-                                                                  orderProvider)
-                                                              .fetchGetBrokerage(
-                                                                  brokerageInput,
-                                                                  context);
+                                                          marginUpdate();
+
                                                           showModalBottomSheet(
                                                               useSafeArea: true,
                                                               isScrollControlled:
@@ -1584,62 +1377,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                       ConnectivityResult.none
                                                   ? null
                                                   : () {
-                                                      OrderMarginInput input = OrderMarginInput(
-                                                          exch:
-                                                              "${widget.scripInfo.exch}",
-                                                          prc: isActivePrice[
-                                                                      1] ||
-                                                                  isActivePrice[
-                                                                      3]
-                                                              ? price
-                                                              : priceCtrl.text,
-                                                          prctyp: prcType,
-                                                          prd: widget
-                                                              .modifyOrderArgs
-                                                              .prd!,
-                                                          qty: qtyCtrl.text,
-                                                          rorgprc: '0',
-                                                          rorgqty: '0',
-                                                          trantype: widget
-                                                              .modifyOrderArgs
-                                                              .trantype!,
-                                                          tsym:
-                                                              "${widget.scripInfo.tsym}",
-                                                          blprc: '',
-                                                          trgprc: isActivePrice[
-                                                                      2] ||
-                                                                  isActivePrice[
-                                                                      3]
-                                                              ? triggerPriceCtrl
-                                                                  .text
-                                                              : "");
-                                                      context
-                                                          .read(orderProvider)
-                                                          .fetchOrderMargin(
-                                                              input, context);
-
-                                                      BrokerageInput
-                                                          brokerageInput =
-                                                          BrokerageInput(
-                                                              exch:
-                                                                  "${widget.scripInfo.exch}",
-                                                              prc: priceCtrl
-                                                                  .text,
-                                                              prd: widget
-                                                                  .modifyOrderArgs
-                                                                  .prd!,
-                                                              qty:
-                                                                  "${widget.scripInfo.ls}",
-                                                              trantype: widget
-                                                                  .modifyOrderArgs
-                                                                  .trantype!,
-                                                              tsym:
-                                                                  "${widget.scripInfo.tsym}");
-                                                      context
-                                                          .read(orderProvider)
-                                                          .fetchGetBrokerage(
-                                                              brokerageInput,
-                                                              context);
+                                                      marginUpdate();
                                                     },
                                               icon: SvgPicture.asset(
                                                   assets.reloadIcon))
@@ -1993,6 +1731,35 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
             TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 
+  void marginUpdate() {
+    OrderMarginInput input = OrderMarginInput(
+        exch: "${widget.scripInfo.exch}",
+        prc: priceCtrl.text,
+        prctyp: prcType,
+        prd: widget.modifyOrderArgs.prd!,
+        qty: widget.scripInfo.exch == 'MCX'
+            ? (double.parse(qtyCtrl.text).toInt() * lotSize).toString()
+            : qtyCtrl.text,
+        rorgprc: '0',
+        rorgqty: '0',
+        trantype: widget.modifyOrderArgs.trantype!,
+        tsym: "${widget.scripInfo.tsym}",
+        blprc: '',
+        trgprc:
+            isActivePrice[2] || isActivePrice[3] ? triggerPriceCtrl.text : "");
+    context.read(orderProvider).fetchOrderMargin(input, context);
+    BrokerageInput brokerageInput = BrokerageInput(
+        exch: "${widget.scripInfo.exch}",
+        prc: priceCtrl.text,
+        prd: widget.modifyOrderArgs.prd!,
+        qty: widget.scripInfo.exch == 'MCX'
+            ? (double.parse(qtyCtrl.text).toInt() * lotSize).toString()
+            : qtyCtrl.text,
+        trantype: widget.modifyOrderArgs.trantype!,
+        tsym: "${widget.scripInfo.tsym}");
+    context.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
+  }
+
   modifyOrder() async {
     bool placeorder = true;
     if (prcType == "LMT" || prcType == "SL-LMT") {
@@ -2033,27 +1800,14 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
           prctyp: prcType,
           blprc: stopLossCtrl.text,
           bpprc: targetCtrl.text,
-          qty: qtyCtrl.text,
+          qty: widget.modifyOrderArgs.exch == 'MCX'
+              ? (int.parse(qtyCtrl.text) * lotSize).toString()
+              : qtyCtrl.text,
           ret: validity,
           trgprc: triggerPriceCtrl.text,
           tsym: widget.modifyOrderArgs.tsym!);
       await context.read(orderProvider).fetchModifyOrder(input, context);
       context.read(orderProvider).setOrderloader(false);
     }
-
-    BrokerageInput brokerageInput = BrokerageInput(
-        exch: "${widget.scripInfo.exch}",
-        prc: ((widget.scripInfo.exch == "MCX" ||
-                    widget.scripInfo.exch == "BSE") &&
-                (prcType == "MKT" || prcType == "SL-MKT"))
-            ? "0"
-            : priceCtrl.text,
-        prd: widget.modifyOrderArgs.prd!,
-        qty: qtyCtrl.text,
-        trantype: isBuy ? "B" : "S",
-        tsym: "${widget.scripInfo.tsym}");
-    await context
-        .read(orderProvider)
-        .fetchGetBrokerage(brokerageInput, context);
   }
 }

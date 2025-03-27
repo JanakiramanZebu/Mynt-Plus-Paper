@@ -487,7 +487,7 @@ class UserAccountScreen extends ConsumerWidget {
             Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text("Version 3.0.2 Build 1.0.73(01) Released on 25 Mar",
+                child: Text("Version 3.0.2 Build 1.0.73(02) Released on 27 Mar",
                     style: textStyle(
                         const Color(0xff666666), 11, FontWeight.w500)))
           ]

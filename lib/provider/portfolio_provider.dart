@@ -1065,7 +1065,25 @@ class PortfolioProvider extends DefaultChangeNotifier {
   Future fetchExitPosition(BuildContext context,
       PlaceOrderInput placeOrderInput, bool isPosition) async {
     try {
-      _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+      int qty = int.parse(placeOrderInput.qty);
+      int frzqty = int.parse(placeOrderInput.frzqty.toString());
+
+      if (qty > frzqty) {
+        int fullOrders = qty ~/ frzqty;
+        int remainingQty = qty % frzqty; 
+
+        for (int i = 0; i < fullOrders; i++) {
+          placeOrderInput.qty = frzqty.toString();
+          _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+        }
+
+        if (remainingQty > 0) {
+          placeOrderInput.qty = remainingQty.toString(); 
+          _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+        }
+      } else {
+        _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+      }
 
       if (_placeOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
@@ -1216,7 +1234,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
         } else {
           var tempunpnl = (lastPrice != 0.0
                   ? lastPrice
-                  : (element.lp != null ? double.parse(element.lp.toString()) : 0)) -
+                  : (element.lp != null
+                      ? double.parse(element.lp.toString())
+                      : 0)) -
               double.parse(element.netupldprc.toString());
           element.profitNloss = (double.parse(tempunpnl.toString()) * qty +
                   double.parse(element.temppnl.toString()))
@@ -1897,7 +1917,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
                   mktProt: '',
                   channel: defaultTargetPlatform == TargetPlatform.android
                       ? '${ref(authProvider).deviceInfo["brand"]}'
-                      : "${ref(authProvider).deviceInfo["model"]}");
+                      : "${ref(authProvider).deviceInfo["model"]}",
+                  frzqty: ((int.parse(element.frzqty.toString()) /
+                              int.parse(element.ls.toString()))
+                          .floor() *
+                      int.parse(element.ls.toString())));
               await fetchExitPosition(context, placeOrderInput, true);
             }
           }
@@ -2150,7 +2174,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       holding.exchTsym![0].oneDayChg =
           ((double.parse(holding.exchTsym![0].lp ?? "0.00") -
-                      double.parse(holding.exchTsym![0].close != null ? holding.exchTsym![0].close.toString() : avgCost.toString() )) *
+                      double.parse(holding.exchTsym![0].close != null
+                          ? holding.exchTsym![0].close.toString()
+                          : avgCost.toString())) *
                   int.parse("${holding.currentQty ?? 0}"))
               .toStringAsFixed(2);
 

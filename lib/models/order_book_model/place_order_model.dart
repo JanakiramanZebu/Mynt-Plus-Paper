@@ -38,7 +38,8 @@ class PlaceOrderInput {
   String prctype;
   String ret;
   String mktProt;
-  String channel; 
+  String channel;
+  int? frzqty;
 
   PlaceOrderInput(
       {required this.amo,
@@ -55,5 +56,7 @@ class PlaceOrderInput {
       required this.trantype,
       required this.prctype,
       required this.ret,
-      required this.mktProt, required this.channel });
+      this.frzqty,
+      required this.mktProt,
+      required this.channel});
 }
