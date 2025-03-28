@@ -115,6 +115,8 @@ class OptChainCallList extends ConsumerWidget {
                     context: context,
                     builder: (context) =>
                         ScripDepthInfo(wlValue: depthArgs, isBasket: ''));
+              scripData.chngDephBtn("Overview");
+
               }
             },
             child: Container(
