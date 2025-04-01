@@ -10,6 +10,7 @@ import '../../res/res.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
+import '../../sharedWidget/snack_bar.dart';
 
 class CreateMandateDialogue extends StatefulWidget {
   const CreateMandateDialogue({super.key});
@@ -219,7 +220,7 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                     Navigator.pop(context);
                   }else{
                      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Amount must be at least 100"))
+        warningMessage(context,"Amount must be at least 100")
     );
                   }
                 },
@@ -228,7 +229,7 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                     backgroundColor:
                         theme.isDarkMode
                             ? colors.colorbluegrey
-                            : const Color(0xffF1F3F8),
+                            : const Color.fromARGB(255, 0, 0, 0),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50))),
                 child:  mfOrder.loading == true 
