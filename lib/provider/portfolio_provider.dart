@@ -618,6 +618,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                         int.parse(element.cfsellqty.toString()))
                 ? int.parse(element.daybuyqty.toString())
                 : int.parse(element.daysellqty.toString());
+            tempqty = (tempqty * double.parse(element.prcftr.toString())).toInt();
             double tempavg = int.parse(element.netqty.toString()) > 0
                 ? double.parse(element.daysellavgprc.toString()) -
                     double.parse(element.netupldprc.toString())
@@ -1203,10 +1204,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
         if (qty == 0) {
           if (element.cfbuyqty != "0") {
             finpnl =
-                "${(double.parse(element.daysellavgprc.toString()) * int.parse(element.daysellqty.toString())) - ((int.parse(element.cfbuyqty.toString()) * double.parse(temavg.toString())) + (double.parse(element.daybuyqty.toString()) * double.parse(element.daybuyavgprc.toString())))}";
+                "${(double.parse(element.daysellavgprc.toString()) * (int.parse(element.daysellqty.toString()) * double.parse(element.prcftr.toString()))) - (((int.parse(element.cfbuyqty.toString()) * double.parse(element.prcftr.toString())) * double.parse(temavg.toString())) + ((double.parse(element.daybuyqty.toString()) * double.parse(element.prcftr.toString())) * double.parse(element.daybuyavgprc.toString())))}";
           } else if (element.cfsellqty != "0") {
             finpnl =
-                "${((double.parse(element.daysellqty.toString()) * double.parse(element.daysellavgprc.toString())) + (int.parse(element.cfsellqty.toString()) * double.parse(temavg.toString()))) - double.parse(element.daybuyavgprc.toString()) * double.parse(element.daybuyqty.toString())}";
+                "${(((double.parse(element.daysellqty.toString()) * double.parse(element.prcftr.toString())) * double.parse(element.daysellavgprc.toString())) + ((int.parse(element.cfsellqty.toString()) * double.parse(element.prcftr.toString())) * double.parse(temavg.toString()))) - double.parse(element.daybuyavgprc.toString()) * (double.parse(element.daybuyqty.toString()) * double.parse(element.prcftr.toString()))}";
           }
 
           // if (element.cfbuyqty != "0") {
@@ -1238,14 +1239,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
                       ? double.parse(element.lp.toString())
                       : 0)) -
               double.parse(element.netupldprc.toString());
-          element.profitNloss = (double.parse(tempunpnl.toString()) * qty +
+          element.profitNloss = (double.parse(tempunpnl.toString()) * (qty * double.parse(element.prcftr.toString())) +
                   double.parse(element.temppnl.toString()))
               .toStringAsFixed(2);
         }
         if (["NFO", "BFO", "NSE", "BSE"].contains(element.exch)) {
           finmtm = qty == 0
               ? double.parse(element.rpnl.toString())
-              : (lastPrice - double.parse(element.netavgprc.toString())) * qty +
+              : (lastPrice - double.parse(element.netavgprc.toString())) * (qty * double.parse(element.prcftr.toString())) +
                   double.parse(element.rpnl.toString());
         } else {
           // element.profitNloss =
@@ -1253,7 +1254,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           finmtm = qty == 0
               ? double.parse(element.rpnl.toString())
               : (lastPrice - double.parse(element.netavgprc.toString())) *
-                      (double.parse(element.mult.toString()) * qty) +
+                      (double.parse(element.mult.toString()) * (qty * double.parse(element.prcftr.toString()))) +
                   double.parse(element.rpnl.toString());
         }
         element.mTm = double.parse(finmtm.toString()).toStringAsFixed(2);

@@ -46,6 +46,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  late WebSocketProvider socketProvider; // Store the reference
+
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
@@ -67,9 +69,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    socketProvider = context.read(websocketProvider); // Store reference safely
+  }
+
+  @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     ConstantName.timer!.cancel();
+    socketProvider.closeSocket(false);
+    ConstantName.chartwebViewController?.dispose();
     super.dispose();
   }
 
@@ -132,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
         if (userProfile.showchartof) {
           if (scriptInfo?.exch != null) {
-            await ConstantName.webViewController!.evaluateJavascript(
+            await ConstantName.chartwebViewController!.evaluateJavascript(
                 source:
                     "window.changeScript([{exch: '${scriptInfo?.exch}', token: '${scriptInfo?.token}', tsym: '${scriptInfo?.tsym}'}], '${theme.isDarkMode}')");
             // await context.read(websocketProvider).establishConnection(
@@ -1461,7 +1471,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         mktwth.singlePageloader(false);
       });
 
-      await ConstantName.webViewController!.evaluateJavascript(
+      await ConstantName.chartwebViewController!.evaluateJavascript(
           source:
               "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${context.read(themeProvider).isDarkMode}')");
       return false; // Prevent back navigation when chart is visible

@@ -791,7 +791,7 @@ class AuthProvider extends DefaultChangeNotifier {
         //     .showSnackBar(warningMessage(context, 'Logged out'));
 
         Navigator.pop(context);
-        ref(websocketProvider).closeSocket();
+        // ref(websocketProvider).closeSocket();
         // ref(websocketProvider).websockConn(false);
         if (currentRouteName != Routes.loginScreen) {
           Navigator.pushNamedAndRemoveUntil(
@@ -980,11 +980,11 @@ class AuthProvider extends DefaultChangeNotifier {
       await ref(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4, context);
 
       if (s.isNotEmpty) {
-        ref(websocketProvider).closeSocket();
+        ref(websocketProvider).closeSocket(true);
       }
 
       if (pref.clientSession!.isNotEmpty) {
-        ref(websocketProvider).closeSocket();
+        ref(websocketProvider).closeSocket(true);
       }
 
       await ref(indexListProvider).checkSession(context);
@@ -1126,7 +1126,7 @@ class AuthProvider extends DefaultChangeNotifier {
     pref.clearClientSession();
 
     ConstantName.sessCheck = false;
-    ref(websocketProvider).closeSocket();
+    ref(websocketProvider).closeSocket(true);
     ScaffoldMessenger.of(context).showSnackBar(
         warningMessage(context, "Session Expired,Kindly login Again!"));
     ConstantName.timer!.cancel();
