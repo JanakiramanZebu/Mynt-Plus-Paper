@@ -12,3 +12,7 @@ app_id: f6d2235a-da09-4e64-9564-0abec2c3dcc4
 # https://pub.dev/packages/shorebird_code_push
 # Uncomment the following line to disable automatic updates.
 # auto_update: false
+
+
+# shorebird patch --platforms=ios --release-version=1.0.76+01
+# shorebird release ios --flutter-version=3.27.1
