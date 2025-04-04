@@ -797,7 +797,7 @@ class OrderProvider extends DefaultChangeNotifier {
       }
     }
     await fetchOrderBook(context, true);
-    // Navigator.pop(context);
+    Navigator.pop(context);
     _exitOrderQty = 0;
     _isExitAllOrder = false;
   }
