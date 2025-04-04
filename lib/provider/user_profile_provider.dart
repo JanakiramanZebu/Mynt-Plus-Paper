@@ -289,6 +289,14 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "case": "Click here to view theMutual Fund."
       },
       {
+        "title": "Bonds",
+        "subTitle": "Bonds",
+        "leading": "assets/profileimage/reports.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": "",
+        "case": "Click here to view the Log message."
+      },
+      {
         "title": "OptionZ",
         "subTitle": "OptionZ",
         "leading": "assets/profileimage/pledge.svg",

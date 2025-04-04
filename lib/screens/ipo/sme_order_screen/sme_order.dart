@@ -148,7 +148,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                             decoration: BoxDecoration(
                                 color: widget.smeipo.key == "SME"
                                     ? theme.isDarkMode
-                                        ? colors.colorGrey.withOpacity(.1)
+                                        ? colors.colorGrey.withOpacity(.3)
                                         : const Color.fromARGB(
                                             255, 243, 242, 174)
                                     : theme.isDarkMode
@@ -307,7 +307,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                           "IPO window is open from ${widget.smeipo.dailyStartTime} till ${widget.smeipo.dailyEndTime} on trading days.",
                           style: textStyle(
                               theme.isDarkMode
-                                  ? colors.colorBlack
+                                  ? colors.colorWhite
                                   : colors.colorBlack,
                               10,
                               FontWeight.w600)),
@@ -344,23 +344,23 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                                   fontWeight: FontWeight.w500,
                                   color: theme.isDarkMode
                                       ? Color(selectedChip == chip
-                                          ? (0xff000000)
-                                          : 0xff000000)
+                                          ? 0xff000000
+                                          : 0xffffffff)
                                       : Color(selectedChip == chip
-                                          ? 0xFFFFFFFF
+                                          ? 0xffffffff
                                           : 0xff000000),
                                 ),
                               ),
                               shape: const StadiumBorder(),
                               backgroundColor: theme.isDarkMode
-                                  ? selectedChip == chip 
+                                  ? selectedChip == chip
                                       ? colors.colorbluegrey
                                       : const Color(0xffB5C0CF).withOpacity(.15)
                                   : selectedChip == chip
                                       ? const Color(0xff000000)
                                       : const Color(0xffF1F3F8),
                               selectedColor: theme.isDarkMode
-                                  ? colors.colorbluegrey
+                                  ? const Color(0xffF1F3F8)
                                   : const Color(
                                       0xff000000), // Color when selected
                               padding: const EdgeInsets.symmetric(

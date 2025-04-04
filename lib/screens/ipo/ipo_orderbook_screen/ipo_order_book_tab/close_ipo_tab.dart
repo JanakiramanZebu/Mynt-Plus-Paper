@@ -188,10 +188,9 @@ class IpoCloseOrder extends ConsumerWidget {
             separatorBuilder: (BuildContext context, int index) {
               return Divider(
                   height: 0,
-                    color: theme.isDarkMode
+                    color:theme.isDarkMode
                         ? colors.darkColorDivider
-                        : const Color(0xffECEDEE),
-                    thickness: 1.2);
+                        : colors.colorDivider);
 
             },
           )

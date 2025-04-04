@@ -144,7 +144,13 @@ class Routes {
   static const String iposearchscreen = 'IpoSearchScreen';
 
 // Bonds
+  static const String bondsclosedetailsscreen = 'bondsclosedetailsscreen';
+  static const String bondsopendetailsscreen = 'bondsopendetailsscreen';
+  static const String bondssearchScreen = 'bondssearchScreen';
+  static const String bondsorderbook = "bondsorderbook";
+  static const String bondsPlaceOrder = 'bondsPlaceOrder';
   static const String bonds = 'bonds';
+
   static const String mfmainscreen = 'mfMainScreen';
   static const String mf = 'mutualFund';
   static const String mfWatchlist = 'mfWatchlist';
@@ -162,7 +168,7 @@ class Routes {
 
   static const String mfOrderbookscreen = 'mfOrderbook';
   static const String mfSipdetScren = 'mfSipdetScren';
-   static const String mfholdsinlepage = 'mfholdsinlepage';
+  static const String mfholdsinlepage = 'mfholdsinlepage';
   static const String mforderdetscreen = 'mforderdetscreen';
   static const String mfsearchscreen = 'mfsearchscreen';
 

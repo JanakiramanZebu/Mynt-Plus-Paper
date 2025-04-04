@@ -550,9 +550,8 @@ class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
                           return Divider(
                               height: 0,
                               color: theme.isDarkMode
-                                  ? colors.darkColorDivider
-                                  : const Color(0xffECEDEE),
-                              thickness: 1.2);
+                        ? colors.darkColorDivider
+                        : colors.colorDivider,);
                         },
                         itemCount: showAll
                             ? ipoList.length

@@ -5,7 +5,7 @@ import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
-import '../provider/bond_provider.dart';
+import '../provider/bonds_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/iop_provider.dart';
 import '../provider/mf_provider.dart';
@@ -71,7 +71,7 @@ class _MoreMenuBottomSheetState extends State<MoreMenuBottomSheet> {
                             .read(ipoProvide)
                             .getipoperfomance(currentYear);
                       } else if (index == 1) {
-                        await context.read(bondProvider).fetchGovtBonds();
+                        await context.read(bondsProvider).fetchAllBonds();
                       } else {
                         await context
                             .read(mfProvider)

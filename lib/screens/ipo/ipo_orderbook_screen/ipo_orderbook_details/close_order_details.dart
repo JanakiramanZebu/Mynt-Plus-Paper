@@ -565,6 +565,7 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                   child: DataTable(
                     columnSpacing: 16.0,
                     horizontalMargin: 0,
+                     headingRowHeight: 40.0,
                      border: TableBorder(
           horizontalInside: BorderSide(color: Colors.white54, width: 0.8), // Horizontal lines
         ),
@@ -603,10 +604,13 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                             ? (bid.cuttoffflag! != "0")
                             : bid.atCutOff!;
                         return DataRow(cells: [
-                          DataCell(Text("${index + 1}" , style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    12,
-                    FontWeight.w500,))),
+                          DataCell(Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Text("${index + 1}" , style: textStyle(
+                                                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                12,
+                                                FontWeight.w500,)),
+                          )),
                           DataCell(Text(bid.quantity!,  style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                     12,
@@ -679,8 +683,8 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                 value,
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600),
+                    12,
+                    FontWeight.w500),
               )
             ],
           ),

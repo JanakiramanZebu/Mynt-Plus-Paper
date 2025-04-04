@@ -14,7 +14,7 @@ import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
-import '../../provider/bond_provider.dart';
+import '../../provider/bonds_provider.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/notification_provider.dart';
 import '../../provider/thems.dart';
@@ -57,13 +57,7 @@ class UserAccountScreen extends ConsumerWidget {
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
                         onTap: () async {
-                          if (index == 3 ||
-                              index == 4 ||
-                              index == 5 ||
-                              index == 6 ||
-                              index == 7 ||
-                              index == 8 ||
-                              index == 9) {
+                          if ([3,4,5,6,10].contains(index)) {
                             await funds.fetchHstoken(context);
                           }
                           if (acttitle == "Fund") {
@@ -156,7 +150,7 @@ class UserAccountScreen extends ConsumerWidget {
                                   return const NeedHelpScreen();
                                 });
                           } else if (acttitle == "Bonds") {
-                            await context.read(bondProvider).fetchGovtBonds();
+                            await context.read(bondsProvider).fetchAllBonds();
                             Navigator.pushNamed(context, Routes.bonds);
                           } else if (acttitle == "Rate Us") {
                             String devicesurl = TargetPlatform.iOS ==
@@ -181,7 +175,7 @@ class UserAccountScreen extends ConsumerWidget {
                         },
                         dense: true,
                         minLeadingWidth: 20,
-                        leading: index == 7
+                        leading: index == 8
                             ? Icon(Icons.flag_outlined,
                                 size: 20, color: colors.colorGrey)
                             : SvgPicture.asset(
@@ -250,7 +244,7 @@ class UserAccountScreen extends ConsumerWidget {
                                               12,
                                               FontWeight.w500))))
                             ],
-                            if (index == 10) ...[
+                            if (index == 11) ...[
                               TextButton(
                                   onPressed: () async {
                                     await Share.share(
@@ -261,7 +255,7 @@ class UserAccountScreen extends ConsumerWidget {
                                       style: theme.isDarkMode
                                           ? textStyles.darktextBtn
                                           : textStyles.textBtn))
-                            ] else if (index == 11) ...[
+                            ] else if (index == 12) ...[
                               TextButton(
                                   onPressed: () async {
                                     showDialog(

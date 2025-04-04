@@ -1,0 +1,446 @@
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/models/bonds_model/bonds_order_book_model.dart';
+import 'package:mynt_plus/models/bonds_model/bonds_place_order_details_model.dart';
+import 'package:mynt_plus/models/bonds_model/place_order_response_model.dart';
+import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/routes/route_names.dart';
+import 'package:mynt_plus/screens/bonds/bonds_orderbook_screen/bonds_order_book_main_screen.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+import '../api/core/api_export.dart';
+import '../locator/locator.dart';
+import '../locator/preference.dart';
+import '../models/bonds_model/all_bonds_list_model.dart';
+import '../models/bonds_model/govt_bonds_model.dart';
+import '../models/bonds_model/ledger_bal_model.dart';
+import '../models/bonds_model/sovereign_gold_bonds_model.dart';
+import '../models/bonds_model/state_bonds_model.dart';
+import '../models/bonds_model/treasury_bonds_model.dart';
+import 'core/default_change_notifier.dart';
+
+final bondsProvider = ChangeNotifierProvider((ref) => BondsProvider(ref.read));
+
+class BondsProvider extends DefaultChangeNotifier {
+  final api = locator<ApiExporter>();
+  final Preferences pref = locator<Preferences>();
+  final Reader ref;
+  BondsProvider(this.ref);
+
+  PlacedBondOrderResp? _bondOrderResponcesModel;
+
+  bool _isBondPlaceOrderBtnActive = false;
+  bool get isBondPlaceOrderBtnActive => _isBondPlaceOrderBtnActive;
+
+  set setisBondPlaceOrderBtnActiveValue(bool value) {
+    _isBondPlaceOrderBtnActive = value;
+  }
+// int bondsSelectedTab = 0;
+
+  Map<String, dynamic> _selectedBondTab = {
+    "Aimgpath": "",
+    // "imgpath": assets.exportIcon,
+    "title": "Govt. bonds",
+    "index": 0,
+  };
+  Map<String, dynamic> get selectedBondTab => _selectedBondTab;
+
+  set setSelectedBondTab(Map<String, dynamic> selectedTab) {
+    _selectedBondTab = selectedTab;
+  }
+
+  // GovtBonds? _govtBonds;
+  // TreasuryBonds? _treasuryBonds;
+  // StateBonds? _stateBonds;
+
+  // SovereignGoldBonds? _sovereignGoldBonds;
+
+  bool _bondsMyBidsload = true;
+  bool get bondsMyBidsload => _bondsMyBidsload;
+
+  GovtBonds? _govtBonds;
+  GovtBonds? get govtBonds => _govtBonds;
+
+  TreasuryBonds? _treasuryBonds;
+  TreasuryBonds? get treasuryBonds => _treasuryBonds;
+
+  StateBonds? _stateBonds;
+  StateBonds? get stateBonds => _stateBonds;
+
+  SovereignGoldBonds? _sovereignGoldBonds;
+  SovereignGoldBonds? get sovereignGoldBonds => _sovereignGoldBonds;
+
+  LedgerBalModel? _ledgerBalModel;
+  LedgerBalModel? get ledgerBalModel => _ledgerBalModel;
+
+  List<BondsOrderBookModel>? _bondsOrderBook;
+  List<BondsOrderBookModel>? get bondsOrderBook => _bondsOrderBook;
+
+  List<BondsOrderBookModel>? _openOrderBook;
+  List<BondsOrderBookModel>? get openOrderBook => _openOrderBook;
+
+  List<BondsOrderBookModel>? _closeOrderBook;
+  List<BondsOrderBookModel>? get closeOrderBook => _closeOrderBook;
+
+  List<BondsList>? _bondsList = [];
+  List<BondsList>? get bondsList => _bondsList;
+
+  final TextEditingController _unitValueCtrl = TextEditingController();
+  TextEditingController get unitValueCtrl => _unitValueCtrl;
+
+  final TextEditingController _bondscommonsearchcontroller =
+      TextEditingController();
+  TextEditingController get bondscommonsearchcontroller =>
+      _bondscommonsearchcontroller;
+
+  final List _bondsCommonSearchList = [];
+  List get bondsCommonSearchList => _bondsCommonSearchList;
+
+  clearCommonBondsSearch() {}
+
+  searchCommonBonds(String SearchBond, BuildContext context) {
+    print("searchCommomBonds ::  $SearchBond");
+  }
+
+// bonds.ledgerBalModel!.total
+// ======= Bonds Place Order Validation Functions ===================
+
+  bool checkSufficientLedgerBal(BondDetails bondDetails) {
+    bool status = false;
+    try {
+      if (double.parse(_ledgerBalModel!.total!) >=
+          bondDetails.minrequriedprice) {
+        status = true;
+      } else {
+        status = false;
+      }
+    } catch (e) {}
+    return status;
+  }
+
+  checkForErrorsInBondPlaceOrder(BondDetails bondDetails) {
+    bool status = false;
+    if (bondDetails.quantityerrortext.isEmpty &&
+        bondDetails.biderrortext.isEmpty) {
+      status = true;
+    } else {
+      status = false;
+    }
+
+    return status;
+  }
+
+  bondValidateController(BondDetails bondDetails) {
+    if (bondDetails.quantityController.text.isEmpty ||
+        bondDetails.quantityController.text == "0") {
+      bondDetails.quantityerrortext =
+          bondDetails.quantityController.text.isEmpty
+              ? "* Value is required"
+              : "Value cannot be 0";
+      setisBondPlaceOrderBtnActiveValue = false;
+    } else if (double.parse(bondDetails.quantityController.text) <
+        (bondDetails.lotsize)) {
+      bondDetails.quantityerrortext =
+          "Minimum Lot Size is ₹${(bondDetails.lotsize).toString()}";
+      setisBondPlaceOrderBtnActiveValue = false;
+    } else if (bondDetails.minrequriedprice > bondDetails.maxrequriedprice) {
+      bondDetails.quantityerrortext =
+          "Maximum investment upto ₹${bondDetails.maxrequriedprice.toString()} only ";
+      setisBondPlaceOrderBtnActiveValue = false;
+    } else {
+      bondDetails.minrequriedprice =
+          double.parse(bondDetails.quantityController.text).toInt() *
+              int.parse(bondDetails.bidpricecontroller.text);
+      bondDetails.quantityerrortext = "";
+      setisBondPlaceOrderBtnActiveValue = true;
+      if (!checkSufficientLedgerBal(bondDetails)) {
+        bondDetails.ledgerBalErrorText =
+            "Insufficient balance, Add fund  ₹${(bondDetails.minrequriedprice - double.parse(_ledgerBalModel?.total ?? "0.00")).ceil().toString()} ";
+      } else {
+        bondDetails.ledgerBalErrorText = "";
+      }
+    }
+    notifyListeners();
+  }
+
+  addQuantity(BondDetails bondDetails) {
+    // print(bondDetails);
+    if (bondDetails.quantityController.text.isNotEmpty) {
+      bondDetails.quantityController.text =
+          (double.parse(bondDetails.quantityController.text).toInt() +
+                  bondDetails.lotsize)
+              .toString();
+    }
+    notifyListeners();
+    bondValidateController(bondDetails);
+  }
+
+  substractQuantity(BondDetails bondDetails) {
+    if (bondDetails.quantityController.text.isNotEmpty) {
+      bondDetails.quantityController.text =
+          (double.parse(bondDetails.quantityController.text).toInt() -
+                  bondDetails.lotsize)
+              .toString();
+    }
+    notifyListeners();
+    bondValidateController(bondDetails);
+  }
+
+  quantityOnchange(BondDetails bondDetails, String value) {
+    bondDetails.quantityController.text = value;
+    bondDetails.quantityController.text.isEmpty
+        ? bondDetails.minrequriedprice = 0
+        : bondDetails.minrequriedprice =
+            (double.parse(bondDetails.quantityController.text).toInt() *
+                    int.parse(bondDetails.bidpricecontroller.text))
+                .toInt();
+    notifyListeners();
+    bondValidateController(bondDetails);
+  }
+
+// ======= End of Bonds Place Order Validation Functions ===================
+
+  ordersplit() {
+    _openOrderBook = [];
+    _closeOrderBook = [];
+
+    try {
+      togglefundLoadingOn(true);
+
+      for (var element in _bondsOrderBook ?? []) {
+        if ((element.reponseStatus == 'success'  && element.orderStatus != "CS" ) ||
+            element.reponseStatus == 'pending') {
+          _openOrderBook!.add(element);
+          // _openorder!.sort((a, b) => a.companyName!.compareTo(b.companyName!));
+        } else {
+          _closeOrderBook!.add(element);
+          // _closeorder!.sort((a, b) => a.companyName!.compareTo(b.companyName!));
+        }
+      }
+      _openOrderBook?.sort((b, a) {
+        // final DateFormat dateFormat = DateFormat("yyyy-MM-dd hh:mm a"); //"2025-01-30 13:37:46.945384"
+        DateTime dateA = DateTime.parse(a.responseDatetime.toString());
+        DateTime dateB = DateTime.parse(b.responseDatetime.toString());
+        return dateA.compareTo(dateB);
+      });
+      _closeOrderBook?.sort((b, a) {
+        // final DateFormat dateFormat = DateFormat("yyyy-MM-dd hh:mm a"); //"2025-01-30 13:37:46.945384"
+        DateTime dateA = DateTime.parse(a.responseDatetime.toString());
+        DateTime dateB = DateTime.parse(b.responseDatetime.toString());
+        return dateA.compareTo(dateB);
+      });
+ print("ordersplit :: Open Orders (${_openOrderBook?.length}):");
+    for (var order in _openOrderBook ?? []) {
+      print(order.toJson());
+    }
+
+    print("ordersplit :: Close Orders (${_closeOrderBook?.length}):");
+    for (var order in _closeOrderBook ?? []) {
+      print(order.toJson());
+    }
+      
+    } catch (e) {
+      print("ordersplit :: ${e}");
+    } finally {
+      togglefundLoadingOn(false);
+    }
+
+    notifyListeners();
+  }
+
+  // changeBondTab(int val) {
+  //   _selectedBondTab = tablistitems[val];
+  //   if (val == 0) {
+  //     _bondsList = _govtBonds!.ncbGSec ?? [];
+  //   } else if (val == 1) {
+  //     _bondsList = _treasuryBonds!.ncbTBill ?? [];
+  //   } else if (val == 2) {
+  //     _bondsList = _stateBonds!.ncbSDL ?? [];
+  //   } else if (val == 3) {
+  //     _bondsList = _sovereignGoldBonds!.ncbSGB ?? [];
+  //   }  else {
+  //      _bondsList = _bondsOrderBook ;
+  //   }
+
+  //   print("Bonds Length ${_bondsList!.length}");
+  //   notifyListeners();
+  // }
+
+// =============== Fetch Bond Data From API ======================
+
+  Future fetchAllBonds() async {
+    try {
+      // _currentBondTab = "Govt. Bonds";
+      _bondsList = [];
+      // _govtBonds = await api.getGovtBondApi();
+      // _bondsList = _govtBonds!.ncbGSec ?? [];
+      await fetchGovtBonds();
+      await fetchTreassuryBonds();
+      await fetchStateBonds();
+      await fetchGoldBonds();
+      await fetchBondsOrderBook();
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future fetchGovtBonds() async {
+    try {
+      _govtBonds = await api.getGovtBondApi();     
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error fetching bonds: $e");
+    }
+  }
+
+  Future fetchTreassuryBonds() async {
+    try {
+      _treasuryBonds = await api.getTreasuryBondApi();      
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");     
+    }
+  }
+
+  Future fetchStateBonds() async {
+    try {
+      _stateBonds = await api.getStateBondApi();   
+      notifyListeners();  
+    } catch (e) {
+      debugPrint("$e");     
+    }
+  }
+
+  Future fetchGoldBonds() async {
+    try {
+      _sovereignGoldBonds = await api.getGoldBondApi();     
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");     
+    }
+  }
+
+  Future fetchLedgerBal() async {
+    try {
+      _ledgerBalModel = await api.getLedgerBalApi();
+
+      notifyListeners();
+      
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future fetchBondsOrderBook() async {
+    try {
+      _bondsMyBidsload = true;
+      _bondsOrderBook = await api.getBondsOrderBookApi();
+      // _bondsOrderBook.bondsOrderBook.forEach()
+      // print("fetchBondsOrderBook called :: $_bondsOrderBook. ");
+       print("fetchBondsOrderBook called :: ${_bondsOrderBook?.length} orders fetched.");    
+      ordersplit();
+      notifyListeners();
+    } catch (e) {
+      print("fetchBondsOrderBook :: $e ");
+    } finally {
+      _bondsMyBidsload = false;
+    }
+  }
+
+  Future validateClientLedgertoPlaceOrder(BuildContext context) async {
+    try {
+      toggleLoadingOn(true);
+      await fetchLedgerBal();
+
+      // if (_ledgerBalModel != null) {
+
+      //   getipoplaceorder(context, menudata, iposbids, iposupiid);
+      //   getipoorderbookmodel(true);
+
+      //   _upierror = "";
+      //   _upivalid = false;
+      //   Navigator.pop(context);
+      //   Navigator.pop(context);
+      //   Navigator.pushNamed(context, Routes.bondorderbook);
+      // } else {
+      //   _upivalid = true;
+      //   _upierror = "Invalid UPI ID";
+      //   ScaffoldMessenger.of(context)
+      //       .showSnackBar(warningMessage(context, 'Invalid UPI ID'));
+      // }
+
+      //log("HDFC BANK $_upiIdValidationModel");
+    } catch (e) {
+      log("Failed to fetch bank Data:: ${e.toString()}");
+    } finally {
+      toggleLoadingOn(false);
+    }
+    notifyListeners();
+  }
+
+  Future placeBondOrder(
+      BuildContext context, Map<String, dynamic> bondOrderData) async {
+    try {
+      toggleLoad(true);
+      String symbol = bondOrderData["symbol"];
+      int investmentValue = bondOrderData["investmentValue"];
+      int price = bondOrderData["price"];
+      _bondOrderResponcesModel =
+          await api.placeBondOrderApi(symbol, investmentValue, price);
+      fetchBondsOrderBook();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+          _bondOrderResponcesModel!.status == "success"
+              ? successMessage(
+                  context, _bondOrderResponcesModel!.orderStatusResponse!)
+              : error(context, _bondOrderResponcesModel!.reason!));
+
+      Navigator.pop(context);
+      Navigator.pushNamed(context, Routes.bondsorderbook);
+      // return _ipoOrderResponcesModel;
+    } catch (e) {
+      print("bonds placeorder error:: $e");
+    } finally {
+      toggleLoad(false);
+    }
+    notifyListeners();
+  }
+
+  Future cancelBondOrder(
+      BuildContext context, Map<String, dynamic> bondOrderData) async {
+    try {
+      toggleLoad(true);
+      _bondsMyBidsload = true;
+      String symbol = bondOrderData["symbol"];
+      String investmentValue = bondOrderData["investmentValue"];
+      int price = bondOrderData["price"];
+      String clientApplicationNumber = bondOrderData["clientApplicationNumber"];
+      String orderNumber = bondOrderData["orderNumber"];
+
+        print('Cancel API call initiated with bondOrderData: $bondOrderData');
+      _bondOrderResponcesModel = await api.cancelBondOrderApi(
+          symbol, investmentValue, price, clientApplicationNumber, orderNumber);
+           print('Cancel API response: ${_bondOrderResponcesModel?.toJson()}');
+           await fetchBondsOrderBook();
+            print('Updated bonds order book fetched successfully.');
+           notifyListeners();
+
+            ScaffoldMessenger.of(context).showSnackBar(successMessage(
+          context, _bondOrderResponcesModel!.orderStatusResponse ?? ""));
+    
+    
+
+      // Navigator.pop(context);
+      // Navigator.pushNamed(context, Routes.bondsorderbook);
+      // return _ipoOrderResponcesModel;
+    } catch (e) {
+      print("bonds cancelBondOrder error:: $e");
+    } finally {
+      toggleLoad(false);
+      _bondsMyBidsload = false;
+    }
+    notifyListeners();
+  }
+}

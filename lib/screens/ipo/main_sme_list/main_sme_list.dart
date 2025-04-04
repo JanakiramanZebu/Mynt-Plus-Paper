@@ -245,6 +245,7 @@ class MainSmeListCard extends StatelessWidget {
                                            : SizedBox.shrink(),
                                        ],
                                      ),
+                                     SizedBox(height: 8,),
                               
                                      Row(
                                        mainAxisAlignment:
@@ -357,75 +358,78 @@ class MainSmeListCard extends StatelessWidget {
                                      
                                          
                                      
-                                         ElevatedButton(
-                                           style: ElevatedButton.styleFrom(
-                                               elevation: 0,
-                                               minimumSize: const Size(0, 30),
-                                               padding:
-                                                   const EdgeInsets.symmetric(
-                                                       horizontal: 14,
-                                                       vertical: 5),
-                                               backgroundColor: theme.isDarkMode
-                                                   ? colors.colorWhite
-                                                   : colors.colorBlack,
-                                               shape: RoundedRectangleBorder(
-                                                 borderRadius:
-                                                     BorderRadius.circular(50),
-                                               )),
-                                           onPressed: () async {
-                                             ipos.setisSMEPlaceOrderBtnActiveValue =
-                                                 false;
-                                             ipos.setisMainIPOPlaceOrderBtnActiveValue =
-                                                 false;
-                                             await upi.fetchupiIdView(
-                                                 upi.bankdetails!
-                                                     .dATA![upi.indexss][1],
-                                                 upi.bankdetails!
-                                                     .dATA![upi.indexss][2]);
-                                             openIpos[index].key == "SME"
-                                                 ? await context
-                                                     .read(ipoProvide)
-                                                     .smeipocategory()
-                                                 : await context
-                                                     .read(ipoProvide)
-                                                     .mainipocategory();
-                                     
-                                             openIpos[index].key == "SME"
-                                                 ? Navigator.pushNamed(
-                                                     context,
-                                                     Routes.smeapplyIPO,
-                                                     arguments: openIpos[index],
+                                         SizedBox(
+                                          height: 30,
+                                           child: ElevatedButton(
+                                             style: ElevatedButton.styleFrom(
+                                                 elevation: 0,
+                                                 minimumSize: const Size(0, 30),
+                                                 padding:
+                                                     const EdgeInsets.symmetric(
+                                                         horizontal: 14,
+                                                         vertical: 5),
+                                                 backgroundColor: theme.isDarkMode
+                                                     ? colors.colorWhite
+                                                     : colors.colorBlack,
+                                                 shape: RoundedRectangleBorder(
+                                                   borderRadius:
+                                                       BorderRadius.circular(50),
+                                                 )),
+                                             onPressed: () async {
+                                               ipos.setisSMEPlaceOrderBtnActiveValue =
+                                                   false;
+                                               ipos.setisMainIPOPlaceOrderBtnActiveValue =
+                                                   false;
+                                               await upi.fetchupiIdView(
+                                                   upi.bankdetails!
+                                                       .dATA![upi.indexss][1],
+                                                   upi.bankdetails!
+                                                       .dATA![upi.indexss][2]);
+                                               openIpos[index].key == "SME"
+                                                   ? await context
+                                                       .read(ipoProvide)
+                                                       .smeipocategory()
+                                                   : await context
+                                                       .read(ipoProvide)
+                                                       .mainipocategory();
+                                                                                
+                                               openIpos[index].key == "SME"
+                                                   ? Navigator.pushNamed(
+                                                       context,
+                                                       Routes.smeapplyIPO,
+                                                       arguments: openIpos[index],
+                                                     )
+                                                   : Navigator.pushNamed(
+                                                       context, Routes.applyIPO,
+                                                       arguments: openIpos[index]);
+                                             },
+                                             child: ipos.loading
+                                                 ? const SizedBox(
+                                                     width: 18,
+                                                     height: 20,
+                                                     child:
+                                                         CircularProgressIndicator(
+                                                             strokeWidth: 2,
+                                                             color: Color(
+                                                                 0xff666666)),
                                                    )
-                                                 : Navigator.pushNamed(
-                                                     context, Routes.applyIPO,
-                                                     arguments: openIpos[index]);
-                                           },
-                                           child: ipos.loading
-                                               ? const SizedBox(
-                                                   width: 18,
-                                                   height: 20,
-                                                   child:
-                                                       CircularProgressIndicator(
-                                                           strokeWidth: 2,
-                                                           color: Color(
-                                                               0xff666666)),
-                                                 )
-                                               : Text(
-                                                   'Apply',
-                                                   style: textStyle(
-                                                       theme.isDarkMode
-                                                           ? colors.colorBlack
-                                                           : colors.colorWhite,
-                                                       12,
-                                                       FontWeight.w500),
-                                                 ),
-                                     
-                                           // ipostartdate(
-                                           //               "${mainstreamipo.mainsme[index].biddingStartDate}",
-                                           //               "${mainstreamipo.mainsme[index].biddingEndDate}") ==
-                                           //           "Open"
-                                           //       ? "Apply"
-                                           //       : "Pre Apply"
+                                                 : Text(
+                                                     'Apply',
+                                                     style: textStyle(
+                                                         theme.isDarkMode
+                                                             ? colors.colorBlack
+                                                             : colors.colorWhite,
+                                                         12,
+                                                         FontWeight.w500),
+                                                   ),
+                                                                                
+                                             // ipostartdate(
+                                             //               "${mainstreamipo.mainsme[index].biddingStartDate}",
+                                             //               "${mainstreamipo.mainsme[index].biddingEndDate}") ==
+                                             //           "Open"
+                                             //       ? "Apply"
+                                             //       : "Pre Apply"
+                                           ),
                                          )
                                          // ipostartdate(
                                          //             "${mainstreamipo.mainsme[index].biddingStartDate}",
@@ -611,9 +615,8 @@ class MainSmeListCard extends StatelessWidget {
                           Divider(
                             height: 0,
                               color: theme.isDarkMode
-                                  ? colors.darkColorDivider
-                                  : const Color(0xffECEDEE),
-                              thickness: 1.2);
+                        ? colors.darkColorDivider
+                        : colors.colorDivider);
                         },
                       ),
                       Container(
@@ -632,9 +635,8 @@ class MainSmeListCard extends StatelessWidget {
                       Divider(
                         height: 0,
                           color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : const Color(0xffECEDEE),
-                          thickness: 1.2),
+                        ? colors.darkColorDivider
+                        : colors.colorDivider,),
                     ],
 
 //Pre-open snippet
@@ -765,6 +767,7 @@ class MainSmeListCard extends StatelessWidget {
                                          child: Text(
                                              "${preOpenIpos[index].key}",
                                              style: textStyle(const Color(0xff666666), 10, FontWeight.w500))),
+                                              SizedBox(height: 8,),
                               
                                      Row(
                                        mainAxisAlignment:
@@ -880,77 +883,80 @@ class MainSmeListCard extends StatelessWidget {
                                            ],
                                          ),
                                                                    
-                                         ElevatedButton(
-                                           style: ElevatedButton.styleFrom(
-                                               elevation: 0,
-                                               minimumSize: const Size(0, 30),
-                                               padding:
-                                                   const EdgeInsets.symmetric(
-                                                       horizontal: 14,
-                                                       vertical: 5),
-                                               backgroundColor: theme.isDarkMode
-                                                   ? colors.colorWhite
-                                                   : colors.colorBlack,
-                                               shape: RoundedRectangleBorder(
-                                                 borderRadius:
-                                                     BorderRadius.circular(50),
-                                               )),
-                                           onPressed: () async {
-                                             ipos.setisSMEPlaceOrderBtnActiveValue =
-                                                 false;
-                                             ipos.setisMainIPOPlaceOrderBtnActiveValue =
-                                                 false;
-                                             await upi.fetchupiIdView(
-                                                 upi.bankdetails!
-                                                     .dATA![upi.indexss][1],
-                                                 upi.bankdetails!
-                                                     .dATA![upi.indexss][2]);
-                                             preOpenIpos[index].key == "SME"
-                                                 ? await context
-                                                     .read(ipoProvide)
-                                                     .smeipocategory()
-                                                 : await context
-                                                     .read(ipoProvide)
-                                                     .mainipocategory();
-                                                                   
-                                             preOpenIpos[index].key == "SME"
-                                                 ? Navigator.pushNamed(
-                                                     context,
-                                                     Routes.smeapplyIPO,
-                                                     arguments:
-                                                         preOpenIpos[index],
+                                         SizedBox(
+                                          height: 30,
+                                           child: ElevatedButton(
+                                             style: ElevatedButton.styleFrom(
+                                                 elevation: 0,
+                                                 minimumSize: const Size(0, 30),
+                                                 padding:
+                                                     const EdgeInsets.symmetric(
+                                                         horizontal: 14,
+                                                         vertical: 5),
+                                                 backgroundColor: theme.isDarkMode
+                                                     ? colors.colorWhite
+                                                     : colors.colorBlack,
+                                                 shape: RoundedRectangleBorder(
+                                                   borderRadius:
+                                                       BorderRadius.circular(50),
+                                                 )),
+                                             onPressed: () async {
+                                               ipos.setisSMEPlaceOrderBtnActiveValue =
+                                                   false;
+                                               ipos.setisMainIPOPlaceOrderBtnActiveValue =
+                                                   false;
+                                               await upi.fetchupiIdView(
+                                                   upi.bankdetails!
+                                                       .dATA![upi.indexss][1],
+                                                   upi.bankdetails!
+                                                       .dATA![upi.indexss][2]);
+                                               preOpenIpos[index].key == "SME"
+                                                   ? await context
+                                                       .read(ipoProvide)
+                                                       .smeipocategory()
+                                                   : await context
+                                                       .read(ipoProvide)
+                                                       .mainipocategory();
+                                                                     
+                                               preOpenIpos[index].key == "SME"
+                                                   ? Navigator.pushNamed(
+                                                       context,
+                                                       Routes.smeapplyIPO,
+                                                       arguments:
+                                                           preOpenIpos[index],
+                                                     )
+                                                   : Navigator.pushNamed(
+                                                       context, Routes.applyIPO,
+                                                       arguments:
+                                                           preOpenIpos[index]);
+                                             },
+                                             child: ipos.loading
+                                                 ? const SizedBox(
+                                                     width: 18,
+                                                     height: 20,
+                                                     child:
+                                                         CircularProgressIndicator(
+                                                             strokeWidth: 2,
+                                                             color: Color(
+                                                                 0xff666666)),
                                                    )
-                                                 : Navigator.pushNamed(
-                                                     context, Routes.applyIPO,
-                                                     arguments:
-                                                         preOpenIpos[index]);
-                                           },
-                                           child: ipos.loading
-                                               ? const SizedBox(
-                                                   width: 18,
-                                                   height: 20,
-                                                   child:
-                                                       CircularProgressIndicator(
-                                                           strokeWidth: 2,
-                                                           color: Color(
-                                                               0xff666666)),
-                                                 )
-                                               : Text(
-                                                   'Pre Apply',
-                                                   style: textStyle(
-                                                       theme.isDarkMode
-                                                           ? colors.colorBlack
-                                                           : colors.colorWhite,
-                                                       12,
-                                                       FontWeight.w500),
-                                                 ),
-                                                                   
-                                           // ipostartdate(
-                                           //               "${mainstreamipo.mainsme[index].biddingStartDate}",
-                                           //               "${mainstreamipo.mainsme[index].biddingEndDate}") ==
-                                           //           "Open"
-                                           //       ? "Apply"
-                                           //       : "Pre Apply"
+                                                 : Text(
+                                                     'Pre Apply',
+                                                     style: textStyle(
+                                                         theme.isDarkMode
+                                                             ? colors.colorBlack
+                                                             : colors.colorWhite,
+                                                         12,
+                                                         FontWeight.w500),
+                                                   ),
+                                                                     
+                                             // ipostartdate(
+                                             //               "${mainstreamipo.mainsme[index].biddingStartDate}",
+                                             //               "${mainstreamipo.mainsme[index].biddingEndDate}") ==
+                                             //           "Open"
+                                             //       ? "Apply"
+                                             //       : "Pre Apply"
+                                           ),
                                          )
                                          // ipostartdate(
                                          //             "${mainstreamipo.mainsme[index].biddingStartDate}",
@@ -977,9 +983,8 @@ class MainSmeListCard extends StatelessWidget {
                           return Divider(
                             height: 0,
                               color: theme.isDarkMode
-                                  ? colors.darkColorDivider
-                                  : const Color(0xffECEDEE),
-                              thickness: 1.2);
+                        ? colors.darkColorDivider
+                        : colors.colorDivider,);
                         },
                       ),
                       // Container(
@@ -999,9 +1004,8 @@ class MainSmeListCard extends StatelessWidget {
                      Divider(
                       height: 0,
                          color: theme.isDarkMode
-                             ? colors.darkColorDivider
-                             : const Color(0xffECEDEE),
-                         thickness: 1.2),
+                        ? colors.darkColorDivider
+                        : colors.colorDivider),
                     ],
 
                     if (ipos.ipoPreClose!.msg.isNotEmpty) ...[

@@ -22,43 +22,37 @@ class IpoOpenOrderDetails extends ConsumerWidget {
     final theme = watch(themeProvider);
     return Scaffold(
       appBar: AppBar(
-          elevation: .2,
-          centerTitle: false,
-          // leadingWidth: 40,
-          titleSpacing: -8,
-          leading:  Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 8)
-    
-    ,
-    child: InkWell(
-                  onTap: () { 
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child:Icon(
-                              Icons.arrow_back_ios,
-                              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                              size: 22,
-                            ),
-    
-                  ),
-                ),
-  ),
-          backgroundColor:
-              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          shadowColor: const Color(0xffECEFF3),
-          title: 
-
-                      Text(
-                "Order Details",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w600),
+        elevation: .2,
+        centerTitle: false,
+        // leadingWidth: 40,
+        titleSpacing: -8,
+        leading: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: InkWell(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Icon(
+                Icons.arrow_back_ios,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                size: 22,
               ),
-                      
-                      ),
+            ),
+          ),
+        ),
+        backgroundColor:
+            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        shadowColor: const Color(0xffECEFF3),
+        title: Text(
+          "Order Details",
+          style: textStyle(
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              16,
+              FontWeight.w600),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +175,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
               ),
             ),
             Divider(
-               height: 0,
+              height: 0,
               color: theme.isDarkMode
                   ? colors.darkColorDivider
                   : colors.colorDivider,
@@ -265,7 +259,7 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             //     ],
             //   ),
             // ),
-           
+
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
             // child: Row(
@@ -318,7 +312,8 @@ class IpoOpenOrderDetails extends ConsumerWidget {
             // ),
 
             Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 0 ),
+              padding: const EdgeInsets.only(
+                  left: 16, right: 16, top: 16, bottom: 0),
               child: Row(
                 // mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -414,12 +409,14 @@ class IpoOpenOrderDetails extends ConsumerWidget {
               height: 16,
             ),
             Divider(
-               height: 0,
+              height: 0,
               color: theme.isDarkMode
                   ? colors.darkColorDivider
                   : colors.colorDivider,
             ),
-            SizedBox(height: 8,),
+            SizedBox(
+              height: 8,
+            ),
             data(
                 "App no",
                 ipodetails.type == "BSE"
@@ -450,15 +447,11 @@ class IpoOpenOrderDetails extends ConsumerWidget {
                       )}",
                 theme),
 
-                 data(
+            data(
                 "Bid Date & Time",
-                ipodetails.
-responseDatetime  .toString() ==
-                                              ""
-                                          ? "----"
-                                          : ipodateres(ipodetails
-                                              .responseDatetime
-                                              .toString()),
+                ipodetails.responseDatetime.toString() == ""
+                    ? "----"
+                    : ipodateres(ipodetails.responseDatetime.toString()),
                 theme),
 
             Padding(
@@ -572,8 +565,6 @@ responseDatetime  .toString() ==
             //                   ],
             //                 ),
 
-
-
             //                 Column(
             //                   crossAxisAlignment: CrossAxisAlignment.start,
             //                   children: [
@@ -613,122 +604,146 @@ responseDatetime  .toString() ==
             //       );
             //     }),
 
-
-
-
-SizedBox(
-  width: double.infinity,
-  child: Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: Theme(
-      data: Theme.of(context).copyWith(
-        cardColor: Colors.transparent, // To ensure background matches
-        textTheme: TextTheme(bodyMedium: TextStyle(color: Colors.white)),
-        dataTableTheme: const DataTableThemeData(
-          headingTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          dataTextStyle: TextStyle(color: Colors.white),
-          
-          
-          dividerThickness: 1.0,
-          
-           
-        ),
-      ),
-      child: DataTable(
-        columnSpacing: 16.0,
-        horizontalMargin: 0,
-          border: TableBorder(
-          horizontalInside: BorderSide(color: Colors.white54, width: 0.8), // Horizontal lines
-        ),
-        columns: [
-          DataColumn(
-            label: Align(
-              alignment: Alignment.centerLeft,
-              child: Text("Bid", style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600,)),
-            ),
-          ),
-          DataColumn(label: Text("Qty", style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600,))),
-          DataColumn(label: Text("Price", style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600,))),
-          DataColumn(label: Text("Amount", style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600,))),       
-          DataColumn(label: Text("Cut off", style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600,))),
-        ],
-        rows: List<DataRow>.generate(
-          ipodetails.bidDetail!.length,
-          (index) {
-            final bid = ipodetails.bidDetail![index];
-            final isCutOff = ipodetails.type == "BSE"
-                ? (bid.cuttoffflag! != "0")
-                : bid.atCutOff!;
-            return DataRow(cells: [
-              DataCell(Align(
-                alignment: Alignment.centerLeft,
-                child: Text("${index + 1}", style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    12,
-                    FontWeight.w500,)),
-              )),
-              DataCell(Text(bid.quantity! , style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    12,
-                    FontWeight.w500,))),
-              DataCell(Text(
-                ipodetails.type == "BSE" 
-                    ? bid.rate.toString() 
-                    : "${double.parse(bid.price.toString()).toInt()}", style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    12,
-                    FontWeight.w500,)
-              )),
-              DataCell(Text(
-                ipodetails.type == "BSE"
-                    ? "₹${getFormatter(
-                        noDecimal: true,
-                        v4d: false,
-                        value: (double.parse(bid.rate!) * double.parse(bid.quantity!))
-                    )}"
-                    : "₹${getFormatter(
-                        noDecimal: true,
-                        v4d: false,
-                        value: double.parse(bid.amount!).toDouble()
-                    )}", style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    12,
-                    FontWeight.w500,)
-              )),
-              DataCell(Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Icon(
-                  isCutOff ? Icons.check_circle : Icons.cancel,
-                  color: isCutOff ? Colors.green : Colors.red,
+            SizedBox(
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    cardColor:
+                        Colors.transparent, // To ensure background matches
+                    textTheme:
+                        TextTheme(bodyMedium: TextStyle(color: Colors.white)),
+                    dataTableTheme: const DataTableThemeData(
+                      headingTextStyle: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                      dataTextStyle: TextStyle(color: Colors.white),
+                      dividerThickness: 1.0,
+                    ),
+                  ),
+                  child: DataTable(
+                    columnSpacing: 16.0,
+                    horizontalMargin: 0,
+                     headingRowHeight: 40.0,
+                    border: TableBorder(
+                      horizontalInside: BorderSide(
+                          color: Colors.white54,
+                          width: 0.8), // Horizontal lines
+                    ),
+                    columns: [
+                      DataColumn(
+                        label: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text("Bid",
+                              style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w600,
+                              )),
+                        ),
+                      ),
+                      DataColumn(
+                          label: Text("Qty",
+                              style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w600,
+                              ))),
+                      DataColumn(
+                          label: Text("Price",
+                              style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w600,
+                              ))),
+                      DataColumn(
+                          label: Text("Amount",
+                              style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w600,
+                              ))),
+                      DataColumn(
+                          label: Text("Cut off",
+                              style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w600,
+                              ))),
+                    ],
+                    rows: List<DataRow>.generate(
+                      ipodetails.bidDetail!.length,
+                      (index) {
+                        final bid = ipodetails.bidDetail![index];
+                        final isCutOff = ipodetails.type == "BSE"
+                            ? (bid.cuttoffflag! != "0")
+                            : bid.atCutOff!;
+                        return DataRow(cells: [
+                          DataCell(Padding(
+                             padding: const EdgeInsets.only(left: 8),
+                            child: Text("${index + 1}",
+                                style: textStyle(
+                                  theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  12,
+                                  FontWeight.w500,
+                                )),
+                          )),
+                          DataCell(Text(bid.quantity!,
+                              style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                12,
+                                FontWeight.w500,
+                              ))),
+                          DataCell(Text(
+                              ipodetails.type == "BSE"
+                                  ? bid.rate.toString()
+                                  : "${double.parse(bid.price.toString()).toInt()}",
+                              style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                12,
+                                FontWeight.w500,
+                              ))),
+                          DataCell(Text(
+                              ipodetails.type == "BSE"
+                                  ? "₹${getFormatter(noDecimal: true, v4d: false, value: (double.parse(bid.rate!) * double.parse(bid.quantity!)))}"
+                                  : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(bid.amount!).toDouble())}",
+                              style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                12,
+                                FontWeight.w500,
+                              ))),
+                          DataCell(Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Icon(
+                              isCutOff ? Icons.check_circle : Icons.cancel,
+                              color: isCutOff ? Colors.green : Colors.red,
+                            ),
+                          )),
+                        ]);
+                      },
+                    ),
+                  ),
                 ),
-              )),
-            ]);
-          },
-        ),
-      ),
-    ),
-  ),
-)
-
-
-
-
-
+              ),
+            )
 
             // Padding(
             //   padding: const EdgeInsets.only(top: 8, left: 16, bottom: 5),
@@ -755,9 +770,7 @@ SizedBox(
 
   Padding data(String name, String value, ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,vertical: 8
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
         children: [
           Row(
@@ -774,8 +787,8 @@ SizedBox(
                 value,
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600),
+                    12,
+                    FontWeight.w500),
               )
             ],
           ),
@@ -783,7 +796,7 @@ SizedBox(
             height: 8,
           ),
           Divider(
-             height: 0,
+            height: 0,
             color: theme.isDarkMode
                 ? colors.darkColorDivider
                 : colors.colorDivider,

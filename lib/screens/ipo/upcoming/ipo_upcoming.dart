@@ -169,8 +169,7 @@ class UpcomingIpo extends StatelessWidget {
                     height: 0,
                     color: theme.isDarkMode
                         ? colors.darkColorDivider
-                        : const Color(0xffECEDEE),
-                    thickness: 1.2);
+                      : const Color(0xffECEDEE),);
               },
             ),
           ],

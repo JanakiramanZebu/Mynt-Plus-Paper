@@ -16,7 +16,7 @@ class CustomExchBadge extends StatelessWidget {
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(2),
           color: theme.isDarkMode
-              ? const Color(0xff666666).withOpacity(.1)
+              ? const Color(0xff666666).withOpacity(.3)
               : const Color(0xffF1F3F8)),
       child: Text(exch,
           overflow: TextOverflow.ellipsis,

@@ -114,7 +114,7 @@ mixin IPOApi on ApiCore {
       //log("Ipo Perfomance res=>${res.body} ");
       return IpoPerformanceModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      print("GETIPOPERFORMANCE $e");
+      // print("GETIPOPERFORMANCE $e");
       rethrow;
     }
   }
@@ -131,7 +131,7 @@ mixin IPOApi on ApiCore {
 
       return MainStreamIpoModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      print("object IPO $e");
+      // print("object IPO $e");
       rethrow;
     }
   }
@@ -183,7 +183,7 @@ mixin IPOApi on ApiCore {
         return ipoModels;
       }
     } catch (e) {
-      print("object $e");
+      // print("object $e");
       rethrow;
     }
   }
@@ -197,7 +197,7 @@ mixin IPOApi on ApiCore {
       IpoPreCloseModel ipoModel = IpoPreCloseModel.fromJson(json);
       return ipoModel;
     } catch (e) {
-      print("fetchipopreclose ::  $e");
+      // print("fetchipopreclose ::  $e");
       rethrow;
     }
   }
@@ -210,7 +210,7 @@ mixin IPOApi on ApiCore {
       Upcoming_ipo ipoModel = Upcoming_ipo.fromJson(json);
       return ipoModel;
     } catch (e) {
-      print("fetchipopreclose ::  $e");
+      // print("fetchipopreclose ::  $e");
       rethrow;
     }
   }

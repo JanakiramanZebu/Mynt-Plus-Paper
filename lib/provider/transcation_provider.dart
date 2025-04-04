@@ -114,7 +114,7 @@ class TranctionProvider extends DefaultChangeNotifier {
 
     String number = y.join("!");
     _multipleAccno = number;
-    print("DDDDDDDDDDD $number");
+    // print("DDDDDDDDDDD $number");
   }
 
   bankselection(int index) {

@@ -202,7 +202,7 @@ String convertNumber(num value) {
           }));
 
       final json = jsonDecode((res.body));
- print("MF orderBook ==>${json}");
+//  print("MF orderBook ==>${json}");
       // log("MF orderBook ==>${json}");
 
       return MFOrderBookModel.fromJson(json as Map<String, dynamic>);
@@ -214,8 +214,8 @@ String convertNumber(num value) {
   redemptioncancelapi(orderno) async {
       // print("object",orderno);
     try {
-      print("object");
-      print("${orderno}");
+      // print("object");
+      // print("${orderno}");
 
       final uri = Uri.parse(apiLinks.redemptioncancel);
       final res = await apiClient.post(uri,
@@ -227,7 +227,7 @@ String convertNumber(num value) {
 
       final json = jsonDecode((res.body));
 
-      print("MF orderBook ==>${json}");
+      // print("MF orderBook ==>${json}");
 
       return MFOrderBookModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -237,10 +237,10 @@ String convertNumber(num value) {
 
 
   cancelsipapi(orderno,siprefno,droupreason,retext) async {
-      print("ordermo ${orderno} ,siprefno ${siprefno} , droupreason ${droupreason} ");
+      // print("ordermo ${orderno} ,siprefno ${siprefno} , droupreason ${droupreason} ");
     try {
-      print("object");
-      print("${orderno}");
+      // print("object");
+      // print("${orderno}");
 
       final uri = Uri.parse(apiLinks.sipcancelapiend);
       final res = await apiClient.post(uri,
@@ -255,7 +255,7 @@ String convertNumber(num value) {
 
       final json = jsonDecode((res.body));
 
-      print("MF cansipp resss ==>${json}");
+      // print("MF cansipp resss ==>${json}");
 
       return mf_sip_cancel_message.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -264,10 +264,10 @@ String convertNumber(num value) {
   }
 
     pausesipapi(orderno,notext) async {
-      print("pausee ordermo ${orderno} ,siprefno ${notext}");
+      // print("pausee ordermo ${orderno} ,siprefno ${notext}");
     try {
-      print("object pausee");
-      print("${orderno}");
+      // print("object pausee");
+      // print("${orderno}");
 
       final uri = Uri.parse(apiLinks.pausesipendpoint);
       final res = await apiClient.post(uri,
@@ -280,11 +280,11 @@ String convertNumber(num value) {
 
       final json = jsonDecode((res.body));
 
-      print("pause res p resss ==>${json}");
+      // print("pause res p resss ==>${json}");
 
       return pause_spi_res.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      print("${"error in pause ${e}"}");
+      // print("${"error in pause ${e}"}");
       rethrow;
     }
   }
@@ -336,7 +336,7 @@ String convertNumber(num value) {
 
       final json = jsonDecode((res.body));
 
-      print("MF top cat neww${json}");
+      // print("MF top cat neww${json}");
 
       return mf_catge_newlist.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -485,16 +485,16 @@ String convertNumber(num value) {
             "mode_of_payment": paymentMethod,
             "vpa_id": upi,
           }));
-      print({
-            "client_code": prefs.clientId,
-            "scheme_code": schemeCode,
-            "amount": totalAmt,
-            "acc_number": accno,
-            "ifsc": ifsc,
-            "bank_name": bankname,
-            "mode_of_payment": paymentMethod,
-            "vpa_id": upi,
-          });
+      // print({
+      //       "client_code": prefs.clientId,
+      //       "scheme_code": schemeCode,
+      //       "amount": totalAmt,
+      //       "acc_number": accno,
+      //       "ifsc": ifsc,
+      //       "bank_name": bankname,
+      //       "mode_of_payment": paymentMethod,
+      //       "vpa_id": upi,
+      //     });
       final json = jsonDecode((res.body));
 
       log("MF ALLL PAYMENT ==>$json");
@@ -567,7 +567,7 @@ String convertNumber(num value) {
 
       final json = jsonDecode((res.body));
 
-      print("Best MF @@@@@@@@1111==>$json");
+      // print("Best MF @@@@@@@@1111==>$json");
 
       return BestmfNewlist.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -602,7 +602,7 @@ String convertNumber(num value) {
 
       return XsipOrderCancleResone.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      print("X-SIP OREDER CANCEL RESONE :: $e");
+      // print("X-SIP OREDER CANCEL RESONE :: $e");
       rethrow;
     }
   }
@@ -610,8 +610,8 @@ String convertNumber(num value) {
   Future<MFWatchlistModel> getMFWatchlistsearch(
       String isin, String isAdd) async {
     try {
-         print("watttadd");
-      print("watttadd${isin},${isAdd}");
+        //  print("watttadd");
+      // print("watttadd${isin},${isAdd}");
       final uri = Uri.parse(apiLinks.mfWatchlist);
       Map payload = {"client_code": "${prefs.clientId}", "type": isin == "" ? "View" : isAdd};
 
@@ -662,11 +662,11 @@ Future<MFFactSheetDataModel?> getMFFactSheetData(String isin) async {
       final json = jsonDecode(res.body);
       return MFFactSheetDataModel.fromJson(json as Map<String, dynamic>);
     } else {
-      print("API Error: ${res.statusCode} - ${res.body}");
+      // print("API Error: ${res.statusCode} - ${res.body}");
       return null; // Return null in case of an error
     }
   } catch (e) {
-    print("Exception: $e");
+    // print("Exception: $e");
     return null; // Return null if an exception occurs
   }
 }
@@ -773,7 +773,7 @@ Future<MFFactSheetDataModel?> getMFFactSheetData(String isin) async {
 
       final json = jsonDecode((res.body));
 
-      print("mflisttt Type MF ==>$json");
+      // print("mflisttt Type MF ==>$json");
       // print("mflisttt Type MF ==>$json.total_sip_amount");
 
 
@@ -794,7 +794,7 @@ Future<MFFactSheetDataModel?> getMFFactSheetData(String isin) async {
 
       final json = jsonDecode((res.body));
 
-      print("mflisttt Type MF ==>$json");
+      // print("mflisttt Type MF ==>$json");
       // print("mflisttt Type MF ==>$json.total_sip_amount");
 
 
@@ -816,7 +816,7 @@ Future<MFFactSheetDataModel?> getMFFactSheetData(String isin) async {
 
       final json = jsonDecode((res.body));
 
-      print("mfsingle orfderrrrrr$json");
+      // print("mfsingle orfderrrrrr$json");
       // print("mflisttt Type MF ==>$json.total_sip_amount");
 
 
@@ -836,10 +836,10 @@ Future<MFFactSheetDataModel?> getMFFactSheetData(String isin) async {
 
 
       final json = jsonDecode((res.body));
-print("client_code||||${prefs.clientId}");
+// print("client_code||||${prefs.clientId}");
 
-print("valuee||||${value}");
-      print("mfholdddddd$json");
+// print("valuee||||${value}");
+      // print("mfholdddddd$json");
       // print("mflisttt Type MF ==>$json.total_sip_amount");
 
 
@@ -859,10 +859,10 @@ print("valuee||||${value}");
 
 
       final json = jsonDecode((res.body));
-print("client_code||||${prefs.clientId}");
+// print("client_code||||${prefs.clientId}");
 
 // print("valuee||||${value}");
-      print("neww hold${json.toString()}");
+      // print("neww hold${json.toString()}");
       // print("mflisttt Tmfholddddddype MF ==>$json.total_sip_amount");
 
 

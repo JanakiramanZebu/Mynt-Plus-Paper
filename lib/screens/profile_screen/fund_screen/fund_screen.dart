@@ -13,7 +13,7 @@ import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/transcation_provider.dart';
-import '../../../../sharedWidget/custom_back_btn.dart';
+// import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/custom_switch_btn.dart';
 import '../../../../sharedWidget/fund_function.dart';
@@ -64,12 +64,29 @@ class _FundScreenState extends State<FundScreen> {
               centerTitle: false,
               leadingWidth: 41,
               titleSpacing: 6,
-              leading: const CustomBackBtn(),
-              elevation: .4,
+              leading: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Icon(
+                      Icons.arrow_back_ios,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ),
+              elevation: .2,
               title: Text('Funds',
                   style: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
+                      16,
                       FontWeight.w600)),
             ),
             body:
@@ -91,11 +108,14 @@ class _FundScreenState extends State<FundScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(left: 16, top: 10),
-                      child: headerTitleText(
-                        "Choose type",
-                      ),
-                    ),
+                        padding: const EdgeInsets.only(left: 16, top: 10),
+                        child: Text("Choose type",
+                            style: textStyle(
+                                !theme.isDarkMode
+                                    ? colors.colorBlack
+                                    : colors.colorWhite,
+                                14,
+                                FontWeight.w600))),
                     Padding(
                       padding: const EdgeInsets.only(left: 16, top: 10),
                       child: Row(
