@@ -240,6 +240,8 @@ class _TaxTurnOver extends State<TaxTurnOver> {
                                     .currency!.currOptTo!)
                                 .toStringAsFixed(2)
                             : "0.00"),
+                            const SizedBox(height: 48.0),
+                  
                   ],
                 )
 

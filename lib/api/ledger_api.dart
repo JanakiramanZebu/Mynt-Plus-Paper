@@ -261,8 +261,8 @@ mixin LedgerApi on ApiCore {
       //   // headers: funddefaultHeaders,
       // );
       //file download.
-      // print("${response}");
-      final uri = Uri.parse('http://192.168.5.175:5003/taxpnl_pdf');
+      // print("${response}"); 
+      final uri = Uri.parse('${apiLinks.reportsapi}/taxpnl_pdf');
       // final uri = Uri.parse('${apiLinks.reportsapi}/getdocdownloads');
       final fromapi = '01/04/$year';
       final toapi = '31/03/${(year) + 1}';
@@ -280,10 +280,11 @@ mixin LedgerApi on ApiCore {
             "from_date": fromapi,
             "to_date": toapi
           }));
+          
       final json = jsonDecode((res.body));
-      if (json['stat'] != 'Not Ok') {
-        final Uri urival =
-            Uri.parse("http://192.168.5.175:5003/${json['path']}");
+      if (json['stat'] != 'Not Ok') { 
+      final urival = Uri.parse('${apiLinks.reportsapi}/${json['path']}');
+
         if (!await launchUrl(urival, mode: LaunchMode.externalApplication)) {
           throw 'Could not launch';
         }

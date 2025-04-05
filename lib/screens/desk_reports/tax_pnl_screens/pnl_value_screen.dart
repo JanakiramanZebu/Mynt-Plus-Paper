@@ -265,7 +265,9 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                                     .currency!.currOptPnl!)
                                 .toStringAsFixed(2)
                             : "0.00"), // Fixed the repeated label
+                            const SizedBox(height: 48.0),
                   ],
+                  
                 )
 
                 // Container(

@@ -241,7 +241,7 @@ class _BarChartWidgetState extends State<BarChartWidget> {
                     rightTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 50,
+                        reservedSize: 30,
                         getTitlesWidget: (value, meta) {
                           return Text(
                             '₹${value.toInt()}',
