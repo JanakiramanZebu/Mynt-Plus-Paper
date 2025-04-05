@@ -488,7 +488,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                       userProfile
                                                           .setChartdialog(true);
                                                       await ConstantName
-                                                          .webViewController!
+                                                          .chartwebViewController!
                                                           .evaluateJavascript(
                                                               source:
                                                                   "window.changeScript([{exch: '${widget.wlValue.exch}', token: '${widget.wlValue.token}', tsym: '${widget.wlValue.tsym}'}], '${theme.isDarkMode}')");

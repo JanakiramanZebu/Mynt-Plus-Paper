@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/screens/dashboard_screen.dart';
 import '../locator/constant.dart';
+import '../models/marketwatch_model/get_quotes.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
@@ -25,6 +26,7 @@ import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/internet_widget.dart';
 import 'market_watch/index/index_screen.dart';
+import 'market_watch/scrip_depth_info.dart';
 import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen.dart';
@@ -44,6 +46,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  late WebSocketProvider socketProvider; // Store the reference
+
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
@@ -65,9 +69,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    socketProvider = context.read(websocketProvider); // Store reference safely
+  }
+
+  @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     ConstantName.timer!.cancel();
+    socketProvider.closeSocket(false);
+    ConstantName.chartwebViewController?.dispose();
     super.dispose();
   }
 
@@ -130,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
         if (userProfile.showchartof) {
           if (scriptInfo?.exch != null) {
-            await ConstantName.webViewController!.evaluateJavascript(
+            await ConstantName.chartwebViewController!.evaluateJavascript(
                 source:
                     "window.changeScript([{exch: '${scriptInfo?.exch}', token: '${scriptInfo?.token}', tsym: '${scriptInfo?.tsym}'}], '${theme.isDarkMode}')");
             // await context.read(websocketProvider).establishConnection(
@@ -1430,8 +1442,36 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       setState(() {
         context.read(userProfileProvider).setChartdialog(false);
         context.read(chartUpdateProvider).changeOrientation('portrait');
+
+        final mktwth = context.read(marketWatchProvider);
+        mktwth.chngDephBtn("Overview");
+        mktwth.singlePageloader(true);
+
+        DepthInputArgs depthArgs = DepthInputArgs(
+            exch: '${mktwth.getQuotes?.exch}',
+            token: '${mktwth.getQuotes?.token}',
+            tsym: '${mktwth.getQuotes?.tsym}',
+            instname: mktwth.getQuotes?.instname ?? "",
+            symbol: '${mktwth.getQuotes?.symbol}',
+            expDate: '${mktwth.getQuotes?.expDate}',
+            option: '${mktwth.getQuotes?.option}');
+
+        showModalBottomSheet(
+            isScrollControlled: true,
+            useSafeArea: true,
+            isDismissible: true,
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            context: context,
+            builder: (context) => Container(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
+        mktwth.singlePageloader(false);
       });
-      await ConstantName.webViewController!.evaluateJavascript(
+
+      await ConstantName.chartwebViewController!.evaluateJavascript(
           source:
               "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${context.read(themeProvider).isDarkMode}')");
       return false; // Prevent back navigation when chart is visible

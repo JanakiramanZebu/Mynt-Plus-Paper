@@ -32,8 +32,16 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
     setState(() {
       maxQty = TextEditingController(
           text: widget.convertPosition.netqty!.replaceAll("-", ""));
-          qty = TextEditingController(
-          text: maxQty.text);
+      qty = TextEditingController(text: maxQty.text);
+      int lotSize = int.parse("${widget.convertPosition.ls ?? 0}");
+
+      if (widget.convertPosition.exch == "MCX") {
+        maxQty.text = (int.parse(maxQty.text) / lotSize).toInt().toString();
+      }
+
+      if (widget.convertPosition.exch == "MCX") {
+        qty.text = (int.parse(qty.text) / lotSize).toInt().toString();
+      }
     });
   }
 
@@ -175,7 +183,9 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
                         child: CustomTextFormField(
                             fillColor:
                                 theme.isDarkMode ? colors.darkGrey : null,
-                            inputFormate:[FilteringTextInputFormatter.digitsOnly],
+                            inputFormate: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
                             hintText: maxQty.text,
                             hintStyle: textStyle(
                                 const Color(0xff666666), 15, FontWeight.w400),
@@ -244,7 +254,13 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
                                     ? "I"
                                     : "I",
                         prevprd: "${widget.convertPosition.prd}",
-                        qty: qty.text,
+                        qty: widget.convertPosition.exch == 'MCX'
+                            ? (int.parse(qty.text) *
+                                    int.parse(
+                                        widget.convertPosition.ls.toString()))
+                                .toInt()
+                                .toString()
+                            : qty.text,
                         trantype: widget.convertPosition.netqty!.startsWith('-')
                             ? "S"
                             : "B",

@@ -55,7 +55,7 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      print("MF Master ==>${json['msg']}");
+      // // print("MF Master ==>${json['msg']}");
 
       return json['msg'];
     } catch (e) {
@@ -75,25 +75,25 @@ mixin ProfileAllDetailsApi on ApiCore {
           }));
 
       final json = jsonDecode((res.body));
-      print("otpres $otpres");
-      print("newemail $newEmail");
+      // // print("otpres $otpres");
+      // // print("newemail $newEmail");
 
-      print("otp email resp ==>${json['msg']}");
+      // // print("otp email resp ==>${json['msg']}");
 
       if (json['msg'] == "otp valid") {
-        print("function call");
-        print("globalcurrmail , ${globalcurrmail}");
-        print("client_id, ${prefs.clientId}");
-        print("client_email: ${globalcurrmail}");
-        print("dp_code: ${globaldpcode}");
-        print("present_email: ${globalNewEmail}");
-        print("previous_email: ${globalcurrmail}");
+        // // print("function call");
+        // // print("globalcurrmail , ${globalcurrmail}");
+        // // print("client_id, ${prefs.clientId}");
+        // // print("client_email: ${globalcurrmail}");
+        // // print("dp_code: ${globaldpcode}");
+        // // print("present_email: ${globalNewEmail}");
+        // // print("previous_email: ${globalcurrmail}");
 
-        print("client_name: ${prefs.clientName}");
+        // // print("client_name: ${prefs.clientName}");
 
-        // String old_email  = old;
-        // String newemail = json['new_email'];
-        print("------------------------------------------------------");
+        // // String old_email  = old;
+        // // String newemail = json['new_email'];
+        // // print("------------------------------------------------------");
         emailfilewrittenapi();
       }
 
@@ -117,8 +117,8 @@ mixin ProfileAllDetailsApi on ApiCore {
           "${nowUtc.millisecond.toString().padLeft(3, '0')}" +
           "Z"; // You can use milliseconds instead of microseconds for simplicity.
 
-      print("Formatted UTC date: $formattedDateUtc");
-      // print("Current date and time: $now");
+      // // print("Formatted UTC date: $formattedDateUtc");
+      // // print("Current date and time: $now");
       final uri = Uri.parse(apiLinks.filewriteemailURL);
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
@@ -132,19 +132,19 @@ mixin ProfileAllDetailsApi on ApiCore {
             "client_name": "${prefs.clientName}",
           }));
 
-      print(jsonEncode({
-        "client_id": "${prefs.clientId}",
-        "client_email": "${globalcurrmail}",
-        "dp_code": globaldpcode,
-        "date_time": "${formattedDateUtc}",
-        "present_email": "${globalNewEmail}",
-        "previous_email": "${globalcurrmail}",
-        "client_name": "${prefs.clientName}",
-      }));
+      // // print(jsonEncode({
+      //   "client_id": "${prefs.clientId}",
+      //   "client_email": "${globalcurrmail}",
+      //   "dp_code": globaldpcode,
+      //   "date_time": "${formattedDateUtc}",
+      //   "present_email": "${globalNewEmail}",
+      //   "previous_email": "${globalcurrmail}",
+      //   "client_name": "${prefs.clientName}",
+      // }));
 
       final json = jsonDecode((res.body));
 
-      print("filewriteep ==>${json}");
+      // // print("filewriteep ==>${json}");
 
       return json['msg'];
     } catch (e) {
@@ -162,23 +162,23 @@ mixin ProfileAllDetailsApi on ApiCore {
 //     });
 
 //     if (result == 'Signed Successfully') {
-//       print("Document signed successfully!");
+//       // print("Document signed successfully!");
 
 //     } else if (result == 'Signing cancelled') {
-//       print("Signing process was cancelled.");
+//       // print("Signing process was cancelled.");
 
 //     } else {
-//       print("Unexpected result: $result");
+//       // print("Unexpected result: $result");
 
 //     }
 //   } catch (e) {
-//     print('Error during Digio eSign: $e');
+//     // print('Error during Digio eSign: $e');
 
 //   }
 // }
 
   Future<void> esignfunstart() async {
-    print("Starting Digio eSign workflow...");
+    // // print("Starting Digio eSign workflow...");
     // var workflowResult;
 
     // try {
@@ -190,7 +190,7 @@ mixin ProfileAllDetailsApi on ApiCore {
 
     //   // Set the listener for gateway events
     //   _kycWorkflowPlugin.setGatewayEventListener((GatewayEvent? gatewayEvent) {
-    //     print("Gateway funnel event: " + gatewayEvent.toString());
+    //     // print("Gateway funnel event: " + gatewayEvent.toString());
     //   });
 
     //   // Start the eSign workflow
@@ -201,11 +201,11 @@ mixin ProfileAllDetailsApi on ApiCore {
     //     null,
     //   );
 
-    //   print('workflowResult : ' + workflowResult.toString());
+    //   // print('workflowResult : ' + workflowResult.toString());
     // } catch (e) {
-    //   print('Error during Digio eSign: $e');
+    //   // print('Error during Digio eSign: $e');
     // }
-    print("eSign workflow finished.");
+    // // print("eSign workflow finished.");
   }
 
 
@@ -226,17 +226,17 @@ mixin ProfileAllDetailsApi on ApiCore {
         return ProfileAllDetails.fromJson(jsonDecode(decryptedData));
       }
     } catch (e) {
-      print("object :: $e");
+      // // print("object :: $e");
       rethrow;
     }
   }
 
   mobileotpapifun(String newmo, clemail, oldmobilmo, fulldataprf) async {
 //  String formattedData = jsonEncode(fulldataprf.toJson()); // Convert object to JSON
-    // print("Formatted Profile Data: $formattedData");
+    // // print("Formatted Profile Data: $formattedData");
 
     // Now you can use []
-    print("CLIENT_ID: ${fulldataprf.toJson()['CLIENT_ID']}");
+    // // print("CLIENT_ID: ${fulldataprf.toJson()['CLIENT_ID']}");
 
     try {
       final uri = Uri.parse(apiLinks.mobotpreq);
@@ -252,9 +252,9 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       final json = jsonDecode((res.body));
 // startDigioEsign();
-      print("otp email resp ==>${json['msg']}");
-      print("------------------------------------------------------");
-      print("testttt${fulldataprf}");
+      // // print("otp email resp ==>${json['msg']}");
+      // // print("------------------------------------------------------");
+      // // print("testttt${fulldataprf}");
 
       esignfunstart();
 
@@ -283,8 +283,8 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      print("otp email resp ==>${json['msg']}");
-      print("${globalfulldata.toJson()['CLIENT_DP_CODE']}");
+      // // print("otp email resp ==>${json['msg']}");
+      // // print("${globalfulldata.toJson()['CLIENT_DP_CODE']}");
 
       if (json['msg'] == "otp valid") {
         mobilefilewrite();
@@ -310,7 +310,7 @@ mixin ProfileAllDetailsApi on ApiCore {
           "${nowUtc.millisecond.toString().padLeft(3, '0')}" +
           "Z"; // You can use milliseconds instead of microseconds for simplicity.
 
-      print("Formatted UTC date: $formattedDateUtc");
+      // // print("Formatted UTC date: $formattedDateUtc");
       final uri = Uri.parse(apiLinks.filewritemob);
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
@@ -325,7 +325,7 @@ mixin ProfileAllDetailsApi on ApiCore {
           }));
       final json = jsonDecode((res.body));
 
-      print("filewriteep ==>${json}");
+      // // print("filewriteep ==>${json}");
 
       return json['msg'];
     } catch (e) {
@@ -336,8 +336,8 @@ mixin ProfileAllDetailsApi on ApiCore {
   manaddbankapi(String newadd, String pincoderes, String dist, String state,
       String county, String profty, fulldataprf, String filepath) async {
     try {
-      print(
-          "123456er${newadd}, ${pincoderes}, ${dist}, ${state}, ${county}, ${profty}, ${filepath}");
+      // // print(
+      //     "123456er${newadd}, ${pincoderes}, ${dist}, ${state}, ${county}, ${profty}, ${filepath}");
       globalfulldata = fulldataprf;
       final uri = Uri.parse(apiLinks.adrchnURL);
 
@@ -345,7 +345,7 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       // Adding headers
       request.headers.addAll(funddefaultHeaders);
-      // print("${fulldataprf.toJson()}");
+      // // print("${fulldataprf.toJson()}");
       // Adding form data
       request.fields['proff'] = profty;
       request.fields['cur_address'] =
@@ -362,17 +362,17 @@ mixin ProfileAllDetailsApi on ApiCore {
       request.fields['client_email'] =
           "${fulldataprf.toJson()['CLIENT_ID_MAIL']}";
 
-      print("proff: ${request.fields['proff']}");
-      print("cur_address: ${request.fields['cur_address']}");
-      print("ext_address: ${request.fields['ext_address']}");
-      print("dp_code: ${request.fields['dp_code']}");
-      print("client_id: ${request.fields['client_id']}");
-      print("client_name: ${request.fields['client_name']}");
-      print("adr_manual: ${request.fields['adr_manual']}");
-      print("aadhar_address: ${request.fields['aadhar_address']}");
-      print("code: ${request.fields['code']}");
-      print("state: ${request.fields['state']}");
-      print("client_email: ${request.fields['client_email']}");
+      // // print("proff: ${request.fields['proff']}");
+      // // print("cur_address: ${request.fields['cur_address']}");
+      // // print("ext_address: ${request.fields['ext_address']}");
+      // // print("dp_code: ${request.fields['dp_code']}");
+      // // print("client_id: ${request.fields['client_id']}");
+      // // print("client_name: ${request.fields['client_name']}");
+      // // print("adr_manual: ${request.fields['adr_manual']}");
+      // // print("aadhar_address: ${request.fields['aadhar_address']}");
+      // // print("code: ${request.fields['code']}");
+      // // print("state: ${request.fields['state']}");
+      // // print("client_email: ${request.fields['client_email']}");
 
       // Attaching the file
       request.files.add(await http.MultipartFile.fromPath('file', filepath));
@@ -382,13 +382,13 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       if (response.statusCode == 200) {
         final responseBody = await response.stream.bytesToString();
-        print("Response: $responseBody");
+        // print("Response: $responseBody");
         // return responseBody['msg'];
       } else {
-        print("Error: ${response.reasonPhrase}");
+        // // print("Error: ${response.reasonPhrase}");
       }
     } catch (e) {
-      print("Exception: $e");
+      // // print("Exception: $e");
     }
   }
 
@@ -403,8 +403,8 @@ mixin ProfileAllDetailsApi on ApiCore {
           }));
 
       final json = jsonDecode(res.body);
-      print("djsonjson ==> ${json}");
-      print("ddpi balance ==> ${json['total']}");
+      // print("djsonjson ==> ${json}");
+      // print("ddpi balance ==> ${json['total']}");
       return json['total'];
       // int totalBalance;
       // if (json['total'] is int) {
@@ -423,8 +423,8 @@ mixin ProfileAllDetailsApi on ApiCore {
   }
 
   finalddpisubmitapi(fulldataprf) async {
-    print("testing");
-    print("1111111111111111${fulldataprf.toJson()}");
+    // print("testing");
+    // print("1111111111111111${fulldataprf.toJson()}");
 
     try {
       final uri = Uri.parse(apiLinks.ddpiURL);
@@ -442,7 +442,7 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      print("otp email resp ==>${json}");
+      // print("otp email resp ==>${json}");
 
       return json['msg'];
     } catch (e) {
@@ -451,8 +451,8 @@ mixin ProfileAllDetailsApi on ApiCore {
   }
 
   mtfenabapipage(fulldataprf) async {
-    print("mtfff");
-    print("1111111111111111${fulldataprf.toJson()}");
+    // print("mtfff");
+    // print("1111111111111111${fulldataprf.toJson()}");
 
     try {
       final uri = Uri.parse(apiLinks.mtfURL);
@@ -468,7 +468,7 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      print("otp email resp ==>${json}");
+      // print("otp email resp ==>${json}");
 
       return json['msg'];
     } catch (e) {
@@ -477,8 +477,8 @@ mixin ProfileAllDetailsApi on ApiCore {
   }
 
   incomeotesendapi(mobileno) async {
-    // print("mtfff");
-    // print("1111111111111111${fulldataprf.toJson()}");
+    // // print("mtfff");
+    // // print("1111111111111111${fulldataprf.toJson()}");
 
     try {
       final uri = Uri.parse(apiLinks.incomeotpreqURL);
@@ -492,8 +492,8 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      print("otp email respincomeee ==>${json}");
-      print("otp email in1234567 ==>${json['msg']}");
+      // print("otp email respincomeee ==>${json}");
+      // print("otp email in1234567 ==>${json['msg']}");
 
       return json['msg'];
     } catch (e) {
@@ -502,8 +502,8 @@ mixin ProfileAllDetailsApi on ApiCore {
   }
 
   incomeotpverfapi(otpno, fulldataprf, chipval, file, proftye) async {
-    // print("mtfff");
-    // print("1111111111111111${fulldataprf.toJson()}");
+    // // print("mtfff");
+    // // print("1111111111111111${fulldataprf.toJson()}");
     globalfulldata = fulldataprf;
     try {
       final uri = Uri.parse(apiLinks.incomeotpverURL);
@@ -521,8 +521,8 @@ mixin ProfileAllDetailsApi on ApiCore {
         incomeupdateaapi(fulldataprf, chipval, file, proftye);
       }
 
-      print("otp email respincomeee ==>${json}");
-      print("otp email in1234567 ==>${json['msg']}");
+      // print("otp email respincomeee ==>${json}");
+      // print("otp email in1234567 ==>${json['msg']}");
 
       return json['msg'];
     } catch (e) {
@@ -555,14 +555,14 @@ mixin ProfileAllDetailsApi on ApiCore {
       request.fields['password'] = "";
       request.fields['password_reqiured'] = "";
 
-      //   print("client_id: ${request.fields['client_id']}");
-      // print("client_email: ${request.fields['client_email']}");
-      // print("client_name: ${request.fields['client_name']}");
-      // print("ext_income_range: ${request.fields['ext_income_range']}");
-      // print("cur_income_range: ${request.fields['cur_income_range']}");
-      // print("proff: ${request.fields['proff']}");
-      // print("dp_code: ${request.fields['dp_code']}");
-      // print("proff_type: ${request.fields['proff_type']}");
+      //   // print("client_id: ${request.fields['client_id']}");
+      // // print("client_email: ${request.fields['client_email']}");
+      // // print("client_name: ${request.fields['client_name']}");
+      // // print("ext_income_range: ${request.fields['ext_income_range']}");
+      // // print("cur_income_range: ${request.fields['cur_income_range']}");
+      // // print("proff: ${request.fields['proff']}");
+      // // print("dp_code: ${request.fields['dp_code']}");
+      // // print("proff_type: ${request.fields['proff_type']}");
 
       // Only add file if 'Above 25L' and filepath is valid
       if (chipval == "Above 25L" && filepath.isNotEmpty) {
@@ -575,22 +575,22 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       if (response.statusCode == 200) {
         final responseBody = await response.stream.bytesToString();
-        print("Response: $responseBody");
+        // print("Response: $responseBody");
         // Return the response message or do further processing
       } else {
-        print("Error: ${response.reasonPhrase}");
+        // print("Error: ${response.reasonPhrase}");
       }
     } catch (e) {
-      print("Exception: $e");
+      // print("Exception: $e");
     }
   }
 
   ifsccodecheckapi(String ifsccode) async {
-    // print("djsonjson ==> ${ifsccode}");
+    // // print("djsonjson ==> ${ifsccode}");
 
     try {
       if (ifsccode.length > 9) {
-        print("Valid IFSC Code: $ifsccode");
+        // print("Valid IFSC Code: $ifsccode");
 
         final uri = Uri.parse("https://ifsc.razorpay.com/$ifsccode");
         final res = await http.get(uri);
@@ -598,21 +598,21 @@ mixin ProfileAllDetailsApi on ApiCore {
         if (res.statusCode == 200) {
           final Map<String, dynamic> json = jsonDecode(res.body);
           globalfulldata = json;
-          print("@@@@@@@@@@@@${globalfulldata}");
-          print("11111111111${globalfulldata['MICR']}");
+          // print("@@@@@@@@@@@@${globalfulldata}");
+          // print("11111111111${globalfulldata['MICR']}");
 
           if (json.containsKey('BANK') && json.containsKey('BRANCH')) {
             return "${json['BANK']} - ${json['BRANCH']}";
           } else {
-            print("Error: Invalid API response format");
+            // print("Error: Invalid API response format");
             return "Invalid response";
           }
         } else {
-          print("Error: Invalid IFSC Code or API issue");
+          // print("Error: Invalid IFSC Code or API issue");
           return "Invalid IFSC Code";
         }
       } else {
-        print("Error: IFSC Code is too short");
+        // print("Error: IFSC Code is too short");
         return "Invalid IFSC Code";
       }
     } catch (e) {
@@ -624,9 +624,9 @@ mixin ProfileAllDetailsApi on ApiCore {
       String setpri, String accty, fulldataprf, bankdata) async {
 //         final file = File(filepath);
 // if (await file.exists()) {
-    print('File exists!${filepath}');
+    // print('File exists!${filepath}');
 // } else {
-//   print('File does not exist at $filepath');
+//   // print('File does not exist at $filepath');
 // }
 
     if (bankdata is String) {
@@ -645,7 +645,7 @@ mixin ProfileAllDetailsApi on ApiCore {
         request.headers.addAll(funddefaultHeaders);
         request.fields['bank_exists'] = jsonEncode(formattedBankData);
         request.files.add(await http.MultipartFile.fromPath('proff', filepath));
-        print("1111111111${filepath}");
+        // print("1111111111${filepath}");
         if (filepath.isNotEmpty) {
           request.files
               .add(await http.MultipartFile.fromPath('proff_file', filepath));
@@ -653,12 +653,12 @@ mixin ProfileAllDetailsApi on ApiCore {
         var response = await request.send();
         if (response.statusCode == 200) {
           final responseBody = await response.stream.bytesToString();
-          print("Response: $responseBody");
+          // print("Response: $responseBody");
         } else {
-          print("Error: ${response.reasonPhrase}");
+          // print("Error: ${response.reasonPhrase}");
         }
       } catch (e) {
-        print("Exception1111111: $e");
+        // print("Exception1111111: $e");
       }
     }
   }
@@ -678,16 +678,16 @@ mixin ProfileAllDetailsApi on ApiCore {
             "clientname": "${prefs.clientName}",
             "relationship": relation
           }));
-      print({
-        "clientid": "${prefs.clientId}",
-        "memberid": menid,
-        "pan": menpan,
-        "mobile_no": mobilno,
-        "clientname": "${prefs.clientName}",
-        "relationship": relation
-      });
+      // print({
+      //   "clientid": "${prefs.clientId}",
+      //   "memberid": menid,
+      //   "pan": menpan,
+      //   "mobile_no": mobilno,
+      //   "clientname": "${prefs.clientName}",
+      //   "relationship": relation
+      // });
       final json = jsonDecode(res.body);
-      print(json['emsg']);
+      // print(json['emsg']);
 
       return json['emsg'];
     } catch (e) {
@@ -728,9 +728,9 @@ mixin ProfileAllDetailsApi on ApiCore {
         stage = "Unknown Stage";
       }
 
-      print("Stage: $stage");
-      print("Balance: $balance");
-      print("Response JSON: $json");
+      // print("Stage: $stage");
+      // print("Balance: $balance");
+      // print("Response JSON: $json");
 
       return {
         "stage": stage,
@@ -742,13 +742,13 @@ mixin ProfileAllDetailsApi on ApiCore {
       // if (json['msg1'] == 'zero ledger balance' &&
       //     json['msg2'] == 'zero holdings' &&
       //     json['stat'] == 'Ok') {
-      //   print("condition satsfy");
+      //   // print("condition satsfy");
       // } else {
-      //   print("condition not satsfy");
+      //   // print("condition not satsfy");
       //   holdingsapiceckapi();
       // }
-      // print("djsonjson ==> ${json}");
-      // // print("ddpi balance ==> ${json['total']}");
+      // // print("djsonjson ==> ${json}");
+      // // // print("ddpi balance ==> ${json['total']}");
       // return json['total'];
     } catch (e) {
       rethrow;
@@ -766,7 +766,7 @@ mixin ProfileAllDetailsApi on ApiCore {
           }));
 
       final json = jsonDecode(res.body);
-      print("djsonjson ==> ${json}");
+      // print("djsonjson ==> ${json}");
       return json['total'];
     } catch (e) {
       rethrow;
@@ -784,16 +784,16 @@ mixin ProfileAllDetailsApi on ApiCore {
 
     // Print all data as string
     // Debugging: Print values before assigning them to request fields
-    print("client_id: ${prefs.clientId}");
-    print("client_name: ${prefs.clientName}");
-    print("client_email: ${fulldataprf.toJson()['CLIENT_ID_MAIL']}");
-    print("dp_code: ${fulldataprf.toJson()['CLIENT_DP_CODE']}");
-    print("segments: $bankDataString");
-    print("reason: ${dpid == '' ? 'no' : 'yes'}");
-    print(
-        "address: ${fulldataprf.toJson()['CL_RESI_ADD1']},${fulldataprf.toJson()['CL_RESI_ADD2']},${fulldataprf.toJson()['CL_RESI_ADD3']}");
-    print("transfer_client_id: $dpid");
-    print("transfer_dp_id: $boid");
+    // print("client_id: ${prefs.clientId}");
+    // print("client_name: ${prefs.clientName}");
+    // print("client_email: ${fulldataprf.toJson()['CLIENT_ID_MAIL']}");
+    // print("dp_code: ${fulldataprf.toJson()['CLIENT_DP_CODE']}");
+    // print("segments: $bankDataString");
+    // print("reason: ${dpid == '' ? 'no' : 'yes'}");
+    // print(
+        // "address: ${fulldataprf.toJson()['CL_RESI_ADD1']},${fulldataprf.toJson()['CL_RESI_ADD2']},${fulldataprf.toJson()['CL_RESI_ADD3']}");
+    // print("transfer_client_id: $dpid");
+    // print("transfer_dp_id: $boid");
     try {
       globalfulldata = fulldataprf;
       final uri = Uri.parse(apiLinks.closureURL);
@@ -826,13 +826,13 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       if (response.statusCode == 200) {
         final responseBody = await response.stream.bytesToString();
-        print("Response: $responseBody");
+        // print("Response: $responseBody");
         // Return the response message or do further processing
       } else {
-        print("Error: ${response.reasonPhrase}");
+        // print("Error: ${response.reasonPhrase}");
       }
     } catch (e) {
-      print("Exception: $e");
+      // print("Exception: $e");
     }
   }
 }

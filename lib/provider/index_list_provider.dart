@@ -504,6 +504,9 @@ class IndexListProvider extends DefaultChangeNotifier {
           _checkSess!.stat == "Not_Ok") {
         ref(authProvider).ifSessionExpired(context);
       }
+      else{
+      _checkSess!.stat = "Ok";
+      }
       notifyListeners();
     } finally {
       toggleLoadingOn(false);

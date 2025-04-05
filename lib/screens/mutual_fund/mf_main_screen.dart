@@ -73,8 +73,9 @@ class _MfmainScreenState extends State<MfmainScreen> {
       child: AbsorbPointer( // Prevents user input but allows onTap
         child: SearchBar(
           hintText: "Search Mutual Fund",
+           hintStyle: MaterialStateProperty.all(TextStyle(color: theme.isDarkMode ? Colors.white: const Color.fromARGB(255, 0, 0, 0))),
           backgroundColor: WidgetStateProperty.all(
-              colors.kColorLightGrey), // Gray background
+             theme.isDarkMode ? const Color(0xFF2A2A2A): colors.kColorLightGrey), // Gray background
           shape: WidgetStateProperty.all(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(50), // Rounded corners
@@ -82,7 +83,7 @@ class _MfmainScreenState extends State<MfmainScreen> {
             ),
           ),
           elevation: WidgetStateProperty.all(0), // No shadow
-          leading: const Icon(Icons.search, color: Colors.black54), // Prefix icon
+          leading: Icon(Icons.search, color: theme.isDarkMode ? Colors.white: Colors.black54), // Prefix icon
         ),
       ),
     ),

@@ -87,7 +87,7 @@ class SaveTaxesScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 10),
-                buildSlidingPanelContent(mf.bestMFListStaticnew, mf),
+                buildSlidingPanelContent(mf.bestMFListStaticnew, mf,theme),
                 Expanded(
                   child: newlisst == null || newlisst.isEmpty
                       ? const Center(child: NoDataFound())
@@ -217,9 +217,7 @@ class SaveTaxesScreen extends ConsumerWidget {
                                             Text(
                                               "${newlisst[index].tHREEYEARDATA!.isEmpty ? "0.00" : newlisst[index].tHREEYEARDATA!}%",
                                               style: textStyle(
-                                                theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : (double.tryParse(newlisst[
+                                               (double.tryParse(newlisst[
                                                                         index]
                                                                     .tHREEYEARDATA!
                                                                     .isEmpty
@@ -260,7 +258,7 @@ class SaveTaxesScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildSlidingPanelContent(List bestMFList, MFProvider mfData) {
+  Widget buildSlidingPanelContent(List bestMFList, MFProvider mfData , theme) {
     return Container(
       padding: const EdgeInsets.only(left: 0, right: 0),
       height: 95,
@@ -286,18 +284,19 @@ class SaveTaxesScreen extends ConsumerWidget {
                             style: textStyle(
                               mf['title'] == mfData.selctedchip
                                   ? colors.colorWhite
-                                  : colors.colorBlack,
+                                  : (theme.isDarkMode ? const Color.fromARGB(255, 255, 255, 255) : colors.colorBlack),
                               12,
                               FontWeight.w500,
                             ),
                           ),
                         ),
-                        backgroundColor: mf['title'] == mfData.selctedchip
-                            ? colors.colorBlack
-                            : colors.colorWhite,
+                       backgroundColor: mf['title'] == mfData.selctedchip
+    ? (theme.isDarkMode ? const Color(0xFF2A2A2A) : colors.colorBlack)
+    : (theme.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : colors.colorWhite), 
+
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
-                          side: BorderSide(color: colors.colorBlack, width: 1),
+                          side: BorderSide(color: theme.isDarkMode ? Color(0xFF2A2A2A) : colors.colorBlack, width: theme.isDarkMode ? 1 : 1),
                         ),
                         labelPadding: const EdgeInsets.symmetric(
                             horizontal: 4, vertical: -2),
@@ -310,9 +309,9 @@ class SaveTaxesScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
           Container(
-            color: Color(0xFFF1F3F8),
-            child: const Padding(
-              padding: EdgeInsets.only(left: 12, bottom: 8, top: 8, right: 8),
+ color: theme.isDarkMode ? const Color(0xFF2A2A2A): const Color(0xFFF1F3F8),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12, bottom: 8, top: 8, right: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -321,18 +320,18 @@ class SaveTaxesScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w400,
-                      color: Colors.black,
+                      color: theme.isDarkMode ? colors.colorWhite : Colors.black,
                       letterSpacing: 0.7,
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: 8),
                     child: Text(
                       '3Y RETURNS',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w400,
-                        color: Colors.black,
+                        color: theme.isDarkMode ? colors.colorWhite : Colors.black,
                         letterSpacing: 0.7,
                       ),
                     ),

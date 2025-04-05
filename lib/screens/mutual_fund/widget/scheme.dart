@@ -16,7 +16,11 @@ class MFSchemeInfo extends ConsumerWidget {
     final theme = watch(themeProvider);
     final mfData = watch(mfProvider).factSheetDataModel!.data!;
  
-    return Padding(
+    return
+     Container(
+      color: theme.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : const Color.fromARGB(255, 255, 255, 255), // Background color
+      child:
+     Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +66,7 @@ class MFSchemeInfo extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xffEEF0F2), width: 1.5)),
+                border: Border.all(color:  theme.isDarkMode ? Color(0xFF2A2A2A) : const Color(0xffEEF0F2), width: 1.5)),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
@@ -143,7 +147,7 @@ class MFSchemeInfo extends ConsumerWidget {
                           const SizedBox(height: 2),
     const SizedBox(height: 8),
           ReadMoreText("${mfData.managerDetailedDescription}",
-              style: textStyle(const Color(0xff666666), 13, FontWeight.w500).copyWith(
+              style: textStyle(theme.isDarkMode ? colors.colorWhite:const Color(0xff666666), 13, FontWeight.w500).copyWith(
     height: 1.5, 
   ),
               textAlign: TextAlign.left,
@@ -201,8 +205,9 @@ class MFSchemeInfo extends ConsumerWidget {
           // const SizedBox(height: 12),
         ],
       ),
-    );
-  }
+    )
+     );
+ }
 
   Row rowOfInfoData(String title1, String value1, String title2, String value2,
       String title3, String value3, ThemesProvider theme) {

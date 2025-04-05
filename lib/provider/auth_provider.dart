@@ -59,7 +59,7 @@ class AuthProvider extends DefaultChangeNotifier {
   final TextEditingController passCtrl = TextEditingController();
   final TextEditingController otpCtrl = TextEditingController();
 
-  bool _totp = true;
+  bool _totp = false;
   bool get totp => _totp;
 
   late TabController exploreTab;
@@ -453,7 +453,8 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // Call this method while clicking if the login validation process is successful.
 
-  submitLogin(BuildContext context, bool navi) {
+  submitLogin(BuildContext context, bool navi) async {
+    _loggedMobile = await getLocalData();
     // if (routeTo == "deviceLogin") {
     //   _isMobileLogin = true;
     // }
@@ -790,7 +791,7 @@ class AuthProvider extends DefaultChangeNotifier {
         //     .showSnackBar(warningMessage(context, 'Logged out'));
 
         Navigator.pop(context);
-        ref(websocketProvider).closeSocket();
+        // ref(websocketProvider).closeSocket();
         // ref(websocketProvider).websockConn(false);
         if (currentRouteName != Routes.loginScreen) {
           Navigator.pushNamedAndRemoveUntil(
@@ -979,11 +980,11 @@ class AuthProvider extends DefaultChangeNotifier {
       await ref(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4, context);
 
       if (s.isNotEmpty) {
-        ref(websocketProvider).closeSocket();
+        ref(websocketProvider).closeSocket(true);
       }
 
       if (pref.clientSession!.isNotEmpty) {
-        ref(websocketProvider).closeSocket();
+        ref(websocketProvider).closeSocket(true);
       }
 
       await ref(indexListProvider).checkSession(context);
@@ -1015,10 +1016,8 @@ class AuthProvider extends DefaultChangeNotifier {
         await FirebaseAnalytics.instance.setUserId(id: pref.clientId);
 
 // mf
-        ref(mfProvider).fetchnewMFBestList();
-        ref(mfProvider).fetchmfallcatnew();
+        setmfapicalls();
         ref(mfProvider).fetchmfNFO(context);
-
 // Explore
         // await ref(stocksProvide)
         //     .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
@@ -1057,10 +1056,10 @@ class AuthProvider extends DefaultChangeNotifier {
                 context: context,
                 builder: (BuildContext context) {
                   return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+                      canPop: false,
+                      onPopInvokedWithResult: (didPop, result) async {
+                        if (didPop) return;
+                      },
                       child: const RiskDisclousreBottomSheet());
                 });
           }
@@ -1082,6 +1081,13 @@ class AuthProvider extends DefaultChangeNotifier {
     await ref(ipoProvide).getipoperfomance(currentYear);
     await ref(ipoProvide).mergemainsme();
     await ref(ipoProvide).fetchIpoPreClose();
+  }
+
+  setmfapicalls() async {
+      ref(mfProvider).fetchnewMFBestList();
+      ref(mfProvider).fetchmfallcatnew();
+      // ref(mfProvider).fetchmfNFO(context);
+
   }
 
   setPrefOrderPrefer() async {
@@ -1120,7 +1126,7 @@ class AuthProvider extends DefaultChangeNotifier {
     pref.clearClientSession();
 
     ConstantName.sessCheck = false;
-    ref(websocketProvider).closeSocket();
+    ref(websocketProvider).closeSocket(true);
     ScaffoldMessenger.of(context).showSnackBar(
         warningMessage(context, "Session Expired,Kindly login Again!"));
     ConstantName.timer!.cancel();

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/thems.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 import '../res/res.dart';
 // ignore: depend_on_referenced_packages
@@ -36,7 +38,11 @@ class IpoTimeLineWidget extends StatelessWidget {
       lineColor = const Color(0xff2DB266); // Future dates
       indicatorColor = const Color(0xff2DB266);
     }
-    return Container(
+    return Consumer(
+      builder: (context, watch, child) {
+        final theme = watch(themeProvider);
+
+         return Container(
       padding: const EdgeInsets.symmetric(),
       height: 60,
       child: TimelineTile(
@@ -69,14 +75,20 @@ class IpoTimeLineWidget extends StatelessWidget {
                   const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
               dense: true,
               title: Text(orderHistoryData['name']!.toUpperCase(),
-                  style: textStyle(colors.colorBlack, 12, FontWeight.w500)),
+                  style: textStyle( theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack, 12, FontWeight.w500)),
               subtitle: Text(orderHistoryData['value']!,
                   style:
                       textStyle(const Color(0xff666666), 10, FontWeight.w500)),
             ),
           )),
     );
+
+        },
+    );
   }
+  
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
     return GoogleFonts.inter(

@@ -618,6 +618,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                         int.parse(element.cfsellqty.toString()))
                 ? int.parse(element.daybuyqty.toString())
                 : int.parse(element.daysellqty.toString());
+            tempqty = (tempqty * double.parse(element.prcftr.toString())).toInt();
             double tempavg = int.parse(element.netqty.toString()) > 0
                 ? double.parse(element.daysellavgprc.toString()) -
                     double.parse(element.netupldprc.toString())
@@ -1065,7 +1066,25 @@ class PortfolioProvider extends DefaultChangeNotifier {
   Future fetchExitPosition(BuildContext context,
       PlaceOrderInput placeOrderInput, bool isPosition) async {
     try {
-      _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+      int qty = int.parse(placeOrderInput.qty);
+      int frzqty = int.parse(placeOrderInput.frzqty.toString());
+
+      if (qty > frzqty) {
+        int fullOrders = qty ~/ frzqty;
+        int remainingQty = qty % frzqty; 
+
+        for (int i = 0; i < fullOrders; i++) {
+          placeOrderInput.qty = frzqty.toString();
+          _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+        }
+
+        if (remainingQty > 0) {
+          placeOrderInput.qty = remainingQty.toString(); 
+          _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+        }
+      } else {
+        _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+      }
 
       if (_placeOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
@@ -1185,10 +1204,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
         if (qty == 0) {
           if (element.cfbuyqty != "0") {
             finpnl =
-                "${(double.parse(element.daysellavgprc.toString()) * int.parse(element.daysellqty.toString())) - ((int.parse(element.cfbuyqty.toString()) * double.parse(temavg.toString())) + (double.parse(element.daybuyqty.toString()) * double.parse(element.daybuyavgprc.toString())))}";
+                "${(double.parse(element.daysellavgprc.toString()) * (int.parse(element.daysellqty.toString()) * double.parse(element.prcftr.toString()))) - (((int.parse(element.cfbuyqty.toString()) * double.parse(element.prcftr.toString())) * double.parse(temavg.toString())) + ((double.parse(element.daybuyqty.toString()) * double.parse(element.prcftr.toString())) * double.parse(element.daybuyavgprc.toString())))}";
           } else if (element.cfsellqty != "0") {
             finpnl =
-                "${((double.parse(element.daysellqty.toString()) * double.parse(element.daysellavgprc.toString())) + (int.parse(element.cfsellqty.toString()) * double.parse(temavg.toString()))) - double.parse(element.daybuyavgprc.toString()) * double.parse(element.daybuyqty.toString())}";
+                "${(((double.parse(element.daysellqty.toString()) * double.parse(element.prcftr.toString())) * double.parse(element.daysellavgprc.toString())) + ((int.parse(element.cfsellqty.toString()) * double.parse(element.prcftr.toString())) * double.parse(temavg.toString()))) - double.parse(element.daybuyavgprc.toString()) * (double.parse(element.daybuyqty.toString()) * double.parse(element.prcftr.toString()))}";
           }
 
           // if (element.cfbuyqty != "0") {
@@ -1216,16 +1235,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
         } else {
           var tempunpnl = (lastPrice != 0.0
                   ? lastPrice
-                  : (element.lp != null ? double.parse(element.lp.toString()) : 0)) -
+                  : (element.lp != null
+                      ? double.parse(element.lp.toString())
+                      : 0)) -
               double.parse(element.netupldprc.toString());
-          element.profitNloss = (double.parse(tempunpnl.toString()) * qty +
+          element.profitNloss = (double.parse(tempunpnl.toString()) * (qty * double.parse(element.prcftr.toString())) +
                   double.parse(element.temppnl.toString()))
               .toStringAsFixed(2);
         }
         if (["NFO", "BFO", "NSE", "BSE"].contains(element.exch)) {
           finmtm = qty == 0
               ? double.parse(element.rpnl.toString())
-              : (lastPrice - double.parse(element.netavgprc.toString())) * qty +
+              : (lastPrice - double.parse(element.netavgprc.toString())) * (qty * double.parse(element.prcftr.toString())) +
                   double.parse(element.rpnl.toString());
         } else {
           // element.profitNloss =
@@ -1233,7 +1254,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           finmtm = qty == 0
               ? double.parse(element.rpnl.toString())
               : (lastPrice - double.parse(element.netavgprc.toString())) *
-                      (double.parse(element.mult.toString()) * qty) +
+                      (double.parse(element.mult.toString()) * (qty * double.parse(element.prcftr.toString()))) +
                   double.parse(element.rpnl.toString());
         }
         element.mTm = double.parse(finmtm.toString()).toStringAsFixed(2);
@@ -1897,7 +1918,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
                   mktProt: '',
                   channel: defaultTargetPlatform == TargetPlatform.android
                       ? '${ref(authProvider).deviceInfo["brand"]}'
-                      : "${ref(authProvider).deviceInfo["model"]}");
+                      : "${ref(authProvider).deviceInfo["model"]}",
+                  frzqty: ((int.parse(element.frzqty.toString()) /
+                              int.parse(element.ls.toString()))
+                          .floor() *
+                      int.parse(element.ls.toString())));
               await fetchExitPosition(context, placeOrderInput, true);
             }
           }
@@ -2150,7 +2175,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       holding.exchTsym![0].oneDayChg =
           ((double.parse(holding.exchTsym![0].lp ?? "0.00") -
-                      double.parse(holding.exchTsym![0].close != null ? holding.exchTsym![0].close.toString() : avgCost.toString() )) *
+                      double.parse(holding.exchTsym![0].close != null
+                          ? holding.exchTsym![0].close.toString()
+                          : avgCost.toString())) *
                   int.parse("${holding.currentQty ?? 0}"))
               .toStringAsFixed(2);
 

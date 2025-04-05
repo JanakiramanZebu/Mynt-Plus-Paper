@@ -75,6 +75,7 @@ class DataMod {
   String? avgQty;
   String? bought;
   String? buyPrice;
+   String? percentage;
 
   DataMod(
       {this.cLIENTCODE,
@@ -105,7 +106,8 @@ class DataMod {
       this.aMCCODE,
       this.avgQty,
       this.bought,
-      this.buyPrice});
+      this.buyPrice,
+      this.percentage});
 
   DataMod.fromJson(Map<String, dynamic> json) {
     cLIENTCODE = json['CLIENTCODE'];
@@ -137,6 +139,7 @@ class DataMod {
     avgQty = json['avg_qty'];
     bought = json['bought'];
     buyPrice = json['buy_price'];
+    percentage = json['percentage'];
   }
 
   Map<String, dynamic> toJson() {
@@ -170,6 +173,7 @@ class DataMod {
     data['avg_qty'] = this.avgQty;
     data['bought'] = this.bought;
     data['buy_price'] = this.buyPrice;
+    data['percentage'] = this.percentage;
     return data;
   }
 }

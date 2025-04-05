@@ -60,7 +60,7 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
                       )),
                   onPressed: () {
                     // context.read(indexListProvider).checkSession(context);
-                    webSocket.closeSocket();
+                    webSocket.closeSocket(true);
                     webSocket.changeretryscreen(true);
                     webSocket.reconnect(context);
                   },

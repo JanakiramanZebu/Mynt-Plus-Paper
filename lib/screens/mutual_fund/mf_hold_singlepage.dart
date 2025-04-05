@@ -180,22 +180,16 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                         FontWeight.w500,
                       ),
                     ),
-                    Text(
-                      "(${(((double.tryParse(mfdata.holssinglelist![0]?.sCRIPVALUE ?? '0') ?? 0) - 
-                           (double.tryParse(mfdata.holssinglelist![0]?.buyPrice ?? '0') ?? 0)) /
-                           (double.tryParse(mfdata.holssinglelist![0]?.buyPrice ?? '1') ?? 1) * 100)
-                           .toStringAsFixed(2)}%)",
-                      style: textStyle(
-                        (((double.tryParse(mfdata.holssinglelist![0]?.sCRIPVALUE ?? '0') ?? 0) * 
-                          (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0)) - 
-                         ((double.tryParse(mfdata.holssinglelist![0]?.buyPrice ?? '0') ?? 0) * 
-                          (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0))) >= 0 
-                          ? Colors.green 
-                          : Colors.red, // Dynamic color change
-                        14,
-                        FontWeight.w500,
-                      ),
-                    ),
+                       Text(
+  "(${(double.tryParse(mfdata.holssinglelist?[0]?.percentage ?? '0') ?? 0).toStringAsFixed(2)}%)",
+  style: textStyle(
+    (double.tryParse(mfdata.holssinglelist?[0]?.percentage ?? '0') ?? 0) >= 0
+      ? Colors.green
+      : Colors.red, 
+    14,
+    FontWeight.w500,
+  ),
+)
                   ],
                 ),
 

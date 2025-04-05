@@ -103,7 +103,7 @@ class NetworkStateProvider extends ChangeNotifier {
     _connectionStatus = result;
 
     if (_connectionStatus == ConnectivityResult.none) {
-      ref(websocketProvider).closeSocket();
+      ref(websocketProvider).closeSocket(true);
       ref(websocketProvider).websockConn(false);
     } else {
       // ref(websocketProvider).websockConn(false);

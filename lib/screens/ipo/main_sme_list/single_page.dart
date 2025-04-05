@@ -95,10 +95,9 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                     child: Text(
                                         "This  IPO application is open for ${singlepage.iposinglepage!.data!['CloseAt']} days",
                                         style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors
-                                                    .colorBlack, // Fixes the logic
+                                             colors
+                                                    .colorBlack
+                                               , // Fixes the logic
                                             12,
                                             FontWeight.w500)),
                                   ),
@@ -199,10 +198,12 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorGrey
-                                                      .withOpacity(.1)
-                                                  : const Color(0xffF1F3F8),
+                                              color:theme.isDarkMode
+                                                     ? colors.colorGrey
+                                                         .withOpacity(
+                                                             .3)
+                                                     : const Color.fromARGB(
+                                                         255, 243, 242, 174),
                                               // border: Border.all(
                                               //     color: const Color(0xffC1E7BA)),
                                               borderRadius:
@@ -429,7 +430,10 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16),
-                                  color: colors.kColorLightGrey,
+                                  color: theme.isDarkMode
+                                          ? Color(0xFF2A2A2A)
+
+                                          :  colors.kColorLightGrey,
                                   child: Builder(
                                     builder: (context) {
                                       final subscriptionData = singlepage
@@ -444,12 +448,12 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
+                                            SizedBox(height: 8,),
                                             Text("Subscription Status",
                                                 style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors
-                                                            .colorBlack, // Fixes the logic
+                                                  theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack, // Fixes the logic
                                                     14,
                                                     FontWeight.w600)),
                                             const SizedBox(
@@ -458,9 +462,9 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                             Text(
                                               "The IPO has been subscribed ${singlepage.iposinglepage!.data['tlSub']['Subscription (times)']} times",
                                               style: textStyle(
-                                                  !theme.isDarkMode
-                                                      ? colors.colorGrey
-                                                      : colors.colorWhite,
+                                                 
+                                                       colors.colorGrey
+                                                      ,
                                                   14,
                                                   FontWeight.w500),
                                             ),
@@ -479,8 +483,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                                     const EdgeInsets.symmetric(
                                                         vertical: 4),
                                                 child: Divider(
-                                                  color: theme.isDarkMode
-                                                      ? colors.darkColorDivider
+                                                  color
                                                       : colors.colorDivider,
                                                 ),
                                               ),
@@ -512,7 +515,10 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                 Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 16),
-                                    color: colors.kColorLightGrey,
+                                    color: theme.isDarkMode
+                                          ? Color(0xFF2A2A2A)
+
+                                          :  colors.kColorLightGrey,
                                     child: Builder(builder: (context) {
                                       final subscriptionData = singlepage
                                           .iposinglepage!.data['subsciption'];
@@ -526,8 +532,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 8),
                                         child: Divider(
-                                          color: theme.isDarkMode
-                                              ? colors.darkColorDivider
+                                          color
                                               : colors.colorDivider,
                                         ),
                                       );
@@ -616,11 +621,15 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                       Text(
                                         singlepage.iposinglepage!.data['about'],
                                         textAlign: TextAlign.justify,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w400,
-                                          height: 1.7,
-                                        ),
+                                        style:  textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                12,
+                                                FontWeight.w400, ).copyWith(height: 1.7)
+                                        
+                                        
+                                        ,
                                         maxLines: _isExpanded
                                             ? null
                                             : 3, // Show only 3 lines initially, or full text when expanded
@@ -1390,7 +1399,9 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
               child: Text(
                 getInvestorCategory(text),
                 style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
                   14,
                   FontWeight.w500,
                 ),
@@ -1399,7 +1410,9 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
             Text(
               "$value x", // Display the subscription count
               style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                 theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
                 14,
                 FontWeight.w500,
               ),

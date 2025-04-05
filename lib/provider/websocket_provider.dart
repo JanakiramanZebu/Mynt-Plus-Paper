@@ -51,6 +51,8 @@ class WebSocketProvider extends ChangeNotifier {
   bool _retryscreen = false;
   bool get retryscreen => _retryscreen;
 
+  bool wsmount = true;
+
   void changeretryscreen(bol) {
     _retryscreen = bol;
   }
@@ -59,7 +61,8 @@ class WebSocketProvider extends ChangeNotifier {
     _connectioncount = 0;
   }
 
-  void closeSocket() {
+  void closeSocket(bool mounted) {
+    wsmount = mounted;
     _wsConnected = false;
     _connecting = false;
     channel?.sink.close();
@@ -68,7 +71,9 @@ class WebSocketProvider extends ChangeNotifier {
       timer.cancel();
     }
     _subscriptionTimers.clear();
-    notifyListeners();
+    if (mounted) {
+      notifyListeners();
+    }
   }
 
   // bool _isGetData = false;
@@ -154,7 +159,7 @@ class WebSocketProvider extends ChangeNotifier {
     ref(indexListProvider)
         .logError
         .add({"type": "Timeout error", "Error": "error"});
-    closeSocket();
+    closeSocket(true);
     // showBottomAlert(context);
     if (_connectioncount < 5) {
       establishConnection(
@@ -520,7 +525,9 @@ class WebSocketProvider extends ChangeNotifier {
               "Error": "Connection closed "
             });
           }
-          notifyListeners();
+          if (wsmount) {
+            notifyListeners();
+          }
         },
         onError: (error) {
           _handleConnectionError(error, context);
@@ -548,7 +555,7 @@ class WebSocketProvider extends ChangeNotifier {
 
   void _handleConnectionClosed(context) {
     _connectioncount += 1;
-    closeSocket();
+    closeSocket(true);
     // Check if the Completer is already completed
     if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
       _connectionCompleter?.completeError("WebSocket connection closed.");
@@ -560,7 +567,7 @@ class WebSocketProvider extends ChangeNotifier {
 
   void _handleConnectionError(dynamic error, context) {
     _connectioncount += 1;
-    closeSocket();
+    closeSocket(true);
     _connectionCompleter?.completeError(error);
     if (_connectioncount < 5) {
       Future.delayed(const Duration(seconds: 5)).then((_) {

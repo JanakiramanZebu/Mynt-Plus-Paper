@@ -54,7 +54,6 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
               centerTitle: false,
               titleSpacing: 0,
               elevation: 0,
-             
               leading: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: IconButton(
@@ -140,7 +139,9 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
-                        color: const Color.fromARGB(255, 250, 251, 255),
+                        color: theme.isDarkMode
+                            ? colors.colorBlack
+                            : const Color.fromARGB(255, 250, 251, 255),
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Column(
@@ -154,23 +155,14 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                       "https://v3.mynt.in/mf/static/images/mf/${widget.mfData.aMCCode}.png",
                                     ),
                                   ),
-                                 
-                                 
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                       
-                                  
-
-
                                         Text(
-                                          "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null)
-      ? mfOrder.factSheetDataModel!.data?.name!
-          .replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : '${widget.mfData.fSchemeName}'
-      }",
+                                          "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : '${widget.mfData.fSchemeName}'}",
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: textStyle(
@@ -181,9 +173,6 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                             FontWeight.w600,
                                           ),
                                         ),
-                                       
-                                
-                                      
                                         const SizedBox(height: 8),
                                         SizedBox(
                                           height: 18,
@@ -203,13 +192,20 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                               //                   : "NORMAL",
                                               // ),
                                               const SizedBox(width: 5),
-                                              CustomExchBadge(
-                                                  exch:
-                                                      "${widget.mfData.schemeType}"),
+                                              if (widget.mfData.schemeType !=
+                                                  null) ...[
+                                                CustomExchBadge(
+                                                    exch:
+                                                        "${widget.mfData.schemeType}"),
+                                              ],
                                               const SizedBox(width: 5),
-                                              CustomExchBadge(
-                                                exch: "${widget.mfData.subtype}",
-                                              ),
+                                              if (widget.mfData.subtype !=
+                                                  null) ...[
+                                                CustomExchBadge(
+                                                  exch:
+                                                      "${widget.mfData.subtype}",
+                                                ),
+                                              ]
                                             ],
                                           ),
                                         ),
@@ -317,7 +313,6 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                               //     ),
                               //   ],
                               // ),
-                            
                             ],
                           ),
                         ),
@@ -377,7 +372,6 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                 ? mfOrder.mfOrderTpyes.length
                                 : 1))
                   ]))),
-     
           body: TransparentLoaderScreen(
             isLoading: mfOrder.investloader,
             child: ListView(padding: const EdgeInsets.all(16), children: [
@@ -400,19 +394,25 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         padding: const EdgeInsets.only(top: 4, left: 16),
                         height: 50,
                         width: MediaQuery.of(context).size.width,
-                        decoration: const BoxDecoration(
-                          color: Color(0xffF1F3F8),
-                          borderRadius: BorderRadius.all(Radius.circular(32)),
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? colors.darkGrey
+                              : Color(0xffF1F3F8),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(32)),
                         ),
                       ),
                       dropdownStyleData: DropdownStyleData(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4)),
-                        offset: const Offset(0, 1),
-                      ),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4)),
+                          offset: const Offset(0, 1)),
                       isExpanded: true,
                       style: textStyle(
-                          const Color(0XFF000000), 13, FontWeight.w500),
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : const Color(0XFF000000),
+                          13,
+                          FontWeight.w500),
                       hint: Text(
                         mfOrder.mandateId ?? "Select a Mandate",
                         style: textStyle(
@@ -423,7 +423,7 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                               .mandateDividers()
                               .any((item) => item.value == mfOrder.mandateId)
                           ? mfOrder.mandateId
-                          : null, // Prevent error if value is not found
+                          : null,
                       onChanged: (value) async {
                         if (value != null) {
                           mfOrder.chngMandate("$value");
@@ -445,10 +445,12 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: colors.colorBlack,
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorbluegrey
+                            : colors.colorBlack,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50))),
-                    child:  Text("Create mandate",
+                    child: Text("Create mandate",
                         style: GoogleFonts.inter(
                             textStyle: textStyle(
                                 !theme.isDarkMode
@@ -693,11 +695,13 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                               child: DropdownButton2(
                                   menuItemStyleData: MenuItemStyleData(
                                       customHeights: mfOrder.frqCustHeight()),
-                                  buttonStyleData: const ButtonStyleData(
+                                  buttonStyleData: ButtonStyleData(
                                       height: 36,
                                       decoration: BoxDecoration(
-                                          color: Color(0xffF1F3F8),
-                                          borderRadius: BorderRadius.all(
+                                          color: theme.isDarkMode
+                                              ? colors.darkGrey
+                                              : Color(0xffF1F3F8),
+                                          borderRadius: const BorderRadius.all(
                                               Radius.circular(32)))),
                                   dropdownStyleData: DropdownStyleData(
                                     padding:
@@ -708,17 +712,21 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                                     offset: const Offset(0, 8),
                                   ),
                                   isExpanded: true,
-                                  style: textStyle(const Color(0XFF000000), 13,
+                                  style: textStyle(theme.isDarkMode ? colors.colorWhite :const Color(0XFF000000), 13,
                                       FontWeight.w500),
                                   hint: Text(mfOrder.freqName,
-                                      style: textStyle(const Color(0XFF000000),
+                                      style: textStyle(theme.isDarkMode ? colors.colorWhite :const Color(0XFF000000),
                                           13, FontWeight.w500)),
+                 
                                   items: mfOrder.addFrqDividers(),
                                   value: mfOrder.freqName,
                                   onChanged: (value) async {
                                     mfOrder.chngFrequency("$value");
-                                  })),
-                       
+                                  },
+                                  
+                                  
+                                  )),
+                                  
                         ],
                       ),
                     ),
@@ -739,11 +747,13 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                               child: DropdownButton2(
                                   menuItemStyleData: MenuItemStyleData(
                                       customHeights: mfOrder.dateCustHeight()),
-                                  buttonStyleData: const ButtonStyleData(
+                                  buttonStyleData: ButtonStyleData(
                                       height: 36,
                                       decoration: BoxDecoration(
-                                          color: Color(0xffF1F3F8),
-                                          borderRadius: BorderRadius.all(
+                                          color: theme.isDarkMode
+                                              ? colors.darkGrey
+                                              : Color(0xffF1F3F8),
+                                          borderRadius: const BorderRadius.all(
                                               Radius.circular(32)))),
                                   dropdownStyleData: DropdownStyleData(
                                     maxHeight: 250,
@@ -943,26 +953,26 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         FontWeight.w600)),
                 const SizedBox(height: 14),
                 DropdownButtonHideUnderline(
-                    child: DropdownButton2(
+                    child: DropdownButton2<String>(
+                         dropdownStyleData: DropdownStyleData(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : const Color.fromARGB(255, 255, 255, 255))),
+                              buttonStyleData: ButtonStyleData(
+                      decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? const Color(0xffB5C0CF).withOpacity(.15)
+                              : const Color(0xffF1F3F8),
+                          // border: Border.all(color: Colors.grey),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(32)))),
                         menuItemStyleData: MenuItemStyleData(
                             customHeights: mfOrder.getCustItemsHeight()),
-                        buttonStyleData: ButtonStyleData(
-                            height: 36,
-                            width: MediaQuery.of(context).size.width,
-                            decoration: const BoxDecoration(
-                                color: Color(0xffF1F3F8),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(32)))),
-                        dropdownStyleData: DropdownStyleData(
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          offset: const Offset(0, 8),
-                        ),
                         isExpanded: true,
-                        style: textStyle(
-                            const Color(0XFF000000), 13, FontWeight.w500),
+                        style: textStyle( 
+                            const Color.fromARGB(255, 0, 0, 0), 13, FontWeight.w500),
                         hint: Text(mfOrder.paymentName,
                             style: textStyle(
                                 const Color(0XFF000000), 13, FontWeight.w500)),
@@ -972,7 +982,11 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         value: mfOrder.paymentName,
                         onChanged: (value) async {
                           mfOrder.chngPayName("$value");
-                        })),
+                        }
+
+                        )),
+              
+              
                 const SizedBox(height: 18),
                 Text("Bank account",
                     style: textStyle(
@@ -982,34 +996,48 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         16,
                         FontWeight.w600)),
                 const SizedBox(height: 12),
-                DropdownButtonHideUnderline(
-                    child: DropdownButton2(
-                        menuItemStyleData: MenuItemStyleData(
-                            customHeights: mfOrder.getBankCustItemsHeight()),
-                        buttonStyleData: ButtonStyleData(
-                            padding: const EdgeInsets.only(top: 10, left: 16),
-                            height: 50,
-                            width: MediaQuery.of(context).size.width,
-                            decoration: const BoxDecoration(
-                                color: Color(0xffF1F3F8),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(32)))),
-                        dropdownStyleData: DropdownStyleData(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4)),
-                            offset: const Offset(0, 1)),
-                        isExpanded: true,
-                        style: textStyle(
-                            const Color(0XFF000000), 13, FontWeight.w500),
-                        hint: Text(mfOrder.accNum,
-                            style: textStyle(
-                                const Color(0XFF000000), 13, FontWeight.w500)),
-                        items: mfOrder.addBankDividers(),
-                        // customItemsHeights: actionTrade.getCustomItemsHeight(),
-                        value: mfOrder.accNum,
-                        onChanged: (value) async {
-                          mfOrder.chngBankAcc("$value");
-                        })),
+               DropdownButtonHideUnderline(
+  child: DropdownButton2(
+    menuItemStyleData: MenuItemStyleData(
+      customHeights: mfOrder.getBankCustItemsHeight(),
+    ),
+    buttonStyleData: ButtonStyleData(
+      padding: const EdgeInsets.only(top: 10, left: 16),
+      height: 50,
+      width: MediaQuery.of(context).size.width,
+      decoration: BoxDecoration(
+        color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+        borderRadius: const BorderRadius.all(Radius.circular(32)),
+      ),
+    ),
+    dropdownStyleData: DropdownStyleData(
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
+      offset: const Offset(0, 1),
+    ),
+    isExpanded: true,
+    style: textStyle(
+      theme.isDarkMode ? colors.colorWhite : const Color(0XFF000000),
+      13,
+      FontWeight.w500,
+    ),
+    hint: Text(
+      mfOrder.accNum,
+      style: textStyle(
+        theme.isDarkMode ? colors.colorWhite : const Color(0XFF000000),
+        13,
+        FontWeight.w500,
+      ),
+    ),
+    items: mfOrder.addBankDividers(),
+    value: mfOrder.accNum,
+    onChanged: (value) async {
+      mfOrder.chngBankAcc("$value");
+    },
+    
+  ),
+),
+
+                        
                 const SizedBox(height: 8),
                 if (mfOrder.paymentName == "UPI") ...[
                   const SizedBox(height: 12),
@@ -1125,79 +1153,88 @@ class _MFOrderScreenState extends State<MFOrderScreen> {
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(
-                        onPressed: () async { 
-                          if(mfOrder.loading == false){
-                          print(mfOrder.invAmtError);
-                          print(mfOrder.upiError);
+                        onPressed: () async {
+                          if (mfOrder.loading == false) {
+                            print(mfOrder.invAmtError);
+                            print(mfOrder.upiError);
 
-                          print(mfOrder.installmentAmtError);
-                          print(mfOrder.invDurationError);
+                            print(mfOrder.installmentAmtError);
+                            print(mfOrder.invDurationError);
 
-                          if (mfOrder.invAmtError == "" &&
-                              mfOrder.upiError == "" &&
-                              mfOrder.installmentAmtError == "" &&
-                              mfOrder.invDurationError == "") {
-                            if (mfOrder.mfOrderTpye == "One-time") {
-                              print(mfOrder.isValidUpiId(widget.mfData));
-                              print(widget.mfData);
-                              if (mfOrder.isValidUpiId(widget.mfData) == true) {
-                                mfPlaceorder(widget.mfData, mfOrder, context);
-                              } else if (mfOrder.paymentName != "UPI") {
-                                mfPlaceorder(widget.mfData, mfOrder, context);
+                            if (mfOrder.invAmtError == "" &&
+                                mfOrder.upiError == "" &&
+                                mfOrder.installmentAmtError == "" &&
+                                mfOrder.invDurationError == "") {
+                              if (mfOrder.mfOrderTpye == "One-time") {
+                                print(mfOrder.isValidUpiId(widget.mfData));
+                                print(widget.mfData);
+                                if (mfOrder.isValidUpiId(widget.mfData) ==
+                                    true) {
+                                  mfPlaceorder(widget.mfData, mfOrder, context);
+                                } else if (mfOrder.paymentName != "UPI") {
+                                  mfPlaceorder(widget.mfData, mfOrder, context);
+                                }
+                              } else {
+                                if (mfOrder.mandateStatus != "APPROVED") {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      successMessage(context,
+                                          "Mandate is not Approved yet"));
+                                } else {
+                                  mfOrder.fetchXsipPlaceOrder(
+                                      context,
+                                      "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
+                                      mfOrder.freqName == "Daily"
+                                          ? "0"
+                                          : mfOrder.dates,
+                                      mfOrder.freqName,
+                                      mfOrder.installmentAmt.text,
+                                      mfOrder.invDuration.text,
+                                      mfOrder.freqName == "Daily"
+                                          ? "0"
+                                          : mfOrder.endDate,
+                                      mfOrder.mandateId);
+                                }
                               }
                             } else {
-                              if (mfOrder.mandateStatus != "APPROVED") {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    successMessage(context,
-                                        "Mandate is not Approved yet"));
-                              } else {
-                                
-                                mfOrder.fetchXsipPlaceOrder(
-                                    context,
-                                    "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
-                                    mfOrder.freqName == "Daily"
-                                        ? "0"
-                                        : mfOrder.dates,
-                                    mfOrder.freqName,
-                                    mfOrder.installmentAmt.text,
-                                    mfOrder.invDuration.text,
-                                    mfOrder.freqName == "Daily"
-                                        ? "0"
-                                        : mfOrder.endDate,
-                                    mfOrder.mandateId);
-                                    
-                              }
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  successMessage(context,
+                                      "Please check if you have entered all Data Correctly"));
                             }
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                successMessage(context,
-                                    "Please check if you have entered all Data Correctly"));
-                          }
                           }
                         },
                         style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             backgroundColor: mfOrder.invAmtError == null &&
                                     mfOrder.upiError == null
-                                ? colors.colorBlack
-                                : colors.colorBlack,
+                                ? (theme.isDarkMode
+                                    ? colors.colorbluegrey
+                                    : colors.colorBlack)
+                                : (theme.isDarkMode
+                                    ? colors.colorbluegrey
+                                    : colors.colorBlack),
                             shape: const StadiumBorder()),
-                        child: mfOrder.loading == true
-    ? const SizedBox(
-        height: 15, 
-        width: 15,
-        child: CircularProgressIndicator(
-          strokeWidth: 2.0, 
-          valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(99, 48, 48, 48)), 
-          backgroundColor: Color.fromARGB(255, 255, 255, 255),
-        ),
-      )
-    :  Text(
-                            mfOrder.mfOrderTpye == "SIP"
-                                ? "SIP"
-                                : mfOrder.mfOrderTpye,
-                            style: textStyle(
-                                const Color(0xffffffff), 14, FontWeight.w600))),
+                        child: mfOrder.loading == true 
+                            ? const SizedBox(
+                                height: 15,
+                                width: 15,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.0,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color.fromARGB(99, 48, 48, 48)),
+                                  backgroundColor:
+                                      Color.fromARGB(255, 255, 255, 255),
+                                ),
+                              )
+                            : Text(
+                                mfOrder.mfOrderTpye == "SIP"
+                                    ? "SIP"
+                                    : mfOrder.mfOrderTpye,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorBlack
+                                        : const Color(0xffffffff),
+                                    14,
+                                    FontWeight.w600))),
                   ),
                   if (defaultTargetPlatform == TargetPlatform.iOS)
                     const SizedBox(height: 18)
@@ -1234,6 +1271,7 @@ mfPlaceorder(
   if (mfOrder.paymentName == "UPI") {
     mfOrder.fetchVerifyUpi(context, mfOrder.upiId.text, input);
   } else {
+    print("netttttelse");
     mfOrder.fetchVerifyUpi(context, "", input);
   }
 

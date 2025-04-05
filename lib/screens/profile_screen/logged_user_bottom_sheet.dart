@@ -156,7 +156,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                               pref.setMobileLogin(true);
                               pref.setLogout(false);
                               pref.setHideLoginOptBtn(true);
-                              watch(websocketProvider).closeSocket();
+                              watch(websocketProvider).closeSocket(true);
                               loggedUser.addClient(true);
                               loggedUser.clearError();
                               loggedUser.clearTextField();

@@ -114,6 +114,9 @@ class MfHoldNewScreen extends ConsumerWidget {
                 mfData.mfholdingnew?.stat == "Not Ok" ?   const Padding(
                                             padding: EdgeInsets.only(top: 280),
                                             child: Center(child: NoDataFound()),
+                                          ) : mfData.mfholdingnew?.msg == "No Data Found" ?   const Padding(
+                                            padding: EdgeInsets.only(top: 80),
+                                            child: Center(child: NoDataFound()),
                                           )
                                         :
                 Expanded(
@@ -221,24 +224,18 @@ class MfHoldNewScreen extends ConsumerWidget {
                                                           FontWeight.w500,
                                                         ),
                                                       ),
-                                                      Text(
-                                                        "(${(((double.tryParse(mfData.mfholdingnew!.data?[index]?.sCRIPVALUE ?? '0') ?? 0) - (double.tryParse(mfData.mfholdingnew!.data?[index]?.buyPrice ?? '0') ?? 0)) / (double.tryParse(mfData.mfholdingnew!.data?[index]?.buyPrice ?? '1') ?? 1) * 100).toStringAsFixed(2)}%)",
-                                                        style: textStyle(
-                                                          (((double.tryParse(mfData.mfholdingnew!.data?[index]?.sCRIPVALUE ?? '0') ??
-                                                                              0) *
-                                                                          (double.tryParse(mfData.mfholdingnew!.data?[index]?.nET ?? '0') ??
-                                                                              0)) -
-                                                                      ((double.tryParse(mfData.mfholdingnew!.data?[index]?.buyPrice ?? '0') ??
-                                                                              0) *
-                                                                          (double.tryParse(mfData.mfholdingnew!.data?[index]?.nET ?? '0') ??
-                                                                              0))) >=
-                                                                  0
-                                                              ? Colors.green
-                                                              : Colors.red,
-                                                          14,
-                                                          FontWeight.w500,
-                                                        ),
-                                                      ),
+                 Text(
+  "(${(double.tryParse(mfData.mfholdingnew!.data?[index]?.percentage ?? '0') ?? 0).toStringAsFixed(2)}%)",
+  style: textStyle(
+    (double.tryParse(mfData.mfholdingnew!.data?[index]?.percentage ?? '0') ?? 0) >= 0
+      ? Colors.green
+      : Colors.red, // Color selection based on value
+    14,
+    FontWeight.w500,
+  ),
+)
+
+
                                                     ],
                                                   ),
                                                 )

@@ -55,14 +55,14 @@ appBar: AppBar(
   decoration: InputDecoration(
     fillColor: theme.isDarkMode ? colors.darkGrey : colors.kColorLightGrey,
     filled: true,
-    hintStyle: textStyle(const Color.fromARGB(255, 0, 0, 0), 14, FontWeight.w600),
+    hintStyle: textStyle(theme.isDarkMode ? Colors.white:const Color.fromARGB(255, 0, 0, 0), 14, FontWeight.w600),
     prefixIconColor: const Color(0xff586279),
     prefixIconConstraints: const BoxConstraints(
       minWidth: 0,
     ),
-    prefixIcon: const Padding(
-      padding: EdgeInsets.only(left: 8, right: 8),
-      child: Icon(Icons.search, color: Colors.black54),
+    prefixIcon: Padding(
+      padding: const EdgeInsets.only(left: 8, right: 8),
+      child: Icon(Icons.search, color:theme.isDarkMode ? Colors.white : Colors.black54),
     ),
     suffixIcon: ValueListenableBuilder<TextEditingValue>(
       valueListenable: mfData.mfsearchcontroller,
@@ -206,20 +206,7 @@ appBar: AppBar(
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    border: Border.symmetric(
-                                      horizontal: BorderSide(
-                                        color: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : Colors.white,
-                                        width: 1.5,
-                                      ),
-                                      vertical: BorderSide(
-                                        color: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : const Color(0xffEEF0F2),
-                                        width: 0,
-                                      ),
-                                    ),
+                                    
                                   ),
                                   padding: const EdgeInsets.all(8),
                                   child: Column(

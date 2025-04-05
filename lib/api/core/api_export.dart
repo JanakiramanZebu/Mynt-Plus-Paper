@@ -30,7 +30,7 @@ class ApiExporter
         PortfolioAPI,
         FundApi,
         NotificationApi,
-        BondApi,
+        BondsApi,
         OrderAPI,
         StocksAPI,
         UserProfileAPI,

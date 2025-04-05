@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:mynt_plus/screens/bonds/bonds_common_search_screen.dart';
 import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_sip_details_screen.dart';
@@ -9,7 +10,11 @@ import '../screens/authentication/login/login_banner_screen.dart';
 import '../screens/authentication/login/login_screen.dart';
 import '../screens/authentication/password/change_pass.dart';
 import '../screens/authentication/password/forgot_pass_unblock_user.dart';
-import '../screens/bonds/bond_screen.dart';
+import '../screens/bonds/bonds_main_screen.dart';
+import '../screens/bonds/bonds_order_screen/order_screen.dart';
+import '../screens/bonds/bonds_orderbook_screen/bonds_order_book_main_screen.dart';
+import '../screens/bonds/bonds_orderbook_screen/bonds_orderbook_details/close_order_details.dart';
+import '../screens/bonds/bonds_orderbook_screen/bonds_orderbook_details/open_order_details.dart';
 import '../screens/desk_reports/calendarpnl_heatmap/headmap_calendar.dart';
 import '../screens/desk_reports/calenderPnl_screen.dart';
 import '../screens/desk_reports/equity_taxpnl_screen.dart';
@@ -68,8 +73,8 @@ import '../screens/profile_screen/fund_screen/secure_fund.dart';
 import '../screens/profile_screen/log_message.dart';
 import '../screens/profile_screen/manage_fund/report_screen.dart';
 import '../screens/profile_screen/my_ac_screens/bank_detail.dart';
-import '../screens/profile_screen/my_ac_screens/my_acc.dart';
-import '../screens/profile_screen/my_ac_screens/profile_details.dart';
+// import '../screens/profile_screen/my_ac_screens/my_acc.dart';
+// import '../screens/profile_screen/my_ac_screens/profile_details.dart';
 import '../screens/profile_screen/my_ac_screens/set_auto_pay.dart';
 import '../screens/profile_screen/my_ac_screens/setautopayscreen.dart';
 import '../screens/profile_screen/my_account_screens/profile_all_details_main_screen.dart';
@@ -1195,7 +1200,7 @@ class AppRoutes {
       case Routes.bonds:
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                const BondScreen(),
+                const BondsScreen(),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               const begin = Offset(-1.0, 0.0);
@@ -1348,6 +1353,83 @@ class AppRoutes {
             );
           },
         );
+      case Routes.bondssearchScreen:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const BondsCommonSearch(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+      case Routes.bondsclosedetailsscreen:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                // BondsCloseOrderDetails(bondsCloseDetails:args),
+                BondsCloseOrderDetails(bondsCloseDetails: args),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(0, 1);
+              const end = Offset(0, 0);
+              const curve = Curves.bounceIn;
+
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+
+      case Routes.bondsopendetailsscreen:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                BondsOpenOrderDetails(bondsdetails: args),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(0, 1);
+              const end = Offset(0, 0);
+              const curve = Curves.bounceIn;
+
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+      case Routes.bondsorderbook:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const BondsOrderbookMainScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              final tween = Tween<Offset>(
+                  begin: const Offset(0, 1), end: const Offset(.0, .0));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+
+      case Routes.bondsPlaceOrder:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ApplyBondsScreen(
+                  bondInfo: args,
+                ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              final tween = Tween<Offset>(
+                  begin: const Offset(0, 1), end: const Offset(.0, .0));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
       case Routes.mfsearchscreen:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>

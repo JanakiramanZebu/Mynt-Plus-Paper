@@ -73,6 +73,7 @@ class MFCategoryListScreen extends ConsumerWidget {
                           ? buildCategoryCard(
                               chips: mfData.mFCategoryTypesStatic[index]['sub'],
                               watch: watch,
+                              themee:theme,
                             )
                           : const SizedBox.shrink();
                     },
@@ -248,15 +249,16 @@ class MFCategoryListScreen extends ConsumerWidget {
   Widget buildCategoryCard({
     required List<dynamic> chips,
     required ScopedReader watch,
+    required ThemesProvider themee,
   }) {
     final mfData = watch(mfProvider);
 
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color:themee.isDarkMode ? colors.colorBlack: Colors.white,
         border: Border.all(
-          color: const Color.fromARGB(255, 255, 255, 255),
+          color: themee.isDarkMode ? colors.colorBlack: const Color.fromARGB(255, 255, 255, 255),
           width: 0,
         ),
         borderRadius: BorderRadius.circular(4),
@@ -285,7 +287,7 @@ class MFCategoryListScreen extends ConsumerWidget {
                           style: textStyle(
                             chips[index] == mfData.selctedchip
                                 ? colors.colorWhite
-                                : colors.colorBlack,
+                                :themee.isDarkMode ? const Color.fromARGB(255, 255, 255, 255) :colors.colorBlack,
                             12,
                             FontWeight.w500,
                           ),
@@ -295,12 +297,12 @@ class MFCategoryListScreen extends ConsumerWidget {
                         labelPadding: const EdgeInsets.symmetric(
                             horizontal: 4, vertical: -2),
                         backgroundColor: chips[index] == mfData.selctedchip
-                            ? colors.colorBlack
-                            : colors.colorWhite,
+                            ? (themee.isDarkMode ? const Color(0xFF2A2A2A) : colors.colorBlack)
+    : (themee.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : colors.colorWhite), 
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12.0, vertical: 4.0),
-                        side: const BorderSide(
-                          color: Color(0xFF666666),
+                        side: BorderSide(
+                          color:themee.isDarkMode ? Color(0xFF2A2A2A)  : Color(0xFF666666),
                           width: 1.0,
                         ),
                       ),
@@ -313,9 +315,9 @@ class MFCategoryListScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Container(
-              color: const Color(0xFFF1F3F8),
+              color: themee.isDarkMode ? const Color(0xFF2A2A2A): const Color(0xFFF1F3F8),
               padding: const EdgeInsets.all(8),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
@@ -323,18 +325,18 @@ class MFCategoryListScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w400,
-                      color: Colors.black,
+                      color: themee.isDarkMode ? colors.colorWhite: Colors.black,
                       letterSpacing: 0.7,
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: 8),
                     child: Text(
                       '3Y RETURNS',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w400,
-                        color: Colors.black,
+                        color:themee.isDarkMode ? colors.colorWhite: Colors.black,
                         letterSpacing: 0.7,
                       ),
                     ),

@@ -251,11 +251,13 @@ class ApiLinks {
   //fund urlss///
   String get viewupiid => 'https://fundapi.mynt.in/withdraw/view_upi_id';
 // Bonds
-  String get bondBaseURL => 'https://besim.zebull.in';
+  String get bondBaseURL => "${dashBoardURL}/ipo";// 'https://besim.zebull.in';
   String get getSGB => "$bondBaseURL/getcurrentSGBdetails";
   String get getGSec => "$bondBaseURL/getcurrentNCB_Gsecdetails";
   String get getTBill => "$bondBaseURL/getcurrentNCB_TBilldetails";
   String get getSDL => "$bondBaseURL/getcurrentNCB_SDLdetails";
+  String get placeBondOrder => "$bondBaseURL/addNCBtoPortfolio";
+  String get getOrderBook => "$bondBaseURL/orderbookncbDetails";
 
   String get ledgerBaseURL => 'https://rekycbe.mynt.in';
   String get getLedgerBal => "$ledgerBaseURL/all_ledger_balance";
@@ -310,13 +312,7 @@ String get profileAllDetailsURL => '$profileDetailsURL/profile';
   String get checkclosureURL => '$profileDetailsURL/check_closure';
   String get getholdingscheckURL => '$profileDetailsURL/getholdingscheck';
   String get closureURL => '$profileDetailsURL/closure';
-
-
-
-
   // reportss api
 
     String get reportsapi => 'https://rekycbe.mynt.in/report/';
-
-
 }

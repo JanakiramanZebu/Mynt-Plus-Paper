@@ -304,7 +304,7 @@ if( mfdata.mfsinglepageres?.liveCancel == "LIVE") ... [
         ),
       ),
     ),
-    const SizedBox(width: 10), // Space between buttons
+    // const SizedBox(width: 10), // Space between buttons
     // if( mfdata.mfsinglepageres?.liveCancel == "LIVE" ||  mfdata.mfsinglepageres?.liveCancel != "PAUSE") ... [
     // Expanded(
     //   flex: 6, // Takes 6 columns
@@ -351,7 +351,7 @@ if( mfdata.mfsinglepageres?.liveCancel == "LIVE") ... [
     //   ),
     // ),
     // ]
-  
+ 
   ],
 )
 

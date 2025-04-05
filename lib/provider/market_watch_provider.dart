@@ -808,6 +808,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             }
           }
         }
+        else{
+          _watchListValues = [];
+        }
 
         _marketWatchScripData.addAll({wlname: jsonEncode(_watchListValues)});
 

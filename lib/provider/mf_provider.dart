@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
+// import 'package:intl/intl.dart';
 import 'package:mynt_plus/models/mf_model/all_category_new_model.dart';
 import 'package:mynt_plus/models/mf_model/allcatlistviewmodel.dart';
 import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
@@ -15,7 +15,7 @@ import 'package:mynt_plus/models/mf_model/mf_sip_reject_reason.dart';
 import 'package:mynt_plus/models/mf_model/mf_sip_single_page_provider.dart';
 import 'package:mynt_plus/models/mf_model/pause_sip_model.dart';
 import 'package:mynt_plus/models/mf_model/sip_mf_list_model.dart';
-import 'package:mynt_plus/provider/fund_provider.dart';
+// import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
@@ -35,7 +35,7 @@ import '../models/mf_model/mf_nav_graph_model.dart';
 import '../models/mf_model/mf_nfo_model.dart';
 import '../models/mf_model/mf_orderbook_lumpsum_model.dart';
 import '../models/mf_model/mf_scheme_peers_model.dart';
-import '../models/mf_model/mf_search_model.dart';
+// import '../models/mf_model/mf_search_model.dart';
 import '../models/mf_model/mf_sip_model.dart';
 import '../models/mf_model/mf_watch_list.dart';
 import '../models/mf_model/mf_x_sip_order_responces.dart';
@@ -45,7 +45,7 @@ import '../models/mf_model/redemption_model.dart';
 import '../models/mf_model/top_schemes_model.dart';
 import '../models/mf_model/x_sip_cancel_order_model.dart';
 import '../res/res.dart';
-import '../routes/route_names.dart';
+// import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'core/default_change_notifier.dart';
@@ -255,7 +255,7 @@ class MFProvider extends DefaultChangeNotifier {
 
     orderrejectupdate(String name) {
     _droupreason = name;
-    print("djfj${_droupreason}");
+    // print("djfj${_droupreason}");
     notifyListeners();
   }
 
@@ -270,7 +270,7 @@ cleartext(){
 
   loaderfun() {
     _bestmfloader = true;
-    print("ttttttttttt");
+    // print("ttttttttttt");
     notifyListeners();
   }
 
@@ -291,7 +291,7 @@ cleartext(){
 
   updateRange(RangeValues values, String start, String end) {
     _currentRangeValues = values;
-    print("object  $start $end");
+    // print("object  $start $end");
 
     notifyListeners();
   }
@@ -898,7 +898,7 @@ List? get mfrejectsiplist => _mfrejectsiplist;
     if (val != "Lumpsum") {
       var indx = _mandateData!.indexWhere((f) => f.mandateId == val);
       _mandateStatus = _mandateData![indx].status!;
-      print("${_mandateData![indx].mandateId}, ${_mandateData![indx].status}");
+      // print("${_mandateData![indx].mandateId}, ${_mandateData![indx].status}");
     }
     invAmtError = "";
     installmentAmtError = "";
@@ -951,7 +951,7 @@ List? get mfrejectsiplist => _mfrejectsiplist;
         .firstWhere((reason) => reason.reasonName == val)
         .id
         .toString();
-    print("object ${_xsipcaseno}");
+    // print("object ${_xsipcaseno}");
     notifyListeners();
   }
 
@@ -1013,9 +1013,9 @@ List? get mfrejectsiplist => _mfrejectsiplist;
         search = "${_mutualFundsearchdata![i].fSchemeName}";
       }
       notifyListeners();
-      print("object ${search}");
+      // print("object ${search}");
     } catch (e) {
-      print("SEARCH ERROR :: $e");
+      // print("SEARCH ERROR :: $e");
     }
   }
 
@@ -1023,10 +1023,10 @@ List? get mfrejectsiplist => _mfrejectsiplist;
     try {
       _investloader = true;
       _mfNFOList = await api.getNFOData();
-      print("NFO list ${_mfNFOList!.nfoList}");
+      // print("NFO list ${_mfNFOList!.nfoList}");
       notifyListeners();
     } catch (e) {
-      print("NFO ERROR :: $e");
+      // print("NFO ERROR :: $e");
     } finally {
       _investloader = false;
     }
@@ -1036,10 +1036,10 @@ List? get mfrejectsiplist => _mfrejectsiplist;
     try {
       // _investloader = true;
       _mfsiprejreason = await api.getsiprejreason();
-      print("sip reject list${_mfsiprejreason?.toJson()}");
+      // print("sip reject list${_mfsiprejreason?.toJson()}");
       notifyListeners();
     } catch (e) {
-      print("NFO sippp error :: $e");
+      // print("NFO sippp error :: $e");
     } finally {
       // _investloader = false;
     }
@@ -1052,10 +1052,10 @@ List? get mfrejectsiplist => _mfrejectsiplist;
       var topSchemesdata = await api.getTopSchemes();
       if (topSchemesdata.msg != "") {
         _topSchemesdata = topSchemesdata.data;
-        log("TopSchemesModel ${_topSchemesdata![0]}");
+        // log("TopSchemesModel ${_topSchemesdata![0]}");
       }
     } catch (e) {
-      print("top schemes error $e");
+      // print("top schemes error $e");
     } finally {
       _investloader = false;
 
@@ -1175,7 +1175,7 @@ List? get mfrejectsiplist => _mfrejectsiplist;
               .forEach((m) => m['funds'] = watchListMf.counts);
         }
       }
-      print("{{{{{{{{{{}}}}}}}}}}${_bestMFModel}");
+      // print("{{{{{{{{{{}}}}}}}}}}${_bestMFModel}");
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
@@ -1188,12 +1188,12 @@ List? get mfrejectsiplist => _mfrejectsiplist;
       _bestMFList = await api.getMFBestListData(type);
       if (_bestMFList != null) {
         _bestMFList!.bestMFList!.sort((a, b) {
-          print("${a.aUM} ${b.aUM}");
+          // print("${a.aUM} ${b.aUM}");
           return double.parse(b.aUM == '' ? "0.00" : b.aUM!)
               .compareTo(double.parse(a.aUM == '' ? "0.00" : a.aUM!));
         }); // Sor
       }
-      print("_bestMFList $_mfCategoryList");
+      // print("_bestMFList $_mfCategoryList");
       for (var m in _bestMFList!.bestMFList!) {
         m.isAdd =
             _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == m.iSIN);
@@ -1208,11 +1208,11 @@ List? get mfrejectsiplist => _mfrejectsiplist;
   }
 
   Future<void> fetchnewMFBestList() async {
-    print("tryoutcalll");
+    // print("tryoutcalll");
 
     try {
       _bestmfloader = true;
-      print("@@@tryyinnn");
+      // print("@@@tryyinnn");
 
       _newbestmodel = await api.getnewMFBestListData();
 
@@ -1222,8 +1222,8 @@ List? get mfrejectsiplist => _mfrejectsiplist;
             .forEach((m) => m['funds'] = watchListMf.count);
       }
 
-      print("--------------mfbest ${_newbestmodel}");
-      print(_newbestmodel);
+      // print("--------------mfbest ${_newbestmodel}");
+      // print(_newbestmodel);
 
       notifyListeners();
     } catch (e, stackTrace) {
@@ -1238,7 +1238,7 @@ List? get mfrejectsiplist => _mfrejectsiplist;
     try {
        _bestmfloader = true;
       _mfsiporderlist = await api.getSiplist();
-      print("sipppppres${_mfsiporderlist?.toJson()}");
+      // print("sipppppres${_mfsiporderlist?.toJson()}");
       notifyListeners();
     } catch (e, stackTrace) {
       debugPrint("Error fetching siplist: $e\n$stackTrace");
@@ -1252,14 +1252,14 @@ List? get mfrejectsiplist => _mfrejectsiplist;
     try {
       _bestmfloader = true;
       _mfsinglepageres = await api.getSipsinglepage(value);
-      print("themffffff//${value}");
-      print("nwewwwww${_mfsinglepageres?.invList.toString()}");
+      // print("themffffff//${value}");
+      // print("nwewwwww${_mfsinglepageres?.invList.toString()}");
 
       notifyListeners();
     } catch (e, stackTrace) {
       _bestmfloader = false;
       debugPrint("Error fetching siplist: $e\n$stackTrace");
-      print("apii errror");
+      // print("apii errror");
     } finally {
       _bestmfloader = false;
       notifyListeners();
@@ -1271,21 +1271,21 @@ List? get mfrejectsiplist => _mfrejectsiplist;
     try {
       _bestmfloader = true;
 
-      print("1111${value},${type},${bs},${status},${sipno},${remarks}");
-      print("nwewwwww${_mforderdet.toString()}");
+      // print("1111${value},${type},${bs},${status},${sipno},${remarks}");
+      // print("nwewwwww${_mforderdet.toString()}");
 
       String orderStatus = checkOrderRemarks(remarks);
-      print(
-          "payload${value},${type},${bs},${status},${sipno},${orderStatus == 'usercancel' ? "" : orderStatus}");
+      // print(
+      //     "payload${value},${type},${bs},${status},${sipno},${orderStatus == 'usercancel' ? "" : orderStatus}");
 
       _mforderdet = await api.getsingleortderapi(
           value, bs, type, status, sipno, orderStatus);
-      print("11111@@${orderStatus}");
+      // print("11111@@${orderStatus}");
       return notifyListeners();
     } catch (e, stackTrace) {
       _bestmfloader = false;
       debugPrint("Error fetching siplist: $e\n$stackTrace");
-      print("apii errror");
+      // print("apii errror");
     } finally {
       _bestmfloader = false;
       notifyListeners();
@@ -1306,14 +1306,14 @@ List? get mfrejectsiplist => _mfrejectsiplist;
     try {
       _bestmfloader = true;
       _mfholdsingepage = await api.getholdsinglepage(value);
-      print("themffffff${value}");
-      print("nwewwwww${_mfholdsingepage.toString()}");
+      // print("themffffff${value}");
+      // print("nwewwwww${_mfholdsingepage.toString()}");
 
       notifyListeners();
     } catch (e, stackTrace) {
       _bestmfloader = false;
       debugPrint("Error fetching siplist: $e\n$stackTrace");
-      print("apii errror");
+      // print("apii errror");
     } finally {
       _bestmfloader = false;
       notifyListeners();
@@ -1326,13 +1326,13 @@ List? get mfrejectsiplist => _mfrejectsiplist;
       _mfholdingnew = await api.getmfholdnewapi();
       // print("themffffff${value}");
       
-      print("holdinglist${_mfholdingnew?.toJson()}");
+      // print("holdinglist${_mfholdingnew?.toJson()}");
 
       notifyListeners();
     } catch (e, stackTrace) {
       _holdstatload = false;
       debugPrint("Error fetching mfliiist: $e\n$stackTrace");
-      print("apii errror");
+      // print("apii errror");
     } finally {
       _holdstatload = false;
       notifyListeners();
@@ -1340,16 +1340,16 @@ List? get mfrejectsiplist => _mfrejectsiplist;
   }
 
  void fetchmfholdsingpage(String isin) async {
-  print("qqqq|${isin}---");
+  // print("qqqq|${isin}---");
 
   for (var item in _mfholdingnew?.data ?? []) {
     if (isin == item.iSIN) {
-      print("ininin");
+      // print("ininin");
       
       // Ensure item is not null before adding it to the list
       _holssinglelist = item != null ? [item] : [];
       
-      print("ttttttt$_holssinglelist");
+      // print("ttttttt$_holssinglelist");
     }
   }
 }
@@ -1361,12 +1361,12 @@ List? get mfrejectsiplist => _mfrejectsiplist;
       _mfCategoryList = await api.getMFCategoryList(type, subtype);
       if (_mfCategoryList != null) {
         _mfCategoryList!.data!.sort((a, b) {
-          print("${a.aUM} ${b.aUM}");
+          // print("${a.aUM} ${b.aUM}");
           return double.parse(b.aUM == '' ? "0.00" : b.aUM!)
               .compareTo(double.parse(a.aUM == '' ? "0.00" : a.aUM!));
         }); // Sor
       }
-      print("_mfCategoryList $_mfCategoryList");
+      // print("_mfCategoryList $_mfCategoryList");
       // if (_bestMFModel!.stat == "Ok") {
       //   for (var watchListMf in _bestMFModel!.bestMFList!) {
       //     _bestMFListStatic
@@ -1831,7 +1831,7 @@ toggleLoadingOn(true);
       try {
         toggleLoadingOn(true);
         _mfLumpSumOrderbook = await api.redemptioncancelapi(orderno);
-        print("@@@1111111111111111$_mfLumpSumOrderbook");
+        // print("@@@1111111111111111$_mfLumpSumOrderbook");
           Navigator.pop(context);
         fetchMfOrderbook(context);
 
@@ -1871,7 +1871,7 @@ toggleLoadingOn(true);
 
 
 Future cancelsiporder(BuildContext context, orderno,siprefno  ) async {
-  print("WWWWWW{${orderno},1111${siprefno},22222222!!${droupreason}!!,33333333${rejectsip.text}}");
+  // print("WWWWWW{${orderno},1111${siprefno},22222222!!${droupreason}!!,33333333${rejectsip.text}}");
   if( droupreason != ""){
     toggleLoadingOn(true);
     try {
@@ -1880,7 +1880,7 @@ Future cancelsiporder(BuildContext context, orderno,siprefno  ) async {
     toggleLoadingOn(true);
 
         _mfsipcancelmess = await api.cancelsipapi(orderno,siprefno,droupreason,rejectsip.text);
-        print("@@@1111111111111111$_mfLumpSumOrderbook");
+        // print("@@@1111111111111111$_mfLumpSumOrderbook");
           // Navigator.pop(context);
         fetchmfsiplist();
 if(_mfsipcancelmess?.stat == "Not Ok") {
@@ -1935,7 +1935,7 @@ if(_mfsipcancelmess?.stat == "Not Ok") {
 
   Future pausesiporder(BuildContext context, orderno  ) async {
 
-  print("@@@@@@@@{${orderno},${pausesip.text}}");
+  // print("@@@@@@@@{${orderno},${pausesip.text}}");
   if( pausesip.text != ""){
         toggleLoadingOn(true);
     try {
@@ -1944,7 +1944,7 @@ if(_mfsipcancelmess?.stat == "Not Ok") {
       try {
             toggleLoadingOn(true);
         _mfsippause = await api.pausesipapi(orderno,pausesip.text);
-        print("pausee sip$_mfsippause");
+        // print("pausee sip$_mfsippause");
           Navigator.pop(context);
         fetchmfsiplist();
 if(_mfsippause?.stat == "Not Ok") {
@@ -2001,8 +2001,8 @@ if(_mfsippause?.stat == "Not Ok") {
       _mfallcatnewlist = await api.mfallcatnewapi();
       // print("object@@${newres?.toJson()}");
 
-      print("valuesss${_mfallcatnewlist!.data![0].values![0].name}");
-      print("#######${_mfallcatnewlist?.toJson()}");
+      // print("valuesss${_mfallcatnewlist!.data![0].values![0].name}");
+      // print("#######${_mfallcatnewlist?.toJson()}");
 
       for (var i = 0; i < _mfallcatnewlist!.data![0].values!.length; i++) {
         _mFCategoryTypesStatic[0]['sub']
@@ -2031,7 +2031,7 @@ if(_mfsippause?.stat == "Not Ok") {
       }
 
 
-      print("Transformed Data: ");
+      // print("Transformed Data: ");
     } catch (e) {
       log("Failed to fetch data: ${e.toString()}");
       notifyListeners();
@@ -2039,7 +2039,7 @@ if(_mfsippause?.stat == "Not Ok") {
   }
 
 void fetchcatdatanew(String tit, String chi) {
-  print("qqqq|${tit}----${chi}");
+  // print("qqqq|${tit}----${chi}");
 
   // Define mapping of title to index dynamically
   Map<String, int> categoryIndex = {
@@ -2052,7 +2052,7 @@ void fetchcatdatanew(String tit, String chi) {
 
   // Check if the category exists in the map
   if (!categoryIndex.containsKey(tit)) {
-    print("Invalid category or missing data.");
+    // print("Invalid category or missing data.");
     return;
   }
 
@@ -2060,16 +2060,16 @@ void fetchcatdatanew(String tit, String chi) {
 
   // Null safety checks
   if (_mfallcatnewlist?.data == null || _mfallcatnewlist!.data!.length <= index) {
-    print("otherr or null data");
+    // print("otherr or null data");
     return;
   }
 
   // Iterate through values and find matching `chi`
   for (var item in _mfallcatnewlist!.data![index].values ?? []) {
-    print("nameee ${item.name}");
+    // print("nameee ${item.name}");
 
     if (chi == item.name) {
-      print("statisfyyy ${item.values}");
+      // print("statisfyyy ${item.values}");
 
       // Assign values safely
       _catnewlist = List<Fund>.from(item.values ?? []);
@@ -2080,7 +2080,7 @@ void fetchcatdatanew(String tit, String chi) {
     }
   }
 
-  print("No matching data found.");
+  // print("No matching data found.");
 }
 
 // void fetchmatchisan(String isin) {
@@ -2095,7 +2095,7 @@ void fetchmatchisan(String isin) {
 
 //  if(isMatch == true)
     _watchbatchval = isMatch;
-    print("Updated isAdd to: ${_watchbatchval}");
+    // print("Updated isAdd to: ${_watchbatchval}");
 notifyListeners();
 }
 
@@ -2125,7 +2125,7 @@ notifyListeners();
 
       //log("HDFC BANK $_upiIdValidationModel");
     } catch (e) {
-      log("Failed to fetch bank Data:: ${e.toString()}");
+      // log("Failed to fetch bank Data:: ${e.toString()}");
 
       notifyListeners();
     } finally {
@@ -2147,8 +2147,8 @@ notifyListeners();
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_createMandateModel!.resp}"));
       }
-      print(
-          "object ${_createMandateModel!.error} ${_createMandateModel!.url1} ::${_createMandateModel!.mandate}");
+      // print(
+      //     "object ${_createMandateModel!.error} ${_createMandateModel!.url1} ::${_createMandateModel!.mandate}");
     } catch (e) {
       log("Failed to Create Mandate :: ${e.toString()}");
       notifyListeners();
@@ -2166,13 +2166,13 @@ notifyListeners();
       String mandateId) async {
         
     try {
-      print("welcoooo");
+      // print("welcoooo");
     toggleLoadingOn(true);
-print("okokok11ttt${loading}");
+// print("okokok11ttt${loading}");
  
       _xsipOrderResponces = await api.getXsipPurchase(schemecode, startDate,
           freqtype, amt, noofinstallment, endDate, mandateId);
-print("okokok11${loading}");
+// print("okokok11${loading}");
       if (_xsipOrderResponces?.stat == 'OK') {
          toggleLoadingOn(false);
          
@@ -2200,7 +2200,7 @@ print("okokok11${loading}");
       }
        fetchmfsiplist();
           fetchMfOrderbook(context);
-      print("object ${_xsipOrderResponces!.responseMessage} ");
+      // print("object ${_xsipOrderResponces!.responseMessage} ");
     } catch (e) {
       log("Failed to Place X-sip :: ${e.toString()}");
       toggleLoadingOn(false);
@@ -2220,7 +2220,7 @@ print("okokok11${loading}");
       _xsipOrderCancleResone = await api.getXsipCancleResone();
       _xsipvalue = "${_xsipOrderCancleResone!.data![0].reasonName}";
       _xsipcaseno = "${_xsipOrderCancleResone!.data![0].id}";
-      print("object ${_xsipOrderCancleResone?.data![0].id}");
+      // print("object ${_xsipOrderCancleResone?.data![0].id}");
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
@@ -2314,13 +2314,13 @@ print("okokok11${loading}");
       if (_allPaymentMfModel?.type == "UPI") {
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_allPaymentMfModel!.msg}"));
-        print("${_allPaymentMfModel!.payment_msg} Payment message");
+        // print("${_allPaymentMfModel!.payment_msg} Payment message");
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_allPaymentMfModel!.msg}"));
-        print("${_allPaymentMfModel!.payment_msg} Payment message 2");
-        print("+++++${_allPaymentMfModel?.toJson()}");
+        // print("${_allPaymentMfModel!.payment_msg} Payment message 2");
+        // print("+++++${_allPaymentMfModel?.toJson()}");
         Navigator.pop(context);
       }
     }
@@ -2710,10 +2710,10 @@ print("okokok11${loading}");
   }
 
   bool isValidUpiId(MutualFundList mfData) {
-    print("Change made");
+    // print("Change made");
     final RegExp upiRegex =
         RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
-        print("mfOrderTpye${mfOrderTpye}");
+        // print("mfOrderTpye${mfOrderTpye}");
     if (mfOrderTpye == "One-time") {
       if (invAmt.text.isEmpty) {
         invAmtError = "Please enter Investment amount";

@@ -180,9 +180,14 @@ class OrderBook extends ConsumerWidget {
 
                             return InkWell(
                                 onLongPress: () {
-                                  if (order.openOrder!.length > 0 && order.tabCtrl.index == 1 ||
-                                      order.openOrder!.length > 0 && !(["COMPLETE", "CANCELED", "REJECTED"]
-                                          .contains(
+                                  if (order.openOrder!.length > 0 &&
+                                          order.tabCtrl.index == 1 ||
+                                      order.openOrder!.length > 0 &&
+                                          !([
+                                            "COMPLETE",
+                                            "CANCELED",
+                                            "REJECTED"
+                                          ].contains(
                                               orderBook[itemIndex].status))) {
                                     Navigator.pushNamed(
                                         context, Routes.orderExit,
@@ -461,15 +466,16 @@ class OrderBook extends ConsumerWidget {
                                                               14,
                                                               FontWeight.w500)),
                                                       Text(
-                                                          "${orderBook[itemIndex].status != "COMPLETE" && (orderBook[itemIndex].fillshares?.isNotEmpty ?? false) ? int.parse(orderBook[itemIndex].fillshares.toString()) : orderBook[itemIndex].status == "COMPLETE" ? orderBook[itemIndex].rqty ?? 0 : orderBook[itemIndex].dscqty ?? 0}/${orderBook[itemIndex].qty ?? 0}",
-                                                          style: textStyle(
-                                                              theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack,
-                                                              14,
-                                                              FontWeight.w500))
+                                                        "${((orderBook[itemIndex].status != "COMPLETE" && (orderBook[itemIndex].fillshares?.isNotEmpty ?? false) ? (int.tryParse(orderBook[itemIndex].fillshares.toString()) ?? 0) : orderBook[itemIndex].status == "COMPLETE" ? (int.tryParse(orderBook[itemIndex].rqty.toString()) ?? 0) : (int.tryParse(orderBook[itemIndex].dscqty.toString()) ?? 0)).toInt() / (orderBook[itemIndex].exch == 'MCX' ? (int.tryParse(orderBook[itemIndex].ls.toString()) ?? 1) : 1)).toInt()}/${((int.tryParse(orderBook[itemIndex].qty.toString()) ?? 0) / (orderBook[itemIndex].exch == 'MCX' ? (int.tryParse(orderBook[itemIndex].ls.toString()) ?? 1) : 1)).toInt()}",
+                                                        style: textStyle(
+                                                            theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            14,
+                                                            FontWeight.w500),
+                                                      )
                                                     ])
                                                   ]),
                                               const SizedBox(height: 10),

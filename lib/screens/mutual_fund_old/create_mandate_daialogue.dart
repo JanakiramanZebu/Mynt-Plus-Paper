@@ -10,6 +10,7 @@ import '../../res/res.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
+import '../../sharedWidget/snack_bar.dart';
 
 class CreateMandateDialogue extends StatefulWidget {
   const CreateMandateDialogue({super.key});
@@ -207,8 +208,9 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                             colors.colorBlack, 14, FontWeight.w500)))),
             ElevatedButton(
                 onPressed: () async {
-                  if (fund.invAmtError == null && fund.upiError == null) {
-                    await mfOrder.fetchCreateMandate(
+                  int installmentAmount = double.parse(mfOrder.installmentAmt.text).toInt();
+                  if (installmentAmount >= 100) {
+                 await mfOrder.fetchCreateMandate(
                         context,
                         double.parse(mfOrder.installmentAmt.text)
                             .toInt()
@@ -216,22 +218,38 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                         mfOrder.startDate,
                         mfOrder.endDate);
                     Navigator.pop(context);
-                  } else {}
+                  }else{
+                     ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context,"Amount must be at least 100")
+    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                     elevation: 0,
                     backgroundColor:
-                        fund.invAmtError == null && fund.upiError == null
-                            ? colors.colorBlack
-                            : const Color(0xffF1F3F8),
+                        theme.isDarkMode
+                            ? colors.colorbluegrey
+                            : const Color.fromARGB(255, 0, 0, 0),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50))),
-                child: Text("Submit",
+                child:  mfOrder.loading == true 
+                            ? const SizedBox(
+                                height: 15,
+                                width: 15,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.0,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color.fromARGB(99, 48, 48, 48)),
+                                  backgroundColor:
+                                      Color.fromARGB(255, 255, 255, 255),
+                                ),
+                              )
+                            :  Text("Submit",
                     style: GoogleFonts.inter(
                         textStyle: textStyle(
-                            !theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
+                            theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.colorWhite,
                             14,
                             FontWeight.w500))))
           ]);

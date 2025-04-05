@@ -172,7 +172,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                                 child: ScripDepthInfo(
                                     wlValue: depthArgs, isBasket: '')));
                         tvChart.singlePageloader(false);
-                await ConstantName.webViewController!.evaluateJavascript(
+                await ConstantName.chartwebViewController!.evaluateJavascript(
                     source:
                         "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${theme.isDarkMode}')");
                 chartUpdate.changeOrientation('portrait');
@@ -232,7 +232,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
           crossPlatform: InAppWebViewOptions(transparentBackground: true),
         ),
         onWebViewCreated: (controller) {
-          ConstantName.webViewController = controller;
+          ConstantName.chartwebViewController = controller;
         },
         onProgressChanged: (_, progress) {
           setState(() {

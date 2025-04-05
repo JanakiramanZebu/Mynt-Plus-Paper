@@ -138,7 +138,7 @@ class OrderBookDetail extends ConsumerWidget {
                       const SizedBox(height: 4),
                       rowOfInfoData(
                           "Filled Qty",
-                          "${orderBookData.status == "COMPLETE" ? orderBookData.rqty ?? 0 : orderBookData.dscqty ?? 0}/${orderBookData.qty}",
+                          "${((orderBookData.status != "COMPLETE" && (orderBookData.fillshares?.isNotEmpty ?? false) ? (int.tryParse(orderBookData.fillshares.toString()) ?? 0) : orderBookData.status == "COMPLETE" ? (int.tryParse(orderBookData.rqty.toString()) ?? 0) : (int.tryParse(orderBookData.dscqty.toString()) ?? 0)).toInt() / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}/${((int.tryParse(orderBookData.qty.toString()) ?? 0) / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}",
                           "MKT Protection",
                           orderBookData.mktProtection ?? "-",
                           theme),
@@ -323,7 +323,8 @@ class OrderBookDetail extends ConsumerWidget {
                                                       .fetchExitSNOOrd(
                                                           "${orderBookData.snonum}",
                                                           "${orderBookData.prd}",
-                                                          context, true);
+                                                          context,
+                                                          true);
                                                 },
                                                 style: ElevatedButton.styleFrom(
                                                     elevation: 0,
@@ -458,7 +459,8 @@ class OrderBookDetail extends ConsumerWidget {
                                                 .read(orderProvider)
                                                 .fetchOrderCancel(
                                                     "${orderBookData.norenordno}",
-                                                    context, true);
+                                                    context,
+                                                    true);
                                           },
                                           child: Text(
                                             "Yes",

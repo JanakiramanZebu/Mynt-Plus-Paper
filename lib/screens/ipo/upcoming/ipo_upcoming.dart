@@ -101,12 +101,12 @@ class UpcomingIpo extends StatelessWidget {
                                           color: ipos.upcomingModel!.upcoming![index].ipoType == "SME"
                                               ? theme.isDarkMode
                                                   ? colors.colorGrey
-                                                      .withOpacity(.1)
+                                                      .withOpacity(.3)
                                                   : const Color.fromARGB(
                                                       255, 243, 242, 174)
                                               : theme.isDarkMode
                                                   ? colors.colorGrey
-                                                      .withOpacity(.1)
+                                                      .withOpacity(.3)
                                                   : const Color.fromARGB(
                                                       255,
                                                       251,
@@ -133,24 +133,27 @@ class UpcomingIpo extends StatelessWidget {
     }
   },
   behavior: HitTestBehavior.translucent, // Ensures the entire area is tappable
-  child: Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Icon(
-        Icons.open_in_new,
-        size: 14,
-        color: Color(0xFF0037B7),
-      ),
-      SizedBox(width: 2),
-      Text(
-        'DRHP',
-        style: textStyle(
-          const Color(0xFF0037B7),
-          12,
-          FontWeight.w600,
+  child: Padding(
+    padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8), // Adjust as needed
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.open_in_new,
+          size: 14,
+          color: Color(0xFF0037B7),
         ),
-      ),
-    ],
+        SizedBox(width: 2),
+        Text(
+          'DRHP',
+          style: textStyle(
+            const Color(0xFF0037B7),
+            12,
+            FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
   ),
 )
 
@@ -166,8 +169,7 @@ class UpcomingIpo extends StatelessWidget {
                     height: 0,
                     color: theme.isDarkMode
                         ? colors.darkColorDivider
-                        : const Color(0xffECEDEE),
-                    thickness: 1.2);
+                      : const Color(0xffECEDEE),);
               },
             ),
           ],

@@ -274,7 +274,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
               ? "EOS"
               : "DAY";
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
-      frezQty = ((sfq / lotSize).round() * lotSize);
+      frezQty = ((sfq / lotSize).floor() * lotSize);
       isBuy = widget.orderArg.transType;
       sipqtyctrl = TextEditingController(text: "1");
 
@@ -287,9 +287,12 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                   ? widget.orderArg.holdQty!.replaceAll("-", "")
                   : widget.orderArg.lotSize!.replaceAll("-", ""));
 
-      qtyCtrl.text = !widget.orderArg.isExit && defaultparams
-          ? (int.parse(qtyCtrl.text) * int.parse(localdata['qty'])).toString()
-          : qtyCtrl.text;
+      if (widget.orderArg.isExit && widget.orderArg.exchange == "MCX") {
+        qtyCtrl.text = (int.parse(qtyCtrl.text) / lotSize).toInt().toString();
+      } else if (!widget.orderArg.isExit && defaultparams) {
+        qtyCtrl.text =
+            (int.parse(qtyCtrl.text) * int.parse(localdata['qty'])).toString();
+      }
 
       multiplayer = int.parse((widget.orderArg.exchange == "MCX"
               ? "1"
@@ -355,9 +358,6 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           (double.tryParse(res['mkt_protection']?.toString() ?? '5')?.toInt() ??
                   5)
               .toString();
-    } else {
-      print(
-          "positionList.netqty s ${widget.scripInfo.exch == 'MCX' ? '1' : '2'}");
     }
 
     super.initState();
@@ -1027,29 +1027,28 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                 SizedBox(
                                                     height: 44,
                                                     child: CustomTextFormField(
-                                                        fillColor:
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .darkGrey
-                                                                : const Color(
-                                                                    0xffF1F3F8),
+                                                        fillColor: theme
+                                                                .isDarkMode
+                                                            ? colors.darkGrey
+                                                            : const Color(
+                                                                0xffF1F3F8),
                                                         hintText:
                                                             orderInput
                                                                 .qtyCtrl.text,
-                                                        hintStyle:
-                                                            textStyle(
-                                                                const Color(
-                                                                    0xff666666),
-                                                                15,
-                                                                FontWeight
-                                                                    .w400),
+                                                        hintStyle: textStyle(
+                                                            const Color(
+                                                                0xff666666),
+                                                            15,
+                                                            FontWeight.w400),
                                                         inputFormate: [
                                                           FilteringTextInputFormatter
                                                               .digitsOnly
                                                         ],
+                                                        keyboardType:
+                                                            TextInputType
+                                                                .number,
                                                         style: textStyle(
-                                                            theme
-                                                                    .isDarkMode
+                                                            theme.isDarkMode
                                                                 ? colors
                                                                     .colorWhite
                                                                 : colors
@@ -1241,6 +1240,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                 0xff666666),
                                                             15,
                                                             FontWeight.w400),
+                                                        keyboardType:
+                                                            const TextInputType.numberWithOptions(
+                                                                decimal: true),
                                                         style: textStyle(
                                                             theme.isDarkMode
                                                                 ? colors
@@ -1249,22 +1251,19 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                     .colorBlack,
                                                             16,
                                                             FontWeight.w600),
-                                                        isReadable: orderInput.actPrcType == "Limit" ||
+                                                        isReadable: orderInput.actPrcType ==
+                                                                    "Limit" ||
                                                                 orderInput.actPrcType ==
                                                                     "SL Limit"
                                                             ? false
                                                             : true,
                                                         prefixIcon: Container(
-                                                            margin:
-                                                                const EdgeInsets.all(
-                                                                    12),
+                                                            margin: const EdgeInsets.all(
+                                                                12),
                                                             decoration: BoxDecoration(
                                                                 borderRadius:
-                                                                    BorderRadius.circular(
-                                                                        20),
-                                                                color: theme.isDarkMode
-                                                                    ? const Color(0xff555555)
-                                                                    : colors.colorWhite),
+                                                                    BorderRadius.circular(20),
+                                                                color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                                                             child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
                                                         textCtrl: orderInput.priceCtrl,
                                                         textAlign: TextAlign.start)),
@@ -1485,6 +1484,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                 FilteringTextInputFormatter
                                                                     .digitsOnly
                                                               ],
+                                                              keyboardType:
+                                                                  TextInputType
+                                                                      .number,
                                                               style: textStyle(
                                                                   theme.isDarkMode
                                                                       ? colors
@@ -1670,6 +1672,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                   15,
                                                                   FontWeight
                                                                       .w400),
+                                                              keyboardType:
+                                                                  const TextInputType.numberWithOptions(
+                                                                      decimal:
+                                                                          true),
                                                               style: textStyle(
                                                                   theme.isDarkMode
                                                                       ? colors
@@ -1679,10 +1685,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                   16,
                                                                   FontWeight
                                                                       .w600),
-                                                              isReadable: orderInput.actOcoPrcType ==
-                                                                          "Limit" ||
-                                                                      orderInput
-                                                                              .actOcoPrcType ==
+                                                              isReadable: orderInput.actOcoPrcType == "Limit" ||
+                                                                      orderInput.actOcoPrcType ==
                                                                           "SL Limit"
                                                                   ? false
                                                                   : true,
@@ -1691,8 +1695,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                       const EdgeInsets.all(
                                                                           12),
                                                                   decoration: BoxDecoration(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(20),
+                                                                      borderRadius: BorderRadius.circular(20),
                                                                       color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                                                                   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
                                                               textCtrl: orderInput.ocoPriceCtrl,
@@ -1770,6 +1773,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                       "Trigger can not be empty"));
                                                         }
                                                       },
+                                                      keyboardType: const TextInputType.numberWithOptions(
+                                                          decimal: true),
                                                       style: textStyle(
                                                           theme.isDarkMode
                                                               ? colors
@@ -1779,13 +1784,11 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                           16,
                                                           FontWeight.w600),
                                                       prefixIcon: Container(
-                                                          margin:
-                                                              const EdgeInsets.all(
-                                                                  12),
+                                                          margin: const EdgeInsets.all(
+                                                              12),
                                                           decoration: BoxDecoration(
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                      20),
+                                                              borderRadius: BorderRadius.circular(
+                                                                  20),
                                                               color: theme.isDarkMode
                                                                   ? const Color(
                                                                       0xff555555)
@@ -1793,10 +1796,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                       .colorWhite),
                                                           child: SvgPicture.asset(
                                                               color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorGrey,
+                                                                  ? colors.colorWhite
+                                                                  : colors.colorGrey,
                                                               assets.ruppeIcon,
                                                               fit: BoxFit.scaleDown)),
                                                       textCtrl: orderInput.ocoTrgPrcCtrl,
@@ -2253,6 +2254,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                 FilteringTextInputFormatter
                                                                     .digitsOnly
                                                               ],
+                                                              keyboardType:
+                                                                  TextInputType
+                                                                      .number,
                                                               style: textStyle(
                                                                   theme.isDarkMode
                                                                       ? colors
@@ -2480,6 +2484,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                   15,
                                                                   FontWeight
                                                                       .w400),
+                                                              keyboardType:
+                                                                  const TextInputType.numberWithOptions(
+                                                                      decimal:
+                                                                          true),
                                                               style: textStyle(
                                                                   theme.isDarkMode
                                                                       ? colors
@@ -2495,15 +2503,12 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                   ? false
                                                                   : true,
                                                               prefixIcon: Container(
-                                                                  margin: const EdgeInsets.all(
-                                                                      12),
+                                                                  margin:
+                                                                      const EdgeInsets.all(
+                                                                          12),
                                                                   decoration: BoxDecoration(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              20),
-                                                                      color: theme.isDarkMode
-                                                                          ? const Color(0xff555555)
-                                                                          : colors.colorWhite),
+                                                                      borderRadius: BorderRadius.circular(20),
+                                                                      color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                                                                   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, priceType == "Limit" || priceType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
                                                               textCtrl: priceCtrl,
                                                               textAlign: TextAlign.start)),
@@ -2602,6 +2607,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                               0xff666666),
                                                           15,
                                                           FontWeight.w400),
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
                                                       style: textStyle(
                                                           theme.isDarkMode
                                                               ? colors
@@ -2686,6 +2695,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                         const Color(0xff666666),
                                                         15,
                                                         FontWeight.w400),
+                                                    keyboardType:
+                                                        const TextInputType
+                                                            .numberWithOptions(
+                                                            decimal: true),
                                                     style: textStyle(
                                                         theme.isDarkMode
                                                             ? colors.colorWhite
@@ -2864,6 +2877,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                   FilteringTextInputFormatter
                                                                       .digitsOnly
                                                                 ],
+                                                                keyboardType:
+                                                                    TextInputType
+                                                                        .number,
                                                                 style: textStyle(
                                                                     theme.isDarkMode
                                                                         ? colors
@@ -3048,6 +3064,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                       }
                                                     });
                                                   },
+                                                  keyboardType:
+                                                      TextInputType.number,
                                                   style: textStyle(
                                                       theme.isDarkMode
                                                           ? colors.colorWhite
@@ -4392,6 +4410,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                   context, "Trigger can not be empty"));
                         }
                       },
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       style: textStyle(
                           theme.isDarkMode
                               ? colors.colorWhite
@@ -4851,7 +4871,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         prctyp: context.read(ordInputProvider).prcType,
         prd: context.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
-            ? (int.parse(qtyCtrl.text) * lotSize).toString()
+            ? (double.parse(qtyCtrl.text).toInt() * lotSize).toString()
             : qtyCtrl.text,
         rorgprc: '0',
         rorgqty: '0',
@@ -4869,7 +4889,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prd: context.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
-            ? (int.parse(qtyCtrl.text) * lotSize).toString()
+            ? (double.parse(qtyCtrl.text).toInt() * lotSize).toString()
             : qtyCtrl.text,
         trantype: isBuy! ? "B" : "S",
         tsym: "${widget.scripInfo.tsym}");

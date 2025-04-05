@@ -148,7 +148,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                             decoration: BoxDecoration(
                                 color: widget.smeipo.key == "SME"
                                     ? theme.isDarkMode
-                                        ? colors.colorGrey.withOpacity(.1)
+                                        ? colors.colorGrey.withOpacity(.3)
                                         : const Color.fromARGB(
                                             255, 243, 242, 174)
                                     : theme.isDarkMode

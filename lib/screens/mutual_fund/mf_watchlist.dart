@@ -27,10 +27,10 @@ class MFWatchlistScreen extends ConsumerWidget {
             : Column(
                 children: [
                   Container(
-                    color: const Color(0xFFF1F3F8),
+                    color: theme.isDarkMode ? const Color(0xFF2A2A2A): const Color(0xFFF1F3F8),
                     padding: const EdgeInsets.only(
                         left: 12, bottom: 8, top: 8, right: 8),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
@@ -38,18 +38,18 @@ class MFWatchlistScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w400,
-                            color: Colors.black,
+                            color:theme.isDarkMode ? Colors.white: Colors.black,
                             letterSpacing: 0.7,
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.only(right: 8),
                           child: Text(
                             '3Y RETURNS',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w400,
-                              color: Colors.black,
+                              color:theme.isDarkMode ? Colors.white: Colors.black,
                               letterSpacing: 0.7,
                             ),
                           ),

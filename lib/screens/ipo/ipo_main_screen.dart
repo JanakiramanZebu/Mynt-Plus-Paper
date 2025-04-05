@@ -39,9 +39,7 @@ class _IPOmainScreenState extends State<IPOScreen> {
               },
               child: Icon(
                 Icons.arrow_back_ios,
-                color: theme.isDarkMode
-                    ? const Color(0xffBDBDBD)
-                    : colors.colorGrey,
+               color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                 size: 22,
               ),
             ),
@@ -61,10 +59,9 @@ class _IPOmainScreenState extends State<IPOScreen> {
                 Expanded(
                   child: Container(
                     height: 45,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF1F3F8),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
+                   
+
+                    
                     child: SearchBar(
                       onTap: () {
                         FocusScope.of(context).requestFocus(FocusNode());
@@ -79,7 +76,9 @@ class _IPOmainScreenState extends State<IPOScreen> {
                         ),
                       ),
                       backgroundColor:
-                          WidgetStateProperty.all(Color(0xffF1F3F8)),
+                          WidgetStateProperty.all(theme.isDarkMode
+                        ? colors.darkGrey
+                        : const Color(0xffF1F3F8)),
                       shape: WidgetStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),

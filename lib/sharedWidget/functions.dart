@@ -369,7 +369,7 @@ DateTime convertIpoDates(String dateString,String inputDateFormat) {
 String ipodateres(String dt1) {
   DateTime dateTime =
       DateTime.parse(dt1); // Format the datetime in the desired format
-  String formattedDate = DateFormat('yyyy-MM-dd hh:mm a').format(dateTime);
+  String formattedDate = DateFormat('dd-MM-yyyy - hh:mm a').format(dateTime);
   return formattedDate;
 }
 
