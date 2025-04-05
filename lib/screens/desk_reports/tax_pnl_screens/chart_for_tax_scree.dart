@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/all.dart';
+import 'package:mynt_plus/screens/authentication/password/forgot_pass_unblock_user.dart';
 
 import '../../../provider/ledger_provider.dart';
 import '../../../provider/thems.dart';
@@ -241,7 +242,7 @@ class _BarChartWidgetState extends State<BarChartWidget> {
                     rightTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 30,
+                        reservedSize: 70,
                         getTitlesWidget: (value, meta) {
                           return Text(
                             '₹${value.toInt()}',
@@ -267,7 +268,12 @@ class _BarChartWidgetState extends State<BarChartWidget> {
                           return value.toInt() < title.length
                               ? Text(
                                   title[value.toInt()],
-                                  style: TextStyle(color: textColor),
+                                  style: textStyle(
+                              theme.isDarkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                              12,
+                              FontWeight.w500),
                                 )
                               : Container();
                         },

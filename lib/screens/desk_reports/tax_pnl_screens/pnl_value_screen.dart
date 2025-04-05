@@ -76,7 +76,7 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                 //       "Financial activities through debits and credits ",
                 //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
                 //     )),
-                SizedBox(height: 36.0),
+                SizedBox(height: 52.0),
                 BarChartWidget(),
 
                 SizedBox(height: 8.0),

@@ -272,8 +272,7 @@ mixin LedgerApi on ApiCore {
           body:
               // jsonEncode({"cc": "${prefs.clientId}", "from": from, "to": to}));
               jsonEncode({
-            "cc": "${prefs.clientId}",
-            // "client_code": "ZE1A40",
+            "client_code": "${prefs.clientId}",  
             "dercomcur": der,
             "equity": eq,
             "equity_taxes": eqcharge,
