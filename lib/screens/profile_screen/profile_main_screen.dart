@@ -175,10 +175,7 @@ class UserAccountScreen extends ConsumerWidget {
                         },
                         dense: true,
                         minLeadingWidth: 20,
-                        leading: index == 8
-                            ? Icon(Icons.flag_outlined,
-                                size: 20, color: colors.colorGrey)
-                            : SvgPicture.asset(
+                        leading:SvgPicture.asset(
                                 userProfile.profileMenu[index]['leading'],
                                 width: 19,
                                 color: const Color(0xff666666)),

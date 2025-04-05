@@ -393,6 +393,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                       FilteringTextInputFormatter
                                                           .digitsOnly
                                                     ],
+                                                    keyboardType:
+                                                        TextInputType.number,
                                                     style: textStyle(
                                                         theme.isDarkMode
                                                             ? colors.colorWhite
@@ -596,12 +598,15 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   .colorBlack,
                                                           15,
                                                           FontWeight.w400),
+                                                      keyboardType: const TextInputType.numberWithOptions(
+                                                          decimal: true),
                                                       style: textStyle(
                                                           const Color(
                                                               0xff000000),
                                                           16,
                                                           FontWeight.w600),
-                                                      isReadable: isActivePrice[1] || isActivePrice[3]
+                                                      isReadable: isActivePrice[1] ||
+                                                              isActivePrice[3]
                                                           ? true
                                                           : false,
                                                       prefixIcon: Container(
@@ -612,14 +617,9 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                   BorderRadius.circular(
                                                                       20),
                                                               color: theme.isDarkMode
-                                                                  ? const Color(
-                                                                      0xff555555)
-                                                                  : colors
-                                                                      .colorWhite),
-                                                          child: SvgPicture.asset(
-                                                              color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey,
-                                                              isActivePrice[1] || isActivePrice[3] ? assets.lock : assets.ruppeIcon,
-                                                              fit: BoxFit.scaleDown)),
+                                                                  ? const Color(0xff555555)
+                                                                  : colors.colorWhite),
+                                                          child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, isActivePrice[1] || isActivePrice[3] ? assets.lock : assets.ruppeIcon, fit: BoxFit.scaleDown)),
                                                       textCtrl: priceCtrl,
                                                       textAlign: TextAlign.start)),
                                             ]))
@@ -692,6 +692,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                       "Trigger can not be empty"));
                                                         }
                                                       },
+                                                      keyboardType: const TextInputType.numberWithOptions(
+                                                          decimal: true),
                                                       style: textStyle(
                                                           theme.isDarkMode
                                                               ? colors
@@ -701,13 +703,11 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           16,
                                                           FontWeight.w600),
                                                       prefixIcon: Container(
-                                                          margin:
-                                                              const EdgeInsets.all(
-                                                                  12),
+                                                          margin: const EdgeInsets.all(
+                                                              12),
                                                           decoration: BoxDecoration(
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                      20),
+                                                              borderRadius: BorderRadius.circular(
+                                                                  20),
                                                               color: theme.isDarkMode
                                                                   ? const Color(
                                                                       0xff555555)
@@ -715,10 +715,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                                       .colorWhite),
                                                           child: SvgPicture.asset(
                                                               color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorGrey,
+                                                                  ? colors.colorWhite
+                                                                  : colors.colorGrey,
                                                               assets.ruppeIcon,
                                                               fit: BoxFit.scaleDown)),
                                                       textCtrl: triggerPriceCtrl,
@@ -789,6 +787,10 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                         const Color(0xff666666),
                                                         15,
                                                         FontWeight.w400),
+                                                    keyboardType:
+                                                        const TextInputType
+                                                            .numberWithOptions(
+                                                            decimal: true),
                                                     style: textStyle(
                                                         theme.isDarkMode
                                                             ? colors.colorWhite
@@ -869,6 +871,10 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                       const Color(0xff666666),
                                                       15,
                                                       FontWeight.w400),
+                                                  keyboardType:
+                                                      const TextInputType
+                                                          .numberWithOptions(
+                                                          decimal: true),
                                                   style: textStyle(
                                                       theme.isDarkMode
                                                           ? colors.colorWhite
@@ -1061,6 +1067,9 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                           FilteringTextInputFormatter
                                                               .digitsOnly
                                                         ],
+                                                        keyboardType:
+                                                            TextInputType
+                                                                .number,
                                                         style: textStyle(
                                                             theme.isDarkMode
                                                                 ? colors
@@ -1239,6 +1248,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                   }
                                                 });
                                               },
+                                              keyboardType:
+                                                  TextInputType.number,
                                               style: textStyle(
                                                   theme.isDarkMode
                                                       ? colors.colorWhite
