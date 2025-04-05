@@ -55,10 +55,7 @@ class _BarChartWidgetState extends State<BarChartWidget> {
                     ledgerprovider.taxpnleq!.data!.shortermTotal!.isNotEmpty)
                 ? double.parse(ledgerprovider.taxpnleq!.data!.shortermTotal!)
                 : 0.00,
-            (ledgerprovider.taxpnleq?.data?.tradingTurnover != null &&
-                    ledgerprovider.taxpnleq!.data!.tradingTurnover!.isNotEmpty)
-                ? double.parse(ledgerprovider.taxpnleq!.data!.tradingTurnover!)
-                : 0.00,
+         
           ],
           [
             (ledgerprovider.taxpnldercomcur?.data?.derivatives != null &&
@@ -111,6 +108,12 @@ class _BarChartWidgetState extends State<BarChartWidget> {
         ];
       } else if (ledgerprovider.activeTabTaxPnl == 1) {
         barData = [
+          [
+               (ledgerprovider.taxpnleq?.data?.tradingTurnover != null &&
+                    ledgerprovider.taxpnleq!.data!.tradingTurnover!.isNotEmpty)
+                ? double.parse(ledgerprovider.taxpnleq!.data!.tradingTurnover!)
+                : 0.00,
+          ],
           [
             (ledgerprovider.taxpnldercomcur?.data?.derivatives != null &&
                     ledgerprovider
@@ -257,7 +260,7 @@ class _BarChartWidgetState extends State<BarChartWidget> {
                         getTitlesWidget: (value, meta) {
                           final title = switch (ledgerprovider.activeTabTaxPnl) {
                             0 => ['Asserts', 'Equity', 'FNO', 'Com', 'Cur'],
-                            1 => ['FNO', 'Com', 'Cur'],
+                            1 => ['Trading','FNO', 'Com', 'Cur'],
                             2 => ['Equity', 'FNO', 'Com', 'Cur'],
                             _ => []
                           };
