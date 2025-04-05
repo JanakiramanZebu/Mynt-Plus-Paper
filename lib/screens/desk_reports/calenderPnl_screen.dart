@@ -10,6 +10,7 @@ import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart'; 
 import '../../models/desk_reports_model/calender_pnl_model.dart';
 import '../../provider/thems.dart';
+import '../../sharedWidget/custom_back_btn.dart';
 
 class CalenderpnlScreen extends StatefulWidget {
   const CalenderpnlScreen({super.key});
@@ -34,22 +35,20 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
       }
       return Scaffold(
         appBar: AppBar(
-          title: Text(
-            "Calender P&L",
-            style: textStyle(colors.colorBlack, 18, FontWeight.w700),
-          ),
+          leadingWidth: 41,
+          titleSpacing: 6,
+          centerTitle: false,
           leading: InkWell(
-            onTap: () {
+            onTap: (){
               ledgerprovider.setSegment("Equity");
               ledgerprovider.setFinancialYear("");
               Navigator.pop(context);
             },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 9),
-              child: SvgPicture.asset(assets.backArrow,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-            ),
+            child: const CustomBackBtn()),
+          elevation: 0.2,
+          title: Text(
+            "Calender P&L",
+            style: textStyle(colors.colorBlack, 18, FontWeight.w700),
           ),
         ),
         body: TransparentLoaderScreen(
@@ -99,10 +98,12 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                         FontWeight.w600)
                                                     : textStyle(Colors.green,
                                                         16, FontWeight.w600)
-                                                : textStyle(colors.colorBlack,
-                                                    16, FontWeight.w600)
-                                            : textStyle(colors.colorBlack, 16,
-                                                FontWeight.w600),
+                                                : textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,16
+                                                    ,FontWeight.w600)
+                                            : textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,16
+                                                    ,FontWeight.w600),
                                       ),
                                     )
                                   ],
@@ -139,10 +140,12 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                         FontWeight.w600)
                                                     : textStyle(Colors.green,
                                                         16, FontWeight.w600)
-                                                : textStyle(colors.colorBlack,
-                                                    16, FontWeight.w600)
-                                            : textStyle(colors.colorBlack, 16,
-                                                FontWeight.w600),
+                                                : textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,16
+                                                    ,FontWeight.w600)
+                                            : textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,16
+                                                    ,FontWeight.w600),
                                       ),
                                     )
                                   ],
@@ -173,7 +176,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                         ledgerprovider.calenderpnlAllData !=
                                                 null
                                             ? ledgerprovider
-                                                        .calenderpnlAllData !=
+                                                        .calenderpnlAllData!.totalCharges !=
                                                     null
                                                 ? ledgerprovider
                                                     .calenderpnlAllData!
@@ -208,8 +211,9 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                     FontWeight.w600)
                                                 : textStyle(Colors.red, 16,
                                                     FontWeight.w600)
-                                            : textStyle(colors.colorBlack, 16,
-                                                FontWeight.w600),
+                                            : textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,16
+                                                    ,FontWeight.w600),
                                       ),
                                     )
                                   ],
@@ -240,6 +244,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: ledgerprovider.selectedFinancialYear,
+                          dropdownColor: theme.isDarkMode ? const Color(0xff3A3A3A) : const Color(0xffF1F3F8),
                           items:
                               ledgerprovider.availableFinancialYears.map((fy) {
                             return DropdownMenuItem<String>(
@@ -281,6 +286,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: ledgerprovider.selectedSegment,
+                          dropdownColor: theme.isDarkMode ? const Color(0xff3A3A3A) : const Color(0xffF1F3F8),
                           items: ledgerprovider.availableSegments.map((seg) {
                             return DropdownMenuItem<String>(
                               value: seg,
@@ -363,7 +369,8 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                     title: Text(
                                       "$dateString  (${tradesForDate.length})",
                                       style: textStyle(
-                                          Colors.black, 14, FontWeight.w500),
+                    theme.isDarkMode ? Colors.white : Colors.black,14,
+                    FontWeight.w500)
                                     ),
                                     trailing: Text(
                                         '₹ ${totalRealisedPnl.toStringAsFixed(2)}',
@@ -373,8 +380,12 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                     FontWeight.w500)
                                                 : textStyle(Colors.red, 14,
                                                     FontWeight.w500)
-                                            : textStyle(Colors.black, 14,
-                                                FontWeight.w500)),
+                                            : textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w500)),
                                     children: [
                                       Column(
                                         children: List.generate(
@@ -509,7 +520,12 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           FontWeight.w500)),
                   Text(
                     "${trade.totalBuyQty}",
-                    style: textStyle(Colors.black, 14, FontWeight.w500),
+                    style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          12,
+                          FontWeight.w600),
                   ),
                 ],
               ),
@@ -524,7 +540,12 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           FontWeight.w500)),
                   Text(
                     "${trade.totalSellQty}",
-                    style: textStyle(Colors.black, 14, FontWeight.w500),
+                    style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          12,
+                          FontWeight.w600),
                   ),
                 ],
               ),
@@ -547,7 +568,12 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           FontWeight.w500)),
                   Text(
                     "${trade.totalBuyRate}",
-                    style: textStyle(Colors.black, 14, FontWeight.w500),
+                    style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          12,
+                          FontWeight.w600),
                   ),
                 ],
               ),
@@ -562,7 +588,12 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           FontWeight.w500)),
                   Text(
                     "${trade.totalSellRate}",
-                    style: textStyle(Colors.black, 14, FontWeight.w500),
+                    style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          12,
+                          FontWeight.w600),
                   ),
                 ],
               ),
@@ -585,7 +616,12 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           FontWeight.w500)),
                   Text(
                     "${trade.bAMT}",
-                    style: textStyle(Colors.black, 14, FontWeight.w500),
+                    style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          12,
+                          FontWeight.w600),
                   ),
                 ],
               ),
@@ -600,7 +636,12 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           FontWeight.w500)),
                   Text(
                     "${trade.sAMT}",
-                    style: textStyle(Colors.black, 14, FontWeight.w500),
+                    style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          12,
+                          FontWeight.w600),
                   ),
                 ],
               ),
@@ -623,7 +664,12 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           FontWeight.w500)),
                   Text(
                     "${trade.realisedpnl}",
-                    style: textStyle(Colors.black, 14, FontWeight.w500),
+                    style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          12,
+                          FontWeight.w600),
                   ),
                 ],
               ),
@@ -638,7 +684,12 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           FontWeight.w500)),
                   Text(
                     " ${trade.unrealisedpnl}",
-                    style: textStyle(Colors.black, 14, FontWeight.w500),
+                    style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          12,
+                          FontWeight.w600),
                   ),
                 ],
               ),
@@ -806,6 +857,7 @@ class _CalendarTabsState extends State<CalendarTabs> {
                   )
                 else
                   _DailyCalendar(
+                    key: ValueKey(ledgerprovider.selectedMonth.toIso8601String()),
                     theme: widget.theme,
                     heatmapData: widget.heatmapData,
                     startDate: ledgerprovider.startTaxDate,
@@ -869,6 +921,7 @@ class _MonthlyGrid extends StatelessWidget {
   }
 
   Widget _buildMonthBox(BuildContext context, DateTime monthDate) {
+    double screenWidth = MediaQuery.of(context).size.width;
     final key =
         "${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}";
     final double? monthValue = monthlyPnL[key];
@@ -907,34 +960,31 @@ class _MonthlyGrid extends StatelessWidget {
           ? Colors.red.withOpacity(0.2)
           : Colors.green.withOpacity(0.2);
     }
-    return GestureDetector(
-      onTap: () => onMonthSelected(monthDate),
-      child: Container(
-        margin: const EdgeInsets.all(6),
-        width: 80,
-        height: 80,
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              monthName,
-              style: textStyle(theme.isDarkMode ? Colors.white : Colors.black,
-                  14, FontWeight.w600),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              displayText,
-              style: textStyle(
-                  theme.isDarkMode ? Colors.white70 : Colors.grey[800]!,
-                  12,
-                  FontWeight.w500),
-            ),
-          ],
-        ),
+    return Container(
+      margin: const EdgeInsets.all(6),
+      width: screenWidth*0.18,
+      height: screenWidth*0.18,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            monthName,
+            style: textStyle(theme.isDarkMode ? Colors.white : Colors.black,
+                14, FontWeight.w600),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            displayText,
+            style: textStyle(
+                theme.isDarkMode ? Colors.white70 : Colors.grey[800]!,
+                12,
+                FontWeight.w500),
+          ),
+        ],
       ),
     );
   }
@@ -955,7 +1005,7 @@ class _DailyCalendar extends StatefulWidget {
     required this.startDate,
     required this.endDate,
     required this.currentMonth,
-    required this.onMonthChanged,
+    required this.onMonthChanged, required ValueKey<String> key,
   });
 
   @override
@@ -970,6 +1020,16 @@ class _DailyCalendarState extends State<_DailyCalendar> {
     super.initState();
     _month = widget.currentMonth;
   }
+
+  @override
+void didUpdateWidget(covariant _DailyCalendar oldWidget) {
+  super.didUpdateWidget(oldWidget);
+  if (oldWidget.currentMonth != widget.currentMonth) {
+    setState(() {
+      _month = widget.currentMonth;
+    });
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -1002,18 +1062,32 @@ class _DailyCalendarState extends State<_DailyCalendar> {
           ),
         ),
         // Day headers (Mon–Sun)
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(vertical: 4.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text("Mon"),
-              Text("Tue"),
-              Text("Wed"),
-              Text("Thu"),
-              Text("Fri"),
-              Text("Sat"),
-              Text("Sun"),
+              Text("Mon",style: textStyle(
+                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
+                    FontWeight.w700)),
+              Text("Tue",style: textStyle(
+                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
+                    FontWeight.w700)),
+              Text("Wed",style: textStyle(
+                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
+                    FontWeight.w700)),
+              Text("Thu",style: textStyle(
+                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
+                    FontWeight.w700)),
+              Text("Fri",style: textStyle(
+                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
+                    FontWeight.w700)),
+              Text("Sat",style: textStyle(
+                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
+                    FontWeight.w700)),
+              Text("Sun",style: textStyle(
+                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
+                    FontWeight.w700)),
             ],
           ),
         ),
@@ -1033,12 +1107,13 @@ class _DailyCalendarState extends State<_DailyCalendar> {
   }
 
   Widget _buildDayBox(BuildContext context, DateTime date) {
+    double screenWidth = MediaQuery.of(context).size.width;
     if (date.isBefore(widget.startDate) ||
         date.isAfter(widget.endDate) ||
         date.year < 1900) {
       return Container(
-        width: 40,
-        height: 50,
+        width: screenWidth*0.09,
+        height: screenWidth*0.09,
         margin: const EdgeInsets.all(1),
         decoration: BoxDecoration(
           color: widget.theme.isDarkMode
@@ -1177,5 +1252,5 @@ class _DailyCalendarState extends State<_DailyCalendar> {
           i, (i + chunkSize > days.length) ? days.length : i + chunkSize));
     }
     return chunks;
-  }
+ }
 }
