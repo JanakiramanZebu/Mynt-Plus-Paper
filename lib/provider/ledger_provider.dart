@@ -1,0 +1,1390 @@
+import 'dart:ffi';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/models/desk_reports_model/pdf_download_model.dart';
+import 'package:mynt_plus/models/desk_reports_model/pnl_seg_charges_model.dart';
+import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/provider/websocket_provider.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+import '../api/core/api_export.dart';
+import '../locator/locator.dart';
+import '../locator/preference.dart';
+import '../models/desk_reports_model/calender_pnl_model.dart';
+import '../models/desk_reports_model/dercomcur_taxpnl_model.dart';
+import '../models/desk_reports_model/holdings_model.dart';
+import '../models/desk_reports_model/ledger_bill_model.dart';
+import '../models/desk_reports_model/ledger_model.dart';
+import '../models/desk_reports_model/pnl_model.dart';
+import '../models/desk_reports_model/pnl_summary_model.dart';
+import '../models/desk_reports_model/tax_pnl_Eq_charge_model.dart';
+import '../models/desk_reports_model/taxpnl_eq_model.dart';
+import '../models/desk_reports_model/tradebook_model.dart';
+import '../screens/desk_reports/bottom_sheets/ledger_filter.dart';
+import 'core/default_change_notifier.dart';
+import 'package:intl/intl.dart';
+
+final ledgerProvider = ChangeNotifierProvider((ref) => LDProvider(ref.read));
+
+class LDProvider extends DefaultChangeNotifier {
+  final api = locator<ApiExporter>();
+  final Preferences pref = locator<Preferences>();
+  final Reader ref;
+  LDProvider(this.ref);
+  List<dynamic> _taxpnlyeararray = [];
+
+  List<dynamic> get taxpnlyeararray => _taxpnlyeararray;
+
+  List<dynamic> _tradebookfilterarray = [];
+
+  List<dynamic> get tradebookfilterarray => _tradebookfilterarray;
+
+  Map<DateTime, double> _heatmapData = {};
+  Map<DateTime, double> get heatmapData => _heatmapData;
+
+  Map<DateTime, List<TradeData>> grouped = {};
+
+  LedgerModelData? _ledgerAllData;
+  LedgerModelData? get ledgerAllData => _ledgerAllData;
+
+  LedgerModelData? _ledgerAllDataDummy;
+  LedgerModelData? get ledgerAllDataDummy => _ledgerAllDataDummy;
+
+  PnlModel? _pnlAllData;
+  PnlModel? get pnlAllData => _pnlAllData;
+
+  PnlModel? _pnlAllDatadummy;
+  PnlModel? get pnlAllDataDummy => _pnlAllDatadummy;
+
+  CalenderpnlModel? _calenderpnlAllData;
+  CalenderpnlModel? get calenderpnlAllData => _calenderpnlAllData;
+
+  TradeBookModel? _tradebookdata;
+  TradeBookModel? get tradebookdata => _tradebookdata;
+
+  TradeBookModel? _tradebookdataDummy;
+  TradeBookModel? get tradebookdataDummy => _tradebookdataDummy;
+  PdfDownloadModel? _pdfdaataDummy;
+  PdfDownloadModel? get pdfdaataDummy => _pdfdaataDummy;
+
+  PdfDownloadModel? _pdfdownload;
+  PdfDownloadModel? get pdfdownload => _pdfdownload;
+
+  TaxPnlEqModel? _taxpnleq;
+  TaxPnlEqModel? get taxpnleq => _taxpnleq;
+
+  DercomcurModel? _taxpnldercomcur;
+  DercomcurModel? get taxpnldercomcur => _taxpnldercomcur;
+
+  var taxpnleqselectedtabdata;
+
+  var taxpnlderselectedtabdata;
+
+  var taxpnlcomselectedtabdata;
+
+  var taxpnlcurselectedtabdata;
+
+  HoldingModel? _holdingsAllData;
+  HoldingModel? get holdingsAllData => _holdingsAllData;
+
+  LedgerBillModel? _ledgerBillData;
+  LedgerBillModel? get ledgerBillData => _ledgerBillData;
+
+  PnlSummaryModel? _pnlSummaryData;
+  PnlSummaryModel? get pnlSummaryData => _pnlSummaryData;
+
+  PnlSegCharge? _pnlsegCharge;
+  PnlSegCharge? get pnlsegCharge => _pnlsegCharge;
+
+  TaxPnlEqCharges? _taxpnleqCharge;
+  TaxPnlEqCharges? get taxpnleqCharge => _taxpnleqCharge;
+
+  final List<List<dynamic>> _tablearray = [];
+  List<List<dynamic>> get tablearray => _tablearray;
+
+//   List<List<dynamic>> _tableArray;
+// List get tablearray = _tableArray;
+  DateTime? _endsDate;
+  DateTime? get endsDate => _endsDate;
+  DateTime _curDate = DateTime.now();
+
+  DateTime get curDate => _curDate;
+  DateTime? _pickedStartDate;
+  DateTime? get pickedStartDate => _pickedStartDate;
+
+  DateTime? _pickedEndDate;
+
+  String _dummyStartYear = "";
+  String _pdfresponse = "";
+
+  bool _valforcheck = false;
+  bool get valforcheck => _valforcheck;
+
+  bool _loader = false;
+  bool get loader => _loader;
+
+  String _dummyStartdate = "";
+  String _dummyStartmonth = "";
+  String _dummyEndYear = "";
+
+  SingingCharacter? _filterval;
+  SingingCharacter? get filterval => _filterval;
+
+  set setfilterval(SingingCharacter? val) {
+    _filterval = val;
+    print("${_filterval}yyyyyyyy");
+  }
+
+  String _eqtypestring = "";
+  String get eqtypestring => _eqtypestring;
+
+  int _holdingdetailindex = 0;
+  int get holdingdetailindex => _holdingdetailindex;
+
+  set setholdingdetailindex(val) {
+    _holdingdetailindex = val;
+  }
+
+  String _currentfilterpage = "";
+  String get currentfilterpage => _currentfilterpage;
+
+  set setfilterpage(val) {
+    _currentfilterpage = val;
+  }
+
+  bool _reportsloading = false;
+  bool get reportsloading => _reportsloading;
+
+  bool _reportsloadingforcharges = false;
+  bool get reportsloadingforcharges => _reportsloadingforcharges;
+
+  bool _taxderloading = false;
+  bool get taxderloading => _taxderloading;
+
+  String _dertypestring = "";
+  String get dertypestring => _dertypestring;
+
+  String _comtypestring = "";
+  String get comtypestring => _comtypestring;
+
+  String _curtypestring = "";
+  String get curtypestring => _curtypestring;
+
+  set clickedvaluecur(val) {
+    _curtypestring = val;
+    print("${_filterval}yyyyyyyy");
+  }
+
+  int _activeTabTaxPnl = 0;
+  int get activeTabTaxPnl => _activeTabTaxPnl;
+
+  int _yearforTaxpnl = 0;
+  int get yearforTaxpnl => _yearforTaxpnl;
+
+  int _yearforTaxpnlDummy = 0;
+  int get yearforTaxpnlDummy => _yearforTaxpnlDummy;
+
+  set clickedvaluecom(val) {
+    _comtypestring = val;
+  }
+
+  set clickedvalue(val) {
+    _eqtypestring = val;
+  }
+
+  int _eqdertabvalue = 0;
+  int get eqdertabvalue => _eqdertabvalue;
+
+  set clickedtabvalue(val) {
+    _eqdertabvalue = val;
+    print("${_filterval}yyyyyyyy");
+  }
+
+  set clickedvalueder(val) {
+    _dertypestring = val;
+    print("${_filterval}yyyyyyyy");
+  }
+
+  String _startDate = "";
+  String get startDate => _startDate;
+
+  String _lastweekdate = "";
+  String get lastweekdate => _lastweekdate;
+
+  String _today = "";
+  String get today => _today;
+
+  String _endDate = "";
+  String get endDate => _endDate;
+
+  getYearlistTaxpnl() {
+    DateTime today = DateTime.now();
+    int yyyy = today.year;
+    int mm = today.month;
+    _taxpnlyeararray = [];
+    int yearmount = (mm < 4) ? (yyyy - 1) : yyyy;
+    // int startYear = yearmount - 4;
+    int startYear = yearmount;
+    _yearforTaxpnl = startYear;
+    _yearforTaxpnlDummy = startYear;
+    for (int year = yearmount; year >= startYear; year--) {
+      _taxpnlyeararray.add(year);
+    }
+
+    print("Current Year: $yearmount");
+    print("Generated Years: $_taxpnlyeararray");
+  }
+
+  getCurrentDate(String trade) {
+    _curDate = DateTime.now();
+    _pickedStartDate = null;
+
+    DateTime seventhDayBefore = _curDate.subtract(Duration(days: 7));
+
+    // Define the date format
+    DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+
+    // Print in reverse order
+    print(dateFormat.format(seventhDayBefore)); // 7th day before
+    print(dateFormat.format(curDate)); // Current date
+    final date =
+        _curDate.day.toString().padLeft(2, '0'); // Ensures "01", "02", etc.
+    final month =
+        _curDate.month.toString().padLeft(2, '0'); // Ensures "04" for April
+    final year = _curDate.year.toString();
+
+    print("$date-$month-$year"); // Example Output: 20-04-2024
+
+    if (_curDate.month > 3) {
+      _dummyStartYear = _curDate.year.toString();
+      _dummyEndYear = "${_curDate.year + 1}";
+      _dummyStartdate = _curDate.day.toString();
+      _dummyStartmonth = _curDate.month.toString();
+    } else {
+      print("less");
+      _dummyStartYear = "${_curDate.year - 1}";
+      _dummyEndYear = _curDate.year.toString();
+
+      print("$_curDate");
+    }
+    print("$date, $month , $year vaavavaavva");
+
+    _today = "$date/$month/$year";
+    if (trade == 'tradebook') {
+      _startDate = dateFormat.format(seventhDayBefore);
+      _endDate = "$date/$month/$year";
+    } else {
+      _startDate = "01/04/$_dummyStartYear";
+      _endDate = "31/03/${_dummyEndYear}";
+    }
+
+    notifyListeners();
+  }
+
+  void datePickerStart(BuildContext context, ThemesProvider theme) async {
+    DateTime? pickedDate = _pickedStartDate ?? _curDate;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 300, // Adjust the calendar height
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: ColorScheme.light(
+                      primary: theme.isDarkMode
+                          ? Colors.white
+                          : Colors.black, // Selected date highlight color
+                      onPrimary: theme.isDarkMode
+                          ? Colors.black
+                          : Colors.white, // Selected text color
+                      surface: theme.isDarkMode ? Colors.black : Colors.white,
+                      onSurface: theme.isDarkMode
+                          ? Colors.white
+                          : Colors.black, // Text color
+                    ),
+                  ),
+                  child: CalendarDatePicker(
+                    initialDate: pickedDate,
+                    firstDate: DateTime(_curDate.year - 200),
+                    lastDate: DateTime(_curDate.year + 200),
+                    onDateChanged: (date) {
+                      pickedDate = date;
+                    },
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(
+                        color: theme.isDarkMode
+                            ? Colors.grey[300]
+                            : theme.isDarkMode
+                                ? Colors.white
+                                : Colors.black,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      if (pickedDate != null) {
+                        _pickedStartDate = pickedDate;
+                        _startDate =
+                            "${_pickedStartDate!.day}/${_pickedStartDate!.month}/${_pickedStartDate!.year}";
+                        notifyListeners();
+                      }
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      "OK",
+                      style: TextStyle(
+                        color: theme.isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // datePickerEnd(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //       currentDate: _pickedEndDate ?? _curDate,
+  //       context: context,
+  //       initialDate: _pickedEndDate ?? _curDate,
+  //       firstDate: DateTime(_curDate.year - 200),
+  //       lastDate: DateTime(_curDate.year + 200));
+  //   if (picked != null) {
+  //     _pickedEndDate = picked;
+  //     _endDate =
+  //         "${_pickedEndDate!.day}/${_pickedEndDate!.month}/${_pickedEndDate!.year}";
+
+  //   }
+  // }
+
+  void datePickerEnd(BuildContext context, ThemesProvider theme) async {
+    DateTime? pickedDate = _endsDate ?? _curDate;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 300, // Adjust the calendar height
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: ColorScheme.light(
+                      primary: theme.isDarkMode
+                          ? Colors.white
+                          : Colors.black, // Selected date highlight color
+                      onPrimary: theme.isDarkMode
+                          ? Colors.black
+                          : Colors.white, // Selected text color
+                      surface: theme.isDarkMode ? Colors.black : Colors.white,
+                      onSurface: theme.isDarkMode
+                          ? Colors.white
+                          : Colors.black, // Text color
+                    ),
+                  ),
+                  child: CalendarDatePicker(
+                    initialDate: pickedDate,
+                    firstDate: DateTime(_curDate.year - 2),
+                    lastDate: DateTime(_curDate.year + 2),
+                    onDateChanged: (date) {
+                      pickedDate = date;
+                    },
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(
+                        color: theme.isDarkMode
+                            ? Colors.grey[300]
+                            : theme.isDarkMode
+                                ? Colors.white
+                                : Colors.black,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      if (pickedDate != null) {
+                        _endsDate = pickedDate;
+                        _endDate =
+                            "${_endsDate!.day}/${_endsDate!.month}/${_endsDate!.year}";
+                        notifyListeners();
+                      }
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      "OK",
+                      style: TextStyle(
+                        color: theme.isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // datePickerEnd(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //       currentDate: _endsDate ?? _curDate,
+  //       context: context,
+  //       initialDate: _endsDate ?? _curDate,
+  //       firstDate: DateTime(_curDate.year - 2),
+  //       lastDate: DateTime(_curDate.year + 2));
+  //   if (picked != null) {
+  //     _endsDate = picked;
+  //     _endDate = "${_endsDate!.day}/${_endsDate!.month}/${_endsDate!.year}";
+  //   }
+  //   notifyListeners();
+  // }
+
+  filtervalchange() {
+    // _ledgerAllData = null;
+    notifyListeners();
+  }
+  ////API CALL
+
+  Future fetchLegerData(String from, String to) async {
+    try {
+      _reportsloading = true;
+      notifyListeners();
+
+      _ledgerAllDataDummy = await api.getLedgerdata(from, to);
+      //  _ledgerAllData = new LedgerModelData();
+
+      _ledgerAllData = LedgerModelData.fromJson(_ledgerAllDataDummy!.toJson());
+      _ledgerAllData!.fullStat?.sort((a, b) {
+        return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
+      });
+      _filterval = SingingCharacter.all;
+      _reportsloading = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future fetchholdingsData(String from, context) async {
+    try {
+      _reportsloading = true;
+      notifyListeners();
+
+      _holdingsAllData = await api.getHoldingsdata(from);
+      print(_holdingsAllData);
+      _reportsloading = false;
+      notifyListeners();
+
+      print("${_holdingsAllData}rererere");
+    } catch (e) {
+      debugPrint("$e");
+      print("${e}eeeeee");
+    } finally {
+      await requestWS(context: context, isSubscribe: true);
+      notifyListeners();
+    }
+  }
+
+  requestWS({required bool isSubscribe, required BuildContext context}) async {
+    String input = "";
+    if (_holdingsAllData != null) {
+      if (_holdingsAllData!.holdings != null) {
+        for (var element in _holdingsAllData!.holdings!) {
+          if (element["Token"] != '') {
+            input += "${element["Exchange"]}|${element["Token"]}#";
+          }
+        }
+      }
+      print('${input} sub val');
+    }
+
+    if (input.isNotEmpty) {
+      // lastScbTok(input);
+      await ref(websocketProvider).establishConnection(
+          channelInput: input, task: isSubscribe ? "t" : "u", context: context);
+    }
+  }
+
+  Future fetchpnldata(String from, String to, bool yrn) async {
+    try {
+      _reportsloading = true;
+      _reportsloadingforcharges = true;
+      notifyListeners();
+      _pnlAllData = await api.getpnldata(from, to, yrn);
+      _pnlAllDatadummy = PnlModel.fromJson(_pnlAllData!.toJson());
+      _valforcheck = yrn;
+      _reportsloading = false;
+      _reportsloadingforcharges = false;
+      _filterval = SingingCharacter.all;
+      print("${_pnlAllData} valval");
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future fetchcalenderpnldata(String from, String to, String type) async {
+    try {
+      _reportsloading = true;
+      notifyListeners();
+      _calenderpnlAllData = await api.getcalenderpnldata(from, to, type);
+      grouped = {};
+      if (_calenderpnlAllData != null) {
+        _heatmapData = {}; // Reset before adding new data
+
+        if (_calenderpnlAllData!.journal != null) {
+          _filterval = SingingCharacter.all;
+
+          for (var element in _calenderpnlAllData!.journal!) {
+            print("realised : ${element.realisedpnl}");
+            if (element.realisedpnl != '0.0') {
+              String dateString = element.tRADEDATE!;
+
+              try {
+                DateFormat inputFormat =
+                    DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+                DateTime parsedDate = inputFormat.parse(dateString);
+                print("${element.realisedpnl}");
+                _heatmapData[DateTime(
+                        parsedDate.year, parsedDate.month, parsedDate.day)] =
+                    double.parse(element.realisedpnl ?? "0.0");
+              } catch (e) {
+                print("Error parsing date: $dateString - $e");
+              }
+            }
+          }
+        }
+
+        for (var trade in _calenderpnlAllData!.data!) {
+          DateFormat inputFormat =
+              DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+          DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
+          final dateKey =
+              DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+          if (!grouped.containsKey(dateKey)) {
+            grouped[dateKey] = [];
+          }
+          grouped[dateKey]!.add(trade);
+        }
+      }
+      setFinancialYear(selectedFinancialYear);
+
+      print("objectobject${_heatmapData}");
+      _reportsloading = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future fetchtradebookdata(String from, String to) async {
+    try {
+      _reportsloading = true;
+      notifyListeners();
+      _tradebookdata = await api.gettradebookdata(from, to);
+
+      _tradebookdataDummy = TradeBookModel.fromJson(_tradebookdata!.toJson());
+      _filterval = SingingCharacter.all;
+      print("$_tradebookdata object");
+      _reportsloading = false;
+      // print("${_calenderpnlAllData} valval");
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future pdfdownloadfunction(
+      BuildContext context, String recno, String filename) async {
+    try {
+      _reportsloading = true;
+      notifyListeners();
+
+      // Request storage permission
+      // var status = await Permission.storage.request();
+      // if (status.isDenied || status.isPermanentlyDenied) {
+      //   _reportsloading = false;
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text("Storage permission is required!")),
+      //   );
+
+      //   return;
+
+      // }
+
+      // Download the file
+      _pdfresponse = await api.getpdffileapi(recno, filename);
+      if (_pdfresponse == 'File downloaded successfully') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          successMessage(context, 'PDF Downloaded, Check Your Download'),
+        );
+
+        // Open the Downloads folder
+        // String downloadsDir = "/storage/emulated/0/Download";
+        // await OpenFile.open(downloadsDir);
+
+        _reportsloading = false;
+      } else {
+        print("$_pdfresponse Error occurred");
+      }
+
+      _reportsloading = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future pdfdownloadfortaxpnl(
+      BuildContext context, eq, dercomcur, eqcharge, year) async {
+    if (year <= _yearforTaxpnlDummy) {
+      try {
+        _reportsloading = true;
+        notifyListeners();
+
+        _pdfresponse =
+            await api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
+        if (_pdfresponse == 'File downloaded successfully') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, 'PDF Downloaded, Check Your Download'),
+          );
+          _reportsloading = false;
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, '$_pdfresponse'),
+          );
+          _reportsloading = false;
+        }
+
+        _reportsloading = false;
+        notifyListeners();
+      } catch (e) {
+        debugPrint("$e");
+      }
+    }
+  }
+
+  Future fetchpdfdownload(String from, String to) async {
+    try {
+      _reportsloading = true;
+      notifyListeners();
+      _pdfdownload = await api.getpdfdownload(from, to);
+      print("$_pdfdownload object");
+      _pdfdaataDummy = PdfDownloadModel.fromJson(_pdfdownload!.toJson());
+      // final dummy = [];
+      // for (var i = 0; i < _pdfdownload!.data!.length; i++) {
+      //   dummy.add(_pdfdownload!.data![i].docType);
+      // }
+      // _tradebookfilterarray = dummy.toSet().toList();
+      // print(_tradebookfilterarray);
+      _filterval = SingingCharacter.all;
+      _reportsloading = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future fetchtaxpnleqdata(BuildContext context, int from) async {
+    if (from <= _yearforTaxpnlDummy) {
+      _yearforTaxpnl = from;
+
+      try {
+        _reportsloading = true;
+        _taxderloading = true;
+        notifyListeners();
+
+        _taxpnleq = await api.gettaxpnleq(from);
+        _taxpnldercomcur = await api.gettaxpnldercomcur(from);
+
+        _reportsloading = false;
+        _taxderloading = false;
+        notifyListeners();
+
+        print("${_taxpnleq} mainresponse");
+
+        _filterval = SingingCharacter.all;
+
+        final taxEqData = _taxpnleq?.data;
+        if (taxEqData != null) {
+          if (taxEqData.aSSETS != null) {
+            _eqtypestring = 'Asserts';
+            taxpnleqselectedtab('Asserts');
+          } else if (taxEqData.lIABILITIES != null) {
+            _eqtypestring = 'Liabilities';
+            taxpnleqselectedtab('Liabilities');
+          } else if (taxEqData.sHORTTERM != null) {
+            _eqtypestring = 'Short Term';
+            taxpnleqselectedtab('Short Term');
+          } else if (taxEqData.tRADING != null) {
+            _eqtypestring = 'Long Term';
+            taxpnleqselectedtab('Long Term');
+          }
+        }
+
+        final derData = _taxpnldercomcur?.data?.derivatives;
+        if (derData != null) {
+          if (derData.derFutBooked != null) {
+            _dertypestring = 'Future Closed';
+            taxpnlderselectedtab();
+          } else if (derData.derFutOpen != null) {
+            _dertypestring = 'Future Open';
+            taxpnlderselectedtab();
+          } else if (derData.derOptBooked != null) {
+            _dertypestring = 'Option Closed';
+            taxpnlderselectedtab();
+          } else if (derData.derOptOpen != null) {
+            _dertypestring = 'Option Open';
+          }
+        }
+
+        final comData = _taxpnldercomcur?.data?.commodity;
+        if (comData != null) {
+          if (comData.comFutBooked != null) {
+            _comtypestring = 'Future Closed';
+            taxpnlcomselectedtab();
+          } else if (comData.comFutOpen != null) {
+            _comtypestring = 'Future Open';
+            taxpnlcomselectedtab();
+          } else if (comData.comOptBooked != null) {
+            _comtypestring = 'Option Closed';
+            taxpnlcomselectedtab();
+          } else if (comData.comOptOpen != null) {
+            _comtypestring = 'Option Open';
+            taxpnlcomselectedtab();
+          }
+        }
+
+        final curData = _taxpnldercomcur?.data?.currency;
+        if (curData != null) {
+          if (curData.currFutBooked != null) {
+            _curtypestring = 'Future Closed';
+            taxpnlcurselectedtab();
+          } else if (curData.currFutOpen != null) {
+            _curtypestring = 'Future Open';
+            taxpnlcurselectedtab();
+          } else if (curData.currOptBooked != null) {
+            _curtypestring = 'Option Closed';
+            taxpnlcurselectedtab();
+          } else if (curData.currOptOpen != null) {
+            _curtypestring = 'Option Open';
+            taxpnlcurselectedtab();
+          }
+        }
+
+        final charges = _taxpnldercomcur?.data?.charges;
+        print("Assertsvalva $charges");
+
+        notifyListeners();
+      } catch (e) {
+        debugPrint("Error fetching tax pnl data: $e");
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Cant move already in $_yearforTaxpnlDummy'),
+      );
+    }
+  }
+
+  Future fetchBillDetails(
+      String sett, String mrktyp, String comc, String tdate) async {
+    try {
+      _reportsloading = true;
+      notifyListeners();
+
+      _ledgerBillData = await api.getLedgerBilldata(sett, mrktyp, comc, tdate);
+      _reportsloading = false;
+
+      // if (_ledgerAllData!.stat == "Ok") {
+      //   // for (var element in _ledgerAllData!.topSchemes!) {
+
+      //   // }
+      // }
+      // formatedList(_ledgerBillData!.fullStat!);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future fetchpnlSummary(
+      String script, String comcode, String from, String to) async {
+    try {
+      _reportsloading = true;
+      notifyListeners();
+      _pnlSummaryData = await api.getPnlSummary(script, comcode, from, to);
+      // if (_ledgerAllData!.stat == "Ok") {
+      //   // for (var element in _ledgerAllData!.topSchemes!) {
+      //   // }
+      // }
+      // formatedList(_ledgerBillData!.fullStat!);
+      _reportsloading = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future chargesforpnlseg(String seg) async {
+    try {
+      _reportsloadingforcharges = true;
+      notifyListeners();
+      _pnlsegCharge =
+          await api.GetpnlSegCharge(seg, _startDate, _today, _valforcheck);
+      _pnlAllData!.expenseAmt = _pnlsegCharge!.expenseAmt;
+      print("${_pnlsegCharge?.expenseAmt} expense");
+      // if (_ledgerAllData!.stat == "Ok") {
+      //   // for (var element in _ledgerAllData!.topSchemes!) {
+
+      //   // }
+      // }
+      // formatedList(_ledgerBillData!.fullStat!);
+      _reportsloadingforcharges = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future chargesforeqtaxpnl(BuildContext context, int from) async {
+    if (from <= _yearforTaxpnlDummy) {
+      try {
+        _reportsloadingforcharges = true;
+        notifyListeners();
+        _taxpnleqCharge = await api.GettaxpnleqCharge('eq', from);
+
+        // _pnlAllData!.expenseAmt = _pnlsegCharge!.expenseAmt;
+        print("${from}  expensevalvalvalval");
+
+        // if (_ledgerAllData!.stat == "Ok") {
+        //   // for (var element in _ledgerAllData!.topSchemes!) {
+
+        //   // }
+        // }
+        // formatedList(_ledgerBillData!.fullStat!);
+        _reportsloadingforcharges = false;
+        notifyListeners();
+      } catch (e) {
+        debugPrint("$e");
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+          context, 'Cant move already in ${_yearforTaxpnlDummy}'));
+    }
+  }
+
+  ledgerfiltercall(val) {
+    // _ledgerAllData!.fullStat = [];
+
+    if (_currentfilterpage == 'ledger') {
+      List<FullStat> originalList = [];
+      originalList = List.from(_ledgerAllDataDummy!.fullStat ?? []);
+      if (_ledgerAllDataDummy != null) {
+        if (val == SingingCharacter.receipt) {
+          _ledgerAllData!.fullStat =
+              originalList.where((o) => o.tYPE == 'Reciept').toList();
+          double totalCrAmt = 0.0;
+
+          for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
+            totalCrAmt += double.tryParse(
+                    _ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ??
+                0.0;
+          }
+
+          _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
+          _ledgerAllData!.drAmt = '0.0';
+          _ledgerAllData!.openingBalance = '0.0';
+        } else if (val == SingingCharacter.journal) {
+          _ledgerAllData!.fullStat =
+              originalList.where((o) => o.tYPE == 'Journal').toList();
+          double totalCrAmt = 0.0;
+          double totalDrAmt = 0.0;
+
+          for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
+            totalCrAmt += double.tryParse(
+                    _ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ??
+                0.0;
+            totalDrAmt += double.tryParse(
+                    _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
+                0.0;
+          }
+          _ledgerAllData!.openingBalance = '0.0';
+
+          _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
+          _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
+        } else if (val == SingingCharacter.payment) {
+          _ledgerAllData!.fullStat =
+              originalList.where((o) => o.tYPE == 'Payment').toList();
+          double totalCrAmt = 0.0;
+          double totalDrAmt = 0.0;
+
+          for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
+            totalDrAmt += double.tryParse(
+                    _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
+                0.0;
+          }
+          _ledgerAllData!.openingBalance = '0.0';
+
+          _ledgerAllData!.crAmt = '0.0';
+          _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
+        } else if (val == SingingCharacter.systemjournal) {
+          _ledgerAllData!.fullStat =
+              originalList.where((o) => o.tYPE == 'Bill').toList();
+          double totalCrAmt = 0.0;
+          double totalDrAmt = 0.0;
+
+          for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
+            totalCrAmt += double.tryParse(
+                    _ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ??
+                0.0;
+            totalDrAmt += double.tryParse(
+                    _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
+                0.0;
+          }
+          _ledgerAllData!.openingBalance = '0.0';
+
+          _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
+          _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
+        } else if (val == SingingCharacter.all) {
+          _ledgerAllData!.fullStat =
+              List.from(originalList); // Ensure full reset
+          double totalCrAmt = 0.0;
+          double totalDrAmt = 0.0;
+
+          for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
+            totalCrAmt += double.tryParse(
+                    _ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ??
+                0.0;
+            totalDrAmt += double.tryParse(
+                    _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
+                0.0;
+          }
+          _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance;
+
+          _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
+          _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
+        }
+        _ledgerAllData!.fullStat?.sort((a, b) {
+          return int.parse(a.sortNo!).compareTo(int.parse(b.sortNo!));
+        });
+        for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
+          if (i == 0) {
+            _ledgerAllData!.fullStat![i].nETAMT =
+                (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) -
+                        double.parse(_ledgerAllData!.fullStat![i].dRAMT!))
+                    .toStringAsFixed(2);
+          } else {
+            _ledgerAllData!.fullStat![i].nETAMT =
+                (double.parse(_ledgerAllData!.fullStat![i - 1].nETAMT!) +
+                        (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) -
+                            double.parse(_ledgerAllData!.fullStat![i].dRAMT!)))
+                    .toStringAsFixed(2);
+          }
+        }
+        _ledgerAllData!.fullStat?.sort((a, b) {
+          return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
+        });
+        if (_ledgerAllData!.fullStat != null &&
+            _ledgerAllData!.fullStat!.isNotEmpty) {
+          if (_ledgerAllData!.fullStat![0].nETAMT != null) {
+            _ledgerAllData!.closingBalance =
+                _ledgerAllData!.fullStat![0].nETAMT!;
+          }
+        } else {
+          _ledgerAllData!.closingBalance = '0.00';
+        }
+      }
+    } else if (_currentfilterpage == 'pnl') {
+      if (_pnlAllData?.transactions != null) {
+        if (val == SingingCharacter.eq) {
+          _pnlAllData!.transactions = _pnlAllDatadummy!.transactions!
+              .where((o) =>
+                  o.companyCode == 'BSE_CASH' ||
+                  o.companyCode == 'NSE_CASH' ||
+                  o.companyCode == 'MF_BSE' ||
+                  o.companyCode == 'MF_NSE' ||
+                  o.companyCode == 'NSE_SLBM' ||
+                  o.companyCode == 'NSE_SPT')
+              .toList();
+          chargesforpnlseg('eq');
+        }
+        if (val == SingingCharacter.fno) {
+          _pnlAllData!.transactions = _pnlAllDatadummy!.transactions!
+              .where((o) =>
+                  o.companyCode == 'NSE_FNO' || o.companyCode == 'BSE_FNO')
+              .toList();
+          chargesforpnlseg('fno');
+        }
+        if (val == SingingCharacter.com) {
+          _pnlAllData!.transactions = _pnlAllDatadummy!.transactions!
+              .where((o) =>
+                  o.companyCode == 'MCX' ||
+                  o.companyCode == 'NCDEX' ||
+                  o.companyCode == 'NSE_COM' ||
+                  o.companyCode == 'BSE_COM')
+              .toList();
+          chargesforpnlseg('comm');
+        }
+        if (val == SingingCharacter.cur) {
+          _pnlAllData!.transactions = _pnlAllDatadummy!.transactions!
+              .where((o) =>
+                  o.companyCode == 'CD_NSE' ||
+                  o.companyCode == 'CD_MCX' ||
+                  o.companyCode == 'CD_USE' ||
+                  o.companyCode == 'CD_BSE')
+              .toList();
+          chargesforpnlseg('curr');
+        }
+        if (val == SingingCharacter.all) {
+          _pnlAllData!.transactions =
+              List.from(_pnlAllDatadummy!.transactions ?? []);
+          _pnlAllData!.expenseAmt = _pnlAllDatadummy!.expenseAmt;
+        }
+      }
+    } else if (_currentfilterpage == 'tradebook') {
+      if (_tradebookdata!.trades != null) {
+        if (val == SingingCharacter.eq) {
+          _tradebookdata!.trades = _tradebookdataDummy!.trades!
+              .where((o) => o.cOMPANYCODE == 'NSE_CASH')
+              .toList();
+        }
+        if (val == SingingCharacter.fno) {
+          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? [])
+              .where((o) => o.cOMPANYCODE == 'NSE_FNO')
+              .toList();
+        }
+        if (val == SingingCharacter.com) {
+          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? [])
+              .where((o) => o.cOMPANYCODE == 'MCX')
+              .toList();
+        }
+        if (val == SingingCharacter.cur) {
+          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? [])
+              .where((o) => o.cOMPANYCODE == 'CD_NSE')
+              .toList();
+        }
+        if (val == SingingCharacter.buy) {
+          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? [])
+              .where((o) => o.showtype == 'BUY')
+              .toList();
+        }
+        if (val == SingingCharacter.sell) {
+          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? [])
+              .where((o) => o.showtype == 'SELL')
+              .toList();
+        }
+        if (val == SingingCharacter.all) {
+          _tradebookdata!.trades = List.from(_tradebookdataDummy!.trades ?? []);
+        }
+      }
+    } else if (_currentfilterpage == 'pdfdownload') {
+      if (val == SingingCharacter.marginstatement) {
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
+            .where((o) => o.docType == 'Margin Statement')
+            .toList();
+      } else if (val == SingingCharacter.contract) {
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
+            .where((o) => o.docType == 'Contract')
+            .toList();
+      } else if (val == SingingCharacter.weekstate) {
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
+            .where((o) => o.docType == 'Weekly Statement')
+            .toList();
+      } else if (val == SingingCharacter.rr) {
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
+            .where((o) => o.docType == 'Retention Report')
+            .toList();
+      } else if (val == SingingCharacter.agts) {
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
+            .where((o) => o.docType == 'AGTS Report')
+            .toList();
+      } else if (val == SingingCharacter.ledgerdetails) {
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
+            .where((o) => o.docType == 'Ledger Detail')
+            .toList();
+      } else if (val == SingingCharacter.cn) {
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
+            .where((o) => o.docType == 'CN')
+            .toList();
+      } else if (val == SingingCharacter.all) {
+        _pdfdownload!.data = List.from(_pdfdaataDummy!.data ?? []);
+      }
+    }
+
+    notifyListeners(); // Notify UI of changes
+  }
+
+  taxpnleqselectedtab(String value) {
+    taxpnleqselectedtabdata = _eqtypestring == 'Asserts'
+        ? taxpnleq!.data!.aSSETS!
+        : _eqtypestring == 'Liabilities'
+            ? taxpnleq!.data!.lIABILITIES!
+            : _eqtypestring == 'Short Term'
+                ? taxpnleq!.data!.sHORTTERM!
+                : _eqtypestring == 'Long Term'
+                    ? taxpnleq!.data!.tRADING!
+                    : [];
+  }
+
+  taxpnlderselectedtab() {
+    taxpnlderselectedtabdata = _dertypestring == 'Future Closed'
+        ? taxpnldercomcur!.data!.derivatives!.derFutBooked != null
+            ? taxpnldercomcur!.data!.derivatives!.derFutBooked!
+            : []
+        : _dertypestring == 'Future Open'
+            ? taxpnldercomcur!.data!.derivatives!.derFutOpen!
+            : _dertypestring == 'Option Closed'
+                ? taxpnldercomcur!.data!.derivatives!.derOptBooked!
+                : _dertypestring == 'Option Open'
+                    ? taxpnldercomcur!.data!.derivatives!.derOptOpen!
+                    : [];
+
+    // taxpnlderselectedtabdata = _dertypestring == 'Future Closed'
+    //     ? taxpnldercomcur!.data!.commodity!.comFutBooked!
+    //     : _dertypestring == 'Future Open'
+    //         ? taxpnldercomcur!.data!.commodity!.comFutOpen!
+    //         : _dertypestring == 'Option Closed'
+    //             ? taxpnldercomcur!.data!.commodity!.comOptBooked!
+    //             : _dertypestring == 'Option Open'
+    //                 ? taxpnldercomcur!.data!.commodity!.comOptOpen!
+    //                 : [];
+
+    // else if (value == '3') {
+    //   taxpnlderselectedtabdata = _dertypestring == 'Future Closed'
+    //       ? taxpnldercomcur!.data!.derivatives!.derFutBooked!
+    //       : _dertypestring == 'Future Open'
+    //           ? taxpnldercomcur!.data!.derivatives!.derFutOpen!
+    //           : _dertypestring == 'Option Closed'
+    //               ? taxpnldercomcur!.data!.derivatives!.derOptBooked!
+    //               : _dertypestring == 'Option Open'
+    //                   ? taxpnldercomcur!.data!.derivatives!.derOptOpen!
+    //                   : [];
+    // }
+  }
+
+  taxpnlcomselectedtab() {
+    taxpnlcomselectedtabdata = _comtypestring == 'Future Closed'
+        ? taxpnldercomcur!.data!.commodity!.comFutBooked!
+        : _comtypestring == 'Future Open'
+            ? taxpnldercomcur!.data!.commodity!.comFutOpen!
+            : _comtypestring == 'Option Closed'
+                ? taxpnldercomcur!.data!.commodity!.comOptBooked!
+                : _comtypestring == 'Option Open'
+                    ? taxpnldercomcur!.data!.commodity!.comOptOpen!
+                    : [];
+
+    // else if (value == '3') {
+    //   taxpnlderselectedtabdata = _dertypestring == 'Future Closed'
+    //       ? taxpnldercomcur!.data!.derivatives!.derFutBooked!
+    //       : _dertypestring == 'Future Open'
+    //           ? taxpnldercomcur!.data!.derivatives!.derFutOpen!
+    //           : _dertypestring == 'Option Closed'
+    //               ? taxpnldercomcur!.data!.derivatives!.derOptBooked!
+    //               : _dertypestring == 'Option Open'
+    //                   ? taxpnldercomcur!.data!.derivatives!.derOptOpen!
+    //                   : [];
+    // }
+  }
+
+  taxpnlcurselectedtab() {
+    taxpnlcurselectedtabdata = _curtypestring == 'Future Closed'
+        ? taxpnldercomcur!.data!.currency!.currFutBooked!
+        : _curtypestring == 'Future Open'
+            ? taxpnldercomcur!.data!.currency!.currFutOpen!
+            : _curtypestring == 'Option Closed'
+                ? taxpnldercomcur!.data!.currency!.currOptBooked!
+                : _curtypestring == 'Option Open'
+                    ? taxpnldercomcur!.data!.currency!.currOptOpen!
+                    : [];
+
+    // else if (value == '3') {
+    //   taxpnlderselectedtabdata = _dertypestring == 'Future Closed'
+    //       ? taxpnldercomcur!.data!.derivatives!.derFutBooked!
+    //       : _dertypestring == 'Future Open'
+    //           ? taxpnldercomcur!.data!.derivatives!.derFutOpen!
+    //           : _dertypestring == 'Option Closed'
+    //               ? taxpnldercomcur!.data!.derivatives!.derOptBooked!
+    //               : _dertypestring == 'Option Open'
+    //                   ? taxpnldercomcur!.data!.derivatives!.derOptOpen!
+    //                   : [];
+    // }
+  }
+
+  taxpnlExTabchange(val) {
+    _activeTabTaxPnl = val;
+    notifyListeners(); // Notify UI of changes
+  }
+
+  //
+
+  // True if Monthly tab is active; false if Daily tab is active.
+  bool isMonthly = true;
+
+  // The selected financial year, e.g., "2024-2025"
+  late String selectedFinancialYear;
+
+  String selectedSegment = 'Equity';
+
+  // A list of available financial years (last 5 years).
+  late List<String> availableFinancialYears;
+
+  List<String> availableSegments = ['Equity', 'FnO', 'Commodity', 'Currency'];
+
+  // Start and end dates for the selected financial year.
+  late DateTime startTaxDate;
+  late DateTime endTaxDate;
+
+  late String formattedStartDate;
+  late String formattedendDate;
+
+  // The currently selected month for the Daily view.
+  late DateTime selectedMonth;
+
+  // Aggregated monthly P&L (key format: "YYYY-MM")
+  Map<String, double> monthlyPnL = {};
+
+  calendarProvider() {
+    // Generate and store the last 5 financial years.
+    availableFinancialYears = _generateFinancialYears(5);
+    // Default to the first (current) financial year.
+    selectedFinancialYear = availableFinancialYears.first;
+    // Initialize startDate, endDate, selectedMonth, and monthlyPnL.
+    setFinancialYear(selectedFinancialYear);
+  }
+
+  /// Sets the active tab: true for Monthly, false for Daily.
+  void setTab(bool monthly) {
+    isMonthly = monthly;
+    notifyListeners();
+  }
+
+  /// Sets the currently selected month (for Daily view).
+  void setSelectedMonth(DateTime month) {
+    selectedMonth = month;
+    notifyListeners();
+  }
+
+  /// Sets the financial year and updates the startDate, endDate, selectedMonth,
+  /// and monthlyPnL aggregation using the provided [heatmapData].
+  void setFinancialYear(String fy) {
+    // Only update if the value has changed.
+    if (fy == "") {
+      selectedFinancialYear = availableFinancialYears.first;
+      fy = selectedFinancialYear;
+    } else {
+      selectedFinancialYear = fy;
+    }
+
+    // Parse "YYYY-YYYY" to extract the start year.
+    final parts = fy.split('-');
+    final startYear = int.parse(parts[0]);
+
+    // Define the financial year range: April of startYear to March of startYear+1.
+    startTaxDate = DateTime(startYear, 4, 1);
+    formattedStartDate = DateFormat("dd/MM/yyyy").format(startTaxDate);
+    endTaxDate = DateTime(startYear + 1, 3, 31);
+    formattedendDate = DateFormat("dd/MM/yyyy").format(endTaxDate);
+
+    // Determine current financial year based on today's date.
+    final now = DateTime.now();
+    final currentFYStartYear = now.month < 4 ? now.year - 1 : now.year;
+
+    // If the selected FY is the current one, default to current month in Daily view;
+    // otherwise, default to the FY start date.
+    selectedMonth = (startYear == currentFYStartYear)
+        ? DateTime(now.year, now.month, 1)
+        : startTaxDate;
+
+    if (_heatmapData != {}) {
+      // Aggregate monthly P&L data for this financial year.
+      monthlyPnL = _aggregateMonthlyPnL(_heatmapData, startTaxDate, endTaxDate);
+    }
+    // Schedule notifyListeners to run after the current frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
+  void setSegment(String seg) {
+    selectedSegment = seg;
+    notifyListeners();
+  }
+
+  /// Aggregates daily P&L into monthly sums for the given [start] and [end] dates.
+  /// The key format is "YYYY-MM".
+  Map<String, double> _aggregateMonthlyPnL(
+      Map<DateTime, double> data, DateTime start, DateTime end) {
+    final Map<String, double> result = {};
+    data.forEach((date, pnl) {
+      if (date.isBefore(start) || date.isAfter(end)) return;
+      final key = "${date.year}-${date.month.toString().padLeft(2, '0')}";
+      result[key] = (result[key] ?? 0) + pnl;
+    });
+    return result;
+  }
+
+  /// Generates a list of the last [count] financial years (in descending order).
+  /// Each financial year is represented as a string "YYYY-YYYY".
+  List<String> _generateFinancialYears(int count) {
+    final now = DateTime.now();
+    // If current month is before April, current FY started last year.
+    int currentFYStartYear = now.month < 4 ? now.year - 1 : now.year;
+    final years = <String>[];
+    for (int i = 0; i < count; i++) {
+      final startY = currentFYStartYear - i;
+      years.add("$startY-${startY + 1}");
+    }
+    return years;
+  }
+}
+// List<double> getCustItemsHeight() {
+//   List<double> itemsHeights = [];
+//   for (var i = 0; i < (_paymentMethod.length * 2) - 1; i++) {
+//     if (i.isEven) {
+//       itemsHeights.add(40);
+//     }
+//     if (i.isOdd) {
+//       itemsHeights.add(4);
+//     }
+//   }
+//   return itemsHeights;
+// }

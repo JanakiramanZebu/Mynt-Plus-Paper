@@ -420,3 +420,17 @@ String formatDateTimepaymet({required String value}) {
   }
   return formatedDate;
 }
+String dateFormatChangeForLedger( String value) {
+  String formatedDate = '';
+  if (value.isNotEmpty) {
+    final inputDatetimeString = value;
+    final inputFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+    final inputDatetime = inputFormat.parse(inputDatetimeString);
+    // Format the datetime in the desired format
+    final outputFormat = DateFormat("dd/MM/yyyy");
+    final formattedDatetime = outputFormat.format(inputDatetime);
+    formatedDate = formattedDatetime;
+    // print("Formatted Datetime: $formattedDatetime");
+  }
+  return formatedDate;
+}

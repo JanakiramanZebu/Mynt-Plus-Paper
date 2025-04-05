@@ -162,10 +162,24 @@ class Routes {
 
   static const String mfOrderbookscreen = 'mfOrderbook';
   static const String mfSipdetScren = 'mfSipdetScren';
-   static const String mfholdsinlepage = 'mfholdsinlepage';
+  static const String mfholdsinlepage = 'mfholdsinlepage';
   static const String mforderdetscreen = 'mforderdetscreen';
   static const String mfsearchscreen = 'mfsearchscreen';
 
   static const String mfnfoscreen = 'mfnfoscreen';
   static const String mfCategoryList = 'mfCategoryList';
+
+  //reports
+  static const String ledgerscreen = 'LedgerScreen';
+  static const String holdingscreen = 'HoldingScreen';
+  static const String pnlscreen = 'PnlScreen';
+  static const String calenderpnlScreen = 'CalenderpnlScreen';
+  static const String taxpnlscreen = 'Taxpnlscreen';
+  static const String tradebook = 'Tradebook';
+  static const String pdfdownload = 'PdfDownload';
+
+  static const String eqtaxpnleq = 'EqTaxpnlEq';
+
+  // rough
+  static const String heatmapcalendarscreen = 'HeatmapCalendarScreen ';
 }

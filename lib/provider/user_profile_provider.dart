@@ -75,10 +75,10 @@ class UserProfileProvider extends DefaultChangeNotifier {
   final List _reporttMenu = [
     {"title": "Ledger", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Holdings", "trailing": "assets/profile/greater_arrow.svg"},
-    {
-      "title": "Positions - (Beta)",
-      "trailing": "assets/profile/greater_arrow.svg"
-    },
+    // {
+    //   "title": "Positions - (Beta)",
+    //   "trailing": "assets/profile/greater_arrow.svg"
+    // },
     {"title": "Profit & Loss", "trailing": "assets/profile/greater_arrow.svg"},
     {
       "title": "Calender P&L (Beta)",

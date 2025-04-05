@@ -22,11 +22,12 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-        fontWeight: fw == 2
+         fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                : FontWeight.normal,
+                :  fw == 0
+                ? FontWeight.w500 : FontWeight.normal,
       )),
     );
   }
@@ -50,11 +51,12 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-        fontWeight: fw == 2
+         fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                : FontWeight.normal,
+                :  fw == 0
+                ? FontWeight.w500 : FontWeight.normal,
       )),
     );
   }
@@ -78,11 +80,12 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-        fontWeight: fw == 2
+         fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                : FontWeight.normal,
+                :  fw == 0
+                ? FontWeight.w500 : FontWeight.normal,
       )),
     );
   }
@@ -106,11 +109,12 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-        fontWeight: fw == 2
+         fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                : FontWeight.normal,
+                :  fw == 0
+                ? FontWeight.w500 : FontWeight.normal,
       )),
     );
   }
@@ -138,7 +142,8 @@ class TextWidget {
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                : FontWeight.normal,
+                :  fw == 0
+                ? FontWeight.w500 : FontWeight.normal,
       )),
     );
   }
@@ -162,11 +167,12 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-        fontWeight: fw == 2
+         fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                : FontWeight.normal,
+                :  fw == 0
+                ? FontWeight.w500 : FontWeight.normal,
       )),
     );
   }
@@ -190,11 +196,12 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-        fontWeight: fw == 2
+         fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                : FontWeight.normal,
+                :  fw == 0
+                ? FontWeight.w500 : FontWeight.normal,
       )),
     );
   }
@@ -219,11 +226,12 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-        fontWeight: fw == 2
+         fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                : FontWeight.normal,
+                :  fw == 0
+                ? FontWeight.w500 : FontWeight.normal,
       )),
     );
   }

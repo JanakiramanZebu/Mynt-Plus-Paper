@@ -82,7 +82,9 @@ dependencies:
   file_picker: ^8.0.7
   crypto: ^3.0.6
   skeletonizer: ^1.4.3
-  
+  flutter_heatmap_calendar: ^1.0.5
+  flutter_spinkit: ^5.2.1
+  fl_chart: ^0.63.0
   
   
   

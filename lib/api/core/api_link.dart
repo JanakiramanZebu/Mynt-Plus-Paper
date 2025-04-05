@@ -310,4 +310,13 @@ String get profileAllDetailsURL => '$profileDetailsURL/profile';
   String get checkclosureURL => '$profileDetailsURL/check_closure';
   String get getholdingscheckURL => '$profileDetailsURL/getholdingscheck';
   String get closureURL => '$profileDetailsURL/closure';
+
+
+
+
+  // reportss api
+
+    String get reportsapi => 'https://rekycbe.mynt.in/report/';
+
+
 }

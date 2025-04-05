@@ -1,3 +1,5 @@
+import 'package:mynt_plus/api/ledger_api.dart';
+
 import '../api_key_generate_api.dart';
 import '../auth_api.dart';
 import '../bond_api.dart';
@@ -37,5 +39,6 @@ class ApiExporter
         MutualFundApi,
         TranscationApi,
         StrategyJson,
+        LedgerApi,
         ProfileAllDetailsApi,
         VersionApi {}

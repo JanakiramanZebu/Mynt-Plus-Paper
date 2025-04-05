@@ -33,6 +33,15 @@ mixin ApiCore {
     };
   }
 
+  
+  Map<String, String> get testingrameshheader {
+    return {
+      'Authorization': "3bff029349529662bebb88576c4b77bde027416141f218011e9e99be2637b1ab",
+      'clientid': "ZP00172",
+      'Content-Type': 'application/json'
+    };
+  }
+
   Map<String, String> get razorpaytHeaders {
     return {
       'Authorization': "${prefs.token}",

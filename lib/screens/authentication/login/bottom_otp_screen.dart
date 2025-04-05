@@ -93,6 +93,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
         border: Border.all(color: colors.darkred, width: 1),
         //textStyle: defaultPinThemes.textStyle?.copyWith(color: Colors.red),
       );
+      
       final submittedPinTheme = defaultPinThemes.copyBorderWith(
         border: Border.all(color: colors.ltpgreen, width: 2),
       );
