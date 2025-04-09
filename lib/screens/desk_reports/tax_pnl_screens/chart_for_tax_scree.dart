@@ -39,7 +39,7 @@ class _BarChartWidgetState extends State<BarChartWidget> {
                                     ? Colors.white
                                     : Colors.black;
 
-      if (ledgerprovider.activeTabTaxPnl == 0) {
+      // if (ledgerprovider.activeTabTaxPnl == 0) {
         barData = [
           [
             (ledgerprovider.taxpnleq?.data?.assetsTotal != null &&
@@ -107,7 +107,7 @@ class _BarChartWidgetState extends State<BarChartWidget> {
                 : 0.00,
           ],
         ];
-      } 
+      // } 
       // else if (ledgerprovider.activeTabTaxPnl == 1) {
       //   barData = [
       //     [
