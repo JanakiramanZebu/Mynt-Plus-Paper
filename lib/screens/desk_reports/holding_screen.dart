@@ -128,13 +128,12 @@ class HoldingScreen extends StatelessWidget {
           centerTitle: false,
           leading: const CustomBackBtn(),
           elevation: 0.2,
-          title: Text(
-            "Holdings",
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                18,
-                FontWeight.w700),
-          ),
+          title: TextWidget.heroText(
+              text: "Holdings",
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 1),
+
           // leading: InkWell(
           //   onTap: () {
           //     ledgerprovider.requestWS(context: context, isSubscribe: true);
@@ -202,36 +201,34 @@ class HoldingScreen extends StatelessWidget {
                                   children: [
                                     TextWidget.subText(
                                         text: "Current Value    ",
-                                        color: Color(0xFF696969), 
+                                        color: Color(0xFF696969),
                                         theme: theme.isDarkMode,
                                         fw: 0),
-                                    
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8.0),
-                                      child:
-                                      
-                                       Text(
-                                        ledgerprovider.holdingsAllData !=
-                                                    null &&
-                                                ledgerprovider.holdingsAllData!
-                                                        .totalInvested !=
-                                                    null
-                                            ? "₹ ${currentval.toStringAsFixed(2)}"
-                                            : '0.00',
-                                        style: textStyle(
-                                            (num.tryParse(currentval
-                                                            .toString()) ??
-                                                        0) >
-                                                    0
-                                                ? Colors.green
-                                                : currentval < 0
-                                                    ? Colors.red
-                                                    : theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                            16,
-                                            FontWeight.w600),
-                                      ),
+                                      child: TextWidget.titleText(
+                                          text: ledgerprovider
+                                                          .holdingsAllData !=
+                                                      null &&
+                                                  ledgerprovider
+                                                          .holdingsAllData!
+                                                          .totalInvested !=
+                                                      null
+                                              ? "₹ ${currentval.toStringAsFixed(2)}"
+                                              : '0.00',
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          color: (num.tryParse(currentval
+                                                          .toString()) ??
+                                                      0) >
+                                                  0
+                                              ? Colors.green
+                                              : currentval < 0
+                                                  ? Colors.red
+                                                  : theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                          fw: 1),
                                     )
                                   ],
                                 ),
@@ -240,55 +237,52 @@ class HoldingScreen extends StatelessWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text(
-                                  "Total P&L",
-                                  textAlign: TextAlign.right,
-                                  style: textStyle(
-                                      Color(0xFF696969), 14, FontWeight.w500),
-                                ),
+                                TextWidget.subText(
+                                  align :                                       TextAlign.right, 
+                                    text: "Total P&L    ",
+                                    color: Color(0xFF696969),
+                                    theme: theme.isDarkMode,
+                                    fw: 0),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        "₹ ${pnlstat.toStringAsFixed(2)}",
-                                        textAlign: TextAlign.right,
-                                        style: textStyle(
-                                            pnlstat > 0
-                                                ? Colors.green
-                                                : pnlstat < 0
-                                                    ? Colors.red
-                                                    : theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                            16,
-                                            FontWeight.w600),
-                                      ),
+                                      child: TextWidget.titleText(
+                                          color: pnlstat > 0
+                                              ? Colors.green
+                                              : pnlstat < 0
+                                                  ? Colors.red
+                                                  : theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                          text:
+                                              "₹ ${pnlstat.toStringAsFixed(2)}",
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          fw: 1),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        ledgerprovider.holdingsAllData
-                                                        ?.totalInvested ==
-                                                    null ||
-                                                ledgerprovider.holdingsAllData
-                                                        ?.totalInvested
-                                                        .toString() ==
-                                                    'null'
-                                            ? '0.00'
-                                            : "(${((pnlstat / (double.tryParse(ledgerprovider.holdingsAllData?.totalInvested?.toString() ?? '1'))!) * 100).toStringAsFixed(2)}%)",
-                                        style: textStyle(
-                                            pnlstat > 0
-                                                ? Colors.green
-                                                : pnlstat < 0
-                                                    ? Colors.red
-                                                    : theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                            13,
-                                            FontWeight.w600),
-                                      ),
+                                      child: TextWidget.subText(
+                                          text: ledgerprovider.holdingsAllData
+                                                          ?.totalInvested ==
+                                                      null ||
+                                                  ledgerprovider.holdingsAllData
+                                                          ?.totalInvested
+                                                          .toString() ==
+                                                      'null'
+                                              ? '0.00'
+                                              : "(${((pnlstat / (double.tryParse(ledgerprovider.holdingsAllData?.totalInvested?.toString() ?? '1'))!) * 100).toStringAsFixed(2)}%)",
+                                          color: pnlstat > 0
+                                              ? Colors.green
+                                              : pnlstat < 0
+                                                  ? Colors.red
+                                                  : theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                          theme: theme.isDarkMode,
+                                          fw: 0),
                                     ),
                                   ],
                                 )
@@ -661,21 +655,14 @@ class HoldingScreen extends StatelessWidget {
                                               const EdgeInsets.only(top: 8.0),
                                           child: Row(
                                             children: [
-                                              Text(
-                                                "${ledgerprovider.holdingsAllData!.holdings![index]['SCRIP_SYMBOL']}",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    14,
-                                                    FontWeight.w600),
-                                                softWrap:
-                                                    true, // Allows text to wrap
-                                                overflow: TextOverflow
-                                                    .ellipsis, // Adds "..." if the text is too long
-                                                maxLines:
-                                                    2, // Limits text to 2 lines, change as needed
-                                              ),
+                                              TextWidget.subText(
+                                                  text:
+                                                      "${ledgerprovider.holdingsAllData!.holdings![index]['SCRIP_SYMBOL']}",
+                                                  color: theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
                                               Padding(
                                                 padding: const EdgeInsets.only(
                                                     left: 8.0),
@@ -707,21 +694,22 @@ class HoldingScreen extends StatelessWidget {
                                       children: [
                                         Row(
                                           children: [
-                                            Text("Qty : ",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : Color(0xFF696969),
-                                                    12,
-                                                    FontWeight.w500)),
-                                            Text(
-                                                "${ledgerprovider.holdingsAllData!.holdings![index]['NET']} @ ₹${ledgerprovider.holdingsAllData?.holdings?[index]['buy_price']}",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    12,
-                                                    FontWeight.w600)),
+                                            TextWidget.subText(
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : Color(0xFF696969),
+                                                text: "Qty : ",
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                            TextWidget.subText(
+                                                text:
+                                                    "${ledgerprovider.holdingsAllData!.holdings![index]['NET']} @ ₹${ledgerprovider.holdingsAllData?.holdings?[index]['buy_price']}",
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
                                           ],
                                         ),
                                         Row(
@@ -735,56 +723,68 @@ class HoldingScreen extends StatelessWidget {
                                             //         FontWeight.w500)),
                                             Row(
                                               children: [
-                                                Text(
-                                                    "₹ ${(ledgerprovider.holdingsAllData!.holdings![index]['pnl'])}",
-                                                    style: textStyle(
-                                                        (num.tryParse(ledgerprovider
+                                                TextWidget.subText(
+                                                    text:
+                                                        "₹ ${(ledgerprovider.holdingsAllData!.holdings![index]['pnl'])}",
+                                                    color: (num.tryParse(ledgerprovider
+                                                                    .holdingsAllData!
+                                                                    .holdings![
+                                                                        index]
+                                                                        ['pnl']
+                                                                    .toString()) ??
+                                                                0) >
+                                                            0
+                                                        ? Colors.green
+                                                        : (num.tryParse(ledgerprovider
                                                                         .holdingsAllData!
                                                                         .holdings![
                                                                             index]
                                                                             [
                                                                             'pnl']
                                                                         .toString()) ??
-                                                                    0) >
+                                                                    0) <
                                                                 0
-                                                            ? Colors.green
-                                                            : (num.tryParse(ledgerprovider
-                                                                            .holdingsAllData!
-                                                                            .holdings![index]['pnl']
-                                                                            .toString()) ??
-                                                                        0) <
-                                                                    0
-                                                                ? Colors.red
-                                                                : theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                        12,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    "(${ (ledgerprovider.holdingsAllData!.holdings![index]['pnlch'])}%)",
-                                                    style: textStyle(
-                                                        (num.tryParse(ledgerprovider
+                                                            ? Colors.red
+                                                            : theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+                                                TextWidget.paraText(
+                                                    color: (num.tryParse(ledgerprovider
+                                                                    .holdingsAllData!
+                                                                    .holdings![
+                                                                        index]
+                                                                        ['pnl']
+                                                                    .toString()) ??
+                                                                0) >
+                                                            0
+                                                        ? Colors.green
+                                                        : (num.tryParse(ledgerprovider
                                                                         .holdingsAllData!
                                                                         .holdings![
                                                                             index]
                                                                             [
                                                                             'pnl']
                                                                         .toString()) ??
-                                                                    0) >
+                                                                    0) <
                                                                 0
-                                                            ? Colors.green
-                                                            : (num.tryParse(ledgerprovider
-                                                                            .holdingsAllData!
-                                                                            .holdings![index]['pnl']
-                                                                            .toString()) ??
-                                                                        0) <
-                                                                    0
-                                                                ? Colors.red
-                                                                : theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                        12,
-                                                        FontWeight.w500)),
+                                                            ? Colors.red
+                                                            : theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                    text:
+                                                        "(${(ledgerprovider.holdingsAllData!.holdings![index]['pnlch'])}%)",
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
                                               ],
                                             ),
                                           ],
@@ -801,42 +801,42 @@ class HoldingScreen extends StatelessWidget {
                                       children: [
                                         Row(
                                           children: [
-                                            Text("Inv : ",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : Color(0xFF696969),
-                                                    12,
-                                                    FontWeight.w500)),
-                                            Text(
-                                              "₹ ${((double.tryParse(ledgerprovider.holdingsAllData?.holdings?[index]['buy_price'].toString() ?? '0') ?? 0) * (double.tryParse(ledgerprovider.holdingsAllData?.holdings?[index]['NET'].toString() ?? '0') ?? 0)).toStringAsFixed(2)}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  12,
-                                                  FontWeight.w600),
-                                            ),
+                                            TextWidget.subText(
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : Color(0xFF696969),
+                                                text: "Inv : ",
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                            TextWidget.subText(
+                                                text:
+                                                    "₹ ${((double.tryParse(ledgerprovider.holdingsAllData?.holdings?[index]['buy_price'].toString() ?? '0') ?? 0) * (double.tryParse(ledgerprovider.holdingsAllData?.holdings?[index]['NET'].toString() ?? '0') ?? 0)).toStringAsFixed(2)}",
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
                                           ],
-                                        ), 
+                                        ),
                                         Row(
                                           children: [
-                                            Text("LTP : ",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : Color(0xFF696969),
-                                                    12,
-                                                    FontWeight.w500)),
-                                            Text(
-                                              "${ledgerprovider.holdingsAllData!.holdings![index]['ltp']}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  12,
-                                                  FontWeight.w600),
-                                            ),
+                                            TextWidget.subText(
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : Color(0xFF696969),
+                                                text: "LTP : ",
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                            TextWidget.subText(
+                                                text:
+                                                    "${ledgerprovider.holdingsAllData!.holdings![index]['ltp']}",
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
                                           ],
                                         ),
                                       ],

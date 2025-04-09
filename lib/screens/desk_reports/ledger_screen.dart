@@ -148,9 +148,7 @@ class LedgerScreen extends StatelessWidget {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(
-                                left: 16.0,
-                                right: 16.0, 
-                                bottom: 16.0),
+                                left: 16.0, right: 16.0, bottom: 16.0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -359,6 +357,31 @@ class LedgerScreen extends StatelessWidget {
                                   ? const Color(0xffBDBDBD)
                                   : colors.colorGrey),
                         )),
+                    SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 14.0),
+                      child: IconButton(
+                        iconSize: 20,
+                        icon: Icon(Icons.download,
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack),
+                        onPressed: () => {
+                          ledgerprovider.pdfdownloadforledger(
+                              context,
+                              ledgerprovider.ledgerAllData?.toJson() ?? {},
+                              ledgerprovider.ledgerAllData?.drAmt ??
+                                  '0.00',
+                                  ledgerprovider.ledgerAllData?.crAmt ??
+                                  '0.00', 
+                              ledgerprovider.ledgerAllData?.closingBalance ??
+                                  '0.00',
+                              ledgerprovider.ledgerAllData?.openingBalance ??
+                                  '0.00',ledgerprovider.startDate,ledgerprovider.endDate
+                                  ),
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -545,46 +568,54 @@ class LedgerScreen extends StatelessWidget {
                                       children: [
                                         Row(
                                           children: [
-                                            Text(
-                                                "${ledgerprovider.ledgerAllData!.fullStat![index].tYPE} ",
-                                                style: textStyle(
-                                                    theme.isDarkMode
+                                            TextWidget.subText(
+                                                  text:  "${ledgerprovider.ledgerAllData!.fullStat![index].tYPE} ",
+                                                  color: theme.isDarkMode
                                                         ? colors.colorWhite
                                                         : colors.colorBlack,
-                                                    14,
-                                                    FontWeight.w600)),
-                                            Text(
-                                                " ${dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString())}",
-                                                style: textStyle(
-                                                    theme.isDarkMode
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 1),
+                                                   TextWidget.paraText(
+                                                  text:  " ${dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString())}",
+                                                  color: theme.isDarkMode
                                                         ? colors.colorWhite
                                                         : colors.colorBlack,
-                                                    12,
-                                                    FontWeight.w500)),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+                                             
+                                             
                                           ],
                                         ),
                                         Padding(
                                           padding: const EdgeInsets.only(
                                               right: 16.0),
-                                          child: Text(
-                                              textAlign: TextAlign.right,
-                                              ledgerprovider
+                                          child: 
+                                           TextWidget.subText(
+                                            align: TextAlign.right,
+                                                  text:  ledgerprovider
                                                           .ledgerAllData!
                                                           .fullStat![index]
                                                           .cRAMT !=
                                                       "0.0"
                                                   ? " ₹ +${ledgerprovider.ledgerAllData!.fullStat![index].cRAMT}  "
                                                   : " ₹ -${ledgerprovider.ledgerAllData!.fullStat![index].dRAMT}  ",
-                                              style: textStyle(
-                                                  ledgerprovider
+                                                  color:  ledgerprovider
                                                               .ledgerAllData!
                                                               .fullStat![index]
                                                               .cRAMT !=
                                                           "0.0"
                                                       ? Colors.green
                                                       : Colors.red,
-                                                  14,
-                                                  FontWeight.w600)),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+
+                                         
                                         ),
                                       ],
                                     ),
@@ -610,23 +641,27 @@ class LedgerScreen extends StatelessWidget {
                                               right: 16.0),
                                           child: Row(
                                             children: [
-                                              Text("CL Bal :  ",
-                                                  textAlign: TextAlign.right,
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : Color(0xFF696969),
-                                                      12,
-                                                      FontWeight.w500)),
-                                              Text(
-                                                  " ${ledgerprovider.ledgerAllData!.fullStat![index].nETAMT}",
-                                                  textAlign: TextAlign.right,
-                                                  style: textStyle(
-                                                      theme.isDarkMode
+                                              TextWidget.subText(
+                                            align: TextAlign.right,
+                                                  text:  "CL Bal :  ",
+                                                  color:   Color(0xFF696969),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+                                              
+                                                TextWidget.subText(
+                                            align: TextAlign.right,
+                                                  text:  " ${ledgerprovider.ledgerAllData!.fullStat![index].nETAMT}",
+                                                  color:   theme.isDarkMode
                                                           ? colors.colorWhite
                                                           : colors.colorBlack,
-                                                      12,
-                                                      FontWeight.w600)),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+
+                                              
                                             ],
                                           ),
                                         ),

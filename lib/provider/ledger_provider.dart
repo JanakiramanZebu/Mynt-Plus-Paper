@@ -703,6 +703,56 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
+  Future pdfdownloadforledger(
+      BuildContext context, res, dr, cr, op, clb,stdate,edate) async {
+    try {
+      _reportsloading = true;
+      notifyListeners();
+      _pdfresponse = await api.getpdffileapiledger(res, dr, cr, op, clb,stdate,edate);
+      if (_pdfresponse == 'File downloaded successfully') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          successMessage(context, 'PDF Downloaded, Check Your Download'),
+        );
+        _reportsloading = false;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          warningMessage(context, '$_pdfresponse'),
+        );
+        _reportsloading = false;
+      }
+
+      _reportsloading = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future pdfdownloadforpnl(
+      BuildContext context, res, stdate, edate, string,notional, chargevalue) async {
+    try {
+      _reportsloading = true;
+      notifyListeners();
+      _pdfresponse = await api.getpdffileapipnl(res,stdate,edate,string,notional,chargevalue);
+      if (_pdfresponse == 'File downloaded successfully') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          successMessage(context, 'PDF Downloaded, Check Your Download'),
+        );
+        _reportsloading = false;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          warningMessage(context, '$_pdfresponse'),
+        );
+        _reportsloading = false;
+      }
+
+      _reportsloading = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
   Future fetchpdfdownload(String from, String to) async {
     try {
       _reportsloading = true;

@@ -107,89 +107,90 @@ class _BarChartWidgetState extends State<BarChartWidget> {
                 : 0.00,
           ],
         ];
-      } else if (ledgerprovider.activeTabTaxPnl == 1) {
-        barData = [
-          [
-               (ledgerprovider.taxpnleq?.data?.tradingTurnover != null &&
-                    ledgerprovider.taxpnleq!.data!.tradingTurnover!.isNotEmpty)
-                ? double.parse(ledgerprovider.taxpnleq!.data!.tradingTurnover!)
-                : 0.00,
-          ],
-          [
-            (ledgerprovider.taxpnldercomcur?.data?.derivatives != null &&
-                    ledgerprovider
-                            .taxpnldercomcur?.data?.derivatives?.derFutTo !=
-                        null)
-                ? double.parse(ledgerprovider
-                    .taxpnldercomcur!.data!.derivatives!.derFutTo!)
-                : 0.00,
-            (ledgerprovider.taxpnldercomcur?.data?.derivatives != null &&
-                    ledgerprovider
-                            .taxpnldercomcur?.data?.derivatives?.derOptTo !=
-                        null)
-                ? double.parse(ledgerprovider
-                    .taxpnldercomcur!.data!.derivatives!.derOptTo!)
-                : 0.00,
-          ],
-          [
-            (ledgerprovider.taxpnldercomcur?.data?.commodity != null &&
-                    ledgerprovider
-                            .taxpnldercomcur?.data?.commodity?.commFutTo !=
-                        null)
-                ? double.parse(
-                    ledgerprovider.taxpnldercomcur!.data!.commodity!.commFutTo!)
-                : 0.00,
-            (ledgerprovider.taxpnldercomcur?.data?.commodity != null &&
-                    ledgerprovider
-                            .taxpnldercomcur?.data?.commodity?.commOptTo !=
-                        null)
-                ? double.parse(
-                    ledgerprovider.taxpnldercomcur!.data!.commodity!.commOptTo!)
-                : 0.00,
-          ],
-          [
-            (ledgerprovider.taxpnldercomcur?.data?.currency != null &&
-                    ledgerprovider.taxpnldercomcur?.data?.currency?.currFutTo !=
-                        null)
-                ? double.parse(
-                    ledgerprovider.taxpnldercomcur!.data!.currency!.currFutTo!)
-                : 0.00,
-            (ledgerprovider.taxpnldercomcur?.data?.currency != null &&
-                    ledgerprovider.taxpnldercomcur?.data?.currency?.currOptTo !=
-                        null)
-                ? double.parse(
-                    ledgerprovider.taxpnldercomcur!.data!.currency!.currOptTo!)
-                : 0.00,
-          ],
-        ];
-      } else if (ledgerprovider.activeTabTaxPnl == 2) {
-        barData = [
-          [
-            ledgerprovider.taxpnleqCharge!.total != 'null' &&
-                    ledgerprovider.taxpnleqCharge!.total!.isNotEmpty
-                ? double.parse(ledgerprovider.taxpnleqCharge!.total!)
-                : 0.00,
-          ],
-          [
-            (ledgerprovider.taxpnldercomcur?.data?.charges?.derChargesTotal != null)
-                ? double.parse(
-                    ledgerprovider.taxpnldercomcur!.data!.charges!.derChargesTotal!)
-                : 0.00,
-          ],
-          [
-            (ledgerprovider.taxpnldercomcur?.data?.charges?.commChargesTotal != null)
-                ? double.parse(
-                    ledgerprovider.taxpnldercomcur!.data!.charges!.commChargesTotal!)
-                : 0.00,
-          ],
-          [
-            (ledgerprovider.taxpnldercomcur?.data?.charges?.curChargesTotal != null)
-                ? double.parse(
-                    ledgerprovider.taxpnldercomcur!.data!.charges!.curChargesTotal!)
-                : 0.00,
-          ]
-        ];
-      }
+      } 
+      // else if (ledgerprovider.activeTabTaxPnl == 1) {
+      //   barData = [
+      //     [
+      //          (ledgerprovider.taxpnleq?.data?.tradingTurnover != null &&
+      //               ledgerprovider.taxpnleq!.data!.tradingTurnover!.isNotEmpty)
+      //           ? double.parse(ledgerprovider.taxpnleq!.data!.tradingTurnover!)
+      //           : 0.00,
+      //     ],
+      //     [
+      //       (ledgerprovider.taxpnldercomcur?.data?.derivatives != null &&
+      //               ledgerprovider
+      //                       .taxpnldercomcur?.data?.derivatives?.derFutTo !=
+      //                   null)
+      //           ? double.parse(ledgerprovider
+      //               .taxpnldercomcur!.data!.derivatives!.derFutTo!)
+      //           : 0.00,
+      //       (ledgerprovider.taxpnldercomcur?.data?.derivatives != null &&
+      //               ledgerprovider
+      //                       .taxpnldercomcur?.data?.derivatives?.derOptTo !=
+      //                   null)
+      //           ? double.parse(ledgerprovider
+      //               .taxpnldercomcur!.data!.derivatives!.derOptTo!)
+      //           : 0.00,
+      //     ],
+      //     [
+      //       (ledgerprovider.taxpnldercomcur?.data?.commodity != null &&
+      //               ledgerprovider
+      //                       .taxpnldercomcur?.data?.commodity?.commFutTo !=
+      //                   null)
+      //           ? double.parse(
+      //               ledgerprovider.taxpnldercomcur!.data!.commodity!.commFutTo!)
+      //           : 0.00,
+      //       (ledgerprovider.taxpnldercomcur?.data?.commodity != null &&
+      //               ledgerprovider
+      //                       .taxpnldercomcur?.data?.commodity?.commOptTo !=
+      //                   null)
+      //           ? double.parse(
+      //               ledgerprovider.taxpnldercomcur!.data!.commodity!.commOptTo!)
+      //           : 0.00,
+      //     ],
+      //     [
+      //       (ledgerprovider.taxpnldercomcur?.data?.currency != null &&
+      //               ledgerprovider.taxpnldercomcur?.data?.currency?.currFutTo !=
+      //                   null)
+      //           ? double.parse(
+      //               ledgerprovider.taxpnldercomcur!.data!.currency!.currFutTo!)
+      //           : 0.00,
+      //       (ledgerprovider.taxpnldercomcur?.data?.currency != null &&
+      //               ledgerprovider.taxpnldercomcur?.data?.currency?.currOptTo !=
+      //                   null)
+      //           ? double.parse(
+      //               ledgerprovider.taxpnldercomcur!.data!.currency!.currOptTo!)
+      //           : 0.00,
+      //     ],
+      //   ];
+      // } else if (ledgerprovider.activeTabTaxPnl == 2) {
+      //   barData = [
+      //     [
+      //       ledgerprovider.taxpnleqCharge!.total != 'null' &&
+      //               ledgerprovider.taxpnleqCharge!.total!.isNotEmpty
+      //           ? double.parse(ledgerprovider.taxpnleqCharge!.total!)
+      //           : 0.00,
+      //     ],
+      //     [
+      //       (ledgerprovider.taxpnldercomcur?.data?.charges?.derChargesTotal != null)
+      //           ? double.parse(
+      //               ledgerprovider.taxpnldercomcur!.data!.charges!.derChargesTotal!)
+      //           : 0.00,
+      //     ],
+      //     [
+      //       (ledgerprovider.taxpnldercomcur?.data?.charges?.commChargesTotal != null)
+      //           ? double.parse(
+      //               ledgerprovider.taxpnldercomcur!.data!.charges!.commChargesTotal!)
+      //           : 0.00,
+      //     ],
+      //     [
+      //       (ledgerprovider.taxpnldercomcur?.data?.charges?.curChargesTotal != null)
+      //           ? double.parse(
+      //               ledgerprovider.taxpnldercomcur!.data!.charges!.curChargesTotal!)
+      //           : 0.00,
+      //     ]
+      //   ];
+      // }
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,16 +198,17 @@ class _BarChartWidgetState extends State<BarChartWidget> {
           SizedBox(
             height: chartHeight,
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.only(left: 16.0 , right: 16.0,bottom: 32.0),
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
                   barTouchData: BarTouchData(
                     enabled: true,
                     touchTooltipData: BarTouchTooltipData(
+                      direction: TooltipDirection.bottom,
                       tooltipBgColor: Colors.black87,
-                      tooltipRoundedRadius: 8,
-                      tooltipPadding: const EdgeInsets.all(8),
+                      tooltipRoundedRadius: 8, 
+                      tooltipPadding: const EdgeInsets.all( 8.0),
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         if (touchedGroupIndex != groupIndex) return null;
                         final items = barData[groupIndex];
@@ -215,7 +217,7 @@ class _BarChartWidgetState extends State<BarChartWidget> {
                             final value = entry.value;
                             return '• ₹${value.toStringAsFixed(1)}\n';
                           }).join(),
-                          tooltipTextStyle,
+                          tooltipTextStyle, 
                         );
                       },
                     ),
@@ -259,22 +261,27 @@ class _BarChartWidgetState extends State<BarChartWidget> {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          final title = switch (ledgerprovider.activeTabTaxPnl) {
-                            0 => ['Asserts', 'Equity', 'FNO', 'Com', 'Cur'],
-                            1 => ['Trading','FNO', 'Com', 'Cur'],
-                            2 => ['Equity', 'FNO', 'Com', 'Cur'],
-                            _ => []
-                          };
+                          final title = 
+                          // switch (ledgerprovider.activeTabTaxPnl) {
+                            // 0 => 
+                            ['Asserts', 'Equity', 'FNO', 'Com', 'Cur'];
+                            // 1 => ['Trading','FNO', 'Com', 'Cur'],
+                            // 2 => ['Equity', 'FNO', 'Com', 'Cur'],
+                            // _ => []
+                          // };
                           return value.toInt() < title.length
-                              ? Text(
-                                  title[value.toInt()],
-                                  style: textStyle(
-                              theme.isDarkMode
-                                  ? Colors.white
-                                  : Colors.black,
-                              12,
-                              FontWeight.w500),
-                                )
+                              ? Padding(
+                                padding: const EdgeInsets.only(top : 8.0),
+                                child: Text(
+                                    title[value.toInt()],
+                                    style: textStyle(
+                                theme.isDarkMode
+                                    ? Colors.white
+                                    : Colors.black,
+                                12,
+                                FontWeight.w500),
+                                  ),
+                              )
                               : Container();
                         },
                       ),

@@ -10,6 +10,7 @@ import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart'; 
 import '../../models/desk_reports_model/calender_pnl_model.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 
 class CalenderpnlScreen extends StatefulWidget {
@@ -46,10 +47,14 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
             },
             child: const CustomBackBtn()),
           elevation: 0.2,
-          title: Text(
-            "Calender P&L",
-            style: textStyle(colors.colorBlack, 18, FontWeight.w700),
-          ),
+          title: 
+          
+           TextWidget.heroText(
+              text: "Calender P&L",
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 1),
+              
         ),
         body: TransparentLoaderScreen(
           isLoading: ledgerprovider.reportsloading,

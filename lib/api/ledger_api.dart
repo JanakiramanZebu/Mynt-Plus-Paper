@@ -261,7 +261,7 @@ mixin LedgerApi on ApiCore {
       //   // headers: funddefaultHeaders,
       // );
       //file download.
-      // print("${response}"); 
+      // print("${response}");
       final uri = Uri.parse('${apiLinks.reportsapi}/taxpnl_pdf');
       // final uri = Uri.parse('${apiLinks.reportsapi}/getdocdownloads');
       final fromapi = '01/04/$year';
@@ -272,17 +272,17 @@ mixin LedgerApi on ApiCore {
           body:
               // jsonEncode({"cc": "${prefs.clientId}", "from": from, "to": to}));
               jsonEncode({
-            "client_code": "${prefs.clientId}",  
+            "client_code": "${prefs.clientId}",
             "dercomcur": der,
             "equity": eq,
             "equity_taxes": eqcharge,
             "from_date": fromapi,
             "to_date": toapi
           }));
-          
+
       final json = jsonDecode((res.body));
-      if (json['stat'] != 'Not Ok') { 
-      final urival = Uri.parse('${apiLinks.reportsapi}/${json['path']}');
+      if (json['stat'] != 'Not Ok') {
+        final urival = Uri.parse('${apiLinks.reportsapi}${json['path']}');
 
         if (!await launchUrl(urival, mode: LaunchMode.externalApplication)) {
           throw 'Could not launch';
@@ -325,6 +325,78 @@ mixin LedgerApi on ApiCore {
     }
   }
 
+  getpdffileapiledger(resp, dr, cr, op,clb,sdate,edate) async {
+    try {
+      // final uri = Uri.parse('${apiLinks.reportsapi}/taxpnl_pdf');
+      final uri = Uri.parse('http://192.168.5.175:5003/ledger_pdf');
+       
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
+          body: jsonEncode({
+            "client_code": "${prefs.clientId}",
+            "resp": resp,
+            "debit": dr, 
+            "credit": cr, 
+            "opening_balance": op, 
+            "closing_balance": clb, 
+            "from_date": sdate,
+            "to_date": edate
+          }));
+
+      final json = jsonDecode((res.body));
+      if (json['stat'] != 'Not Ok') {
+        // final urival = Uri.parse('${apiLinks.reportsapi}${json['path']}');
+        final urival = Uri.parse('http://192.168.5.175:5003/${json['path']}');
+
+        if (!await launchUrl(urival, mode: LaunchMode.externalApplication)) {
+          throw 'Could not launch';
+        }
+        return "File downloaded successfully";
+      } else {
+        return json['msg'];
+      }
+    } catch (e) {
+      print("Error downloading file: $e");
+      rethrow;
+    }
+  }
+
+
+  getpdffileapipnl(resp,sdate,edate,string,notional,value) async {
+    try {
+      // final uri = Uri.parse('${apiLinks.reportsapi}/taxpnl_pdf');
+      final uri = Uri.parse('http://192.168.5.175:5003/notional_p_and_l');
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
+          body: jsonEncode({
+            "client_code": "${prefs.clientId}",
+            "resp": resp, 
+            "heading_value": value, 
+            "heading": string, 
+            "all_charges": notional, 
+
+            "from_date": sdate,
+            "to_date": edate
+          })); 
+      final json = jsonDecode((res.body));
+      if (json['stat'] != 'Not Ok') {
+        // final urival = Uri.parse('${apiLinks.reportsapi}${json['path']}');
+        final urival = Uri.parse('http://192.168.5.175:5003/${json['path']}');
+        if (!await launchUrl(urival, mode: LaunchMode.externalApplication)) {
+          throw 'Could not launch';
+        }
+        return "File downloaded successfully";
+      } else {
+        return json['msg'];
+      }
+    } catch (e) {
+      print("Error downloading file: $e");
+      rethrow;
+    }
+  }
+
   Future<PdfDownloadModel> getpdfdownload(String from, String to) async {
     try {
       final uri = Uri.parse('${apiLinks.reportsapi}/getdocdownloads');
@@ -353,7 +425,7 @@ mixin LedgerApi on ApiCore {
     }
   }
 
-  Future<TaxPnlEqModel> gettaxpnleq(int from) async { 
+  Future<TaxPnlEqModel> gettaxpnleq(int from) async {
     try {
       final uri = Uri.parse('${apiLinks.reportsapi}/getequitypnl');
       final fromapi = '01/04/$from';
@@ -376,7 +448,7 @@ mixin LedgerApi on ApiCore {
 
       final json = {"data": jsonDecode((res.body))};
 
-      if ( json['data']['stat'] != 'Not Ok') {
+      if (json['data']['stat'] != 'Not Ok') {
         return TaxPnlEqModel.fromJson({'data': json});
       } else {
         return TaxPnlEqModel.fromJson({});
@@ -507,7 +579,7 @@ mixin LedgerApi on ApiCore {
               // jsonEncode({"cc": "${prefs.clientId}", "from": from, "to": to}));
               jsonEncode({
             "cc": "${prefs.clientId}",
-              
+
             // "cc": "ZP00172",
 
             "from": fromapi,
@@ -516,7 +588,7 @@ mixin LedgerApi on ApiCore {
       final json = {"data": jsonDecode((res.body))};
       log("${res.body} datdatdatdadta");
 
-      if ( json['data']['stat'] != 'Not Ok') {
+      if (json['data']['stat'] != 'Not Ok') {
         return DercomcurModel.fromJson({'data': json});
       } else {
         return DercomcurModel.fromJson({});

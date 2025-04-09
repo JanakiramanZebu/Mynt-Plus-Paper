@@ -9,6 +9,7 @@ import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import 'bottom_sheets/ledger_filter.dart';
 
 class PdfDownload extends StatelessWidget {
@@ -60,11 +61,13 @@ class PdfDownload extends StatelessWidget {
           centerTitle: false,
           leading: const CustomBackBtn(),
           elevation: 0.2,
-          title: Text(
-            "Pdf Download",
-            style: textStyle(theme.isDarkMode? colors.colorWhite
-: colors.colorBlack, 18, FontWeight.w700),
-          ),
+          title: 
+           TextWidget.heroText(
+              text: "Download",
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 1),
+          
           // leading: InkWell(
           //   onTap: () {
 

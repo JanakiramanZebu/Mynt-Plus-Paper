@@ -9,11 +9,13 @@ class TextWidget {
       Color? color,
       int? fw,
       int? maxLines,
+      TextAlign? align,
       TextOverflow? textOverflow}) {
     return Text(
       text,
       maxLines: maxLines,
       overflow: textOverflow,
+      textAlign: align,
       style: GoogleFonts.inter(
           textStyle: TextStyle(
         fontSize: 20,
@@ -38,11 +40,13 @@ class TextWidget {
       Color? color,
       int? fw,
       int? maxLines,
+      TextAlign? align,
       TextOverflow? textOverflow}) {
     return Text(
       text,
       maxLines: maxLines,
       overflow: textOverflow,
+      textAlign: align,
       style: GoogleFonts.inter(
           textStyle: TextStyle(
         fontSize: 18,
@@ -67,11 +71,13 @@ class TextWidget {
       Color? color,
       int? fw,
       int? maxLines,
+      TextAlign? align,
       TextOverflow? textOverflow}) {
     return Text(
       text,
       maxLines: maxLines,
       overflow: textOverflow,
+      textAlign: align,
       style: GoogleFonts.inter(
           textStyle: TextStyle(
         fontSize: 16,
@@ -96,11 +102,13 @@ class TextWidget {
       Color? color,
       int? fw,
       int? maxLines,
+      TextAlign? align,
       TextOverflow? textOverflow}) {
     return Text(
       text,
       maxLines: maxLines,
       overflow: textOverflow,
+      textAlign: align,
       style: GoogleFonts.inter(
           textStyle: TextStyle(
         fontSize: 14,
@@ -125,11 +133,13 @@ class TextWidget {
       Color? color,
       int? fw,
       int? maxLines,
+      TextAlign? align,
       TextOverflow? textOverflow}) {
     return Text(
       text,
       maxLines: maxLines,
       overflow: textOverflow,
+      textAlign: align,
       style: GoogleFonts.inter(
           textStyle: TextStyle(
         fontSize: 12,
@@ -154,11 +164,13 @@ class TextWidget {
       Color? color,
       int? fw,
       int? maxLines,
+      TextAlign? align,
       TextOverflow? textOverflow}) {
     return Text(
       text,
       maxLines: maxLines,
       overflow: textOverflow,
+      textAlign: align,
       style: GoogleFonts.inter(
           textStyle: TextStyle(
         fontSize: 10,
@@ -183,11 +195,13 @@ class TextWidget {
       Color? color,
       int? fw,
       int? maxLines,
+      TextAlign? align,
       TextOverflow? textOverflow}) {
     return Text(
       text,
       maxLines: maxLines,
       overflow: textOverflow,
+      textAlign: align,
       style: GoogleFonts.inter(
           textStyle: TextStyle(
         fontSize: 8,
@@ -213,11 +227,13 @@ class TextWidget {
       Color? color,
       int? fw,
       int? maxLines,
+      TextAlign? align,
       TextOverflow? textOverflow}) {
     return Text(
       text,
       maxLines: maxLines,
       overflow: textOverflow,
+      textAlign: align,
       style: GoogleFonts.inter(
           textStyle: TextStyle(
         fontSize: fs.toDouble(),
