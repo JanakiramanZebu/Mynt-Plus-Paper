@@ -15,5 +15,6 @@ app_id: f6d2235a-da09-4e64-9564-0abec2c3dcc4
 
 
 # shorebird patch --platforms=ios --release-version=1.0.76+01
+# shorebird patch --platforms=android --release-version=1.0.42+103
 # shorebird release ios --flutter-version=3.27.1
-# shorebird release ios --flutter-version=3.24.3
+# shorebird release android --flutter-version=3.24.3
