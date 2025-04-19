@@ -147,19 +147,20 @@ class PositionScreen extends ConsumerWidget {
                             //                         255, 5, 107, 241)
                             //                     .withOpacity(.2)
                             //                 : Colors.transparent),
-                            //     child: Column(
-                            //         crossAxisAlignment: CrossAxisAlignment.end,
-                            //         children: [
-                            //           Text(
-                            //               positionBook.isDay
-                            //                   ? "Booked P&L"
-                            //                   : "Net P&L",
-                            //               style: textStyle(
-                            //                   const Color(0xff5E6B7D),
-                            //                   12,
-                            //                   FontWeight.w500)),
-                            //           const SizedBox(height: 6),
-                            //           Row(children: [
+                            //     child: 
+                            Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                          !positionBook.isNetPnl
+                                              ? "Net MTM"
+                                              : "Net P&L",
+                                          style: textStyle(
+                                              const Color(0xff5E6B7D),
+                                              12,
+                                              FontWeight.w500)),
+                                      const SizedBox(height: 6),
+                                      Row(children: [
 
                             !positionBook.isNetPnl
                                 ? Text(
@@ -200,8 +201,8 @@ class PositionScreen extends ConsumerWidget {
                                                     : colors.ltpgreen,
                                         16,
                                         FontWeight.w500))
-                            // ])
-                            // ]),
+                            ])
+                            ]),
                             // ),
                             // )
                           ])
