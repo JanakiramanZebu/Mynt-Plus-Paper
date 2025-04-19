@@ -244,9 +244,30 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
             });
           }
         },
-        onProgressChanged: (_, progress) {
-          setState(() {
+        onProgressChanged: (controller, progress) async {
+              WebUri? currentUrl = await controller.getUrl();
+
+          setState(()  {
             this.progress = progress / 100;
+            if (context.read(userProfileProvider).showchartof &&
+                progress == 100) {
+                  final mktpro =context.read(marketWatchProvider).getQuotes;
+
+              String redirUrl = currentUrl.toString();
+              Uri url = Uri.parse(redirUrl);
+              Map<String, String> queryParams = url.queryParameters;
+              String? query = queryParams['token'];
+              if (mktpro?.token != "" &&
+                 mktpro?.token
+                          .toString() !=
+                      query) {
+                print("sddccdcdcdc WebUri ${currentUrl.toString()}");
+                 ConstantName.chartwebViewController!.evaluateJavascript(
+                    source:
+                        "window.changeScript([{exch: '${mktpro?.exch}', token: '${mktpro?.token}', tsym: '${mktpro?.tsym}'}], '${theme.isDarkMode}')");
+              }
+              print("sddccdcdcdc $progress $query");
+            }
           });
         },
       ),

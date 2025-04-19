@@ -1357,7 +1357,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           indexProvide.selectedBtmIndx, theme),
                                     ]
                                   ])),
-                              if (userProfile.onloadshowchartof) ...[
+                              // if (userProfile.onloadshowchartof) ...[
                                 Positioned(
                                   key: userProfile.webViewKey,
                                   // right: userProfile.showchartof
@@ -1413,7 +1413,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                   ),
                                 ),
-                              ]
+                              // ]
                             ],
                           ),
                         ));
