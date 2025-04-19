@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import '../api/core/api_export.dart';
@@ -345,6 +346,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   calldepthApis(BuildContext context, raw, basket) async {
+    ref(userProfileProvider).setonloadChartdialog(true);
     chngDephBtn("Overview");
     singlePageloader(true);
     bool flow = raw.runtimeType.toString() == '_Map<String, dynamic>';
@@ -377,7 +379,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         task: "d",
         context: context);
     singlePageloader(false);
-
     await fetchScripQuote("${flow ? raw['token'] : raw.token}",
         "${flow ? raw['exch'] : raw.exch}", context);
     final portfolios = ref(portfolioProvider);
@@ -807,8 +808,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               }
             }
           }
-        }
-        else{
+        } else {
           _watchListValues = [];
         }
 

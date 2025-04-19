@@ -6,9 +6,10 @@ import '../res/res.dart';
 
 class CustomSwitch extends StatefulWidget {
   final bool value;
+  final Color? color;
   final ValueChanged<bool> onChanged;
 
-  const CustomSwitch({super.key, required this.value, required this.onChanged});
+  const CustomSwitch({super.key, required this.value, required this.onChanged, this.color});
 
   @override
   CustomSwitchState createState() => CustomSwitchState();
@@ -53,8 +54,7 @@ class CustomSwitchState extends State<CustomSwitch>
             height: 28.0,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24.0),
-              color:
-                  theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+              color: widget.color ?? (theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8)),
             ),
             child: Padding(
               padding: const EdgeInsets.only(

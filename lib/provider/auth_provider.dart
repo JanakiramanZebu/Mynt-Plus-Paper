@@ -1037,6 +1037,7 @@ class AuthProvider extends DefaultChangeNotifier {
         // ref(mfProvider).fetchMfOrderbook(context);
         setProfileAPicalls();
         setPrefOrderPrefer();
+        ref(orderProvider).setOrderIp();
 // End Explore
         if (s.isEmpty) {
           Navigator.pushNamedAndRemoveUntil(
@@ -1084,10 +1085,9 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   setmfapicalls() async {
-      ref(mfProvider).fetchnewMFBestList();
-      ref(mfProvider).fetchmfallcatnew();
-      // ref(mfProvider).fetchmfNFO(context);
-
+    ref(mfProvider).fetchnewMFBestList();
+    ref(mfProvider).fetchmfallcatnew();
+    // ref(mfProvider).fetchmfNFO(context);
   }
 
   setPrefOrderPrefer() async {

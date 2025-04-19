@@ -12,6 +12,7 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
+import '../../../sharedWidget/custom_switch_btn.dart';
 import '../../../sharedWidget/custom_text_btn.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/functions.dart';
@@ -44,117 +45,165 @@ class PositionScreen extends ConsumerWidget {
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            InkWell(
-                              onTap: positionBook.isDay
-                                  ? null
-                                  : () {
-                                      positionBook.chngPositionPnl(false);
+                            Row(
+                              children: [
+                                Text("P&L",
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        13,
+                                        FontWeight.w500)),
+                                const SizedBox(width: 6),
+                                CustomSwitch(
+                                    onChanged: (bool value) {
+                                      // print('object ${value}');
+                                      positionBook.chngPositionPnl(
+                                          !positionBook.isNetPnl);
                                     },
-                              child: Container(
-                                padding:
-                                    EdgeInsets.all(positionBook.isDay ? 0 : 8),
-                                decoration: positionBook.isDay
-                                    ? null
-                                    : BoxDecoration(
-                                        borderRadius: BorderRadius.circular(6),
-                                        color: !positionBook.isNetPnl
-                                            ? const Color.fromARGB(
-                                                    255, 5, 107, 241)
-                                                .withOpacity(.2)
-                                            : Colors.transparent),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                        positionBook.isDay
-                                            ? "Unrealised MTM"
-                                            : "Net MTM",
-                                        style: textStyle(
-                                            const Color(0xff5E6B7D),
-                                            12,
-                                            FontWeight.w500)),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                        "₹${positionBook.isDay ? positionBook.totUnRealMtm : positionBook.totMtM}",
-                                        style: textStyle(
-                                            positionBook.isDay
-                                                ? positionBook.totUnRealMtm
-                                                        .startsWith("-")
-                                                    ? colors.darkred
-                                                    : positionBook
-                                                                .totUnRealMtm ==
-                                                            "0.00"
-                                                        ? colors.ltpgrey
-                                                        : colors.ltpgreen
-                                                : positionBook.totMtM
-                                                        .startsWith("-")
-                                                    ? colors.darkred
-                                                    : positionBook.totMtM ==
-                                                            "0.00"
-                                                        ? colors.ltpgrey
-                                                        : colors.ltpgreen,
-                                            16,
-                                            FontWeight.w500)),
-                                  ],
-                                ),
-                              ),
+                                    color: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack ,
+                                    value: positionBook.isNetPnl),
+                                const SizedBox(width: 6),
+                                Text("MTM",
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        13,
+                                        FontWeight.w500)),
+                              ],
                             ),
-                            InkWell(
-                              onTap: positionBook.isDay
-                                  ? null
-                                  : () {
-                                      positionBook.chngPositionPnl(true);
-                                    },
-                              child: Container(
-                                padding:
-                                    EdgeInsets.all(positionBook.isDay ? 0 : 8),
-                                decoration: positionBook.isDay
-                                    ? null
-                                    : BoxDecoration(
-                                        borderRadius: BorderRadius.circular(6),
-                                        color: positionBook.isNetPnl
-                                            ? const Color.fromARGB(
-                                                    255, 5, 107, 241)
-                                                .withOpacity(.2)
-                                            : Colors.transparent),
-                                child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                          positionBook.isDay
-                                              ? "Booked P&L"
-                                              : "Net P&L",
-                                          style: textStyle(
-                                              const Color(0xff5E6B7D),
-                                              12,
-                                              FontWeight.w500)),
-                                      const SizedBox(height: 6),
-                                      Row(children: [
-                                        Text(
-                                            "₹${positionBook.isDay ? positionBook.totBookedPnL : positionBook.totPnL}",
-                                            style: textStyle(
-                                                positionBook.isDay
-                                                    ? positionBook.totBookedPnL
-                                                            .startsWith("-")
-                                                        ? colors.darkred
-                                                        : positionBook
-                                                                    .totBookedPnL ==
-                                                                "0.00"
-                                                            ? colors.ltpgrey
-                                                            : colors.ltpgreen
-                                                    : positionBook.totPnL
-                                                            .startsWith("-")
-                                                        ? colors.darkred
-                                                        : positionBook.totPnL ==
-                                                                "0.00"
-                                                            ? colors.ltpgrey
-                                                            : colors.ltpgreen,
-                                                16,
-                                                FontWeight.w500))
-                                      ])
-                                    ]),
-                              ),
-                            )
+                            // InkWell(
+                            //   onTap: positionBook.isDay
+                            //       ? null
+                            //       : () {
+                            //           positionBook.chngPositionPnl(false);
+                            //         },
+                            //   child: Container(
+                            //     padding:
+                            //         EdgeInsets.all(positionBook.isDay ? 0 : 8),
+                            //     decoration: positionBook.isDay
+                            //         ? null
+                            //         : BoxDecoration(
+                            //             borderRadius: BorderRadius.circular(6),
+                            //             color: !positionBook.isNetPnl
+                            //                 ? const Color.fromARGB(
+                            //                         255, 5, 107, 241)
+                            //                     .withOpacity(.2)
+                            //                 : Colors.transparent),
+                            //     child: Column(
+                            //       crossAxisAlignment: CrossAxisAlignment.start,
+                            //       children: [
+                            //         Text(
+                            //             positionBook.isDay
+                            //                 ? "Unrealised MTM"
+                            //                 : "Net MTM",
+                            //             style: textStyle(
+                            //                 const Color(0xff5E6B7D),
+                            //                 12,
+                            //                 FontWeight.w500)),
+                            //         const SizedBox(height: 6),
+                            //         Text(
+                            //             "₹${positionBook.isDay ? positionBook.totUnRealMtm : positionBook.totMtM}",
+                            //             style: textStyle(
+                            //                 positionBook.isDay
+                            //                     ? positionBook.totUnRealMtm
+                            //                             .startsWith("-")
+                            //                         ? colors.darkred
+                            //                         : positionBook
+                            //                                     .totUnRealMtm ==
+                            //                                 "0.00"
+                            //                             ? colors.ltpgrey
+                            //                             : colors.ltpgreen
+                            //                     : positionBook.totMtM
+                            //                             .startsWith("-")
+                            //                         ? colors.darkred
+                            //                         : positionBook.totMtM ==
+                            //                                 "0.00"
+                            //                             ? colors.ltpgrey
+                            //                             : colors.ltpgreen,
+                            //                 16,
+                            //                 FontWeight.w500)),
+                            //       ],
+                            //     ),
+                            //   ),
+                            // ),
+
+                            // InkWell(
+                            //   onTap: positionBook.isDay
+                            //       ? null
+                            //       : () {
+                            //           positionBook.chngPositionPnl(true);
+                            //         },
+                            //   child: Container(
+                            //     padding:
+                            //         EdgeInsets.all(positionBook.isDay ? 0 : 8),
+                            //     decoration: positionBook.isDay
+                            //         ? null
+                            //         : BoxDecoration(
+                            //             borderRadius: BorderRadius.circular(6),
+                            //             color: positionBook.isNetPnl
+                            //                 ? const Color.fromARGB(
+                            //                         255, 5, 107, 241)
+                            //                     .withOpacity(.2)
+                            //                 : Colors.transparent),
+                            //     child: Column(
+                            //         crossAxisAlignment: CrossAxisAlignment.end,
+                            //         children: [
+                            //           Text(
+                            //               positionBook.isDay
+                            //                   ? "Booked P&L"
+                            //                   : "Net P&L",
+                            //               style: textStyle(
+                            //                   const Color(0xff5E6B7D),
+                            //                   12,
+                            //                   FontWeight.w500)),
+                            //           const SizedBox(height: 6),
+                            //           Row(children: [
+
+                            !positionBook.isNetPnl
+                                ? Text(
+                                    "₹${positionBook.isDay ? positionBook.totUnRealMtm : positionBook.totMtM}",
+                                    style: textStyle(
+                                        positionBook.isDay
+                                            ? positionBook.totUnRealMtm
+                                                    .startsWith("-")
+                                                ? colors.darkred
+                                                : positionBook.totUnRealMtm ==
+                                                        "0.00"
+                                                    ? colors.ltpgrey
+                                                    : colors.ltpgreen
+                                            : positionBook.totMtM
+                                                    .startsWith("-")
+                                                ? colors.darkred
+                                                : positionBook.totMtM == "0.00"
+                                                    ? colors.ltpgrey
+                                                    : colors.ltpgreen,
+                                        16,
+                                        FontWeight.w500))
+                                : Text(
+                                    "₹${positionBook.isDay ? positionBook.totBookedPnL : positionBook.totPnL}",
+                                    style: textStyle(
+                                        positionBook.isDay
+                                            ? positionBook.totBookedPnL
+                                                    .startsWith("-")
+                                                ? colors.darkred
+                                                : positionBook.totBookedPnL ==
+                                                        "0.00"
+                                                    ? colors.ltpgrey
+                                                    : colors.ltpgreen
+                                            : positionBook.totPnL
+                                                    .startsWith("-")
+                                                ? colors.darkred
+                                                : positionBook.totPnL == "0.00"
+                                                    ? colors.ltpgrey
+                                                    : colors.ltpgreen,
+                                        16,
+                                        FontWeight.w500))
+                            // ])
+                            // ]),
+                            // ),
+                            // )
                           ])
                     ])),
             if (positionBook.postionBookModel!.isNotEmpty)

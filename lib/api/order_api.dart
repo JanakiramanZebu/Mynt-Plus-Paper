@@ -1,7 +1,4 @@
 import 'dart:developer';
-
-import 'package:public_ip_address/public_ip_address.dart';
-
 import '../models/order_book_model/cancel_order_model.dart';
 import '../models/order_book_model/get_brokerage.dart';
 import '../models/order_book_model/gtt_order_book.dart';
@@ -22,9 +19,8 @@ import 'core/api_link.dart';
 mixin OrderAPI on ApiCore {
   // Get Order placing response from kambala
 
-  Future<PlaceOrderModel> getPlaceOrder(PlaceOrderInput placeOrderInput) async {
+  Future<PlaceOrderModel> getPlaceOrder(PlaceOrderInput placeOrderInput, String ip) async {
     try {
-      String ip = await IpAddress().getIp();
 
       final uri = Uri.parse(apiLinks.placeOrder);
       Map payload = {
@@ -327,9 +323,8 @@ mixin OrderAPI on ApiCore {
 
 // get Modify order response from kambala
 
-  Future<ModifyOrderModel> getModifyOrder(ModifyOrderInput input) async {
+  Future<ModifyOrderModel> getModifyOrder(ModifyOrderInput input, String ip) async {
     try {
-      String ip = await IpAddress().getIp();
 
       final uri = Uri.parse(apiLinks.mdifyOrder);
       Map payload = {

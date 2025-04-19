@@ -37,7 +37,6 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   double progress = 0;
   final Preferences prefs = locator<Preferences>();
   SharedPreferences? sharedPrefs;
-
   @override
   void initState() {
     super.initState();
@@ -45,6 +44,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
   @override
   void dispose() {
+    ConstantName.chartwebViewController?.dispose();
+    ConstantName.chartwebViewController = null;
     super.dispose();
   }
 
@@ -145,33 +146,32 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
               onPressed: () async {
                 userProfile.setChartdialog(false);
                 tvChart.chngDephBtn("Overview");
-                        tvChart.singlePageloader(true);
+                tvChart.singlePageloader(true);
 
-                        DepthInputArgs depthArgs = DepthInputArgs(
-                            exch: '${tvChart.getQuotes?.exch}',
-                            token: '${tvChart.getQuotes?.token}',
-                            tsym: '${tvChart.getQuotes?.tsym}',
-                            instname: tvChart.getQuotes?.instname ?? "",
-                            symbol: '${tvChart.getQuotes?.symbol}',
-                            expDate: '${tvChart.getQuotes?.expDate}',
-                            option: '${tvChart.getQuotes?.option}');
+                DepthInputArgs depthArgs = DepthInputArgs(
+                    exch: '${tvChart.getQuotes?.exch}',
+                    token: '${tvChart.getQuotes?.token}',
+                    tsym: '${tvChart.getQuotes?.tsym}',
+                    instname: tvChart.getQuotes?.instname ?? "",
+                    symbol: '${tvChart.getQuotes?.symbol}',
+                    expDate: '${tvChart.getQuotes?.expDate}',
+                    option: '${tvChart.getQuotes?.option}');
 
-                        showModalBottomSheet(
-                            isScrollControlled: true,
-                            useSafeArea: true,
-                            isDismissible: true,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(16))),
-                            context: context,
-                            builder: (context) => Container(
-                                padding: EdgeInsets.only(
-                                  bottom:
-                                      MediaQuery.of(context).viewInsets.bottom,
-                                ),
-                                child: ScripDepthInfo(
-                                    wlValue: depthArgs, isBasket: '')));
-                        tvChart.singlePageloader(false);
+                showModalBottomSheet(
+                    isScrollControlled: true,
+                    useSafeArea: true,
+                    isDismissible: true,
+                    shape: const RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(16))),
+                    context: context,
+                    builder: (context) => Container(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom,
+                        ),
+                        child:
+                            ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
+                tvChart.singlePageloader(false);
                 await ConstantName.chartwebViewController!.evaluateJavascript(
                     source:
                         "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${theme.isDarkMode}')");
@@ -204,6 +204,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       height: (MediaQuery.of(context).size.height -
           (TargetPlatform.iOS == defaultTargetPlatform ? 160 : 140)),
       child: InAppWebView(
+        key: context.read(userProfileProvider).webViewKey,
         gestureRecognizers: {
           // Factory<VerticalDragGestureRecognizer>(
           //     () => VerticalDragGestureRecognizer()),
@@ -226,13 +227,22 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
               ),
         ),
         onConsoleMessage: (controller, consoleMessage) {
-          //
+          ConstantName.chartwebViewController = controller;
         },
-        initialOptions: InAppWebViewGroupOptions(
-          crossPlatform: InAppWebViewOptions(transparentBackground: true),
+        initialSettings: InAppWebViewSettings(
+          transparentBackground: true,
         ),
         onWebViewCreated: (controller) {
           ConstantName.chartwebViewController = controller;
+        },
+        onReceivedError: (controller, request, error) {
+          ConstantName.chartwebViewController = controller;
+
+          if (error.description.contains('recreating_view')) {
+            setState(() {
+              context.read(userProfileProvider).setonloadChartdialog(true);
+            });
+          }
         },
         onProgressChanged: (_, progress) {
           setState(() {

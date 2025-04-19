@@ -498,20 +498,22 @@ class WebSocketProvider extends ChangeNotifier {
 
             // log("Soxket data ${jsonEncode(_socketDatas)}");
           } else if (res['t'].toString().toLowerCase() == "om") {
-            ref(indexListProvider)
-                .logError
-                .add({"type": "Order Response", "Error": "$res"});
-            ref(portfolioProvider).fetchHoldings(context, "");
+            if (!ref(orderProvider).sliceorderapi) {
+              ref(indexListProvider)
+                  .logError
+                  .add({"type": "Order Response", "Error": "$res"});
+              ref(portfolioProvider).fetchHoldings(context, "");
 
-            ref(orderProvider).fetchOrderBook(context, true);
-            ref(orderProvider).fetchTradeBook(context);
-            ref(orderProvider).fetchGTTOrderBook(context, "");
-            ref(fundProvider).fetchFunds(context);
-            if (res['status'].toString() == "COMPLETE") {
-              Timer(
-                  const Duration(seconds: 1),
-                  () =>
-                      ref(portfolioProvider).fetchPositionBook(context, false));
+              ref(orderProvider).fetchOrderBook(context, true);
+              ref(orderProvider).fetchTradeBook(context);
+              ref(orderProvider).fetchGTTOrderBook(context, "");
+              ref(fundProvider).fetchFunds(context);
+              if (res['status'].toString() == "COMPLETE") {
+                Timer(
+                    const Duration(seconds: 1),
+                    () => ref(portfolioProvider)
+                        .fetchPositionBook(context, false));
+              }
             }
           }
 

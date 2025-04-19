@@ -23,7 +23,7 @@ class DefaultIndexList extends ConsumerWidget {
     final theme = context.read(themeProvider);
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: EdgeInsets.only(left: src ? 0 : 14),
+      padding: EdgeInsets.only(left: src ? 0 : 12),
       height: src ? 54 : 50,
       child: ListView.separated(
         shrinkWrap: true,
@@ -83,7 +83,7 @@ class DefaultIndexList extends ConsumerWidget {
             },
             child: Container(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 6.0, horizontal: 11),
+                    const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8),
                 decoration: BoxDecoration(
                     border: Border.all(
                         color: theme.isDarkMode
@@ -96,7 +96,7 @@ class DefaultIndexList extends ConsumerWidget {
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
                     borderRadius: BorderRadius.circular(5)),
-                width: MediaQuery.of(context).size.width * 0.46,
+                width: MediaQuery.of(context).size.width * 0.47,
                 child: src
                     ? Column(
                         // mainAxisAlignment: MainAxisAlignment.start,
@@ -188,7 +188,7 @@ class DefaultIndexList extends ConsumerWidget {
                                 indexProvide.defaultIndexList!.indValues![index]
                                     .idxname!
                                     .toUpperCase(),
-                                maxLines: 3,
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: textStyle(
                                     theme.isDarkMode
@@ -210,7 +210,7 @@ class DefaultIndexList extends ConsumerWidget {
                                               : const Color(0xff000000),
                                           13,
                                           FontWeight.w600)),
-                                  const SizedBox(height: 2),
+                                  const SizedBox(height: 4),
                                   Row(
                                     children: [
                                       Text(

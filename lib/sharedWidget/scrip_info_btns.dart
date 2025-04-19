@@ -58,10 +58,10 @@ class ScripInfoBtns extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(98)),
                 child: InkWell(
                     onTap: () async {
+                      userProfile.setonloadChartdialog(true);
                       marketwatch.singlePageloader(true);
 
                       if (marketwatch.depthBtns[index]['btnName'] != "Chart") {
-                        
                         DepthInputArgs depthArgs = DepthInputArgs(
                             exch: exch,
                             token: token,

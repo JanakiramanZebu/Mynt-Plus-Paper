@@ -159,6 +159,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         if (context.read(indexListProvider).selectedBtmIndx == 2) {
           context.read(portfolioProvider).cancelTimer();
         }
+        final userProfile = context.read(userProfileProvider);
+        userProfile.setonloadChartdialog(false);
         print("app in inactive");
         break;
       case AppLifecycleState.paused:
@@ -171,6 +173,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         if (context.read(indexListProvider).selectedBtmIndx == 2) {
           context.read(portfolioProvider).cancelTimer();
         }
+        final userProfile = context.read(userProfileProvider);
+        userProfile.setonloadChartdialog(false);
         print("app in detached");
         break;
       case AppLifecycleState.hidden:
@@ -1353,60 +1357,63 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           indexProvide.selectedBtmIndx, theme),
                                     ]
                                   ])),
-                              Positioned(
-                                // right: userProfile.showchartof
-                                //     ? 0
-                                //     : -300,
-                                bottom: userProfile.showchartof
-                                    ? 0
-                                    : (MediaQuery.of(context).size.height +
-                                        100),
-                                // top: 0,
-                                // : 0,
-                                child: AnimatedContainer(
-                                  alignment: Alignment.center,
-                                  duration: const Duration(milliseconds: 100),
-                                  curve: Curves.fastLinearToSlowEaseIn,
-                                  decoration: BoxDecoration(
-                                    color: theme.isDarkMode
-                                        ? colors.colorBlack
-                                        : colors.colorWhite,
-                                    // borderRadius: const BorderRadius.only(
-                                    //   topLeft: Radius.circular(24),
-                                    //   topRight: Radius.circular(24),
-                                    // ),
-                                    // boxShadow: [
-                                    //   BoxShadow(
-                                    //       color: theme.isDarkMode
-                                    //           ? const Color.fromARGB(
-                                    //               100, 100, 100, 100)
-                                    //           : const Color.fromARGB(
-                                    //               100, 0, 0, 0),
-                                    //       blurRadius: theme.isDarkMode ? 5 : 10,
-                                    //       spreadRadius:
-                                    //           theme.isDarkMode ? 1 : 100,
-                                    //       offset: Offset(
-                                    //           0, theme.isDarkMode ? -3 : -6)),
-                                    // ],
-                                  ),
-                                  height: MediaQuery.of(context).size.height,
-                                  width: MediaQuery.of(context).size.width,
-                                  child: SafeArea(
-                                    bottom: false,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        ChartScreenWebView(
-                                            chartArgs: ChartArgs(
-                                                exch: 'ABC',
-                                                tsym: 'ABCD',
-                                                token: '0123')),
-                                      ],
+                              if (userProfile.onloadshowchartof) ...[
+                                Positioned(
+                                  key: userProfile.webViewKey,
+                                  // right: userProfile.showchartof
+                                  //     ? 0
+                                  //     : -300,
+                                  bottom: userProfile.showchartof
+                                      ? 0
+                                      : (MediaQuery.of(context).size.height +
+                                          100),
+                                  // top: 0,
+                                  // : 0,
+                                  child: AnimatedContainer(
+                                    alignment: Alignment.center,
+                                    duration: const Duration(milliseconds: 100),
+                                    curve: Curves.fastLinearToSlowEaseIn,
+                                    decoration: BoxDecoration(
+                                      color: theme.isDarkMode
+                                          ? colors.colorBlack
+                                          : colors.colorWhite,
+                                      // borderRadius: const BorderRadius.only(
+                                      //   topLeft: Radius.circular(24),
+                                      //   topRight: Radius.circular(24),
+                                      // ),
+                                      // boxShadow: [
+                                      //   BoxShadow(
+                                      //       color: theme.isDarkMode
+                                      //           ? const Color.fromARGB(
+                                      //               100, 100, 100, 100)
+                                      //           : const Color.fromARGB(
+                                      //               100, 0, 0, 0),
+                                      //       blurRadius: theme.isDarkMode ? 5 : 10,
+                                      //       spreadRadius:
+                                      //           theme.isDarkMode ? 1 : 100,
+                                      //       offset: Offset(
+                                      //           0, theme.isDarkMode ? -3 : -6)),
+                                      // ],
+                                    ),
+                                    height: MediaQuery.of(context).size.height,
+                                    width: MediaQuery.of(context).size.width,
+                                    child: SafeArea(
+                                      bottom: false,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          ChartScreenWebView(
+                                              chartArgs: ChartArgs(
+                                                  exch: 'ABC',
+                                                  tsym: 'ABCD',
+                                                  token: '0123')),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
+                              ]
                             ],
                           ),
                         ));

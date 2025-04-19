@@ -20,6 +20,7 @@ class ReportsScreen extends ConsumerWidget {
     final List<String> reportPaths = [
       'ledger',
       'holding',
+      'positions',
       'pnl',
       'calenderpnl',
       'taxpnl',
