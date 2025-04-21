@@ -636,6 +636,74 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  List<ChartArgs> _chartTabs = [];
+  ChartArgs? _activeTab;
+
+  List<ChartArgs> get chartTabs => _chartTabs;
+  ChartArgs? get activeTab => _activeTab;
+
+  final List<ChartArgs> defaultChartTabs = [
+    ChartArgs(tsym: "Nifty 50", token: "26000", exch: "NSE"),
+    ChartArgs(tsym: "Nifty Bank", token: "26009", exch: "NSE"),
+    // ChartArgs(tsym: "Sensex", token: "1", exch: "BSE"),
+    // ChartArgs(tsym: "India VIX", token: "26017", exch: "NSE"),
+  ];
+
+  void loadDefaultTabs() {
+    if (_chartTabs.isEmpty) {
+      _chartTabs.addAll(defaultChartTabs);
+      _activeTab = _chartTabs.first;
+      notifyListeners();
+    }
+  }
+
+  void addChartTab(ChartArgs tab) {
+    if (!_chartTabs.any((t) => t.token == tab.token)) {
+      _chartTabs.add(tab);
+    }
+    _activeTab = tab;
+    notifyListeners();
+  }
+
+  void selectChartTab(String token) {
+    _activeTab = _chartTabs.firstWhere(
+      (tab) => tab.token == token,
+      orElse: () => ChartArgs(
+          tsym: '',
+          token: '',
+          exch: ''), // <- this works if ChartArgs? is allowed
+    );
+    notifyListeners();
+  }
+
+  void removeChartTab(ChartArgs tab) {
+    _chartTabs.removeWhere((t) => t.token == tab.token);
+    if (_activeTab?.token == tab.token) {
+      _activeTab = _chartTabs.isNotEmpty ? _chartTabs.last : null;
+    }
+    notifyListeners();
+  }
+
+  void clearAllTabs() {
+    _chartTabs.clear();
+    _activeTab = null;
+    notifyListeners();
+  }
+
+  void setChartScript(String exch, String token, String tsym) async {
+    await ConstantName.chartwebViewController!.evaluateJavascript(
+        source:
+            "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref(themeProvider).isDarkMode}')");
+    if (_chartTabs.length == 5) {
+      removeChartTab(_chartTabs.last);
+    }
+    if (token != "0123") {
+      addChartTab(ChartArgs(tsym: tsym, token: token, exch: exch));
+    }
+    ref(marketWatchProvider).selectChartTab(token.toString());
+    notifyListeners();
+  }
+
   setpageName(String name) {
     ConstantName.pageName = name;
     notifyListeners();
@@ -715,7 +783,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
 
-  Future fetchMWList(BuildContext context) async {
+  Future fetchMWList(BuildContext context, bool waitis) async {
     try {
       _marketWatchlist = await api.getMWList();
       pref.setMWScrip(true);
@@ -729,8 +797,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _marketWatchlist!.values!.sort((a, b) => a.compareTo(b));
 
           _marketWatchScripData = {};
+          bool isFirst = true;
+
           for (var element in _marketWatchlist!.values!) {
-            await fetchMWScrip(element, context);
+            if (isFirst && !waitis) {
+              await fetchMWScrip(element, context);
+              isFirst = waitis;
+            } else {
+              fetchMWScrip(element, context); // No await here
+            }
           }
         }
 
@@ -740,7 +815,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         _marketWatchlist!.values!.addAll(_preDefWL);
 
-        await fetchPreDefMWScrip(context);
+        fetchPreDefMWScrip(context);
         await changeWLScrip(_wlName, context);
       } else {
         if (_marketWatchlist!.emsg ==
@@ -1945,7 +2020,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
       await changeWlName("", "No");
-      await fetchMWList(context);
+      await fetchMWList(context, false);
     }
   }
 
@@ -1956,7 +2031,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
       await changeWlName(wlName, "No");
-      await fetchMWList(context);
+      await fetchMWList(context, false);
     } else {
       ref(authProvider).ifSessionExpired(context);
     }
@@ -2390,7 +2465,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _watchlistRenameModel = await api.getWatchListRename(oldName, newName);
       if (_watchlistRenameModel!.stat == "Ok") {
-        fetchMWList(context);
+        fetchMWList(context, false);
         _wlName = newName;
         Navigator.pop(context);
         Navigator.pop(context);

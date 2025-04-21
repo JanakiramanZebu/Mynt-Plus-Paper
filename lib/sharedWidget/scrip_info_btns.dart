@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
-import '../locator/constant.dart';
 import '../models/marketwatch_model/get_quotes.dart';
 import '../provider/market_watch_provider.dart';
 import '../provider/user_profile_provider.dart';
@@ -131,9 +130,7 @@ class ScripInfoBtns extends ConsumerWidget {
                           "Chart") {
                         Navigator.pop(context);
                         userProfile.setChartdialog(true);
-                        await ConstantName.webViewController!.evaluateJavascript(
-                            source:
-                                "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${theme.isDarkMode}')");
+                        marketwatch.setChartScript(exch, token, tsym);
                       }
 
                       marketwatch

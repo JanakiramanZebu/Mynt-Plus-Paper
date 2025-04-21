@@ -8,6 +8,7 @@ import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/thems.dart';
+import '../../provider/user_profile_providerNEWUI.dart';
 import '../../res/res.dart';
 import '../../routes/app_routes.dart';
 import '../../sharedWidget/custom_text_form_field.dart';

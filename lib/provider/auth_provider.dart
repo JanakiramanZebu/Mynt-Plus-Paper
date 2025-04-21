@@ -984,7 +984,7 @@ class AuthProvider extends DefaultChangeNotifier {
       }
 
       await ref(indexListProvider).checkSession(context);
-      await ref(marketWatchProvider).changeWlName("", "No");
+      ref(marketWatchProvider).changeWlName("", "No");
       _logoutMsg = "";
 
       if (ref(indexListProvider).checkSess!.stat == "Ok") {
@@ -994,7 +994,7 @@ class AuthProvider extends DefaultChangeNotifier {
         await ref(portfolioProvider).fetchHoldings(context, "");
 
         await ref(indexListProvider).getDeafultIndexList(context);
-        await ref(marketWatchProvider).fetchMWList(context);
+        await ref(marketWatchProvider).fetchMWList(context, true);
         ref(orderProvider).fetchOrderBook(context, false);
         ref(portfolioProvider).fetchPositionBook(context, false);
         ref(orderProvider).fetchTradeBook(context);
@@ -1006,14 +1006,13 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(portfolioProvider).fetchPosGroupSymbol("", false);
         ref(transcationProvider).fetchc(context);
 
-        await FirebaseAnalytics.instance.setUserId(id: pref.clientId);
-// IPOs
+        FirebaseAnalytics.instance.setUserId(id: pref.clientId);
+        // IPOs
         setIposAPicalls();
-// mf
+        // mf
         setmfapicalls(context);
-// Explore
-        // await ref(stocksProvide)
-        //     .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
+        // Explore
+        // await ref(stocksProvide).fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
         // await ref(indexListProvider).fetchStockTopIndex();
 
         // await ref(stocksProvide).fetchCorporateAction();
@@ -1031,7 +1030,7 @@ class AuthProvider extends DefaultChangeNotifier {
         setProfileAPicalls();
         setPrefOrderPrefer();
         ref(orderProvider).setOrderIp();
-// End Explore
+        // End Explore
         if (s.isEmpty) {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.homeScreen, (route) => false);
