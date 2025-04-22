@@ -47,11 +47,11 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelectedTab());
   }
 
-  @override
-  void didUpdateWidget(covariant ChartScreenWebView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelectedTab());
-  }
+  // @override
+  // void didUpdateWidget(covariant ChartScreenWebView oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  //   WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelectedTab());
+  // }
 
   void _scrollToSelectedTab() {
     final tvChart = context.read(marketWatchProvider);
@@ -97,22 +97,22 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      padding: const EdgeInsets.all(0),
-                      icon: Icon(Icons.restart_alt,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack), // Back icon
-                      onPressed: () {
-                        ConstantName.chartwebViewController?.loadUrl(
-                          urlRequest: URLRequest(
-                            url: WebUri(
-                              "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}",
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    // IconButton(
+                    //   padding: const EdgeInsets.all(0),
+                    //   icon: Icon(Icons.restart_alt,
+                    //       color: theme.isDarkMode
+                    //           ? colors.colorWhite
+                    //           : colors.colorBlack), // Back icon
+                    //   onPressed: () {
+                    //     ConstantName.chartwebViewController?.loadUrl(
+                    //       urlRequest: URLRequest(
+                    //         url: WebUri(
+                    //           "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}",
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
                     Expanded(
                         child: InkWell(
                       onTap: () async {
@@ -239,7 +239,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                     },
                     borderRadius: BorderRadius.circular(16),
                     child: Chip(
-                      visualDensity: const VisualDensity(vertical: -4, horizontal: 0),
+                      visualDensity:
+                          const VisualDensity(vertical: -4, horizontal: 0),
                       labelPadding: const EdgeInsets.only(right: 0),
                       padding: index > 1
                           ? const EdgeInsets.only(left: 16)
@@ -301,10 +302,15 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
             ),
             IconButton(
               padding: const EdgeInsets.all(0),
-              icon: Icon(Icons.add_circle_outline,
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack), // Back icon
+              icon: Text("+",
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      32,
+                      FontWeight.normal)),
+              // Icon(Icons.add_circle_outline,
+              //     color: theme.isDarkMode
+              //         ? colors.colorWhite
+              // : colors.colorBlack),
               onPressed: () async {
                 context
                     .read(marketWatchProvider)
