@@ -30,7 +30,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     print('Message data: ${message.data}');
     print('Message notification: ${message.notification?.title}');
     print('Message notification: ${message.notification?.body}');
-
+  }
     message.data["imageUrl"] != ""
         ? NotificationService.showNotification(
             title: message.notification!.title,
@@ -41,12 +41,12 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
             payload: {"navigate": "true", "url": message.data["url"]})
         : NotificationService.showNotification(
             title: message.notification!.title,
-            body: message.notification!.body,
+            body: message.notification!.body!.replaceAll("  ", "\n"),
             // summary: "Mynt",
-            notificationLayout: NotificationLayout.Default,
+            notificationLayout: NotificationLayout.BigText,
           );
   }
-}
+
 
 // This method represents the project's entry level.
 void main() async {
@@ -117,9 +117,9 @@ void main() async {
             payload: {"navigate": "true", "url": message.data["url"]})
         : NotificationService.showNotification(
             title: message.notification!.title,
-            body: message.notification!.body,
+            body: message.notification!.body!.replaceAll("  ", "\n"),
             // summary: "Mynt",
-            notificationLayout: NotificationLayout.Default);
+            notificationLayout: NotificationLayout.BigText);
 
     // NotificationService().showNotification(
     //     title: message.notification?.title, body: message.notification?.body);

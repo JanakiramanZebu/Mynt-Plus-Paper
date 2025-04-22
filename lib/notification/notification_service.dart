@@ -148,20 +148,23 @@ class NotificationService extends ChangeNotifier {
     final int? interval,
   }) async {
     assert(!scheduled || (scheduled && interval != null));
+    final processedBody = body?.replaceAll('\n', '<br>');
 
     await AwesomeNotifications().createNotification(
       content: NotificationContent(
         id: -1,
         channelKey: 'high_importance_channel',
         title: title,
-        body: body,
+        body: processedBody,
         actionType: actionType,
         notificationLayout: notificationLayout,
+        autoDismissible: true,
+        showWhen: true,
         summary: summary,
         category: category,
         payload: payload,
         bigPicture: bigPicture,
-        icon: "resource://drawable/res_notification_app_icon",
+        // icon: "resource://drawable/res_notification_app_icon",
         color:Colors.blue.shade900
       ),
       actionButtons: actionButtons,
