@@ -89,7 +89,8 @@ class UserProfileProvider extends DefaultChangeNotifier {
       "title": "TradeBook/Contract",
       "trailing": "assets/profile/greater_arrow.svg"
     },
-    {"title": "PDF Download", "trailing": "assets/profile/greater_arrow.svg"}
+    {"title": "PDF Download", "trailing": "assets/profile/greater_arrow.svg"},
+    // {"title": "Pledge & Unpledge", "trailing": "assets/profile/greater_arrow.svg"}
   ];
 
   List get profileMenu => _profileMenu;

@@ -7,7 +7,7 @@ import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
-import 'package:mynt_plus/sharedWidget/no_data_found.dart'; 
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../models/desk_reports_model/calender_pnl_model.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
@@ -40,21 +40,18 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
           titleSpacing: 6,
           centerTitle: false,
           leading: InkWell(
-            onTap: (){
-              ledgerprovider.setSegment("Equity");
-              ledgerprovider.setFinancialYear("");
-              Navigator.pop(context);
-            },
-            child: const CustomBackBtn()),
+              onTap: () {
+                ledgerprovider.setSegment("Equity");
+                ledgerprovider.setFinancialYear("");
+                Navigator.pop(context);
+              },
+              child: const CustomBackBtn()),
           elevation: 0.2,
-          title: 
-          
-           TextWidget.heroText(
+          title: TextWidget.heroText(
               text: "Calender P&L",
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
               fw: 1),
-              
         ),
         body: TransparentLoaderScreen(
           isLoading: ledgerprovider.reportsloading,
@@ -104,11 +101,17 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                     : textStyle(Colors.green,
                                                         16, FontWeight.w600)
                                                 : textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,16
-                                                    ,FontWeight.w600)
+                                                    theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    16,
+                                                    FontWeight.w600)
                                             : textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,16
-                                                    ,FontWeight.w600),
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                16,
+                                                FontWeight.w600),
                                       ),
                                     )
                                   ],
@@ -146,11 +149,17 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                     : textStyle(Colors.green,
                                                         16, FontWeight.w600)
                                                 : textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,16
-                                                    ,FontWeight.w600)
+                                                    theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    16,
+                                                    FontWeight.w600)
                                             : textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,16
-                                                    ,FontWeight.w600),
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                16,
+                                                FontWeight.w600),
                                       ),
                                     )
                                   ],
@@ -180,8 +189,8 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                       child: Text(
                                         ledgerprovider.calenderpnlAllData !=
                                                 null
-                                            ? ledgerprovider
-                                                        .calenderpnlAllData!.totalCharges !=
+                                            ? ledgerprovider.calenderpnlAllData!
+                                                        .totalCharges !=
                                                     null
                                                 ? ledgerprovider
                                                     .calenderpnlAllData!
@@ -217,8 +226,11 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                 : textStyle(Colors.red, 16,
                                                     FontWeight.w600)
                                             : textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,16
-                                                    ,FontWeight.w600),
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                16,
+                                                FontWeight.w600),
                                       ),
                                     )
                                   ],
@@ -249,7 +261,9 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: ledgerprovider.selectedFinancialYear,
-                          dropdownColor: theme.isDarkMode ? const Color(0xff3A3A3A) : const Color(0xffF1F3F8),
+                          dropdownColor: theme.isDarkMode
+                              ? const Color(0xff3A3A3A)
+                              : const Color(0xffF1F3F8),
                           items:
                               ledgerprovider.availableFinancialYears.map((fy) {
                             return DropdownMenuItem<String>(
@@ -291,7 +305,9 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: ledgerprovider.selectedSegment,
-                          dropdownColor: theme.isDarkMode ? const Color(0xff3A3A3A) : const Color(0xffF1F3F8),
+                          dropdownColor: theme.isDarkMode
+                              ? const Color(0xff3A3A3A)
+                              : const Color(0xffF1F3F8),
                           items: ledgerprovider.availableSegments.map((seg) {
                             return DropdownMenuItem<String>(
                               value: seg,
@@ -372,11 +388,13 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                     childrenPadding: EdgeInsets.zero,
                                     backgroundColor: Colors.transparent,
                                     title: Text(
-                                      "$dateString  (${tradesForDate.length})",
-                                      style: textStyle(
-                    theme.isDarkMode ? Colors.white : Colors.black,14,
-                    FontWeight.w500)
-                                    ),
+                                        "$dateString  (${tradesForDate.length})",
+                                        style: textStyle(
+                                            theme.isDarkMode
+                                                ? Colors.white
+                                                : Colors.black,
+                                            14,
+                                            FontWeight.w500)),
                                     trailing: Text(
                                         '₹ ${totalRealisedPnl.toStringAsFixed(2)}',
                                         style: totalRealisedPnl != 0
@@ -386,11 +404,11 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                 : textStyle(Colors.red, 14,
                                                     FontWeight.w500)
                                             : textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          14,
-                          FontWeight.w500)),
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                14,
+                                                FontWeight.w500)),
                                     children: [
                                       Column(
                                         children: List.generate(
@@ -490,20 +508,20 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
             children: [
               Row(
                 children: [
-                  Text("Net Qty : ",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xFF696969),
-                          13,
-                          FontWeight.w500)),
-                  Text("${trade.updatedNETQTY}",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          12,
-                          FontWeight.w600)),
+                  TextWidget.subText(
+                      text: "Net Qty :  ",
+                      color: Color(0xFF696969),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                  TextWidget.subText(
+                      text: "${trade.updatedNETQTY}",
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 ],
               ),
             ],
@@ -516,42 +534,38 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
             children: [
               Row(
                 children: [
-                  Text("Buy Qty : ",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xFF696969),
-                          13,
-                          FontWeight.w500)),
-                  Text(
-                    "${trade.totalBuyQty}",
-                    style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          12,
-                          FontWeight.w600),
-                  ),
+                  TextWidget.subText(
+                      text: "Buy Qty :  ",
+                      color: Color(0xFF696969),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                  TextWidget.subText(
+                      text: "${trade.totalBuyQty}",
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 ],
               ),
               Row(
                 children: [
-                  Text("Sell Qty : ",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xFF696969),
-                          13,
-                          FontWeight.w500)),
-                  Text(
-                    "${trade.totalSellQty}",
-                    style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          12,
-                          FontWeight.w600),
-                  ),
+                  TextWidget.subText(
+                      text: "Sell Qty :  ",
+                      color: Color(0xFF696969),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                  TextWidget.subText(
+                      text: "${trade.totalSellQty}",
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 ],
               ),
             ],
@@ -564,42 +578,38 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
             children: [
               Row(
                 children: [
-                  Text("Buy Rate : ",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xFF696969),
-                          13,
-                          FontWeight.w500)),
-                  Text(
-                    "${trade.totalBuyRate}",
-                    style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          12,
-                          FontWeight.w600),
-                  ),
+                  TextWidget.subText(
+                      text: "Buy Rate :  ",
+                      color: Color(0xFF696969),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                  TextWidget.subText(
+                      text: "${trade.totalBuyRate}",
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 ],
               ),
               Row(
                 children: [
-                  Text("Sell Rate : ",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xFF696969),
-                          13,
-                          FontWeight.w500)),
-                  Text(
-                    "${trade.totalSellRate}",
-                    style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          12,
-                          FontWeight.w600),
-                  ),
+                  TextWidget.subText(
+                      text: "Sell Rate :  ",
+                      color: Color(0xFF696969),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                  TextWidget.subText(
+                      text: "${trade.totalSellRate}",
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 ],
               ),
             ],
@@ -612,42 +622,38 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
             children: [
               Row(
                 children: [
-                  Text("Buy Amount : ",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xFF696969),
-                          13,
-                          FontWeight.w500)),
-                  Text(
-                    "${trade.bAMT}",
-                    style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          12,
-                          FontWeight.w600),
-                  ),
+                  TextWidget.subText(
+                      text: "Buy Amount :  ",
+                      color: Color(0xFF696969),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                  TextWidget.subText(
+                      text: "${trade.bAMT}",
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 ],
               ),
               Row(
                 children: [
-                  Text("Sell Amount : ",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xFF696969),
-                          13,
-                          FontWeight.w500)),
-                  Text(
-                    "${trade.sAMT}",
-                    style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          12,
-                          FontWeight.w600),
-                  ),
+                  TextWidget.subText(
+                      text: "Sell Amount :  ",
+                      color: Color(0xFF696969),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                  TextWidget.subText(
+                      text: "${trade.sAMT}",
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 ],
               ),
             ],
@@ -660,42 +666,38 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
             children: [
               Row(
                 children: [
-                  Text("Realised : ",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xFF696969),
-                          13,
-                          FontWeight.w500)),
-                  Text(
-                    "${trade.realisedpnl}",
-                    style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          12,
-                          FontWeight.w600),
-                  ),
+                  TextWidget.subText(
+                      text: "Realised :  ",
+                      color: Color(0xFF696969),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                  TextWidget.subText(
+                      text: "${trade.realisedpnl}",
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 ],
               ),
               Row(
                 children: [
-                  Text("Unrealised : ",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xFF696969),
-                          13,
-                          FontWeight.w500)),
-                  Text(
-                    " ${trade.unrealisedpnl}",
-                    style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          12,
-                          FontWeight.w600),
-                  ),
+                  TextWidget.subText(
+                      text: "Unrealised :  ",
+                      color: Color(0xFF696969),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                  TextWidget.subText(
+                      text: "${trade.unrealisedpnl}",
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 ],
               ),
             ],
@@ -862,7 +864,8 @@ class _CalendarTabsState extends State<CalendarTabs> {
                   )
                 else
                   _DailyCalendar(
-                    key: ValueKey(ledgerprovider.selectedMonth.toIso8601String()),
+                    key: ValueKey(
+                        ledgerprovider.selectedMonth.toIso8601String()),
                     theme: widget.theme,
                     heatmapData: widget.heatmapData,
                     startDate: ledgerprovider.startTaxDate,
@@ -933,14 +936,16 @@ class _MonthlyGrid extends StatelessWidget {
     final numval = (monthValue == null || monthValue == 0)
         ? "-"
         : monthValue.toStringAsFixed(2);
-    var displayText = numval != "-" ? NumberFormat.compactCurrency(
-      decimalDigits: 2,
-      locale: 'en_IN',
-      symbol: '',
-    ).format(double.parse(numval)) : '-';
+    var displayText = numval != "-"
+        ? NumberFormat.compactCurrency(
+            decimalDigits: 2,
+            locale: 'en_IN',
+            symbol: '',
+          ).format(double.parse(numval))
+        : '-';
     if (displayText.contains("T")) {
-    displayText = displayText.replaceAll("T", "K");
-  }
+      displayText = displayText.replaceAll("T", "K");
+    }
     final monthAbbrs = [
       "Jan",
       "Feb",
@@ -967,8 +972,8 @@ class _MonthlyGrid extends StatelessWidget {
     }
     return Container(
       margin: const EdgeInsets.all(6),
-      width: screenWidth*0.18,
-      height: screenWidth*0.18,
+      width: screenWidth * 0.18,
+      height: screenWidth * 0.18,
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(8.0),
@@ -978,8 +983,8 @@ class _MonthlyGrid extends StatelessWidget {
         children: [
           Text(
             monthName,
-            style: textStyle(theme.isDarkMode ? Colors.white : Colors.black,
-                14, FontWeight.w600),
+            style: textStyle(theme.isDarkMode ? Colors.white : Colors.black, 14,
+                FontWeight.w600),
           ),
           const SizedBox(height: 6),
           Text(
@@ -1010,7 +1015,8 @@ class _DailyCalendar extends StatefulWidget {
     required this.startDate,
     required this.endDate,
     required this.currentMonth,
-    required this.onMonthChanged, required ValueKey<String> key,
+    required this.onMonthChanged,
+    required ValueKey<String> key,
   });
 
   @override
@@ -1027,14 +1033,14 @@ class _DailyCalendarState extends State<_DailyCalendar> {
   }
 
   @override
-void didUpdateWidget(covariant _DailyCalendar oldWidget) {
-  super.didUpdateWidget(oldWidget);
-  if (oldWidget.currentMonth != widget.currentMonth) {
-    setState(() {
-      _month = widget.currentMonth;
-    });
+  void didUpdateWidget(covariant _DailyCalendar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentMonth != widget.currentMonth) {
+      setState(() {
+        _month = widget.currentMonth;
+      });
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -1072,27 +1078,41 @@ void didUpdateWidget(covariant _DailyCalendar oldWidget) {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text("Mon",style: textStyle(
-                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
-                    FontWeight.w700)),
-              Text("Tue",style: textStyle(
-                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
-                    FontWeight.w700)),
-              Text("Wed",style: textStyle(
-                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
-                    FontWeight.w700)),
-              Text("Thu",style: textStyle(
-                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
-                    FontWeight.w700)),
-              Text("Fri",style: textStyle(
-                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
-                    FontWeight.w700)),
-              Text("Sat",style: textStyle(
-                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
-                    FontWeight.w700)),
-              Text("Sun",style: textStyle(
-                    widget.theme.isDarkMode ? Colors.white : Colors.black,12,
-                    FontWeight.w700)),
+              Text("Mon",
+                  style: textStyle(
+                      widget.theme.isDarkMode ? Colors.white : Colors.black,
+                      12,
+                      FontWeight.w700)),
+              Text("Tue",
+                  style: textStyle(
+                      widget.theme.isDarkMode ? Colors.white : Colors.black,
+                      12,
+                      FontWeight.w700)),
+              Text("Wed",
+                  style: textStyle(
+                      widget.theme.isDarkMode ? Colors.white : Colors.black,
+                      12,
+                      FontWeight.w700)),
+              Text("Thu",
+                  style: textStyle(
+                      widget.theme.isDarkMode ? Colors.white : Colors.black,
+                      12,
+                      FontWeight.w700)),
+              Text("Fri",
+                  style: textStyle(
+                      widget.theme.isDarkMode ? Colors.white : Colors.black,
+                      12,
+                      FontWeight.w700)),
+              Text("Sat",
+                  style: textStyle(
+                      widget.theme.isDarkMode ? Colors.white : Colors.black,
+                      12,
+                      FontWeight.w700)),
+              Text("Sun",
+                  style: textStyle(
+                      widget.theme.isDarkMode ? Colors.white : Colors.black,
+                      12,
+                      FontWeight.w700)),
             ],
           ),
         ),
@@ -1117,8 +1137,8 @@ void didUpdateWidget(covariant _DailyCalendar oldWidget) {
         date.isAfter(widget.endDate) ||
         date.year < 1900) {
       return Container(
-        width: screenWidth*0.09,
-        height: screenWidth*0.09,
+        width: screenWidth * 0.09,
+        height: screenWidth * 0.09,
         margin: const EdgeInsets.all(1),
         decoration: BoxDecoration(
           color: widget.theme.isDarkMode
@@ -1147,9 +1167,9 @@ void didUpdateWidget(covariant _DailyCalendar oldWidget) {
                 decimalDigits: 2, locale: 'en_IN', symbol: '')
             .format(double.parse(displayTextVal))
         : '-';
-          if (displayText.contains("T")) {
-    displayText = displayText.replaceAll("T", "K");
-  }
+    if (displayText.contains("T")) {
+      displayText = displayText.replaceAll("T", "K");
+    }
     return GestureDetector(
       onTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1257,5 +1277,5 @@ void didUpdateWidget(covariant _DailyCalendar oldWidget) {
           i, (i + chunkSize > days.length) ? days.length : i + chunkSize));
     }
     return chunks;
- }
+  }
 }

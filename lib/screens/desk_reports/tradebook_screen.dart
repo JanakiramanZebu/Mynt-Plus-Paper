@@ -471,6 +471,32 @@ class Tradebook extends StatelessWidget {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
+                                      
+                                      Row(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              TextWidget.subText( 
+                                                  text:  "Trade Date : ",
+                                                  color:   Color(0xFF696969),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+                                           TextWidget.subText( 
+                                                  text:  "${value.tRADEDATE}",
+                                                  color:   theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 1),
+                                               
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                       Row(
                                         children: [
                                             TextWidget.subText( 
@@ -500,31 +526,6 @@ class Tradebook extends StatelessWidget {
                                           //     FontWeight.w600)),
                                         ],
                                       ),
-                                      Row(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              TextWidget.subText( 
-                                                  text:  "Trade Date : ",
-                                                  color:   Color(0xFF696969),
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 0),
-                                           TextWidget.subText( 
-                                                  text:  "${value.tRADEDATE}",
-                                                  color:   theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1),
-                                               
-                                            ],
-                                          ),
-                                        ],
-                                      ),
                                     ],
                                   ),
                                 ),
@@ -535,31 +536,7 @@ class Tradebook extends StatelessWidget {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              TextWidget.subText( 
-                                                  text:  "Price :  ",
-                                                  color:   Color(0xFF696969),
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 0),
-                                           TextWidget.subText( 
-                                                  text:  "₹ ${value.showprice}",
-                                                  color:   theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1),
-                                               
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                     
                                       Row(
                                         children: [
                                           TextWidget.subText( 
@@ -587,6 +564,31 @@ class Tradebook extends StatelessWidget {
                                           //         : colors.colorBlack,
                                           //     12,
                                           //     FontWeight.w600)),
+                                        ],
+                                      ),
+                                       Row(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              TextWidget.subText( 
+                                                  text:  "Price :  ",
+                                                  color:   Color(0xFF696969),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+                                           TextWidget.subText( 
+                                                  text:  "₹ ${value.showprice}",
+                                                  color:   theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 1),
+                                               
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ],

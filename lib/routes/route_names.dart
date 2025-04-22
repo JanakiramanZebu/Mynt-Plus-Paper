@@ -182,9 +182,12 @@ class Routes {
   static const String calenderpnlScreen = 'CalenderpnlScreen';
   static const String taxpnlscreen = 'Taxpnlscreen';
   static const String tradebook = 'Tradebook';
+  static const String pledgeandun = 'PledgenUnpledge';
+  static const String pledgeunpledgeresponse = 'PledgenUnpledgeResponse';
   static const String pdfdownload = 'PdfDownload';
 
   static const String eqtaxpnleq = 'EqTaxpnlEq';
+  static const String cdslWebView = 'CDSLWebView';
 
   // rough
   static const String heatmapcalendarscreen = 'HeatmapCalendarScreen ';

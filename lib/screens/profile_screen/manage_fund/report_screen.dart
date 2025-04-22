@@ -80,12 +80,11 @@ class ReportsScreen extends ConsumerWidget {
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,
                 //     arguments: "pnl");
               } else if (index == 3) {
-                
                 await ledgerdate.getCurrentDate('else');
-                 
-                    ledgerdate.calendarProvider();
-              ledgerdate.fetchcalenderpnldata(
-                    ledgerdate.startDate, ledgerdate.today,'Equity');
+
+                ledgerdate.calendarProvider();
+                ledgerdate.fetchcalenderpnldata(
+                    ledgerdate.startDate, ledgerdate.today, 'Equity');
                 Navigator.pushNamed(context, Routes.calenderpnlScreen,
                     arguments: "DDDDD");
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,
@@ -119,15 +118,26 @@ class ReportsScreen extends ConsumerWidget {
                 // launch(
                 //     'https://profile.mynt.in/pdfdownload/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}'
                 //     );
-                 await ledgerdate.getCurrentDate('else');
-                 
-                 ledgerdate.fetchpdfdownload(
+                await ledgerdate.getCurrentDate('else');
+
+                ledgerdate.fetchpdfdownload(
                     ledgerdate.startDate, ledgerdate.today);
                 Navigator.pushNamed(context, Routes.pdfdownload,
                     arguments: "DDDDD");
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,
                 //     arguments: "pdfdownload");
-              }
+              } 
+              // else if (index == 7) {
+              //   // launch(
+              //   //     'https://profile.mynt.in/pdfdownload/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}'
+              //   //     ); 
+              //   ledgerdate.fetchpledgeandunpledge();
+              //   ledgerdate.getCurrentDate("pandu");
+              //   Navigator.pushNamed(context, Routes.pledgeandun,
+              //       arguments: "DDDDD");
+              //   // Navigator.pushNamed(context, Routes.reportWebViewApp,
+              //   //     arguments: "pdfdownload");
+              // }
             },
             dense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),

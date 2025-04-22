@@ -315,4 +315,6 @@ String get profileAllDetailsURL => '$profileDetailsURL/profile';
   // reportss api
 
     String get reportsapi => 'https://rekycbe.mynt.in/report/';
+    String get reportspledge => 'https://rekycbe.mynt.in/pledge/';
+    String get fundforprofile => 'https://fundapi.mynt.in/api/';
 }

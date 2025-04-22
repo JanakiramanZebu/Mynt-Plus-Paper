@@ -774,8 +774,8 @@ class PnlScreen extends StatelessWidget {
                                         padding: const EdgeInsets.only(
                                             left: 16.0,
                                             right: 16.0,
-                                            top: 4.0,
-                                            bottom: 8.0),
+                                            top: 8.0,
+                                            bottom: 16.0),
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,

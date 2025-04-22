@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -37,6 +38,7 @@ class UserAccountScreen extends ConsumerWidget {
     final trancation = watch(transcationProvider);
     final mf = watch(mfProvider);
     final portfolio = watch(portfolioProvider);
+    final ledgerdate = watch(ledgerProvider);
 
     //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
@@ -57,7 +59,7 @@ class UserAccountScreen extends ConsumerWidget {
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
                         onTap: () async {
-                          if ([3,4,5,6,10].contains(index)) {
+                          if ([3, 4, 5, 6, 10].contains(index)) {
                             await funds.fetchHstoken(context);
                           }
                           if (acttitle == "Fund") {
@@ -80,9 +82,13 @@ class UserAccountScreen extends ConsumerWidget {
                                 context, Routes.reportWebViewApp,
                                 arguments: "event");
                           } else if (acttitle == "Pledge & Unpledge") {
-                            Navigator.pushNamed(
-                                context, Routes.reportWebViewApp,
-                                arguments: "pledge");
+                            ledgerdate.fetchpledgeandunpledge();
+                            ledgerdate.getCurrentDate("pandu");
+                            Navigator.pushNamed(context, Routes.pledgeandun,
+                                arguments: "DDDDD");
+                            // Navigator.pushNamed(
+                            //     context, Routes.reportWebViewApp,
+                            //     arguments: "pledge");
                           } else if (acttitle == "IPO") {
                             Navigator.pushNamed(context, Routes.ipo);
                             // launch(
@@ -175,10 +181,10 @@ class UserAccountScreen extends ConsumerWidget {
                         },
                         dense: true,
                         minLeadingWidth: 20,
-                        leading:SvgPicture.asset(
-                                userProfile.profileMenu[index]['leading'],
-                                width: 19,
-                                color: const Color(0xff666666)),
+                        leading: SvgPicture.asset(
+                            userProfile.profileMenu[index]['leading'],
+                            width: 19,
+                            color: const Color(0xff666666)),
                         title: Text(
                             "${index == 0 ? "₹${getFormatter(value: double.parse(funds.fundDetailModel!.avlMrg ?? "0.00"), v4d: false, noDecimal: false)}" : userProfile.profileMenu[index]['title']}",
                             style: textStyle(

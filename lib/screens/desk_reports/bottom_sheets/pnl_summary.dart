@@ -60,64 +60,90 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 15.0, left: 16),
-                child: TextWidget.heroText(
-                    text: "Detailed P&L",
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 1),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16),
-                child: TextWidget.paraText(
-                    text:
-                        "${ledgerdata.pnlSummaryData?.data![0].fULLSCRIPSYMBOL}",
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    color: Colors.grey,
-                    fw: 1),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 15.0, left: 16),
+                        child: TextWidget.heroText(
+                            text: "Detailed P&L",
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 1),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: TextWidget.paraText(
+                            text:
+                                "${ledgerdata.pnlSummaryData?.data![0].fULLSCRIPSYMBOL}",
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            color: Colors.grey,
+                            fw: 1),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right : 16.0),
+                    child: TextWidget.subText(
+                                        text: "${notional.toStringAsFixed(2)}",
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        color: notional > 0
+                                            ? Colors.green
+                                            : Colors.red,
+                                        fw: 1),
+                  ),
+                ],
               ),
               Expanded(
                 // height: screenheight * 0.5,
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                            color: theme.isDarkMode
-                                ? const Color(0xffB5C0CF).withOpacity(.15)
-                                : const Color(0xffF1F3F8)),
-                        margin: EdgeInsets.only(top: 16),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  top: 10, left: 16, right: 16, bottom: 15),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  TextWidget.subText(
-                                      text: "Notional",
-                                      color: Color(0xFF696969),
-                                      textOverflow: TextOverflow.ellipsis,
-                                      theme: theme.isDarkMode,
-                                      fw: 0),
-                                  TextWidget.subText(
-                                      text: "${notional.toStringAsFixed(2)}",
-                                      textOverflow: TextOverflow.ellipsis,
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      fw: 1),
-                                ],
-                              ),
+                      // Container(
+                      //   decoration: BoxDecoration(
+                      //       color: theme.isDarkMode
+                      //           ? const Color(0xffB5C0CF).withOpacity(.15)
+                      //           : const Color(0xffF1F3F8)),
+                      //   margin: EdgeInsets.only(top: 16),
+                      //   child: Column(
+                      //     children: [
+                      //       Padding(
+                      //         padding: const EdgeInsets.only(
+                      //             top: 10, left: 16, right: 16, bottom: 15),
+                      //         child: Row(
+                      //           mainAxisAlignment:
+                      //               MainAxisAlignment.spaceBetween,
+                      //           children: [
+                      //             TextWidget.subText(
+                      //                 text: "Notional",
+                      //                 color: Color(0xFF696969),
+                      //                 textOverflow: TextOverflow.ellipsis,
+                      //                 theme: theme.isDarkMode,
+                      //                 fw: 0),
+                                  
+                      //           ],
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                      Padding(
+                            padding: const EdgeInsets.only(
+                              top: 8.0,
+                              bottom: 0.0,
                             ),
-                          ],
-                        ),
-                      ),
+                            child: Divider(
+                              color: theme.isDarkMode
+                                  ? const Color(0xffB5C0CF).withOpacity(.15)
+                                  : const Color(0xffF1F3F8),
+                              thickness: 7.0,
+                            ),
+                          ),
                       ListView.separated(
                         physics: ScrollPhysics(),
                         itemCount: ledgerdata.pnlSummaryData?.data?.length ?? 0,
@@ -131,7 +157,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                 children: [
                                   Padding(
                                     padding: const EdgeInsets.only(
-                                        right: 16.0, left: 16.0, top: 16.0),
+                                        right: 16.0, left: 16.0, top: 8.0),
                                     child: TextWidget.subText(
                                         text: "${value.tRADEDATE}",
                                         textOverflow: TextOverflow.ellipsis,
@@ -179,18 +205,37 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                     Row(
                                       children: [
                                         TextWidget.subText(
-                                            text: "Sell Qty : ",
+                                            text: "Net Qty : ",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
-                                            color: Colors.red,
+                                            color: Color(0xFF696969),
                                             fw: 0),
                                         TextWidget.subText(
                                             text:
-                                                "${value.sQTY} @ ₹ ${double.parse(value.sRATE.toString()).toStringAsFixed(2)}",
+                                                "${value.nETQTY} @ ₹${value.nRATE}",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
-                                            color: Colors.red,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
                                             fw: 1),
+                                        // Text(
+                                        //   ("${ledgerdata.ledgerBillData!.transactions![index].bAMT}"
+                                        //                ) ,
+                                        //   style: textStyle(
+                                        //     double.tryParse(ledgerdata
+                                        //                     .ledgerBillData!
+                                        //                     .transactions![index]
+                                        //                     .bAMT ??
+                                        //                 "0")! <
+                                        //             0
+                                        //         ? Colors.red // Red for less than 0
+                                        //         : Colors
+                                        //             .green, // Green for greater than or equal to 0
+                                        //     14,
+                                        //     FontWeight.w500,
+                                        //   ),
+                                        // ),
                                       ],
                                     ),
                                     // Row(
@@ -286,39 +331,21 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                     Row(
                                       children: [
                                         TextWidget.subText(
-                                            text: "Net Qty : ",
+                                            text: "Sell Qty : ",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
-                                            color: Color(0xFF696969),
-                                            fw:0),
+                                            color: Colors.red,
+                                            fw: 0),
                                         TextWidget.subText(
                                             text:
-                                                "${value.nETQTY} @ ₹${value.nRATE}",
+                                                "${value.sQTY} @ ₹ ${double.parse(value.sRATE.toString()).toStringAsFixed(2)}",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
+                                            color: Colors.red,
                                             fw: 1),
-                                        // Text(
-                                        //   ("${ledgerdata.ledgerBillData!.transactions![index].bAMT}"
-                                        //                ) ,
-                                        //   style: textStyle(
-                                        //     double.tryParse(ledgerdata
-                                        //                     .ledgerBillData!
-                                        //                     .transactions![index]
-                                        //                     .bAMT ??
-                                        //                 "0")! <
-                                        //             0
-                                        //         ? Colors.red // Red for less than 0
-                                        //         : Colors
-                                        //             .green, // Green for greater than or equal to 0
-                                        //     14,
-                                        //     FontWeight.w500,
-                                        //   ),
-                                        // ),
                                       ],
                                     ),
+
                                     // Row(
                                     //   children: [
                                     //     Text(
