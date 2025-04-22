@@ -207,7 +207,9 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   final isSelected = tab.token == tvChart.activeTab?.token;
 
                   return GestureDetector(
-                    onTap: () {
+                    onTap: () async {
+                      await tvChart.fetchScripQuoteIndex(
+                          tab.token, tab.exch, context);
                       tvChart.setChartScript(tab.exch, tab.token, tab.tsym);
                     },
                     child: Container(

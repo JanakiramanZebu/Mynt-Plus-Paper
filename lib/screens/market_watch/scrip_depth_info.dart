@@ -543,8 +543,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                               .optionExch!,
                                                           numofStrike: scripInfo
                                                               .numStrike,
-                                                          strPrc: scripInfo
-                                                              .optionStrPrc,
+                                                          strPrc: depthData.lp.toString(),
                                                           tradeSym: scripInfo
                                                               .selectedTradeSym!);
                                                     } else if (scripInfo

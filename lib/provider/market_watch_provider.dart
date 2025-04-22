@@ -800,7 +800,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           bool isFirst = true;
 
           for (var element in _marketWatchlist!.values!) {
-            if (isFirst && !waitis) {
+            if (isFirst && waitis) {
               await fetchMWScrip(element, context);
               isFirst = waitis;
             } else {
@@ -1354,7 +1354,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         if (_searchScripModel!.values!.isNotEmpty) {
           for (var i = 0; i < _searchScripModel!.values!.length; i++) {
 // Seperating Trade symbol(symbol,exp date, Option)
-
             if (_searchScripModel!.values![i].exch == "BFO" &&
                 _searchScripModel!.values![i].dname != null) {
               List<String> splitVal =
@@ -1382,50 +1381,51 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                 _isAdded![i] = true;
               }
             }
-            _allSearchScrip = _searchScripModel!.values!;
-            if (_searchScripModel!
-                        .values![i].instname!
-                        .toUpperCase() ==
-                    "FUTCUR" ||
-                _searchScripModel!
-                        .values![i].instname!
-                        .toUpperCase() ==
-                    "FUTIRC" ||
-                _searchScripModel!
-                        .values![i].instname!
-                        .toUpperCase() ==
-                    "FUTIRT" ||
-                _searchScripModel!.values![i].instname!.toUpperCase() ==
-                    "OPTCUR" ||
-                _searchScripModel!.values![i].instname!.toUpperCase() ==
-                    "OPTIRC") {
-              _currencySearchScrip!.add(_searchScripModel!.values![i]);
-            } else if (_searchScripModel!.values![i].instname!.toUpperCase() ==
-                    "AUCSO" ||
-                _searchScripModel!
-                        .values![i].instname!
-                        .toUpperCase() ==
-                    "COM" ||
-                _searchScripModel!
-                        .values![i].instname!
-                        .toUpperCase() ==
-                    "FUTCOM" ||
-                _searchScripModel!.values![i].instname!.toUpperCase() ==
-                    "FUTIDX" ||
-                _searchScripModel!.values![i].instname!.toUpperCase() ==
-                    "OPTFUT") {
-              _commoditySearchScrip!.add(_searchScripModel!.values![i]);
-            } else if ((_searchScripModel!.values![i].instname!.toUpperCase() ==
-                        "FUTIDX" ||
-                    _searchScripModel!.values![i].instname!.toUpperCase() ==
-                        "FUTSTK") ||
-                (_searchScripModel!.values![i].instname!.toUpperCase() ==
-                        "OPTIDX" ||
-                    _searchScripModel!.values![i].instname!.toUpperCase() ==
-                        "OPTSTK")) {
-              _fNoSearchScrip!.add(_searchScripModel!.values![i]);
-            } else {
-              _equitySearchScrip!.add(_searchScripModel!.values![i]);
+            if (_searchScripModel!.values![i].instname!.toUpperCase() !=
+                "COM") {
+              _allSearchScrip?.add(_searchScripModel!.values![i]);
+              if (_searchScripModel!
+                          .values![i].instname!
+                          .toUpperCase() ==
+                      "FUTCUR" ||
+                  _searchScripModel!
+                          .values![i].instname!
+                          .toUpperCase() ==
+                      "FUTIRC" ||
+                  _searchScripModel!
+                          .values![i].instname!
+                          .toUpperCase() ==
+                      "FUTIRT" ||
+                  _searchScripModel!.values![i].instname!.toUpperCase() ==
+                      "OPTCUR" ||
+                  _searchScripModel!.values![i].instname!.toUpperCase() ==
+                      "OPTIRC") {
+                _currencySearchScrip!.add(_searchScripModel!.values![i]);
+              } else if (_searchScripModel!
+                          .values![i].instname!
+                          .toUpperCase() ==
+                      "AUCSO" ||
+                  _searchScripModel!
+                          .values![i].instname!
+                          .toUpperCase() ==
+                      "FUTCOM" ||
+                  _searchScripModel!.values![i].instname!.toUpperCase() ==
+                      "FUTIDX" ||
+                  _searchScripModel!.values![i].instname!.toUpperCase() ==
+                      "OPTFUT") {
+                _commoditySearchScrip!.add(_searchScripModel!.values![i]);
+              } else if ((_searchScripModel!.values![i].instname!.toUpperCase() ==
+                          "FUTIDX" ||
+                      _searchScripModel!.values![i].instname!.toUpperCase() ==
+                          "FUTSTK") ||
+                  (_searchScripModel!.values![i].instname!.toUpperCase() ==
+                          "OPTIDX" ||
+                      _searchScripModel!.values![i].instname!.toUpperCase() ==
+                          "OPTSTK")) {
+                _fNoSearchScrip!.add(_searchScripModel!.values![i]);
+              } else {
+                _equitySearchScrip!.add(_searchScripModel!.values![i]);
+              }
             }
 
             notifyListeners();
@@ -1611,7 +1611,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         requestWSOptChain(context: context, isSubscribe: false);
       }
 
-      print("Strike Price $strPrc     ------ ");
+      print(
+          "op Strike Price $strPrc ------ $tradeSym ------ $exchange ------ $numofStrike");
       _optionChainModel = await api.getOptionChain(
           context: context,
           strPrc: strPrc,
@@ -1901,6 +1902,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   splitOptionChain(BuildContext context) {
     _optChainCall = [];
     _optChainPut = [];
+    _optChainCallDown = [];
+    _optChainCallUp = [];
+    _optChainPutDown = [];
+    _optChainPutUp = [];
 // Seperating Trade symbol(symbol,exp date, Option)
     for (var element in _optionChainModel!.optValue!) {
       Map spilitSymbol = spilitTsym(value: "${element.tsym}");
@@ -1910,17 +1915,22 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       element.option = "${spilitSymbol["option"]}";
       if (element.optt == "CE") {
         _optChainCall.add(element);
-
-        int callLength = _optChainCall.length ~/ 2;
-        _optChainCallDown = _optChainCall.sublist(0, callLength);
-
-        _optChainCallUp = _optChainCall.sublist(callLength);
+        // int callLength = _optChainCall.length ~/ 2;
+        if (double.parse(_getQuotes.lp.toString()) <
+            double.parse(element.strprc.toString())) {
+          _optChainCallDown.add(element);
+        } else {
+          _optChainCallUp.add(element);
+        }
       } else {
         _optChainPut.add(element);
-        int putLength = _optChainPut.length ~/ 2;
-        _optChainPutDown = _optChainPut.sublist(0, putLength);
-
-        _optChainPutUp = _optChainPut.sublist(putLength);
+        // int putLength = _optChainPut.length ~/ 2;
+        if (double.parse(_getQuotes.lp.toString()) <
+            double.parse(element.strprc.toString())) {
+          _optChainPutDown.add(element);
+        } else {
+          _optChainPutUp.add(element);
+        }
       }
     }
     notifyListeners();

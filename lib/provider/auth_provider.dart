@@ -1006,7 +1006,7 @@ class AuthProvider extends DefaultChangeNotifier {
         ref(portfolioProvider).fetchPosGroupSymbol("", false);
         ref(transcationProvider).fetchc(context);
 
-        FirebaseAnalytics.instance.setUserId(id: pref.clientId);
+        // FirebaseAnalytics.instance.setUserId(id: pref.clientId);
         // IPOs
         setIposAPicalls();
         // mf
