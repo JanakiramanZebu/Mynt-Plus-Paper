@@ -5,6 +5,8 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../res/res.dart';
 import '../../models/marketwatch_model/search_scrip_model.dart';
 import '../../provider/thems.dart';
+import '../../provider/user_profile_providerNEWUI.dart';
+import '../../routes/app_routes.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/no_data_found.dart';
@@ -14,7 +16,10 @@ class SearchScripList extends ConsumerWidget {
   final String wlName;
   final String isBasket;
   const SearchScripList(
-      {super.key, required this.wlName, required this.searchValue, required this.isBasket});
+      {super.key,
+      required this.wlName,
+      required this.searchValue,
+      required this.isBasket});
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
@@ -26,7 +31,18 @@ class SearchScripList extends ConsumerWidget {
             itemBuilder: (BuildContext context, int index) {
               return ListTile(
                 onTap: () async {
-                  await searchScrip.calldepthApis(context, searchValue[index], isBasket);
+                  if (wlName == "Chart||Is") {
+                    searchScrip.setChartScript(
+                        searchValue[index].exch.toString(),
+                        searchValue[index].token.toString(),
+                        searchValue[index].tsym.toString());
+                    currentRouteName = 'Chart';
+                    await searchScrip.searchClear();
+                    Navigator.of(context).pop();
+                  } else {
+                    await searchScrip.calldepthApis(
+                        context, searchValue[index], isBasket);
+                  }
                 },
                 dense: true,
                 contentPadding:
@@ -65,7 +81,10 @@ class SearchScripList extends ConsumerWidget {
                       )
                   ],
                 ),
-                trailing: wlName == "Basket"
+                trailing: wlName == "Chart||Is" ||
+                        wlName == "Basket" ||
+                        searchScrip.isPreDefWLs == "Yes" ||
+                        searchScrip.scrips.length >= 50
                     ? Container(width: .2)
                     : IconButton(
                         splashRadius: 20,

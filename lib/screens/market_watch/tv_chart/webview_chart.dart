@@ -40,6 +40,9 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   @override
   void initState() {
     super.initState();
+    Future.microtask(() {
+      context.read(marketWatchProvider).loadDefaultTabs();
+    });
   }
 
   @override
@@ -72,6 +75,22 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    IconButton(
+                      padding: const EdgeInsets.all(0),
+                      icon: Icon(Icons.restart_alt,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack), // Back icon
+                      onPressed: () {
+                        ConstantName.chartwebViewController?.loadUrl(
+                          urlRequest: URLRequest(
+                            url: WebUri(
+                              "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}",
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     Expanded(
                         child: InkWell(
                       onTap: () async {
@@ -172,10 +191,99 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                         child:
                             ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
                 tvChart.singlePageloader(false);
-                await ConstantName.chartwebViewController!.evaluateJavascript(
-                    source:
-                        "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${theme.isDarkMode}')");
+                tvChart.setChartScript('ABC', '0123', 'ABCD');
                 chartUpdate.changeOrientation('portrait');
+              },
+            ),
+            Expanded(
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(right: 8),
+                itemCount:
+                    tvChart.chartTabs.length, // List of tabs (tokens/symbols)
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final tab = tvChart.chartTabs[index];
+                  final isSelected = tab.token == tvChart.activeTab?.token;
+
+                  return GestureDetector(
+                    onTap: () {
+                      tvChart.setChartScript(tab.exch, tab.token, tab.tsym);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode
+                            ? isSelected
+                                ? const Color(0xffffffff)
+                                : const Color(0xff000000)
+                            : isSelected
+                                ? const Color(0xff000000)
+                                : const Color(0xffffffff),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: theme.isDarkMode
+                              ? !isSelected
+                                  ? colors.colorWhite
+                                  : colors.colorBlack
+                              : isSelected
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(tab.tsym,
+                              style: textStyle(
+                                  theme.isDarkMode
+                                      ? Color(
+                                          isSelected ? 0xff000000 : 0xffffffff)
+                                      : Color(
+                                          isSelected ? 0xffffffff : 0xff000000),
+                                  12,
+                                  FontWeight.w500)),
+                          if (index > 1) ...[
+                            const SizedBox(width: 4),
+                            GestureDetector(
+                              onTap: () {
+                                tvChart.removeChartTab(tab);
+                              },
+                              child: Icon(
+                                Icons.close,
+                                size: 16,
+                                color: theme.isDarkMode
+                                    ? Color(
+                                        isSelected ? 0xff000000 : 0xffffffff)
+                                    : Color(
+                                        isSelected ? 0xffffffff : 0xff000000),
+                              ),
+                            )
+                          ]
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            IconButton(
+              padding: const EdgeInsets.all(0),
+              icon: Icon(Icons.add_circle_outline,
+                  color: theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.colorBlack), // Back icon
+              onPressed: () async {
+                context
+                    .read(marketWatchProvider)
+                    .requestMWScrip(context: context, isSubscribe: false);
+                Navigator.pushNamed(
+                  context,
+                  Routes.searchScrip,
+                  arguments: "Chart||Is",
+                );
+                // userProfile.setChartdialog(false);
               },
             ),
             IconButton(
@@ -220,7 +328,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         },
         initialUrlRequest: URLRequest(
           url: WebUri(
-              "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}"
+              "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}"
               // "https://global-grammar-349410.web.app/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
               // "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
               // "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}&showseries=Y",
@@ -245,28 +353,24 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
           }
         },
         onProgressChanged: (controller, progress) async {
-              WebUri? currentUrl = await controller.getUrl();
+          WebUri? currentUrl = await controller.getUrl();
 
-          setState(()  {
+          setState(() {
             this.progress = progress / 100;
             if (context.read(userProfileProvider).showchartof &&
                 progress == 100) {
-                  final mktpro =context.read(marketWatchProvider).getQuotes;
+              final mktpro = context.read(marketWatchProvider).getQuotes;
 
               String redirUrl = currentUrl.toString();
               Uri url = Uri.parse(redirUrl);
               Map<String, String> queryParams = url.queryParameters;
               String? query = queryParams['token'];
-              if (mktpro?.token != "" &&
-                 mktpro?.token
-                          .toString() !=
-                      query) {
-                print("sddccdcdcdc WebUri ${currentUrl.toString()}");
-                 ConstantName.chartwebViewController!.evaluateJavascript(
-                    source:
-                        "window.changeScript([{exch: '${mktpro?.exch}', token: '${mktpro?.token}', tsym: '${mktpro?.tsym}'}], '${theme.isDarkMode}')");
+              if (mktpro!.token != "" && mktpro.token.toString() != query) {
+                // print("sddccdcdcdc WebUri ${currentUrl.toString()}");
+                tvChart.setChartScript(mktpro.exch.toString(),
+                    mktpro.token.toString(), mktpro.tsym.toString());
               }
-              print("sddccdcdcdc $progress $query");
+              // print("sddccdcdcdc $progress $query");
             }
           });
         },

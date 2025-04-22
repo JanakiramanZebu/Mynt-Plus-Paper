@@ -17,7 +17,6 @@ import '../screens/bonds/bonds_orderbook_screen/bonds_orderbook_details/close_or
 import '../screens/bonds/bonds_orderbook_screen/bonds_orderbook_details/open_order_details.dart';
 import '../screens/desk_reports/calendarpnl_heatmap/headmap_calendar.dart';
 import '../screens/desk_reports/calenderPnl_screen.dart';
-import '../screens/desk_reports/equity_taxpnl_screen.dart';
 import '../screens/desk_reports/holding_screen.dart';
 import '../screens/desk_reports/ledger_screen.dart';
 import '../screens/desk_reports/pdf_downalod_screen.dart';
@@ -703,21 +702,6 @@ class AppRoutes {
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 HoldingScreen(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
-
-      case Routes.taxpnlscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                TaxPnlScreen(),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               const begin = Offset(-1.0, 0.0);

@@ -977,18 +977,14 @@ class AuthProvider extends DefaultChangeNotifier {
       ConstantName.timer =
           Timer.periodic(const Duration(seconds: 1), (timer) {});
       ConstantName.timer!.cancel();
-      await ref(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4, context);
+      ref(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4, context);
 
-      if (s.isNotEmpty) {
-        ref(websocketProvider).closeSocket(true);
-      }
-
-      if (pref.clientSession!.isNotEmpty) {
+      if (s.isNotEmpty || pref.clientSession!.isNotEmpty) {
         ref(websocketProvider).closeSocket(true);
       }
 
       await ref(indexListProvider).checkSession(context);
-      await ref(marketWatchProvider).changeWlName("", "No");
+      ref(marketWatchProvider).changeWlName("", "No");
       _logoutMsg = "";
 
       if (ref(indexListProvider).checkSess!.stat == "Ok") {
@@ -998,29 +994,25 @@ class AuthProvider extends DefaultChangeNotifier {
         await ref(portfolioProvider).fetchHoldings(context, "");
 
         await ref(indexListProvider).getDeafultIndexList(context);
-        await ref(marketWatchProvider).fetchMWList(context);
-        ref(portfolioProvider).fetchOplist(context);
-        ref(userProfileProvider).fetchUserDetail(context);
-        ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
-        ref(portfolioProvider).fetchPositionBook(context, false);
+        await ref(marketWatchProvider).fetchMWList(context, true);
         ref(orderProvider).fetchOrderBook(context, false);
+        ref(portfolioProvider).fetchPositionBook(context, false);
         ref(orderProvider).fetchTradeBook(context);
-
-        ref(portfolioProvider).fetchPosGroupSymbol("", false);
-
+        ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
         ref(transcationProvider).fetchcwithdraw(context);
         ref(transcationProvider).fetchfundbank(context);
+        ref(portfolioProvider).fetchOplist(context);
+        ref(userProfileProvider).fetchUserDetail(context);
+        ref(portfolioProvider).fetchPosGroupSymbol("", false);
         ref(transcationProvider).fetchc(context);
-// IPOs
-        setIposAPicalls();
-        await FirebaseAnalytics.instance.setUserId(id: pref.clientId);
 
-// mf
-        setmfapicalls();
-        ref(mfProvider).fetchmfNFO(context);
-// Explore
-        // await ref(stocksProvide)
-        //     .fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
+        FirebaseAnalytics.instance.setUserId(id: pref.clientId);
+        // IPOs
+        setIposAPicalls();
+        // mf
+        setmfapicalls(context);
+        // Explore
+        // await ref(stocksProvide).fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
         // await ref(indexListProvider).fetchStockTopIndex();
 
         // await ref(stocksProvide).fetchCorporateAction();
@@ -1038,7 +1030,7 @@ class AuthProvider extends DefaultChangeNotifier {
         setProfileAPicalls();
         setPrefOrderPrefer();
         ref(orderProvider).setOrderIp();
-// End Explore
+        // End Explore
         if (s.isEmpty) {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.homeScreen, (route) => false);
@@ -1084,9 +1076,10 @@ class AuthProvider extends DefaultChangeNotifier {
     await ref(ipoProvide).fetchIpoPreClose();
   }
 
-  setmfapicalls() async {
+  setmfapicalls(context) async {
     ref(mfProvider).fetchnewMFBestList();
     ref(mfProvider).fetchmfallcatnew();
+    ref(mfProvider).fetchmfNFO(context);
     // ref(mfProvider).fetchmfNFO(context);
   }
 

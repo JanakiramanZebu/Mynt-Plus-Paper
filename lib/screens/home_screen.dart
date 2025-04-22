@@ -136,15 +136,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         }
         print("app in resumed");
         final userProfile = context.read(userProfileProvider);
-
         final scriptInfo = context.read(marketWatchProvider).getQuotes;
-        final theme = context.read(themeProvider);
-
         if (userProfile.showchartof) {
-          if (scriptInfo?.exch != null) {
-            await ConstantName.chartwebViewController!.evaluateJavascript(
-                source:
-                    "window.changeScript([{exch: '${scriptInfo?.exch}', token: '${scriptInfo?.token}', tsym: '${scriptInfo?.tsym}'}], '${theme.isDarkMode}')");
+          if (scriptInfo!.exch != null) {
+            context.read(marketWatchProvider).setChartScript(
+                scriptInfo.exch.toString(),
+                scriptInfo.token.toString(),
+                scriptInfo.tsym.toString());
             // await context.read(websocketProvider).establishConnection(
             //     channelInput: "${scriptInfo?.exch}|${scriptInfo?.token}",
             //     task: "d",
@@ -359,14 +357,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   ? []
                                                   : [
                                                       if (indexProvide
-                                                                  .selectedBtmIndx ==
-                                                              1 &&
-                                                          marketWatchList
-                                                                  .isPreDefWLs !=
-                                                              "Yes") ...[
-                                                        marketWatchList.scrips
-                                                                    .length >
-                                                                1
+                                                              .selectedBtmIndx ==
+                                                          1) ...[
+                                                        marketWatchList.isPreDefWLs !=
+                                                                    "Yes" &&
+                                                                marketWatchList
+                                                                        .scrips
+                                                                        .length >
+                                                                    1
                                                             ? InkWell(
                                                                 onTap: () {
                                                                   FocusScope.of(
@@ -403,43 +401,42 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                             .colorGrey)),
                                                               )
                                                             : Container(),
-                                                        marketWatchList.scrips
-                                                                    .length >=
-                                                                50
-                                                            ? const SizedBox()
-                                                            : InkWell(
-                                                                onTap: () {
-                                                                  context
-                                                                      .read(
-                                                                          marketWatchProvider)
-                                                                      .requestMWScrip(
-                                                                          context:
-                                                                              context,
-                                                                          isSubscribe:
-                                                                              false);
-                                                                  Navigator.pushNamed(
-                                                                      context,
-                                                                      Routes
-                                                                          .searchScrip,
-                                                                      arguments:
-                                                                          marketWatchList
-                                                                              .wlName);
-                                                                },
-                                                                child: Padding(
-                                                                    padding: const EdgeInsets
-                                                                        .only(
-                                                                        right:
-                                                                            16,
-                                                                        left:
-                                                                            8),
-                                                                    child: SvgPicture.asset(
-                                                                        assets
-                                                                            .searchIcon,
-                                                                        width:
-                                                                            19,
-                                                                        color: colors
-                                                                            .colorGrey)),
-                                                              ),
+                                                        // marketWatchList.scrips
+                                                        //             .length >=
+                                                        //         50
+                                                        //     ? const SizedBox()
+                                                        //     :
+                                                        InkWell(
+                                                          onTap: () {
+                                                            context
+                                                                .read(
+                                                                    marketWatchProvider)
+                                                                .requestMWScrip(
+                                                                    context:
+                                                                        context,
+                                                                    isSubscribe:
+                                                                        false);
+                                                            Navigator.pushNamed(
+                                                                context,
+                                                                Routes
+                                                                    .searchScrip,
+                                                                arguments:
+                                                                    marketWatchList
+                                                                        .wlName);
+                                                          },
+                                                          child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      right: 16,
+                                                                      left: 8),
+                                                              child: SvgPicture.asset(
+                                                                  assets
+                                                                      .searchIcon,
+                                                                  width: 19,
+                                                                  color: colors
+                                                                      .colorGrey)),
+                                                        ),
                                                       ] else if ((indexProvide
                                                                       .selectedBtmIndx ==
                                                                   2 &&
@@ -1358,61 +1355,61 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ]
                                   ])),
                               // if (userProfile.onloadshowchartof) ...[
-                                Positioned(
-                                  key: userProfile.webViewKey,
-                                  // right: userProfile.showchartof
-                                  //     ? 0
-                                  //     : -300,
-                                  bottom: userProfile.showchartof
-                                      ? 0
-                                      : (MediaQuery.of(context).size.height +
-                                          100),
-                                  // top: 0,
-                                  // : 0,
-                                  child: AnimatedContainer(
-                                    alignment: Alignment.center,
-                                    duration: const Duration(milliseconds: 100),
-                                    curve: Curves.fastLinearToSlowEaseIn,
-                                    decoration: BoxDecoration(
-                                      color: theme.isDarkMode
-                                          ? colors.colorBlack
-                                          : colors.colorWhite,
-                                      // borderRadius: const BorderRadius.only(
-                                      //   topLeft: Radius.circular(24),
-                                      //   topRight: Radius.circular(24),
-                                      // ),
-                                      // boxShadow: [
-                                      //   BoxShadow(
-                                      //       color: theme.isDarkMode
-                                      //           ? const Color.fromARGB(
-                                      //               100, 100, 100, 100)
-                                      //           : const Color.fromARGB(
-                                      //               100, 0, 0, 0),
-                                      //       blurRadius: theme.isDarkMode ? 5 : 10,
-                                      //       spreadRadius:
-                                      //           theme.isDarkMode ? 1 : 100,
-                                      //       offset: Offset(
-                                      //           0, theme.isDarkMode ? -3 : -6)),
-                                      // ],
-                                    ),
-                                    height: MediaQuery.of(context).size.height,
-                                    width: MediaQuery.of(context).size.width,
-                                    child: SafeArea(
-                                      bottom: false,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          ChartScreenWebView(
-                                              chartArgs: ChartArgs(
-                                                  exch: 'ABC',
-                                                  tsym: 'ABCD',
-                                                  token: '0123')),
-                                        ],
-                                      ),
+                              Positioned(
+                                key: userProfile.webViewKey,
+                                // right: userProfile.showchartof
+                                //     ? 0
+                                //     : -300,
+                                bottom: userProfile.showchartof
+                                    ? 0
+                                    : (MediaQuery.of(context).size.height +
+                                        100),
+                                // top: 0,
+                                // : 0,
+                                child: AnimatedContainer(
+                                  alignment: Alignment.center,
+                                  duration: const Duration(milliseconds: 100),
+                                  curve: Curves.fastLinearToSlowEaseIn,
+                                  decoration: BoxDecoration(
+                                    color: theme.isDarkMode
+                                        ? colors.colorBlack
+                                        : colors.colorWhite,
+                                    // borderRadius: const BorderRadius.only(
+                                    //   topLeft: Radius.circular(24),
+                                    //   topRight: Radius.circular(24),
+                                    // ),
+                                    // boxShadow: [
+                                    //   BoxShadow(
+                                    //       color: theme.isDarkMode
+                                    //           ? const Color.fromARGB(
+                                    //               100, 100, 100, 100)
+                                    //           : const Color.fromARGB(
+                                    //               100, 0, 0, 0),
+                                    //       blurRadius: theme.isDarkMode ? 5 : 10,
+                                    //       spreadRadius:
+                                    //           theme.isDarkMode ? 1 : 100,
+                                    //       offset: Offset(
+                                    //           0, theme.isDarkMode ? -3 : -6)),
+                                    // ],
+                                  ),
+                                  height: MediaQuery.of(context).size.height,
+                                  width: MediaQuery.of(context).size.width,
+                                  child: SafeArea(
+                                    bottom: false,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        ChartScreenWebView(
+                                            chartArgs: ChartArgs(
+                                                exch: 'ABC',
+                                                tsym: 'ABCD',
+                                                token: '0123')),
+                                      ],
                                     ),
                                   ),
                                 ),
+                              ),
                               // ]
                             ],
                           ),
@@ -1477,10 +1474,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 child: ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
         mktwth.singlePageloader(false);
       });
-
-      await ConstantName.chartwebViewController!.evaluateJavascript(
-          source:
-              "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${context.read(themeProvider).isDarkMode}')");
+      context.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
       return false; // Prevent back navigation when chart is visible
     } else {
       return await showDialog(

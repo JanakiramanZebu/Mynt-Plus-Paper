@@ -487,11 +487,14 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
                                                       userProfile
                                                           .setChartdialog(true);
-                                                      await ConstantName
-                                                          .chartwebViewController!
-                                                          .evaluateJavascript(
-                                                              source:
-                                                                  "window.changeScript([{exch: '${widget.wlValue.exch}', token: '${widget.wlValue.token}', tsym: '${widget.wlValue.tsym}'}], '${theme.isDarkMode}')");
+
+                                                      scripInfo.setChartScript(
+                                                              widget
+                                                                  .wlValue.exch,
+                                                              widget.wlValue
+                                                                  .token,
+                                                              widget.wlValue
+                                                                  .tsym);
 
                                                       // "window.tvWidget.activeChart().setSymbol('${widget.wlValue.exch}:${widget.wlValue.tsym}')");
                                                       // userProfile.setChartdialog(true);
