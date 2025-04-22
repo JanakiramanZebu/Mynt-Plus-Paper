@@ -1451,27 +1451,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         mktwth.chngDephBtn("Overview");
         mktwth.singlePageloader(true);
 
-        DepthInputArgs depthArgs = DepthInputArgs(
-            exch: '${mktwth.getQuotes?.exch}',
-            token: '${mktwth.getQuotes?.token}',
-            tsym: '${mktwth.getQuotes?.tsym}',
-            instname: mktwth.getQuotes?.instname ?? "",
-            symbol: '${mktwth.getQuotes?.symbol}',
-            expDate: '${mktwth.getQuotes?.expDate}',
-            option: '${mktwth.getQuotes?.option}');
+        mktwth.calldepthApis(context, mktwth.getQuotes, "");
+       
+        // DepthInputArgs depthArgs = DepthInputArgs(
+        //     exch: '${mktwth.getQuotes?.exch}',
+        //     token: '${mktwth.getQuotes?.token}',
+        //     tsym: '${mktwth.getQuotes?.tsym}',
+        //     instname: mktwth.getQuotes?.instname ?? "",
+        //     symbol: '${mktwth.getQuotes?.symbol}',
+        //     expDate: '${mktwth.getQuotes?.expDate}',
+        //     option: '${mktwth.getQuotes?.option}');
 
-        showModalBottomSheet(
-            isScrollControlled: true,
-            useSafeArea: true,
-            isDismissible: true,
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-            context: context,
-            builder: (context) => Container(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                child: ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
+        // showModalBottomSheet(
+        //     isScrollControlled: true,
+        //     useSafeArea: true,
+        //     isDismissible: true,
+        //     shape: const RoundedRectangleBorder(
+        //         borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        //     context: context,
+        //     builder: (context) => Container(
+        //         padding: EdgeInsets.only(
+        //           bottom: MediaQuery.of(context).viewInsets.bottom,
+        //         ),
+        //         child: ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
         mktwth.singlePageloader(false);
       });
       context.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');

@@ -34,6 +34,7 @@ class ChartScreenWebView extends StatefulWidget {
 }
 
 class _ChartScreenWebViewState extends State<ChartScreenWebView> {
+  final ScrollController _scrollController = ScrollController();
   double progress = 0;
   final Preferences prefs = locator<Preferences>();
   SharedPreferences? sharedPrefs;
@@ -43,6 +44,27 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     Future.microtask(() {
       context.read(marketWatchProvider).loadDefaultTabs();
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelectedTab());
+  }
+
+  @override
+  void didUpdateWidget(covariant ChartScreenWebView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelectedTab());
+  }
+
+  void _scrollToSelectedTab() {
+    final tvChart = context.read(marketWatchProvider);
+
+    final selectedIndex = tvChart.chartTabs
+        .indexWhere((tab) => tab.token == tvChart.activeTab?.token);
+    if (_scrollController.hasClients && selectedIndex != -1) {
+      _scrollController.animateTo(
+        selectedIndex * 120.0, // Adjust width estimate based on Chip size
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
@@ -166,30 +188,31 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                 userProfile.setChartdialog(false);
                 tvChart.chngDephBtn("Overview");
                 tvChart.singlePageloader(true);
+                await tvChart.calldepthApis(context, tvChart.getQuotes, "");
 
-                DepthInputArgs depthArgs = DepthInputArgs(
-                    exch: '${tvChart.getQuotes?.exch}',
-                    token: '${tvChart.getQuotes?.token}',
-                    tsym: '${tvChart.getQuotes?.tsym}',
-                    instname: tvChart.getQuotes?.instname ?? "",
-                    symbol: '${tvChart.getQuotes?.symbol}',
-                    expDate: '${tvChart.getQuotes?.expDate}',
-                    option: '${tvChart.getQuotes?.option}');
+                // DepthInputArgs depthArgs = DepthInputArgs(
+                //     exch: '${tvChart.getQuotes?.exch}',
+                //     token: '${tvChart.getQuotes?.token}',
+                //     tsym: '${tvChart.getQuotes?.tsym}',
+                //     instname: tvChart.getQuotes?.instname ?? "",
+                //     symbol: '${tvChart.getQuotes?.symbol}',
+                //     expDate: '${tvChart.getQuotes?.expDate}',
+                //     option: '${tvChart.getQuotes?.option}');
 
-                showModalBottomSheet(
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    isDismissible: true,
-                    shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(16))),
-                    context: context,
-                    builder: (context) => Container(
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewInsets.bottom,
-                        ),
-                        child:
-                            ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
+                // showModalBottomSheet(
+                //     isScrollControlled: true,
+                //     useSafeArea: true,
+                //     isDismissible: true,
+                //     shape: const RoundedRectangleBorder(
+                //         borderRadius:
+                //             BorderRadius.vertical(top: Radius.circular(16))),
+                //     context: context,
+                //     builder: (context) => Container(
+                //         padding: EdgeInsets.only(
+                //           bottom: MediaQuery.of(context).viewInsets.bottom,
+                //         ),
+                //         child:
+                //             ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
                 tvChart.singlePageloader(false);
                 tvChart.setChartScript('ABC', '0123', 'ABCD');
                 chartUpdate.changeOrientation('portrait');
@@ -197,74 +220,80 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
             ),
             Expanded(
               child: ListView.separated(
+                controller: _scrollController,
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.only(right: 8),
                 itemCount:
                     tvChart.chartTabs.length, // List of tabs (tokens/symbols)
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
+                  final last = tvChart.chartTabs.first;
                   final tab = tvChart.chartTabs[index];
                   final isSelected = tab.token == tvChart.activeTab?.token;
 
-                  return GestureDetector(
+                  return InkWell(
                     onTap: () async {
                       await tvChart.fetchScripQuoteIndex(
                           tab.token, tab.exch, context);
                       tvChart.setChartScript(tab.exch, tab.token, tab.tsym);
                     },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? isSelected
-                                ? const Color(0xffffffff)
-                                : const Color(0xff000000)
-                            : isSelected
-                                ? const Color(0xff000000)
-                                : const Color(0xffffffff),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: theme.isDarkMode
-                              ? !isSelected
-                                  ? colors.colorWhite
-                                  : colors.colorBlack
-                              : isSelected
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Chip(
+                      visualDensity: const VisualDensity(vertical: -4, horizontal: 0),
+                      labelPadding: const EdgeInsets.only(right: 0),
+                      padding: index > 1
+                          ? const EdgeInsets.only(left: 16)
+                          : const EdgeInsets.symmetric(horizontal: 8),
+                      label: Text(
+                        tab.tsym,
+                        style: textStyle(
+                          theme.isDarkMode
+                              ? Color(isSelected ? 0xff000000 : 0xffffffff)
+                              : Color(isSelected ? 0xffffffff : 0xff000000),
+                          12,
+                          FontWeight.w500,
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(tab.tsym,
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? Color(
-                                          isSelected ? 0xff000000 : 0xffffffff)
-                                      : Color(
-                                          isSelected ? 0xffffffff : 0xff000000),
-                                  12,
-                                  FontWeight.w500)),
-                          if (index > 1) ...[
-                            const SizedBox(width: 4),
-                            GestureDetector(
-                              onTap: () {
-                                tvChart.removeChartTab(tab);
-                              },
-                              child: Icon(
-                                Icons.close,
-                                size: 16,
-                                color: theme.isDarkMode
-                                    ? Color(
-                                        isSelected ? 0xff000000 : 0xffffffff)
-                                    : Color(
-                                        isSelected ? 0xffffffff : 0xff000000),
-                              ),
-                            )
-                          ]
-                        ],
+                      backgroundColor: theme.isDarkMode
+                          ? (isSelected
+                              ? const Color(0xffffffff)
+                              : const Color(0xff000000))
+                          : (isSelected
+                              ? const Color(0xff000000)
+                              : const Color(0xffffffff)),
+                      shape: StadiumBorder(
+                        side: BorderSide(
+                          color: theme.isDarkMode
+                              ? (!isSelected
+                                  ? colors.colorWhite
+                                  : colors.colorBlack)
+                              : (isSelected
+                                  ? colors.colorWhite
+                                  : colors.colorBlack),
+                        ),
                       ),
+                      deleteIcon: index > 1
+                          ? Icon(
+                              Icons.close,
+                              size: 16,
+                              color: theme.isDarkMode
+                                  ? Color(isSelected ? 0xff000000 : 0xffffffff)
+                                  : Color(isSelected ? 0xffffffff : 0xff000000),
+                            )
+                          : null,
+                      onDeleted: index > 1
+                          ? () async {
+                              tvChart.removeChartTab(tab);
+                              if (tvChart.activeTab?.token == tab.token) {
+                                await tvChart.fetchScripQuoteIndex(
+                                    last.token, last.exch, context);
+                                tvChart.setChartScript(
+                                    last.exch, last.token, last.tsym);
+                              }
+                            }
+                          : null,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      // padding: const EdgeInsets.symmetric(horizontal: 8),
                     ),
                   );
                 },

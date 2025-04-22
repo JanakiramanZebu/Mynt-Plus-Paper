@@ -678,9 +678,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   void removeChartTab(ChartArgs tab) {
     _chartTabs.removeWhere((t) => t.token == tab.token);
-    if (_activeTab?.token == tab.token) {
-      _activeTab = _chartTabs.isNotEmpty ? _chartTabs.last : null;
-    }
     notifyListeners();
   }
 
@@ -694,7 +691,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     await ConstantName.chartwebViewController!.evaluateJavascript(
         source:
             "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref(themeProvider).isDarkMode}')");
-    if (_chartTabs.length == 5) {
+    if (_chartTabs.length == 5 && (_chartTabs.any((t) => t.token == token)) != true) {
       removeChartTab(_chartTabs.last);
     }
     if (token != "0123") {
@@ -1610,9 +1607,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (_optionChainModel != null) {
         requestWSOptChain(context: context, isSubscribe: false);
       }
-
-      print(
-          "op Strike Price $strPrc ------ $tradeSym ------ $exchange ------ $numofStrike");
       _optionChainModel = await api.getOptionChain(
           context: context,
           strPrc: strPrc,
