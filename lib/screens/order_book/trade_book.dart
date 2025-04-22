@@ -146,7 +146,7 @@ class TradeBook extends ConsumerWidget {
         },
         child: order.tradeBooksearch!.isEmpty
             ? tradeBook.isNotEmpty
-                ? ListView.separated(
+                ? ListView.builder(
                     physics: const BouncingScrollPhysics(),
                     shrinkWrap: false,
                     itemBuilder: (context, index) {
@@ -313,21 +313,21 @@ class TradeBook extends ConsumerWidget {
                                                       12,
                                                       FontWeight.w600)))
                                         ]),
-                                        Row(children: [
-                                          Text("Prc: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                          Text(
-                                              "₹${tradeBook[itemIndex].prc ?? 0.00}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500))
-                                        ])
+                                        // Row(children: [
+                                        //   Text("Prc: ",
+                                        //       style: textStyle(
+                                        //           const Color(0xff5E6B7D),
+                                        //           14,
+                                        //           FontWeight.w500)),
+                                        //   Text(
+                                        //       "₹${tradeBook[itemIndex].prc ?? 0.00}",
+                                        //       style: textStyle(
+                                        //           theme.isDarkMode
+                                        //               ? colors.colorWhite
+                                        //               : colors.colorBlack,
+                                        //           14,
+                                        //           FontWeight.w500))
+                                        // ])
                                       ]),
                                   const SizedBox(height: 8),
                                   Row(
@@ -350,7 +350,7 @@ class TradeBook extends ConsumerWidget {
                                                   FontWeight.w500))
                                         ]),
                                         Row(children: [
-                                          Text("Avg.Price: ",
+                                          Text("Price: ",
                                               style: textStyle(
                                                   const Color(0xff5E6B7D),
                                                   14,
@@ -398,13 +398,6 @@ class TradeBook extends ConsumerWidget {
                           ));
                     },
                     itemCount: tradeBook.length * 2 - 1,
-                    separatorBuilder: (BuildContext context, int index) {
-                      return Container(
-                          color: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                          height: 6);
-                    },
                   )
                 : const SizedBox(height: 500, child: NoDataFound())
             : order.tradeBooksearch!.isNotEmpty

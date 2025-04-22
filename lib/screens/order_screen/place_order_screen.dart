@@ -16,7 +16,6 @@ import '../../models/order_book_model/order_margin_model.dart';
 import '../../models/order_book_model/place_gtt_order.dart';
 import '../../models/order_book_model/place_order_model.dart';
 import '../../models/order_book_model/sip_place_order.dart';
-import '../../provider/index_list_provider.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/order_input_provider.dart';
@@ -28,7 +27,6 @@ import '../../provider/user_profile_provider.dart';
 import '../../provider/websocket_provider.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
-import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/custom_switch_btn.dart';
 import '../../sharedWidget/custom_widget_button.dart';
@@ -37,6 +35,7 @@ import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/no_internet_widget.dart';
 import '../../sharedWidget/snack_bar.dart';
+import '../market_watch/slice_order_pop.dart';
 import 'gtt_condition.dart';
 import 'invest_type_widget.dart';
 import 'margin_charges_bottom_sheet.dart';
@@ -359,7 +358,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                   5)
               .toString();
     }
-
+    context.read(orderProvider).setDOrderloader(false);
     super.initState();
     anibuildctrl = AnimationController(
       vsync: this,
@@ -3628,7 +3627,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                   (frezQty *
                                                                       quantity);
                                                               maxQty =
-                                                                  frezQty * 28;
+                                                                  frezQty * 20;
                                                               print(
                                                                   "objectobject{$quantity | $reminder | $maxQty}");
                                                             });
@@ -4547,311 +4546,40 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           context.read(orderProvider).setOrderloader(false);
         }
       } else {
-        showModalBottomSheet(
+        int q = ((int.parse(qtyCtrl.text) / lotSize).round() * lotSize);
+        if (int.parse(qtyCtrl.text) != q && widget.scripInfo.exch != 'MCX') {
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+              "Quantity should be multiple of lot size $lotSize => $q"));
+        } else if (20 < quantity) {
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+              context, "Quantity can only be split into a maximum of 20 slice. (Ex: $frezQty x 20 = ${frezQty * 20})"));
+        } else {
+          showModalBottomSheet(
             isScrollControlled: true,
             useSafeArea: true,
             isDismissible: true,
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
             context: context,
-            builder: (context) => Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                    boxShadow: const [
-                      BoxShadow(
-                          color: Color(0xff999999),
-                          blurRadius: 4.0,
-                          offset: Offset(2.0, 0.0))
-                    ]),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CustomDragHandler(),
-                      Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Text("Slice Order",
-                              style: textStyles.appBarTitleTxt.copyWith(
-                                  color: theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack))),
-                      Divider(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider),
-                      Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(children: [
-                                        Text("${widget.scripInfo.symbol} ",
-                                            style: textStyles.scripNameTxtStyle
-                                                .copyWith(
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack)),
-                                        Text("${widget.scripInfo.option}",
-                                            style: textStyles.scripNameTxtStyle
-                                                .copyWith(
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack))
-                                      ]),
-                                      const SizedBox(height: 4),
-                                      Row(children: [
-                                        CustomExchBadge(
-                                            exch: "${widget.scripInfo.exch}"),
-                                        Text("${widget.scripInfo.expDate}",
-                                            style: textStyles.scripExchTxtStyle
-                                                .copyWith(
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack))
-                                      ])
-                                    ]),
-                                Row(children: [
-                                  Text("Qty: $frezQty ",
-                                      style: textStyles.scripNameTxtStyle
-                                          .copyWith(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack)),
-                                  Text(" X ${quantity >= 28 ? 28 : quantity}",
-                                      style: textStyles.scripExchTxtStyle
-                                          .copyWith(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack))
-                                ])
-                              ])),
-                      if (reminder != 0) ...[
-                        Divider(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider),
-                        Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(children: [
-                                          Text("${widget.scripInfo.symbol} ",
-                                              style: textStyles
-                                                  .scripNameTxtStyle
-                                                  .copyWith(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack)),
-                                          Text("${widget.scripInfo.option}",
-                                              style: textStyles
-                                                  .scripNameTxtStyle
-                                                  .copyWith(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack))
-                                        ]),
-                                        const SizedBox(height: 4),
-                                        Row(children: [
-                                          CustomExchBadge(
-                                              exch: "${widget.scripInfo.exch}"),
-                                          Text("${widget.scripInfo.expDate}",
-                                              style: textStyles
-                                                  .scripExchTxtStyle
-                                                  .copyWith(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack))
-                                        ])
-                                      ]),
-                                  Row(children: [
-                                    Text("Qty: $reminder ",
-                                        style: textStyles.scripNameTxtStyle
-                                            .copyWith(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack)),
-                                    Text(" X 1",
-                                        style: textStyles.scripExchTxtStyle
-                                            .copyWith(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack))
-                                  ])
-                                ])),
-                        const SizedBox(height: 6)
-                      ],
-                      Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 4),
-                          width: MediaQuery.of(context).size.width,
-                          child: ElevatedButton(
-                              onPressed: () async {
-                                context
-                                    .read(orderProvider)
-                                    .setOrderloader(true);
-
-                                if (quantity >= 28) {
-                                  for (var i = 0; i < 28; i++) {
-                                    PlaceOrderInput placeOrderInput =
-                                        PlaceOrderInput(
-                                            amo: isAmo ? "Yes" : "",
-                                            blprc: orderType == "Cover" ||
-                                                    orderType == "Bracket"
-                                                ? stopLossCtrl.text
-                                                : '',
-                                            bpprc: orderType == "Bracket"
-                                                ? targetCtrl.text
-                                                : '',
-                                            dscqty: discQtyCtrl.text,
-                                            exch: widget.scripInfo.exch!,
-                                            prc: ordPrice,
-                                            prctype: orderInput.prcType,
-                                            prd: orderInput.orderType,
-                                            qty: "$frezQty",
-                                            ret: validityType,
-                                            trailprc: '',
-                                            trantype: isBuy! ? 'B' : 'S',
-                                            trgprc: priceType == "SL Limit" ||
-                                                    priceType == "SL MKT"
-                                                ? triggerPriceCtrl.text
-                                                : "",
-                                            tsym: widget.scripInfo.tsym!,
-                                            mktProt: priceType == "Market" ||
-                                                    priceType == "SL MKT"
-                                                ? mktProtCtrl.text
-                                                : '',
-                                            channel: '');
-                                    await context
-                                        .read(orderProvider)
-                                        .slicePlaceOrder(
-                                            context, placeOrderInput);
-                                  }
-                                } else {
-                                  for (var i = 0; i < quantity; i++) {
-                                    PlaceOrderInput placeOrderInput =
-                                        PlaceOrderInput(
-                                            amo: isAmo ? "Yes" : "",
-                                            blprc: orderType == "Cover" ||
-                                                    orderType == "Bracket"
-                                                ? stopLossCtrl.text
-                                                : '',
-                                            bpprc: orderType == "Bracket"
-                                                ? targetCtrl.text
-                                                : '',
-                                            dscqty: discQtyCtrl.text,
-                                            exch: widget.scripInfo.exch!,
-                                            prc: ordPrice,
-                                            prctype: orderInput.prcType,
-                                            prd: orderInput.orderType,
-                                            qty: "$frezQty",
-                                            ret: validityType,
-                                            trailprc: '',
-                                            trantype: isBuy! ? 'B' : 'S',
-                                            trgprc: priceType == "SL Limit" ||
-                                                    priceType == "SL MKT"
-                                                ? triggerPriceCtrl.text
-                                                : "",
-                                            tsym: widget.scripInfo.tsym!,
-                                            mktProt: priceType == "Market" ||
-                                                    priceType == "SL MKT"
-                                                ? mktProtCtrl.text
-                                                : '',
-                                            channel: '');
-                                    await context
-                                        .read(orderProvider)
-                                        .slicePlaceOrder(
-                                            context, placeOrderInput);
-
-                                    if (context
-                                            .read(orderProvider)
-                                            .placeOrderModel!
-                                            .emsg ==
-                                        "Session Expired :  Invalid Session Key") {
-                                      break;
-                                    }
-                                  }
-                                }
-
-                                if (reminder != 0) {
-                                  PlaceOrderInput placeOrderInput =
-                                      PlaceOrderInput(
-                                          amo: isAmo ? "Yes" : "",
-                                          blprc:
-                                              orderType ==
-                                                          "Cover" ||
-                                                      orderType == "Bracket"
-                                                  ? stopLossCtrl.text
-                                                  : '',
-                                          bpprc:
-                                              orderType ==
-                                                      "Bracket"
-                                                  ? targetCtrl.text
-                                                  : '',
-                                          dscqty: discQtyCtrl.text,
-                                          exch: widget.scripInfo.exch!,
-                                          prc: ordPrice,
-                                          prctype: orderInput.prcType,
-                                          prd: orderInput.orderType,
-                                          qty: "$reminder",
-                                          ret: validityType,
-                                          trailprc: '',
-                                          trantype: isBuy! ? 'B' : 'S',
-                                          trgprc:
-                                              priceType ==
-                                                          "SL Limit" ||
-                                                      priceType == "SL MKT"
-                                                  ? triggerPriceCtrl.text
-                                                  : "",
-                                          tsym: widget.scripInfo.tsym!,
-                                          mktProt: priceType == "Market" ||
-                                                  priceType == "SL MKT"
-                                              ? mktProtCtrl.text
-                                              : '',
-                                          channel: '');
-                                  await context
-                                      .read(orderProvider)
-                                      .slicePlaceOrder(
-                                          context, placeOrderInput);
-                                }
-                                await context
-                                    .read(orderProvider)
-                                    .fetchOrderBook(context, true);
-
-                                await context
-                                    .read(indexListProvider)
-                                    .bottomMenu(2, context);
-                                Navigator.pop(context);
-                                Navigator.pop(context);
-                                context
-                                    .read(orderProvider)
-                                    .setOrderloader(false);
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 10),
-                                  backgroundColor:
-                                      isBuy! ? colors.ltpgreen : colors.darkred,
-                                  shape: const StadiumBorder()),
-                              child: Text(isBuy! ? 'Buy Now' : "Sell Now",
-                                  style: textStyle(const Color(0xffffffff), 14,
-                                      FontWeight.w600)))),
-                      const SizedBox(height: 10)
-                    ])));
+            builder: (context) => SliceOrderSheet(
+              scripInfo: widget.scripInfo,
+              isBuy: isBuy!,
+              quantity: quantity,
+              frezQty: frezQty,
+              reminder: reminder,
+              isAmo: isAmo,
+              orderType: orderType,
+              priceType: priceType,
+              ordPrice: ordPrice,
+              validityType: validityType,
+              stopLossCtrl: stopLossCtrl,
+              targetCtrl: targetCtrl,
+              discQtyCtrl: discQtyCtrl,
+              triggerPriceCtrl: triggerPriceCtrl,
+              mktProtCtrl: mktProtCtrl,
+            ),
+          );
+        }
       }
     }
   }

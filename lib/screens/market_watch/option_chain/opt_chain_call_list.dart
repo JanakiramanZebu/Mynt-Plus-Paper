@@ -12,7 +12,6 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
-import '../scrip_depth_info.dart';
 
 class OptChainCallList extends ConsumerWidget {
   final List<OptionValues>? callData;
@@ -77,47 +76,19 @@ class OptChainCallList extends ConsumerWidget {
               }
             },
             onTap: () async {
-              await scripData.fetchScripQuote("${callData![index].token}",
+              await scripData.fetchScripQuoteIndex("${callData![index].token}",
                   "${callData![index].exch}", context);
-
-           
-
-              if (watch(marketWatchProvider).getQuotes!.stat == "Ok") {
-                Navigator.pop(context);
-                   await context.read(marketWatchProvider).fetchLinkeScrip(
-                  "${callData![index].token}",
-                  "${callData![index].exch}",
-                  context);
-
-              await watch(websocketProvider).establishConnection(
-                  channelInput:
-                      "${callData![index].exch}|${callData![index].token}",
-                  task: "d",
-                  context: context);
-                DepthInputArgs depthArgs = DepthInputArgs(
-                    exch: '${callData![index].exch}',
-                    token: '${callData![index].token}',
-                    tsym: '${callData![index].tsym}',
-                    instname: "",
-                    symbol: '${callData![index].symbol}',
-                    expDate: '${callData![index].expDate}',
-                    option: '${callData![index].option}');
-
-                showModalBottomSheet(
-                    barrierColor: Colors.transparent,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    isDismissible: true,
-                    shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(16))),
-                    backgroundColor: const Color(0xffffffff),
-                    context: context,
-                    builder: (context) =>
-                        ScripDepthInfo(wlValue: depthArgs, isBasket: ''));
-              scripData.chngDephBtn("Overview");
-
-              }
+              final quots = scripData.getQuotes;
+              DepthInputArgs depthArgs = DepthInputArgs(
+                  exch: quots!.exch.toString(),
+                  token: quots.token.toString(),
+                  tsym: quots.tsym.toString(),
+                  instname: quots.instname.toString(),
+                  symbol: quots.symbol.toString(),
+                  expDate: quots.expDate.toString(),
+                  option: quots.option.toString());
+              Navigator.pop(context);
+              await scripData.calldepthApis(context, depthArgs, "");
             },
             child: Container(
               height: 58,

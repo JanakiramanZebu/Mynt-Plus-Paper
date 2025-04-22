@@ -9,7 +9,6 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
-import '../scrip_depth_info.dart';
 
 class OptChainPutList extends ConsumerWidget {
   final List<OptionValues>? putData;
@@ -73,44 +72,19 @@ class OptChainPutList extends ConsumerWidget {
               }
             },
             onTap: () async {
-              await watch(marketWatchProvider).fetchScripQuote(
-                  "${putData![index].token}",
-                  "${putData![index].exch}",
-                  context);
-              await scripData.fetchLinkeScrip("${putData![index].token}",
+  await scripData.fetchScripQuoteIndex("${putData![index].token}",
                   "${putData![index].exch}", context);
-
-              await watch(websocketProvider).establishConnection(
-                  channelInput:
-                      "${putData![index].exch}|${putData![index].token}",
-                  task: "d",
-                  context: context);
-
-              if (watch(marketWatchProvider).getQuotes!.stat == "Ok") {
-                DepthInputArgs depthArgs = DepthInputArgs(
-                    exch: '${putData![index].exch}',
-                    token: '${putData![index].token}',
-                    tsym: '${putData![index].tsym}',
-                    instname: "",
-                    symbol: '${putData![index].symbol}',
-                    expDate: '${putData![index].expDate}',
-                    option: '${putData![index].option}');
-                Navigator.pop(context);
-                showModalBottomSheet(
-                    barrierColor: Colors.transparent,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    isDismissible: true,
-                    shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(16))),
-                    backgroundColor: const Color(0xffffffff),
-                    context: context,
-                    builder: (context) =>
-                        ScripDepthInfo(wlValue: depthArgs, isBasket: ''));
-              scripData.chngDephBtn("Overview");
-
-              }
+              final quots = scripData.getQuotes;
+              DepthInputArgs depthArgs = DepthInputArgs(
+                  exch: quots!.exch.toString(),
+                  token: quots.token.toString(),
+                  tsym: quots.tsym.toString(),
+                  instname: quots.instname.toString(),
+                  symbol: quots.symbol.toString(),
+                  expDate: quots.expDate.toString(),
+                  option: quots.option.toString());
+              Navigator.pop(context);
+              await scripData.calldepthApis(context, depthArgs, "");
             },
             child: Container(
               height: 58,

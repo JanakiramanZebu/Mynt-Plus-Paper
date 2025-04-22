@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:public_ip_address/public_ip_address.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
@@ -138,6 +139,12 @@ class OrderProvider extends DefaultChangeNotifier {
   bool _showtradebookSearch = false;
   bool get showtradebookSearch => _showtradebookSearch;
 
+  bool _sliceorderapi = false;
+  bool get sliceorderapi => _sliceorderapi;
+
+  String _ip = "";
+  String get ip => _ip;
+
   String _selectedBsktName = "";
   String get selectedBsktName => _selectedBsktName;
 
@@ -171,8 +178,21 @@ class OrderProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  setOrderIp() async {
+    _ip = await IpAddress().getIp();
+  }
+
+  setDOrderloader(bool value) {
+    _orderloader = value;
+  }
+
   setOrderloader(bool value) {
     _orderloader = value;
+    notifyListeners();
+  }
+
+  setsliceOrderloader(bool value) {
+    _sliceorderapi = value;
     notifyListeners();
   }
 
@@ -275,6 +295,54 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
+  DateTime formatDate(String exdate) {
+    List<String> parts = exdate.split(' ');
+
+    if (parts.length == 3 && parts[1].length == 3) {
+      String day = parts[0].padLeft(2, '0'); // Ensure day is two digits
+      String monthAbbreviation = parts[1];
+      String yearShort = parts[2];
+      String year = '20$yearShort';
+
+      String formatted = '$year-${_getMonthNumber(monthAbbreviation)}-$day';
+      return DateTime.parse(formatted);
+    } else {
+      throw const FormatException('Invalid date format');
+    }
+  }
+
+  String _getMonthNumber(String monthAbbreviation) {
+    switch (monthAbbreviation.toUpperCase()) {
+      case 'JAN':
+        return '01';
+      case 'FEB':
+        return '02';
+      case 'MAR':
+        return '03';
+      case 'APR':
+        return '04';
+      case 'MAY':
+        return '05';
+      case 'JUN':
+        return '06';
+      case 'JUL':
+        return '07';
+      case 'AUG':
+        return '08';
+      case 'SEP':
+      case 'SEPT':
+        return '09';
+      case 'OCT':
+        return '10';
+      case 'NOV':
+        return '11';
+      case 'DEC':
+        return '12';
+      default:
+        return '00';
+    }
+  }
+
 // Change Basket name
   chngBsktName(String val, BuildContext context) async {
     _selectedBsktName = val;
@@ -285,10 +353,28 @@ class OrderProvider extends DefaultChangeNotifier {
 
     if (_bsktScripList.isNotEmpty) {
       String input = "";
-      // for (var i = 0; i < _bsktScripList.length; i++) {
-      input =
-         _bsktScripList.map((e) => "${e['exch']}|${e['token']}").toSet().join("#");
-      // }
+      final now = DateTime.now();
+      _bsktScripList.asMap().entries.toList().reversed.forEach((entry) {
+        final index = entry.key;
+        final item = entry.value;
+        try {
+          Map spilitSymbol = spilitTsym(value: "${item['tsym']}");
+          final expDateStr = spilitSymbol['expDate'];
+          if (expDateStr == null || expDateStr.isEmpty) return;
+
+          final parsedDate = formatDate(expDateStr);
+          if (parsedDate.isBefore(now)) {
+            removeBsktScrip(index, val); 
+          }
+        } catch (e) {
+          print('Error parsing expDate for ${item['tsym']}: $e');
+        }
+      });
+
+      input = _bsktScripList
+          .map((e) => "${e['exch']}|${e['token']}")
+          .toSet()
+          .join("#");
       if (input.isNotEmpty) {
         ref(websocketProvider).establishConnection(
             channelInput: input, task: "t", context: context);
@@ -318,7 +404,6 @@ class OrderProvider extends DefaultChangeNotifier {
           text:
               "SIP Order(${_siporderBookModel?.sipDetails?.length == null ? 0 : _siporderBookModel!.sipDetails!.length})")
     ];
-
     notifyListeners();
   }
 
@@ -469,7 +554,7 @@ class OrderProvider extends DefaultChangeNotifier {
           ? '${ref(authProvider).deviceInfo["brand"]}'
           : "${ref(authProvider).deviceInfo["model"]}";
 
-      _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+      _placeOrderModel = await api.getPlaceOrder(placeOrderInput, _ip);
 
       if (_placeOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
@@ -529,7 +614,7 @@ class OrderProvider extends DefaultChangeNotifier {
           ? '${ref(authProvider).deviceInfo["brand"]}'
           : "${ref(authProvider).deviceInfo["model"]}";
 
-      _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+      _placeOrderModel = await api.getPlaceOrder(placeOrderInput, _ip);
 
       if (_placeOrderModel!.emsg == "Session Expired :  Invalid Session Key" &&
           _placeOrderModel!.stat == "Not_Ok") {
@@ -857,7 +942,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
   Future fetchModifyOrder(ModifyOrderInput input, context) async {
     try {
-      _modifyOrderModel = await api.getModifyOrder(input);
+      _modifyOrderModel = await api.getModifyOrder(input, _ip);
       if (_modifyOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
         await fetchOrderBook(context, true);
@@ -1617,7 +1702,7 @@ class OrderProvider extends DefaultChangeNotifier {
                 ? '${ref(authProvider).deviceInfo["brand"]}'
                 : "${ref(authProvider).deviceInfo["model"]}");
 
-        _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+        _placeOrderModel = await api.getPlaceOrder(placeOrderInput, _ip);
 
         if (_placeOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&

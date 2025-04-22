@@ -18,7 +18,6 @@ import '../screens/bonds/bonds_orderbook_screen/bonds_orderbook_details/open_ord
 import '../screens/desk_reports/calendarpnl_heatmap/headmap_calendar.dart';
 import '../screens/desk_reports/calenderPnl_screen.dart';
 import '../screens/desk_reports/cdsl_pledge.dart';
-import '../screens/desk_reports/equity_taxpnl_screen.dart';
 import '../screens/desk_reports/holding_screen.dart';
 import '../screens/desk_reports/ledger_screen.dart';
 import '../screens/desk_reports/pdf_downalod_screen.dart';
@@ -717,7 +716,21 @@ class AppRoutes {
                   position: animation.drive(tween), child: child);
             });
 
-      case Routes.taxpnlscreen:
+      case Routes.tradebook:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                Tradebook(ddd: args),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+case Routes.taxpnlscreen:
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 TaxPnlScreen(),
@@ -731,11 +744,25 @@ class AppRoutes {
               return SlideTransition(
                   position: animation.drive(tween), child: child);
             });
-
-      case Routes.tradebook:
+      case Routes.pledgeandun:
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                Tradebook(ddd: args),
+                PledgenUnpledge(ddd: args),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+
+            case Routes.pledgeunpledgeresponse:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                PledgenUnpledgeResponse(ddd: args),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               const begin = Offset(-1.0, 0.0);

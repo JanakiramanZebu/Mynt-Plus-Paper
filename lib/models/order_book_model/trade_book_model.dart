@@ -20,16 +20,20 @@ class TradeBookModel {
   String? pp;
   String? ls;
   String? ti;
+  String? ltp;
+  String? perChange;
+  String? change;
   String? prc;
   String? prcftr;
   String? flprc;
   String? norentm;
   String? avgprc;
   String? exchTm;
-  String? exchordid;String? symbol;
-String?expDate;
-String? dname;
-String? option;
+  String? exchordid;
+  String? symbol;
+  String? expDate;
+  String? dname;
+  String? option;
 
   TradeBookModel(
       {this.stat,
@@ -53,6 +57,9 @@ String? option;
       this.pp,
       this.ls,
       this.ti,
+      this.ltp,
+      this.change,
+      this.perChange,
       this.prc,
       this.prcftr,
       this.dname,
@@ -60,8 +67,10 @@ String? option;
       this.norentm,
       this.avgprc,
       this.exchTm,
-      this.exchordid,this.expDate,
-      this.option,this.symbol});
+      this.exchordid,
+      this.expDate,
+      this.option,
+      this.symbol});
 
   TradeBookModel.fromJson(Map<String, dynamic> json) {
     stat = json['stat'];
@@ -85,15 +94,20 @@ String? option;
     pp = json['pp'];
     ls = json['ls'];
     ti = json['ti'];
+    ltp = json['ltp'];
+    change = change == null ? "0.00" : json['change'];
+    perChange = perChange == null ? "0.00" : json['perChange'];
     prc = json['prc'];
     prcftr = json['prcftr'];
-    dname=json['dname'];
+    dname = json['dname'];
     flprc = json['flprc'];
     norentm = json['norentm'];
     avgprc = json['avgprc'];
     exchTm = json['exch_tm'];
-    exchordid = json['exchordid'];    expDate=json['expDate'];
-        symbol=json['symbol'];option= json['option'];
+    exchordid = json['exchordid'];
+    expDate = json['expDate'];
+    symbol = json['symbol'];
+    option = json['option'];
   }
 
   Map<String, dynamic> toJson() {
@@ -119,6 +133,9 @@ String? option;
     data['pp'] = pp;
     data['ls'] = ls;
     data['ti'] = ti;
+    data["ltp"] = ltp;
+    data["perChange"] = perChange;
+    data["change"] = change;
     data['prc'] = prc;
     data['prcftr'] = prcftr;
     data['flprc'] = flprc;
@@ -126,10 +143,10 @@ String? option;
     data['avgprc'] = avgprc;
     data['exch_tm'] = exchTm;
     data['exchordid'] = exchordid;
-       data['option']=option;
-    data['expDate']=expDate;
-    data['dname']=dname;
-    data['symbol']=symbol; 
+    data['option'] = option;
+    data['expDate'] = expDate;
+    data['dname'] = dname;
+    data['symbol'] = symbol;
     return data;
   }
 }

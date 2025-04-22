@@ -8,7 +8,9 @@ import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/thems.dart';
+import '../../provider/user_profile_providerNEWUI.dart';
 import '../../res/res.dart';
+import '../../routes/app_routes.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_internet_widget.dart';
@@ -52,8 +54,8 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                 .read(marketWatchProvider)
                 .requestMWScrip(context: context, isSubscribe: true);
             await searchScrip.searchClear();
-
-            Navigator.of(context).pop(); // Proceed with back navigation
+            currentRouteName = 'homeScreen';
+            Navigator.of(context).pop();
           },
           child: GestureDetector(
               onTap: () => FocusManager.instance.primaryFocus!.unfocus(),
@@ -68,6 +70,7 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                                 context: context, isSubscribe: true);
                             searchScrip.searchClear();
                             searchScrip.setpageName("");
+                            currentRouteName = 'homeScreen';
                             Navigator.pop(context);
                           },
                           child: Padding(

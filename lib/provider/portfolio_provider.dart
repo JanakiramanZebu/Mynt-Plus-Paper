@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/provider/order_provider.dart';
 
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
@@ -474,9 +475,22 @@ class PortfolioProvider extends DefaultChangeNotifier {
     double invest = 0.0;
     try {
       await setPortfolioupdate('H');
-      if (_holdingsModel!.isNotEmpty) {
-        if (_tholdingsModel!.isNotEmpty) {
-          _holdingsModel = _tholdingsModel;
+      // if (_holdingsModel!.isNotEmpty) {
+      //   if (_tholdingsModel!.isNotEmpty) {
+      //     _holdingsModel = _tholdingsModel;
+      //   }
+      // If holdings exist, merge new data with existing
+      if (_holdingsModel!.isNotEmpty && _tholdingsModel!.isNotEmpty) {
+        // Merge each element instead of complete reset
+        for (var newHolding in _tholdingsModel!) {
+          final index = _holdingsModel!.indexWhere((oldHolding) =>
+              oldHolding.exchTsym![0].token == newHolding.exchTsym![0].token);
+          if (index != -1) {
+            // Update only changed fields
+            _holdingsModel![index].updateFrom(newHolding);
+          } else {
+            _holdingsModel!.add(newHolding);
+          }
         }
       } else {
         _holdloader = true;
@@ -618,7 +632,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
                         int.parse(element.cfsellqty.toString()))
                 ? int.parse(element.daybuyqty.toString())
                 : int.parse(element.daysellqty.toString());
-            tempqty = (tempqty * double.parse(element.prcftr.toString())).toInt();
+            tempqty =
+                (tempqty * double.parse(element.prcftr.toString())).toInt();
             double tempavg = int.parse(element.netqty.toString()) > 0
                 ? double.parse(element.daysellavgprc.toString()) -
                     double.parse(element.netupldprc.toString())
@@ -1071,19 +1086,27 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       if (qty > frzqty) {
         int fullOrders = qty ~/ frzqty;
-        int remainingQty = qty % frzqty; 
+        int remainingQty = qty % frzqty;
 
+        ref(orderProvider).setsliceOrderloader(true);
         for (int i = 0; i < fullOrders; i++) {
           placeOrderInput.qty = frzqty.toString();
-          _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+          _placeOrderModel =
+              await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
+
+          if (i == fullOrders - 1) {
+            ref(orderProvider).setsliceOrderloader(false);
+          }
         }
 
         if (remainingQty > 0) {
-          placeOrderInput.qty = remainingQty.toString(); 
-          _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+          placeOrderInput.qty = remainingQty.toString();
+          _placeOrderModel =
+              await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
         }
       } else {
-        _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+        _placeOrderModel =
+            await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
       }
 
       if (_placeOrderModel!.stat == "Ok") {
@@ -1239,14 +1262,16 @@ class PortfolioProvider extends DefaultChangeNotifier {
                       ? double.parse(element.lp.toString())
                       : 0)) -
               double.parse(element.netupldprc.toString());
-          element.profitNloss = (double.parse(tempunpnl.toString()) * (qty * double.parse(element.prcftr.toString())) +
+          element.profitNloss = (double.parse(tempunpnl.toString()) *
+                      (qty * double.parse(element.prcftr.toString())) +
                   double.parse(element.temppnl.toString()))
               .toStringAsFixed(2);
         }
         if (["NFO", "BFO", "NSE", "BSE"].contains(element.exch)) {
           finmtm = qty == 0
               ? double.parse(element.rpnl.toString())
-              : (lastPrice - double.parse(element.netavgprc.toString())) * (qty * double.parse(element.prcftr.toString())) +
+              : (lastPrice - double.parse(element.netavgprc.toString())) *
+                      (qty * double.parse(element.prcftr.toString())) +
                   double.parse(element.rpnl.toString());
         } else {
           // element.profitNloss =
@@ -1254,7 +1279,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
           finmtm = qty == 0
               ? double.parse(element.rpnl.toString())
               : (lastPrice - double.parse(element.netavgprc.toString())) *
-                      (double.parse(element.mult.toString()) * (qty * double.parse(element.prcftr.toString()))) +
+                      (double.parse(element.mult.toString()) *
+                          (qty * double.parse(element.prcftr.toString()))) +
                   double.parse(element.rpnl.toString());
         }
         element.mTm = double.parse(finmtm.toString()).toStringAsFixed(2);
@@ -1607,7 +1633,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 channel: defaultTargetPlatform == TargetPlatform.android
                     ? '${ref(authProvider).deviceInfo["brand"]}'
                     : "${ref(authProvider).deviceInfo["model"]}");
-            _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+            _placeOrderModel =
+                await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
 
             if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
               break;
@@ -1893,7 +1920,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 channel: defaultTargetPlatform == TargetPlatform.android
                     ? '${ref(authProvider).deviceInfo["brand"]}'
                     : "${ref(authProvider).deviceInfo["model"]}");
-            _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
+            _placeOrderModel =
+                await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
 
             if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
               break;
@@ -2152,23 +2180,34 @@ class PortfolioProvider extends DefaultChangeNotifier {
     if (index != -1) {
       var holding = _holdingsModel![index];
 
-      holding.exchTsym![0].lp = "${socketData['lp'] ?? 0.00}";
-      holding.exchTsym![0].perChange = "${socketData['pc'] ?? 0.00}";
-      holding.exchTsym![0].close = "${socketData['c'] ?? 0.00}";
+      String newLp = "${socketData['lp'] ?? '0.00'}";
+      String newPc = "${socketData['pc'] ?? '0.00'}";
+      String newClose = "${socketData['c'] ?? '0.00'}";
+
+      if (double.parse(newLp) != 0.0) {
+        holding.exchTsym![0].lp = newLp;
+      }
+      if (double.parse(newPc) != 0.0) {
+        holding.exchTsym![0].perChange = newPc;
+      }
+      if (double.parse(newClose) != 0.0) {
+        holding.exchTsym![0].close = newClose;
+      }
 
       // Calculate current value, invested, and P&L
       holding.currentValue = (int.parse("${holding.currentQty ?? 0}") *
-              double.parse("${holding.exchTsym![0].lp ?? 0.0}"))
+              double.parse(holding.exchTsym![0].lp ?? '0.0'))
           .toStringAsFixed(2);
 
-      double avgCost = double.parse(
-          "${holding.upldprc == "0.00" ? holding.exchTsym![0].close ?? 0.0 : holding.upldprc ?? 0.00}");
+      double avgCost = double.parse(holding.upldprc == "0.00"
+          ? holding.exchTsym![0].close ?? '0.0'
+          : holding.upldprc ?? '0.00');
       holding.invested = (holding.currentQty! * avgCost).toStringAsFixed(2);
 
       holding.exchTsym![0].pNlChng = holding.invested == "0.00"
           ? "0.00"
           : ((double.parse("${holding.exchTsym![0].profitNloss}") /
-                      double.parse("${holding.invested ?? 0.00}")) *
+                      double.parse(holding.invested ?? '0.00')) *
                   100)
               .toStringAsFixed(2)
               .toString();
