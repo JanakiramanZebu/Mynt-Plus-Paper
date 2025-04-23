@@ -489,12 +489,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                           .setChartdialog(true);
 
                                                       scripInfo.setChartScript(
-                                                              widget
-                                                                  .wlValue.exch,
-                                                              widget.wlValue
-                                                                  .token,
-                                                              widget.wlValue
-                                                                  .tsym);
+                                                          widget.wlValue.exch,
+                                                          widget.wlValue.token,
+                                                          widget.wlValue.tsym);
 
                                                       // "window.tvWidget.activeChart().setSymbol('${widget.wlValue.exch}:${widget.wlValue.tsym}')");
                                                       // userProfile.setChartdialog(true);
@@ -521,6 +518,11 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                             "${depthData.undTk}",
                                                             "${depthData.undExch}",
                                                             context);
+                                                      } else {
+                                                        scripInfo
+                                                            .updateOptStrPrc(
+                                                                depthData.lp
+                                                                    .toString());
                                                       }
 
                                                       await context.read(websocketProvider).establishConnection(
@@ -543,7 +545,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                               .optionExch!,
                                                           numofStrike: scripInfo
                                                               .numStrike,
-                                                          strPrc: depthData.lp.toString(),
+                                                          strPrc: scripInfo
+                                                              .optionStrPrc,
                                                           tradeSym: scripInfo
                                                               .selectedTradeSym!);
                                                     } else if (scripInfo
