@@ -22,30 +22,36 @@ import 'themes/theme.dart';
 
 // used to pass messages from event handler to the UI
 final _messageStreamController = BehaviorSubject<RemoteMessage>();
+
+// Create a dedicated function for handling notification messages
+void handleNotificationMessage(RemoteMessage message) {
+  // Consistent notification display logic
+  if (message.data["imageUrl"] != null && message.data["imageUrl"] != "") {
+    NotificationService.showNotification(
+      title: message.notification?.title,
+      body: message.notification?.body?.replaceAll("  ", "\n"),
+      notificationLayout: NotificationLayout.BigPicture,
+      bigPicture: message.data["imageUrl"],
+      payload: {"navigate": "true", "url": message.data["url"]},
+    );
+  } else {
+    NotificationService.showNotification(
+      title: message.notification?.title,
+      body: message.notification?.body?.replaceAll("  ", "\n"),
+      notificationLayout: NotificationLayout.BigText,
+    );
+  }
+}
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-
   if (kDebugMode) {
     print("Handling a background message: ${message.messageId}");
     print('Message data: ${message.data}');
     print('Message notification: ${message.notification?.title}');
     print('Message notification: ${message.notification?.body}');
   }
-    message.data["imageUrl"] != ""
-        ? NotificationService.showNotification(
-            title: message.notification!.title,
-            body: message.notification!.body,
-            // summary: "Mynt",
-            notificationLayout: NotificationLayout.BigPicture,
-            bigPicture: message.data["imageUrl"],
-            payload: {"navigate": "true", "url": message.data["url"]})
-        : NotificationService.showNotification(
-            title: message.notification!.title,
-            body: message.notification!.body!.replaceAll("  ", "\n"),
-            // summary: "Mynt",
-            notificationLayout: NotificationLayout.BigText,
-          );
-  }
+}
 
 
 // This method represents the project's entry level.
@@ -53,9 +59,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
   setupLocator();
-
   await NotificationService.initializeNotification();
-  // NotificationService().initNotification();
   WidgetsFlutterBinding.ensureInitialized();
   if (TargetPlatform.android == defaultTargetPlatform) {
     await Firebase.initializeApp(
@@ -67,10 +71,8 @@ void main() async {
 
   final Preferences pref = locator<Preferences>();
   await pref.init();
-
   final messaging = FirebaseMessaging.instance;
-
-  final settings = await messaging.requestPermission(
+  await messaging.requestPermission(
     alert: true,
     announcement: false,
     badge: true,
@@ -79,52 +81,46 @@ void main() async {
     provisional: false,
     sound: true,
   );
+
 // It requests a registration token for sending messages to users from your App server or other trusted server environment.
   ConstantName.msgToken = await messaging.getToken();
 
   log("Token ${ConstantName.msgToken}");
-  if (kDebugMode) {
-    print('Permission granted: ${settings.authorizationStatus}');
-  }
+
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  FirebaseMessaging.instance.getInitialMessage().then((value) async {
-    if (value != null) {
-      final Uri url = Uri.parse(value.data["url"]);
-      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {}
+  FirebaseMessaging.instance.getInitialMessage().then((message) async {
+  if (message != null) {
+    // Handle notification click when app was terminated
+    if (message.data["url"] != null) {
+      final Uri url = Uri.parse(message.data["url"]);
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        print("Could not launch URL");
+      }
     }
-  });
-  FirebaseMessaging.onMessageOpenedApp.listen((event) async {
-    final Uri url = Uri.parse(event.data["url"]);
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {}
-  });
+  }
+});
+  FirebaseMessaging.onMessageOpenedApp.listen((message) async {
+  // Handle notification click when app was in background
+  if (message.data["url"] != null) {
+    final Uri url = Uri.parse(message.data["url"]);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      print("Could not launch URL");
+    }
+  }
+});
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  if (kDebugMode) {
     print("Message $message");
-    if (kDebugMode) {
-      print('Handling a foreground message: ${message.messageId}');
-      print('Message data: ${message.data}');
-      print('Message notification: ${message.notification?.title}');
-      print('Message notification: ${message.notification?.body}');
-      print('Message notification: ${message.data["imageUrl"]}');
-    }
-
-    message.data["imageUrl"] != ""
-        ? NotificationService.showNotification(
-            title: message.notification!.title,
-            body: message.notification!.body,
-            // summary: "Mynt",
-            notificationLayout: NotificationLayout.BigPicture,
-            bigPicture: message.data["imageUrl"],
-            payload: {"navigate": "true", "url": message.data["url"]})
-        : NotificationService.showNotification(
-            title: message.notification!.title,
-            body: message.notification!.body!.replaceAll("  ", "\n"),
-            // summary: "Mynt",
-            notificationLayout: NotificationLayout.BigText);
-
-    // NotificationService().showNotification(
-    //     title: message.notification?.title, body: message.notification?.body);
-    _messageStreamController.sink.add(message);
-  });
+    print('Handling a foreground message: ${message.messageId}');
+    print('Message data: ${message.data}');
+    print('Message notification: ${message.notification?.title}');
+    print('Message notification: ${message.notification?.body}');
+    print('Message notification: ${message.data["imageUrl"]}');
+  }
+  
+  handleNotificationMessage(message);
+  _messageStreamController.sink.add(message);
+});
   runApp(Phoenix(child: const ProviderScope(child: MyApp())));
 }
 
