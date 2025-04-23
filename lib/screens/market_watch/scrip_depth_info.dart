@@ -1431,6 +1431,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                             child: CircularProgressIndicator(
                                                 color: Color(0xff0037B7)))
                                       else
+                                      
                                         Padding(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 12.0),
