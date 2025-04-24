@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
+import 'package:mynt_plus/provider/portfolio_provider.dart';
+// import 'package:mynt_plus/models/marketwatch_model/get_quotes.dart';
+import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
 
 import '../../provider/thems.dart';
+import '../../provider/user_profile_provider.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
@@ -27,6 +31,7 @@ class _WatchListScreen extends State<WatchListScreen> {
   final PageController _controller = PageController(initialPage: 0);
 
   late SwipeActionController swipecontroller;
+  List linkedscript = ['NFO', 'BFO', 'MCX', 'NCOM', 'BCOM', 'CDS'];
   @override
   void initState() {
     FirebaseAnalytics.instance.logScreenView(
@@ -52,6 +57,9 @@ class _WatchListScreen extends State<WatchListScreen> {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final marketWatch = watch(marketWatchProvider);
+      final userProfile = watch(userProfileProvider);
+      final portfolios = watch(portfolioProvider);
+
       final socketDatas = watch(websocketProvider).socketDatas;
       final theme = context.read(themeProvider);
       return PageView.builder(
@@ -158,54 +166,108 @@ class _WatchListScreen extends State<WatchListScreen> {
                             }
                           }
 
+                          bool opt = linkedscript
+                                  .contains(marketWatch.scrips[idx]['exch']) ||
+                              (portfolios.oplists.isNotEmpty &&
+                                  portfolios.oplists.contains(int.parse(
+                                      marketWatch.scrips[idx]['token'])));
+
                           if (index.isOdd) {
                             return const ListDivider();
                           }
                           return SwipeActionCell(
-                            fullSwipeFactor: 1,
+                            isDraggable: false,
+                            fullSwipeFactor: 0.7,
                             controller: swipecontroller,
                             index: index,
                             key: ValueKey(marketWatch.scrips[idx]),
                             leadingActions: [
                               SwipeAction(
+                                  performsFirstActionWithFullSwipe: true,
                                   color: const Color(0xff9db6fb),
                                   icon: SvgPicture.asset(assets.charticon,
                                       color: theme.isDarkMode
                                           ? const Color(0xff000000)
                                           : const Color(0xffffffff),
-                                      width: 24),onTap: (handler) async {
-                                    setState(() {});
-                                  }),
-                              SwipeAction(
-                                  color: Color(!theme.isDarkMode ? 0xffe7edfe : 0xff041d62),
-                                  icon: SvgPicture.asset(assets.optChainIcon,
-                                      color: !theme.isDarkMode
-                                          ? const Color(0xff000000)
-                                          : const Color(0xffffffff),
                                       width: 24),
-                                  onTap: (handler) {}),
-                            ],
-                            trailingActions: [
-                              SwipeAction(
-                                  title: "BUY",
-                                  color: Color(theme.isDarkMode ? 0xffcaedc4 : 0xffedf9eb),
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: colors.ltpgreen),
                                   onTap: (handler) async {
-                                    setState(() {});
+                                    userProfile.setonloadChartdialog(true);
+                                    await marketWatch.fetchScripQuoteIndex(
+                                        marketWatch.scrips[idx]['token'],
+                                        marketWatch.scrips[idx]['exch'],
+                                        context);
+                                    userProfile.setChartdialog(true);
+                                    marketWatch.setChartScript(
+                                        marketWatch.getQuotes!.exch.toString(),
+                                        marketWatch.getQuotes!.token.toString(),
+                                        marketWatch.getQuotes!.tsym.toString());
+                                    handler(false);
                                   }),
-                              SwipeAction(
-                                  title: "SELL",
-                                  color: Color(theme.isDarkMode ? 0xfffbbbb6 :0xfffee8e7),
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: colors.darkred),
-                                  onTap: (handler) {}),
+                              if (opt) ...[
+                                SwipeAction(
+                                    color: Color(!theme.isDarkMode
+                                        ? 0xffe7edfe
+                                        : 0xff041d62),
+                                    icon: SvgPicture.asset(assets.optChainIcon,
+                                        color: (!theme.isDarkMode
+                                            ? const Color(0xff000000)
+                                            : const Color(0xffffffff)),
+                                        width: 24),
+                                    onTap: (handler) async {
+                                      // marketWatch.calldepthApis();
+                                      if (opt) {
+                                        await marketWatch.calldepthApis(
+                                            context,
+                                            marketWatch.scrips[idx],
+                                            "Option|-|Deph");
+                                      }
+                                      handler(false);
+                                    })
+                              ],
                             ],
-
+                            trailingActions: (marketWatch.scrips[idx]
+                                            ['instname'] !=
+                                        "UNDIND" &&
+                                    marketWatch.scrips[idx]['instname'] !=
+                                        "COM")
+                                ? [
+                                    SwipeAction(
+                                        performsFirstActionWithFullSwipe: true,
+                                        title: "BUY",
+                                        color: Color(theme.isDarkMode
+                                            ? 0xffcaedc4
+                                            : 0xffedf9eb),
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700,
+                                            color: colors.ltpgreen),
+                                        onTap: (handler) async {
+                                          await placeOrderInput(
+                                              marketWatch,
+                                              context,
+                                              marketWatch.scrips[idx],
+                                              true);
+                                          handler(false);
+                                        }),
+                                    SwipeAction(
+                                        title: "SELL",
+                                        color: Color(theme.isDarkMode
+                                            ? 0xfffbbbb6
+                                            : 0xfffee8e7),
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700,
+                                            color: colors.darkred),
+                                        onTap: (handler) async {
+                                          await placeOrderInput(
+                                              marketWatch,
+                                              context,
+                                              marketWatch.scrips[idx],
+                                              false);
+                                          handler(false);
+                                        }),
+                                  ]
+                                : [],
                             child: GestureDetector(
                               onLongPress: () {
                                 if (marketWatch.isPreDefWLs == "Yes") {
@@ -354,6 +416,30 @@ class _WatchListScreen extends State<WatchListScreen> {
           );
         },
       );
+    });
+  }
+
+  Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
+      Map depthData, bool transType) async {
+    await context.read(marketWatchProvider).fetchScripInfo(
+        depthData['token'].toString(), depthData['exch'].toString(), context);
+    OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: depthData['exch'].toString(),
+        tSym: depthData['tsym'].toString(),
+        isExit: false,
+        token: depthData['token'].toString(),
+        transType: transType,
+        lotSize: depthData['ls'],
+        ltp: "${depthData['ltp'] ?? depthData['close'] ?? 0.00}",
+        perChange: depthData['perChange'] ?? "0.00",
+        orderTpye: '',
+        holdQty: '',
+        isModify: false,
+        raw: {});
+    Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
+      "orderArg": orderArgs,
+      "scripInfo": ctx.read(marketWatchProvider).scripInfoModel!,
+      "isBskt": ""
     });
   }
 }

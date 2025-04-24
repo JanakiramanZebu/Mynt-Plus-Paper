@@ -347,7 +347,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   calldepthApis(BuildContext context, raw, basket) async {
     ref(userProfileProvider).setonloadChartdialog(true);
-    chngDephBtn("Overview");
+    chngDephBtn(basket == "Option|-|Deph" ? "Option" : "Overview");
     singlePageloader(true);
     bool flow = raw.runtimeType.toString() == '_Map<String, dynamic>';
 // _Map<String, dynamic>

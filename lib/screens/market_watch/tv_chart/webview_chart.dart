@@ -19,7 +19,7 @@ import '../../../provider/webview_chart_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
-import '../scrip_depth_info.dart';
+// import '../scrip_depth_info.dart';
 
 class ChartScreenWebView extends StatefulWidget {
   final ChartArgs chartArgs;
