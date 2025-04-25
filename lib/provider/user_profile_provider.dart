@@ -187,7 +187,13 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "TOTP",
-        "subTitle": "TOTP",
+        "subTitle": "Time-based One-Time Password",
+        "leading": "assets/icon/key-01.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
+      {
+        "title": "Freeze Account",
+        "subTitle": "Temporarily disabling access",
         "leading": "assets/icon/key-01.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
@@ -203,12 +209,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/icon/theme_icon.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
-      // {
-      //   "title": "TOTP",
-      //   "subTitle": "TOTP",
-      //   "leading": "assets/icon/key-01.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg"
-      // },
       {
         "title": "Log",
         "subTitle": "Log message",
@@ -230,14 +230,14 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
   fetchprofilemenu() {
     _profileMenu = [
-      {
-        "title": "Fund",
-        "subTitle": "Add Fund, Withdraw",
-        "leading": "assets/profileimage/wallet.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": ref(showcaseProvide).fundcase,
-        "case": "Click here to view the fund information page."
-      },
+      // {
+      //   "title": "Fund",
+      //   "subTitle": "Add Fund, Withdraw",
+      //   "leading": "assets/profileimage/wallet.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref(showcaseProvide).fundcase,
+      //   "case": "Click here to view the fund information page."
+      // },
       {
         "title": "My Account",
         "subTitle": "Profile Details, Bank Accounts",

@@ -1057,9 +1057,9 @@ class AuthProvider extends DefaultChangeNotifier {
                 });
           }
         }
-        {
+        // {
           await ref(fundProvider).fetchFunds(context);
-        }
+        // }
       }
     } finally {
       initLaod(false);

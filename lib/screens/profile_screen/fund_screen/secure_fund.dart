@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../../../locator/preference.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
 import '../../../sharedWidget/functions.dart';
 
@@ -20,7 +17,7 @@ class SecureFund extends ConsumerWidget {
     final funds = watch(fundProvider);
     final theme = watch(themeProvider);
     final trancation = watch(transcationProvider);
-    Preferences pref = Preferences();
+    // Preferences pref = Preferences();
     final List<ChartData> donutChart = [
       if (funds.fundDetailModel?.margincurper != null)
         ChartData(
@@ -34,40 +31,41 @@ class SecureFund extends ConsumerWidget {
     ];
 
     return Scaffold(
-        appBar: AppBar(
-          centerTitle: false,
-          leadingWidth: 41,
-          titleSpacing: 6,
-          leading: const CustomBackBtn(),
-          elevation: .4,
-          title: Text('Funds',
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600)),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(top: 22, right: 16),
-              child: InkWell(
-                onTap: () async {
-                  await funds.fetchHstoken(context);
-                  Future.delayed(Duration(microseconds: 10), () {
-                    launch(
-                        'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
-                  });
-                },
-                child: Text(
-                  "Web",
-                  style: textStyle(colors.colorBlue, 14, FontWeight.w600),
-                ),
-              ),
-            )
-          ],
-        ),
+        // appBar: AppBar(
+        //   centerTitle: false,
+        //   leadingWidth: 41,
+        //   titleSpacing: 6,
+        //   leading: const CustomBackBtn(),
+        //   elevation: .4,
+        //   title: Text('Funds',
+        //       style: textStyle(
+        //           theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        //           14,
+        //           FontWeight.w600)),
+        //   actions: [
+        //     Padding(
+        //       padding: const EdgeInsets.only(top: 22, right: 16),
+        //       child: InkWell(
+        //         onTap: () async {
+        //           await funds.fetchHstoken(context);
+        //           Future.delayed(Duration(microseconds: 10), () {
+        //             launch(
+        //                 'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
+        //           });
+        //         },
+        //         child: Text(
+        //           "Web",
+        //           style: textStyle(colors.colorBlue, 14, FontWeight.w600),
+        //         ),
+        //       ),
+        //     )
+        //   ],
+        // ),
         body: ListView(
             padding: const EdgeInsets.symmetric(vertical: 10),
             children: [
               if (funds.fundDetailModel?.avlMrg != "0.00") ...[
+                const SizedBox(height: 16),
                 Container(
                     padding: EdgeInsets.zero,
                     margin: EdgeInsets.zero,

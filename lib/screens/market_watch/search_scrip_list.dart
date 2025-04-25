@@ -5,7 +5,6 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../res/res.dart';
 import '../../models/marketwatch_model/search_scrip_model.dart';
 import '../../provider/thems.dart';
-import '../../provider/user_profile_providerNEWUI.dart';
 import '../../routes/app_routes.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/list_divider.dart';

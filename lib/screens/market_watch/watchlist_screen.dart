@@ -156,9 +156,22 @@ class _WatchListScreen extends State<WatchListScreen> {
                               marketWatch.scrips[idx]['change'] = "0.00";
                             }
                             if (marketWatch.scrips[idx]['perChange']
-                                    .toString() ==
-                                "null") {
-                              marketWatch.scrips[idx]['perChange'] = "0.00";
+                                        .toString() ==
+                                    "null" ||
+                                marketWatch.scrips[idx]['perChange']
+                                        .toString() ==
+                                    "0.00") {
+                              marketWatch.scrips[idx]['perChange'] = marketWatch
+                                          .scrips[idx]['change']
+                                          .toString() !=
+                                      "0.00"
+                                  ? ((double.parse(marketWatch.scrips[idx]
+                                                  ['change']) /
+                                              double.parse(marketWatch
+                                                  .scrips[idx]['ltp'])) *
+                                          100)
+                                      .toStringAsFixed(2)
+                                  : "0.00";
                             }
                             if (marketWatch.scrips[idx]['close'].toString() ==
                                 "null") {

@@ -283,13 +283,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
       ),
       // if (_mfHoldingsModel!.isNotEmpty) ...[
       //   if (_mfHoldingsModel![0].stat != "Not_Ok") ...[
-      Tab(
+      const Tab(
         child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                  "MF Holding${_mfHoldingsModel!.isNotEmpty ? "s (${_mfHoldingsModel!.length})" : ""}")
+                  // "MF Holding${_mfHoldingsModel!.isNotEmpty ? "s (${_mfHoldingsModel!.length})" : ""}"
+                  "Funds"
+                  )
             ]),
       ),
       //   ]

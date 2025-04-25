@@ -2,12 +2,13 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/fund_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+import '../profile_screen/fund_screen/secure_fund.dart';
 import 'allholdings/allholdings_screen.dart';
 import 'holdings/holding_screen.dart';
-import 'mfHoldings/mf_holding_screen.dart';
 import 'positions/position_screen.dart';
 
 class PortfolioScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
     with TickerProviderStateMixin {
   @override
   void initState() {
+    //  await
     context.read(portfolioProvider).fetchBrokerDetails(context, false);
 
     context.read(portfolioProvider).portTab = TabController(
@@ -66,9 +68,10 @@ class _PortfolioScreenState extends State<PortfolioScreen>
         context
             .read(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: false);
-        context
-            .read(portfolioProvider)
-            .requestallHoldings(context: context, isSubscribe: true);
+        context.read(fundProvider).fetchFunds(context);
+        // context
+        //     .read(portfolioProvider)
+        //     .requestallHoldings(context: context, isSubscribe: true);
       } else {
         context.read(portfolioProvider).cancelTimer();
         context
@@ -84,7 +87,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
     });
 
     FirebaseAnalytics.instance.logScreenView(
-     screenName: 'Portfolio Screen',
+      screenName: 'Portfolio Screen',
       screenClass: 'Portfolio_screen',
     );
     super.initState();
@@ -134,7 +137,8 @@ class _PortfolioScreenState extends State<PortfolioScreen>
             const HoldingScreen(),
             // if (portfolio.mfHoldingsModel!.isNotEmpty) ...[
             //   if (portfolio.mfHoldingsModel![0].stat != "Not_Ok") ...[
-            const MFHoldingScreen(),
+            // const MFHoldingScreen(),
+            const SecureFund(),
             //   ]
             // ],
             const Allholdings()
