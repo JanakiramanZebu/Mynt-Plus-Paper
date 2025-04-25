@@ -73,23 +73,29 @@ class UserProfileProvider extends DefaultChangeNotifier {
   ];
 
   final List _reporttMenu = [
+    {
+      "title": "P&L Insights",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
     {"title": "Ledger", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Holdings", "trailing": "assets/profile/greater_arrow.svg"},
-    {
+     {
       "title": "Positions - (Beta)",
-      "trailing": "assets/profile/greater_arrow.svg"
+      "trailing": "assets/profile/ex-link.svg"
     },
-    {"title": "Profit & Loss", "trailing": "assets/profile/greater_arrow.svg"},
-    {
-      "title": "Calender P&L (Beta)",
-      "trailing": "assets/profile/greater_arrow.svg"
-    },
+    // {
+    //   "title": "Positions - (Beta)",
+    //   "trailing": "assets/profile/greater_arrow.svg"
+    // },
+    {"title": "Profit & Loss", "trailing": "assets/profile/greater_arrow.svg"}, 
+    
     {"title": "Tax P&L", "trailing": "assets/profile/greater_arrow.svg"},
     {
       "title": "TradeBook/Contract",
       "trailing": "assets/profile/greater_arrow.svg"
     },
     {"title": "PDF Download", "trailing": "assets/profile/greater_arrow.svg"},
+    
     // {"title": "Pledge & Unpledge", "trailing": "assets/profile/greater_arrow.svg"}
   ];
 
@@ -248,7 +254,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Reports",
-        "subTitle": "Ledger, Holdings, Profit&Loss",
+        "subTitle": "P&L Insights, Ledger, Holdings",
         "leading": "assets/profileimage/reports.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).reportcase,

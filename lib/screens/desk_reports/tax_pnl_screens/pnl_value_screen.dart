@@ -77,78 +77,78 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
               //     )),
               // SizedBox(height: 52.0),
               // BarChartWidget(),
-        
+
               SizedBox(height: 8.0),
-              Container(
-                  width: screenWidth,
-                  child: Container(
-                      decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? const Color(0xffB5C0CF).withOpacity(.15)
-                              : const Color(0xffF1F3F8)),
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.only(left: 16.0, right: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Financial Year",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  14,
-                                  FontWeight.w500),
-                            ),
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.arrow_left,
-                                      color: Colors.black),
-                                  onPressed: () => {
-                                    ledgerprovider.fetchtaxpnleqdata(context,
-                                        ledgerprovider.yearforTaxpnl - 1)
-                                  },
-                                ),
-                                // Center(
-                                //   child: Container(
-                                //     width: screenWidth * 0.5,
-                                //     alignment: Alignment.centerLeft,
-                                //     padding: const EdgeInsets.symmetric(
-                                //         vertical: 10, horizontal: 10),
-                                //     decoration: BoxDecoration(
-                                //         borderRadius: BorderRadius.circular(30),
-                                //         color: theme.isDarkMode
-                                //             ? const Color(0xffB5C0CF).withOpacity(.15)
-                                //             : const Color(0xffF1F3F8)),
-                                //     child: Center(
-                                //       child:
-                                Text("${ledgerprovider.yearforTaxpnl}",
-                                    textAlign: TextAlign.right,
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500)),
-        
-                                //     ),
-                                //   ),
-                                // ),
-                                IconButton(
-                                  icon: Icon(Icons.arrow_right,
-                                      color: Colors.black),
-                                  onPressed: () => {
-                                    ledgerprovider.fetchtaxpnleqdata(context,
-                                        ledgerprovider.yearforTaxpnl + 1)
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ))),
+              // Container(
+              //     width: screenWidth,
+              //     child: Container(
+              //         decoration: BoxDecoration(
+              //             color: theme.isDarkMode
+              //                 ? const Color(0xffB5C0CF).withOpacity(.15)
+              //                 : const Color(0xffF1F3F8)),
+              //         child: Padding(
+              //           padding:
+              //               const EdgeInsets.only(left: 16.0, right: 16.0),
+              //           child: Row(
+              //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //             children: [
+              //               Text(
+              //                 "Financial Year",
+              //                 style: textStyle(
+              //                     theme.isDarkMode
+              //                         ? colors.colorWhite
+              //                         : colors.colorBlack,
+              //                     14,
+              //                     FontWeight.w500),
+              //               ),
+              //               Row(
+              //                 children: [
+              //                   IconButton(
+              //                     icon: Icon(Icons.arrow_left,
+              //                         color: Colors.black),
+              //                     onPressed: () => {
+              //                       ledgerprovider.fetchtaxpnleqdata(context,
+              //                           ledgerprovider.yearforTaxpnl - 1)
+              //                     },
+              //                   ),
+              //                   // Center(
+              //                   //   child: Container(
+              //                   //     width: screenWidth * 0.5,
+              //                   //     alignment: Alignment.centerLeft,
+              //                   //     padding: const EdgeInsets.symmetric(
+              //                   //         vertical: 10, horizontal: 10),
+              //                   //     decoration: BoxDecoration(
+              //                   //         borderRadius: BorderRadius.circular(30),
+              //                   //         color: theme.isDarkMode
+              //                   //             ? const Color(0xffB5C0CF).withOpacity(.15)
+              //                   //             : const Color(0xffF1F3F8)),
+              //                   //     child: Center(
+              //                   //       child:
+              //                   Text("${ledgerprovider.yearforTaxpnl}",
+              //                       textAlign: TextAlign.right,
+              //                       style: textStyle(
+              //                           theme.isDarkMode
+              //                               ? colors.colorWhite
+              //                               : colors.colorBlack,
+              //                           14,
+              //                           FontWeight.w500)),
+
+              //                   //     ),
+              //                   //   ),
+              //                   // ),
+              //                   IconButton(
+              //                     icon: Icon(Icons.arrow_right,
+              //                         color: Colors.black),
+              //                     onPressed: () => {
+              //                       ledgerprovider.fetchtaxpnleqdata(context,
+              //                           ledgerprovider.yearforTaxpnl + 1)
+              //                     },
+              //                   ),
+              //                 ],
+              //               ),
+              //             ],
+              //           ),
+              //         ))),
               // Divider(
               //   color: const Color.fromARGB(
               //       255, 117, 117, 117),
@@ -166,6 +166,18 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                                   ledgerprovider.taxpnleq!.data!.assetsTotal!)
                               .toStringAsFixed(2)
                           : "0.00"),
+
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
                   headingstat(
                     theme,
                     "Eq Long team",
@@ -177,18 +189,39 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                             .toStringAsFixed(2)
                         : "0.00",
                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
                   headingstat(
                       theme,
                       "Eq Short term",
                       (ledgerprovider.taxpnleq?.data?.shortermTotal != null &&
                               ledgerprovider
                                   .taxpnleq!.data!.shortermTotal!.isNotEmpty)
-                          ? num.parse(ledgerprovider
-                                  .taxpnleq!.data!.shortermTotal!)
+                          ? num.parse(
+                                  ledgerprovider.taxpnleq!.data!.shortermTotal!)
                               .toStringAsFixed(2)
                           : "0.00"),
-        
-                  
+
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
                   headingstat(
                     theme,
                     "FNO Future",
@@ -197,37 +230,69 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                             ledgerprovider.taxpnldercomcur?.data?.derivatives
                                     ?.derFutPnl !=
                                 null)
-                        ? double.parse(ledgerprovider.taxpnldercomcur!.data!
-                                .derivatives!.derFutPnl!)
+                        ? double.parse(ledgerprovider
+                                .taxpnldercomcur!.data!.derivatives!.derFutPnl!)
                             .toStringAsFixed(2)
                         : "0.00",
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
                   ),
                   headingstat(
                       theme,
                       "FNO Option",
                       (ledgerprovider.taxpnldercomcur?.data?.derivatives !=
                                   null &&
-                              ledgerprovider.taxpnldercomcur?.data
-                                      ?.derivatives?.derOptPnl !=
+                              ledgerprovider.taxpnldercomcur?.data?.derivatives
+                                      ?.derOptPnl !=
                                   null)
                           ? double.parse(ledgerprovider.taxpnldercomcur!.data!
                                   .derivatives!.derOptPnl!)
                               .toStringAsFixed(2)
                           : "0.00"),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
                   headingstat(
                     theme,
                     "Com Future",
-                    (ledgerprovider.taxpnldercomcur?.data?.commodity !=
-                                null &&
+                    (ledgerprovider.taxpnldercomcur?.data?.commodity != null &&
                             ledgerprovider.taxpnldercomcur?.data?.commodity
                                     ?.commFutPnl !=
                                 null)
-                        ? double.parse(ledgerprovider.taxpnldercomcur!.data!
-                                .commodity!.commFutPnl!)
+                        ? double.parse(ledgerprovider
+                                .taxpnldercomcur!.data!.commodity!.commFutPnl!)
                             .toStringAsFixed(2)
                         : "0.00",
                   ),
-        
+
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
                   headingstat(
                       theme,
                       "Com Option",
@@ -240,35 +305,54 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                                   .commodity!.commOptPnl!)
                               .toStringAsFixed(2)
                           : "0.00"),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
                   headingstat(
                       theme,
                       "Cur Future",
-                      (ledgerprovider.taxpnldercomcur?.data?.currency !=
-                                  null &&
+                      (ledgerprovider.taxpnldercomcur?.data?.currency != null &&
                               ledgerprovider.taxpnldercomcur?.data?.currency
                                       ?.currFutPnl !=
                                   null)
-                          ? double.parse(ledgerprovider.taxpnldercomcur!.data!
-                                  .currency!.currFutPnl!)
+                          ? double.parse(ledgerprovider
+                                  .taxpnldercomcur!.data!.currency!.currFutPnl!)
                               .toStringAsFixed(2)
                           : "0.00"),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
                   headingstat(
                       theme,
                       "Cur Option",
-                      (ledgerprovider.taxpnldercomcur?.data?.currency !=
-                                  null &&
+                      (ledgerprovider.taxpnldercomcur?.data?.currency != null &&
                               ledgerprovider.taxpnldercomcur?.data?.currency
                                       ?.currOptPnl !=
                                   null)
-                          ? double.parse(ledgerprovider.taxpnldercomcur!.data!
-                                  .currency!.currOptPnl!)
+                          ? double.parse(ledgerprovider
+                                  .taxpnldercomcur!.data!.currency!.currOptPnl!)
                               .toStringAsFixed(2)
                           : "0.00"), // Fixed the repeated label
-                          const SizedBox(height: 48.0),
+                  const SizedBox(height: 48.0),
                 ],
-                
               )
-        
+
               // Container(
               //   width: screenWidth,
               //   child: Container(
@@ -508,7 +592,7 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
               //     ),
               //   ),
               // ),
-        
+
               // Padding(
               //   padding: const EdgeInsets.only(left: 30 , right: 30),
               //   child: Row(
@@ -531,7 +615,7 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
               //             Container(
               //               width: 100, // Fixed width for the static column
               //               height: 50,
-        
+
               //               padding: EdgeInsets.all(8.0),
               //               decoration: BoxDecoration(
               //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
@@ -543,7 +627,7 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
               //         ],
               //       ),
               //       // Scrollable Content
-        
+
               //       Expanded(
               //         child: SingleChildScrollView(
               //           scrollDirection: Axis.horizontal,
@@ -556,7 +640,7 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
               //                     Container(
               //                        margin: EdgeInsets.only(top: 20),
               //                       width: i == 4 ? 275 : 100, // Column width
-        
+
               //                       padding: EdgeInsets.all(8.0),
               //                       color: Color(0xFFEEEEEE),
               //                       child: Text(
@@ -615,7 +699,7 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
               //         tabsbutton('Future Open', ledgerprovider, theme),
               //         tabsbutton('Option Closed', ledgerprovider, theme),
               //         tabsbutton('Option Open', ledgerprovider, theme),
-        
+
               //       ],
               //     ),
               //   ),
@@ -635,7 +719,7 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
               //               itemCount:  ledgerprovider.taxpnlcomselectedtabdata == null ? 0 : ledgerprovider.taxpnlcomselectedtabdata.length,
               //               shrinkWrap: true,
               //               itemBuilder: (context, index) {
-        
+
               //                 return Column(
               //                   crossAxisAlignment: CrossAxisAlignment.start,
               //                   children: [
@@ -783,7 +867,7 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
               //                         ],
               //                       ),
               //                     ),
-        
+
               //                     Padding(
               //                       padding: const EdgeInsets.only(top: 10),
               //                       child: Divider(
@@ -898,39 +982,32 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
 
   headingstat(ThemesProvider theme, String heading, String value) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 14, top: 6.0),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-                TextWidget.subText( 
-                                                  text:  "${heading}",
-                                                  color:   theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 0),
-                                                   TextWidget.subText( 
-                                                  text:   "${value ?? 0}",
-                                                  color:    (double.parse(value)) > 0
+              TextWidget.subText(
+                  text: "${heading}",
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 0),
+              TextWidget.subText(
+                  text: "${value ?? 0}",
+                  color: (double.parse(value)) > 0
                       ? Colors.green
                       : double.parse(value) < 0
                           ? Colors.red
-                          : theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1),
-              
-              
+                          : theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 1),
             ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 2.0),
-            child: Divider(
-              color: const Color.fromARGB(255, 117, 117, 117),
-            ),
           ),
         ],
       ),

@@ -56,22 +56,24 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final theme = watch(themeProvider);
+      double screenWidth = MediaQuery.of(context).size.width;
 
       final ledgerprovider = watch(ledgerProvider);
 
       return Scaffold(
         appBar: AppBar(
           // automaticallyImplyLeading: false,
+           elevation: 0.2,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              TextWidget.heroText(
+                  text: "Tax P&L",
+                  
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 1),
 
-               TextWidget.heroText(
-              text: "Tax P&L",
-              textOverflow: TextOverflow.ellipsis,
-              theme: theme.isDarkMode,
-              fw: 1),
-               
               // DropdownButtonHideUnderline(
               //     child: DropdownButton2(
               //         menuItemStyleData: MenuItemStyleData(
@@ -113,16 +115,94 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
           isLoading: ledgerprovider.taxderloading,
           child: Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left : 16.0, top : 24.0),
-                      child: BarChartWidget(),
-                    ),
-                    Container(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Padding(
+                  //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
+                  //   child: BarChartWidget(),
+                  // ),
+                  Container(
+                      width: screenWidth,
+                      child: Container(
+                          decoration: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? const Color(0xffB5C0CF).withOpacity(.15)
+                                  : const Color(0xffF1F3F8)),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16.0, right: 16.0),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Financial Year",
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
+                                      FontWeight.w500),
+                                ),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.arrow_left,
+                                          color: theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack),
+                                      onPressed: () => {
+                                        ledgerprovider.fetchtaxpnleqdata(
+                                            context,
+                                            ledgerprovider.yearforTaxpnl - 1)
+                                      },
+                                    ),
+                                    // Center(
+                                    //   child: Container(
+                                    //     width: screenWidth * 0.5,
+                                    //     alignment: Alignment.centerLeft,
+                                    //     padding: const EdgeInsets.symmetric(
+                                    //         vertical: 10, horizontal: 10),
+                                    //     decoration: BoxDecoration(
+                                    //         borderRadius: BorderRadius.circular(30),
+                                    //         color: theme.isDarkMode
+                                    //             ? const Color(0xffB5C0CF).withOpacity(.15)
+                                    //             : const Color(0xffF1F3F8)),
+                                    //     child: Center(
+                                    //       child:
+                                    Text("${ledgerprovider.yearforTaxpnl}",
+                                        textAlign: TextAlign.right,
+                                        style: textStyle(
+                                            theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                            14,
+                                            FontWeight.w500)),
+              
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                    IconButton(
+                                      icon: Icon(Icons.arrow_right,
+                                          color: theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack),
+                                      onPressed: () => {
+                                        ledgerprovider.fetchtaxpnleqdata(
+                                            context,
+                                            ledgerprovider.yearforTaxpnl + 1)
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ))),
+
+                  Padding(
+                    padding: const EdgeInsets.only(top :8.0),
+                    child: Container(
                         width: MediaQuery.of(context).size.width,
                         padding:
                             const EdgeInsets.only(bottom: 0, left: 15, top: 2),
@@ -149,26 +229,28 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                     tab,
                                     () {},
                                     ledgerprovider)))),
-                    Expanded(
-                      child: TabBarView(
-                        physics: const NeverScrollableScrollPhysics(),
-                        controller: _tabController,
-                        children: [
-                          TaxpnlvalueScreen(),
-                          TaxTurnOver(),
-                          TaxCharges(),
-                        ],
-                      ),
+                  ),
+                  
+              
+                  Expanded(
+                    child: TabBarView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      controller: _tabController,
+                      children: [
+                        TaxpnlvalueScreen(),
+                        TaxTurnOver(),
+                        TaxCharges(),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               Positioned(
                 bottom: 20,
                 left: 20,
                 right: 20,
                 child: Container(
-                    height: 35,
+                    height: 40,
                     width: 65,
                     margin: const EdgeInsets.only(right: 12, top: 15),
                     child: ElevatedButton(
@@ -232,11 +314,11 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
           print("object act tab $tab");
         },
         style: ElevatedButton.styleFrom(
-            elevation: 0,
+            elevation: 0, 
             side: const BorderSide(
                 color: Color.fromARGB(255, 0, 0, 0),
                 width: 1), // Border color & width
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             backgroundColor: theme.isDarkMode
                 ? tab == ledgerprovider.activeTabTaxPnl
                     ? colors.colorbluegrey
@@ -259,7 +341,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                           : Color(tab == ledgerprovider.activeTabTaxPnl
                               ? 0xffffffff
                               : 0xff000000),
-                      14,
+                      12,
                       FontWeight.w500))
             ]));
   }

@@ -8,6 +8,7 @@ import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import 'chart_for_tax_scree.dart';
 
 class TaxCharges extends StatefulWidget {
@@ -76,78 +77,78 @@ class _TaxCharges extends State<TaxCharges> {
               //     )),
               // SizedBox(height: 36.0),
               // BarChartWidget(),
-        
+
               SizedBox(height: 8.0),
-              Container(
-                  width: screenWidth,
-                  child: Container(
-                      decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? const Color(0xffB5C0CF).withOpacity(.15)
-                              : const Color(0xffF1F3F8)),
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.only(left: 16.0, right: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Financial Year",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  14,
-                                  FontWeight.w500),
-                            ),
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.arrow_left,
-                                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-                                  onPressed: () => {
-                                    ledgerprovider.fetchtaxpnleqdata(context,
-                                        ledgerprovider.yearforTaxpnl - 1)
-                                  },
-                                ),
-                                // Center(
-                                //   child: Container(
-                                //     width: screenWidth * 0.5,
-                                //     alignment: Alignment.centerLeft,
-                                //     padding: const EdgeInsets.symmetric(
-                                //         vertical: 10, horizontal: 10),
-                                //     decoration: BoxDecoration(
-                                //         borderRadius: BorderRadius.circular(30),
-                                //         color: theme.isDarkMode
-                                //             ? const Color(0xffB5C0CF).withOpacity(.15)
-                                //             : const Color(0xffF1F3F8)),
-                                //     child: Center(
-                                //       child:
-                                Text("${ledgerprovider.yearforTaxpnl}",
-                                    textAlign: TextAlign.right,
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500)),
-        
-                                //     ),
-                                //   ),
-                                // ),
-                                IconButton(
-                                  icon: Icon(Icons.arrow_right,
-                                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-                                  onPressed: () => {
-                                    ledgerprovider.fetchtaxpnleqdata(context,
-                                        ledgerprovider.yearforTaxpnl + 1)
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ))),
+              // Container(
+              //     width: screenWidth,
+              //     child: Container(
+              //         decoration: BoxDecoration(
+              //             color: theme.isDarkMode
+              //                 ? const Color(0xffB5C0CF).withOpacity(.15)
+              //                 : const Color(0xffF1F3F8)),
+              //         child: Padding(
+              //           padding:
+              //               const EdgeInsets.only(left: 16.0, right: 16.0),
+              //           child: Row(
+              //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //             children: [
+              //               Text(
+              //                 "Financial Year",
+              //                 style: textStyle(
+              //                     theme.isDarkMode
+              //                         ? colors.colorWhite
+              //                         : colors.colorBlack,
+              //                     14,
+              //                     FontWeight.w500),
+              //               ),
+              //               Row(
+              //                 children: [
+              //                   IconButton(
+              //                     icon: Icon(Icons.arrow_left,
+              //                         color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+              //                     onPressed: () => {
+              //                       ledgerprovider.fetchtaxpnleqdata(context,
+              //                           ledgerprovider.yearforTaxpnl - 1)
+              //                     },
+              //                   ),
+              //                   // Center(
+              //                   //   child: Container(
+              //                   //     width: screenWidth * 0.5,
+              //                   //     alignment: Alignment.centerLeft,
+              //                   //     padding: const EdgeInsets.symmetric(
+              //                   //         vertical: 10, horizontal: 10),
+              //                   //     decoration: BoxDecoration(
+              //                   //         borderRadius: BorderRadius.circular(30),
+              //                   //         color: theme.isDarkMode
+              //                   //             ? const Color(0xffB5C0CF).withOpacity(.15)
+              //                   //             : const Color(0xffF1F3F8)),
+              //                   //     child: Center(
+              //                   //       child:
+              //                   Text("${ledgerprovider.yearforTaxpnl}",
+              //                       textAlign: TextAlign.right,
+              //                       style: textStyle(
+              //                           theme.isDarkMode
+              //                               ? colors.colorWhite
+              //                               : colors.colorBlack,
+              //                           14,
+              //                           FontWeight.w500)),
+
+              //                   //     ),
+              //                   //   ),
+              //                   // ),
+              //                   IconButton(
+              //                     icon: Icon(Icons.arrow_right,
+              //                         color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+              //                     onPressed: () => {
+              //                       ledgerprovider.fetchtaxpnleqdata(context,
+              //                           ledgerprovider.yearforTaxpnl + 1)
+              //                     },
+              //                   ),
+              //                 ],
+              //               ),
+              //             ],
+              //           ),
+              //         ))),
               // Divider(
               //   color: const Color.fromARGB(
               //       255, 117, 117, 117),
@@ -156,62 +157,102 @@ class _TaxCharges extends State<TaxCharges> {
               Column(
                 children: [
                   Padding(
-                    padding:
-                        const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+                    padding: const EdgeInsets.only(
+                        left: 16, right: 16, bottom: 14, top: 6.0),
                     child: Column(
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              "Equity",
-                              style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                  15, FontWeight.w600),
-                            ),
+                            TextWidget.subText(
+                                text: "Equity",
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                fw: 0),
                             ledgerprovider.reportsloadingforcharges == true
                                 ? CircularProgressIndicator()
-                                : Text(
-                                    "${ledgerprovider.taxpnleqCharge?.total != 'null' ? ledgerprovider.taxpnleqCharge!.total! : '0.00'}",
-                                    textAlign: TextAlign.right,
-                                    style: textStyle(
-                                        Colors.red, 13, FontWeight.w500),
-                                  )
+                                : TextWidget.subText(
+                                    text:
+                                        "${ledgerprovider.taxpnleqCharge?.total != 'null' ? ledgerprovider.taxpnleqCharge!.total! : '0.00'}",
+                                    color: Colors.red,
+                                    textOverflow: TextOverflow.ellipsis,
+                                    theme: theme.isDarkMode,
+                                    fw: 0),
                           ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2.0),
-                          child: Divider(
-                            color: const Color.fromARGB(255, 117, 117, 117),
-                          ),
                         ),
                       ],
                     ),
                   ),
-                  headingstat(theme,
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
+                  headingstat(
+                    theme,
                     "FNO",
-                    (ledgerprovider.taxpnldercomcur?.data?.charges?.derChargesTotal != null  )
-                        ? double.parse(
-                                ledgerprovider.taxpnldercomcur!.data!.charges!.derChargesTotal!)
+                    (ledgerprovider.taxpnldercomcur?.data?.charges
+                                ?.derChargesTotal !=
+                            null)
+                        ? double.parse(ledgerprovider.taxpnldercomcur!.data!
+                                .charges!.derChargesTotal!)
                             .toStringAsFixed(2)
                         : "0.00",
                   ),
-                  headingstat(theme,
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
+                  headingstat(
+                      theme,
                       "Com",
-                       (ledgerprovider.taxpnldercomcur?.data?.charges?.commChargesTotal != null  )
-                        ? double.parse(
-                                ledgerprovider.taxpnldercomcur!.data!.charges!.commChargesTotal!)
-                            .toStringAsFixed(2)
-                        : "0.00"),
-                  headingstat(theme,
-                    "Cur",
-                    (ledgerprovider.taxpnldercomcur?.data?.charges?.curChargesTotal != null  )
-                        ? double.parse(
-                                ledgerprovider.taxpnldercomcur!.data!.charges!.curChargesTotal!)
-                            .toStringAsFixed(2)
-                        : "0.00"),
+                      (ledgerprovider.taxpnldercomcur?.data?.charges
+                                  ?.commChargesTotal !=
+                              null)
+                          ? double.parse(ledgerprovider.taxpnldercomcur!.data!
+                                  .charges!.commChargesTotal!)
+                              .toStringAsFixed(2)
+                          : "0.00"),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
+                  headingstat(
+                      theme,
+                      "Cur",
+                      (ledgerprovider.taxpnldercomcur?.data?.charges
+                                  ?.curChargesTotal !=
+                              null)
+                          ? double.parse(ledgerprovider.taxpnldercomcur!.data!
+                                  .charges!.curChargesTotal!)
+                              .toStringAsFixed(2)
+                          : "0.00"),
                 ],
               )
-        
+
               // Container(
               //   width: screenWidth,
               //   child: Container(
@@ -451,7 +492,7 @@ class _TaxCharges extends State<TaxCharges> {
               //     ),
               //   ),
               // ),
-        
+
               // Padding(
               //   padding: const EdgeInsets.only(left: 30 , right: 30),
               //   child: Row(
@@ -474,7 +515,7 @@ class _TaxCharges extends State<TaxCharges> {
               //             Container(
               //               width: 100, // Fixed width for the static column
               //               height: 50,
-        
+
               //               padding: EdgeInsets.all(8.0),
               //               decoration: BoxDecoration(
               //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
@@ -486,7 +527,7 @@ class _TaxCharges extends State<TaxCharges> {
               //         ],
               //       ),
               //       // Scrollable Content
-        
+
               //       Expanded(
               //         child: SingleChildScrollView(
               //           scrollDirection: Axis.horizontal,
@@ -499,7 +540,7 @@ class _TaxCharges extends State<TaxCharges> {
               //                     Container(
               //                        margin: EdgeInsets.only(top: 20),
               //                       width: i == 4 ? 275 : 100, // Column width
-        
+
               //                       padding: EdgeInsets.all(8.0),
               //                       color: Color(0xFFEEEEEE),
               //                       child: Text(
@@ -558,7 +599,7 @@ class _TaxCharges extends State<TaxCharges> {
               //         tabsbutton('Future Open', ledgerprovider, theme),
               //         tabsbutton('Option Closed', ledgerprovider, theme),
               //         tabsbutton('Option Open', ledgerprovider, theme),
-        
+
               //       ],
               //     ),
               //   ),
@@ -578,7 +619,7 @@ class _TaxCharges extends State<TaxCharges> {
               //               itemCount:  ledgerprovider.taxpnlcomselectedtabdata == null ? 0 : ledgerprovider.taxpnlcomselectedtabdata.length,
               //               shrinkWrap: true,
               //               itemBuilder: (context, index) {
-        
+
               //                 return Column(
               //                   crossAxisAlignment: CrossAxisAlignment.start,
               //                   children: [
@@ -726,7 +767,7 @@ class _TaxCharges extends State<TaxCharges> {
               //                         ],
               //                       ),
               //                     ),
-        
+
               //                     Padding(
               //                       padding: const EdgeInsets.only(top: 10),
               //                       child: Divider(
@@ -839,30 +880,32 @@ class _TaxCharges extends State<TaxCharges> {
     }
   }
 
-  headingstat(ThemesProvider theme,String heading, String value) {
+  headingstat(ThemesProvider theme, String heading, String value) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 14, top: 6.0),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "${heading}",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 15, FontWeight.w600),
-              ),
-              Text(
-                "${value}",
-                style: textStyle(Colors.red, 13, FontWeight.w500),
-              )
+              TextWidget.subText(
+                  text: "${heading}",
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 0),
+              TextWidget.subText(
+                  text: "${value ?? 0}",
+                  color: (double.parse(value)) == 0.0
+                      ? theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack
+                      : Colors.red,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 1),
             ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 2.0),
-            child: Divider(
-              color: const Color.fromARGB(255, 117, 117, 117),
-            ),
           ),
         ],
       ),

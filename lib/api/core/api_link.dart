@@ -14,6 +14,7 @@ class ApiLinks {
   String get goMyntURL => "https://go.mynt.in/NorenWClient";
   static String wsURL = 'wss://go.mynt.in/NorenWS/';
   String get newsurl => "https://be.mynt.in/news";
+  String get weblog => "https://be.mynt.in/weblog/addlogversion";
 
   ///generate api key
   String get apiKey => '$goMyntURL/RequestApiKey';
@@ -157,7 +158,8 @@ class ApiLinks {
 
   // String tradeAction = "https://v3.mynt.in/equity/getadindicesAdvdec";
 
-  String get fundamentalDetail =>'$dashBoardURL/equity/stockFundamentalDetails';
+  String get fundamentalDetail =>
+      '$dashBoardURL/equity/stockFundamentalDetails';
   String get topListStock => '$dashBoardURL/equity/TopList';
   String get getGlobalIndex => '$dashBoardURL/equity/getGlobalIndex';
   String get getadindices => '$dashBoardURL/equity/getadindices';
@@ -170,7 +172,7 @@ class ApiLinks {
   String get getQrScanner => '$mainBaseURL/QRMobileReq';
 
   ///ipo///
-  String get ipourlendpoint =>"${dashBoardURL}/ipo/";
+  String get ipourlendpoint => "${dashBoardURL}/ipo/";
   String get dashboardipos => "${ipourlendpoint}IpoDashboard";
   String get smeipos => "${ipourlendpoint}getcurrentSMEIPOdetails";
   String get mainstreamipo => "${ipourlendpoint}getcurrentIPOdetails";
@@ -181,24 +183,23 @@ class ApiLinks {
   String get ipoprecloseurl => "${ipourlendpoint}precloseipo";
   String get ipoupcomingurl => "${ipourlendpoint}getupcomingdetails";
 
-
 // Mutual Fund
   String get bestMf => "$dashBoardURL/mf/z_data_1";
-   String get newbestMf => "$dashBoardURL/mf/getMfBaskets";
+  String get newbestMf => "$dashBoardURL/mf/getMfBaskets";
   String get mfCategoryList => "$dashBoardURL/mf/getCategoryschemes";
   String get mfCategoryListData => "$dashBoardURL/mf/get_title_values";
   String get mfCategoryTypes => "$dashBoardURL/mf/getCategoryType";
-   String get mfsiplist => "$dashBoardURL/mf/client_approved_sips";
-   String get mfsinglepage => "$dashBoardURL/mf/single_page_sip";
-     String get mfsingleorder => "$dashBoardURL/mf/single_page_order_book";
-    //  String get mfsingleorder => "$dashBoardURL/mf/single_page_order_book";
-     String get mfholdsinlepageapi => "$dashBoardURL/mf/holdings_single_page";
-     String get mfholdnewapi => "$dashBoardURL/mf/GetHoldings_mob";
-       String get redemptioncancel => "$dashBoardURL/mf/lumsum_redemption_cancel";
-       String get sipcancelapiend => "$dashBoardURL/mf/xsip_cancel";
-       String get pausesipendpoint => "$dashBoardURL/mf/xsip_pause";
+  String get mfsiplist => "$dashBoardURL/mf/client_approved_sips";
+  String get mfsinglepage => "$dashBoardURL/mf/single_page_sip";
+  String get mfsingleorder => "$dashBoardURL/mf/single_page_order_book";
+  //  String get mfsingleorder => "$dashBoardURL/mf/single_page_order_book";
+  String get mfholdsinlepageapi => "$dashBoardURL/mf/holdings_single_page";
+  String get mfholdnewapi => "$dashBoardURL/mf/GetHoldings_mob";
+  String get redemptioncancel => "$dashBoardURL/mf/lumsum_redemption_cancel";
+  String get sipcancelapiend => "$dashBoardURL/mf/xsip_cancel";
+  String get pausesipendpoint => "$dashBoardURL/mf/xsip_pause";
 
-       String get mfallcatnewendpoit => "$dashBoardURL/mf/getCategoryschemes_new";
+  String get mfallcatnewendpoit => "$dashBoardURL/mf/getCategoryschemes_new";
   String get masterMF => "$dashBoardURL/mf/master_file_datas";
   String get nfoMF => "https://v3.mynt.in/mf/NFO_datas";
   String get searchMF => "https://v3.mynt.in/mf/mfsearch";
@@ -214,16 +215,13 @@ class ApiLinks {
   String get lumpsumOrder => "$dashBoardURL/mf/lumsum_purchase";
   String get lumpsumOrderbook => "$dashBoardURL/mf/mf_orderbook";
   String get mandatecreate => "$dashBoardURL/mf/mandate_creation";
-  String get mfXSiporder=> "$dashBoardURL/mf/xsip_purchase";
+  String get mfXSiporder => "$dashBoardURL/mf/xsip_purchase";
   String get mfXsipcancleRes => "$dashBoardURL/mf/reasons";
   String get mfxsipcancel => "$dashBoardURL/mf/xsip_cancel";
   // String get mfallpayment => "https://v3.mynt.in/mf//all_payment";
   String get mfallpayment => "$dashBoardURL/mf/lumsum_purchase_mob";
   String get topSchemes => "$dashBoardURL/mf/getTopschemes";
   String get redemption => "$dashBoardURL/mf/lumsum_redemption_mob";
-
-  
-
 
   String get mainfund => 'https://fundapi.mynt.in/api';
   String get clientcheck => '$mainfund/client_check';
@@ -251,7 +249,7 @@ class ApiLinks {
   //fund urlss///
   String get viewupiid => 'https://fundapi.mynt.in/withdraw/view_upi_id';
 // Bonds
-  String get bondBaseURL => "${dashBoardURL}/ipo";// 'https://besim.zebull.in';
+  String get bondBaseURL => "${dashBoardURL}/ipo"; // 'https://besim.zebull.in';
   String get getSGB => "$bondBaseURL/getcurrentSGBdetails";
   String get getGSec => "$bondBaseURL/getcurrentNCB_Gsecdetails";
   String get getTBill => "$bondBaseURL/getcurrentNCB_TBilldetails";
@@ -263,10 +261,10 @@ class ApiLinks {
   String get getLedgerBal => "$ledgerBaseURL/all_ledger_balance";
 
   // ###### Profile All Details  #############
-String get profileDetailsURL => "https://rekycbe.mynt.in/";
-String get detailschangecurrentstatusURL => '$profileDetailsURL/add_mob_email_stat';
-String get profileAllDetailsURL => '$profileDetailsURL/profile';
-
+  String get profileDetailsURL => "https://rekycbe.mynt.in/";
+  String get detailschangecurrentstatusURL =>
+      '$profileDetailsURL/add_mob_email_stat';
+  String get profileAllDetailsURL => '$profileDetailsURL/profile';
 
   // email change
   String get sendOTPEmailURL => '$profileDetailsURL/mail_otpsend';
@@ -278,7 +276,7 @@ String get profileAllDetailsURL => '$profileDetailsURL/profile';
   String get mobotpver => '$profileDetailsURL/mob_otp_ver';
   String get filewritemob => '$profileDetailsURL/file_write_mob';
 
-  // Address change 
+  // Address change
   String get adrchnURL => '$profileDetailsURL/adr_chn';
   // String get freezeAccount => '$profileDetailsURL/FreezeAccount';
   // String get blockAcct => '$profileDetailsURL/BlockAcct';
@@ -314,7 +312,7 @@ String get profileAllDetailsURL => '$profileDetailsURL/profile';
   String get closureURL => '$profileDetailsURL/closure';
   // reportss api
 
-    String get reportsapi => 'https://rekycbe.mynt.in/report/';
-    String get reportspledge => 'https://rekycbe.mynt.in/pledge/';
-    String get fundforprofile => 'https://fundapi.mynt.in/api/';
+  String get reportsapi => 'https://rekycbe.mynt.in/report/';
+  String get reportspledge => 'https://rekycbe.mynt.in/pledge/';
+  String get fundforprofile => 'https://fundapi.mynt.in/api/';
 }

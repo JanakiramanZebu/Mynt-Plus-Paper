@@ -74,7 +74,12 @@ class Tradebook extends StatelessWidget {
           leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
-          leading: const CustomBackBtn(),
+          leading:  InkWell(
+            onTap: () {
+              ledgerprovider.falseloader('tradebook');
+            },
+            child: const CustomBackBtn(),
+          ),
           elevation: 0.2,
           title: 
            TextWidget.heroText(
@@ -90,7 +95,7 @@ class Tradebook extends StatelessWidget {
           //   child: Icon(Icons.ios_share)),
         ),
         body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.reportsloading,
+          isLoading: ledgerprovider.tradebookloading,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -200,7 +205,7 @@ class Tradebook extends StatelessWidget {
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(32)))),
                               onPressed: () async {
-                                ledgerprovider.fetchtradebookdata(
+                                ledgerprovider.fetchtradebookdata(context,
                                     ledgerprovider.startDate,
                                     ledgerprovider.today);
                               },
@@ -507,7 +512,7 @@ class Tradebook extends StatelessWidget {
                                                   theme: theme.isDarkMode,
                                                   fw: 0),
                                            TextWidget.subText( 
-                                                  text:  "${value.showqnt}",
+                                                  text:  "${double.tryParse(value.showqnt.toString())!.toInt()}",
                                                   color:   theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
@@ -547,7 +552,10 @@ class Tradebook extends StatelessWidget {
                                                   theme: theme.isDarkMode,
                                                   fw: 0),
                                            TextWidget.subText( 
-                                                  text:  "₹ ${value.showamt}",
+                                                  // text:  "₹ ${value.showamt}",
+                                                  text: "${(double.tryParse(value.showamt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+
+
                                                   color:   theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
@@ -578,7 +586,9 @@ class Tradebook extends StatelessWidget {
                                                   theme: theme.isDarkMode,
                                                   fw: 0),
                                            TextWidget.subText( 
-                                                  text:  "₹ ${value.showprice}",
+                                                  // text:  "₹ ${value.showprice}",
+                                                  text: "${(double.tryParse(value.showprice ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+
                                                   color:   theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,

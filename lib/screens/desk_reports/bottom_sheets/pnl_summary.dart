@@ -87,15 +87,22 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right : 16.0),
-                    child: TextWidget.subText(
-                                        text: "${notional.toStringAsFixed(2)}",
-                                        textOverflow: TextOverflow.ellipsis,
-                                        theme: theme.isDarkMode,
-                                        color: notional > 0
-                                            ? Colors.green
-                                            : Colors.red,
-                                        fw: 1),
+                    padding: const EdgeInsets.only(right: 16.0,top: 12.0),
+                    child: TextWidget.titleText(
+                        text: "${notional.toStringAsFixed(2)}",
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        color: notional != 0
+                                                        ? notional > 0
+                                                            ? Colors.green
+                                                            : notional <
+                                                                    0
+                                                                ? Colors.red
+                                                                : Colors.black
+                                                        : theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                        fw: 1),
                   ),
                 ],
               ),
@@ -125,7 +132,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                       //                 textOverflow: TextOverflow.ellipsis,
                       //                 theme: theme.isDarkMode,
                       //                 fw: 0),
-                                  
+
                       //           ],
                       //         ),
                       //       ),
@@ -133,17 +140,17 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                       //   ),
                       // ),
                       Padding(
-                            padding: const EdgeInsets.only(
-                              top: 8.0,
-                              bottom: 0.0,
-                            ),
-                            child: Divider(
-                              color: theme.isDarkMode
-                                  ? const Color(0xffB5C0CF).withOpacity(.15)
-                                  : const Color(0xffF1F3F8),
-                              thickness: 7.0,
-                            ),
-                          ),
+                        padding: const EdgeInsets.only(
+                          top: 8.0,
+                          bottom: 0.0,
+                        ),
+                        child: Divider(
+                          color: theme.isDarkMode
+                              ? const Color(0xffB5C0CF).withOpacity(.15)
+                              : const Color(0xffF1F3F8),
+                          thickness: 7.0,
+                        ),
+                      ),
                       ListView.separated(
                         physics: ScrollPhysics(),
                         itemCount: ledgerdata.pnlSummaryData?.data?.length ?? 0,
@@ -188,37 +195,44 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                     Row(
                                       children: [
                                         TextWidget.subText(
-                                            text: "Buy Qty : ",
+                                            text: "BQty : ",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
-                                            color: Colors.green,
-                                            fw: 0),
+                                            color: Color(0xFF696969),
+                                            fw: 1),
                                         TextWidget.subText(
                                             text:
-                                                "${value.bQTY} @ ₹${double.parse(value.bRATE.toString()).toStringAsFixed(2)}",
+                                                "${double.tryParse(value.bQTY.toString())!.toInt()} @ ₹${double.parse(value.bRATE.toString()).toStringAsFixed(2)}",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
-                                            color: Colors.green,
-                                            fw: 1),
+                                            color: double.tryParse(value.bQTY.toString())!.toInt() != 0
+                                                        ? double.tryParse(value.bQTY.toString())!.toInt() > 0
+                                                            ? Colors.green
+                                                              
+                                                                : Colors.black
+                                                        : theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                                            fw: 0),
                                       ],
                                     ),
                                     Row(
                                       children: [
                                         TextWidget.subText(
-                                            text: "Net Qty : ",
+                                            text: "NQty : ",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             color: Color(0xFF696969),
-                                            fw: 0),
+                                            fw: 1),
                                         TextWidget.subText(
                                             text:
-                                                "${value.nETQTY} @ ₹${value.nRATE}",
+                                                "${double.tryParse(value.nETQTY!)!.toInt()}",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? colors.colorWhite
                                                 : colors.colorBlack,
-                                            fw: 1),
+                                            fw: 0),
                                         // Text(
                                         //   ("${ledgerdata.ledgerBillData!.transactions![index].bAMT}"
                                         //                ) ,
@@ -331,18 +345,43 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                     Row(
                                       children: [
                                         TextWidget.subText(
-                                            text: "Sell Qty : ",
+                                            text: "SQty : ",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
-                                            color: Colors.red,
-                                            fw: 0),
+                                            color: Color(0xFF696969),
+                                            fw: 1),
                                         TextWidget.subText(
                                             text:
-                                                "${value.sQTY} @ ₹ ${double.parse(value.sRATE.toString()).toStringAsFixed(2)}",
+                                                "${double.tryParse(value.sQTY.toString())!.toInt()} @ ₹ ${double.parse(value.sRATE.toString()).toStringAsFixed(2)}",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
-                                            color: Colors.red,
+                                            color: double.tryParse(value.sQTY.toString())!.toInt() != 0
+                                                        ? double.tryParse(value.sQTY.toString())!.toInt() > 0
+                                                            
+                                                            ? Colors.red
+                                                                : Colors.black
+                                                        : theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                                            fw: 0),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        TextWidget.subText(
+                                            text: "NRate : ",
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            color: Color(0xFF696969),
                                             fw: 1),
+                                        TextWidget.subText(
+                                            text: "₹${value.nRATE}",
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            color: theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                            fw: 0),
                                       ],
                                     ),
 

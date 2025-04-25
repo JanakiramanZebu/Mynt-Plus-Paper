@@ -17,6 +17,7 @@ import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/bonds_provider.dart';
 import '../../provider/fund_provider.dart';
+import '../../provider/ledger_provider.dart';
 import '../../provider/notification_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/transcation_provider.dart';
@@ -38,7 +39,8 @@ class UserAccountScreen extends ConsumerWidget {
     final trancation = watch(transcationProvider);
     final mf = watch(mfProvider);
     final portfolio = watch(portfolioProvider);
-    // final ledgerdate = watch(ledgerProvider);
+    final reportsprovider = watch(ledgerProvider);
+    final auth = watch(authProvider);
 
     //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
@@ -68,6 +70,60 @@ class UserAccountScreen extends ConsumerWidget {
                           } else if (acttitle == "My Account") {
                             Navigator.pushNamed(context, Routes.myAcc);
                           } else if (acttitle == "Reports") {
+                            if (reportsprovider.ledgerAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchLegerData(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.endDate);
+                            }
+                            if (reportsprovider.holdingsAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchholdingsData(
+                                  reportsprovider.today, context);
+                            }
+                            if (reportsprovider.pnlAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchpnldata(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today,
+                                  true);
+                            }
+                            if (reportsprovider.calenderpnlAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.calendarProvider();
+                              reportsprovider.fetchcalenderpnldata(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today,
+                                  'Equity');
+                            }
+                            if (reportsprovider.taxpnldercomcur == null &&
+                                reportsprovider.taxpnleq == null) {
+                              await reportsprovider.getYearlistTaxpnl();
+                              reportsprovider.getCurrentDate('');
+                              reportsprovider.fetchtaxpnleqdata(
+                                  context, reportsprovider.yearforTaxpnl);
+
+                              reportsprovider.taxpnlExTabchange(0);
+                              reportsprovider.chargesforeqtaxpnl(
+                                  context, reportsprovider.yearforTaxpnl);
+                            }
+                            if (reportsprovider.tradebookdata == null) {
+                              await reportsprovider.getCurrentDate('tradebook');
+                              reportsprovider.fetchtradebookdata(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today);
+                            }
+                            if (reportsprovider.pdfdownload == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchpdfdownload(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today);
+                            }
                             Navigator.pushNamed(context, Routes.reports);
                           } else if (acttitle == "Verified P&L") {
                             Navigator.pushNamed(
@@ -82,8 +138,8 @@ class UserAccountScreen extends ConsumerWidget {
                                 context, Routes.reportWebViewApp,
                                 arguments: "event");
                           } else if (acttitle == "Pledge & Unpledge") {
-                            // ledgerdate.fetchpledgeandunpledge();
-                            // ledgerdate.getCurrentDate("pandu");
+                            // reportsprovider.fetchpledgeandunpledge(context);
+                            // reportsprovider.getCurrentDate("pandu");
                             // Navigator.pushNamed(context, Routes.pledgeandun,
                             //     arguments: "DDDDD");
                             Navigator.pushNamed(
@@ -94,31 +150,7 @@ class UserAccountScreen extends ConsumerWidget {
                             // launch(
                             //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                           } else if (acttitle == "Mutual Fund") {
-                            // mf.loaderfun();
-                            mf.mfExTabchange(0);
-                            mf.fetchsiprejreasn();
-                            // await mf.fetchnewMFBestList();
-                            // await mf.fetchBestMF();
-                            Navigator.pushNamed(context, Routes.mfmainscreen);
-                            // await mf.fetchsiprejreasin();
-                            await mf.fetchmfholdingnew();
-
-                            await mf.fetchMfOrderbook(context);
-                            // await mf.fetchmfallcatnew();
-                            await portfolio.fetchMFHoldings(context);
-                            // await mf.fetchMFCategoryType();
-                            // await mf.fetchmfNFO(context);
-                            await mf.fetchMFWatchlist(
-                                "", "", context, true, "");
-                            await mf.fetchmfsiplist();
-                            // await mf.fetchBestMF();
-                            // await portfolio.fetchMFHoldings(context);
-                            // await mf.fetchMFCategoryType();
-                            // // await mf.fetchmfNFO(context);
-                            // await mf.fetchMFWatchlist("", "", context, true, "");
-                            // Navigator.pushNamed(context, Routes.mfmainscreen);
-                            // launch(
-                            //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                           mf.mfApicallinit(context, 0);
                           } else if (acttitle == "OptionZ") {
                             funds.optionZ(context);
                           } else if (acttitle == "Refer") {
@@ -499,8 +531,8 @@ class UserAccountScreen extends ConsumerWidget {
               Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                      "Version 3.0.2 Build 1.0.77(03+05) Released on 23 Apr",
+                  child: Text(auth.versiontext
+                      ,
                       style: textStyle(
                           const Color(0xff666666), 11, FontWeight.w500)))
             ]));

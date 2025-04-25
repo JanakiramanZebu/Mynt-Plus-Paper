@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
+// import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:mynt_plus/provider/mf_provider.dart';
@@ -52,6 +53,10 @@ class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final Reader ref;
+  final String _version = "1.0.78(02)";
+  late final String _versiontext =
+      "Version 3.0.2 Build $_version Released on 25 Apr";
+  String get versiontext => _versiontext;
 
   //  Text field controller for Login and otp screen
 
@@ -1058,7 +1063,17 @@ class AuthProvider extends DefaultChangeNotifier {
           }
         }
         // {
-          await ref(fundProvider).fetchFunds(context);
+        await ref(fundProvider).fetchFunds(context);
+        Map data = {
+          "uid": "${pref.clientId}_${pref.imei}",
+          "log": {
+            "version": _version,
+            "os": defaultTargetPlatform.toString(),
+            "devices": pref.deviceName!.toString(),
+            "date": DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())
+          }
+        };
+        api.setAppversion(data);
         // }
       }
     } finally {

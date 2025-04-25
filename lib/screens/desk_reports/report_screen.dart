@@ -50,7 +50,7 @@ class ReportsScreen extends ConsumerWidget {
                 //     arguments: "ledger");
                 await ledgerdate.getCurrentDate('else');
 
-                ledgerdate.fetchLegerData(
+                ledgerdate.fetchLegerData(context,
                     ledgerdate.startDate, ledgerdate.endDate); 
 
                 Navigator.pushNamed(context, Routes.ledgerscreen,
@@ -74,14 +74,14 @@ class ReportsScreen extends ConsumerWidget {
                 //     arguments: "pnl");
                 await ledgerdate.getCurrentDate('else');
 
-                 ledgerdate.fetchpnldata(
+                 ledgerdate.fetchpnldata(context,
                     ledgerdate.startDate, ledgerdate.today, true);
 
                 Navigator.pushNamed(context, Routes.pnlscreen,
                     arguments: "DDDDD");
               } else if (index == 3) {
                 await ledgerdate.getCurrentDate('else');
-              ledgerdate.fetchcalenderpnldata(
+              ledgerdate.fetchcalenderpnldata(context,
                     ledgerdate.startDate, ledgerdate.today, 'eq');
                 Navigator.pushNamed(context, Routes.calenderpnlScreen,
                     arguments: "DDDDD");
@@ -111,7 +111,7 @@ class ReportsScreen extends ConsumerWidget {
                 //     arguments: "taxpnl");
               } else if (index == 5) { 
                 await ledgerdate.getCurrentDate('tradebook');
-                 ledgerdate.fetchtradebookdata(
+                 ledgerdate.fetchtradebookdata(context,
                     ledgerdate.startDate, ledgerdate.today);
                 
 Navigator.pushNamed(context, Routes.tradebook,
@@ -121,7 +121,7 @@ Navigator.pushNamed(context, Routes.tradebook,
               } else if (index == 6) {
                  await ledgerdate.getCurrentDate('else');
                  
-                 ledgerdate.fetchpdfdownload(
+                 ledgerdate.fetchpdfdownload(context,
                     ledgerdate.startDate, ledgerdate.today);
                 Navigator.pushNamed(context, Routes.pdfdownload,
                     arguments: "DDDDD");

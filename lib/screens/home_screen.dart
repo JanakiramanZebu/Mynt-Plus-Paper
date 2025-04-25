@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/screens/dashboard_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../locator/constant.dart';
@@ -203,6 +204,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           final marketWatchList = watch(marketWatchProvider);
           // final explore = watch(authProvider);
           final indexProvide = watch(indexListProvider);
+          final reportsprovider = watch(ledgerProvider);
           final internet = watch(networkStateProvider);
           final portfolio = watch(portfolioProvider);
           final userProfile = watch(userProfileProvider);
@@ -1220,6 +1222,41 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       indexProvide.bottomMenu(
                                                           4, context);
                                                       portfolio.cancelTimer();
+                                                      if (reportsprovider.ledgerAllData == null) {
+                                                        await reportsprovider.getCurrentDate('else');
+                                                        reportsprovider.fetchLegerData(context, reportsprovider.startDate, reportsprovider.endDate); 
+                                                      }
+                                                      if (reportsprovider.holdingsAllData == null) {
+                                                        await reportsprovider.getCurrentDate('else'); 
+                                                        reportsprovider.fetchholdingsData(reportsprovider.today, context);
+                                                      }
+                                                      if (reportsprovider.pnlAllData == null) {
+                                                        await reportsprovider.getCurrentDate('else');
+                                                        reportsprovider.fetchpnldata(context, reportsprovider.startDate, reportsprovider.today, true);
+                                                      }
+                                                      if (reportsprovider.calenderpnlAllData == null) {
+                                                         await reportsprovider.getCurrentDate('else');
+                                                         reportsprovider.calendarProvider();
+                                                         reportsprovider.fetchcalenderpnldata( context, reportsprovider.startDate, reportsprovider.today,'Equity');
+                                                      }
+                                                      if (reportsprovider.taxpnldercomcur == null && reportsprovider.taxpnleq == null) {
+                                                         await reportsprovider.getYearlistTaxpnl();
+                                                         reportsprovider.getCurrentDate('');
+                                                         reportsprovider.fetchtaxpnleqdata(context, reportsprovider.yearforTaxpnl);
+                
+                                                         reportsprovider.taxpnlExTabchange(0);
+                                                        reportsprovider.chargesforeqtaxpnl(  context, reportsprovider.yearforTaxpnl);
+
+                                                      }
+                                                      if (reportsprovider.tradebookdata == null) {
+                                                        await reportsprovider.getCurrentDate('tradebook');
+                                                        reportsprovider.fetchtradebookdata( context, reportsprovider.startDate, reportsprovider.today);
+                                                      }
+                                                      if (reportsprovider.pdfdownload == null) {
+                                                        await reportsprovider.getCurrentDate('else');
+                                                        reportsprovider.fetchpdfdownload(context, reportsprovider.startDate, reportsprovider.today);
+                                                      }
+
                                                       await context
                                                           .read(fundProvider)
                                                           .fetchFunds(context);
