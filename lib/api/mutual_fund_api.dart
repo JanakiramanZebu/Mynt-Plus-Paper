@@ -82,7 +82,7 @@ mixin MutualFundApi on ApiCore {
 
    Future<mf_sip_reject_res> getsiprejreason() async {
     try {
-      final uri = Uri.parse(apiLinks.nfoMF);
+      final uri = Uri.parse(apiLinks.mfXsipcancleRes);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
@@ -90,7 +90,7 @@ mixin MutualFundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      // log("MF Master ==>$json");
+      print("MF Master ==>$json");
 
       return mf_sip_reject_res.fromJson(json);
     } catch (e) {
@@ -263,24 +263,33 @@ String convertNumber(num value) {
     }
   }
 
-    pausesipapi(orderno,notext) async {
+    pausesipapi(orderno,notext , freqty , nxtdate) async {
       // print("pausee ordermo ${orderno} ,siprefno ${notext}");
     try {
-      // print("object pausee");
-      // print("${orderno}");
+      print("object pausee");
+      print("object paus function prefs.clientId${prefs.clientId}");
+      print("object paus function calll${orderno}");
+      print("object paus function installments${notext}");
+      print("object paus freqtys${freqty}");
+      print("object paus nxtdatents${nxtdate}");
+
+
 
       final uri = Uri.parse(apiLinks.pausesipendpoint);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
             "client_code": "${prefs.clientId}",
-            "xsip_reg_no":orderno,
-            "installments": notext
+            "sip_register_number":orderno,
+            "installments": notext,
+            "frequency":freqty,
+            "next_installment_date":nxtdate
+
           }));
 
       final json = jsonDecode((res.body));
 
-      // print("pause res p resss ==>${json}");
+      print("pause res p resss ==>${json}");
 
       return pause_spi_res.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -346,6 +355,8 @@ String convertNumber(num value) {
 
   Future<RedemptionModel> getMFRedemption(String scheme, String qty) async {
     try {
+    print("remm apiii");
+
       final uri = Uri.parse(apiLinks.redemption);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
@@ -359,7 +370,7 @@ String convertNumber(num value) {
 
       final json = jsonDecode((res.body));
 
-      // log("MF orderBook ==>${json}");
+      log("reddapiresppp==>${json}");
 
       return RedemptionModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -623,10 +634,11 @@ String convertNumber(num value) {
           headers: defaultHeaders, body: jsonEncode(payload));
       log("DDDDDDDDD ${res.body}");
       final json = jsonDecode((res.body));
+      print("watchlist${json}" );
 
       return MFWatchlistModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      log("API ERROr ::: $e");
+      log("API ERROrwatchlii ::: $e");
       rethrow;
     }
   }
@@ -645,10 +657,11 @@ String convertNumber(num value) {
           headers: defaultHeaders, body: jsonEncode(payload));
       ///log("DDDDDDDDD ${res.body}");
       final json = jsonDecode((res.body));
+      print("watchlist${json}" );
 
       return MFWatchlistModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      log("API ERROr ::: $e");
+      log("API ERROrwattttt ::: $e");
       rethrow;
     }
   }
