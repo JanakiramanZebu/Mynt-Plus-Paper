@@ -59,7 +59,12 @@ class PdfDownload extends StatelessWidget {
           leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
-          leading: const CustomBackBtn(),
+          leading:  InkWell(
+            onTap: () {
+              ledgerprovider.falseloader('download');
+            },
+            child: const CustomBackBtn(),
+          ),
           elevation: 0.2,
           title: 
            TextWidget.heroText(
@@ -75,7 +80,7 @@ class PdfDownload extends StatelessWidget {
           //   child: Icon(Icons.ios_share)),
         ),
         body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.reportsloading,
+          isLoading: ledgerprovider.pdfdownloadloading,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -182,7 +187,7 @@ class PdfDownload extends StatelessWidget {
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(32)))),
                               onPressed: () async {
-                                ledgerprovider.fetchpdfdownload(
+                                ledgerprovider.fetchpdfdownload(context,
                                     ledgerprovider.startDate,
                                     ledgerprovider.today);
                               },
@@ -339,19 +344,20 @@ class PdfDownload extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: [
+                                      
                                       Text(
-                                        "${value.docDate} - ",
-                                        style: textStyle(
-                                            theme.isDarkMode
+                                        "${value.docType} - " ,
+                                        style: textStyle(theme.isDarkMode
                                                 ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            14,
+                                                : colors.colorBlack, 14,
                                             FontWeight.w600),
                                       ),
                                       Text(
-                                        "${value.docType}",
-                                        style: textStyle(Color(0xFF696969), 12,
-                                            FontWeight.w500),
+                                        "${value.docDate}",
+                                        style: textStyle(
+                                            Color(0xFF696969),
+                                            12,
+                                            FontWeight.w600),
                                       ),
                                     ],
                                   ),

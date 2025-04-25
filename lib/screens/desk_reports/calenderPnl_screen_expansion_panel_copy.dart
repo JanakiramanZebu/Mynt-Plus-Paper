@@ -50,7 +50,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
               child: const CustomBackBtn()),
           elevation: 0.2,
           title: TextWidget.heroText(
-              text: "P&L Insights",
+              text: "Calender P&L",
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
               fw: 1),
@@ -290,8 +290,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                             if (newFY != null) {
                               ledgerprovider.setFinancialYear(newFY);
                               // Call API after updating financial year
-                              ledgerprovider.fetchcalenderpnldata(
-                                context,
+                              ledgerprovider.fetchcalenderpnldata(context,
                                 ledgerprovider.formattedStartDate,
                                 ledgerprovider.formattedendDate,
                                 ledgerprovider.selectedSegment,
@@ -338,8 +337,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           onChanged: (seg) {
                             if (seg != null) {
                               ledgerprovider.setSegment(seg);
-                              ledgerprovider.fetchcalenderpnldata(
-                                context,
+                              ledgerprovider.fetchcalenderpnldata(context,
                                 ledgerprovider.formattedStartDate,
                                 ledgerprovider.formattedendDate,
                                 ledgerprovider.selectedSegment,
@@ -351,7 +349,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(
-                          top: 8.0, right: 2.0, bottom: 8.0),
+                          top: 8.0, right: 16.0, bottom: 8.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -387,20 +385,14 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                   ],
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
-                    child: TextWidget.overlineText(
-                        text: "M-Monthly and D-Daily",
-                        color: Color.fromARGB(255, 105, 105, 105),
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        align: TextAlign.end,
-                        fw: 0),
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: TextWidget.overlineText(
+                    text: "! M and D means Monthly and Daily",
+                    color: Color(0xFF696969),
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 0),
               ),
               ledgerprovider.calenderpnlAllData == null
                   ? const Center(
@@ -412,6 +404,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                       child: SingleChildScrollView(
                         physics: const ScrollPhysics(),
                         child: Column(
+                          
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -421,138 +414,129 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                               ),
                             ),
                             Column(
+
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Divider(
-                                  color: theme.isDarkMode
-                                      ? const Color(0xffB5C0CF).withOpacity(.15)
-                                      : const Color(0xffF1F3F8),
-                                  thickness: 1.0,
-                                ),
+                                                  color: theme.isDarkMode
+                                                      ? const Color(0xffB5C0CF)
+                                                          .withOpacity(.15)
+                                                      : const Color(0xffF1F3F8),
+                                                  thickness: 1.0,
+                                                ),
                                 Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 16.0, top: 8.0, bottom: 8.0),
+                                    padding: const EdgeInsets.only(left: 16.0 ,top: 8.0,bottom : 8.0),
                                     child: TextWidget.titleText(
                                         text: "Date-specific Information",
                                         color: Color.fromARGB(255, 0, 0, 0),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0)),
-                                Divider(
+                              Divider(
+                                                  color: theme.isDarkMode
+                                                      ? const Color(0xffB5C0CF)
+                                                          .withOpacity(.15)
+                                                      : const Color(0xffF1F3F8),
+                                                  thickness: 1.0,
+                                                ),
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: sortedDates.length,
+                              itemBuilder: (context, index) {
+                                final dateKey = sortedDates[index];
+                                final tradesForDate =
+                                    ledgerprovider.grouped[dateKey]!; 
+                                // Calculate total realized PnL for this date
+                                final totalRealisedPnl =
+                                    tradesForDate.fold<double>(
+                                        0.0,
+                                        (sum, item) =>
+                                            sum +
+                                            double.parse(item.realisedpnl!));
+
+                                // Format the date (e.g. "03 Oct 2024")
+                                final dateString =
+                                    '${dateKey.day.toString().padLeft(2, '0')} '
+                                    '${_monthName(dateKey.month)} '
+                                    '${dateKey.year}';
+
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                      dividerColor: Colors.transparent),
+                                  child: ExpansionTile(
+                                    collapsedBackgroundColor:
+                                        Colors.transparent,
+                                    childrenPadding: EdgeInsets.zero,
+                                    backgroundColor: Colors.transparent,
+                                    title: Text(
+                                        "$dateString  (${tradesForDate.length})",
+                                        style: textStyle(
+                                            theme.isDarkMode
+                                                ? Colors.white
+                                                : Colors.black,
+                                            14,
+                                            FontWeight.w500)),
+                                    trailing: Text(
+                                        '₹ ${totalRealisedPnl.toStringAsFixed(2)}',
+                                        style: totalRealisedPnl != 0
+                                            ? totalRealisedPnl > 0
+                                                ? textStyle(Colors.green, 14,
+                                                    FontWeight.w500)
+                                                : textStyle(Colors.red, 14,
+                                                    FontWeight.w500)
+                                            : textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                14,
+                                                FontWeight.w500)),
+                                    children: [
+                                      Column(
+                                        children: List.generate(
+                                            tradesForDate.length, (index) {
+                                          final trade = tradesForDate[index];
+                                          return Column(
+                                            children: [
+                                              _buildTradeItem(trade, theme),
+                                              if (index !=
+                                                  tradesForDate.length - 1)
+                                                Divider(
+                                                  color: theme.isDarkMode
+                                                      ? const Color(0xffB5C0CF)
+                                                          .withOpacity(.15)
+                                                      : const Color(0xffF1F3F8),
+                                                  thickness: 7.0,
+                                                ),
+                                              SizedBox(
+                                                height: 5,
+                                              )
+                                            ],
+                                          );
+                                        }),
+                                      )
+                                    ],
+                                  ),
+                                );
+                              },
+                              separatorBuilder:
+                                  (BuildContext context, int index) {
+                                return Divider(
                                   color: theme.isDarkMode
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
-                                  thickness: 1.0,
-                                ),
-                                sortedDates.length == 0
-                                    ? const Center(
-                                        child: Padding(
-                                        padding: EdgeInsets.only(top: 30),
-                                        child: NoDataFound(),
-                                      ))
-                                    : ListView.separated(
-                                        shrinkWrap: true,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemCount: sortedDates.length,
-                                        itemBuilder: (context, index) {
-                                          final dateKey = sortedDates[index];
-                                          final tradesForDate =
-                                              ledgerprovider.grouped[dateKey]!;
-                                          // Calculate total realized PnL for this date
-                                          final totalRealisedPnl =
-                                              tradesForDate.fold<double>(
-                                                  0.0,
-                                                  (sum, item) =>
-                                                      sum +
-                                                      double.parse(
-                                                          item.realisedpnl!));
-
-                                          // Format the date (e.g. "03 Oct 2024")
-                                          final dateString =
-                                              '${dateKey.day.toString().padLeft(2, '0')} '
-                                              '${_monthName(dateKey.month)} '
-                                              '${dateKey.year}';
-                                          return Theme(
-                                              data: Theme.of(context).copyWith(
-                                                  dividerColor:
-                                                      Colors.transparent),
-                                              child: InkWell(
-                                                onTap: () {
-                                                  _showBottomSheet(
-                                                      context,
-                                                      tradesForDate,
-                                                      theme,
-                                                      dateString,
-                                                      screenWidth);
-                                                },
-                                                child: Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                      vertical: 16.0,
-                                                      horizontal: 16.0),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      TextWidget.subText(
-                                                          text:
-                                                              "${dateString} (${tradesForDate.length})",
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 0),
-                                                      TextWidget.subText(
-                                                          text:
-                                                              "₹${(totalRealisedPnl).toStringAsFixed(2)} ",
-                                                          color: totalRealisedPnl !=
-                                                                  0
-                                                              ? totalRealisedPnl >
-                                                                      0
-                                                                  ? Colors.green
-                                                                  : totalRealisedPnl <
-                                                                          0
-                                                                      ? Colors
-                                                                          .red
-                                                                      : Colors
-                                                                          .black
-                                                              : theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack,
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 0),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ));
-                                        },
-                                        separatorBuilder:
-                                            (BuildContext context, int index) {
-                                          return Divider(
-                                            color: theme.isDarkMode
-                                                ? const Color(0xffB5C0CF)
-                                                    .withOpacity(.15)
-                                                : const Color(0xffF1F3F8),
-                                            thickness: 7.0,
-                                          );
-                                        },
-                                      )
-                              ],
-                            ),
+                                  thickness: 7.0,
+                                );
+                              },
+                            )
                           ],
+                            ),
+                          
+                          ]
+
+
+                          
+                          ,
                         ),
                       ),
                     ),
@@ -620,7 +604,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                       theme: theme.isDarkMode,
                       fw: 0),
                   TextWidget.subText(
-                      text: "${double.tryParse(trade.updatedNETQTY!)!.toInt()}",
+                      text: "${trade.updatedNETQTY}",
                       color: theme.isDarkMode
                           ? colors.colorWhite
                           : colors.colorBlack,
@@ -824,284 +808,20 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
     );
   }
 
-  void _showBottomSheet(BuildContext context, trade, ThemesProvider theme,
-      String date, double widthval) {
+  void _showBottomSheet(BuildContext context, Widget bottomSheet) {
     showModalBottomSheet(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      useSafeArea: true,
-      isDismissible: true,
-      backgroundColor: Colors.white,
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: DraggableScrollableSheet(
-          initialChildSize: 0.88,
-          minChildSize: .4,
-          maxChildSize: 0.88,
-          expand: false,
-          builder: (BuildContext context, ScrollController scrollController) {
-            return Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  color: theme.isDarkMode
-                      ? Color.fromARGB(255, 0, 0, 0)
-                      : Color.fromARGB(255, 255, 255, 255)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Drag Handle
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        color: const Color.fromARGB(255, 219, 218, 218),
-                        width: 40,
-                        height: 4.0,
-                        padding: EdgeInsets.only(
-                            top: 10, bottom: 25, left: 20, right: 20),
-                        margin: EdgeInsets.only(top: 16),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 16.0, top: 16.0, bottom: 8.0),
-                    child: TextWidget.titleText(
-                        text: "Trades in ${date}",
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        fw: 1),
-                  ),
-                  Divider(
-                    color: theme.isDarkMode
-                        ? const Color(0xffB5C0CF).withOpacity(.15)
-                        : const Color(0xffF1F3F8),
-                    thickness: 7.0,
-                  ),
-                  // Text(
-                  //                       date,
-                  //                       style: textStyle(
-                  //                         theme.isDarkMode
-                  //                             ? colors.colorWhite
-                  //                             : colors.colorBlack,
-                  //                         13,
-                  //                         FontWeight.w600,
-                  //                       ),
-                  //                       softWrap: true,
-                  //                       overflow: TextOverflow.ellipsis,
-                  //                       maxLines: 2,
-                  //                     ),
-                  Expanded(
-                    child: ListView.separated(
-                      controller: scrollController,
-                      itemCount: trade.length,
-                      itemBuilder: (context, index) {
-                        return Column(
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16.0),
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        SizedBox(
-                                          width: widthval *
-                                              0.80, // Ensures text takes the available width
-                                          child: InkWell(
-                                            onTap: () async {
-                                              // Handle the onTap event here
-                                            },
-                                            child: Text(
-                                              "${trade[index].sCRIPSYMBOL}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  13,
-                                                  FontWeight.w600),
-                                              softWrap:
-                                                  true, // Allows text to wrap
-                                              overflow: TextOverflow
-                                                  .ellipsis, // Adds "..." if the text is too long
-                                              maxLines:
-                                                  2, // Limits text to 2 lines, change as needed
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 2.0),
-                                    child: Divider(
-                                      color: Color.fromARGB(255, 212, 212, 212),
-                                      thickness: 0.5,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            TextWidget.subText(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : Color(0xFF696969),
-                                                text: "Buy Qty : ",
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                fw: 1),
-                                            TextWidget.subText(
-                                                text:
-                                                    "${double.tryParse(trade[index].bQTY)!.toInt()} @ ₹${double.tryParse(trade[index].bRATE)!.toStringAsFixed(2)}",
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                color: double.tryParse(
-                                                                trade[index]
-                                                                    .bQTY)!
-                                                            .toInt() !=
-                                                        0
-                                                    ? double.tryParse(
-                                                                    trade[index]
-                                                                        .bQTY)!
-                                                                .toInt() >
-                                                            0
-                                                        ? Colors.green
-                                                        : double.tryParse(trade[
-                                                                            index]
-                                                                        .bQTY)!
-                                                                    .toInt() <
-                                                                0
-                                                            ? Colors.red
-                                                            : Colors.black
-                                                    : theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                fw: 0),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            TextWidget.subText(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : Color(0xFF696969),
-                                                text: "  Net Qty : ",
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                fw: 1),
-                                            TextWidget.subText(
-                                                text:
-                                                    "${double.tryParse(trade[index].updatedNETQTY)!.toInt()}  ",
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                fw: 0),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            TextWidget.subText(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : Color(0xFF696969),
-                                                text: "Sell Qty : ",
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                fw: 1),
-                                            TextWidget.subText(
-                                                text:
-                                                    "${double.tryParse(trade[index].sQTY)!.toInt()} @ ₹${double.tryParse(trade[index].sRATE)!.toStringAsFixed(2)}",
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                color: double.tryParse(
-                                                                trade[index]
-                                                                    .sQTY)!
-                                                            .toInt() !=
-                                                        0
-                                                    ? Colors.red
-                                                    : theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                fw: 0),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            TextWidget.subText(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : Color(0xFF696969),
-                                                text: 'Realised : ',
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                fw: 1),
-                                            TextWidget.subText(
-                                                text:
-                                                    "₹${double.parse(trade[index].realisedpnl).toStringAsFixed(2)}",
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                fw: 0),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                      separatorBuilder: (BuildContext context, int index) {
-                        return Divider(
-                          color: theme.isDarkMode
-                              ? const Color(0xffB5C0CF).withOpacity(.15)
-                              : const Color(0xffF1F3F8),
-                          thickness: 7.0,
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-    );
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        useSafeArea: true,
+        isDismissible: true,
+        backgroundColor: Colors.white,
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: bottomSheet));
   }
 
   // Convert month integer to month name

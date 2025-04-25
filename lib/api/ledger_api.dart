@@ -255,7 +255,7 @@ mixin LedgerApi on ApiCore {
     }
   }
 
-  getpdffileapitaxpnl(eq, der, eqcharge, year) async {
+   Future getpdffileapitaxpnl(eq, der, eqcharge, year) async {
     try {
       // final url = Uri.parse('${apiLinks.reportsapi}/getdocdownloadsmobile?cc=${prefs.clientId}&recno=${recno}');
       // final url = Uri.parse(
@@ -330,10 +330,10 @@ mixin LedgerApi on ApiCore {
     }
   }
 
-  getpdffileapiledger(resp, dr, cr, op, clb, sdate, edate) async {
+  Future getpdffileapiledger(resp, dr, cr, op, clb, sdate, edate) async {
     try {
-      // final uri = Uri.parse('${apiLinks.reportsapi}/taxpnl_pdf');
-      final uri = Uri.parse('http://192.168.5.175:5003/ledger_pdf');
+      final uri = Uri.parse('${apiLinks.reportsapi}/ledger_pdf');
+      // final uri = Uri.parse('http://192.168.5.175:5004/ledger_pdf');
 
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
@@ -351,8 +351,8 @@ mixin LedgerApi on ApiCore {
 
       final json = jsonDecode((res.body));
       if (json['stat'] != 'Not Ok') {
-        // final urival = Uri.parse('${apiLinks.reportsapi}${json['path']}');
-        final urival = Uri.parse('http://192.168.5.175:5003/${json['path']}');
+        final urival = Uri.parse('${apiLinks.reportsapi}${json['path']}');
+        // final urival = Uri.parse('http://192.168.5.175:5004/${json['path']}');
 
         if (!await launchUrl(urival, mode: LaunchMode.externalApplication)) {
           throw 'Could not launch';
@@ -367,26 +367,26 @@ mixin LedgerApi on ApiCore {
     }
   }
 
-  getpdffileapipnl(resp, sdate, edate, string, notional, value) async {
+   Future getpdffileapipnl(resp, sdate, edate, string, notional, value) async {
     try {
       // final uri = Uri.parse('${apiLinks.reportsapi}/taxpnl_pdf');
-      final uri = Uri.parse('http://192.168.5.175:5003/notional_p_and_l');
+      final uri = Uri.parse('${apiLinks.reportsapi}/notional_p_and_l');
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           // headers: testingrameshheader,
           body: jsonEncode({
             "client_code": "${prefs.clientId}",
             "resp": resp,
-            "heading_value": value,
+            "heading_value": notional,
             "heading": string,
-            "all_charges": notional,
+            "all_charges": value,
             "from_date": sdate,
             "to_date": edate
           }));
       final json = jsonDecode((res.body));
       if (json['stat'] != 'Not Ok') {
         // final urival = Uri.parse('${apiLinks.reportsapi}${json['path']}');
-        final urival = Uri.parse('http://192.168.5.175:5003/${json['path']}');
+        final urival = Uri.parse('${apiLinks.reportsapi}/${json['path']}');
         if (!await launchUrl(urival, mode: LaunchMode.externalApplication)) {
           throw 'Could not launch';
         }

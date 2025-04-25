@@ -38,7 +38,7 @@ class UserAccountScreen extends ConsumerWidget {
     final trancation = watch(transcationProvider);
     final mf = watch(mfProvider);
     final portfolio = watch(portfolioProvider);
-    final ledgerdate = watch(ledgerProvider);
+    final reportsprovider = watch(ledgerProvider);
 
     //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
@@ -68,6 +68,60 @@ class UserAccountScreen extends ConsumerWidget {
                           } else if (acttitle == "My Account") {
                             Navigator.pushNamed(context, Routes.myAcc);
                           } else if (acttitle == "Reports") {
+                            if (reportsprovider.ledgerAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchLegerData(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.endDate);
+                            }
+                            if (reportsprovider.holdingsAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchholdingsData(
+                                  reportsprovider.today, context);
+                            }
+                            if (reportsprovider.pnlAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchpnldata(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today,
+                                  true);
+                            }
+                            if (reportsprovider.calenderpnlAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.calendarProvider();
+                              reportsprovider.fetchcalenderpnldata(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today,
+                                  'Equity');
+                            }
+                            if (reportsprovider.taxpnldercomcur == null &&
+                                reportsprovider.taxpnleq == null) {
+                              await reportsprovider.getYearlistTaxpnl();
+                              reportsprovider.getCurrentDate('');
+                              reportsprovider.fetchtaxpnleqdata(
+                                  context, reportsprovider.yearforTaxpnl);
+
+                              reportsprovider.taxpnlExTabchange(0);
+                              reportsprovider.chargesforeqtaxpnl(
+                                  context, reportsprovider.yearforTaxpnl);
+                            }
+                            if (reportsprovider.tradebookdata == null) {
+                              await reportsprovider.getCurrentDate('tradebook');
+                              reportsprovider.fetchtradebookdata(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today);
+                            }
+                            if (reportsprovider.pdfdownload == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchpdfdownload(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today);
+                            }
                             Navigator.pushNamed(context, Routes.reports);
                           } else if (acttitle == "Verified P&L") {
                             Navigator.pushNamed(
@@ -82,13 +136,13 @@ class UserAccountScreen extends ConsumerWidget {
                                 context, Routes.reportWebViewApp,
                                 arguments: "event");
                           } else if (acttitle == "Pledge & Unpledge") {
-                            ledgerdate.fetchpledgeandunpledge();
-                            ledgerdate.getCurrentDate("pandu");
-                            Navigator.pushNamed(context, Routes.pledgeandun,
-                                arguments: "DDDDD");
-                            // Navigator.pushNamed(
-                            //     context, Routes.reportWebViewApp,
-                            //     arguments: "pledge");
+                            // reportsprovider.fetchpledgeandunpledge(context);
+                            // reportsprovider.getCurrentDate("pandu");
+                            // Navigator.pushNamed(context, Routes.pledgeandun,
+                            //     arguments: "DDDDD");
+                            Navigator.pushNamed(
+                                context, Routes.reportWebViewApp,
+                                arguments: "pledge");
                           } else if (acttitle == "IPO") {
                             Navigator.pushNamed(context, Routes.ipo);
                             // launch(

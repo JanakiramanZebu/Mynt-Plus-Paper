@@ -85,7 +85,12 @@ class PnlScreen extends StatelessWidget {
           leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
-          leading: const CustomBackBtn(),
+          leading:  InkWell(
+            onTap: () {
+              ledgerprovider.falseloader('pnl');
+            },
+            child: const CustomBackBtn(),
+          ),
           elevation: 0.2,
           title: 
            TextWidget.heroText(
@@ -101,7 +106,7 @@ class PnlScreen extends StatelessWidget {
           //   child: Icon(Icons.ios_share)),
         ),
         body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.reportsloading,
+          isLoading: ledgerprovider.pnlloading,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -164,9 +169,8 @@ class PnlScreen extends StatelessWidget {
                                       TextWidget.titleText(
                                           text:
                                                "${allnotional.toStringAsFixed(2)}",
-                                          color:   theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
+                                          color:   allnotional > 0 ? Colors.green :allnotional 
+                                          < 0 ? Colors.red : Colors.black  ,
                                           textOverflow: TextOverflow.ellipsis,
                                           theme: theme.isDarkMode,
                                           fw: 1),
@@ -476,7 +480,7 @@ class PnlScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(32)))),
                               onPressed: () async {
-                                ledgerprovider.fetchpnldata(
+                                ledgerprovider.fetchpnldata(context,
                                     ledgerprovider.startDate,
                                     ledgerprovider.endDate,
                                     ledgerprovider.valforcheck);
@@ -518,7 +522,7 @@ class PnlScreen extends StatelessWidget {
                     //                 12,
                     //                 FontWeight.w500))))
                     InkWell(
-                        onTap: () async {
+                        onTap: ()  {
                           ledgerprovider.setfilterpage = 'pnl';
 
                           _showBottomSheet(context, LedgerFilter());
@@ -559,11 +563,11 @@ class PnlScreen extends StatelessWidget {
                                                   'SingingCharacter.com'
                                               ? 'Commodity'
                                               : ledgerprovider.filterval
-                                                          .toString() ==
+                                                          .toString() == 
                                                       'SingingCharacter.cur'
                                                   ? 'Currency'
                                                   : "-".toString(),
-                                                  allnotional,
+                                                  allnotional.toString(),
                               double.parse(ledgerprovider.pnlAllData!.expenseAmt!).toStringAsFixed(2)), // Ensure expenseAmt is not null
                         },
                       ),
@@ -579,7 +583,7 @@ class PnlScreen extends StatelessWidget {
                   IconButton(
                       onPressed: () {
                         checkval = !checkval;
-                        ledgerprovider.fetchpnldata(ledgerprovider.startDate,
+                        ledgerprovider.fetchpnldata(context,ledgerprovider.startDate,
                             ledgerprovider.endDate, checkval);
                         //   if (isOco) {
                         //     orderInput.chngAlert("LTP");
@@ -746,7 +750,7 @@ class PnlScreen extends StatelessWidget {
                                     .pnlAllData?.transactions?[index];
 
                                 if (pnlval != null) {
-                                  await ledgerprovider.fetchpnlSummary(
+                                  await ledgerprovider.fetchpnlSummary(context,
                                       pnlval.sCRIPSYMBOL ?? '',
                                       pnlval.companyCode ??
                                           '', // Provide a default value
@@ -802,7 +806,8 @@ class PnlScreen extends StatelessWidget {
                                           
                                             ),
                                                TextWidget.subText(
-                                        text:   "₹ ${pnldata.nOTPROFIT ?? '0'}", // Ensure it doesn’t break if null
+                                        text:   "₹ ${(double.tryParse(pnldata.nOTPROFIT ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+ // Ensure it doesn’t break if null
                                         color:   (double.tryParse(pnldata
                                                                 .nOTPROFIT
                                                                 .toString()) ??

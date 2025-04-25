@@ -81,7 +81,7 @@ class LDProvider extends DefaultChangeNotifier {
   PledgeAndUnpledgeModel? _pledgeandunpledge;
   PledgeAndUnpledgeModel? get pledgeandunpledge => _pledgeandunpledge;
 
-    CdslReponseModel? _cdslresponsedata;
+  CdslReponseModel? _cdslresponsedata;
   CdslReponseModel? get cdslresponsedata => _cdslresponsedata;
 
   PledgeSegmentCheckModel? _pledgesegmentcheck;
@@ -153,6 +153,16 @@ class LDProvider extends DefaultChangeNotifier {
     print("${_filterval}yyyyyyyy");
   }
 
+  set setterfornullallSwitch( val) {
+    _ledgerAllData = val; 
+    _holdingsAllData = val; 
+    _pnlAllData = val; 
+    _calenderpnlAllData = val; 
+    _taxpnleq = val; 
+    _taxpnldercomcur = val; 
+    _tradebookdata = val; 
+    _pdfdownload = val; 
+  }
   String _eqtypestring = "";
   String get eqtypestring => _eqtypestring;
 
@@ -187,14 +197,36 @@ class LDProvider extends DefaultChangeNotifier {
     _currentfilterpage = val;
   }
 
+//loadingsssssssssssssssssssssssssssssssss reportssssssssssssssss
   bool _reportsloading = false;
   bool get reportsloading => _reportsloading;
 
-  bool _reportsloadingforcharges = false;
-  bool get reportsloadingforcharges => _reportsloadingforcharges;
+  bool _ledgerloading = false;
+  bool get ledgerloading => _ledgerloading;
+
+  bool _holdingsloading = false;
+  bool get holdingsloading => _holdingsloading;
+
+  bool _pnlloading = false;
+  bool get pnlloading => _pnlloading;
+
+  bool _calendarpnlloading = false;
+  bool get calendarpnlloading => _calendarpnlloading;
 
   bool _taxderloading = false;
   bool get taxderloading => _taxderloading;
+
+  bool _tradebookloading = false;
+  bool get tradebookloading => _tradebookloading;
+
+  bool _pdfdownloadloading = false;
+  bool get pdfdownloadloading => _pdfdownloadloading;
+
+  bool _isDaily = false;
+  bool get isDaily => _isDaily;
+
+  bool _reportsloadingforcharges = false;
+  bool get reportsloadingforcharges => _reportsloadingforcharges;
 
   String _dertypestring = "";
   String get dertypestring => _dertypestring;
@@ -529,9 +561,9 @@ class LDProvider extends DefaultChangeNotifier {
   }
   ////API CALL
 
-  Future fetchLegerData(String from, String to) async {
+  Future fetchLegerData(BuildContext context, String from, String to) async {
     try {
-      _reportsloading = true;
+      _ledgerloading = true;
       notifyListeners();
 
       _ledgerAllDataDummy = await api.getLedgerdata(from, to);
@@ -542,25 +574,33 @@ class LDProvider extends DefaultChangeNotifier {
         return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
       });
       _filterval = SingingCharacter.all;
-      _reportsloading = false;
+      _ledgerloading = false;
       notifyListeners();
     } catch (e) {
+      _ledgerloading = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
 
-  Future fetchholdingsData(String from, context) async {
+  Future fetchholdingsData(String from, BuildContext context) async {
     try {
-      _reportsloading = true;
+      _holdingsloading = true;
       notifyListeners();
 
       _holdingsAllData = await api.getHoldingsdata(from);
       print(_holdingsAllData);
-      _reportsloading = false;
+      _holdingsloading = false;
       notifyListeners();
 
       print("${_holdingsAllData}rererere");
     } catch (e) {
+      _holdingsloading = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
       print("${e}eeeeee");
     } finally {
@@ -589,27 +629,32 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchpnldata(String from, String to, bool yrn) async {
+  Future fetchpnldata(BuildContext context, String from, String to, bool yrn) async {
     try {
-      _reportsloading = true;
+      _pnlloading = true;
       _reportsloadingforcharges = true;
       notifyListeners();
       _pnlAllData = await api.getpnldata(from, to, yrn);
       _pnlAllDatadummy = PnlModel.fromJson(_pnlAllData!.toJson());
       _valforcheck = yrn;
-      _reportsloading = false;
+      _pnlloading = false;
       _reportsloadingforcharges = false;
       _filterval = SingingCharacter.all;
       print("${_pnlAllData} valval");
       notifyListeners();
     } catch (e) {
+      _pnlloading = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
 
-  Future fetchcalenderpnldata(String from, String to, String type) async {
+  Future fetchcalenderpnldata(
+      BuildContext context, String from, String to, String type) async {
     try {
-      _reportsloading = true;
+      _calendarpnlloading = true;
       notifyListeners();
       _calenderpnlAllData = await api.getcalenderpnldata(from, to, type);
       grouped = {};
@@ -638,42 +683,51 @@ class LDProvider extends DefaultChangeNotifier {
             }
           }
         }
-
-        for (var trade in _calenderpnlAllData!.data!) {
-          DateFormat inputFormat =
-              DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
-          DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
-          final dateKey =
-              DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
-          if (!grouped.containsKey(dateKey)) {
-            grouped[dateKey] = [];
+        if (_calenderpnlAllData!.data != null) {
+          for (var trade in _calenderpnlAllData!.data!) {
+            DateFormat inputFormat =
+                DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+            DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
+            final dateKey =
+                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            if (!grouped.containsKey(dateKey)) {
+              grouped[dateKey] = [];
+            }
+            grouped[dateKey]!.add(trade);
           }
-          grouped[dateKey]!.add(trade);
         }
       }
       setFinancialYear(selectedFinancialYear);
 
       print("objectobject${_heatmapData}");
-      _reportsloading = false;
+      _calendarpnlloading = false;
       notifyListeners();
     } catch (e) {
+      _calendarpnlloading = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
 
-  Future fetchtradebookdata(String from, String to) async {
+  Future fetchtradebookdata(BuildContext context, String from, String to) async {
     try {
-      _reportsloading = true;
+      _tradebookloading = true;
       notifyListeners();
       _tradebookdata = await api.gettradebookdata(from, to);
 
       _tradebookdataDummy = TradeBookModel.fromJson(_tradebookdata!.toJson());
       _filterval = SingingCharacter.all;
       print("$_tradebookdata object");
-      _reportsloading = false;
+      _tradebookloading = false;
       // print("${_calenderpnlAllData} valval");
       notifyListeners();
     } catch (e) {
+      _tradebookloading = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
@@ -681,7 +735,7 @@ class LDProvider extends DefaultChangeNotifier {
   Future pdfdownloadfunction(
       BuildContext context, String recno, String filename) async {
     try {
-      _reportsloading = true;
+      _pdfdownloadloading = true;
       notifyListeners();
 
       // Request storage permission
@@ -707,14 +761,18 @@ class LDProvider extends DefaultChangeNotifier {
         // String downloadsDir = "/storage/emulated/0/Download";
         // await OpenFile.open(downloadsDir);
 
-        _reportsloading = false;
+        _pdfdownloadloading = false;
       } else {
         print("$_pdfresponse Error occurred");
       }
 
-      _reportsloading = false;
+      _pdfdownloadloading = false;
       notifyListeners();
     } catch (e) {
+       _pdfdownloadloading = false;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
       debugPrint("$e");
     }
   }
@@ -723,7 +781,7 @@ class LDProvider extends DefaultChangeNotifier {
       BuildContext context, eq, dercomcur, eqcharge, year) async {
     if (year <= _yearforTaxpnlDummy) {
       try {
-        _reportsloading = true;
+        _taxderloading = true;
         notifyListeners();
 
         _pdfresponse =
@@ -732,17 +790,21 @@ class LDProvider extends DefaultChangeNotifier {
           ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, 'PDF Downloaded, Check Your Download'),
           );
-          _reportsloading = false;
+          _taxderloading = false;
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             warningMessage(context, '$_pdfresponse'),
           );
-          _reportsloading = false;
+          _taxderloading = false;
         }
 
-        _reportsloading = false;
+        _taxderloading = false;
         notifyListeners();
       } catch (e) {
+         _taxderloading = false;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
         debugPrint("$e");
       }
     }
@@ -751,7 +813,7 @@ class LDProvider extends DefaultChangeNotifier {
   Future pdfdownloadforledger(
       BuildContext context, res, dr, cr, op, clb, stdate, edate) async {
     try {
-      _reportsloading = true;
+      _ledgerloading = true;
       notifyListeners();
       _pdfresponse =
           await api.getpdffileapiledger(res, dr, cr, op, clb, stdate, edate);
@@ -759,17 +821,21 @@ class LDProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context).showSnackBar(
           successMessage(context, 'PDF Downloaded, Check Your Download'),
         );
-        _reportsloading = false;
+        _ledgerloading = false;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           warningMessage(context, '$_pdfresponse'),
         );
-        _reportsloading = false;
+        _ledgerloading = false;
       }
 
-      _reportsloading = false;
+      _ledgerloading = false;
       notifyListeners();
     } catch (e) {
+       _ledgerloading = false;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
       debugPrint("$e");
     }
   }
@@ -777,7 +843,7 @@ class LDProvider extends DefaultChangeNotifier {
   Future pdfdownloadforpnl(BuildContext context, res, stdate, edate, string,
       notional, chargevalue) async {
     try {
-      _reportsloading = true;
+      _pnlloading = true;
       notifyListeners();
       _pdfresponse = await api.getpdffileapipnl(
           res, stdate, edate, string, notional, chargevalue);
@@ -785,24 +851,28 @@ class LDProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context).showSnackBar(
           successMessage(context, 'PDF Downloaded, Check Your Download'),
         );
-        _reportsloading = false;
+        _pnlloading = false;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           warningMessage(context, '$_pdfresponse'),
         );
-        _reportsloading = false;
+        _pnlloading = false;
       }
 
-      _reportsloading = false;
+      _pnlloading = false;
       notifyListeners();
     } catch (e) {
+       _pnlloading = false;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
       debugPrint("$e");
     }
   }
 
-  Future fetchpdfdownload(String from, String to) async {
+  Future fetchpdfdownload(BuildContext context,String from, String to) async {
     try {
-      _reportsloading = true;
+      _pdfdownloadloading = true;
       notifyListeners();
       _pdfdownload = await api.getpdfdownload(from, to);
       print("$_pdfdownload object");
@@ -814,14 +884,19 @@ class LDProvider extends DefaultChangeNotifier {
       // _tradebookfilterarray = dummy.toSet().toList();
       // print(_tradebookfilterarray);
       _filterval = SingingCharacter.all;
-      _reportsloading = false;
+      _pdfdownloadloading = false;
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+      _pdfdownloadloading = false;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
     }
   }
 
-  Future fetchpledgeandunpledge() async {
+  Future fetchpledgeandunpledge(BuildContext context) async {
     try {
       _reportsloading = true;
       notifyListeners();
@@ -844,6 +919,11 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+      _reportsloading = false;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
     }
   }
 
@@ -859,11 +939,7 @@ class LDProvider extends DefaultChangeNotifier {
         _taxpnleq = await api.gettaxpnleq(from);
         _taxpnldercomcur = await api.gettaxpnldercomcur(from);
 
-        _reportsloading = false;
-        _taxderloading = false;
-        notifyListeners();
-
-        print("${_taxpnleq} mainresponse");
+        
 
         _filterval = SingingCharacter.all;
 
@@ -935,10 +1011,20 @@ class LDProvider extends DefaultChangeNotifier {
         }
 
         final charges = _taxpnldercomcur?.data?.charges;
+        _reportsloading = false;
+        _taxderloading = false;
+        notifyListeners();
+
+        print("${_taxpnleq} mainresponse");
         print("Assertsvalva $charges");
 
         notifyListeners();
       } catch (e) {
+         _taxderloading = false;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
         debugPrint("Error fetching tax pnl data: $e");
       }
     } else {
@@ -948,14 +1034,14 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchBillDetails(
+  Future fetchBillDetails(BuildContext context,
       String sett, String mrktyp, String comc, String tdate) async {
     try {
-      _reportsloading = true;
+      _ledgerloading = true;
       notifyListeners();
 
       _ledgerBillData = await api.getLedgerBilldata(sett, mrktyp, comc, tdate);
-      _reportsloading = false;
+      _ledgerloading = false;
 
       // if (_ledgerAllData!.stat == "Ok") {
       //   // for (var element in _ledgerAllData!.topSchemes!) {
@@ -966,13 +1052,18 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+       _ledgerloading = false;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
     }
   }
 
-  Future fetchpnlSummary(
+  Future fetchpnlSummary(BuildContext context,
       String script, String comcode, String from, String to) async {
     try {
-      _reportsloading = true;
+      _pnlloading = true;
       notifyListeners();
       _pnlSummaryData = await api.getPnlSummary(script, comcode, from, to);
       // if (_ledgerAllData!.stat == "Ok") {
@@ -980,15 +1071,20 @@ class LDProvider extends DefaultChangeNotifier {
       //   // }
       // }
       // formatedList(_ledgerBillData!.fullStat!);
-      _reportsloading = false;
+      _pnlloading = false;
       notifyListeners();
     } catch (e) {
+       _pnlloading = false;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
       debugPrint("$e");
     }
   }
 
   Future sendunpledgerequest(
-      context, String uccid, String boid, String cname, List list) async {
+      BuildContext context, String uccid, String boid, String cname, List list) async {
     try {
       _reportsloading = true;
       notifyListeners();
@@ -996,6 +1092,7 @@ class LDProvider extends DefaultChangeNotifier {
       if (responce['msg'] == 'data updated successfully') {
         _pledgeandunpledge = await api.getpledgeandunpledge();
         _pledgeoruppledgedelete = '';
+        _pledgeorunpledge = '';
         _listforpledge = [];
         ScaffoldMessenger.of(context).showSnackBar(
           successMessage(context, 'Scripts Unpledged'),
@@ -1011,10 +1108,15 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
+       _reportsloading = false;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
     }
   }
 
-  Future unpldgedeletefun(context, String uccid, List list) async {
+  Future unpldgedeletefun(BuildContext context, String uccid, List list) async {
     try {
       _reportsloading = true;
       notifyListeners();
@@ -1036,11 +1138,16 @@ class LDProvider extends DefaultChangeNotifier {
       _reportsloading = false;
       notifyListeners();
     } catch (e) {
+       _reportsloading = false;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
       debugPrint("$e");
     }
   }
 
-  Future chargesforpnlseg(String seg) async {
+  Future chargesforpnlseg(BuildContext context,String seg) async {
     try {
       _reportsloadingforcharges = true;
       notifyListeners();
@@ -1057,6 +1164,11 @@ class LDProvider extends DefaultChangeNotifier {
       _reportsloadingforcharges = false;
       notifyListeners();
     } catch (e) {
+       _reportsloadingforcharges = false;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
       debugPrint("$e");
     }
   }
@@ -1080,6 +1192,11 @@ class LDProvider extends DefaultChangeNotifier {
         _reportsloadingforcharges = false;
         notifyListeners();
       } catch (e) {
+        _reportsloadingforcharges = false;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
         debugPrint("$e");
       }
     } else {
@@ -1088,7 +1205,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  ledgerfiltercall(val) {
+  ledgerfiltercall(BuildContext context,val) {
     // _ledgerAllData!.fullStat = [];
 
     if (_currentfilterpage == 'ledger') {
@@ -1221,14 +1338,14 @@ class LDProvider extends DefaultChangeNotifier {
                   o.companyCode == 'NSE_SLBM' ||
                   o.companyCode == 'NSE_SPT')
               .toList();
-          chargesforpnlseg('eq');
+          chargesforpnlseg(context,'eq');
         }
         if (val == SingingCharacter.fno) {
           _pnlAllData!.transactions = _pnlAllDatadummy!.transactions!
               .where((o) =>
                   o.companyCode == 'NSE_FNO' || o.companyCode == 'BSE_FNO')
               .toList();
-          chargesforpnlseg('fno');
+          chargesforpnlseg(context,'fno');
         }
         if (val == SingingCharacter.com) {
           _pnlAllData!.transactions = _pnlAllDatadummy!.transactions!
@@ -1238,7 +1355,7 @@ class LDProvider extends DefaultChangeNotifier {
                   o.companyCode == 'NSE_COM' ||
                   o.companyCode == 'BSE_COM')
               .toList();
-          chargesforpnlseg('comm');
+          chargesforpnlseg(context,'comm');
         }
         if (val == SingingCharacter.cur) {
           _pnlAllData!.transactions = _pnlAllDatadummy!.transactions!
@@ -1248,7 +1365,7 @@ class LDProvider extends DefaultChangeNotifier {
                   o.companyCode == 'CD_USE' ||
                   o.companyCode == 'CD_BSE')
               .toList();
-          chargesforpnlseg('curr');
+          chargesforpnlseg(context,'curr');
         }
         if (val == SingingCharacter.all) {
           _pnlAllData!.transactions =
@@ -1401,6 +1518,30 @@ class LDProvider extends DefaultChangeNotifier {
     // }
   }
 
+  chngPnlmonthordaily(bool value) {
+    isMonthly = value;
+    notifyListeners();
+  }
+
+  falseloader(String value) {
+    if (value == 'ledger') {
+      _ledgerloading = false;
+    } else if (value == 'holdings') {
+      _holdingsloading = false;
+    } else if (value == 'pnl') {
+      _pnlloading = false;
+    } else if (value == 'calpnl') {
+      _calendarpnlloading = false;
+    } else if (value == 'tradebook') {
+      _tradebookloading = false;
+    } else if (value == 'taxpnl') {
+      _taxderloading = false;
+    } else if (value == 'download') {
+      _pdfdownloadloading = false;
+    }
+    notifyListeners();
+  }
+
   taxpnlcurselectedtab() {
     taxpnlcurselectedtabdata = _curtypestring == 'Future Closed'
         ? taxpnldercomcur!.data!.currency!.currFutBooked!
@@ -1444,6 +1585,7 @@ class LDProvider extends DefaultChangeNotifier {
   late List<String> availableFinancialYears;
 
   List<String> availableSegments = ['Equity', 'FnO', 'Commodity', 'Currency'];
+  List<String> dailyormonthly = ['Monthly', 'Daily'];
 
   // Start and end dates for the selected financial year.
   late DateTime startTaxDate;
@@ -1584,45 +1726,46 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  Future beforecdsl(BuildContext context,String ccode,String boid,String cname,List list) async {
-    try { 
+  Future beforecdsl(BuildContext context, String ccode, String boid,
+      String cname, List list) async {
+    try {
       _reportsloading = true;
-      final res = await api.geturlforcdsl(ccode,boid,cname,list);
-      Navigator.pushNamed(context, Routes.cdslWebView,
-      
-          arguments:res );
+      final res = await api.geturlforcdsl(ccode, boid, cname, list);
+      Navigator.pushNamed(context, Routes.cdslWebView, arguments: res);
       print("wdwdwdwdwwdwdwdwd $res");
       // Navigator.pushNamed(context, Routes.camsWebView,
       //     arguments: res);+
       _reportsloading = false;
       notifyListeners();
+    } catch (e) {
+      _reportsloading = false;
 
-
-    } catch (e) { 
+                ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, 'Error occurred try again later'),
+                );
       notifyListeners();
     } finally {
       toggleLoad(false);
     }
   }
 
-  Future cdslresponsepage(BuildContext context,String response) async {
-    try { 
+  Future cdslresponsepage(BuildContext context, String response) async {
+    try {
       _reportsloading = true;
       _cdslresponsedata = await api.getresponsefromcdsl(response);
       _reportsloading = false;
-     
+
       // Navigator.pushNamed(context, Routes.camsWebView,
       //     arguments: res);
       notifyListeners();
-
-    } catch (e) { 
+    } catch (e) {
       notifyListeners();
     } finally {
       toggleLoad(false);
     }
   }
 
-  void listforpledgefunction(context, String seg, String sym, String isin,
+  void listforpledgefunction(BuildContext context, String seg, String sym, String isin,
       String value, String qty, String net, String type) {
     bool found = false;
     if (type == 'pledge') {

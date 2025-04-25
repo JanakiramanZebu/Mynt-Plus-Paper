@@ -63,7 +63,7 @@ class HoldingScreen extends StatelessWidget {
           final val = ledgerprovider.holdingsAllData!.holdings![i];
           num currentcal = 0; // Ensure it starts from 0
           num pnl = 0; // Ensure it starts from 0
-
+          // print("${socketDatas[val['Token']]} socketdataavalue");
           if (val['Token'] != null && val['Token'].toString().isNotEmpty) {
             if (socketDatas.containsKey(val['Token'])) {
               num buyPrice = num.tryParse(val['buy_price'].toString()) ?? 0;
@@ -84,11 +84,13 @@ class HoldingScreen extends StatelessWidget {
                 currentcal = livePrice * net;
 
                 val['ltp'] = "${socketDatas[val['Token']]?['lp'] ?? 0.00}";
+                val['ltpch'] = "${socketDatas[val['Token']]?['pc'] ?? 0.00}";
               } else {
                 val['pnl'] = 0;
                 val['pnlch'] = 0;
 
                 val['ltp'] = "${socketDatas[val['Token']]?['lp'] ?? 0.00}";
+                val['ltpch'] = "${socketDatas[val['Token']]?['pc'] ?? 0.00}";
               }
               pnl = num.tryParse(val['pnl'].toString()) ?? 0;
             }
@@ -106,11 +108,13 @@ class HoldingScreen extends StatelessWidget {
                       .toStringAsFixed(2);
 
               val['ltp'] = livePrice.toString();
+              val['ltpch'] = "${socketDatas[val['Token']]?['pc'] ?? 0.00}";
             } else {
               val['pnl'] = 0;
               val['pnlch'] = 0;
 
               val['ltp'] = livePrice;
+              val['ltpch'] = "${socketDatas[val['Token']]?['pc'] ?? 0.00}";
             }
             pnl = num.tryParse(val['pnl'].toString()) ?? 0;
           }
@@ -126,7 +130,12 @@ class HoldingScreen extends StatelessWidget {
           leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
-          leading: const CustomBackBtn(),
+          leading: InkWell(
+            onTap: () {
+              ledgerprovider.falseloader('holdings');
+            },
+            child: const CustomBackBtn(),
+          ),
           elevation: 0.2,
           title: TextWidget.heroText(
               text: "Holdings",
@@ -142,7 +151,7 @@ class HoldingScreen extends StatelessWidget {
           //   child: Icon(Icons.ios_share)),
         ),
         body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.reportsloading,
+          isLoading: ledgerprovider.holdingsloading,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -238,7 +247,7 @@ class HoldingScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 TextWidget.subText(
-                                  align :                                       TextAlign.right, 
+                                    align: TextAlign.right,
                                     text: "Total P&L    ",
                                     color: Color(0xFF696969),
                                     theme: theme.isDarkMode,
@@ -648,12 +657,15 @@ class HoldingScreen extends StatelessWidget {
                                   Padding(
                                     padding: const EdgeInsets.only(
                                         left: 16.0, right: 16.0),
-                                    child: Row(
-                                      children: [
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8.0),
-                                          child: Row(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               TextWidget.subText(
                                                   text:
@@ -662,10 +674,10 @@ class HoldingScreen extends StatelessWidget {
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
                                                   theme: theme.isDarkMode,
-                                                  fw: 0),
+                                                  fw: 1),
                                               Padding(
                                                 padding: const EdgeInsets.only(
-                                                    left: 8.0),
+                                                    top: 4.0),
                                                 child: CustomExchBadge(
                                                   exch:
                                                       "${ledgerprovider.holdingsAllData?.holdings?[index]['seg_type']}",
@@ -673,8 +685,65 @@ class HoldingScreen extends StatelessWidget {
                                               ),
                                             ],
                                           ),
-                                        ),
-                                      ],
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  TextWidget.subText(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : Color(0xFF696969),
+                                                      text: "LTP : ",
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 0),
+                                                  TextWidget.subText(
+                                                      text:
+                                                          "₹${ledgerprovider.holdingsAllData!.holdings![index]['ltp']}",
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 0),
+                                                ],
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 4.0),
+                                                child: TextWidget.paraText(
+                                                    text:
+                                                        "(${ledgerprovider.holdingsAllData!.holdings![index]['ltpch']} %)",
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    color: (double.tryParse(ledgerprovider
+                                                                        .holdingsAllData
+                                                                        ?.holdings?[
+                                                                            index]
+                                                                            [
+                                                                            'ltpch']
+                                                                        .toString() ??
+                                                                    '0') ??
+                                                                0) >
+                                                            0
+                                                        ? Colors.green
+                                                        : (double.tryParse(ledgerprovider
+                                                                            .holdingsAllData
+                                                                            ?.holdings?[index]['ltpch']
+                                                                            .toString() ??
+                                                                        '0') ??
+                                                                    0) <
+                                                                0
+                                                            ? Colors.red
+                                                            : Colors.black,
+                                                    fw: 0),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   Divider(
@@ -725,7 +794,7 @@ class HoldingScreen extends StatelessWidget {
                                               children: [
                                                 TextWidget.subText(
                                                     text:
-                                                        "₹ ${(ledgerprovider.holdingsAllData!.holdings![index]['pnl'])}",
+                                                        "₹${(ledgerprovider.holdingsAllData!.holdings![index]['pnl'])}",
                                                     color: (num.tryParse(ledgerprovider
                                                                     .holdingsAllData!
                                                                     .holdings![
@@ -780,7 +849,7 @@ class HoldingScreen extends StatelessWidget {
                                                                 : colors
                                                                     .colorBlack,
                                                     text:
-                                                        "(${(ledgerprovider.holdingsAllData!.holdings![index]['pnlch'])}%)",
+                                                        " (${(ledgerprovider.holdingsAllData!.holdings![index]['pnlch'])}%)",
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -825,14 +894,14 @@ class HoldingScreen extends StatelessWidget {
                                                 color: theme.isDarkMode
                                                     ? colors.colorWhite
                                                     : Color(0xFF696969),
-                                                text: "LTP : ",
+                                                text: "Cur : ",
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
                                                 fw: 0),
                                             TextWidget.subText(
                                                 text:
-                                                    "${ledgerprovider.holdingsAllData!.holdings![index]['ltp']}",
+                                                    "₹${((double.tryParse(ledgerprovider.holdingsAllData?.holdings?[index]['ltp'].toString() ?? '0') ?? 0) * (double.tryParse(ledgerprovider.holdingsAllData?.holdings?[index]['NET'].toString() ?? '0') ?? 0)).toStringAsFixed(2)}",
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,

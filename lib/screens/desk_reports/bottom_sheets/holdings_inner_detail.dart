@@ -58,7 +58,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
               ),
               Padding(
                 padding:
-                    const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 8.0),
+                    const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 2.0),
                 child: TextWidget.heroText(
                     text: "Holding Details",
                     textOverflow: TextOverflow.ellipsis,
@@ -99,7 +99,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.only(
-                                          top: 2.0, left: 16.0),
+                                          top: 2.0, left: 8.0),
                                       child: TextWidget.subText(
                                           align: TextAlign.right,
                                           text:
@@ -111,10 +111,13 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                           theme: theme.isDarkMode,
                                           fw: 1),
                                     ),
-                                    Divider(
-                                      color: const Color.fromARGB(
-                                          255, 212, 212, 212),
-                                      thickness: 0.5,
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                      child: Divider(
+                                        color: const Color.fromARGB(
+                                            255, 212, 212, 212),
+                                        thickness: 0.5,
+                                      ),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(
@@ -131,7 +134,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
                                                   color: Color(0xFF696969),
-                                                  fw: 0),
+                                                  fw: 1),
                                               TextWidget.subText(
                                                   text:
                                                       "${indexval['QUANTITY']}",
@@ -141,7 +144,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                                   color: theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
-                                                  fw: 1),
+                                                  fw: 0),
 
                                               // Text(
                                               //   ("${ledgerdata.ledgerBillData!.transactions![index].bAMT}"
@@ -170,17 +173,17 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
                                                   color: Color(0xFF696969),
-                                                  fw: 0),
+                                                  fw: 1),
                                               TextWidget.subText(
                                                   text:
-                                                      "${indexval['PRICE_PREMIUM']}",
+                                                      "${(indexval['PRICE_PREMIUM']).toStringAsFixed(2)}",
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
                                                   color: theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
-                                                  fw: 1),
+                                                  fw: 0),
                                             ],
                                           ),
                                         ],

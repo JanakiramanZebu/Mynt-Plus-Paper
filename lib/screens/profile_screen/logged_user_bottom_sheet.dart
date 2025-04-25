@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
+import '../../provider/ledger_provider.dart';
 import '../../provider/order_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
@@ -26,6 +27,8 @@ class LoggedUserBottomSheet extends ConsumerWidget {
     final portfolio = watch(portfolioProvider);
     final orders = watch(orderProvider);
     final userProfile = watch(userProfileProvider);
+    final ledgerprovider = watch(ledgerProvider);
+
     final Preferences pref = locator<Preferences>();
     return DraggableScrollableSheet(
         expand: false,
@@ -80,10 +83,11 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                     if (loggedUser
                                             .loggedMobile[index].clientId !=
                                         pref.clientId) {
+                                          
                                       userProfile.profilePageloader(true);
                                       pref.setClientId(loggedUser
-                                          .loggedMobile[index].clientId);
-
+                                          .loggedMobile[index].clientId); 
+                                          ledgerprovider.setterfornullallSwitch = null;
                                       pref.setClientMob(loggedUser
                                           .loggedMobile[index].mobile);
                                       pref.setClientSession(loggedUser
