@@ -315,8 +315,8 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                 height: 2,
                                               );
                                             },
-                                            itemCount: mforderbook
-                                                .mflumpsumorderbook!.data!.length,
+                                          itemCount: mforderbook.mflumpsumorderbook?.data?.length ?? 0,
+
                                           )
                                     : const Padding(
                                         padding: EdgeInsets.only(top: 300),

@@ -292,7 +292,7 @@ if (mfdata.mforderdet?.data?.ordertype == "NRM" && mfdata.mforderdet?.data?.buys
         borderRadius: BorderRadius.circular(20), // Optional: rounded corners
       ),
     ),
-    child: const Row(
+    child:  const Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Icon(

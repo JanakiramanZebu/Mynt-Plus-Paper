@@ -174,6 +174,8 @@ class Routes {
 
   static const String mfnfoscreen = 'mfnfoscreen';
   static const String mfCategoryList = 'mfCategoryList';
+  static const String mfsipcalscreen = 'mfsipcalscreen';
+  static const String mfcagrcalss = 'mfcagrcalss';
 
   //reports
   static const String ledgerscreen = 'LedgerScreen';

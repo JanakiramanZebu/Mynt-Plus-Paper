@@ -319,12 +319,12 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
                                   //     );
                                   //   }
                                   // },
-                                   onTap: () async {
-                                   _showBottomSheet(
-                                        context,
-                                        RedemptionBottomScreen(mfHoldingData:mfHolding.mfHoldingsModel![index]),
-                                      );
-                                   },
+                                  //  onTap: () async {
+                                  //  _showBottomSheet(
+                                  //       context,
+                                  //       RedemptionBottomScreen(mfHoldingData:mfHolding.mfHoldingsModel![index]),
+                                  //     );
+                                  //  },
                                  child: Container(
   padding: const EdgeInsets.all(0), // Set even padding
   child: Column(

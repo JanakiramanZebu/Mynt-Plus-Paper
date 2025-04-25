@@ -7,13 +7,14 @@ class mf_holdoing_new {
   String? gainOrLoss;
   String? percentage;
 
-
-  mf_holdoing_new({this.data, this.stat, this.msg,
-   this.purchaseValue,
+  mf_holdoing_new(
+      {this.data,
+      this.stat,
+      this.msg,
+      this.purchaseValue,
       this.currentValue,
       this.gainOrLoss,
-      this.percentage
-  });
+      this.percentage});
 
   mf_holdoing_new.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null) {
@@ -37,13 +38,13 @@ class mf_holdoing_new {
     }
     data['stat'] = this.stat;
     data['msg'] = this.msg;
-     data['purchase_value'] = this.purchaseValue;
+    data['purchase_value'] = this.purchaseValue;
     data['current_value'] = this.currentValue;
     data['gain_or_loss'] = this.gainOrLoss;
     data['percentage'] = this.percentage;
     return data;
   }
-} 
+}
 
 class DataMod {
   String? cLIENTCODE;
@@ -75,7 +76,11 @@ class DataMod {
   String? avgQty;
   String? bought;
   String? buyPrice;
-   String? percentage;
+  String? purchase;
+  String? current;
+  String? gainOrLoss;
+  String? percentage;
+  String? nav;
 
   DataMod(
       {this.cLIENTCODE,
@@ -107,7 +112,11 @@ class DataMod {
       this.avgQty,
       this.bought,
       this.buyPrice,
-      this.percentage});
+      this.purchase,
+      this.current,
+      this.gainOrLoss,
+      this.percentage,
+      this.nav});
 
   DataMod.fromJson(Map<String, dynamic> json) {
     cLIENTCODE = json['CLIENTCODE'];
@@ -139,7 +148,11 @@ class DataMod {
     avgQty = json['avg_qty'];
     bought = json['bought'];
     buyPrice = json['buy_price'];
+    purchase = json['purchase'];
+    current = json['current'];
+    gainOrLoss = json['gain_or_loss'];
     percentage = json['percentage'];
+    nav = json['nav'];
   }
 
   Map<String, dynamic> toJson() {
@@ -173,7 +186,11 @@ class DataMod {
     data['avg_qty'] = this.avgQty;
     data['bought'] = this.bought;
     data['buy_price'] = this.buyPrice;
+    data['purchase'] = this.purchase;
+    data['current'] = this.current;
+    data['gain_or_loss'] = this.gainOrLoss;
     data['percentage'] = this.percentage;
+    data['nav'] = this.nav;
     return data;
   }
 }

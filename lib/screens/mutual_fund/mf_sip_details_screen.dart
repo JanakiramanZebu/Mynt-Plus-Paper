@@ -34,330 +34,372 @@ class _mfSipdetScren extends State<mfSipdetScren>
       final theme = watch(themeProvider);
       final mfdata = watch(mfProvider);
       // print("11111111111111111${mfdata.mfsinglepageres!.invList}");
-    // print("5667567${mfdata.mfsinglepageres!.toJson()}");
-    print("5667567${mfdata.mfsinglepageres?.schemename}");
-
+      // print("5667567${mfdata.mfsinglepageres!.toJson()}");
+      print("5667567${mfdata.mfsinglepageres?.schemename}");
 
       return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          centerTitle: false,
-          leadingWidth: 41,
-          titleSpacing: 6,
-          leading: Padding(
-             padding: const EdgeInsets.only(left:8.0),
-             child: IconButton(
-                 icon: Icon(Icons.arrow_back_ios, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack), 
-                 onPressed: () {
-             
+          appBar: AppBar(
+            elevation: 0,
+            centerTitle: false,
+            leadingWidth: 41,
+            titleSpacing: 6,
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: IconButton(
+                icon: Icon(Icons.arrow_back_ios,
+                    color: theme.isDarkMode
+                        ? colors.colorWhite
+                        : colors.colorBlack),
+                onPressed: () {
                   Navigator.pop(context);
-                 },
-               ),
-           ),
-          backgroundColor:
-              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          shadowColor: const Color(0xffECEFF3),
-          title: Text("SIP details",
-              style: textStyles.appBarTitleTxt.copyWith(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              )
+                },
               ),
-        ),
-        body:
-      Stack(children: [
-          TransparentLoaderScreen(
-            isLoading: mfdata.bestmfloader!,
-
-        child:   
-         Padding(
-            padding: const EdgeInsets.all(16),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                const SizedBox(width: 0),
-                Expanded(
-                    child: Padding(
-                  padding: const EdgeInsets.only(top: 2),
+            ),
+            backgroundColor:
+                theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            shadowColor: const Color(0xffECEFF3),
+            title: Text("SIP details",
+                style: textStyles.appBarTitleTxt.copyWith(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                )),
+          ),
+          body: Stack(children: [
+            TransparentLoaderScreen(
+              isLoading: mfdata.bestmfloader!,
+              child: Padding(
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            // const SizedBox(
-                            //     width: 6),
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const SizedBox(width: 0),
+                              Expanded(
+                                  child: Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          // const SizedBox(
+                                          //     width: 6),
 
-                            // const SizedBox(
-                            //     width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.6,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment
-                                          .start, // Aligns text properly
+                                          // const SizedBox(
+                                          //     width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      0.6,
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start, // Aligns text properly
+                                                    children: [
+                                                      // const SizedBox(height: 4), // Now it's correctly placed
+                                                      Text(
+                                                        "${mfdata.mfsinglepageres?.schemename}",
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: textStyles
+                                                            .scripNameTxtStyle
+                                                            .copyWith(
+                                                          color: theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                SizedBox(
+                                                    height: 16,
+                                                    child: ListView(
+                                                        scrollDirection:
+                                                            Axis.horizontal,
+                                                        children: [
+                                                          if (mfdata
+                                                                  .mfsinglepageres
+                                                                  ?.nextInstallmentDate !=
+                                                              "") ...[
+                                                            CustomExchBadge(
+                                                                exch:
+                                                                    "Next Due Date : ${mfdata.mfsinglepageres?.nextInstallmentDate}"),
+                                                            SizedBox(width: 5),
+                                                          ],
+                                                          // CustomExchBadge(exch: "${"${mfdata.mfsinglepageres?.liveCancel}"}"),
+
+                                                          Container(
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: mfdata
+                                                                          .mfsinglepageres
+                                                                          ?.liveCancel ==
+                                                                      "LIVE"
+                                                                  ? const Color(
+                                                                      0xFFE5F5EA)
+                                                                  : const Color(
+                                                                      0xFFFFC7C7),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          3),
+                                                            ),
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        4,
+                                                                    vertical:
+                                                                        2),
+                                                            child: Text(
+                                                              "${mfdata.mfsinglepageres?.liveCancel}",
+                                                              style: textStyle(
+                                                                mfdata.mfsinglepageres
+                                                                            ?.liveCancel ==
+                                                                        "LIVE"
+                                                                    ? const Color(
+                                                                        0xFF42A833)
+                                                                    : const Color(
+                                                                        0xFFF33E4B),
+                                                                10,
+                                                                FontWeight.w400,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ]))
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                    ]),
+                              )),
+                              Text(
+                                "${mfdata.mfsinglepageres?.installmentAmount}",
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    14,
+                                    FontWeight.w500),
+                              ),
+                              const SizedBox(width: 12),
+                            ]),
+                        const SizedBox(height: 2),
+                        Divider(
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider,
+                          thickness: 1.0,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "SIP Details",
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              16,
+                              FontWeight.w500),
+                        ),
+                        const SizedBox(height: 16),
+                        rowOfInfoData(
+                            "SIP Register Date",
+                            "${mfdata.mfsinglepageres!.invList![0]["sipregndate"]}",
+                            "Amount",
+                            "${mfdata.mfsinglepageres!.installmentAmount}",
+                            theme),
+
+                            //    rowOfInfoData(
+                            // "SIP Register 111111111111",
+                            // "${mfdata.mfsinglepageres!.frequency_type}",
+                            // "Amount",
+                            // "${mfdata.mfsinglepageres!.installmentAmount}",
+                            // theme),
+                        const SizedBox(height: 16),
+                        Text(
+                          "SIP Status",
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              16,
+                              FontWeight.w500),
+                        ),
+                        const SizedBox(height: 16),
+                        ListView.builder(
+                          itemCount: mfdata.mfsinglepageres!.invList!.length,
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemBuilder: (BuildContext context, int index) {
+                            final isFirst = index == 0;
+                            final isLasts = index ==
+                                mfdata.mfsinglepageres!.invList!.length;
+                            print(
+                                "Index: $index, Data: ${mfdata.mfsinglepageres!.invList![index]}");
+
+                            return MFtimelineWidget(
+                              isfFrist: isFirst,
+                              isLast: isLasts,
+                              orderHistoryData:
+                                  mfdata.mfsinglepageres?.invList?[index],
+                            );
+                          },
+                        ),
+                        if (mfdata.mfsinglepageres?.nextInstallmentDate ==
+                            "") ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            "Rejected Reason",
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                16,
+                                FontWeight.w500),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "${mfdata.mfsinglepageres!.invList![0]["orderremarks"]}",
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : const Color(0xFFF33E4B),
+                                13,
+                                FontWeight.w500),
+                          ),
+                        ],
+                        const SizedBox(height: 20),
+                        if (mfdata.mfsinglepageres?.liveCancel == "LIVE") ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 6, // Takes 6 columns
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      await showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return MfSipCancelalert(
+                                            mfcancels: mfdata.mfsinglepageres!
+                                                    .schemename ??
+                                                "",
+                                            mforderno: mfdata.mfsinglepageres!
+                                                    .sipregnno ??
+                                                "",
+                                            mfreferno: mfdata.mfsinglepageres!
+                                                    .internalrefernumber ??
+                                                "",
+                                            message: "sip",
+                                            mffreqtype : mfdata.mfsinglepageres!.frequency_type ?? "", mfnextsipdate : mfdata.mfsinglepageres!.nextInstallmentDate ?? ""
+                                          );
+                                        },
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          Colors.white, // White background
+                                      foregroundColor: const Color.fromARGB(
+                                          255, 0, 0, 0), // Text and icon color
+                                      side: const BorderSide(
+                                          color: Color.fromARGB(255, 0, 0, 0),
+                                          width: 1), // Outlined border
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            20), // Optional: rounded corners
+                                      ),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        // const SizedBox(height: 4), // Now it's correctly placed
+                                        // Icon(
+                                        //   Icons.cancel,
+                                        //   color: Color.fromARGB(255, 0, 0, 0),
+                                        //   size: 18,
+                                        // ),
+                                        // SizedBox(width: 6),
                                         Text(
-                                          "${mfdata.mfsinglepageres?.schemename}",
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: textStyles.scripNameTxtStyle
-                                              .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
+                                          "Cancel SIP",
+                                          style: TextStyle(
+                                            color: Color.fromARGB(255, 0, 0, 0),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  SizedBox(
-                                      height: 16,
-                                      child: ListView(
-                                          scrollDirection: Axis.horizontal,
-                                          children: [
-                                            if(mfdata.mfsinglepageres?.nextInstallmentDate != "")...[
-                                            CustomExchBadge(
-                                                exch:
-                                                    "Next Due Date : ${mfdata.mfsinglepageres?.nextInstallmentDate}"),
-                                            SizedBox(width: 5),
-                                            ],
-                                            // CustomExchBadge(exch: "${"${mfdata.mfsinglepageres?.liveCancel}"}"),
-
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: mfdata.mfsinglepageres
-                                                            ?.liveCancel ==
-                                                        "LIVE"
-                                                    ? const Color(0xFFE5F5EA)
-                                                    : const Color(0xFFFFC7C7),
-                                                borderRadius:
-                                                    BorderRadius.circular(3),
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 4,
-                                                      vertical: 2),
-                                              child: Text(
-                                                "${mfdata.mfsinglepageres?.liveCancel}",
-                                                style: textStyle(
-                                                  mfdata.mfsinglepageres
-                                                              ?.liveCancel ==
-                                                          "LIVE"
-                                                      ? const Color(0xFF42A833)
-                                                      : const Color(0xFFF33E4B),
-                                                  10,
-                                                  FontWeight.w400,
-                                                ),
-                                              ),
-                                            ),
-                                          ]))
-                                ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                      ]),
-                )),
-                Text(
-                  "${mfdata.mfsinglepageres?.installmentAmount}",
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w500),
-                ),
-                const SizedBox(width: 12),
-              ]),
-              const SizedBox(height: 2),
-              Divider(
-                color: theme.isDarkMode
-                    ? colors.darkColorDivider
-                    : colors.colorDivider,
-                thickness: 1.0,
-              ),
-
-const SizedBox(height: 8),
-              Text(
-                "SIP Details",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w500),
-              ),
-
- const SizedBox(height: 16),
-                      rowOfInfoData(
-                          "SIP Register Date",
-                         "${mfdata.mfsinglepageres!.invList![0]["sipregndate"]}",
-                          "Amount",
-                           "${mfdata.mfsinglepageres!.installmentAmount}",
-                          theme),
-              
-
-
-
-
-
-              const SizedBox(height: 16),
-              Text(
-                "SIP Status",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w500),
-              ),
-              const SizedBox(height: 16),
-              ListView.builder(
-                itemCount: mfdata.mfsinglepageres!.invList!.length,
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemBuilder: (BuildContext context, int index) {
-                  final isFirst = index == 0;
-                  final isLasts =
-                      index == mfdata.mfsinglepageres!.invList!.length;
-                  print(
-                      "Index: $index, Data: ${mfdata.mfsinglepageres!.invList![index]}");
-
-                  return MFtimelineWidget(
-                    isfFrist: isFirst,
-                    isLast: isLasts,
-                    orderHistoryData: mfdata.mfsinglepageres?.invList?[index],
-                  );
-                },
-              ),
-            if(mfdata.mfsinglepageres?.nextInstallmentDate == "")...[
-           const SizedBox(height: 16),
-              Text(
-                "Rejected Reason",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w500),
-              ),
-           const SizedBox(height: 8),
-
- Text(
-            "${mfdata.mfsinglepageres!.invList![0]["orderremarks"]}",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : const Color(0xFFF33E4B),
-                    13,
-                    FontWeight.w500),
-              ),
-            ],
-         
-         const SizedBox(height: 20),
-
-if( mfdata.mfsinglepageres?.liveCancel == "LIVE") ... [
-
-          Row(
-  children: [
-    Expanded(
-      flex: 6, // Takes 6 columns
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () async {
-          await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return MfSipCancelalert(mfcancels: mfdata.mfsinglepageres!.schemename ?? "", mforderno: mfdata.mfsinglepageres!.sipregnno ?? "", mfreferno: mfdata.mfsinglepageres!.internalrefernumber ?? "", message: "sip",) ;
-          },
-        );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white, // White background
-            foregroundColor: const Color.fromARGB(255, 0, 0, 0), // Text and icon color
-            side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0), width: 1), // Outlined border
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20), // Optional: rounded corners
-            ),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icon(
-              //   Icons.cancel,
-              //   color: Color.fromARGB(255, 0, 0, 0),
-              //   size: 18,
-              // ),
-              // SizedBox(width: 6),
-              Text(
-                "Cancel SIP",
-                style: TextStyle(
-                  color: Color.fromARGB(255, 0, 0, 0),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-    // const SizedBox(width: 10), // Space between buttons
-    // if( mfdata.mfsinglepageres?.liveCancel == "LIVE" ||  mfdata.mfsinglepageres?.liveCancel != "PAUSE") ... [
-    // Expanded(
-    //   flex: 6, // Takes 6 columns
-    //   child: SizedBox(
-    //     width: double.infinity,
-    //     child: ElevatedButton(
-    //       onPressed: () async{
-    //         // Your second button logic
-    //          await showDialog(
-    //       context: context,
-    //       builder: (BuildContext context) {
-    //         return MfSipCancelalert(mfcancels: mfdata.mfsinglepageres!.schemename ?? "", mforderno: mfdata.mfsinglepageres!.sipregnno ?? "", mfreferno: mfdata.mfsinglepageres!.internalrefernumber ?? "", message: "pause",) ;
-    //       },
-    //     );
-    //       },
-    //       style: ElevatedButton.styleFrom(
-    //         backgroundColor: Colors.white,
-    //         foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-    //         side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0), width: 1),
-    //         shape: RoundedRectangleBorder(
-    //           borderRadius: BorderRadius.circular(20),
-    //         ),
-    //       ),
-    //       child: const Row(
-    //         mainAxisSize: MainAxisSize.min,
-    //         children: [
-    //           // Icon(
-    //           //   Icons.check_circle,
-    //           //   color: Color.fromARGB(255, 0, 0, 0),
-    //           //   size: 18,
-    //           // ),
-    //           // SizedBox(width: 6),
-    //           Text(
-    //             "Pause SIP",
-    //             style: TextStyle(
-    //               color: Color.fromARGB(255, 0, 0, 0),
-    //               fontSize: 14,
-    //               fontWeight: FontWeight.w600,
-    //             ),
-    //           ),
-    //         ],
-    //       ),
-    //     ),
-    //   ),
-    // ),
-    // ]
- 
-  ],
-)
-
-]
-          
-            ])
+                              const SizedBox(width: 10),
+                            //   if( mfdata.mfsinglepageres?.liveCancel == "LIVE" ||  mfdata.mfsinglepageres?.liveCancel != "PAUSE") ... [
+                            //   Expanded(
+                            //     flex: 6, 
+                            //     child: SizedBox(
+                            //       width: double.infinity,
+                            //       child: ElevatedButton(
+                            //         onPressed: () async{
+                            //            await showDialog(
+                            //         context: context,
+                            //         builder: (BuildContext context) {
+                            //           return MfSipCancelalert(mfcancels: mfdata.mfsinglepageres!.schemename ?? "", mforderno: mfdata.mfsinglepageres!.sipregnno ?? "", mfreferno: mfdata.mfsinglepageres!.internalrefernumber ?? "", message: "pause",mffreqtype : mfdata.mfsinglepageres!.frequency_type ?? "", mfnextsipdate : mfdata.mfsinglepageres!.nextInstallmentDate ?? "") ;
+                            //         },
+                            //       );
+                            //         },
+                            //         style: ElevatedButton.styleFrom(
+                            //           backgroundColor: Colors.white,
+                            //           foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                            //           side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0), width: 1),
+                            //           shape: RoundedRectangleBorder(
+                            //             borderRadius: BorderRadius.circular(20),
+                            //           ),
+                            //         ),
+                            //         child: const Row(
+                            //           mainAxisSize: MainAxisSize.min,
+                            //           children: [
+                                     
+                            //             Text(
+                            //               "Pause SIP",
+                            //               style: TextStyle(
+                            //                 color: Color.fromARGB(255, 0, 0, 0),
+                            //                 fontSize: 14,
+                            //                 fontWeight: FontWeight.w600,
+                            //               ),
+                            //             ),
+                            //           ],
+                            //         ),
+                            //       ),
+                            //     ),
+                            //   ),
+                            //   ]
+                            ],
+                          )
+                        ]
+                      ])
 
 //           Column(
 //             crossAxisAlignment: CrossAxisAlignment.start,
@@ -499,12 +541,13 @@ if( mfdata.mfsinglepageres?.liveCancel == "LIVE") ... [
 //               // ),
 //             ],
 //           ),
-            ),
-       )]) );
+                  ),
+            )
+          ]));
     });
   }
 
-Row rowOfInfoData(String title1, String value1, String title2, String value2,
+  Row rowOfInfoData(String title1, String value1, String title2, String value2,
       ThemesProvider theme) {
     return Row(children: [
       Expanded(
@@ -546,7 +589,4 @@ Row rowOfInfoData(String title1, String value1, String title2, String value2,
       ]))
     ]);
   }
-
-
-
 }

@@ -19,6 +19,9 @@ class MfSipCancelalert extends ConsumerWidget {
   final String message;
   final String mforderno;
   final String mfreferno;
+  final String mffreqtype;
+  final String mfnextsipdate;
+
 
   const MfSipCancelalert({
     super.key,
@@ -26,6 +29,9 @@ class MfSipCancelalert extends ConsumerWidget {
     required this.mforderno,
     required this.mfreferno,
     required this.message,
+    required this.mffreqtype,
+    required this.mfnextsipdate,
+
   });
   @override
   Widget build(BuildContext context, ScopedReader watch) {
@@ -48,53 +54,53 @@ class MfSipCancelalert extends ConsumerWidget {
       ),
       content: Column(
         children: [
-          Text("Are you sure you want to ${message == 'pause' ? "Pause" : "Cancel"}  the ( ${mfcancels})  SIP order",
+          Text(
+              "Are you sure you want to ${message == 'pause' ? "Pause" : "Cancel"}  the ( ${mfcancels})  SIP order",
               textAlign: TextAlign.center,
               style: textStyle(
                   theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   16,
                   FontWeight.w600)),
           const SizedBox(height: 18),
-          if(message == 'sip')...[
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                "Select The SIP Cancel Reason *",
-                style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  12,
-                  FontWeight.w500,
+          if (message == 'sip') ...[
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  "Select The SIP Cancel Reason *",
+                  style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    12,
+                    FontWeight.w500,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 5),
-          droupdowntest(mfData,theme),
-          const SizedBox(height: 5),
-],
+            const SizedBox(height: 5),
+            droupdowntest(mfData, theme),
+            const SizedBox(height: 5),
+          ],
 
- if(message == 'pause')...[
-    Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                "No of installments Passed *",
-                style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  12,
-                  FontWeight.w500,
+          if (message == 'pause') ...[
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  "No of installments Passed *",
+                  style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    12,
+                    FontWeight.w500,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 0),
-  pausetextfield(mfData,theme),
-          const SizedBox(height: 5),
- ]
-      
+            const SizedBox(height: 0),
+            pausetextfield(mfData, theme),
+            const SizedBox(height: 5),
+          ]
 
           // Text("${mfData.droupreason}")
         ],
@@ -112,86 +118,89 @@ class MfSipCancelalert extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(50),
                       )),
                   onPressed: () {
-                   mfData.cleartext();
+                    mfData.cleartext();
                     mfData.rejectsip.text = "";
                     mfData.pausesip.text = "";
                     Navigator.pop(context);
-
                   },
                   child: Text("No",
                       style: textStyle(colors.colorGrey, 12, FontWeight.w600))),
             ),
             const SizedBox(width: 16),
-            if(message == 'sip')...[
-            Expanded(
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: theme.isDarkMode
-                          ? colors.colorbluegrey
-                          : colors.colorBlack,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      )),
-                  onPressed: () async {
+            if (message == 'sip') ...[
+              Expanded(
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorbluegrey
+                            : colors.colorBlack,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        )),
+                    onPressed: () async {
+                      await mfData.cancelsiporder(
+                          context, mforderno, mfreferno);
 
-                    await mfData.cancelsiporder(context, mforderno, mfreferno );
-
-                    // Navigator.pop(context);
-                  },
-                  child: mfData.loading == true
-    ? const SizedBox(
-        height: 15, 
-        width: 15,
-        child: CircularProgressIndicator(
-          strokeWidth: 2.0, 
-          valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(99, 48, 48, 48)), 
-          backgroundColor: Color.fromARGB(255, 255, 255, 255),
-        ),
-      )
-    :  Text("Yes",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          12,
-                          FontWeight.w600))),
-            )
+                      // Navigator.pop(context);
+                    },
+                    child: mfData.loading == true
+                        ? const SizedBox(
+                            height: 15,
+                            width: 15,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.0,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color.fromARGB(99, 48, 48, 48)),
+                              backgroundColor:
+                                  Color.fromARGB(255, 255, 255, 255),
+                            ),
+                          )
+                        : Text("Yes",
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorBlack
+                                    : colors.colorWhite,
+                                12,
+                                FontWeight.w600))),
+              )
             ],
-             if(message == 'pause')...[
-            Expanded(
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: theme.isDarkMode
-                          ? colors.colorbluegrey
-                          : colors.colorBlack,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      )),
-                  onPressed: () async {
-                    await mfData.pausesiporder(context, mforderno );
+            if (message == 'pause') ...[
+              Expanded(
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorbluegrey
+                            : colors.colorBlack,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        )),
+                    onPressed: () async {
+                      await mfData.pausesiporder(context, mforderno,mffreqtype,mfnextsipdate);
 
-                    // Navigator.pop(context);
-                  },
-                  child: mfData.loading == true
-    ? const SizedBox(
-        height: 15, 
-        width: 15,
-        child: CircularProgressIndicator(
-          strokeWidth: 2.0, 
-          valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(99, 48, 48, 48)), 
-          backgroundColor: Color.fromARGB(255, 255, 255, 255),
-        ),
-      )
-    :  Text("Yes",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          12,
-                          FontWeight.w600))),
-            )
+                      // Navigator.pop(context);
+                    },
+                    child: mfData.loading == true
+                        ? const SizedBox(
+                            height: 15,
+                            width: 15,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.0,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color.fromARGB(99, 48, 48, 48)),
+                              backgroundColor:
+                                  Color.fromARGB(255, 255, 255, 255),
+                            ),
+                          )
+                        : Text("Yes",
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorBlack
+                                    : colors.colorWhite,
+                                12,
+                                FontWeight.w600))),
+              )
             ]
           ],
         ),
@@ -204,7 +213,8 @@ class MfSipCancelalert extends ConsumerWidget {
         textStyle:
             TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
-    Text headerTitleText(String text, ThemesProvider theme) {
+
+  Text headerTitleText(String text, ThemesProvider theme) {
     return Text(text,
         style: textStyle(
             theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -213,8 +223,8 @@ class MfSipCancelalert extends ConsumerWidget {
   }
 
 // String? selectedValue;
-  Widget droupdowntest(MFProvider mfData , ThemesProvider theme) {
-        // final theme = watch(themeProvider);
+  Widget droupdowntest(MFProvider mfData, ThemesProvider theme) {
+    // final theme = watch(themeProvider);
     return Column(
       children: [
         DropdownButtonHideUnderline(
@@ -238,7 +248,7 @@ class MfSipCancelalert extends ConsumerWidget {
               ),
             ),
             dropdownStyleData: DropdownStyleData(
-               maxHeight: 200,
+              maxHeight: 200,
               padding: const EdgeInsets.symmetric(vertical: 6),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(4),
@@ -255,7 +265,8 @@ class MfSipCancelalert extends ConsumerWidget {
                 value: item["id"],
                 child: Text(
                   item["reason_name"],
-                  style: textStyle(const Color(0XFF000000), 13, FontWeight.w500),
+                  style:
+                      textStyle(const Color(0XFF000000), 13, FontWeight.w500),
                 ),
               );
             }).toList(),
@@ -265,57 +276,54 @@ class MfSipCancelalert extends ConsumerWidget {
               }
             },
           ),
-        
-          
-           
         ),
-        if(mfData.droupreason == "13") ...[
+        if (mfData.droupreason == "13") ...[
           const SizedBox(height: 10),
-         Container(
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                height: 44,
-                child: CustomTextFormField(
-                  textAlign: TextAlign.start,
-                  fillColor: theme.isDarkMode
-                      ? colors.darkGrey
-                      : const Color(0xffF1F3F8),
-                  hintText: 'Specify The Reason',
-                  hintStyle:
-                      textStyle(const Color(0xff666666), 14, FontWeight.w400),
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w600),
-                  textCtrl: mfData.rejectsip,
-                )),
-      ]
+          Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              height: 44,
+              child: CustomTextFormField(
+                textAlign: TextAlign.start,
+                fillColor: theme.isDarkMode
+                    ? colors.darkGrey
+                    : const Color(0xffF1F3F8),
+                hintText: 'Specify The Reason',
+                hintStyle:
+                    textStyle(const Color(0xff666666), 14, FontWeight.w400),
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600),
+                textCtrl: mfData.rejectsip,
+              )),
+        ]
       ],
     );
   }
 
-Widget pausetextfield(MFProvider mfData, ThemesProvider theme) {
-  return Column(
-    children: [
-      Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        height: 44,
-        child: CustomTextFormField(
-  textAlign: TextAlign.start,
-  fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-  hintText: 'No of installments Passed',
-  hintStyle: textStyle(const Color(0xff666666), 14, FontWeight.w400),
-  style: textStyle(
-    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-    14,
-    FontWeight.w600,
-  ),
-  textCtrl: mfData.pausesip,
-  // inputFormatters: [FilteringTextInputFormatter.digitsOnly], 
-  keyboardType: TextInputType.number, // Show numeric keyboard
-),
-      ),
-    ],
-  );
-}
-
+  Widget pausetextfield(MFProvider mfData, ThemesProvider theme) {
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          height: 44,
+          child: CustomTextFormField(
+            textAlign: TextAlign.start,
+            fillColor:
+                theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+            hintText: 'No of installments Passed',
+            hintStyle: textStyle(const Color(0xff666666), 14, FontWeight.w400),
+            style: textStyle(
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              14,
+              FontWeight.w600,
+            ),
+            textCtrl: mfData.pausesip,
+            // inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            keyboardType: TextInputType.number, // Show numeric keyboard
+          ),
+        ),
+      ],
+    );
+  }
 }

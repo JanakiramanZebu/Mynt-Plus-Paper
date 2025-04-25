@@ -141,10 +141,20 @@ class MFSipdetScreen extends ConsumerWidget {
                                                             "${mfData.mfsiporderlist?.xsip![index].frequencyType}",
                                                       ),
                                                       const SizedBox(width: 5),
+                                                       CustomExchBadge(
+                                                        exch:
+                                                            "${mfData.mfsiporderlist?.xsip![index].dateTime}",
+                                                      ),
+                                                      const SizedBox(width: 5),
+                                                     if(mfData.mfsiporderlist?.xsip?[
+                                                                        index]
+                                                                    .liveCancel ==
+                                                                "LIVE")...[
                                                       CustomExchBadge(
                                                         exch:
                                                             "Due Date : ${mfData.mfsiporderlist?.xsip![index].nextSipDate}",
                                                       ),
+                                                      ],
                                                       const Spacer(),
                                                       Text(
                                                         (mfData.mfsiporderlist
