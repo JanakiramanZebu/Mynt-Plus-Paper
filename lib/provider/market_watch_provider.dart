@@ -347,7 +347,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   calldepthApis(BuildContext context, raw, basket) async {
     ref(userProfileProvider).setonloadChartdialog(true);
-    chngDephBtn("Overview");
+    chngDephBtn(basket == "Option|-|Deph" ? "Option" : "Overview");
     singlePageloader(true);
     bool flow = raw.runtimeType.toString() == '_Map<String, dynamic>';
 // _Map<String, dynamic>
@@ -387,19 +387,19 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         (portfolios.oplists.isNotEmpty &&
             portfolios.oplists
                 .contains(int.parse(flow ? raw['token'] : raw.token)))) {
-      await ref(marketWatchProvider).fetchLinkeScrip(
-          "${flow ? raw['token'] : raw.token}",
-          "${flow ? raw['exch'] : raw.exch}",
-          context);
+      await fetchScripInfo("${flow ? raw['token'] : raw.token}",
+          "${flow ? raw['exch'] : raw.exch}", context);
+      await fetchLinkeScrip("${flow ? raw['token'] : raw.token}",
+          "${flow ? raw['exch'] : raw.exch}", context);
     }
 
     if (((flow ? raw['exch'] : raw.exch) == "NSE" ||
         (flow ? raw['exch'] : raw.exch) == "BSE")) {
-      ref(marketWatchProvider).fetchFundamentalData(
+      fetchFundamentalData(
           tradeSym:
               "${flow ? raw['exch'] : raw.exch}:${(flow ? raw['tsym'] : raw.tsym)}");
 
-      await ref(marketWatchProvider).fetchTechData(
+      await fetchTechData(
           context: context,
           exch: "${(flow ? raw['exch'] : raw.exch)}",
           tradeSym: "${(flow ? raw['tsym'] : raw.tsym)}",
@@ -678,9 +678,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   void removeChartTab(ChartArgs tab) {
     _chartTabs.removeWhere((t) => t.token == tab.token);
-    if (_activeTab?.token == tab.token) {
-      _activeTab = _chartTabs.isNotEmpty ? _chartTabs.last : null;
-    }
     notifyListeners();
   }
 
@@ -694,13 +691,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     await ConstantName.chartwebViewController!.evaluateJavascript(
         source:
             "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref(themeProvider).isDarkMode}')");
-    if (_chartTabs.length == 5) {
+    if (_chartTabs.length == 5 &&
+        (_chartTabs.any((t) => t.token == token)) != true) {
       removeChartTab(_chartTabs.last);
     }
     if (token != "0123") {
       addChartTab(ChartArgs(tsym: tsym, token: token, exch: exch));
     }
-    ref(marketWatchProvider).selectChartTab(token.toString());
+    selectChartTab(token.toString());
     notifyListeners();
   }
 
@@ -1610,7 +1608,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (_optionChainModel != null) {
         requestWSOptChain(context: context, isSubscribe: false);
       }
-
       print(
           "op Strike Price $strPrc ------ $tradeSym ------ $exchange ------ $numofStrike");
       _optionChainModel = await api.getOptionChain(
@@ -1623,7 +1620,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         ConstantName.sessCheck = true;
 
         // Seprating option chain scrips (Call / Put)
-        await splitOptionChain(context);
+        await splitOptionChain(context, double.parse(strPrc));
       } else {
         _optChainCall = [];
         _optChainPut = [];
@@ -1899,7 +1896,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   // Seprating option chain scrips (Call / Put)
-  splitOptionChain(BuildContext context) {
+  splitOptionChain(BuildContext context, double strPrc) {
     _optChainCall = [];
     _optChainPut = [];
     _optChainCallDown = [];
@@ -1916,7 +1913,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (element.optt == "CE") {
         _optChainCall.add(element);
         // int callLength = _optChainCall.length ~/ 2;
-        if (double.parse(_getQuotes.lp.toString()) <
+        if (strPrc <
             double.parse(element.strprc.toString())) {
           _optChainCallDown.add(element);
         } else {
@@ -1925,7 +1922,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       } else {
         _optChainPut.add(element);
         // int putLength = _optChainPut.length ~/ 2;
-        if (double.parse(_getQuotes.lp.toString()) <
+        if (strPrc <
             double.parse(element.strprc.toString())) {
           _optChainPutDown.add(element);
         } else {
@@ -2432,7 +2429,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         fetchPendingAlert(context);
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, "${_cancelalert?.stat}"));
-        context.read(marketWatchProvider)._alertPendingModel!.length;
+        _alertPendingModel!.length;
       }
       _cancelalert = await api.getCancelAlert(alid);
       ConstantName.sessCheck = true;

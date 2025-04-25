@@ -24,31 +24,34 @@ class OptChainCallList extends ConsumerWidget {
     final socketDatas = watch(websocketProvider).socketDatas;
     final scripData = watch(marketWatchProvider);
     final theme = watch(themeProvider);
-    return ListView.separated(
+    return ListView.builder(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       reverse: isCallUp ? true : false,
-      itemCount: callData!.length,
+      itemCount: callData!.length * 2 - 1,
       itemBuilder: (BuildContext context, int index) {
-        if (socketDatas.containsKey(callData![index].token)) {
-          callData![index].lp =
-              "${socketDatas["${callData![index].token}"]['lp']}";
-          callData![index].perChange =
-              "${socketDatas["${callData![index].token}"]['pc']}";
-
-          callData![index].oiLack = (double.parse(
-                      "${socketDatas["${callData![index].token}"]['oi']}") /
+        final itemIndex = index ~/ 2;
+        if (socketDatas.containsKey(callData![itemIndex].token)) {
+          callData![itemIndex].lp =
+              "${socketDatas["${callData![itemIndex].token}"]['lp']}";
+          callData![itemIndex].perChange =
+              "${socketDatas["${callData![itemIndex].token}"]['pc']}";
+    
+          callData![itemIndex].oiLack = (double.parse(
+                      "${socketDatas["${callData![itemIndex].token}"]['oi']}") /
                   100000)
               .toStringAsFixed(2);
-
-          callData![index].oiPerChng = ((double.parse(
-                          "${socketDatas["${callData![index].token}"]['poi'] ?? 0.00}") /
+    
+          callData![itemIndex].oiPerChng = ((double.parse(
+                          "${socketDatas["${callData![itemIndex].token}"]['poi'] ?? 0.00}") /
                       double.parse(
-                          "${socketDatas["${callData![index].token}"]['oi'] ?? 0.00}")) *
+                          "${socketDatas["${callData![itemIndex].token}"]['oi'] ?? 0.00}")) *
                   100)
               .toStringAsFixed(2);
         }
-
+        if (index.isOdd) {
+          return const ListDivider();
+        }
         return InkWell(
             onLongPress: () async {
               if (scripData.isPreDefWLs == "Yes") {
@@ -62,12 +65,12 @@ class OptChainCallList extends ConsumerWidget {
               } else {
                 await watch(websocketProvider).establishConnection(
                     channelInput:
-                        "${callData![index].exch}|${callData![index].token}",
+                        "${callData![itemIndex].exch}|${callData![itemIndex].token}",
                     task: "t",
                     context: context);
                 await scripData.addDelMarketScrip(
                     scripData.wlName,
-                    "${callData![index].exch}|${callData![index].token}",
+                    "${callData![itemIndex].exch}|${callData![itemIndex].token}",
                     context,
                     true,
                     true,
@@ -76,8 +79,10 @@ class OptChainCallList extends ConsumerWidget {
               }
             },
             onTap: () async {
-              await scripData.fetchScripQuoteIndex("${callData![index].token}",
-                  "${callData![index].exch}", context);
+              await scripData.fetchScripQuoteIndex(
+                  "${callData![itemIndex].token}",
+                  "${callData![itemIndex].exch}",
+                  context);
               final quots = scripData.getQuotes;
               DepthInputArgs depthArgs = DepthInputArgs(
                   exch: quots!.exch.toString(),
@@ -100,7 +105,7 @@ class OptChainCallList extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("${callData![index].oiLack ?? 0.00}",
+                      Text("${callData![itemIndex].oiLack ?? 0.00}",
                           style: textStyle(
                               theme.isDarkMode
                                   ? colors.colorWhite
@@ -109,12 +114,14 @@ class OptChainCallList extends ConsumerWidget {
                               FontWeight.w500)),
                       const SizedBox(height: 3),
                       Text(
-                          "(${callData![index].oiPerChng == "NaN" ? "0.00" : callData![index].oiPerChng ?? 0.00}%)",
+                          "(${callData![itemIndex].oiPerChng == "NaN" ? "0.00" : callData![itemIndex].oiPerChng ?? 0.00}%)",
                           style: textStyle(
-                              callData![index].oiPerChng == null ||
-                                      callData![index].oiPerChng == "0.00"
+                              callData![itemIndex].oiPerChng == null ||
+                                      callData![itemIndex].oiPerChng == "0.00"
                                   ? colors.ltpgrey
-                                  : callData![index].oiPerChng!.startsWith("-")
+                                  : callData![itemIndex]
+                                          .oiPerChng!
+                                          .startsWith("-")
                                       ? colors.darkred
                                       : colors.ltpgreen,
                               11,
@@ -127,7 +134,7 @@ class OptChainCallList extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                            "${callData![index].lp ?? callData![index].close ?? 0.00}",
+                            "${callData![itemIndex].lp ?? callData![itemIndex].close ?? 0.00}",
                             style: textStyle(
                                 theme.isDarkMode
                                     ? colors.colorWhite
@@ -135,12 +142,12 @@ class OptChainCallList extends ConsumerWidget {
                                 13,
                                 FontWeight.w500)),
                         const SizedBox(height: 3),
-                        Text("(${callData![index].perChange ?? 0.00}%)",
+                        Text("(${callData![itemIndex].perChange ?? 0.00}%)",
                             style: textStyle(
-                                callData![index].perChange == null ||
-                                        callData![index].perChange == "0.00"
+                                callData![itemIndex].perChange == null ||
+                                        callData![itemIndex].perChange == "0.00"
                                     ? colors.ltpgrey
-                                    : callData![index]
+                                    : callData![itemIndex]
                                             .perChange!
                                             .startsWith("-")
                                         ? colors.darkred
@@ -160,9 +167,9 @@ class OptChainCallList extends ConsumerWidget {
               ),
             ));
       },
-      separatorBuilder: (BuildContext context, int index) {
-        return const ListDivider();
-      },
+      // separatorBuilder: (BuildContext context, int index) {
+      //   return const ListDivider();
+      // },
     );
   }
 }

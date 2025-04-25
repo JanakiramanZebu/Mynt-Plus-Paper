@@ -32,6 +32,10 @@ class SearchScripList extends ConsumerWidget {
               return ListTile(
                 onTap: () async {
                   if (wlName == "Chart||Is") {
+                    await searchScrip.fetchScripQuoteIndex(
+                        searchValue[index].token.toString(),
+                        searchValue[index].exch.toString(),
+                        context);
                     searchScrip.setChartScript(
                         searchValue[index].exch.toString(),
                         searchValue[index].token.toString(),

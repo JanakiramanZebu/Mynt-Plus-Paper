@@ -57,9 +57,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
   void initState() {
     regtoken = widget.wlValue.token;
     setState(() {
-      print("basket ${widget.isBasket}");
-
-      initSize = (widget.wlValue.instname != "UNDIND" &&
+      initSize = (context.read(marketWatchProvider).actDeptBtn != "Overview" || widget.wlValue.instname != "UNDIND" &&
               widget.wlValue.instname != "COM")
           ? 0.88
           : 0.38;
@@ -489,12 +487,9 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                           .setChartdialog(true);
 
                                                       scripInfo.setChartScript(
-                                                              widget
-                                                                  .wlValue.exch,
-                                                              widget.wlValue
-                                                                  .token,
-                                                              widget.wlValue
-                                                                  .tsym);
+                                                          widget.wlValue.exch,
+                                                          widget.wlValue.token,
+                                                          widget.wlValue.tsym);
 
                                                       // "window.tvWidget.activeChart().setSymbol('${widget.wlValue.exch}:${widget.wlValue.tsym}')");
                                                       // userProfile.setChartdialog(true);
@@ -521,6 +516,11 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                             "${depthData.undTk}",
                                                             "${depthData.undExch}",
                                                             context);
+                                                      } else {
+                                                        scripInfo
+                                                            .updateOptStrPrc(
+                                                                depthData.lp
+                                                                    .toString());
                                                       }
 
                                                       await context.read(websocketProvider).establishConnection(
@@ -543,7 +543,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                               .optionExch!,
                                                           numofStrike: scripInfo
                                                               .numStrike,
-                                                          strPrc: depthData.lp.toString(),
+                                                          strPrc: scripInfo
+                                                              .optionStrPrc,
                                                           tradeSym: scripInfo
                                                               .selectedTradeSym!);
                                                     } else if (scripInfo
@@ -1428,6 +1429,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                             child: CircularProgressIndicator(
                                                 color: Color(0xff0037B7)))
                                       else
+                                      
                                         Padding(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 12.0),
@@ -1698,8 +1700,6 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
         holdQty: '',
         isModify: false,
         raw: {});
-    await scripInfo.fetchScripInfo(
-        widget.wlValue.token, widget.wlValue.exch, ctx);
     Navigator.pop(ctx);
     Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
