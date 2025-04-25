@@ -92,6 +92,15 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
       isBuy = widget.modifyOrderArgs.trantype == "B" ? true : false;
       priceCtrl = TextEditingController(text: widget.modifyOrderArgs.prc);
       qtyCtrl = TextEditingController(text: widget.modifyOrderArgs.qty);
+
+      if (int.parse(widget.modifyOrderArgs.fillshares.toString()) > 0 &&
+          widget.modifyOrderArgs.fillshares != widget.modifyOrderArgs.qty) {
+        int fqty = (int.parse(widget.modifyOrderArgs.qty.toString()) -
+            int.parse(widget.modifyOrderArgs.fillshares.toString()));
+        if (fqty != 0) {
+          qtyCtrl.text = fqty.toString();
+        }
+      }
       if (widget.orderArg.exchange == "MCX") {
         qtyCtrl.text = (int.parse(qtyCtrl.text) / lotSize).toInt().toString();
       }
