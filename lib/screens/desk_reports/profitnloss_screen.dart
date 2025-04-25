@@ -15,6 +15,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../market_watch/tv_chart/resolution_bottom.dart';
 import 'bottom_sheets/ledger_filter.dart';
 import 'bottom_sheets/pnl_filter.dart';
@@ -84,13 +85,20 @@ class PnlScreen extends StatelessWidget {
           leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
-          leading: const CustomBackBtn(),
-          elevation: 0.2,
-          title: Text(
-            "Profit & Loss",
-            style: textStyle(theme.isDarkMode? colors.colorWhite
-: colors.colorBlack, 18, FontWeight.w700),
+          leading:  InkWell(
+            onTap: () {
+              ledgerprovider.falseloader('pnl');
+            },
+            child: const CustomBackBtn(),
           ),
+          elevation: 0.2,
+          title: 
+           TextWidget.heroText(
+              text: "Profit & Loss",
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 1),
+               
           // leading: InkWell(
           //   onTap: () {
 
@@ -98,7 +106,7 @@ class PnlScreen extends StatelessWidget {
           //   child: Icon(Icons.ios_share)),
         ),
         body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.reportsloading,
+          isLoading: ledgerprovider.pnlloading,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -129,8 +137,8 @@ class PnlScreen extends StatelessWidget {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      ledgerprovider.filterval.toString() ==
+                                    TextWidget.subText(
+                                        text:  ledgerprovider.filterval.toString() ==
                                               'SingingCharacter.all'
                                           ? 'Net Notional'
                                           : ledgerprovider.filterval
@@ -149,38 +157,42 @@ class PnlScreen extends StatelessWidget {
                                                                   .toString() ==
                                                               'SingingCharacter.cur'
                                                           ? 'Currency'
-                                                          : "-"
-                                                              .toString(), // Adjust this to show a meaningful value
-                                      style: textStyle(Color(0xFF696969), 14,
-                                          FontWeight.w500),
-                                    ),
+                                                          : "-".toString(),
+                                        color: Color(0xFF696969),
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 0),
+                                     
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        "${allnotional.toStringAsFixed(2)}",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            16,
-                                            FontWeight.w600),
-                                      ),
+                                      child:
+                                      TextWidget.titleText(
+                                          text:
+                                               "${allnotional.toStringAsFixed(2)}",
+                                          color:   allnotional > 0 ? Colors.green :allnotional 
+                                          < 0 ? Colors.red : Colors.black  ,
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          fw: 1),
+                                       
                                     )
                                   ],
                                 ),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text(
-                                      "Charges and Taxes",
-                                      textAlign: TextAlign.right,
-                                      style: textStyle(Color(0xFF696969), 14,
-                                          FontWeight.w500),
-                                    ),
+                                      TextWidget.subText(
+                                        text: "Charges and Taxes",
+                                        color: Color(0xFF696969),
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 0),
+                                     
                                     ledgerprovider.reportsloadingforcharges ==
                                             true
                                         ? Padding(
-                                            padding: const EdgeInsets.only(top : 8.0),
+                                            padding:
+                                                const EdgeInsets.only(top: 8.0),
                                             child: SpinKitThreeBounce(
                                               color: Colors.grey,
                                               size: 24,
@@ -189,12 +201,15 @@ class PnlScreen extends StatelessWidget {
                                         : Padding(
                                             padding:
                                                 const EdgeInsets.only(top: 8.0),
-                                            child: Text(
-                                              "₹ ${ledgerprovider.pnlAllData == null ||  ledgerprovider.pnlAllData!.expenseAmt == 'null' ?  '0.00' : double.parse(ledgerprovider.pnlAllData!.expenseAmt!).toStringAsFixed(2)}",
-                                              textAlign: TextAlign.right,
-                                              style: textStyle(Colors.red, 16,
-                                                  FontWeight.w600),
-                                            ),
+                                            child: 
+                                            TextWidget.titleText(
+                                          text:
+                                                "₹ ${ledgerprovider.pnlAllData == null || ledgerprovider.pnlAllData!.expenseAmt == 'null' ? '0.00' : double.parse(ledgerprovider.pnlAllData!.expenseAmt!).toStringAsFixed(2)}",
+                                          color:   Colors.red,
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          fw: 1),
+                                           
                                           )
                                   ],
                                 ),
@@ -375,15 +390,18 @@ class PnlScreen extends StatelessWidget {
                     Expanded(
                       child: InkWell(
                         onTap: () {
-                          ledgerprovider.datePickerStart(context , theme);
+                          ledgerprovider.datePickerStart(context, theme);
                         },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text("Start Date",
                                 style: textStyle(
-                                    theme.isDarkMode? colors.colorWhite
-: colors.colorBlack, 12, FontWeight.w500)),
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    12,
+                                    FontWeight.w500)),
                             Container(
                               margin: const EdgeInsets.symmetric(vertical: 6),
                               alignment: Alignment.centerLeft,
@@ -392,8 +410,8 @@ class PnlScreen extends StatelessWidget {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(30),
                                 color: theme.isDarkMode
-                                      ? const Color(0xffB5C0CF).withOpacity(.15)
-                                      : const Color(0xffF1F3F8),
+                                    ? const Color(0xffB5C0CF).withOpacity(.15)
+                                    : const Color(0xffF1F3F8),
                               ),
                               child: Text("${ledgerprovider.startDate}",
                                   style: textStyle(
@@ -411,25 +429,28 @@ class PnlScreen extends StatelessWidget {
                     Expanded(
                       child: InkWell(
                         onTap: () {
-                          ledgerprovider.datePickerEnd(context , theme);
+                          ledgerprovider.datePickerEnd(context, theme);
                         },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text("End Date",
                                 style: textStyle(
-                                    theme.isDarkMode? colors.colorWhite
-: colors.colorBlack, 12, FontWeight.w500)),
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    12,
+                                    FontWeight.w500)),
                             Container(
                               margin: const EdgeInsets.symmetric(vertical: 6),
                               alignment: Alignment.centerLeft,
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal:   10),
+                                  vertical: 10, horizontal: 10),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(30),
                                 color: theme.isDarkMode
-                                      ? const Color(0xffB5C0CF).withOpacity(.15)
-                                      : const Color(0xffF1F3F8),
+                                    ? const Color(0xffB5C0CF).withOpacity(.15)
+                                    : const Color(0xffF1F3F8),
                               ),
                               child: Text("${ledgerprovider.endDate}",
                                   style: textStyle(
@@ -459,7 +480,7 @@ class PnlScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(32)))),
                               onPressed: () async {
-                                ledgerprovider.fetchpnldata(
+                                ledgerprovider.fetchpnldata(context,
                                     ledgerprovider.startDate,
                                     ledgerprovider.endDate,
                                     ledgerprovider.valforcheck);
@@ -501,7 +522,7 @@ class PnlScreen extends StatelessWidget {
                     //                 12,
                     //                 FontWeight.w500))))
                     InkWell(
-                        onTap: () async {
+                        onTap: ()  {
                           ledgerprovider.setfilterpage = 'pnl';
 
                           _showBottomSheet(context, LedgerFilter());
@@ -513,6 +534,44 @@ class PnlScreen extends StatelessWidget {
                                   ? const Color(0xffBDBDBD)
                                   : colors.colorGrey),
                         )),
+                    SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 14.0),
+                      child: IconButton(
+                        iconSize: 20,
+                        icon: Icon(Icons.download,
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack),
+                        onPressed: () => {
+                          ledgerprovider.pdfdownloadforpnl(
+                              context,
+                              ledgerprovider.pnlAllData?.toJson() ?? {},
+                              ledgerprovider.startDate,
+                              ledgerprovider.endDate,
+                              ledgerprovider.filterval.toString() ==
+                                      'SingingCharacter.all'
+                                  ? 'Net Notional'
+                                  : ledgerprovider.filterval.toString() ==
+                                          'SingingCharacter.eq'
+                                      ? 'Equity'
+                                      : ledgerprovider.filterval.toString() ==
+                                              'SingingCharacter.fno'
+                                          ? 'FNO'
+                                          : ledgerprovider.filterval
+                                                      .toString() ==
+                                                  'SingingCharacter.com'
+                                              ? 'Commodity'
+                                              : ledgerprovider.filterval
+                                                          .toString() == 
+                                                      'SingingCharacter.cur'
+                                                  ? 'Currency'
+                                                  : "-".toString(),
+                                                  allnotional.toString(),
+                              double.parse(ledgerprovider.pnlAllData!.expenseAmt!).toStringAsFixed(2)), // Ensure expenseAmt is not null
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -524,7 +583,7 @@ class PnlScreen extends StatelessWidget {
                   IconButton(
                       onPressed: () {
                         checkval = !checkval;
-                        ledgerprovider.fetchpnldata(ledgerprovider.startDate,
+                        ledgerprovider.fetchpnldata(context,ledgerprovider.startDate,
                             ledgerprovider.endDate, checkval);
                         //   if (isOco) {
                         //     orderInput.chngAlert("LTP");
@@ -665,7 +724,8 @@ class PnlScreen extends StatelessWidget {
               //   ),
               // ),
 
-              ledgerprovider.pnlAllData == null || ledgerprovider.pnlAllData?.transactions == null
+              ledgerprovider.pnlAllData == null ||
+                      ledgerprovider.pnlAllData?.transactions == null
                   ? Center(
                       child: Padding(
                       padding: EdgeInsets.only(top: 60),
@@ -690,7 +750,7 @@ class PnlScreen extends StatelessWidget {
                                     .pnlAllData?.transactions?[index];
 
                                 if (pnlval != null) {
-                                  await ledgerprovider.fetchpnlSummary(
+                                  await ledgerprovider.fetchpnlSummary(context,
                                       pnlval.sCRIPSYMBOL ?? '',
                                       pnlval.companyCode ??
                                           '', // Provide a default value
@@ -718,8 +778,8 @@ class PnlScreen extends StatelessWidget {
                                         padding: const EdgeInsets.only(
                                             left: 16.0,
                                             right: 16.0,
-                                            top: 4.0,
-                                            bottom: 8.0),
+                                            top: 8.0,
+                                            bottom: 16.0),
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
@@ -727,36 +787,41 @@ class PnlScreen extends StatelessWidget {
                                             SizedBox(
                                               width: screenWidth *
                                                   0.65, // Ensures text takes the available width
-                                              child: Text(
-                                                "${pnldata.sCRIPSYMBOL}",
-                                                style: textStyle(
-                                                    theme.isDarkMode
+                                              child:
+                                              
+                                               TextWidget.subText(
+                                        text: "${pnldata.sCRIPSYMBOL}",
+                                        color:  theme.isDarkMode
                                                         ? colors.colorWhite
                                                         : colors.colorBlack,
-                                                    13,
-                                                    FontWeight.w600),
-                                                softWrap:
-                                                    true, // Allows text to wrap
-                                                overflow: TextOverflow
-                                                    .ellipsis, // Adds "..." if the text is too long
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        // softWrap:
+                                        //             true, // Allows text to wrap
+                                                 
                                                 maxLines:
                                                     2, // Limits text to 2 lines, change as needed
-                                              ),
+                                        fw: 0),
+                                        
+                                          
                                             ),
-                                            Text(
-                                              "₹ ${pnldata.nOTPROFIT ?? '0'}", // Ensure it doesn’t break if null
-                                              style: textStyle(
-                                                (double.tryParse(pnldata
+                                               TextWidget.subText(
+                                        text:   "₹ ${(double.tryParse(pnldata.nOTPROFIT ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+ // Ensure it doesn’t break if null
+                                        color:   (double.tryParse(pnldata
                                                                 .nOTPROFIT
                                                                 .toString()) ??
                                                             0) >
                                                         0
                                                     ? Colors.green
                                                     : Colors.red,
-                                                12,
-                                                FontWeight.w600,
-                                              ),
-                                            ),
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                     
+                                                 
+                                                
+                                        fw: 0),
+                                            
 
                                             // Text((ledgerprovider
                                             //               .ledgerAllData!

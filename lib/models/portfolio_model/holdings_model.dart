@@ -109,6 +109,52 @@ class HoldingsModel {
     data['isExitHoldings'] = isExitHoldings;
     return data;
   }
+
+    /// Updates this HoldingsModel by merging in the new model's data.
+  /// Primitive fields are updated if the new model provides a non-null value.
+  /// For the 'exchTsym' list, existing elements are updated by matching on token;
+  /// if a new element is not already present, it is added.
+  void updateFrom(HoldingsModel newModel) {
+    stat = newModel.stat ?? stat;
+    upldprc = newModel.upldprc ?? upldprc;
+    sellAmt = newModel.sellAmt ?? sellAmt;
+    holdqty = newModel.holdqty ?? holdqty;
+    npoadqty = newModel.npoadqty ?? npoadqty;
+    npoadt1qty = newModel.npoadt1qty ?? npoadt1qty;
+    benqty = newModel.benqty ?? benqty;
+    sPrdtAli = newModel.sPrdtAli ?? sPrdtAli;
+    prd = newModel.prd ?? prd;
+    btstqty = newModel.btstqty ?? btstqty;
+    usedqty = newModel.usedqty ?? usedqty;
+    trdqty = newModel.trdqty ?? trdqty;
+    invested = newModel.invested ?? invested;
+    totalPnL = newModel.totalPnL ?? totalPnL;
+    currentValue = newModel.currentValue ?? currentValue;
+    emsg = newModel.emsg ?? emsg;
+    currentQty = newModel.currentQty ?? currentQty;
+    saleableQty = newModel.saleableQty ?? saleableQty;
+    dpQty = newModel.dpQty ?? dpQty;
+    avgPrc = newModel.avgPrc ?? avgPrc;
+    isExitHoldings = newModel.isExitHoldings ?? isExitHoldings;
+
+    // Update exchTsym list
+    if (newModel.exchTsym != null) {
+      if (exchTsym == null || exchTsym!.isEmpty) {
+        exchTsym = newModel.exchTsym;
+      } else {
+        // For each new ExchTsym item, update if exists, or add new one.
+        for (var newExch in newModel.exchTsym!) {
+          int index =
+              exchTsym!.indexWhere((exch) => exch.token == newExch.token);
+          if (index != -1) {
+            exchTsym![index].updateFrom(newExch);
+          } else {
+            exchTsym!.add(newExch);
+          }
+        }
+      }
+    }
+  }
 }
 
 class ExchTsym {
@@ -208,5 +254,35 @@ class ExchTsym {
     data['expDate'] = expDate;
     data['symbol'] = symbol;
     return data;
+  }
+
+  /// Updates this ExchTsym instance with values from [newExch].
+  /// Only non-null values from [newExch] will overwrite the current values.
+  void updateFrom(ExchTsym newExch) {
+    exch = newExch.exch ?? exch;
+    token = newExch.token ?? token;
+    tsym = newExch.tsym ?? tsym;
+    pp = newExch.pp ?? pp;
+    ti = newExch.ti ?? ti;
+    ls = newExch.ls ?? ls;
+    isin = newExch.isin ?? isin;
+    if (double.parse(newExch.lp!) != 0) {
+    lp = newExch.lp ?? lp;
+    close = newExch.close ?? close;
+    profitNloss = newExch.profitNloss ?? profitNloss;
+    change = newExch.change ?? change;
+    perChange = newExch.perChange ?? perChange;
+    pNlChng = newExch.pNlChng ?? pNlChng;
+    oneDayChg = newExch.oneDayChg ?? oneDayChg;
+    }
+    low = newExch.low ?? low;
+    high = newExch.high ?? high;
+    open = newExch.open ?? open;
+    currentAmt = newExch.currentAmt ?? currentAmt;
+    isExit = newExch.isExit ?? isExit;
+    expDate = newExch.expDate ?? expDate;
+    symbol = newExch.symbol ?? symbol;
+    option = newExch.option ?? option;
+  
   }
 }

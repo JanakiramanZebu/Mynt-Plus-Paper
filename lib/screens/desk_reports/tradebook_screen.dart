@@ -11,6 +11,7 @@ import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import 'bottom_sheets/ledger_filter.dart';
 
 class Tradebook extends StatelessWidget {
@@ -73,15 +74,20 @@ class Tradebook extends StatelessWidget {
           leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
-          leading: const CustomBackBtn(),
-          elevation: 0.2,
-          title: Text(
-            "TradeBook",
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                18,
-                FontWeight.w700),
+          leading:  InkWell(
+            onTap: () {
+              ledgerprovider.falseloader('tradebook');
+            },
+            child: const CustomBackBtn(),
           ),
+          elevation: 0.2,
+          title: 
+           TextWidget.heroText(
+              text: "TradeBook",
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 1),
+          
           // leading: InkWell(
           //   onTap: () {
 
@@ -89,7 +95,7 @@ class Tradebook extends StatelessWidget {
           //   child: Icon(Icons.ios_share)),
         ),
         body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.reportsloading,
+          isLoading: ledgerprovider.tradebookloading,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -199,7 +205,7 @@ class Tradebook extends StatelessWidget {
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(32)))),
                               onPressed: () async {
-                                ledgerprovider.fetchtradebookdata(
+                                ledgerprovider.fetchtradebookdata(context,
                                     ledgerprovider.startDate,
                                     ledgerprovider.today);
                               },
@@ -367,13 +373,18 @@ class Tradebook extends StatelessWidget {
                                         children: [
                                           Row(
                                             children: [
-                                              Text("${value.sCRIPNAME} ",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
+                                               TextWidget.subText(
+                                                  text:  "${value.sCRIPNAME} ",
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+
+                                                  color:  theme.isDarkMode
                                                           ? colors.colorWhite
                                                           : colors.colorBlack,
-                                                      13,
-                                                      FontWeight.w600)),
+                                                  fw: 1),
+
+                                              
                                               Text("${value.sTRIKEPRICE} ",
                                                   style: textStyle(
                                                       theme.isDarkMode
@@ -431,13 +442,19 @@ class Tradebook extends StatelessWidget {
                                           Padding(
                                             padding: const EdgeInsets.only(
                                                 right: 16.0),
-                                            child: Text("${value.showtype}",
-                                                style: textStyle(
-                                                    value.showtype == "BUY"
+                                            child: 
+                                            
+                                            TextWidget.subText( 
+                                                  text: "${value.showtype}",
+                                                  color:  value.showtype == "BUY"
                                                         ? Colors.green
                                                         : Colors.red,
-                                                    12,
-                                                    FontWeight.w600)),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 1),
+                                           
+                                            
                                           ),
                                         ],
                                       ),
@@ -459,22 +476,51 @@ class Tradebook extends StatelessWidget {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
+                                      
                                       Row(
                                         children: [
-                                          Text("Qty : ",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : Color(0xFF696969),
-                                                  13,
-                                                  FontWeight.w500)),
-                                          Text("${value.showqnt}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
+                                          Row(
+                                            children: [
+                                              TextWidget.subText( 
+                                                  text:  "Trade Date : ",
+                                                  color:   Color(0xFF696969),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+                                           TextWidget.subText( 
+                                                  text:  "${value.tRADEDATE}",
+                                                  color:   theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
-                                                  12,
-                                                  FontWeight.w600)),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 1),
+                                               
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                            TextWidget.subText( 
+                                                  text:  "Qty :  ",
+                                                  color:   Color(0xFF696969),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+                                           TextWidget.subText( 
+                                                  text:  "${double.tryParse(value.showqnt.toString())!.toInt()}",
+                                                  color:   theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 1),
+                                       
                                           //         Text(
                                           // " (${value.tRADEDATE})",
                                           // style: textStyle(
@@ -483,28 +529,6 @@ class Tradebook extends StatelessWidget {
                                           //         : colors.colorBlack,
                                           //     12,
                                           //     FontWeight.w600)),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Text("Trade Date : ",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : Color(0xFF696969),
-                                                      13,
-                                                      FontWeight.w500)),
-                                              Text("${value.tRADEDATE}",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      12,
-                                                      FontWeight.w600)),
-                                            ],
-                                          ),
                                         ],
                                       ),
                                     ],
@@ -517,44 +541,29 @@ class Tradebook extends StatelessWidget {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
+                                     
                                       Row(
                                         children: [
-                                          Row(
-                                            children: [
-                                              Text("Price : ",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : Color(0xFF696969),
-                                                      13,
-                                                      FontWeight.w500)),
-                                              Text("₹ ${value.showprice}",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      12,
-                                                      FontWeight.w600)),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text("Amount : ",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : Color(0xFF696969),
-                                                  13,
-                                                  FontWeight.w500)),
-                                          Text("₹ ${value.showamt}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
+                                          TextWidget.subText( 
+                                                  text:  "Amount :  ",
+                                                  color:   Color(0xFF696969),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+                                           TextWidget.subText( 
+                                                  // text:  "₹ ${value.showamt}",
+                                                  text: "${(double.tryParse(value.showamt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+
+
+                                                  color:   theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
-                                                  12,
-                                                  FontWeight.w600)),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 1),
+                                           
                                           //         Text(
                                           // " (${value.tRADEDATE})",
                                           // style: textStyle(
@@ -563,6 +572,33 @@ class Tradebook extends StatelessWidget {
                                           //         : colors.colorBlack,
                                           //     12,
                                           //     FontWeight.w600)),
+                                        ],
+                                      ),
+                                       Row(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              TextWidget.subText( 
+                                                  text:  "Price :  ",
+                                                  color:   Color(0xFF696969),
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+                                           TextWidget.subText( 
+                                                  // text:  "₹ ${value.showprice}",
+                                                  text: "${(double.tryParse(value.showprice ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+
+                                                  color:   theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 1),
+                                               
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ],

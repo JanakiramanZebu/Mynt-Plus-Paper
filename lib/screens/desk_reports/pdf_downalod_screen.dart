@@ -9,6 +9,7 @@ import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import 'bottom_sheets/ledger_filter.dart';
 
 class PdfDownload extends StatelessWidget {
@@ -58,13 +59,20 @@ class PdfDownload extends StatelessWidget {
           leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
-          leading: const CustomBackBtn(),
-          elevation: 0.2,
-          title: Text(
-            "Pdf Download",
-            style: textStyle(theme.isDarkMode? colors.colorWhite
-: colors.colorBlack, 18, FontWeight.w700),
+          leading:  InkWell(
+            onTap: () {
+              ledgerprovider.falseloader('download');
+            },
+            child: const CustomBackBtn(),
           ),
+          elevation: 0.2,
+          title: 
+           TextWidget.heroText(
+              text: "Download",
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 1),
+          
           // leading: InkWell(
           //   onTap: () {
 
@@ -72,7 +80,7 @@ class PdfDownload extends StatelessWidget {
           //   child: Icon(Icons.ios_share)),
         ),
         body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.reportsloading,
+          isLoading: ledgerprovider.pdfdownloadloading,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -179,7 +187,7 @@ class PdfDownload extends StatelessWidget {
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(32)))),
                               onPressed: () async {
-                                ledgerprovider.fetchpdfdownload(
+                                ledgerprovider.fetchpdfdownload(context,
                                     ledgerprovider.startDate,
                                     ledgerprovider.today);
                               },
@@ -336,19 +344,20 @@ class PdfDownload extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: [
+                                      
                                       Text(
-                                        "${value.docDate} - ",
-                                        style: textStyle(
-                                            theme.isDarkMode
+                                        "${value.docType} - " ,
+                                        style: textStyle(theme.isDarkMode
                                                 ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            14,
+                                                : colors.colorBlack, 14,
                                             FontWeight.w600),
                                       ),
                                       Text(
-                                        "${value.docType}",
-                                        style: textStyle(Color(0xFF696969), 12,
-                                            FontWeight.w500),
+                                        "${value.docDate}",
+                                        style: textStyle(
+                                            Color(0xFF696969),
+                                            12,
+                                            FontWeight.w600),
                                       ),
                                     ],
                                   ),

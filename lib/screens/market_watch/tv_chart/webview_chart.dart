@@ -19,7 +19,7 @@ import '../../../provider/webview_chart_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
-import '../scrip_depth_info.dart';
+// import '../scrip_depth_info.dart';
 
 class ChartScreenWebView extends StatefulWidget {
   final ChartArgs chartArgs;
@@ -34,17 +34,43 @@ class ChartScreenWebView extends StatefulWidget {
 }
 
 class _ChartScreenWebViewState extends State<ChartScreenWebView> {
+  final ScrollController _scrollController = ScrollController();
   double progress = 0;
   final Preferences prefs = locator<Preferences>();
   SharedPreferences? sharedPrefs;
-
   @override
   void initState() {
     super.initState();
+    Future.microtask(() {
+      context.read(marketWatchProvider).loadDefaultTabs();
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelectedTab());
+  }
+
+  // @override
+  // void didUpdateWidget(covariant ChartScreenWebView oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  //   WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelectedTab());
+  // }
+
+  void _scrollToSelectedTab() {
+    final tvChart = context.read(marketWatchProvider);
+
+    final selectedIndex = tvChart.chartTabs
+        .indexWhere((tab) => tab.token == tvChart.activeTab?.token);
+    if (_scrollController.hasClients && selectedIndex != -1) {
+      _scrollController.animateTo(
+        selectedIndex * 120.0, // Adjust width estimate based on Chip size
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
   void dispose() {
+    ConstantName.chartwebViewController?.dispose();
+    ConstantName.chartwebViewController = null;
     super.dispose();
   }
 
@@ -71,6 +97,22 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // IconButton(
+                    //   padding: const EdgeInsets.all(0),
+                    //   icon: Icon(Icons.restart_alt,
+                    //       color: theme.isDarkMode
+                    //           ? colors.colorWhite
+                    //           : colors.colorBlack), // Back icon
+                    //   onPressed: () {
+                    //     ConstantName.chartwebViewController?.loadUrl(
+                    //       urlRequest: URLRequest(
+                    //         url: WebUri(
+                    //           "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}",
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
                     Expanded(
                         child: InkWell(
                       onTap: () async {
@@ -145,37 +187,140 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
               onPressed: () async {
                 userProfile.setChartdialog(false);
                 tvChart.chngDephBtn("Overview");
-                        tvChart.singlePageloader(true);
+                tvChart.singlePageloader(true);
+                await tvChart.calldepthApis(context, tvChart.getQuotes, "");
 
-                        DepthInputArgs depthArgs = DepthInputArgs(
-                            exch: '${tvChart.getQuotes?.exch}',
-                            token: '${tvChart.getQuotes?.token}',
-                            tsym: '${tvChart.getQuotes?.tsym}',
-                            instname: tvChart.getQuotes?.instname ?? "",
-                            symbol: '${tvChart.getQuotes?.symbol}',
-                            expDate: '${tvChart.getQuotes?.expDate}',
-                            option: '${tvChart.getQuotes?.option}');
+                // DepthInputArgs depthArgs = DepthInputArgs(
+                //     exch: '${tvChart.getQuotes?.exch}',
+                //     token: '${tvChart.getQuotes?.token}',
+                //     tsym: '${tvChart.getQuotes?.tsym}',
+                //     instname: tvChart.getQuotes?.instname ?? "",
+                //     symbol: '${tvChart.getQuotes?.symbol}',
+                //     expDate: '${tvChart.getQuotes?.expDate}',
+                //     option: '${tvChart.getQuotes?.option}');
 
-                        showModalBottomSheet(
-                            isScrollControlled: true,
-                            useSafeArea: true,
-                            isDismissible: true,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(16))),
-                            context: context,
-                            builder: (context) => Container(
-                                padding: EdgeInsets.only(
-                                  bottom:
-                                      MediaQuery.of(context).viewInsets.bottom,
-                                ),
-                                child: ScripDepthInfo(
-                                    wlValue: depthArgs, isBasket: '')));
-                        tvChart.singlePageloader(false);
-                await ConstantName.chartwebViewController!.evaluateJavascript(
-                    source:
-                        "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${theme.isDarkMode}')");
+                // showModalBottomSheet(
+                //     isScrollControlled: true,
+                //     useSafeArea: true,
+                //     isDismissible: true,
+                //     shape: const RoundedRectangleBorder(
+                //         borderRadius:
+                //             BorderRadius.vertical(top: Radius.circular(16))),
+                //     context: context,
+                //     builder: (context) => Container(
+                //         padding: EdgeInsets.only(
+                //           bottom: MediaQuery.of(context).viewInsets.bottom,
+                //         ),
+                //         child:
+                //             ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
+                tvChart.singlePageloader(false);
+                tvChart.setChartScript('ABC', '0123', 'ABCD');
                 chartUpdate.changeOrientation('portrait');
+              },
+            ),
+            Expanded(
+              child: ListView.separated(
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(right: 8),
+                itemCount:
+                    tvChart.chartTabs.length, // List of tabs (tokens/symbols)
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final last = tvChart.chartTabs.first;
+                  final tab = tvChart.chartTabs[index];
+                  final isSelected = tab.token == tvChart.activeTab?.token;
+
+                  return InkWell(
+                    onTap: () async {
+                      await tvChart.fetchScripQuoteIndex(
+                          tab.token, tab.exch, context);
+                      tvChart.setChartScript(tab.exch, tab.token, tab.tsym);
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Chip(
+                      visualDensity:
+                          const VisualDensity(vertical: -4, horizontal: 0),
+                      labelPadding: const EdgeInsets.only(right: 0),
+                      padding: index > 1
+                          ? const EdgeInsets.only(left: 16)
+                          : const EdgeInsets.symmetric(horizontal: 8),
+                      label: Text(
+                        tab.tsym,
+                        style: textStyle(
+                          theme.isDarkMode
+                              ? Color(isSelected ? 0xff000000 : 0xffffffff)
+                              : Color(isSelected ? 0xffffffff : 0xff000000),
+                          12,
+                          FontWeight.w500,
+                        ),
+                      ),
+                      backgroundColor: theme.isDarkMode
+                          ? (isSelected
+                              ? const Color(0xffffffff)
+                              : const Color(0xff000000))
+                          : (isSelected
+                              ? const Color(0xff000000)
+                              : const Color(0xffffffff)),
+                      shape: StadiumBorder(
+                        side: BorderSide(
+                          color: theme.isDarkMode
+                              ? (!isSelected
+                                  ? colors.colorWhite
+                                  : colors.colorBlack)
+                              : (isSelected
+                                  ? colors.colorWhite
+                                  : colors.colorBlack),
+                        ),
+                      ),
+                      deleteIcon: index > 1
+                          ? Icon(
+                              Icons.close,
+                              size: 16,
+                              color: theme.isDarkMode
+                                  ? Color(isSelected ? 0xff000000 : 0xffffffff)
+                                  : Color(isSelected ? 0xffffffff : 0xff000000),
+                            )
+                          : null,
+                      onDeleted: index > 1
+                          ? () async {
+                              tvChart.removeChartTab(tab);
+                              if (tvChart.activeTab?.token == tab.token) {
+                                await tvChart.fetchScripQuoteIndex(
+                                    last.token, last.exch, context);
+                                tvChart.setChartScript(
+                                    last.exch, last.token, last.tsym);
+                              }
+                            }
+                          : null,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      // padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                  );
+                },
+              ),
+            ),
+            IconButton(
+              padding: const EdgeInsets.all(0),
+              icon: Text("+",
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      32,
+                      FontWeight.normal)),
+              // Icon(Icons.add_circle_outline,
+              //     color: theme.isDarkMode
+              //         ? colors.colorWhite
+              // : colors.colorBlack),
+              onPressed: () async {
+                context
+                    .read(marketWatchProvider)
+                    .requestMWScrip(context: context, isSubscribe: false);
+                Navigator.pushNamed(
+                  context,
+                  Routes.searchScrip,
+                  arguments: "Chart||Is",
+                );
+                // userProfile.setChartdialog(false);
               },
             ),
             IconButton(
@@ -204,6 +349,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       height: (MediaQuery.of(context).size.height -
           (TargetPlatform.iOS == defaultTargetPlatform ? 160 : 140)),
       child: InAppWebView(
+        key: context.read(userProfileProvider).webViewKey,
         gestureRecognizers: {
           // Factory<VerticalDragGestureRecognizer>(
           //     () => VerticalDragGestureRecognizer()),
@@ -219,24 +365,50 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         },
         initialUrlRequest: URLRequest(
           url: WebUri(
-              "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}"
+              "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}"
               // "https://global-grammar-349410.web.app/?symbol=${widget.chartArgs.exch}%3A${widget.chartArgs.tsym}"
               // "&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}"
               // "&exch=${widget.chartArgs.exch}&res=${tvChart.chartDuration}&dark=${theme.isDarkMode}&showseries=Y",
               ),
         ),
         onConsoleMessage: (controller, consoleMessage) {
-          //
+          ConstantName.chartwebViewController = controller;
         },
-        initialOptions: InAppWebViewGroupOptions(
-          crossPlatform: InAppWebViewOptions(transparentBackground: true),
+        initialSettings: InAppWebViewSettings(
+          transparentBackground: true,
         ),
         onWebViewCreated: (controller) {
           ConstantName.chartwebViewController = controller;
         },
-        onProgressChanged: (_, progress) {
+        onReceivedError: (controller, request, error) {
+          ConstantName.chartwebViewController = controller;
+
+          if (error.description.contains('recreating_view')) {
+            setState(() {
+              context.read(userProfileProvider).setonloadChartdialog(true);
+            });
+          }
+        },
+        onProgressChanged: (controller, progress) async {
+          WebUri? currentUrl = await controller.getUrl();
+
           setState(() {
             this.progress = progress / 100;
+            if (context.read(userProfileProvider).showchartof &&
+                progress == 100) {
+              final mktpro = context.read(marketWatchProvider).getQuotes;
+
+              String redirUrl = currentUrl.toString();
+              Uri url = Uri.parse(redirUrl);
+              Map<String, String> queryParams = url.queryParameters;
+              String? query = queryParams['token'];
+              if (mktpro!.token != "" && mktpro.token.toString() != query) {
+                // print("sddccdcdcdc WebUri ${currentUrl.toString()}");
+                tvChart.setChartScript(mktpro.exch.toString(),
+                    mktpro.token.toString(), mktpro.tsym.toString());
+              }
+              // print("sddccdcdcdc $progress $query");
+            }
           });
         },
       ),

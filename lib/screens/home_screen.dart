@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/screens/dashboard_screen.dart';
 import '../locator/constant.dart';
 import '../models/marketwatch_model/get_quotes.dart';
@@ -136,15 +137,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         }
         print("app in resumed");
         final userProfile = context.read(userProfileProvider);
-
         final scriptInfo = context.read(marketWatchProvider).getQuotes;
-        final theme = context.read(themeProvider);
-
         if (userProfile.showchartof) {
-          if (scriptInfo?.exch != null) {
-            await ConstantName.chartwebViewController!.evaluateJavascript(
-                source:
-                    "window.changeScript([{exch: '${scriptInfo?.exch}', token: '${scriptInfo?.token}', tsym: '${scriptInfo?.tsym}'}], '${theme.isDarkMode}')");
+          if (scriptInfo!.exch != null) {
+            context.read(marketWatchProvider).setChartScript(
+                scriptInfo.exch.toString(),
+                scriptInfo.token.toString(),
+                scriptInfo.tsym.toString());
             // await context.read(websocketProvider).establishConnection(
             //     channelInput: "${scriptInfo?.exch}|${scriptInfo?.token}",
             //     task: "d",
@@ -159,6 +158,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         if (context.read(indexListProvider).selectedBtmIndx == 2) {
           context.read(portfolioProvider).cancelTimer();
         }
+        final userProfile = context.read(userProfileProvider);
+        userProfile.setonloadChartdialog(false);
         print("app in inactive");
         break;
       case AppLifecycleState.paused:
@@ -171,6 +172,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         if (context.read(indexListProvider).selectedBtmIndx == 2) {
           context.read(portfolioProvider).cancelTimer();
         }
+        final userProfile = context.read(userProfileProvider);
+        userProfile.setonloadChartdialog(false);
         print("app in detached");
         break;
       case AppLifecycleState.hidden:
@@ -201,6 +204,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           final marketWatchList = watch(marketWatchProvider);
           // final explore = watch(authProvider);
           final indexProvide = watch(indexListProvider);
+          final reportsprovider = watch(ledgerProvider);
           final internet = watch(networkStateProvider);
           final portfolio = watch(portfolioProvider);
           final userProfile = watch(userProfileProvider);
@@ -355,14 +359,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   ? []
                                                   : [
                                                       if (indexProvide
-                                                                  .selectedBtmIndx ==
-                                                              1 &&
-                                                          marketWatchList
-                                                                  .isPreDefWLs !=
-                                                              "Yes") ...[
-                                                        marketWatchList.scrips
-                                                                    .length >
-                                                                1
+                                                              .selectedBtmIndx ==
+                                                          1) ...[
+                                                        marketWatchList.isPreDefWLs !=
+                                                                    "Yes" &&
+                                                                marketWatchList
+                                                                        .scrips
+                                                                        .length >
+                                                                    1
                                                             ? InkWell(
                                                                 onTap: () {
                                                                   FocusScope.of(
@@ -399,43 +403,42 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                             .colorGrey)),
                                                               )
                                                             : Container(),
-                                                        marketWatchList.scrips
-                                                                    .length >=
-                                                                50
-                                                            ? const SizedBox()
-                                                            : InkWell(
-                                                                onTap: () {
-                                                                  context
-                                                                      .read(
-                                                                          marketWatchProvider)
-                                                                      .requestMWScrip(
-                                                                          context:
-                                                                              context,
-                                                                          isSubscribe:
-                                                                              false);
-                                                                  Navigator.pushNamed(
-                                                                      context,
-                                                                      Routes
-                                                                          .searchScrip,
-                                                                      arguments:
-                                                                          marketWatchList
-                                                                              .wlName);
-                                                                },
-                                                                child: Padding(
-                                                                    padding: const EdgeInsets
-                                                                        .only(
-                                                                        right:
-                                                                            16,
-                                                                        left:
-                                                                            8),
-                                                                    child: SvgPicture.asset(
-                                                                        assets
-                                                                            .searchIcon,
-                                                                        width:
-                                                                            19,
-                                                                        color: colors
-                                                                            .colorGrey)),
-                                                              ),
+                                                        // marketWatchList.scrips
+                                                        //             .length >=
+                                                        //         50
+                                                        //     ? const SizedBox()
+                                                        //     :
+                                                        InkWell(
+                                                          onTap: () {
+                                                            context
+                                                                .read(
+                                                                    marketWatchProvider)
+                                                                .requestMWScrip(
+                                                                    context:
+                                                                        context,
+                                                                    isSubscribe:
+                                                                        false);
+                                                            Navigator.pushNamed(
+                                                                context,
+                                                                Routes
+                                                                    .searchScrip,
+                                                                arguments:
+                                                                    marketWatchList
+                                                                        .wlName);
+                                                          },
+                                                          child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      right: 16,
+                                                                      left: 8),
+                                                              child: SvgPicture.asset(
+                                                                  assets
+                                                                      .searchIcon,
+                                                                  width: 19,
+                                                                  color: colors
+                                                                      .colorGrey)),
+                                                        ),
                                                       ] else if ((indexProvide
                                                                       .selectedBtmIndx ==
                                                                   2 &&
@@ -1184,6 +1187,41 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       indexProvide.bottomMenu(
                                                           4, context);
                                                       portfolio.cancelTimer();
+                                                      if (reportsprovider.ledgerAllData == null) {
+                                                        await reportsprovider.getCurrentDate('else');
+                                                        reportsprovider.fetchLegerData(context, reportsprovider.startDate, reportsprovider.endDate); 
+                                                      }
+                                                      if (reportsprovider.holdingsAllData == null) {
+                                                        await reportsprovider.getCurrentDate('else'); 
+                                                        reportsprovider.fetchholdingsData(reportsprovider.today, context);
+                                                      }
+                                                      if (reportsprovider.pnlAllData == null) {
+                                                        await reportsprovider.getCurrentDate('else');
+                                                        reportsprovider.fetchpnldata(context, reportsprovider.startDate, reportsprovider.today, true);
+                                                      }
+                                                      if (reportsprovider.calenderpnlAllData == null) {
+                                                         await reportsprovider.getCurrentDate('else');
+                                                         reportsprovider.calendarProvider();
+                                                         reportsprovider.fetchcalenderpnldata( context, reportsprovider.startDate, reportsprovider.today,'Equity');
+                                                      }
+                                                      if (reportsprovider.taxpnldercomcur == null && reportsprovider.taxpnleq == null) {
+                                                         await reportsprovider.getYearlistTaxpnl();
+                                                         reportsprovider.getCurrentDate('');
+                                                         reportsprovider.fetchtaxpnleqdata(context, reportsprovider.yearforTaxpnl);
+                
+                                                         reportsprovider.taxpnlExTabchange(0);
+                                                        reportsprovider.chargesforeqtaxpnl(  context, reportsprovider.yearforTaxpnl);
+
+                                                      }
+                                                      if (reportsprovider.tradebookdata == null) {
+                                                        await reportsprovider.getCurrentDate('tradebook');
+                                                        reportsprovider.fetchtradebookdata( context, reportsprovider.startDate, reportsprovider.today);
+                                                      }
+                                                      if (reportsprovider.pdfdownload == null) {
+                                                        await reportsprovider.getCurrentDate('else');
+                                                        reportsprovider.fetchpdfdownload(context, reportsprovider.startDate, reportsprovider.today);
+                                                      }
+
                                                       await context
                                                           .read(fundProvider)
                                                           .fetchFunds(context);
@@ -1353,7 +1391,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           indexProvide.selectedBtmIndx, theme),
                                     ]
                                   ])),
+                              // if (userProfile.onloadshowchartof) ...[
                               Positioned(
+                                key: userProfile.webViewKey,
                                 // right: userProfile.showchartof
                                 //     ? 0
                                 //     : -300,
@@ -1407,6 +1447,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ),
                               ),
+                              // ]
                             ],
                           ),
                         ));
@@ -1447,33 +1488,32 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         mktwth.chngDephBtn("Overview");
         mktwth.singlePageloader(true);
 
-        DepthInputArgs depthArgs = DepthInputArgs(
-            exch: '${mktwth.getQuotes?.exch}',
-            token: '${mktwth.getQuotes?.token}',
-            tsym: '${mktwth.getQuotes?.tsym}',
-            instname: mktwth.getQuotes?.instname ?? "",
-            symbol: '${mktwth.getQuotes?.symbol}',
-            expDate: '${mktwth.getQuotes?.expDate}',
-            option: '${mktwth.getQuotes?.option}');
+        mktwth.calldepthApis(context, mktwth.getQuotes, "");
+       
+        // DepthInputArgs depthArgs = DepthInputArgs(
+        //     exch: '${mktwth.getQuotes?.exch}',
+        //     token: '${mktwth.getQuotes?.token}',
+        //     tsym: '${mktwth.getQuotes?.tsym}',
+        //     instname: mktwth.getQuotes?.instname ?? "",
+        //     symbol: '${mktwth.getQuotes?.symbol}',
+        //     expDate: '${mktwth.getQuotes?.expDate}',
+        //     option: '${mktwth.getQuotes?.option}');
 
-        showModalBottomSheet(
-            isScrollControlled: true,
-            useSafeArea: true,
-            isDismissible: true,
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-            context: context,
-            builder: (context) => Container(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                child: ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
+        // showModalBottomSheet(
+        //     isScrollControlled: true,
+        //     useSafeArea: true,
+        //     isDismissible: true,
+        //     shape: const RoundedRectangleBorder(
+        //         borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        //     context: context,
+        //     builder: (context) => Container(
+        //         padding: EdgeInsets.only(
+        //           bottom: MediaQuery.of(context).viewInsets.bottom,
+        //         ),
+        //         child: ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
         mktwth.singlePageloader(false);
       });
-
-      await ConstantName.chartwebViewController!.evaluateJavascript(
-          source:
-              "window.changeScript([{exch: 'ABC', token: '0123', tsym: 'ABCDEF'}], '${context.read(themeProvider).isDarkMode}')");
+      context.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
       return false; // Prevent back navigation when chart is visible
     } else {
       return await showDialog(

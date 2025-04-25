@@ -7,6 +7,7 @@ import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../provider/change_password_provider.dart';
+import '../../../provider/ledger_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/version_provider.dart';
 import '../../../res/res.dart';
@@ -37,6 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final auth = watch(authProvider);
       final forpass = watch(changePasswordProvider);
       final theme = watch(themeProvider);
+    final ledgerprovider = context.read(ledgerProvider);
+
       return GestureDetector(
         onTap: () {
           //theme.removeUsermatrial(context);
@@ -448,8 +451,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             )),
-                        onPressed: ((auth.loginMethCtrl.text.isEmpty ||
-                                auth.passCtrl.text.isEmpty))
+                        onPressed: (
+                          
+                          (auth.loginMethCtrl.text.isEmpty ||
+                                auth.passCtrl.text.isEmpty)
+                                )
                             // ||
                             //     internet.connectionStatus ==
                             //         ConnectivityResult.none)
@@ -459,6 +465,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 SystemSound.play(SystemSoundType.click);
                                 auth.optError = "";
                                 auth.submitLogin(context, false);
+                                          ledgerprovider.setterfornullallSwitch = null;
+
                               },
                         child: auth.loading
                             ? const SizedBox(

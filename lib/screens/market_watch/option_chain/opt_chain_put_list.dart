@@ -9,7 +9,6 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
-import '../scrip_depth_info.dart';
 
 class OptChainPutList extends ConsumerWidget {
   final List<OptionValues>? putData;
@@ -22,29 +21,34 @@ class OptChainPutList extends ConsumerWidget {
     final socketDatas = watch(websocketProvider).socketDatas;
     final scripData = watch(marketWatchProvider);
     final theme = watch(themeProvider);
-    return ListView.separated(
+    return ListView.builder(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       reverse: isPutUp ? true : false,
-      itemCount: putData!.length,
+      itemCount: putData!.length * 2 - 1,
       itemBuilder: (BuildContext context, int index) {
-        if (socketDatas.containsKey(putData![index].token)) {
-          putData![index].lp =
-              "${socketDatas["${putData![index].token}"]['lp']}";
-          putData![index].perChange =
-              "${socketDatas["${putData![index].token}"]['pc']}";
-
-          putData![index].oiLack = (double.parse(
-                      "${socketDatas["${putData![index].token}"]['oi']}") /
+        final itemIndex = index ~/ 2;
+    
+        if (socketDatas.containsKey(putData![itemIndex].token)) {
+          putData![itemIndex].lp =
+              "${socketDatas["${putData![itemIndex].token}"]['lp']}";
+          putData![itemIndex].perChange =
+              "${socketDatas["${putData![itemIndex].token}"]['pc']}";
+    
+          putData![itemIndex].oiLack = (double.parse(
+                      "${socketDatas["${putData![itemIndex].token}"]['oi']}") /
                   100000)
               .toStringAsFixed(2);
-
-          putData![index].oiPerChng = ((double.parse(
-                          "${socketDatas["${putData![index].token}"]['poi'] ?? 0.00}") /
+    
+          putData![itemIndex].oiPerChng = ((double.parse(
+                          "${socketDatas["${putData![itemIndex].token}"]['poi'] ?? 0.00}") /
                       double.parse(
-                          "${socketDatas["${putData![index].token}"]['oi'] ?? 0.00}")) *
+                          "${socketDatas["${putData![itemIndex].token}"]['oi'] ?? 0.00}")) *
                   100)
               .toStringAsFixed(2);
+        }
+        if (index.isOdd) {
+          return const ListDivider();
         }
         return InkWell(
             onLongPress: () async {
@@ -59,12 +63,12 @@ class OptChainPutList extends ConsumerWidget {
               } else {
                 await watch(websocketProvider).establishConnection(
                     channelInput:
-                        "${putData![index].exch}|${putData![index].token}",
+                        "${putData![itemIndex].exch}|${putData![itemIndex].token}",
                     task: "t",
                     context: context);
                 await scripData.addDelMarketScrip(
                     scripData.wlName,
-                    "${putData![index].exch}|${putData![index].token}",
+                    "${putData![itemIndex].exch}|${putData![itemIndex].token}",
                     context,
                     true,
                     true,
@@ -73,44 +77,21 @@ class OptChainPutList extends ConsumerWidget {
               }
             },
             onTap: () async {
-              await watch(marketWatchProvider).fetchScripQuote(
-                  "${putData![index].token}",
-                  "${putData![index].exch}",
+              await scripData.fetchScripQuoteIndex(
+                  "${putData![itemIndex].token}",
+                  "${putData![itemIndex].exch}",
                   context);
-              await scripData.fetchLinkeScrip("${putData![index].token}",
-                  "${putData![index].exch}", context);
-
-              await watch(websocketProvider).establishConnection(
-                  channelInput:
-                      "${putData![index].exch}|${putData![index].token}",
-                  task: "d",
-                  context: context);
-
-              if (watch(marketWatchProvider).getQuotes!.stat == "Ok") {
-                DepthInputArgs depthArgs = DepthInputArgs(
-                    exch: '${putData![index].exch}',
-                    token: '${putData![index].token}',
-                    tsym: '${putData![index].tsym}',
-                    instname: "",
-                    symbol: '${putData![index].symbol}',
-                    expDate: '${putData![index].expDate}',
-                    option: '${putData![index].option}');
-                Navigator.pop(context);
-                showModalBottomSheet(
-                    barrierColor: Colors.transparent,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    isDismissible: true,
-                    shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(16))),
-                    backgroundColor: const Color(0xffffffff),
-                    context: context,
-                    builder: (context) =>
-                        ScripDepthInfo(wlValue: depthArgs, isBasket: ''));
-              scripData.chngDephBtn("Overview");
-
-              }
+              final quots = scripData.getQuotes;
+              DepthInputArgs depthArgs = DepthInputArgs(
+                  exch: quots!.exch.toString(),
+                  token: quots.token.toString(),
+                  tsym: quots.tsym.toString(),
+                  instname: quots.instname.toString(),
+                  symbol: quots.symbol.toString(),
+                  expDate: quots.expDate.toString(),
+                  option: quots.option.toString());
+              Navigator.pop(context);
+              await scripData.calldepthApis(context, depthArgs, "");
             },
             child: Container(
               height: 58,
@@ -130,7 +111,7 @@ class OptChainPutList extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                            "${putData![index].lp ?? putData![index].close ?? 0.00}",
+                            "${putData![itemIndex].lp ?? putData![itemIndex].close ?? 0.00}",
                             style: textStyle(
                                 theme.isDarkMode
                                     ? colors.colorWhite
@@ -138,12 +119,14 @@ class OptChainPutList extends ConsumerWidget {
                                 13,
                                 FontWeight.w500)),
                         const SizedBox(height: 3),
-                        Text("(${putData![index].perChange ?? 0.00}%)",
+                        Text("(${putData![itemIndex].perChange ?? 0.00}%)",
                             style: textStyle(
-                                putData![index].perChange == null ||
-                                        putData![index].perChange == "0.00"
+                                putData![itemIndex].perChange == null ||
+                                        putData![itemIndex].perChange == "0.00"
                                     ? colors.ltpgrey
-                                    : putData![index].perChange!.startsWith("-")
+                                    : putData![itemIndex]
+                                            .perChange!
+                                            .startsWith("-")
                                         ? colors.darkred
                                         : colors.ltpgreen,
                                 11,
@@ -155,7 +138,7 @@ class OptChainPutList extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text("${putData![index].oiLack ?? 0.00}",
+                      Text("${putData![itemIndex].oiLack ?? 0.00}",
                           style: textStyle(
                               theme.isDarkMode
                                   ? colors.colorWhite
@@ -164,12 +147,14 @@ class OptChainPutList extends ConsumerWidget {
                               FontWeight.w500)),
                       const SizedBox(height: 3),
                       Text(
-                          "(${putData![index].oiPerChng == "NaN" ? "0.00" : putData![index].oiPerChng ?? 0.00}%)",
+                          "(${putData![itemIndex].oiPerChng == "NaN" ? "0.00" : putData![itemIndex].oiPerChng ?? 0.00}%)",
                           style: textStyle(
-                              putData![index].oiPerChng == null ||
-                                      putData![index].oiPerChng == "0.00"
+                              putData![itemIndex].oiPerChng == null ||
+                                      putData![itemIndex].oiPerChng == "0.00"
                                   ? colors.ltpgrey
-                                  : putData![index].oiPerChng!.startsWith("-")
+                                  : putData![itemIndex]
+                                          .oiPerChng!
+                                          .startsWith("-")
                                       ? colors.darkred
                                       : colors.ltpgreen,
                               11,
@@ -180,9 +165,9 @@ class OptChainPutList extends ConsumerWidget {
               ),
             ));
       },
-      separatorBuilder: (BuildContext context, int index) {
-        return const ListDivider();
-      },
+      // separatorBuilder: (BuildContext context, int index) {
+      //   return const ListDivider();
+      // },
     );
   }
 }

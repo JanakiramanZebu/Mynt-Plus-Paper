@@ -290,7 +290,7 @@ class _LedgerFilter extends State<LedgerFilter> {
   void _handleSelection(SingingCharacter? newvalue, LDProvider ledgerprovider) {
     if (newvalue != null) {
       ledgerprovider.setfilterval = newvalue;
-      ledgerprovider.ledgerfiltercall(newvalue);
+      ledgerprovider.ledgerfiltercall(context,newvalue);
       Navigator.pop(context);
     }
   }

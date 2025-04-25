@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -37,6 +38,7 @@ class UserAccountScreen extends ConsumerWidget {
     final trancation = watch(transcationProvider);
     final mf = watch(mfProvider);
     final portfolio = watch(portfolioProvider);
+    final reportsprovider = watch(ledgerProvider);
 
     //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
@@ -57,7 +59,7 @@ class UserAccountScreen extends ConsumerWidget {
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
                         onTap: () async {
-                          if ([3,4,5,6,10].contains(index)) {
+                          if ([3, 4, 5, 6, 10].contains(index)) {
                             await funds.fetchHstoken(context);
                           }
                           if (acttitle == "Fund") {
@@ -66,6 +68,60 @@ class UserAccountScreen extends ConsumerWidget {
                           } else if (acttitle == "My Account") {
                             Navigator.pushNamed(context, Routes.myAcc);
                           } else if (acttitle == "Reports") {
+                            if (reportsprovider.ledgerAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchLegerData(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.endDate);
+                            }
+                            if (reportsprovider.holdingsAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchholdingsData(
+                                  reportsprovider.today, context);
+                            }
+                            if (reportsprovider.pnlAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchpnldata(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today,
+                                  true);
+                            }
+                            if (reportsprovider.calenderpnlAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.calendarProvider();
+                              reportsprovider.fetchcalenderpnldata(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today,
+                                  'Equity');
+                            }
+                            if (reportsprovider.taxpnldercomcur == null &&
+                                reportsprovider.taxpnleq == null) {
+                              await reportsprovider.getYearlistTaxpnl();
+                              reportsprovider.getCurrentDate('');
+                              reportsprovider.fetchtaxpnleqdata(
+                                  context, reportsprovider.yearforTaxpnl);
+
+                              reportsprovider.taxpnlExTabchange(0);
+                              reportsprovider.chargesforeqtaxpnl(
+                                  context, reportsprovider.yearforTaxpnl);
+                            }
+                            if (reportsprovider.tradebookdata == null) {
+                              await reportsprovider.getCurrentDate('tradebook');
+                              reportsprovider.fetchtradebookdata(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today);
+                            }
+                            if (reportsprovider.pdfdownload == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              reportsprovider.fetchpdfdownload(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.today);
+                            }
                             Navigator.pushNamed(context, Routes.reports);
                           } else if (acttitle == "Verified P&L") {
                             Navigator.pushNamed(
@@ -80,6 +136,10 @@ class UserAccountScreen extends ConsumerWidget {
                                 context, Routes.reportWebViewApp,
                                 arguments: "event");
                           } else if (acttitle == "Pledge & Unpledge") {
+                            // reportsprovider.fetchpledgeandunpledge(context);
+                            // reportsprovider.getCurrentDate("pandu");
+                            // Navigator.pushNamed(context, Routes.pledgeandun,
+                            //     arguments: "DDDDD");
                             Navigator.pushNamed(
                                 context, Routes.reportWebViewApp,
                                 arguments: "pledge");
@@ -175,10 +235,10 @@ class UserAccountScreen extends ConsumerWidget {
                         },
                         dense: true,
                         minLeadingWidth: 20,
-                        leading:SvgPicture.asset(
-                                userProfile.profileMenu[index]['leading'],
-                                width: 19,
-                                color: const Color(0xff666666)),
+                        leading: SvgPicture.asset(
+                            userProfile.profileMenu[index]['leading'],
+                            width: 19,
+                            color: const Color(0xff666666)),
                         title: Text(
                             "${index == 0 ? "₹${getFormatter(value: double.parse(funds.fundDetailModel!.avlMrg ?? "0.00"), v4d: false, noDecimal: false)}" : userProfile.profileMenu[index]['title']}",
                             style: textStyle(
@@ -492,7 +552,7 @@ class UserAccountScreen extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                      "Version 3.0.2 Build 1.0.78(01) Released on 05 Apr",
+                      "Version 3.0.2 Build 1.0.77(03+05) Released on 23 Apr",
                       style: textStyle(
                           const Color(0xff666666), 11, FontWeight.w500)))
             ]));

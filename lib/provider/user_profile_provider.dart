@@ -73,23 +73,30 @@ class UserProfileProvider extends DefaultChangeNotifier {
   ];
 
   final List _reporttMenu = [
+    {
+      "title": "P&L Insights",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
     {"title": "Ledger", "trailing": "assets/profile/greater_arrow.svg"},
     {"title": "Holdings", "trailing": "assets/profile/greater_arrow.svg"},
+     {
+      "title": "Positions - (Beta)",
+      "trailing": "assets/profile/ex-link.svg"
+    },
     // {
     //   "title": "Positions - (Beta)",
     //   "trailing": "assets/profile/greater_arrow.svg"
     // },
-    {"title": "Profit & Loss", "trailing": "assets/profile/greater_arrow.svg"},
-    {
-      "title": "Calender P&L (Beta)",
-      "trailing": "assets/profile/greater_arrow.svg"
-    },
+    {"title": "Profit & Loss", "trailing": "assets/profile/greater_arrow.svg"}, 
+    
     {"title": "Tax P&L", "trailing": "assets/profile/greater_arrow.svg"},
     {
       "title": "TradeBook/Contract",
       "trailing": "assets/profile/greater_arrow.svg"
     },
-    {"title": "PDF Download", "trailing": "assets/profile/greater_arrow.svg"}
+    {"title": "PDF Download", "trailing": "assets/profile/greater_arrow.svg"},
+    
+    // {"title": "Pledge & Unpledge", "trailing": "assets/profile/greater_arrow.svg"}
   ];
 
   List get profileMenu => _profileMenu;
@@ -105,9 +112,23 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
   bool _showchartof = false;
   bool get showchartof => _showchartof;
-  
+
+  bool _onloadshowchartof = false;
+  bool get onloadshowchartof => _onloadshowchartof;
+
+  Key _webViewKey = UniqueKey();
+  Key get webViewKey => _webViewKey;
+
   setChartdialog(bool value) {
     _showchartof = value;
+    notifyListeners();
+  }
+
+  setonloadChartdialog(bool value) {
+    if (value == true && !_onloadshowchartof) {
+      _webViewKey = UniqueKey();
+    }
+    _onloadshowchartof = value;
     notifyListeners();
   }
 
@@ -206,7 +227,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/profile/privacy_settings.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
-      
     ];
     notifyListeners();
     return settingmenu;
@@ -234,7 +254,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Reports",
-        "subTitle": "Ledger, Holdings, Profit&Loss",
+        "subTitle": "P&L Insights, Ledger, Holdings",
         "leading": "assets/profileimage/reports.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref(showcaseProvide).reportcase,

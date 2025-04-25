@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pinput/pinput.dart';
+import 'package:sms_autofill/sms_autofill.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../provider/thems.dart';
@@ -18,20 +19,58 @@ class BottomSheetContent extends StatefulWidget {
   State<BottomSheetContent> createState() => _BottomSheetContentState();
 }
 
-class _BottomSheetContentState extends State<BottomSheetContent> {
+class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFill{
   final TextEditingController otpController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
   Timer? _timer;
   int _start = 89;
   String resendTime = "01.29";
+  String? _receivedCode = '';
+  final autoFill  = SmsAutoFill();
+  String _appSignature = "Fetching...";
+  
   @override
   void initState() {
     startTimer();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
+    _startListeningForOtp();
+    _getAppSignature();
     super.initState();
+  }
+
+   Future<void> _getAppSignature() async {
+    try {
+      final autoFill = SmsAutoFill();
+      final signature = await autoFill.getAppSignature;
+      setState(() {
+        _appSignature = signature;
+      });
+    } catch (e) {
+      setState(() {
+        _appSignature = "Error: $e";
+      });
+    }
+  }
+  
+
+  Future<void> _startListeningForOtp() async {
+    setState(() {
+      otpController.text = '';
+    });
+    await SmsAutoFill().listenForCode(); // Listen via SMS Retriever API
+    listenForCode(); // Needed to trigger CodeAutoFill callback
+  }
+
+   @override
+  void codeUpdated() {
+    setState(() {
+      _receivedCode = code; // `code` is provided by the mixin
+      otpController.text = _receivedCode ?? '';
+      print("signature ${otpController.text} $code");
+    });
   }
 
   Preferences pref = Preferences();
@@ -67,6 +106,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
     _timer!.cancel();
     _focusNode.dispose();
     otpController.dispose();
+    SmsAutoFill().unregisterListener();
     super.dispose();
   }
 
@@ -273,6 +313,9 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                                     //     ? null
                                     //     :
                                     () {
+                                      SmsAutoFill().unregisterListener();
+                                  otpController.text = '';
+                                  _startListeningForOtp();
                                   auth.submitResendOtp(context);
                                   _start = 89;
 

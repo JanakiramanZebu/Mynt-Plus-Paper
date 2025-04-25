@@ -52,7 +52,7 @@ class OrderBookModel {
   String? rejby;
   String? srcUid;
   String? snoFillid;
-String? dname;
+  String? dname;
   String? ordersource;
   String? brnchid;
   String? c;
@@ -79,7 +79,8 @@ String? dname;
       this.mktProtection,
       this.norentm,
       this.ordenttm,
-      this.pp,this.dname,
+      this.pp,
+      this.dname,
       this.prc,
       this.prcftr,
       this.prctyp,
@@ -183,7 +184,7 @@ String? dname;
     snonum = json['snonum'];
     snoordt = json['snoordt'];
     instname = json['instname'];
-    dname=json['dname'];
+    dname = json['dname'];
     isExitSelection = json['isExitSelection'];
   }
 
@@ -245,7 +246,7 @@ String? dname;
     data['ordersource'] = ordersource;
     data['brnchid'] = brnchid;
     data['C'] = c;
-    data['dname']=dname;
+    data['dname'] = dname;
     data['snonum'] = snonum;
     data['snoordt'] = snoordt;
 

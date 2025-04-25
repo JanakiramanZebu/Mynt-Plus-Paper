@@ -617,9 +617,9 @@ class PositionDetailScreen extends ConsumerWidget {
                                   tSym: '${positionList.tsym}',
                                   isExit: false,
                                   token: "${positionList.token}",
-                                  transType: int.parse(positionList.netqty!) > 0
-                                      ? true
-                                      : false,
+                                  transType: int.parse(positionList.netqty!) < 0
+                                      ? false
+                                      : true,
                                   prd: '${positionList.prd}',
                                   // change: depthData.chng,
                                   // close: depthData.c,

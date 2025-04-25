@@ -8,6 +8,7 @@ import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import 'chart_for_tax_scree.dart';
 
 class TaxpnlvalueScreen extends StatefulWidget {
@@ -63,768 +64,849 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
       final ledgerprovider = watch(ledgerProvider);
 
       return Scaffold(
-        body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.taxderloading,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Text("${ddd}")
-                // Padding(
-                //     padding: EdgeInsets.only(left: 4.0, top: 10.0),
-                //     child: Text(
-                //       "Financial activities through debits and credits ",
-                //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
-                //     )),
-                SizedBox(height: 52.0),
-                BarChartWidget(),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Text("${ddd}")
+              // Padding(
+              //     padding: EdgeInsets.only(left: 4.0, top: 10.0),
+              //     child: Text(
+              //       "Financial activities through debits and credits ",
+              //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+              //     )),
+              // SizedBox(height: 52.0),
+              // BarChartWidget(),
 
-                SizedBox(height: 8.0),
-                Container(
-                    width: screenWidth,
-                    child: Container(
-                        decoration: BoxDecoration(
-                            color: theme.isDarkMode
-                                ? const Color(0xffB5C0CF).withOpacity(.15)
-                                : const Color(0xffF1F3F8)),
-                        child: Padding(
-                          padding:
-                              const EdgeInsets.only(left: 16.0, right: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Financial Year",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    14,
-                                    FontWeight.w500),
-                              ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.arrow_left,
-                                        color: Colors.black),
-                                    onPressed: () => {
-                                      ledgerprovider.fetchtaxpnleqdata(context,
-                                          ledgerprovider.yearforTaxpnl - 1)
-                                    },
-                                  ),
-                                  // Center(
-                                  //   child: Container(
-                                  //     width: screenWidth * 0.5,
-                                  //     alignment: Alignment.centerLeft,
-                                  //     padding: const EdgeInsets.symmetric(
-                                  //         vertical: 10, horizontal: 10),
-                                  //     decoration: BoxDecoration(
-                                  //         borderRadius: BorderRadius.circular(30),
-                                  //         color: theme.isDarkMode
-                                  //             ? const Color(0xffB5C0CF).withOpacity(.15)
-                                  //             : const Color(0xffF1F3F8)),
-                                  //     child: Center(
-                                  //       child:
-                                  Text("${ledgerprovider.yearforTaxpnl}",
-                                      textAlign: TextAlign.right,
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w500)),
+              SizedBox(height: 8.0),
+              // Container(
+              //     width: screenWidth,
+              //     child: Container(
+              //         decoration: BoxDecoration(
+              //             color: theme.isDarkMode
+              //                 ? const Color(0xffB5C0CF).withOpacity(.15)
+              //                 : const Color(0xffF1F3F8)),
+              //         child: Padding(
+              //           padding:
+              //               const EdgeInsets.only(left: 16.0, right: 16.0),
+              //           child: Row(
+              //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //             children: [
+              //               Text(
+              //                 "Financial Year",
+              //                 style: textStyle(
+              //                     theme.isDarkMode
+              //                         ? colors.colorWhite
+              //                         : colors.colorBlack,
+              //                     14,
+              //                     FontWeight.w500),
+              //               ),
+              //               Row(
+              //                 children: [
+              //                   IconButton(
+              //                     icon: Icon(Icons.arrow_left,
+              //                         color: Colors.black),
+              //                     onPressed: () => {
+              //                       ledgerprovider.fetchtaxpnleqdata(context,
+              //                           ledgerprovider.yearforTaxpnl - 1)
+              //                     },
+              //                   ),
+              //                   // Center(
+              //                   //   child: Container(
+              //                   //     width: screenWidth * 0.5,
+              //                   //     alignment: Alignment.centerLeft,
+              //                   //     padding: const EdgeInsets.symmetric(
+              //                   //         vertical: 10, horizontal: 10),
+              //                   //     decoration: BoxDecoration(
+              //                   //         borderRadius: BorderRadius.circular(30),
+              //                   //         color: theme.isDarkMode
+              //                   //             ? const Color(0xffB5C0CF).withOpacity(.15)
+              //                   //             : const Color(0xffF1F3F8)),
+              //                   //     child: Center(
+              //                   //       child:
+              //                   Text("${ledgerprovider.yearforTaxpnl}",
+              //                       textAlign: TextAlign.right,
+              //                       style: textStyle(
+              //                           theme.isDarkMode
+              //                               ? colors.colorWhite
+              //                               : colors.colorBlack,
+              //                           14,
+              //                           FontWeight.w500)),
 
-                                  //     ),
-                                  //   ),
-                                  // ),
-                                  IconButton(
-                                    icon: Icon(Icons.arrow_right,
-                                        color: Colors.black),
-                                    onPressed: () => {
-                                      ledgerprovider.fetchtaxpnleqdata(context,
-                                          ledgerprovider.yearforTaxpnl + 1)
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ))),
-                // Divider(
-                //   color: const Color.fromARGB(
-                //       255, 117, 117, 117),
-                // ),
-                SizedBox(height: 8.0),
-                Column(
-                  children: [
-                    headingstat(
-                        theme,
-                        "Asserts term",
-                        (ledgerprovider.taxpnleq?.data?.assetsTotal != null &&
-                                ledgerprovider
-                                    .taxpnleq!.data!.assetsTotal!.isNotEmpty)
-                            ? num.parse(
-                                    ledgerprovider.taxpnleq!.data!.assetsTotal!)
-                                .toStringAsFixed(2)
-                            : "0.00"),
-                    headingstat(
+              //                   //     ),
+              //                   //   ),
+              //                   // ),
+              //                   IconButton(
+              //                     icon: Icon(Icons.arrow_right,
+              //                         color: Colors.black),
+              //                     onPressed: () => {
+              //                       ledgerprovider.fetchtaxpnleqdata(context,
+              //                           ledgerprovider.yearforTaxpnl + 1)
+              //                     },
+              //                   ),
+              //                 ],
+              //               ),
+              //             ],
+              //           ),
+              //         ))),
+              // Divider(
+              //   color: const Color.fromARGB(
+              //       255, 117, 117, 117),
+              // ),
+              SizedBox(height: 8.0),
+              Column(
+                children: [
+                  headingstat(
                       theme,
-                      "Eq Long team",
-                      (ledgerprovider.taxpnleq?.data?.longtermTotal != null &&
+                      "Asserts term",
+                      (ledgerprovider.taxpnleq?.data?.assetsTotal != null &&
                               ledgerprovider
-                                  .taxpnleq!.data!.longtermTotal!.isNotEmpty)
-                          ? double.parse(
-                                  ledgerprovider.taxpnleq!.data!.longtermTotal!)
+                                  .taxpnleq!.data!.assetsTotal!.isNotEmpty)
+                          ? num.parse(
+                                  ledgerprovider.taxpnleq!.data!.assetsTotal!)
                               .toStringAsFixed(2)
-                          : "0.00",
-                    ),
-                    headingstat(
-                        theme,
-                        "Eq Short term",
-                        (ledgerprovider.taxpnleq?.data?.shortermTotal != null &&
-                                ledgerprovider
-                                    .taxpnleq!.data!.shortermTotal!.isNotEmpty)
-                            ? num.parse(ledgerprovider
-                                    .taxpnleq!.data!.shortermTotal!)
-                                .toStringAsFixed(2)
-                            : "0.00"),
+                          : "0.00"),
 
-                    
-                    headingstat(
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
+                  headingstat(
+                    theme,
+                    "Eq Long team",
+                    (ledgerprovider.taxpnleq?.data?.longtermTotal != null &&
+                            ledgerprovider
+                                .taxpnleq!.data!.longtermTotal!.isNotEmpty)
+                        ? double.parse(
+                                ledgerprovider.taxpnleq!.data!.longtermTotal!)
+                            .toStringAsFixed(2)
+                        : "0.00",
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
+                  headingstat(
                       theme,
-                      "FNO Future",
+                      "Eq Short term",
+                      (ledgerprovider.taxpnleq?.data?.shortermTotal != null &&
+                              ledgerprovider
+                                  .taxpnleq!.data!.shortermTotal!.isNotEmpty)
+                          ? num.parse(
+                                  ledgerprovider.taxpnleq!.data!.shortermTotal!)
+                              .toStringAsFixed(2)
+                          : "0.00"),
+
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
+                  headingstat(
+                    theme,
+                    "FNO Future",
+                    (ledgerprovider.taxpnldercomcur?.data?.derivatives !=
+                                null &&
+                            ledgerprovider.taxpnldercomcur?.data?.derivatives
+                                    ?.derFutPnl !=
+                                null)
+                        ? double.parse(ledgerprovider
+                                .taxpnldercomcur!.data!.derivatives!.derFutPnl!)
+                            .toStringAsFixed(2)
+                        : "0.00",
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
+                  headingstat(
+                      theme,
+                      "FNO Option",
                       (ledgerprovider.taxpnldercomcur?.data?.derivatives !=
                                   null &&
                               ledgerprovider.taxpnldercomcur?.data?.derivatives
-                                      ?.derFutPnl !=
+                                      ?.derOptPnl !=
                                   null)
                           ? double.parse(ledgerprovider.taxpnldercomcur!.data!
-                                  .derivatives!.derFutPnl!)
+                                  .derivatives!.derOptPnl!)
                               .toStringAsFixed(2)
-                          : "0.00",
+                          : "0.00"),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
                     ),
-                    headingstat(
-                        theme,
-                        "FNO Option",
-                        (ledgerprovider.taxpnldercomcur?.data?.derivatives !=
-                                    null &&
-                                ledgerprovider.taxpnldercomcur?.data
-                                        ?.derivatives?.derOptPnl !=
-                                    null)
-                            ? double.parse(ledgerprovider.taxpnldercomcur!.data!
-                                    .derivatives!.derOptPnl!)
-                                .toStringAsFixed(2)
-                            : "0.00"),
-                    headingstat(
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
+                  headingstat(
+                    theme,
+                    "Com Future",
+                    (ledgerprovider.taxpnldercomcur?.data?.commodity != null &&
+                            ledgerprovider.taxpnldercomcur?.data?.commodity
+                                    ?.commFutPnl !=
+                                null)
+                        ? double.parse(ledgerprovider
+                                .taxpnldercomcur!.data!.commodity!.commFutPnl!)
+                            .toStringAsFixed(2)
+                        : "0.00",
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
+                  headingstat(
                       theme,
-                      "Com Future",
+                      "Com Option",
                       (ledgerprovider.taxpnldercomcur?.data?.commodity !=
                                   null &&
                               ledgerprovider.taxpnldercomcur?.data?.commodity
-                                      ?.commFutPnl !=
+                                      ?.commOptPnl !=
                                   null)
                           ? double.parse(ledgerprovider.taxpnldercomcur!.data!
-                                  .commodity!.commFutPnl!)
+                                  .commodity!.commOptPnl!)
                               .toStringAsFixed(2)
-                          : "0.00",
+                          : "0.00"),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
                     ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
+                  headingstat(
+                      theme,
+                      "Cur Future",
+                      (ledgerprovider.taxpnldercomcur?.data?.currency != null &&
+                              ledgerprovider.taxpnldercomcur?.data?.currency
+                                      ?.currFutPnl !=
+                                  null)
+                          ? double.parse(ledgerprovider
+                                  .taxpnldercomcur!.data!.currency!.currFutPnl!)
+                              .toStringAsFixed(2)
+                          : "0.00"),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 8.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
+                  headingstat(
+                      theme,
+                      "Cur Option",
+                      (ledgerprovider.taxpnldercomcur?.data?.currency != null &&
+                              ledgerprovider.taxpnldercomcur?.data?.currency
+                                      ?.currOptPnl !=
+                                  null)
+                          ? double.parse(ledgerprovider
+                                  .taxpnldercomcur!.data!.currency!.currOptPnl!)
+                              .toStringAsFixed(2)
+                          : "0.00"), // Fixed the repeated label
+                  const SizedBox(height: 48.0),
+                ],
+              )
 
-                    headingstat(
-                        theme,
-                        "Com Option",
-                        (ledgerprovider.taxpnldercomcur?.data?.commodity !=
-                                    null &&
-                                ledgerprovider.taxpnldercomcur?.data?.commodity
-                                        ?.commOptPnl !=
-                                    null)
-                            ? double.parse(ledgerprovider.taxpnldercomcur!.data!
-                                    .commodity!.commOptPnl!)
-                                .toStringAsFixed(2)
-                            : "0.00"),
-                    headingstat(
-                        theme,
-                        "Cur Future",
-                        (ledgerprovider.taxpnldercomcur?.data?.currency !=
-                                    null &&
-                                ledgerprovider.taxpnldercomcur?.data?.currency
-                                        ?.currFutPnl !=
-                                    null)
-                            ? double.parse(ledgerprovider.taxpnldercomcur!.data!
-                                    .currency!.currFutPnl!)
-                                .toStringAsFixed(2)
-                            : "0.00"),
-                    headingstat(
-                        theme,
-                        "Cur Option",
-                        (ledgerprovider.taxpnldercomcur?.data?.currency !=
-                                    null &&
-                                ledgerprovider.taxpnldercomcur?.data?.currency
-                                        ?.currOptPnl !=
-                                    null)
-                            ? double.parse(ledgerprovider.taxpnldercomcur!.data!
-                                    .currency!.currOptPnl!)
-                                .toStringAsFixed(2)
-                            : "0.00"), // Fixed the repeated label
-                            const SizedBox(height: 48.0),
-                  ],
-                  
-                )
+              // Container(
+              //   width: screenWidth,
+              //   child: Container(
+              //     decoration: BoxDecoration(
+              //         color: theme.isDarkMode
+              //             ? const Color(0xffB5C0CF).withOpacity(.15)
+              //             : const Color(0xffF1F3F8)),
+              //     child: Column(
+              //       children: [
+              //         Padding(
+              //           padding: const EdgeInsets.all(16.0),
+              //           child: Row(
+              //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //             children: [
+              //               Column(
+              //                 crossAxisAlignment: CrossAxisAlignment.start,
+              //                 children: [
+              //                   Text(
+              //                     "Futures",
+              //                     style: textStyle(
+              //                         Color(0xFF696969), 14, FontWeight.w500),
+              //                   ),
+              //                   Padding(
+              //                     padding: const EdgeInsets.only(top: 8.0),
+              //                     child: Text(
+              //                       double.parse(ledgerprovider
+              //                               .taxpnldercomcur!
+              //                               .data!
+              //                               .commodity!
+              //                               .commFutPnl!)
+              //                           .toStringAsFixed(2),
+              //                       style: textStyle(
+              //                           (ledgerprovider.taxpnldercomcur!.data!
+              //                                       .commodity!.commFutPnl !=
+              //                                   null)
+              //                               ? (double.parse(ledgerprovider
+              //                                           .taxpnldercomcur!
+              //                                           .data!
+              //                                           .commodity!
+              //                                           .commFutPnl!) >
+              //                                       0
+              //                                   ? Colors.green
+              //                                   : double.parse(ledgerprovider
+              //                                               .taxpnldercomcur!
+              //                                               .data!
+              //                                               .commodity!
+              //                                               .commFutPnl!) <
+              //                                           0
+              //                                       ? Colors.red
+              //                                       : Colors.black)
+              //                               : Colors.black,
+              //                           16,
+              //                           FontWeight.w600),
+              //                     ),
+              //                   )
+              //                 ],
+              //               ),
+              //               Column(
+              //                 crossAxisAlignment: CrossAxisAlignment.end,
+              //                 children: [
+              //                   Text(
+              //                     "Futures Turnover",
+              //                     textAlign: TextAlign.right,
+              //                     style: textStyle(
+              //                         Color(0xFF696969), 14, FontWeight.w500),
+              //                   ),
+              //                   Padding(
+              //                     padding: const EdgeInsets.only(top: 8.0),
+              //                     child: Text(
+              //                       double.parse(ledgerprovider
+              //                               .taxpnldercomcur!
+              //                               .data!
+              //                               .commodity!
+              //                               .commFutTo!)
+              //                           .toStringAsFixed(2),
+              //                       style: textStyle(
+              //                           (ledgerprovider.taxpnldercomcur!.data!
+              //                                       .commodity!.commFutTo !=
+              //                                   null)
+              //                               ? (double.parse(ledgerprovider
+              //                                           .taxpnldercomcur!
+              //                                           .data!
+              //                                           .commodity!
+              //                                           .commFutTo!) >
+              //                                       0
+              //                                   ? Colors.green
+              //                                   : double.parse(ledgerprovider
+              //                                               .taxpnldercomcur!
+              //                                               .data!
+              //                                               .commodity!
+              //                                               .commFutTo!) <
+              //                                           0
+              //                                       ? Colors.red
+              //                                       : Colors.black)
+              //                               : Colors.black,
+              //                           16,
+              //                           FontWeight.w600),
+              //                     ),
+              //                   )
+              //                 ],
+              //               ),
+              //             ],
+              //           ),
+              //         ),
+              //         Padding(
+              //           padding: const EdgeInsets.only(
+              //               left: 18.0, right: 18.0, top: 4.0, bottom: 18.0),
+              //           child: Row(
+              //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //             children: [
+              //               Column(
+              //                 crossAxisAlignment: CrossAxisAlignment.start,
+              //                 children: [
+              //                   Text(
+              //                     "Options",
+              //                     style: textStyle(
+              //                         Color(0xFF696969), 14, FontWeight.w500),
+              //                   ),
+              //                   Padding(
+              //                     padding: const EdgeInsets.only(top: 8.0),
+              //                     child: Text(
+              //                       double.parse(ledgerprovider
+              //                               .taxpnldercomcur!
+              //                               .data!
+              //                               .commodity!
+              //                               .commOptPnl!)
+              //                           .toStringAsFixed(2),
+              //                       textAlign: TextAlign.right,
+              //                       style: textStyle(
+              //                           (ledgerprovider.taxpnldercomcur!.data!
+              //                                       .commodity!.commOptPnl !=
+              //                                   null)
+              //                               ? (double.parse(ledgerprovider
+              //                                           .taxpnldercomcur!
+              //                                           .data!
+              //                                           .commodity!
+              //                                           .commOptPnl!) >
+              //                                       0
+              //                                   ? Colors.green
+              //                                   : double.parse(ledgerprovider
+              //                                               .taxpnldercomcur!
+              //                                               .data!
+              //                                               .commodity!
+              //                                               .commOptPnl!) <
+              //                                           0
+              //                                       ? Colors.red
+              //                                       : Colors.black)
+              //                               : Colors.black,
+              //                           16,
+              //                           FontWeight.w600),
+              //                     ),
+              //                   )
+              //                 ],
+              //               ),
+              //               Column(
+              //                 crossAxisAlignment: CrossAxisAlignment.end,
+              //                 children: [
+              //                   Text(
+              //                     "Options Turnover",
+              //                     textAlign: TextAlign.right,
+              //                     style: textStyle(
+              //                         Color(0xFF696969), 14, FontWeight.w500),
+              //                   ),
+              //                   Padding(
+              //                     padding: const EdgeInsets.only(top: 8.0),
+              //                     child: Text(
+              //                       double.parse(ledgerprovider
+              //                               .taxpnldercomcur!
+              //                               .data!
+              //                               .commodity!
+              //                               .commOptTo!)
+              //                           .toStringAsFixed(2),
+              //                       textAlign: TextAlign.right,
+              //                       style: textStyle(
+              //                           (ledgerprovider.taxpnldercomcur!.data!
+              //                                       .commodity!.commOptTo !=
+              //                                   null)
+              //                               ? (double.parse(ledgerprovider
+              //                                           .taxpnldercomcur!
+              //                                           .data!
+              //                                           .commodity!
+              //                                           .commOptTo!) >
+              //                                       0
+              //                                   ? Colors.green
+              //                                   : double.parse(ledgerprovider
+              //                                               .taxpnldercomcur!
+              //                                               .data!
+              //                                               .commodity!
+              //                                               .commOptTo!) <
+              //                                           0
+              //                                       ? Colors.red
+              //                                       : Colors.black)
+              //                               : Colors.black,
+              //                           16,
+              //                           FontWeight.w600),
+              //                     ),
+              //                   )
+              //                 ],
+              //               ),
+              //             ],
+              //           ),
+              //         ),
+              //         Padding(
+              //           padding: const EdgeInsets.only(
+              //               left: 18.0, right: 18.0, top: 4.0, bottom: 18.0),
+              //           child: Row(
+              //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //             children: [
+              //               Column(
+              //                 crossAxisAlignment: CrossAxisAlignment.start,
+              //                 children: [
+              //                   Text(
+              //                     "Total Charges",
+              //                     style: textStyle(
+              //                         Color(0xFF696969), 14, FontWeight.w500),
+              //                   ),
+              //                   Padding(
+              //                     padding: const EdgeInsets.only(top: 8.0),
+              //                     child: Text(
+              //                       double.parse(ledgerprovider
+              //                               .taxpnldercomcur!
+              //                               .data!
+              //                               .commodity!
+              //                               .commFutPnl!)
+              //                           .toStringAsFixed(2),
+              //                       textAlign: TextAlign.right,
+              //                       style: textStyle(
+              //                           Colors.red, 16, FontWeight.w600),
+              //                     ),
+              //                   )
+              //                 ],
+              //               ),
+              //             ],
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
 
-                // Container(
-                //   width: screenWidth,
-                //   child: Container(
-                //     decoration: BoxDecoration(
-                //         color: theme.isDarkMode
-                //             ? const Color(0xffB5C0CF).withOpacity(.15)
-                //             : const Color(0xffF1F3F8)),
-                //     child: Column(
-                //       children: [
-                //         Padding(
-                //           padding: const EdgeInsets.all(16.0),
-                //           child: Row(
-                //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //             children: [
-                //               Column(
-                //                 crossAxisAlignment: CrossAxisAlignment.start,
-                //                 children: [
-                //                   Text(
-                //                     "Futures",
-                //                     style: textStyle(
-                //                         Color(0xFF696969), 14, FontWeight.w500),
-                //                   ),
-                //                   Padding(
-                //                     padding: const EdgeInsets.only(top: 8.0),
-                //                     child: Text(
-                //                       double.parse(ledgerprovider
-                //                               .taxpnldercomcur!
-                //                               .data!
-                //                               .commodity!
-                //                               .commFutPnl!)
-                //                           .toStringAsFixed(2),
-                //                       style: textStyle(
-                //                           (ledgerprovider.taxpnldercomcur!.data!
-                //                                       .commodity!.commFutPnl !=
-                //                                   null)
-                //                               ? (double.parse(ledgerprovider
-                //                                           .taxpnldercomcur!
-                //                                           .data!
-                //                                           .commodity!
-                //                                           .commFutPnl!) >
-                //                                       0
-                //                                   ? Colors.green
-                //                                   : double.parse(ledgerprovider
-                //                                               .taxpnldercomcur!
-                //                                               .data!
-                //                                               .commodity!
-                //                                               .commFutPnl!) <
-                //                                           0
-                //                                       ? Colors.red
-                //                                       : Colors.black)
-                //                               : Colors.black,
-                //                           16,
-                //                           FontWeight.w600),
-                //                     ),
-                //                   )
-                //                 ],
-                //               ),
-                //               Column(
-                //                 crossAxisAlignment: CrossAxisAlignment.end,
-                //                 children: [
-                //                   Text(
-                //                     "Futures Turnover",
-                //                     textAlign: TextAlign.right,
-                //                     style: textStyle(
-                //                         Color(0xFF696969), 14, FontWeight.w500),
-                //                   ),
-                //                   Padding(
-                //                     padding: const EdgeInsets.only(top: 8.0),
-                //                     child: Text(
-                //                       double.parse(ledgerprovider
-                //                               .taxpnldercomcur!
-                //                               .data!
-                //                               .commodity!
-                //                               .commFutTo!)
-                //                           .toStringAsFixed(2),
-                //                       style: textStyle(
-                //                           (ledgerprovider.taxpnldercomcur!.data!
-                //                                       .commodity!.commFutTo !=
-                //                                   null)
-                //                               ? (double.parse(ledgerprovider
-                //                                           .taxpnldercomcur!
-                //                                           .data!
-                //                                           .commodity!
-                //                                           .commFutTo!) >
-                //                                       0
-                //                                   ? Colors.green
-                //                                   : double.parse(ledgerprovider
-                //                                               .taxpnldercomcur!
-                //                                               .data!
-                //                                               .commodity!
-                //                                               .commFutTo!) <
-                //                                           0
-                //                                       ? Colors.red
-                //                                       : Colors.black)
-                //                               : Colors.black,
-                //                           16,
-                //                           FontWeight.w600),
-                //                     ),
-                //                   )
-                //                 ],
-                //               ),
-                //             ],
-                //           ),
-                //         ),
-                //         Padding(
-                //           padding: const EdgeInsets.only(
-                //               left: 18.0, right: 18.0, top: 4.0, bottom: 18.0),
-                //           child: Row(
-                //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //             children: [
-                //               Column(
-                //                 crossAxisAlignment: CrossAxisAlignment.start,
-                //                 children: [
-                //                   Text(
-                //                     "Options",
-                //                     style: textStyle(
-                //                         Color(0xFF696969), 14, FontWeight.w500),
-                //                   ),
-                //                   Padding(
-                //                     padding: const EdgeInsets.only(top: 8.0),
-                //                     child: Text(
-                //                       double.parse(ledgerprovider
-                //                               .taxpnldercomcur!
-                //                               .data!
-                //                               .commodity!
-                //                               .commOptPnl!)
-                //                           .toStringAsFixed(2),
-                //                       textAlign: TextAlign.right,
-                //                       style: textStyle(
-                //                           (ledgerprovider.taxpnldercomcur!.data!
-                //                                       .commodity!.commOptPnl !=
-                //                                   null)
-                //                               ? (double.parse(ledgerprovider
-                //                                           .taxpnldercomcur!
-                //                                           .data!
-                //                                           .commodity!
-                //                                           .commOptPnl!) >
-                //                                       0
-                //                                   ? Colors.green
-                //                                   : double.parse(ledgerprovider
-                //                                               .taxpnldercomcur!
-                //                                               .data!
-                //                                               .commodity!
-                //                                               .commOptPnl!) <
-                //                                           0
-                //                                       ? Colors.red
-                //                                       : Colors.black)
-                //                               : Colors.black,
-                //                           16,
-                //                           FontWeight.w600),
-                //                     ),
-                //                   )
-                //                 ],
-                //               ),
-                //               Column(
-                //                 crossAxisAlignment: CrossAxisAlignment.end,
-                //                 children: [
-                //                   Text(
-                //                     "Options Turnover",
-                //                     textAlign: TextAlign.right,
-                //                     style: textStyle(
-                //                         Color(0xFF696969), 14, FontWeight.w500),
-                //                   ),
-                //                   Padding(
-                //                     padding: const EdgeInsets.only(top: 8.0),
-                //                     child: Text(
-                //                       double.parse(ledgerprovider
-                //                               .taxpnldercomcur!
-                //                               .data!
-                //                               .commodity!
-                //                               .commOptTo!)
-                //                           .toStringAsFixed(2),
-                //                       textAlign: TextAlign.right,
-                //                       style: textStyle(
-                //                           (ledgerprovider.taxpnldercomcur!.data!
-                //                                       .commodity!.commOptTo !=
-                //                                   null)
-                //                               ? (double.parse(ledgerprovider
-                //                                           .taxpnldercomcur!
-                //                                           .data!
-                //                                           .commodity!
-                //                                           .commOptTo!) >
-                //                                       0
-                //                                   ? Colors.green
-                //                                   : double.parse(ledgerprovider
-                //                                               .taxpnldercomcur!
-                //                                               .data!
-                //                                               .commodity!
-                //                                               .commOptTo!) <
-                //                                           0
-                //                                       ? Colors.red
-                //                                       : Colors.black)
-                //                               : Colors.black,
-                //                           16,
-                //                           FontWeight.w600),
-                //                     ),
-                //                   )
-                //                 ],
-                //               ),
-                //             ],
-                //           ),
-                //         ),
-                //         Padding(
-                //           padding: const EdgeInsets.only(
-                //               left: 18.0, right: 18.0, top: 4.0, bottom: 18.0),
-                //           child: Row(
-                //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //             children: [
-                //               Column(
-                //                 crossAxisAlignment: CrossAxisAlignment.start,
-                //                 children: [
-                //                   Text(
-                //                     "Total Charges",
-                //                     style: textStyle(
-                //                         Color(0xFF696969), 14, FontWeight.w500),
-                //                   ),
-                //                   Padding(
-                //                     padding: const EdgeInsets.only(top: 8.0),
-                //                     child: Text(
-                //                       double.parse(ledgerprovider
-                //                               .taxpnldercomcur!
-                //                               .data!
-                //                               .commodity!
-                //                               .commFutPnl!)
-                //                           .toStringAsFixed(2),
-                //                       textAlign: TextAlign.right,
-                //                       style: textStyle(
-                //                           Colors.red, 16, FontWeight.w600),
-                //                     ),
-                //                   )
-                //                 ],
-                //               ),
-                //             ],
-                //           ),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
+              // Padding(
+              //   padding: const EdgeInsets.only(left: 30 , right: 30),
+              //   child: Row(
+              //     children: [
+              //       // Static Column
+              //       Column(
+              //         children: [
+              //           Container(
+              //             margin: EdgeInsets.only(top: 20),
+              //             width: 100,
+              //             color: Colors
+              //                 .cardbgrey, // Header cell for the static column
+              //             padding: EdgeInsets.all(8.0),
+              //             child: Text(
+              //               'Exchange',
+              //               style: TextStyle(fontWeight: FontWeight.bold),
+              //             ),
+              //           ),
+              //           for (var item in ledgerprovider.ledgerAllData!.fullStat!)
+              //             Container(
+              //               width: 100, // Fixed width for the static column
+              //               height: 50,
 
-                // Padding(
-                //   padding: const EdgeInsets.only(left: 30 , right: 30),
-                //   child: Row(
-                //     children: [
-                //       // Static Column
-                //       Column(
-                //         children: [
-                //           Container(
-                //             margin: EdgeInsets.only(top: 20),
-                //             width: 100,
-                //             color: Colors
-                //                 .cardbgrey, // Header cell for the static column
-                //             padding: EdgeInsets.all(8.0),
-                //             child: Text(
-                //               'Exchange',
-                //               style: TextStyle(fontWeight: FontWeight.bold),
-                //             ),
-                //           ),
-                //           for (var item in ledgerprovider.ledgerAllData!.fullStat!)
-                //             Container(
-                //               width: 100, // Fixed width for the static column
-                //               height: 50,
+              //               padding: EdgeInsets.all(8.0),
+              //               decoration: BoxDecoration(
+              //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
+              //               ),
+              //               child: Text("${item.cOCD}",
+              //               style: textStyle(Colors.black, 14, FontWeight.w600),
+              //               ),
+              //             ),
+              //         ],
+              //       ),
+              //       // Scrollable Content
 
-                //               padding: EdgeInsets.all(8.0),
-                //               decoration: BoxDecoration(
-                //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
-                //               ),
-                //               child: Text("${item.cOCD}",
-                //               style: textStyle(Colors.black, 14, FontWeight.w600),
-                //               ),
-                //             ),
-                //         ],
-                //       ),
-                //       // Scrollable Content
+              //       Expanded(
+              //         child: SingleChildScrollView(
+              //           scrollDirection: Axis.horizontal,
+              //           child: Column(
+              //             children: [
+              //               // Header Row for the scrollable content
+              //               Row(
+              //                 children: [
+              //                   for (int i = 0; i < Header.length; i++)
+              //                     Container(
+              //                        margin: EdgeInsets.only(top: 20),
+              //                       width: i == 4 ? 275 : 100, // Column width
 
-                //       Expanded(
-                //         child: SingleChildScrollView(
-                //           scrollDirection: Axis.horizontal,
-                //           child: Column(
-                //             children: [
-                //               // Header Row for the scrollable content
-                //               Row(
-                //                 children: [
-                //                   for (int i = 0; i < Header.length; i++)
-                //                     Container(
-                //                        margin: EdgeInsets.only(top: 20),
-                //                       width: i == 4 ? 275 : 100, // Column width
+              //                       padding: EdgeInsets.all(8.0),
+              //                       color: Color(0xFFEEEEEE),
+              //                       child: Text(
+              //                         '${Header[i]}',
+              //                         style:
+              //                             TextStyle(fontWeight: FontWeight.bold),
+              //                       ),
+              //                     ),
+              //                 ],
+              //               ),
+              //               // Data Rows for the scrollable content
+              //               for (int rowIndex = 0;
+              //                   rowIndex <
+              //                       ledgerprovider
+              //                           .ledgerAllData!.fullStat!.length;
+              //                   rowIndex++)
+              //                 Row(
+              //                   children: [
+              //                     for (int colIndex = 0; colIndex < 5; colIndex++)
+              //                       Container(
+              //                          width: colIndex == 4 ? 275 : 100,  // Column width
+              //                         height: 50,
+              //                         padding: EdgeInsets.all(8.0),
+              //                         decoration: BoxDecoration(
+              //                           border: Border.all(color: Color.fromARGB(255, 224, 224, 224)),
+              //                         ),
+              //                         child: Text(colIndex == 0 ? dateFormatChangeForLedger(ledgerprovider
+              //                             .tablearray[rowIndex][colIndex]) : ledgerprovider
+              //                             .tablearray[rowIndex][colIndex] ,
+              //                             textAlign: colIndex == 1 ||colIndex == 2 || colIndex == 3  ? TextAlign.right : TextAlign.start ,
+              //                             ) ,
+              //                         //  child: Text(  ledgerprovider
+              //                         //     .tablearray[rowIndex][colIndex] ) ,
+              //                       ),
+              //                   ],
+              //                 ),
+              //             ],
+              //           ),
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+              //  Padding(
+              //     padding:
+              //         const EdgeInsets.only(right: 15, left: 15, bottom: 15.0),
+              //     child: SingleChildScrollView(
+              //       scrollDirection: Axis.horizontal,
+              //       child: Row(
+              //       children: [
+              //         tabsbutton(
+              //           'Future Closed',
+              //           ledgerprovider,
+              //           theme,
+              //         ),
+              //         tabsbutton('Future Open', ledgerprovider, theme),
+              //         tabsbutton('Option Closed', ledgerprovider, theme),
+              //         tabsbutton('Option Open', ledgerprovider, theme),
 
-                //                       padding: EdgeInsets.all(8.0),
-                //                       color: Color(0xFFEEEEEE),
-                //                       child: Text(
-                //                         '${Header[i]}',
-                //                         style:
-                //                             TextStyle(fontWeight: FontWeight.bold),
-                //                       ),
-                //                     ),
-                //                 ],
-                //               ),
-                //               // Data Rows for the scrollable content
-                //               for (int rowIndex = 0;
-                //                   rowIndex <
-                //                       ledgerprovider
-                //                           .ledgerAllData!.fullStat!.length;
-                //                   rowIndex++)
-                //                 Row(
-                //                   children: [
-                //                     for (int colIndex = 0; colIndex < 5; colIndex++)
-                //                       Container(
-                //                          width: colIndex == 4 ? 275 : 100,  // Column width
-                //                         height: 50,
-                //                         padding: EdgeInsets.all(8.0),
-                //                         decoration: BoxDecoration(
-                //                           border: Border.all(color: Color.fromARGB(255, 224, 224, 224)),
-                //                         ),
-                //                         child: Text(colIndex == 0 ? dateFormatChangeForLedger(ledgerprovider
-                //                             .tablearray[rowIndex][colIndex]) : ledgerprovider
-                //                             .tablearray[rowIndex][colIndex] ,
-                //                             textAlign: colIndex == 1 ||colIndex == 2 || colIndex == 3  ? TextAlign.right : TextAlign.start ,
-                //                             ) ,
-                //                         //  child: Text(  ledgerprovider
-                //                         //     .tablearray[rowIndex][colIndex] ) ,
-                //                       ),
-                //                   ],
-                //                 ),
-                //             ],
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                //  Padding(
-                //     padding:
-                //         const EdgeInsets.only(right: 15, left: 15, bottom: 15.0),
-                //     child: SingleChildScrollView(
-                //       scrollDirection: Axis.horizontal,
-                //       child: Row(
-                //       children: [
-                //         tabsbutton(
-                //           'Future Closed',
-                //           ledgerprovider,
-                //           theme,
-                //         ),
-                //         tabsbutton('Future Open', ledgerprovider, theme),
-                //         tabsbutton('Option Closed', ledgerprovider, theme),
-                //         tabsbutton('Option Open', ledgerprovider, theme),
+              //       ],
+              //     ),
+              //   ),
+              //  ),
+              // Text("${ledgerprovider.taxpnlcomselectedtabdata}data"),
+              // ledgerprovider.taxpnleq!.data == null
+              //     ? Center(
+              //         child: Padding(
+              //         padding: EdgeInsets.only(top: 60),
+              //         child: NoDataFound(),
+              //       ))
+              //     : Expanded(
+              //         child: SingleChildScrollView(
+              //           child: ListView.builder(
+              //              controller: ScrollController(),
+              //               physics: ScrollPhysics(),
+              //               itemCount:  ledgerprovider.taxpnlcomselectedtabdata == null ? 0 : ledgerprovider.taxpnlcomselectedtabdata.length,
+              //               shrinkWrap: true,
+              //               itemBuilder: (context, index) {
 
-                //       ],
-                //     ),
-                //   ),
-                //  ),
-                // Text("${ledgerprovider.taxpnlcomselectedtabdata}data"),
-                // ledgerprovider.taxpnleq!.data == null
-                //     ? Center(
-                //         child: Padding(
-                //         padding: EdgeInsets.only(top: 60),
-                //         child: NoDataFound(),
-                //       ))
-                //     : Expanded(
-                //         child: SingleChildScrollView(
-                //           child: ListView.builder(
-                //              controller: ScrollController(),
-                //               physics: ScrollPhysics(),
-                //               itemCount:  ledgerprovider.taxpnlcomselectedtabdata == null ? 0 : ledgerprovider.taxpnlcomselectedtabdata.length,
-                //               shrinkWrap: true,
-                //               itemBuilder: (context, index) {
+              //                 return Column(
+              //                   crossAxisAlignment: CrossAxisAlignment.start,
+              //                   children: [
+              //                     Padding(
+              //                       padding: const EdgeInsets.only(
+              //                           right: 30.0, left: 30.0, top: 25.0),
+              //                       child: Text(
+              //                         "${ledgerprovider.taxpnlcomselectedtabdata[index]['SCRIP_SYMBOL']}",
+              //                         style: textStyle(Colors.black, 14,
+              //                             FontWeight.w700),
+              //                       ),
+              //                     ),
+              //                     Padding(
+              //                       padding: const EdgeInsets.only(
+              //                           right: 30.0, left: 30.0, top: 10.0),
+              //                       child: Divider(
+              //                         color: const Color.fromARGB(
+              //                             255, 117, 117, 117),
+              //                       ),
+              //                     ),
+              //                    Padding(
+              //                       padding: const EdgeInsets.only(
+              //                           right: 30.0, left: 30.0, top: 10.0),
+              //                       child: Row(
+              //                         mainAxisAlignment:
+              //                             MainAxisAlignment.spaceBetween,
+              //                         children: [
+              //                           Row(
+              //                             children: [
+              //                               Text(
+              //                                 "Net Qty : ",
+              //                                 style: textStyle(Color(0xFF696969),
+              //                                     13, FontWeight.w500),
+              //                               ),
+              //                               Text(
+              //                                 "${ledgerprovider.taxpnlcomselectedtabdata[index]['NETAMT']}",
+              //                                 style: textStyle(Colors.black, 14,
+              //                                     FontWeight.w500),
+              //                               ),
+              //                             ],
+              //                           ),
+              //                         ],
+              //                       ),
+              //                     ),
+              //                     Padding(
+              //                       padding: const EdgeInsets.only(
+              //                           right: 30.0, left: 30.0, top: 10.0),
+              //                       child: Row(
+              //                         mainAxisAlignment:
+              //                             MainAxisAlignment.spaceBetween,
+              //                         children: [
+              //                           Row(
+              //                             children: [
+              //                               Text(
+              //                                 "Buy Qty : ",
+              //                                 style: textStyle(Color(0xFF696969),
+              //                                     13, FontWeight.w500),
+              //                               ),
+              //                               Text(
+              //                                 "${ledgerprovider.taxpnlcomselectedtabdata[index]['BUYQTY']}",
+              //                                 style: textStyle(Colors.black, 14,
+              //                                     FontWeight.w500),
+              //                               ),
+              //                             ],
+              //                           ),
+              //                           Row(
+              //                             children: [
+              //                               Row(
+              //                                 children: [
+              //                                   Text(
+              //                                     "Sell Qty : ",
+              //                                     style: textStyle(
+              //                                         Color(0xFF696969),
+              //                                         13,
+              //                                         FontWeight.w500),
+              //                                   ),
+              //                                   Text(
+              //                                     "${ledgerprovider.taxpnlcomselectedtabdata[index]['SALEQTY']}",
+              //                                     style: textStyle(
+              //                                       Colors.black,
+              //                                       14,
+              //                                       FontWeight.w500,
+              //                                     ),
+              //                                   ),
+              //                                 ],
+              //                               ),
+              //                             ],
+              //                           ),
+              //                         ],
+              //                       ),
+              //                     ),
+              //                     Padding(
+              //                       padding: const EdgeInsets.only(
+              //                           right: 30.0, left: 30.0, top: 10.0),
+              //                       child: Row(
+              //                         mainAxisAlignment:
+              //                             MainAxisAlignment.spaceBetween,
+              //                         children: [
+              //                          Row(
+              //                             children: [
+              //                               Row(
+              //                                 children: [
+              //                                   Text(
+              //                                     "Buy Rate : ",
+              //                                     style: textStyle(
+              //                                         Color(0xFF696969),
+              //                                         13,
+              //                                         FontWeight.w500),
+              //                                   ),
+              //                                   Text(
+              //                                     "${ledgerprovider.taxpnlcomselectedtabdata[index]['BUYRATE']}",
+              //                                     style: textStyle(
+              //                                       Colors.black,
+              //                                       14,
+              //                                       FontWeight.w500,
+              //                                     ),
+              //                                   ),
+              //                                 ],
+              //                               ),
+              //                             ],
+              //                           ),
+              //                           Row(
+              //                             children: [
+              //                               Row(
+              //                                 children: [
+              //                                   Text(
+              //                                     "Sell Rate : ",
+              //                                     style: textStyle(
+              //                                         Color(0xFF696969),
+              //                                         13,
+              //                                         FontWeight.w500),
+              //                                   ),
+              //                                   Text(
+              //                                     "${ledgerprovider.taxpnlcomselectedtabdata[index]['SALERATE']}",
+              //                                     style: textStyle(
+              //                                       Colors.black,
+              //                                       14,
+              //                                       FontWeight.w500,
+              //                                     ),
+              //                                   ),
+              //                                 ],
+              //                               ),
+              //                             ],
+              //                           ),
+              //                         ],
+              //                       ),
+              //                     ),
 
-                //                 return Column(
-                //                   crossAxisAlignment: CrossAxisAlignment.start,
-                //                   children: [
-                //                     Padding(
-                //                       padding: const EdgeInsets.only(
-                //                           right: 30.0, left: 30.0, top: 25.0),
-                //                       child: Text(
-                //                         "${ledgerprovider.taxpnlcomselectedtabdata[index]['SCRIP_SYMBOL']}",
-                //                         style: textStyle(Colors.black, 14,
-                //                             FontWeight.w700),
-                //                       ),
-                //                     ),
-                //                     Padding(
-                //                       padding: const EdgeInsets.only(
-                //                           right: 30.0, left: 30.0, top: 10.0),
-                //                       child: Divider(
-                //                         color: const Color.fromARGB(
-                //                             255, 117, 117, 117),
-                //                       ),
-                //                     ),
-                //                    Padding(
-                //                       padding: const EdgeInsets.only(
-                //                           right: 30.0, left: 30.0, top: 10.0),
-                //                       child: Row(
-                //                         mainAxisAlignment:
-                //                             MainAxisAlignment.spaceBetween,
-                //                         children: [
-                //                           Row(
-                //                             children: [
-                //                               Text(
-                //                                 "Net Qty : ",
-                //                                 style: textStyle(Color(0xFF696969),
-                //                                     13, FontWeight.w500),
-                //                               ),
-                //                               Text(
-                //                                 "${ledgerprovider.taxpnlcomselectedtabdata[index]['NETAMT']}",
-                //                                 style: textStyle(Colors.black, 14,
-                //                                     FontWeight.w500),
-                //                               ),
-                //                             ],
-                //                           ),
-                //                         ],
-                //                       ),
-                //                     ),
-                //                     Padding(
-                //                       padding: const EdgeInsets.only(
-                //                           right: 30.0, left: 30.0, top: 10.0),
-                //                       child: Row(
-                //                         mainAxisAlignment:
-                //                             MainAxisAlignment.spaceBetween,
-                //                         children: [
-                //                           Row(
-                //                             children: [
-                //                               Text(
-                //                                 "Buy Qty : ",
-                //                                 style: textStyle(Color(0xFF696969),
-                //                                     13, FontWeight.w500),
-                //                               ),
-                //                               Text(
-                //                                 "${ledgerprovider.taxpnlcomselectedtabdata[index]['BUYQTY']}",
-                //                                 style: textStyle(Colors.black, 14,
-                //                                     FontWeight.w500),
-                //                               ),
-                //                             ],
-                //                           ),
-                //                           Row(
-                //                             children: [
-                //                               Row(
-                //                                 children: [
-                //                                   Text(
-                //                                     "Sell Qty : ",
-                //                                     style: textStyle(
-                //                                         Color(0xFF696969),
-                //                                         13,
-                //                                         FontWeight.w500),
-                //                                   ),
-                //                                   Text(
-                //                                     "${ledgerprovider.taxpnlcomselectedtabdata[index]['SALEQTY']}",
-                //                                     style: textStyle(
-                //                                       Colors.black,
-                //                                       14,
-                //                                       FontWeight.w500,
-                //                                     ),
-                //                                   ),
-                //                                 ],
-                //                               ),
-                //                             ],
-                //                           ),
-                //                         ],
-                //                       ),
-                //                     ),
-                //                     Padding(
-                //                       padding: const EdgeInsets.only(
-                //                           right: 30.0, left: 30.0, top: 10.0),
-                //                       child: Row(
-                //                         mainAxisAlignment:
-                //                             MainAxisAlignment.spaceBetween,
-                //                         children: [
-                //                          Row(
-                //                             children: [
-                //                               Row(
-                //                                 children: [
-                //                                   Text(
-                //                                     "Buy Rate : ",
-                //                                     style: textStyle(
-                //                                         Color(0xFF696969),
-                //                                         13,
-                //                                         FontWeight.w500),
-                //                                   ),
-                //                                   Text(
-                //                                     "${ledgerprovider.taxpnlcomselectedtabdata[index]['BUYRATE']}",
-                //                                     style: textStyle(
-                //                                       Colors.black,
-                //                                       14,
-                //                                       FontWeight.w500,
-                //                                     ),
-                //                                   ),
-                //                                 ],
-                //                               ),
-                //                             ],
-                //                           ),
-                //                           Row(
-                //                             children: [
-                //                               Row(
-                //                                 children: [
-                //                                   Text(
-                //                                     "Sell Rate : ",
-                //                                     style: textStyle(
-                //                                         Color(0xFF696969),
-                //                                         13,
-                //                                         FontWeight.w500),
-                //                                   ),
-                //                                   Text(
-                //                                     "${ledgerprovider.taxpnlcomselectedtabdata[index]['SALERATE']}",
-                //                                     style: textStyle(
-                //                                       Colors.black,
-                //                                       14,
-                //                                       FontWeight.w500,
-                //                                     ),
-                //                                   ),
-                //                                 ],
-                //                               ),
-                //                             ],
-                //                           ),
-                //                         ],
-                //                       ),
-                //                     ),
-
-                //                     Padding(
-                //                       padding: const EdgeInsets.only(top: 10),
-                //                       child: Divider(
-                //                         color: const Color.fromARGB(
-                //                             255, 212, 212, 212),
-                //                         thickness: 2.0,
-                //                       ),
-                //                     ),
-                //                   ],
-                //                 );
-                //               }),
-                //         ),
-                //       ),
-                // Padding(
-                //   padding: const EdgeInsets.only(top: 120),
-                //   child: Center(
-                //     child: Column(children: [
-                //       // SvgPicture.asset(assets.noDatafound,
-                //       //     color: theme.isDarkMode
-                //       //         ? colors.darkColorDivider
-                //       //         : colors.colorDivider),
-                //       // const SizedBox(height: 2),
-                //       IconButton(
-                //         icon: Icon(Icons.download, color: Colors.black),
-                //         onPressed: () => {},
-                //       ),
-                //       Text("Here you can download your ",
-                //           style: textStyle(
-                //               const Color(0xff777777), 14, FontWeight.w500)),
-                //       Padding(
-                //         padding: const EdgeInsets.only(top: 4.0),
-                //         child: Text("Tax p&l data",
-                //             style: textStyle(Color.fromARGB(255, 119, 119, 119),
-                //                 14, FontWeight.w500)),
-                //       )
-                //     ]),
-                //   ),
-                // )
-              ],
-            ),
+              //                     Padding(
+              //                       padding: const EdgeInsets.only(top: 10),
+              //                       child: Divider(
+              //                         color: const Color.fromARGB(
+              //                             255, 212, 212, 212),
+              //                         thickness: 2.0,
+              //                       ),
+              //                     ),
+              //                   ],
+              //                 );
+              //               }),
+              //         ),
+              //       ),
+              // Padding(
+              //   padding: const EdgeInsets.only(top: 120),
+              //   child: Center(
+              //     child: Column(children: [
+              //       // SvgPicture.asset(assets.noDatafound,
+              //       //     color: theme.isDarkMode
+              //       //         ? colors.darkColorDivider
+              //       //         : colors.colorDivider),
+              //       // const SizedBox(height: 2),
+              //       IconButton(
+              //         icon: Icon(Icons.download, color: Colors.black),
+              //         onPressed: () => {},
+              //       ),
+              //       Text("Here you can download your ",
+              //           style: textStyle(
+              //               const Color(0xff777777), 14, FontWeight.w500)),
+              //       Padding(
+              //         padding: const EdgeInsets.only(top: 4.0),
+              //         child: Text("Tax p&l data",
+              //             style: textStyle(Color.fromARGB(255, 119, 119, 119),
+              //                 14, FontWeight.w500)),
+              //       )
+              //     ]),
+              //   ),
+              // )
+            ],
           ),
         ),
       );
@@ -900,38 +982,32 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
 
   headingstat(ThemesProvider theme, String heading, String value) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 14, top: 6.0),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "${heading}",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    15,
-                    FontWeight.w600),
-              ),
-              Text(
-                "${value ?? 0}",
-                style: textStyle(
-                  (double.parse(value)) > 0
+              TextWidget.subText(
+                  text: "${heading}",
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 0),
+              TextWidget.subText(
+                  text: "${value ?? 0}",
+                  color: (double.parse(value)) > 0
                       ? Colors.green
                       : double.parse(value) < 0
                           ? Colors.red
-                          : theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  13,
-                  FontWeight.w500,
-                ),
-              )
+                          : theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 1),
             ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 2.0),
-            child: Divider(
-              color: const Color.fromARGB(255, 117, 117, 117),
-            ),
           ),
         ],
       ),

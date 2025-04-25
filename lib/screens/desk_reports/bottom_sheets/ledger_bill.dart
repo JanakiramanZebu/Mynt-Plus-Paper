@@ -80,7 +80,8 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                             .withOpacity(.15)
                                         : const Color(0xffF1F3F8)),
                                 child: Padding(
-                                  padding: const EdgeInsets.only(top : 16.0, left : 16.0 , right : 16.0),
+                                  padding: const EdgeInsets.only(
+                                      top: 16.0, left: 16.0, right: 16.0),
                                   child: Column(
                                     children: [
                                       for (var item in ledgerdata
@@ -102,16 +103,12 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
                                                   fw: 0),
-                                                  
-                                              Text(
-                                                "${item.nETAMT}",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    14,
-                                                    FontWeight.w500),
-                                              )
+                                              TextWidget.subText(
+                                                  text: "${item.nETAMT}",
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 1),
                                             ],
                                           ),
                                         ),
@@ -128,7 +125,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                               itemBuilder: (context, index) {
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16.0),
+                                      horizontal: 16.0,vertical : 4.0),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -137,21 +134,16 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                         children: [
                                           Padding(
                                             padding: const EdgeInsets.only(
-                                                top: 16.0),
-                                            child: Text(
-                                              // "${dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString())}",
-                                              ledgerdata
-                                                  .ledgerBillData!
-                                                  .transactions![index]
-                                                  .sCRIPNAME!,
-
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w600),
-                                            ),
+                                                top: 8.0),
+                                            child: TextWidget.subText(
+                                                text: ledgerdata
+                                                    .ledgerBillData!
+                                                    .transactions![index]
+                                                    .sCRIPNAME!,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 1),
                                           ),
                                         ],
                                       ),
@@ -168,37 +160,64 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                           children: [
                                             Row(
                                               children: [
-                                                 Text("BQty :  ",
-                                                  textAlign: TextAlign.right,
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : Color(0xFF696969),
-                                                      12,
-                                                      FontWeight.w500)),
-                                                 
-                                                Text(
-                                                  // ledgerprovider.ledgerAllData!.fullStat![index]
-                                                  //             .cRAMT !=
-                                                  " ${ledgerdata.ledgerBillData!.transactions![index].bQTY} ",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      12,
-                                                      FontWeight.w600),
-                                                ),
-                                                Text(
-                                                  // ledgerprovider.ledgerAllData!.fullStat![index]
-                                                  //             .cRAMT !=
-                                                  "@ ₹${double.parse(ledgerdata.ledgerBillData!.transactions![index].bRATE.toString()).toStringAsFixed(2)}",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      12,
-                                                      FontWeight.w600),
-                                                ),
+                                                TextWidget.subText(
+                                                    text: "BQty : ",
+                                                    color: Color(0xFF696969),
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 1),
+
+                                                TextWidget.subText(
+                                                    text:
+                                                        " ${double.tryParse(ledgerdata.ledgerBillData!.transactions![index].bQTY!)!.toInt()}",
+                                                    color: double.tryParse(ledgerdata
+                                                                    .ledgerBillData!
+                                                                    .transactions![
+                                                                        index]
+                                                                    .bQTY!)!
+                                                                .toInt() >
+                                                            0
+                                                        ? Colors.green
+                                                        : double.tryParse(ledgerdata
+                                                                        .ledgerBillData!
+                                                                        .transactions![
+                                                                            index]
+                                                                        .bQTY!)!
+                                                                    .toInt() <
+                                                                0
+                                                            ? Colors.red
+                                                            : Colors.black,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+
+                                                TextWidget.subText(
+                                                    text:
+                                                        " @ ₹${double.parse(ledgerdata.ledgerBillData!.transactions![index].bRATE.toString()).toStringAsFixed(2)}",
+                                                    color: double.tryParse(ledgerdata
+                                                                    .ledgerBillData!
+                                                                    .transactions![
+                                                                        index]
+                                                                    .bQTY!)!
+                                                                .toInt() >
+                                                            0
+                                                        ? Colors.green
+                                                        : double.tryParse(ledgerdata
+                                                                        .ledgerBillData!
+                                                                        .transactions![
+                                                                            index]
+                                                                        .bQTY!)!
+                                                                    .toInt() <
+                                                                0
+                                                            ? Colors.red
+                                                            : Colors.black,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+
                                                 // Text(
                                                 //   ("${ledgerdata.ledgerBillData!.transactions![index].bAMT}"
                                                 //                ) ,
@@ -220,104 +239,77 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                             ),
                                             Row(
                                               children: [
-                                                 Text("SQty :  ",
-                                                  textAlign: TextAlign.right,
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : Color(0xFF696969),
-                                                      12,
-                                                      FontWeight.w500)),
-                                                 
-                                                Text(
-                                                  // ledgerprovider.ledgerAllData!.fullStat![index]
-                                                  //             .cRAMT !=
-                                                  " ${ledgerdata.ledgerBillData!.transactions![index].sQTY} ",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      12,
-                                                      FontWeight.w600),
-                                                ),
-                                                Text(
-                                                  // ledgerprovider.ledgerAllData!.fullStat![index]
-                                                  //             .cRAMT !=
-                                                  "@ ₹${double.parse(ledgerdata.ledgerBillData!.transactions![index].sRATE.toString()).toStringAsFixed(2)}",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      12,
-                                                      FontWeight.w600),
-                                                ),
+                                                TextWidget.subText(
+                                                    text: "NQty :  ",
+                                                    color: Color(0xFF696969),
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 1),
+                                                TextWidget.subText(
+                                                    text:
+                                                        "${double.tryParse((double.parse(ledgerdata.ledgerBillData!.transactions![index].bQTY!) - double.parse(ledgerdata.ledgerBillData!.transactions![index].sQTY!)).toString())!.toInt()} ",
+                                                    color: theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 1),
                                               ],
                                             ),
                                           ],
                                         ),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.only(
-                                              top: 8.0),
+                                        padding:
+                                            const EdgeInsets.only(top: 8.0),
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
                                             Row(
                                               children: [
-                                                 Text("NQty :  ",
-                                                  textAlign: TextAlign.right,
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : Color(0xFF696969),
-                                                      12,
-                                                      FontWeight.w500)),
-                                                Text(
-                                                  // ledgerprovider.ledgerAllData!.fullStat![index]
-                                                  //             .cRAMT !=
-                                                  " ${(double.parse(ledgerdata.ledgerBillData!.transactions![index].bQTY!) - double.parse(ledgerdata.ledgerBillData!.transactions![index].sQTY!)).toString()} ",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      12,
-                                                      FontWeight.w600),
-                                                ),
+                                                TextWidget.subText(
+                                                    text: "SQty : ",
+                                                    color: Color(0xFF696969),
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 1),
+                                                TextWidget.subText(
+                                                    text:
+                                                        " ${double.tryParse(ledgerdata.ledgerBillData!.transactions![index].sQTY.toString())!.toInt()} @ ₹${double.parse(ledgerdata.ledgerBillData!.transactions![index].sRATE.toString()).toStringAsFixed(2)}",
+                                                    color:double.tryParse(ledgerdata.ledgerBillData!.transactions![index].sQTY.toString())!.toInt() > 0 ? Colors.red : double.tryParse(ledgerdata.ledgerBillData!.transactions![index].sQTY.toString())!.toInt() < 0 ?Colors.red : theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+                                                    
+                                                 
                                               ],
                                             ),
                                             Row(
                                               children: [
-                                                 Text("NAmt :  ",
-                                                  textAlign: TextAlign.right,
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : Color(0xFF696969),
-                                                      12,
-                                                      FontWeight.w500)),
-                                                Text(
-                                                  " ₹ ${double.tryParse(ledgerdata.ledgerBillData?.transactions?[index].nETAMT?.toString() ?? "0")?.toStringAsFixed(2) ?? "0.00"}",
-                                                  style: textStyle(
-                                                    (double.tryParse(ledgerdata
-                                                                        .ledgerBillData
-                                                                        ?.transactions?[
-                                                                            index]
-                                                                        .nETAMT
-                                                                        ?.toString() ??
-                                                                    "0") ??
-                                                                0) <
-                                                            0
-                                                        ? Colors
-                                                            .red // Red for negative values
-                                                        : (theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors
-                                                                .colorBlack), // Green for positive values, else theme color
-                                                    12,
-                                                    FontWeight.w600,
-                                                  ),
-                                                ),
+                                                TextWidget.subText(
+                                                    text: "NAmt : ",
+                                                    color: Color(0xFF696969),
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 1),
+                                                TextWidget.subText(
+                                                    text:
+                                                        "₹ ${double.tryParse(ledgerdata.ledgerBillData?.transactions?[index].nETAMT?.toString() ?? "0")?.toStringAsFixed(2) ?? "0.00"}",
+                                                    color: theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 1),
                                               ],
                                             ),
                                           ],
