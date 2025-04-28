@@ -93,7 +93,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
       priceCtrl = TextEditingController(text: widget.modifyOrderArgs.prc);
       qtyCtrl = TextEditingController(text: widget.modifyOrderArgs.qty);
 
-      if (int.parse(widget.modifyOrderArgs.fillshares.toString()) > 0 &&
+      if (widget.modifyOrderArgs.fillshares != null && int.parse(widget.modifyOrderArgs.fillshares.toString()) > 0 &&
           widget.modifyOrderArgs.fillshares != widget.modifyOrderArgs.qty) {
         int fqty = (int.parse(widget.modifyOrderArgs.qty.toString()) -
             int.parse(widget.modifyOrderArgs.fillshares.toString()));
