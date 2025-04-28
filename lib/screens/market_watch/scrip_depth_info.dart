@@ -146,6 +146,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
           // This scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the scrip details.
 
           if (socketDatas.containsKey(regtoken)) {
+            depthData.ap = "${socketDatas[regtoken]['ap']}";
             depthData.lp = "${socketDatas[regtoken]['lp']}";
             depthData.pc = "${socketDatas[regtoken]['pc']}";
             depthData.o = "${socketDatas[regtoken]['o']}";

@@ -63,7 +63,7 @@ class UserAccountScreen extends ConsumerWidget {
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
                         onTap: () async {
-                          if (["Verified P&L", "Corporate Action", "CA Events", "Pledge & Unpledge", "OptionZ"].contains(index)) {
+                          if (["Verified P&L", "Corporate Action", "CA Events", "Pledge & Unpledge", "OptionZ"].contains(acttitle)) {
                             await funds.fetchHstoken(context);
                           }
                           if (acttitle == "Fund") {

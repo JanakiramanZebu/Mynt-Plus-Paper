@@ -53,7 +53,7 @@ class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final Reader ref;
-  final String _version = "1.0.79(01+01)";
+  final String _version = "1.0.79(01+02)";
   late final String _versiontext =
       "Version 3.0.2 Build $_version Released on 28 Apr";
   String get versiontext => _versiontext;
