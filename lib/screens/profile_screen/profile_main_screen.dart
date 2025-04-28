@@ -17,6 +17,7 @@ import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/bonds_provider.dart';
 import '../../provider/fund_provider.dart';
+import '../../provider/index_list_provider.dart';
 import '../../provider/ledger_provider.dart';
 import '../../provider/notification_provider.dart';
 import '../../provider/thems.dart';
@@ -41,6 +42,7 @@ class UserAccountScreen extends ConsumerWidget {
     final portfolio = watch(portfolioProvider);
     final reportsprovider = watch(ledgerProvider);
     final auth = watch(authProvider);
+    final indexProvide = watch(indexListProvider);
 
     //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
@@ -61,12 +63,14 @@ class UserAccountScreen extends ConsumerWidget {
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
                         onTap: () async {
-                          if ([3, 4, 5, 6, 10].contains(index)) {
+                          if (["Verified P&L", "Corporate Action", "CA Events", "Pledge & Unpledge", "OptionZ"].contains(index)) {
                             await funds.fetchHstoken(context);
                           }
                           if (acttitle == "Fund") {
                             await funds.fetchFunds(context);
-                            Navigator.pushNamed(context, Routes.fund);
+                            indexProvide.bottomMenu(2, context);
+                            portfolio.changeTabIndex(2);
+                            // Navigator.pushNamed(context, Routes.fund);
                           } else if (acttitle == "My Account") {
                             Navigator.pushNamed(context, Routes.myAcc);
                           } else if (acttitle == "Reports") {
@@ -150,7 +154,7 @@ class UserAccountScreen extends ConsumerWidget {
                             // launch(
                             //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                           } else if (acttitle == "Mutual Fund") {
-                           mf.mfApicallinit(context, 0);
+                            mf.mfApicallinit(context, 0);
                           } else if (acttitle == "OptionZ") {
                             funds.optionZ(context);
                           } else if (acttitle == "Refer") {
@@ -290,7 +294,7 @@ class UserAccountScreen extends ConsumerWidget {
                                       style: theme.isDarkMode
                                           ? textStyles.darktextBtn
                                           : textStyles.textBtn))
-                            ] 
+                            ]
                             // else if (acttitle == "Settings") ...[
                             //   TextButton(
                             //       onPressed: () async {
@@ -405,7 +409,7 @@ class UserAccountScreen extends ConsumerWidget {
                             //               ? textStyles.darktextBtn
                             //               : textStyles.textBtn))
                             // ]
-                             else ...[
+                            else ...[
                               SvgPicture.asset(
                                   userProfile.profileMenu[index]['trailing'])
                             ]
@@ -531,8 +535,7 @@ class UserAccountScreen extends ConsumerWidget {
               Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(auth.versiontext
-                      ,
+                  child: Text(auth.versiontext,
                       style: textStyle(
                           const Color(0xff666666), 11, FontWeight.w500)))
             ]));

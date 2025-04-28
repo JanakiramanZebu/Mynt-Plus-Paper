@@ -236,14 +236,14 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
   fetchprofilemenu() {
     _profileMenu = [
-      // {
-      //   "title": "Fund",
-      //   "subTitle": "Add Fund, Withdraw",
-      //   "leading": "assets/profileimage/wallet.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).fundcase,
-      //   "case": "Click here to view the fund information page."
-      // },
+      {
+        "title": "Fund",
+        "subTitle": "Add Fund, Withdraw",
+        "leading": "assets/profileimage/wallet.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": ref(showcaseProvide).fundcase,
+        "case": "Click here to view the fund information page."
+      },
       {
         "title": "My Account",
         "subTitle": "Profile Details, Bank Accounts",
