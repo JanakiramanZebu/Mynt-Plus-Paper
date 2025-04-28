@@ -291,6 +291,9 @@ class WebSocketProvider extends ChangeNotifier {
               if (res["pc"] != null) {
                 _socketDatas["${res['tk']}"]["pc"] = res["pc"];
               }
+                 if (res["ap"] != null) {
+                _socketDatas["${res['tk']}"]["ap"] = res["ap"];
+              }
 
               if (res["o"] != null) {
                 _socketDatas["${res['tk']}"]["o"] = res["o"];
@@ -435,6 +438,7 @@ class WebSocketProvider extends ChangeNotifier {
               _socketDatas["${res['tk']}"] = <String, dynamic>{};
             }
             _socketDatas["${res['tk']}"]["pc"] = res["pc"] ?? "0.00";
+            _socketDatas["${res['tk']}"]["ap"] = res["ap"] ?? "0.00";
             _socketDatas["${res['tk']}"]["o"] = res["o"] ?? "0.00";
             _socketDatas["${res['tk']}"]["h"] = res["h"] ?? "0.00";
             _socketDatas["${res['tk']}"]["l"] = res["l"] ?? "0.00";
