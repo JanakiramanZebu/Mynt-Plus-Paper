@@ -53,7 +53,7 @@ class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final Reader ref;
-  final String _version = "1.0.43(104+03)";
+  final String _version = "1.0.79(01+03)";
   late final String _versiontext =
       "Version 3.0.2 Build $_version Released on 28 Apr";
   String get versiontext => _versiontext;
@@ -71,6 +71,9 @@ class AuthProvider extends DefaultChangeNotifier {
 
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
+
+  Map _ordgrefis = {};
+  Map get ordgrefis => _ordgrefis;
 
   setChangetotp(bool value) {
     _totp = value;
@@ -1099,23 +1102,48 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   setPrefOrderPrefer() async {
-    String getlocal = "";
+    Map getlocal = await api.setOrderprefer({}, false);
+    Map local = {};
+    String getapplocal = "";
     if (pref.showOrderpref != null) {
-      getlocal = pref.showOrderpref!;
+      getapplocal = pref.showOrderpref!;
     }
-    if (!(getlocal.isNotEmpty && getlocal.contains("expos"))) {
-      Map<String, String> local = {
-        "prc": "Limit",
-        "prd": "Intraday",
-        "qtypref": "qty",
-        "qty": "1",
-        "validity": "DAY",
-        "mrkprot": "1",
-        "expos": "Market"
+
+    if (getlocal.isNotEmpty &&
+        getlocal.containsKey("metadata") &&
+        getlocal["metadata"].containsKey("expos")) {
+      _ordgrefis = getlocal['metadata'];
+    } else if ((getapplocal.isNotEmpty && getapplocal.contains("expos"))) {
+      local = {
+        "clientid": pref.clientId,
+        "metadata": jsonDecode(getapplocal),
+        "source": "MOB"
       };
-      String jsonString = jsonEncode(local);
-      await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
+      _ordgrefis = getlocal['metadata'];
+      await api.setOrderprefer(local, true);
+    } else {
+      local = {
+        "clientid": pref.clientId,
+        "metadata": {
+          "prc": "Limit",
+          "prd": "Intraday",
+          "qtypref": "qty",
+          "qty": "1",
+          "validity": "DAY",
+          "mrkprot": "1",
+          "expos": "Market"
+        },
+        "source": "MOB"
+      };
+      _ordgrefis = local['metadata'];
+      await api.setOrderprefer(local, true);
+      // String jsonString = jsonEncode(local);
+      // await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
     }
+  }
+
+  getPrefOrderPrefer(Map data, bool url) async {
+    await api.setOrderprefer(data, url);
   }
 
   setProfileAPicalls() async {

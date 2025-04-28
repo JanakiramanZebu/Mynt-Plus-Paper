@@ -16,6 +16,7 @@ import '../../models/order_book_model/order_margin_model.dart';
 import '../../models/order_book_model/place_gtt_order.dart';
 import '../../models/order_book_model/place_order_model.dart';
 import '../../models/order_book_model/sip_place_order.dart';
+import '../../provider/auth_provider.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/order_input_provider.dart';
@@ -115,18 +116,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
     return ((input / interval).round() * interval);
   }
 
-  Map<String, dynamic> localdata = {};
+  Map localdata = {};
   bool defaultparams = false;
   final GlobalKey<TooltipState> tooltipKey = GlobalKey<TooltipState>();
 
   @override
   void initState() {
-    String getlocal = "";
-    if (pref.showOrderpref != null) {
-      getlocal = pref.showOrderpref!;
-    }
-    if (getlocal != "" && !widget.orderArg.isModify) {
-      localdata = jsonDecode(getlocal);
+    localdata = context.read(authProvider).ordgrefis;
+    if (localdata.isNotEmpty && !widget.orderArg.isModify) {
       defaultparams = true;
     }
 

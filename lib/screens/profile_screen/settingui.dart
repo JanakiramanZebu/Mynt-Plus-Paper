@@ -265,11 +265,16 @@ class SettingsScreen extends ConsumerWidget {
                 },
                 dense: true,
                 minLeadingWidth: 20,
-                leading: index == 2 ? const Icon(Icons.lock_outline_rounded, size: 21,)  : SvgPicture.asset(
-                  usersettings.settingmenu[index]['leading'],
-                  width: 19,
-                  color: const Color(0xff666666),
-                ),
+                leading: index == 2
+                    ? const Icon(
+                        Icons.lock_outline_rounded,
+                        size: 21,
+                      )
+                    : SvgPicture.asset(
+                        usersettings.settingmenu[index]['leading'],
+                        width: 19,
+                        color: const Color(0xff666666),
+                      ),
                 title: Text(usersettings.settingmenu[index]['title'],
                     style: textStyle(
                         theme.isDarkMode
@@ -407,7 +412,7 @@ class SettingsScreen extends ConsumerWidget {
                               ),
                             ),
                     ],
-                    index != 2 && index != 0 
+                    index != 2 && index != 0
                         ? SvgPicture.asset(
                             usersettings.settingmenu[index]['trailing'])
                         : Container()

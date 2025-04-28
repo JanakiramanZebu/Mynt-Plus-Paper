@@ -13,8 +13,13 @@ class ApiLinks {
 
   String get goMyntURL => "https://go.mynt.in/NorenWClient";
   static String wsURL = 'wss://go.mynt.in/NorenWS/';
-  String get newsurl => "https://be.mynt.in/news";
-  String get weblog => "https://be.mynt.in/weblog/addlogversion";
+  String get bemynt => "https://be.mynt.in/";
+
+  String get newsurl => "$bemynt/news";
+  String get weblog => "$bemynt/weblog/addlogversion";
+  
+  String get getpref => "$bemynt/weblog/getpreference";
+  String get setpref => "$bemynt/weblog/savepreference";
 
   ///generate api key
   String get apiKey => '$goMyntURL/RequestApiKey';

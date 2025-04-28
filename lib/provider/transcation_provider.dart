@@ -441,7 +441,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       _payoutdetails!.withdrawAmount =
           (double.tryParse(_payoutdetails!.margin.toString())! > 0 &&
                   (reqs > 0 || marg > 0))
-              ? ((90 / 100) *
+              ? ((100 / 100) *
                       (reqs > 0
                           ? reqs
                           : double.tryParse(
