@@ -95,7 +95,7 @@ class _BreakUpDetailsState extends State<BreakUpDetails> {
                                 "Collateral Value",
                               ),
                               contantTitleText(
-                                  "₹ ${widget.withdraw.payoutdetails!.collateral}",
+                                  "₹ ${widget.withdraw.payoutdetails!.brkcollamt}",
                                   theme),
                             ],
                           ),

@@ -418,7 +418,7 @@ class TranctionProvider extends DefaultChangeNotifier {
 
       if (double.tryParse(_payoutdetails!.totalLedger.toString())! > 0) {
         if (double.tryParse(_payoutdetails!.brkcollamt.toString())! > 0) {
-          marg = double.tryParse(_payoutdetails!.brkcollamt.toString())! -
+          marg = double.tryParse(_payoutdetails!.brkcollamt.toString())! - 
               double.tryParse(_payoutdetails!.margin.toString())!;
         } else {
           if (double.tryParse(_payoutdetails!.collateral.toString())! > 0) {
@@ -428,13 +428,13 @@ class TranctionProvider extends DefaultChangeNotifier {
         }
 
         if (marg <= 0 && double.tryParse(_payoutdetails!.fD.toString())! > 0) {
-          reqs = marg + double.tryParse(_payoutdetails!.fD.toString())!;
+          reqs = double.tryParse(_payoutdetails!.fD.toString())!;
         }
 
         if (marg <= 0 &&
             double.tryParse(_payoutdetails!.totalLedger.toString())! > 0) {
-          reqs =
-              marg + double.tryParse(_payoutdetails!.totalLedger.toString())!;
+          reqs += marg +
+               double.tryParse(_payoutdetails!.totalLedger.toString())!;
         }
       }
 
