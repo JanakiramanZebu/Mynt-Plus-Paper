@@ -875,7 +875,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                                           },
                                                                                           contentPadding: const EdgeInsets.symmetric(horizontal: 0),
                                                                                           dense: true,
-                                                                                          title: Text(scripInfo.numStrikes[index] == "50" ? "All" : scripInfo.numStrikes[index],
+                                                                                          title: Text(scripInfo.numStrikes[index],
                                                                                               style: textStyle(
                                                                                                   scripInfo.numStrike == scripInfo.numStrikes[index] && theme.isDarkMode
                                                                                                       ? colors.colorLightBlue
@@ -901,7 +901,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                         },
                                                         child: Row(children: [
                                                           Text(
-                                                              "${scripInfo.numStrike == "50" ? "All" : scripInfo.numStrike} ",
+                                                              "${ scripInfo.numStrike} ",
                                                               style: textStyle(
                                                                   theme.isDarkMode
                                                                       ? colors
@@ -1687,7 +1687,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
       GetQuotes depthData, bool transType) async {
     await context
         .read(marketWatchProvider)
-        .fetchScripInfo(widget.wlValue.token, widget.wlValue.exch, context);
+        .fetchScripInfo(widget.wlValue.token, widget.wlValue.exch, context, true);
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: widget.wlValue.exch,
         tSym: widget.wlValue.tsym,

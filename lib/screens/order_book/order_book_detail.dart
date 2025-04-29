@@ -571,7 +571,7 @@ class OrderBookDetail extends ConsumerWidget {
                         await watch(marketWatchProvider).fetchScripInfo(
                             "${orderBookData.token}",
                             "${orderBookData.exch}",
-                            context);
+                            context, true);
 
                         OrderScreenArgs orderArgs = OrderScreenArgs(
                             exchange: orderBookData.exch.toString(),

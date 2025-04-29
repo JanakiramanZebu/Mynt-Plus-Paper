@@ -538,7 +538,7 @@ class PositionGroupDetail extends ConsumerWidget {
                               await context
                                   .read(marketWatchProvider)
                                   .fetchScripInfo("${positionData['token']}",
-                                      '${positionData['exch']}', context);
+                                      '${positionData['exch']}', context, true);
                               Navigator.pop(context);
                               OrderScreenArgs orderArgs = OrderScreenArgs(
                                   exchange: '${positionData['exch']}',
@@ -593,7 +593,7 @@ class PositionGroupDetail extends ConsumerWidget {
                                       .fetchScripInfo(
                                           "${positionData['token']}",
                                           '${positionData['exch']}',
-                                          context);
+                                          context, true);
                                   Navigator.pop(context);
                                   OrderScreenArgs orderArgs = OrderScreenArgs(
                                       exchange: '${positionData['exch']}',

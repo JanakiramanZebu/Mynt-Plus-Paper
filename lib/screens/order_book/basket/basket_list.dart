@@ -423,7 +423,7 @@ class BasketScripList extends ConsumerWidget {
                                 .fetchScripInfo(
                                     "${basket.bsktScripList[index]['token']}",
                                     '${basket.bsktScripList[index]['exch']}',
-                                    context);
+                                    context, true);
                             basket.bsktScripList[index]['index'] = index;
                             basket.bsktScripList[index]['prctyp'] =
                                 basket.bsktScripList[index]['prctype'];

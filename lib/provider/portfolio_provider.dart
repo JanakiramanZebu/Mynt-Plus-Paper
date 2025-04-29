@@ -1090,15 +1090,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
         int fullOrders = qty ~/ frzqty;
         int remainingQty = qty % frzqty;
 
-        ref(orderProvider).setsliceOrderloader(true);
         for (int i = 0; i < fullOrders; i++) {
           placeOrderInput.qty = frzqty.toString();
           _placeOrderModel =
               await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
-
-          if (i == fullOrders - 1) {
-            ref(orderProvider).setsliceOrderloader(false);
-          }
         }
 
         if (remainingQty > 0) {

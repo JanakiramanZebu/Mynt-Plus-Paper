@@ -2508,6 +2508,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, priceType == "Limit" || priceType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
                                                               textCtrl: priceCtrl,
                                                               textAlign: TextAlign.start)),
+                                                  const SizedBox(height: 8),
+                                                  Text(
+                                                      "Cir Lv : ${widget.scripInfo.lc ?? 0.00} - ${widget.scripInfo.uc ?? 0.00}",
+                                                      style: textStyle(
+                                                          const Color(
+                                                              0xff666666),
+                                                          12,
+                                                          FontWeight.w500))
                                                 ]))
                                           ])),
                                   const SizedBox(height: 3),
@@ -4548,8 +4556,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
               "Quantity should be multiple of lot size $lotSize => $q"));
         } else if (20 < quantity) {
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-              context, "Quantity can only be split into a maximum of 20 slice. (Ex: $frezQty x 20 = ${frezQty * 20})"));
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+              "Quantity can only be split into a maximum of 20 slice. (Ex: $frezQty x 20 = ${frezQty * 20})"));
         } else {
           showModalBottomSheet(
             isScrollControlled: true,

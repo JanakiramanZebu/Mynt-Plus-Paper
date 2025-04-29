@@ -24,6 +24,8 @@ class WebSocketProvider extends ChangeNotifier {
   final Reader ref;
   WebSocketProvider(this.ref);
 
+  Timer? holdStartTime;
+
   // Map to track active subscriptions and their timers
   final Map<String, Timer> _subscriptionTimers = {};
 
@@ -291,7 +293,7 @@ class WebSocketProvider extends ChangeNotifier {
               if (res["pc"] != null) {
                 _socketDatas["${res['tk']}"]["pc"] = res["pc"];
               }
-                 if (res["ap"] != null) {
+              if (res["ap"] != null) {
                 _socketDatas["${res['tk']}"]["ap"] = res["ap"];
               }
 
@@ -502,23 +504,28 @@ class WebSocketProvider extends ChangeNotifier {
 
             // log("Soxket data ${jsonEncode(_socketDatas)}");
           } else if (res['t'].toString().toLowerCase() == "om") {
-            if (!ref(orderProvider).sliceorderapi) {
-              ref(indexListProvider)
-                  .logError
-                  .add({"type": "Order Response", "Error": "$res"});
-              ref(portfolioProvider).fetchHoldings(context, "");
-
-              ref(orderProvider).fetchOrderBook(context, true);
-              ref(orderProvider).fetchTradeBook(context);
-              ref(orderProvider).fetchGTTOrderBook(context, "");
-              ref(fundProvider).fetchFunds(context);
-              if (res['status'].toString() == "COMPLETE") {
-                Timer(
-                    const Duration(seconds: 1),
-                    () => ref(portfolioProvider)
-                        .fetchPositionBook(context, false));
+              if (holdStartTime != null && holdStartTime!.isActive) {
+                holdStartTime!.cancel();
               }
-            }
+
+              holdStartTime = Timer(const Duration(milliseconds: 500), () {
+        
+                ref(indexListProvider)
+                    .logError
+                    .add({"type": "Order Response", "Error": "$res"});
+                ref(portfolioProvider).fetchHoldings(context, "");
+                ref(orderProvider).fetchOrderBook(context, true);
+                ref(orderProvider).fetchTradeBook(context);
+                ref(orderProvider).fetchGTTOrderBook(context, "");
+                ref(fundProvider).fetchFunds(context);
+                if (res['status'].toString() == "COMPLETE") {
+                  Timer(
+                      const Duration(seconds: 1),
+                      () => ref(portfolioProvider)
+                          .fetchPositionBook(context, false));
+                }
+                holdStartTime = null;
+              });
           }
 
           notifyListeners();

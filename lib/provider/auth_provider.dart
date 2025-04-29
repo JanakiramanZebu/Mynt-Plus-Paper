@@ -53,9 +53,9 @@ class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final Reader ref;
-  final String _version = "1.0.79(01+03)";
+  final String _version = "1.0.79(01+04)";
   late final String _versiontext =
-      "Version 3.0.2 Build $_version Released on 28 Apr";
+      "Version 3.0.2 Build $_version Released on 29 Apr";
   String get versiontext => _versiontext;
 
   //  Text field controller for Login and otp screen
@@ -1119,7 +1119,7 @@ class AuthProvider extends DefaultChangeNotifier {
         "metadata": jsonDecode(getapplocal),
         "source": "MOB"
       };
-      _ordgrefis = getlocal['metadata'];
+      _ordgrefis = jsonDecode(getapplocal);
       await api.setOrderprefer(local, true);
     } else {
       local = {

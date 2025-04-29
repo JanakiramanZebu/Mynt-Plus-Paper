@@ -421,7 +421,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     final raw = context.read(marketWatchProvider).getQuotes;
     await context
         .read(marketWatchProvider)
-        .fetchScripInfo(raw!.token.toString(), raw.exch.toString(), ctx);
+        .fetchScripInfo(raw!.token.toString(), raw.exch.toString(), ctx, true);
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: raw.exch.toString(),
         tSym: raw.tsym.toString(),

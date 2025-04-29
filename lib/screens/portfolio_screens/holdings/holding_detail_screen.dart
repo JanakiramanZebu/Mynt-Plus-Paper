@@ -402,7 +402,7 @@ class HoldingDetailScreen extends ConsumerWidget {
                           await context
                               .read(marketWatchProvider)
                               .fetchScripInfo("${exchTsym.token}",
-                                  '${exchTsym.exch}', context);
+                                  '${exchTsym.exch}', context, true);
                           OrderScreenArgs orderArgs = OrderScreenArgs(
                               exchange: '${exchTsym.exch}',
                               tSym: '${exchTsym.tsym}',
@@ -473,7 +473,7 @@ class HoldingDetailScreen extends ConsumerWidget {
                               await context
                                   .read(marketWatchProvider)
                                   .fetchScripInfo("${exchTsym.token}",
-                                      '${exchTsym.exch}', context);
+                                      '${exchTsym.exch}', context, true);
                               OrderScreenArgs orderArgs = OrderScreenArgs(
                                   exchange: '${exchTsym.exch}',
                                   tSym: '${exchTsym.tsym}',

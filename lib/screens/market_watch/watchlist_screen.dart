@@ -435,7 +435,7 @@ class _WatchListScreen extends State<WatchListScreen> {
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       Map depthData, bool transType) async {
     await context.read(marketWatchProvider).fetchScripInfo(
-        depthData['token'].toString(), depthData['exch'].toString(), context);
+        depthData['token'].toString(), depthData['exch'].toString(), context, true);
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: depthData['exch'].toString(),
         tSym: depthData['tsym'].toString(),

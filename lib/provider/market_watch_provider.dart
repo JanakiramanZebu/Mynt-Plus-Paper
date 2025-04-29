@@ -1052,9 +1052,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
 // Fetching data from the api and stored in a variable
-  Future fetchScripInfo(String token, String exch, BuildContext context) async {
+  Future fetchScripInfo(String token, String exch, BuildContext context, [bool order = false]) async {
     try {
-      if (storeQuotes.containsKey(token) && storeQuotes[token]?['s'] != null) {
+      if (order == false && storeQuotes.containsKey(token) && storeQuotes[token]?['s'] != null) {
         _scripInfoModel = storeQuotes[token]?['s'];
         ConstantName.sessCheck = true;
         print('qqq if si');
