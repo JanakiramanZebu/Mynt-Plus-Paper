@@ -367,10 +367,10 @@ class TranctionProvider extends DefaultChangeNotifier {
             context: context,
             builder: (BuildContext context) {
               return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+                  canPop: false,
+                  onPopInvokedWithResult: (didPop, result) async {
+                    if (didPop) return;
+                  },
                   child: const UPIAppsPaymentSuccessAlert());
             });
       }
@@ -416,43 +416,35 @@ class TranctionProvider extends DefaultChangeNotifier {
       double marg = 0;
       double reqs = 0;
 
-      if (double.tryParse(_payoutdetails!.totalLedger.toString())! > 0) {
-        if (double.tryParse(_payoutdetails!.brkcollamt.toString())! > 0) {
-          marg = double.tryParse(_payoutdetails!.brkcollamt.toString())! - 
-              double.tryParse(_payoutdetails!.margin.toString())!;
-        } else {
-          if (double.tryParse(_payoutdetails!.collateral.toString())! > 0) {
-            marg = double.tryParse(_payoutdetails!.collateral.toString())! -
-                double.tryParse(_payoutdetails!.margin.toString())!;
-          }
-        }
+      double ledger =
+          double.tryParse(_payoutdetails!.totalLedger.toString()) ?? 0;
 
-        if (marg <= 0 && double.tryParse(_payoutdetails!.fD.toString())! > 0) {
-          reqs = double.tryParse(_payoutdetails!.fD.toString())!;
-        }
+      double brkColl =
+          double.tryParse(_payoutdetails!.brkcollamt.toString()) ?? 0;
+      double collateral =
+          double.tryParse(_payoutdetails!.collateral.toString()) ?? 0;
+      double margin = double.tryParse(_payoutdetails!.margin.toString()) ?? 0;
+      double fd = double.tryParse(_payoutdetails!.fD.toString()) ?? 0;
 
-        if (marg <= 0 &&
-            double.tryParse(_payoutdetails!.totalLedger.toString())! > 0) {
-          reqs += marg +
-               double.tryParse(_payoutdetails!.totalLedger.toString())!;
+      if (ledger > 0) {
+        marg = brkColl > 0
+            ? brkColl - margin
+            : collateral > 0
+                ? collateral - margin
+                : 0;
+
+        if (marg <= 0 && fd > 0) {
+          reqs = marg + fd;
+        }
+        if (reqs <= 0) {
+          reqs = reqs + ledger;
         }
       }
 
-      _payoutdetails!.withdrawAmount =
-          (double.tryParse(_payoutdetails!.margin.toString())! > 0 &&
-                  (reqs > 0 || marg > 0))
-              ? ((100 / 100) *
-                      (reqs > 0
-                          ? reqs
-                          : double.tryParse(
-                                  _payoutdetails!.totalLedger.toString()) ??
-                              0))
-                  .toStringAsFixed(2)
-              : (double.tryParse(_payoutdetails!.withdrawAmount
-                          .toString()
-                          .toString()) ??
-                      0)
-                  .toStringAsFixed(2);
+      _payoutdetails!.withdrawAmount = (margin > 0 && (reqs > 0 || marg > 0))
+          ? ((reqs > 0 ? reqs : ledger)).toStringAsFixed(2)
+          : (double.tryParse(_payoutdetails!.withdrawAmount.toString()) ?? 0)
+              .toStringAsFixed(2);
 
       //  print("------------ ${ApiLinks.token}");
 
@@ -575,10 +567,10 @@ class TranctionProvider extends DefaultChangeNotifier {
           context: context,
           builder: (BuildContext context) {
             return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+                canPop: false,
+                onPopInvokedWithResult: (didPop, result) async {
+                  if (didPop) return;
+                },
                 child: const PaymentCancelAlert());
           });
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -617,10 +609,10 @@ class TranctionProvider extends DefaultChangeNotifier {
             context: context,
             builder: (BuildContext context) {
               return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+                  canPop: false,
+                  onPopInvokedWithResult: (didPop, result) async {
+                    if (didPop) return;
+                  },
                   child: const UpiIdSucessorFaliureScreen());
             });
       }

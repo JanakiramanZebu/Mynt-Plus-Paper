@@ -64,7 +64,7 @@ class AuthProvider extends DefaultChangeNotifier {
   final TextEditingController passCtrl = TextEditingController();
   final TextEditingController otpCtrl = TextEditingController();
 
-  bool _totp = false;
+  bool _totp = true;
   bool get totp => _totp;
 
   late TabController exploreTab;

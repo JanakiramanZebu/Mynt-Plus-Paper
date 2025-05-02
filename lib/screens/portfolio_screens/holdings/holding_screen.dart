@@ -176,7 +176,7 @@ class HoldingScreen extends ConsumerWidget {
                                   ])
                             ])
                       ])),
-              if (holdingProvide.holdingsModel!.isNotEmpty)
+              
                 Container(
                     decoration: BoxDecoration(
                         color: theme.isDarkMode
@@ -192,13 +192,11 @@ class HoldingScreen extends ConsumerWidget {
                         padding: const EdgeInsets.only(
                             left: 16, right: 2, top: 8, bottom: 8),
                         child: Row(
-                            mainAxisAlignment: holdingProvide.showEdis
-                                ? MainAxisAlignment.spaceBetween
-                                : MainAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 children: [
-                                  if (holdingProvide.showEdis) ...[
+                                  if (holdingProvide.holdingsModel!.isNotEmpty && holdingProvide.showEdis) ...[
                                     SizedBox(
                                         height: 27,
                                         child: OutlinedButton(
@@ -245,7 +243,7 @@ class HoldingScreen extends ConsumerWidget {
                                           onPressed: () async {
                                             await mf.mfApicallinit(context, 2);
                                           },
-                                          child: Text("MF Holdings",
+                                          child: Text("My MF",
                                               style: textStyle(
                                                   !theme.isDarkMode
                                                       ? colors.colorBlack

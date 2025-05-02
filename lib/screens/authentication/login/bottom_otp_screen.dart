@@ -19,7 +19,8 @@ class BottomSheetContent extends StatefulWidget {
   State<BottomSheetContent> createState() => _BottomSheetContentState();
 }
 
-class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFill{
+class _BottomSheetContentState extends State<BottomSheetContent>
+    with CodeAutoFill {
   final TextEditingController otpController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
@@ -27,9 +28,9 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
   int _start = 89;
   String resendTime = "01.29";
   String? _receivedCode = '';
-  final autoFill  = SmsAutoFill();
+  final autoFill = SmsAutoFill();
   String _appSignature = "Fetching...";
-  
+
   @override
   void initState() {
     startTimer();
@@ -41,7 +42,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
     super.initState();
   }
 
-   Future<void> _getAppSignature() async {
+  Future<void> _getAppSignature() async {
     try {
       final autoFill = SmsAutoFill();
       final signature = await autoFill.getAppSignature;
@@ -54,7 +55,6 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
       });
     }
   }
-  
 
   Future<void> _startListeningForOtp() async {
     setState(() {
@@ -64,7 +64,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
     listenForCode(); // Needed to trigger CodeAutoFill callback
   }
 
-   @override
+  @override
   void codeUpdated() {
     setState(() {
       _receivedCode = code; // `code` is provided by the mixin
@@ -133,7 +133,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
         border: Border.all(color: colors.darkred, width: 1),
         //textStyle: defaultPinThemes.textStyle?.copyWith(color: Colors.red),
       );
-      
+
       final submittedPinTheme = defaultPinThemes.copyBorderWith(
         border: Border.all(color: colors.ltpgreen, width: 2),
       );
@@ -261,7 +261,8 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
                                 onChanged: (value) {
                                   auth.validateOtp(otpController.text);
                                   auth.activeBtnOtp(otpController.text);
-                                  if (value.isNotEmpty && value.length == (auth.totp ? 6 : 4)) {
+                                  if (value.isNotEmpty &&
+                                      value.length == (auth.totp ? 6 : 4)) {
                                     auth.submitOtp(context, otpController.text);
                                   }
                                 },
@@ -313,7 +314,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
                                     //     ? null
                                     //     :
                                     () {
-                                      SmsAutoFill().unregisterListener();
+                                  SmsAutoFill().unregisterListener();
                                   otpController.text = '';
                                   _startListeningForOtp();
                                   auth.submitResendOtp(context);
@@ -330,7 +331,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
                                             ? colors.colorLightBlue
                                             : colors.colorBlue)),
                               ),
-                            if (!auth.totp)
+                            if (!auth.totp) ...[
                               Text(" $resendTime",
                                   style: textStyles.resendOtpstyle.copyWith(
                                       color: resendTime == "00 : 00"
@@ -338,6 +339,61 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
                                           : theme.isDarkMode
                                               ? colors.colorLightBlue
                                               : colors.colorBlue))
+                            ] else ...[
+                              Row(
+                                children: [
+                                  Text("Go to User → Settings → TOTP on Web ",
+                                      style: textStyles.resendOtpstyle
+                                          .copyWith(color: colors.colorGrey)),
+                                  InkWell(
+                                    onTap: () {
+                                      showModalBottomSheet(
+                                        barrierColor: Colors.transparent,
+                                        context: context,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                              top: Radius.circular(16)),
+                                        ),
+                                        isScrollControlled: true,
+                                        builder: (context) => Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16),
+                                          child: SingleChildScrollView(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const CustomDragHandler(),
+                                                const SizedBox(height: 12),
+                                                const Text(
+                                                  'Enable TOTP Authentication',
+                                                  style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                const SizedBox(height: 16),
+                                                _buildStep("Login to mynt.zebuetrade.com"),
+                                                _buildStep("Click on the User menu (top-right)."),
+                                                _buildStep("Select Settings."),
+                                                _buildStep("Navigate to the TOTP section."),
+                                                _buildStep("Enter the 6-digit code to verify."),
+                                                const SizedBox(height: 100),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: const Icon(
+                                      Icons.info_outline,
+                                      size: 16,
+                                    ),
+                                  )
+                                ],
+                              )
+                            ]
                           ],
                         ),
                       ),
@@ -353,18 +409,21 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
                           style: ElevatedButton.styleFrom(
                               elevation: 0,
                               backgroundColor: !theme.isDarkMode
-                                  ? otpController.length <= (auth.totp ? 5 : 3) ||
+                                  ? otpController.length <=
+                                              (auth.totp ? 5 : 3) ||
                                           otpController.text.isEmpty
                                       ? const Color(0xfff5f5f5)
                                       : colors.colorBlack
-                                  : otpController.length <= (auth.totp ? 5 : 3) ||
+                                  : otpController.length <=
+                                              (auth.totp ? 5 : 3) ||
                                           otpController.text.isEmpty
                                       ? colors.darkGrey
                                       : colors.colorbluegrey,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               )),
-                          onPressed: otpController.length <= (auth.totp ? 5 : 3) ||
+                          onPressed: otpController.length <=
+                                      (auth.totp ? 5 : 3) ||
                                   otpController.text.isEmpty
                               //         ||
                               //     internet.connectionStatus ==
@@ -386,11 +445,13 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
                               : Text("Verify",
                                   style: textStyle(
                                       !theme.isDarkMode
-                                          ? otpController.length <= (auth.totp ? 5 : 3) ||
+                                          ? otpController.length <=
+                                                      (auth.totp ? 5 : 3) ||
                                                   otpController.text.isEmpty
                                               ? const Color(0xff999999)
                                               : colors.colorWhite
-                                          : otpController.length <= (auth.totp ? 5 : 3) ||
+                                          : otpController.length <=
+                                                      (auth.totp ? 5 : 3) ||
                                                   otpController.text.isEmpty
                                               ? colors.darkGrey
                                               : colors.colorBlack,
@@ -404,5 +465,18 @@ class _BottomSheetContentState extends State<BottomSheetContent> with CodeAutoFi
               ),
             );
     });
+  }
+
+  Widget _buildStep(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("• ", style: TextStyle(fontWeight: FontWeight.bold)),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
   }
 }

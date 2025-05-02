@@ -155,12 +155,13 @@ class _WatchListScreen extends State<WatchListScreen> {
                                 "null") {
                               marketWatch.scrips[idx]['change'] = "0.00";
                             }
-                            if (marketWatch.scrips[idx]['perChange']
-                                        .toString() ==
-                                    "null" ||
-                                marketWatch.scrips[idx]['perChange']
-                                        .toString() ==
-                                    "0.00") {
+                            if ((marketWatch.scrips[idx]['perChange']
+                                            .toString() ==
+                                        "null" ||
+                                    marketWatch.scrips[idx]['perChange']
+                                            .toString() ==
+                                        "0.00") &&
+                                marketWatch.scrips[idx]['ltp'] != '0.00') {
                               marketWatch.scrips[idx]['perChange'] = marketWatch
                                           .scrips[idx]['change']
                                           .toString() !=
@@ -435,7 +436,10 @@ class _WatchListScreen extends State<WatchListScreen> {
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       Map depthData, bool transType) async {
     await context.read(marketWatchProvider).fetchScripInfo(
-        depthData['token'].toString(), depthData['exch'].toString(), context, true);
+        depthData['token'].toString(),
+        depthData['exch'].toString(),
+        context,
+        true);
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: depthData['exch'].toString(),
         tSym: depthData['tsym'].toString(),
