@@ -23,14 +23,8 @@ import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
-import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/no_data_found.dart';
 import 'futures/future_screen.dart';
-import 'option_chain/cur_strike_price.dart';
-import 'option_chain/opt_chain_call_list.dart';
-import 'option_chain/opt_chain_put_list.dart';
-import 'option_chain/strike_price_list_card.dart';
-
 import 'over_view/funtamental_data_widget.dart';
 import 'scrip_detail_dialogue.dart';
 import 'set_alert_screen.dart';
@@ -51,14 +45,13 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
   ChartArgs? chartArgs;
   String regtoken = "";
 
-  final ScrollController _controller = ScrollController();
-
   @override
   void initState() {
     regtoken = widget.wlValue.token;
     setState(() {
-      initSize = (context.read(marketWatchProvider).actDeptBtn != "Overview" || widget.wlValue.instname != "UNDIND" &&
-              widget.wlValue.instname != "COM")
+      initSize = (context.read(marketWatchProvider).actDeptBtn != "Overview" ||
+              widget.wlValue.instname != "UNDIND" &&
+                  widget.wlValue.instname != "COM")
           ? 0.88
           : 0.38;
       chartArgs = ChartArgs(
@@ -482,6 +475,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                         scripInfo
                                                             .setpageName("");
                                                         Navigator.pop(context);
+                                                        currentRouteName =
+                                                            'homeScreen';
                                                       }
 
                                                       userProfile
@@ -506,48 +501,20 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                 .depthBtns[
                                                             index]['btnName'] ==
                                                         "Option") {
-                                                      if (depthData.exch ==
-                                                              "NFO" ||
-                                                          (depthData.exch ==
-                                                                  "MCX" &&
-                                                              depthData
-                                                                      .instname ==
-                                                                  "OPTFUT")) {
-                                                        await scripInfo.fetchStikePrc(
-                                                            "${depthData.undTk}",
-                                                            "${depthData.undExch}",
-                                                            context);
-                                                      } else {
-                                                        scripInfo
-                                                            .updateOptStrPrc(
-                                                                depthData.lp
-                                                                    .toString());
-                                                      }
-
-                                                      await context.read(websocketProvider).establishConnection(
-                                                          channelInput: (depthData
-                                                                          .exch ==
-                                                                      "NFO" ||
-                                                                  (depthData.exch ==
-                                                                          "MCX" &&
-                                                                      depthData
-                                                                              .instname ==
-                                                                          "OPTFUT"))
-                                                              ? '${depthData.undExch}|${depthData.undTk!}'
-                                                              : '${depthData.exch}|${depthData.token!}',
-                                                          task: "t",
-                                                          context: context);
-
-                                                      await scripInfo.fetchOPtionChain(
-                                                          context: context,
-                                                          exchange: scripInfo
-                                                              .optionExch!,
-                                                          numofStrike: scripInfo
-                                                              .numStrike,
-                                                          strPrc: scripInfo
-                                                              .optionStrPrc,
-                                                          tradeSym: scripInfo
-                                                              .selectedTradeSym!);
+                                                      scripInfo
+                                                          .singlePageloader(
+                                                              true);
+                                                      Navigator.pop(context);
+                                                      Navigator.pushNamed(
+                                                          context,
+                                                          Routes.optionChain,
+                                                          arguments:
+                                                              widget.wlValue);
+                                                      scripInfo.setOptionScript(
+                                                          context,
+                                                          widget.wlValue.exch,
+                                                          widget.wlValue.token,
+                                                          widget.wlValue.tsym);
                                                     } else if (scripInfo
                                                                 .depthBtns[
                                                             index]['btnName'] ==
@@ -653,321 +620,6 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                     int index) {
                                               return const SizedBox(width: 10);
                                             })),
-                                    if (scripInfo.actDeptBtn == "Option") ...[
-                                      Padding(
-                                          padding: const EdgeInsets.only(
-                                              right: 3,
-                                              left: 16,
-                                              top: 10,
-                                              bottom: 8),
-                                          child: SizedBox(
-                                              height: 32,
-                                              child: ListView.separated(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  controller: _controller,
-                                                  itemBuilder:
-                                                      (context, index) {
-                                                    return Container(
-                                                      alignment:
-                                                          Alignment.center,
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 14),
-                                                      decoration: BoxDecoration(
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? scripInfo.selectedExpDate! ==
-                                                                      scripInfo
-                                                                              .sortDate[
-                                                                          index]
-                                                                  ? const Color(
-                                                                      0xffF1F3F8)
-                                                                  : const Color(
-                                                                          0xffB5C0CF)
-                                                                      .withOpacity(
-                                                                          .15)
-                                                              : scripInfo.selectedExpDate! ==
-                                                                      scripInfo
-                                                                              .sortDate[
-                                                                          index]
-                                                                  ? const Color(
-                                                                      0xff000000)
-                                                                  : const Color(
-                                                                      0xffF1F3F8),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      98)),
-                                                      child: InkWell(
-                                                          onTap: () async {
-                                                            if (scripInfo
-                                                                    .sortDate
-                                                                    .length <=
-                                                                12) {
-                                                              _controller.animateTo(
-                                                                  scripInfo.sortDate
-                                                                              .length <=
-                                                                          4
-                                                                      ? index *
-                                                                          40
-                                                                      : index *
-                                                                          100,
-                                                                  duration:
-                                                                      const Duration(
-                                                                          seconds:
-                                                                              1),
-                                                                  curve: Curves
-                                                                      .fastOutSlowIn);
-                                                            } else {
-                                                              _controller.animateTo(
-                                                                  index * 112,
-                                                                  duration:
-                                                                      const Duration(
-                                                                          seconds:
-                                                                              1),
-                                                                  curve: Curves
-                                                                      .fastOutSlowIn);
-                                                            }
-
-                                                            for (var i = 0;
-                                                                i <
-                                                                    scripInfo
-                                                                        .optExp!
-                                                                        .length;
-                                                                i++) {
-                                                              if (scripInfo
-                                                                          .sortDate[
-                                                                      index] ==
-                                                                  scripInfo
-                                                                      .optExp![
-                                                                          i]
-                                                                      .exd) {
-                                                                scripInfo
-                                                                    .selecTradSym(
-                                                                        "${scripInfo.optExp![i].tsym}");
-                                                                scripInfo.optExch(
-                                                                    "${scripInfo.optExp![i].exch}");
-                                                              }
-                                                            }
-                                                            scripInfo.selecexpDate(
-                                                                scripInfo
-                                                                        .sortDate[
-                                                                    index]);
-
-                                                            await context.read(marketWatchProvider).fetchOPtionChain(
-                                                                context:
-                                                                    context,
-                                                                exchange: scripInfo
-                                                                    .optionExch!,
-                                                                numofStrike:
-                                                                    scripInfo
-                                                                        .numStrike,
-                                                                strPrc: scripInfo
-                                                                    .optionStrPrc,
-                                                                tradeSym: scripInfo
-                                                                    .selectedTradeSym!);
-                                                          },
-                                                          child: Text(
-                                                              scripInfo
-                                                                  .sortDate[
-                                                                      index]
-                                                                  .replaceAll(
-                                                                      "-", " "),
-                                                              style: textStyle(
-                                                                  theme.isDarkMode
-                                                                      ? Color(scripInfo.selectedExpDate! == scripInfo.sortDate[index]
-                                                                          ? 0xff000000
-                                                                          : 0xffffffff)
-                                                                      : Color(scripInfo.selectedExpDate! == scripInfo.sortDate[index]
-                                                                          ? 0xffffffff
-                                                                          : 0xff000000),
-                                                                  12.5,
-                                                                  FontWeight
-                                                                      .w500))),
-                                                    );
-                                                  },
-                                                  separatorBuilder:
-                                                      (context, index) {
-                                                    return const SizedBox(
-                                                        width: 8);
-                                                  },
-                                                  shrinkWrap: true,
-                                                  itemCount: scripInfo
-                                                      .sortDate.length))),
-                                      Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10),
-                                          height: 36,
-                                          color: theme.isDarkMode
-                                              ? const Color(0xffB5C0CF)
-                                                  .withOpacity(.15)
-                                              : const Color(0xffFAFBFF),
-                                          child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: [
-                                                Text("OI",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        13,
-                                                        FontWeight.w500)),
-                                                Text("  Call LTP   ",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        13,
-                                                        FontWeight.w500)),
-                                                Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 4),
-                                                    child: InkWell(
-                                                        onTap: () {
-                                                          showModalBottomSheet(
-                                                              useSafeArea: true,
-                                                              isScrollControlled:
-                                                                  true,
-                                                              shape: const RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius.vertical(
-                                                                          top: Radius.circular(
-                                                                              16))),
-                                                              context: context,
-                                                              builder: (context) =>
-                                                                  Container(
-                                                                      decoration: BoxDecoration(
-                                                                          borderRadius: BorderRadius.circular(16),
-                                                                          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                                                                          boxShadow: const [
-                                                                            BoxShadow(
-                                                                                color: Color(0xff999999),
-                                                                                blurRadius: 4.0,
-                                                                                offset: Offset(2.0, 0.0))
-                                                                          ]),
-                                                                      padding: const EdgeInsets
-                                                                          .symmetric(
-                                                                          horizontal:
-                                                                              16.0),
-                                                                      child: Column(
-                                                                          crossAxisAlignment: CrossAxisAlignment
-                                                                              .start,
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.min,
-                                                                          children: [
-                                                                            const CustomDragHandler(),
-                                                                            Text("Select Number of Strike",
-                                                                                style: textStyles.appBarTitleTxt.copyWith(color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack)),
-                                                                            const SizedBox(height: 6),
-                                                                            Flexible(
-                                                                                child: ListView.separated(
-                                                                                    physics: const ClampingScrollPhysics(),
-                                                                                    itemBuilder: (context, index) {
-                                                                                      return ListTile(
-                                                                                          onTap: () async {
-                                                                                            scripInfo.selecNumStrike(scripInfo.numStrikes[index]);
-                                                                                            await context.read(marketWatchProvider).fetchOPtionChain(context: context, exchange: scripInfo.optionExch!, numofStrike: scripInfo.numStrikes[index], strPrc: scripInfo.optionStrPrc, tradeSym: scripInfo.selectedTradeSym!);
-                                                                                            Navigator.pop(context);
-                                                                                          },
-                                                                                          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                                                                                          dense: true,
-                                                                                          title: Text(scripInfo.numStrikes[index],
-                                                                                              style: textStyle(
-                                                                                                  scripInfo.numStrike == scripInfo.numStrikes[index] && theme.isDarkMode
-                                                                                                      ? colors.colorLightBlue
-                                                                                                      : scripInfo.numStrike == scripInfo.numStrikes[index]
-                                                                                                          ? colors.colorBlue
-                                                                                                          : colors.colorGrey,
-                                                                                                  14,
-                                                                                                  scripInfo.numStrike == scripInfo.numStrikes[index] ? FontWeight.w600 : FontWeight.w500)),
-                                                                                          trailing: SvgPicture.asset(theme.isDarkMode
-                                                                                              ? scripInfo.numStrike == scripInfo.numStrikes[index]
-                                                                                                  ? assets.darkActProductIcon
-                                                                                                  : assets.darkProductIcon
-                                                                                              : scripInfo.numStrike == scripInfo.numStrikes[index]
-                                                                                                  ? assets.actProductIcon
-                                                                                                  : assets.productIcon));
-                                                                                    },
-                                                                                    separatorBuilder: (context, index) {
-                                                                                      return const ListDivider();
-                                                                                    },
-                                                                                    shrinkWrap: true,
-                                                                                    itemCount: scripInfo.numStrikes.length))
-                                                                          ])));
-                                                        },
-                                                        child: Row(children: [
-                                                          Text(
-                                                              "${ scripInfo.numStrike} ",
-                                                              style: textStyle(
-                                                                  theme.isDarkMode
-                                                                      ? colors
-                                                                          .colorLightBlue
-                                                                      : colors
-                                                                          .colorBlue,
-                                                                  13,
-                                                                  FontWeight
-                                                                      .w500)),
-                                                          Text("Strike",
-                                                              style: textStyle(
-                                                                  theme.isDarkMode
-                                                                      ? colors
-                                                                          .colorLightBlue
-                                                                      : colors
-                                                                          .colorBlue,
-                                                                  13,
-                                                                  FontWeight
-                                                                      .w500)),
-                                                          Icon(
-                                                              Icons
-                                                                  .arrow_drop_down,
-                                                              color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorLightBlue
-                                                                  : colors
-                                                                      .colorBlue,
-                                                              size: 20)
-                                                        ]))),
-                                                Text("  Put LTP   ",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        13,
-                                                        FontWeight.w500)),
-                                                Text("OI",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        13,
-                                                        FontWeight.w500))
-                                              ])),
-                                      if (scripInfo.isPreDefWLs != "Yes")
-                                        Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 3),
-                                            decoration: BoxDecoration(
-                                                color: const Color(0xffe3f2fd),
-                                                borderRadius:
-                                                    BorderRadius.circular(6)),
-                                            child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  SvgPicture.asset(assets.dInfo,
-                                                      color: colors.colorBlue),
-                                                  Text(
-                                                      " Long press to add ${scripInfo.wlName}'s Watchlist",
-                                                      style: textStyle(
-                                                          colors.colorBlue,
-                                                          12,
-                                                          FontWeight.w500))
-                                                ]))
-                                    ]
                                   ])
                             ]),
 
@@ -1424,67 +1076,6 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                       // ChartScreenWebView(
                                       //     chartArgs: chartArgs!, cHeight: 1.48)
                                     ] else if (scripInfo.actDeptBtn ==
-                                        "Option") ...[
-                                      if (scripInfo.isLoad)
-                                        const Center(
-                                            child: CircularProgressIndicator(
-                                                color: Color(0xff0037B7)))
-                                      else
-                                      
-                                        Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 12.0),
-                                            child: Row(children: <Widget>[
-                                              Flexible(
-                                                child: OptChainCallList(
-                                                    callData: scripInfo
-                                                        .optChainCallUP,
-                                                    isCallUp: true),
-                                              ),
-                                              SizedBox(
-                                                width: 100,
-                                                child: StrikePriceListCard(
-                                                    strike: scripInfo
-                                                        .optChainCallUP,
-                                                    isCallUp: true),
-                                              ),
-                                              Flexible(
-                                                child: OptChainPutList(
-                                                    putData:
-                                                        scripInfo.optChainPutUp,
-                                                    isPutUp: true),
-                                              )
-                                            ])),
-                                      CurStrkprice(
-                                          token: depthData.undTk ??
-                                              depthData.token ??
-                                              "0.00"),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12.0),
-                                        child: Row(children: [
-                                          Flexible(
-                                            child: OptChainCallList(
-                                                callData:
-                                                    scripInfo.optChainCallDown,
-                                                isCallUp: false),
-                                          ),
-                                          SizedBox(
-                                            width: 100,
-                                            child: StrikePriceListCard(
-                                                strike:
-                                                    scripInfo.optChainCallDown,
-                                                isCallUp: false),
-                                          ),
-                                          Flexible(
-                                            child: OptChainPutList(
-                                                putData:
-                                                    scripInfo.optChainPutDown,
-                                                isPutUp: false),
-                                          )
-                                        ]),
-                                      )
-                                    ] else if (scripInfo.actDeptBtn ==
                                         "Future") ...[
                                       Container(
                                           padding: const EdgeInsets.symmetric(
@@ -1685,9 +1276,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {
-    await context
-        .read(marketWatchProvider)
-        .fetchScripInfo(widget.wlValue.token, widget.wlValue.exch, context, true);
+    await context.read(marketWatchProvider).fetchScripInfo(
+        widget.wlValue.token, widget.wlValue.exch, context, true);
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: widget.wlValue.exch,
         tSym: widget.wlValue.tsym,

@@ -24,123 +24,149 @@ class SearchScripList extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = context.read(themeProvider);
     final searchScrip = watch(marketWatchProvider);
-    return searchValue.isNotEmpty
-        ? ListView.separated(
-            shrinkWrap: true,
-            itemBuilder: (BuildContext context, int index) {
-              return ListTile(
-                onTap: () async {
-                  if (wlName == "Chart||Is") {
-                    await searchScrip.fetchScripQuoteIndex(
-                        searchValue[index].token.toString(),
-                        searchValue[index].exch.toString(),
-                        context);
-                    searchScrip.setChartScript(
-                        searchValue[index].exch.toString(),
-                        searchValue[index].token.toString(),
-                        searchValue[index].tsym.toString());
-                    currentRouteName = 'Chart';
-                    await searchScrip.searchClear();
-                    Navigator.of(context).pop();
-                  } else {
-                    await searchScrip.calldepthApis(
-                        context, searchValue[index], isBasket);
-                  }
-                },
-                dense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-                title: Row(
-                  children: [
-                    Text(
-                        "${searchValue[index].symbol != null ? searchValue[index].symbol!.isEmpty ? searchValue[index].tsym : searchValue[index].symbol! : searchValue[index].tsym!} ",
-                        style: textStyles.scripNameTxtStyle.copyWith(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack)),
-                    if (searchValue[index].option != null)
-                      Text("${searchValue[index].option}",
-                          style: textStyles.scripNameTxtStyle
-                              .copyWith(color: const Color(0xff666666))),
-                  ],
-                ),
-                subtitle: Row(
-                  children: [
-                    CustomExchBadge(exch: "${searchValue[index].exch}"),
-                    if (searchValue[index].expDate != null)
-                      Text("${searchValue[index].expDate} ",
-                          style: textStyles.scripExchTxtStyle.copyWith(
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack)),
-                    if (searchValue[index].cname != null)
-                      Expanded(
-                        child: Text("${searchValue[index].cname}",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyles.scripExchTxtStyle.copyWith(
-                                color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack)),
-                      )
-                  ],
-                ),
-                trailing: wlName == "Chart||Is" ||
-                        wlName == "Basket" ||
-                        searchScrip.isPreDefWLs == "Yes" ||
-                        searchScrip.scrips.length >= 50
-                    ? Container(width: .2)
-                    : IconButton(
-                        splashRadius: 20,
-                        onPressed: () async {
-                          if (searchScrip.isAdded![index]) {
-                            await searchScrip.isActiveAddBtn(false, index);
 
-                            await searchScrip.addDelMarketScrip(
-                                wlName,
-                                "${searchValue[index].exch}|${searchValue[index].token}",
-                                context,
-                                false,
-                                false,
-                                false,
-                                false);
-                          } else {
-                            await searchScrip.isActiveAddBtn(true, index);
-                            await searchScrip.addDelMarketScrip(
-                                wlName,
-                                "${searchValue[index].exch}|${searchValue[index].token}",
-                                context,
-                                true,
-                                false,
-                                false,
-                                false);
-                          }
-                          // await context
-                          //     .read(marketWatchProvider)
-                          //     .fetchAddDeleteScrip(
-                          //         wlname: wlName,
-                          //         context: context,
-                          //         scripToken:
-                          //             "${searchValue[index].exch}|${searchValue[index].token}",
-                          //         isAdd: true,
-                          //         isWList: false,
-                          //         isSort: true);
-                        },
-                        icon: SvgPicture.asset(
-                          color: theme.isDarkMode && searchScrip.isAdded![index]
-                              ? colors.colorLightBlue
-                              : searchScrip.isAdded![index]
-                                  ? colors.colorBlue
-                                  : colors.colorGrey,
-                          searchScrip.isAdded![index]
-                              ? assets.bookmarkIcon
-                              : assets.bookmarkedIcon,
-                        )),
-              );
+    return searchValue.isNotEmpty
+        ? ListView.builder(
+            physics: const BouncingScrollPhysics(),
+            shrinkWrap: false,
+            itemBuilder: (BuildContext context, int index) {
+              final itemIndex = index ~/ 2;
+
+              bool opc = searchScrip.getOptionawait(
+                  searchValue[itemIndex].exch.toString(),
+                  searchValue[itemIndex].token.toString());
+              if (index.isOdd) {
+                return const ListDivider();
+              }
+              return (isBasket == "Option||Is" ? opc : true)
+                  ? ListTile(
+                      onTap: () async {
+                        if (isBasket == "Chart||Is") {
+                          await searchScrip.fetchScripQuoteIndex(
+                              searchValue[itemIndex].token.toString(),
+                              searchValue[itemIndex].exch.toString(),
+                              context);
+                          searchScrip.setChartScript(
+                              searchValue[itemIndex].exch.toString(),
+                              searchValue[itemIndex].token.toString(),
+                              searchValue[itemIndex].tsym.toString());
+                          currentRouteName = 'Chart';
+                          await searchScrip.searchClear();
+                          Navigator.of(context).pop();
+                        } else if (isBasket == "Option||Is" && opc) {
+                          currentRouteName = 'Optionchain';
+                          searchScrip.setOptionScript(
+                              context,
+                              searchValue[itemIndex].exch.toString(),
+                              searchValue[itemIndex].token.toString(),
+                              searchValue[itemIndex].tsym.toString());
+                          await searchScrip.searchClear();
+                          Navigator.of(context).pop();
+                        } else {
+                          await searchScrip.calldepthApis(
+                              context, searchValue[itemIndex], isBasket);
+                        }
+                      },
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 0),
+                      title: Row(
+                        children: [
+                          Text(
+                              "${searchValue[itemIndex].symbol != null ? searchValue[itemIndex].symbol!.isEmpty ? searchValue[itemIndex].tsym : searchValue[itemIndex].symbol! : searchValue[itemIndex].tsym!} ",
+                              style: textStyles.scripNameTxtStyle.copyWith(
+                                  color: theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack)),
+                          if (searchValue[itemIndex].option != null)
+                            Text("${searchValue[itemIndex].option}",
+                                style: textStyles.scripNameTxtStyle
+                                    .copyWith(color: const Color(0xff666666))),
+                        ],
+                      ),
+                      subtitle: Row(
+                        children: [
+                          CustomExchBadge(
+                              exch: "${searchValue[itemIndex].exch}"),
+                          if (searchValue[itemIndex].expDate != null)
+                            Text("${searchValue[itemIndex].expDate} ",
+                                style: textStyles.scripExchTxtStyle.copyWith(
+                                    color: theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack)),
+                          if (searchValue[itemIndex].cname != null)
+                            Expanded(
+                              child: Text("${searchValue[itemIndex].cname}",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: textStyles.scripExchTxtStyle.copyWith(
+                                      color: theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack)),
+                            )
+                        ],
+                      ),
+                      trailing: isBasket == "Chart||Is" ||
+                              isBasket == "Option||Is" ||
+                              isBasket == "Basket" ||
+                              searchScrip.isPreDefWLs == "Yes" ||
+                              searchScrip.scrips.length >= 50
+                          ? Container(width: .2)
+                          : IconButton(
+                              splashRadius: 20,
+                              onPressed: () async {
+                                if (searchScrip.isAdded![itemIndex]) {
+                                  await searchScrip.isActiveAddBtn(
+                                      false, itemIndex);
+
+                                  await searchScrip.addDelMarketScrip(
+                                      wlName,
+                                      "${searchValue[itemIndex].exch}|${searchValue[itemIndex].token}",
+                                      context,
+                                      false,
+                                      false,
+                                      false,
+                                      false);
+                                } else {
+                                  await searchScrip.isActiveAddBtn(
+                                      true, itemIndex);
+                                  await searchScrip.addDelMarketScrip(
+                                      wlName,
+                                      "${searchValue[itemIndex].exch}|${searchValue[itemIndex].token}",
+                                      context,
+                                      true,
+                                      false,
+                                      false,
+                                      false);
+                                }
+                                // await context
+                                //     .read(marketWatchProvider)
+                                //     .fetchAddDeleteScrip(
+                                //         wlname: wlName,
+                                //         context: context,
+                                //         scripToken:
+                                //             "${searchValue[itemIndex].exch}|${searchValue[itemIndex].token}",
+                                //         isAdd: true,
+                                //         isWList: false,
+                                //         isSort: true);
+                              },
+                              icon: SvgPicture.asset(
+                                color: theme.isDarkMode &&
+                                        searchScrip.isAdded![itemIndex]
+                                    ? colors.colorLightBlue
+                                    : searchScrip.isAdded![itemIndex]
+                                        ? colors.colorBlue
+                                        : colors.colorGrey,
+                                searchScrip.isAdded![itemIndex]
+                                    ? assets.bookmarkIcon
+                                    : assets.bookmarkedIcon,
+                              )),
+                    )
+                  : Container();
             },
-            itemCount: searchValue.length,
-            separatorBuilder: (BuildContext context, int index) {
-              return const ListDivider();
-            },
+            itemCount: searchValue.length * 2 - 1,
+            // separatorBuilder: (BuildContext context, int itemIndex) {
+            //   return const ListDivider();
+            // },
           )
         : const NoDataFound();
   }

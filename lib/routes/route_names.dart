@@ -12,6 +12,8 @@ class Routes {
   static const String fontSize = 'fontSize';
   static const String nointernet = 'nointernet';
 
+  static const String optionChain = 'OptionChain';
+
   static const String watchlistScreen = 'WatchlistScreen';
   static const String searchScrip = 'searchScrip';
   static const String editScrip = 'EditScrip';

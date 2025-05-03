@@ -49,12 +49,14 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
           onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return; // If system handled back, do nothing
 
-            context
-                .read(marketWatchProvider)
-                .requestMWScrip(context: context, isSubscribe: true);
+            if (!(["Option||Is", "Chart||Is"].contains(widget.isBasket))) {
+              context
+                  .read(marketWatchProvider)
+                  .requestMWScrip(context: context, isSubscribe: true);
+            }
             await searchScrip.searchClear();
             currentRouteName = 'homeScreen';
-            Navigator.of(context).pop();
+            Navigator.pop(context);
           },
           child: GestureDetector(
               onTap: () => FocusManager.instance.primaryFocus!.unfocus(),
@@ -65,8 +67,11 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                       titleSpacing: 3,
                       leading: InkWell(
                           onTap: () {
-                            context.read(marketWatchProvider).requestMWScrip(
-                                context: context, isSubscribe: true);
+                            if (!(["Option||Is", "Chart||Is"]
+                                .contains(widget.isBasket))) {
+                              context.read(marketWatchProvider).requestMWScrip(
+                                  context: context, isSubscribe: true);
+                            }
                             searchScrip.searchClear();
                             searchScrip.setpageName("");
                             currentRouteName = 'homeScreen';
