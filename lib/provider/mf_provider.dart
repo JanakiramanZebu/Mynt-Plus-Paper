@@ -2357,6 +2357,7 @@ notifyListeners();
 
   List<double> frqCustHeight() {
     List<double> itemsHeights = [];
+    if (_mfSIPModel?.data != null) {
     for (var i = 0; i < (_mfSIPModel!.data!.length * 2) - 1; i++) {
       if (i.isEven) {
         itemsHeights.add(40);
@@ -2364,7 +2365,7 @@ notifyListeners();
       if (i.isOdd) {
         itemsHeights.add(4);
       }
-    }
+    }}
     return itemsHeights;
   }
 

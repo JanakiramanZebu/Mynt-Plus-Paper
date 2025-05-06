@@ -174,36 +174,32 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                                       const SizedBox(height: 4),
                                     ]),
                               )),
-                              Column(
-                                children: [
-                                  Text(
-                                    "₹ ${(((double.tryParse(mfdata.holssinglelist![0]?.gainOrLoss ?? '0') ?? 0) )).toStringAsFixed(2)} ",
-                                    style: textStyle(
-                                      (((double.tryParse(mfdata.holssinglelist![0]?.gainOrLoss ?? '0') ??
-                                                          0) )) >=
-                                              0
-                                          ? Colors.green
-                                          : Colors.red, // Dynamic color change
-                                      14,
-                                      FontWeight.w500,
-                                    ),
-                                  ),
-                                  Text(
-                                    "(${(double.tryParse(mfdata.holssinglelist?[0]?.percentage ?? '0') ?? 0).toStringAsFixed(2)}%)",
-                                    style: textStyle(
-                                      (double.tryParse(mfdata.holssinglelist?[0]
-                                                          ?.percentage ??
-                                                      '0') ??
-                                                  0) >=
-                                              0
-                                          ? Colors.green
-                                          : Colors.red,
-                                      14,
-                                      FontWeight.w500,
-                                    ),
-                                  )
-                                ],
-                              ),
+                            Column(
+  crossAxisAlignment: CrossAxisAlignment.end, // Align children to the right
+  children: [
+    Text(
+      "₹ ${mfdata.holssinglelist![0]?.gainOrLoss ?? '0'} ",
+      style: textStyle(
+        (((double.tryParse(mfdata.holssinglelist![0]?.gainOrLoss ?? '0') ?? 0)) >= 0
+            ? Colors.green
+            : Colors.red),
+        14,
+        FontWeight.w500,
+      ),
+    ),
+    Text(
+      "(${(double.tryParse(mfdata.holssinglelist?[0]?.percentage ?? '0') ?? 0).toStringAsFixed(2)}%)",
+      style: textStyle(
+        (((double.tryParse(mfdata.holssinglelist![0]?.gainOrLoss ?? '0') ?? 0)) >= 0
+            ? Colors.green
+            : Colors.red),
+        14,
+        FontWeight.w500,
+      ),
+    ),
+  ],
+),
+
                               // const SizedBox(width: 7),
                             ]),
                         const SizedBox(height: 2),
@@ -229,15 +225,15 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
      "Units",
                             "${mfdata.holssinglelist![0]?.nET}",
                             "Avg Price",
-                            "${(double.tryParse(mfdata.holssinglelist?[0]?.bought ?? '0') ?? 0).toStringAsFixed(4)}",
+                            "${(mfdata.holssinglelist?[0]?.bought ?? '0')}",
                            
                             theme),
                         const SizedBox(height: 16),
 
 
   rowOfInfoData(
-                            "Pledged Qty",
-                            "${(double.tryParse(mfdata.holssinglelist![0]?.pLEDGEQTY ?? '0') ?? 0).toStringAsFixed(4)}",
+                            "Pledged Units",
+                            "${mfdata.holssinglelist![0]?.pLEDGEQTY ?? '0'}",
                             "Current NAV",
                             "${mfdata.holssinglelist![0]?.nav}",
                             theme),
@@ -246,9 +242,9 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
 
                         rowOfInfoData(
                             "Invested",
-                            "₹ ${((double.tryParse(mfdata.holssinglelist![0]?.buyPrice ?? '0') ?? 0) * (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0)).toStringAsFixed(4)}",
+                            "₹ ${mfdata.holssinglelist![0]?.purchase ?? '0'}",
                             "Current",
-                            "₹ ${((double.tryParse(mfdata.holssinglelist![0]?.sCRIPVALUE ?? '0') ?? 0) * (double.tryParse(mfdata.holssinglelist![0]?.nET ?? '0') ?? 0)).toStringAsFixed(4)}",
+                            "₹ ${mfdata.holssinglelist![0]?.current ?? '0'}",
                             theme),
                       
                         const SizedBox(height: 16),

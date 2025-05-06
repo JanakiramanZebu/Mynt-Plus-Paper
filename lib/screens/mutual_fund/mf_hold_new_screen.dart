@@ -440,15 +440,16 @@ class MfHoldNewScreen extends ConsumerWidget {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    "${item.sCHEMENAME}",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: textStyles.scripNameTxtStyle.copyWith(
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                    ),
-                                  ),
+                                   Expanded(
+      flex: 6,
+      child: Text(
+        "${item.sCHEMENAME}",
+        overflow: TextOverflow.ellipsis,
+        style: textStyles.scripNameTxtStyle.copyWith(
+          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        ),
+      ),
+    ),
                                   Row(
                                     children: [
                                       Text(" NAV: ",
@@ -526,7 +527,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                   Row(
                                     children: [
                                       Text(
-                                        "₹${(double.tryParse(item.gainOrLoss ?? '') ?? 0.0).toStringAsFixed(2)}",
+                                        "₹${item.gainOrLoss ?? 0}",
                                         style: textStyle(
                                           (double.tryParse(item.gainOrLoss ??
                                                           '') ??
@@ -539,7 +540,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                         ),
                                       ),
                                       Text(
-                                        "(${(double.tryParse(item.percentage ?? '') ?? 0.0).toStringAsFixed(2)}%)",
+                                        "(${(double.tryParse(item.percentage ?? '') ?? 0.0)}%)",
                                         style: textStyle(
                                           (double.tryParse(item.percentage ??
                                                           '') ??
@@ -568,7 +569,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                           style: textStyle(Color(0xff5E6B7D), 14,
                                               FontWeight.w500)),
                                       Text(
-                                       "${(double.tryParse(item.purchase ?? '') ?? 0.0).toStringAsFixed(4)}",
+                                       "${item.purchase  ?? 0}",
                                         style: textStyle(
                                           theme.isDarkMode
                                               ? colors.colorWhite
@@ -585,7 +586,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                           style: textStyle(Color(0xff5E6B7D), 14,
                                               FontWeight.w500)),
                                       Text(
-                                          "₹${double.tryParse(val)?.toStringAsFixed(2) ?? '0.00'}",
+                                          "₹${val ?? 0}",
                                           style: textStyle(
                                             theme.isDarkMode
                                                 ? colors.colorWhite

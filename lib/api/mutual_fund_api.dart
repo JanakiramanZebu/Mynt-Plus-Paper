@@ -767,10 +767,13 @@ Future<MFFactSheetDataModel?> getMFFactSheetData(String isin) async {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({"isin": isin, "scheme_code": schemeCode}));
-
+      if(res.statusCode == 200){
       final json = jsonDecode((res.body));
 
-      return MfSIPModel.fromJson(json as Map<String, dynamic>);
+      return MfSIPModel.fromJson(json as Map<String, dynamic>);}
+      else{
+        return MfSIPModel.fromJson({"data":[],"stat":"Not ok"});
+      }
     } catch (e) {
       rethrow;
     }
