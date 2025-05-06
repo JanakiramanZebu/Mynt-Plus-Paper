@@ -240,7 +240,6 @@ class OptChainCallList extends ConsumerWidget {
         holdQty: '',
         isModify: false,
         raw: {});
-    Navigator.pop(context);
     Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
       "scripInfo": context.read(marketWatchProvider).scripInfoModel!,

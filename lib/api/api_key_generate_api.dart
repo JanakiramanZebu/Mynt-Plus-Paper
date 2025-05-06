@@ -42,9 +42,9 @@ mixin GenerateApiKey on ApiCore {
   }
 
   /// get totp
-  Future<TotpKey> getTotp() async {
+  Future<TotpKey> getTotp(bool apiurl) async {
     try {
-      final uri = Uri.parse(apiLinks.totp);
+      final uri = Uri.parse(apiurl ? apiLinks.gentotp : apiLinks.gettotp);
 
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
@@ -53,7 +53,7 @@ mixin GenerateApiKey on ApiCore {
       //final json = jsonDecode(res.body);
       Map<String, dynamic> jsonResponse = jsonDecode(res.body);
 
-      log("Logout Model => $jsonResponse");
+      log("totp Model => $jsonResponse");
       return TotpKey.fromJson(jsonResponse);
     } catch (e) {
       rethrow;

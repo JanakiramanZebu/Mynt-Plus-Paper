@@ -89,18 +89,20 @@ class _OptionChainSSState extends State<OptionChainSS> {
                   padding: const EdgeInsets.all(0),
                   icon: const Icon(Icons.chevron_left, size: 38),
                   onPressed: () async {
+                    final wsProvider = context.read(websocketProvider);
+                    final currentContext =
+                        context; 
                     Navigator.pop(context);
-
-                    await scripInfo.calldepthApis(context, depthData, "");
-
+                    await scripInfo.calldepthApis(
+                        currentContext, depthData, "");
                     await scripInfo.requestWSOptChain(
-                        context: context, isSubscribe: false);
-                    await context.read(websocketProvider).establishConnection(
-                          channelInput:
-                              "${widget.wlValue.exch}|${widget.wlValue.token}",
-                          task: "ud",
-                          context: context,
-                        );
+                        context: currentContext, isSubscribe: false);
+                    await wsProvider.establishConnection(
+                      channelInput:
+                          "${widget.wlValue.exch}|${widget.wlValue.token}",
+                      task: "ud",
+                      context: currentContext,
+                    );
                   }),
               leadingWidth: 32,
               toolbarHeight: 40,
@@ -410,7 +412,7 @@ class _OptionChainSSState extends State<OptionChainSS> {
                                       ? <Widget>[
                                           Flexible(
                                             child: OptChainCallList(
-                                                swipe:swipecontroller,
+                                                swipe: swipecontroller,
                                                 callData:
                                                     scripInfo.optChainCallUP,
                                                 isCallUp: true),
@@ -443,7 +445,7 @@ class _OptionChainSSState extends State<OptionChainSS> {
                                     ? [
                                         Flexible(
                                           child: OptChainCallList(
-                                                swipe:swipecontroller,
+                                              swipe: swipecontroller,
                                               callData:
                                                   scripInfo.optChainCallDown,
                                               isCallUp: false),
@@ -468,8 +470,8 @@ class _OptionChainSSState extends State<OptionChainSS> {
                       ]),
                     )),
                     if (!scripInfo.scripDepthloader &&
-                        widget.wlValue.instname != "UNDIND" &&
-                        widget.wlValue.instname != "COM")
+                        scripInfo.getQuotes?.instname != "UNDIND" &&
+                        scripInfo.getQuotes?.instname != "COM")
                       scripInfo.actDeptBtn == "Set Alert"
                           ? Container()
                           : Container(

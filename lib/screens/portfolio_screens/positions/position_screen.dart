@@ -509,8 +509,10 @@ class PositionScreen extends ConsumerWidget {
                                       },
                                       itemCount: listofPosition.length * 2 - 1,
                                     )
-                              : const SizedBox(
-                                  height: 500, child: NoDataFound())
+                              : const Center(
+                                child: SizedBox(
+                                    height: 500, child: NoDataFound()),
+                              )
                           : ListView.builder(
                               physics: const AlwaysScrollableScrollPhysics(),
                               shrinkWrap: false,

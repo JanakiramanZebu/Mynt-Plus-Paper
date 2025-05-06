@@ -24,7 +24,8 @@ class ApiLinks {
   ///generate api key
   String get apiKey => '$goMyntURL/RequestApiKey';
   String get generateapiKey => '$goMyntURL/UserApiKeyRenReq';
-  String get totp => "$goMyntURL/GetSecretKey";
+  String get gettotp => "$goMyntURL/GetSecretKey";
+  String get gentotp => "$goMyntURL/GenSecretKey";
 
   // Notification service
   String get exchStatus => '$goMyntURL/ExchStatus';

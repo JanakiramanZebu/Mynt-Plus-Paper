@@ -739,7 +739,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     singlePageloader(true);
     notifyListeners();
     await fetchScripQuoteIndex(token, exch, context);
-    if (exch == "NFO" || (exch == "MCX" && _getQuotes.instname == "OPTFUT")) {
+    if (exch == "BFO" || exch == "NFO" || (exch == "MCX" && _getQuotes.instname == "OPTFUT")) {
       await fetchStikePrc(
           "${_getQuotes.undTk}", "${_getQuotes.undExch}", context);
     } else {
@@ -747,7 +747,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
 
     await ref(websocketProvider).establishConnection(
-        channelInput: (_getQuotes.exch == "NFO" ||
+        channelInput: (_getQuotes.exch == "BFO" || _getQuotes.exch == "NFO" ||
                 (_getQuotes.exch == "MCX" && _getQuotes.instname == "OPTFUT"))
             ? '${_getQuotes.undExch}|${_getQuotes.undTk!}'
             : '${_getQuotes.exch}|${_getQuotes.token!}',
@@ -1342,7 +1342,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_getStikePrc!.stat == "Ok") {
         ConstantName.sessCheck = true;
-        if (_getStikePrc!.exch == "NSE" ||
+        if (_getStikePrc!.exch == "NSE" || _getStikePrc!.exch == "BSE" ||
             (_getStikePrc!.exch == "MCX" &&
                 _getStikePrc!.instname == "FUTCOM")) {
           _optionStrPrc = "${_getStikePrc!.lp}";

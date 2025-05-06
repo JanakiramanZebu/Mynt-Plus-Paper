@@ -30,9 +30,9 @@ class ApikeyProvider extends DefaultChangeNotifier {
   TotpKey? get totpkey => _totpKey;
 
   bool _hidePass = true;
-  bool get hidePass => _hidePass; 
+  bool get hidePass => _hidePass;
 
-   hiddenPass() {
+  hiddenPass() {
     _hidePass = !_hidePass;
     print("object ::: $_hidePass");
     notifyListeners();
@@ -78,7 +78,9 @@ class ApikeyProvider extends DefaultChangeNotifier {
   }
 
   fetchTotp() async {
-    _totpKey = await api.getTotp();
-    print("object :: ${_totpKey!.pwd}");
+    _totpKey = await api.getTotp(false);
+    if (_totpKey?.pwd == "") {
+      _totpKey = await api.getTotp(true);
+    }
   }
 }

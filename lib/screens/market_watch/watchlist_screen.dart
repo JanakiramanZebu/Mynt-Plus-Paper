@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
+import '../../models/marketwatch_model/get_quotes.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
 
@@ -168,7 +169,9 @@ class _WatchListScreen extends State<WatchListScreen> {
                             }
                           }
 
-                          bool opt = marketWatch.getOptionawait(marketWatch.scrips[idx]['exch'], marketWatch.scrips[idx]['token']);
+                          bool opt = marketWatch.getOptionawait(
+                              marketWatch.scrips[idx]['exch'],
+                              marketWatch.scrips[idx]['token']);
 
                           if (index.isOdd) {
                             return const ListDivider();
@@ -214,10 +217,35 @@ class _WatchListScreen extends State<WatchListScreen> {
                                     onTap: (handler) async {
                                       // marketWatch.calldepthApis();
                                       if (opt) {
-                                        await marketWatch.calldepthApis(
+                                        // await marketWatch.calldepthApis(
+                                        //     context,
+                                        //     marketWatch.scrips[idx],
+                                        //     "Option|-|Deph");
+                                        DepthInputArgs depthArgs =
+                                            DepthInputArgs(
+                                                exch: marketWatch.scrips[idx]
+                                                    ['exch'],
+                                                token: marketWatch.scrips[idx]
+                                                    ['token'],
+                                                tsym: marketWatch.scrips[idx]
+                                                    ['tsym'],
+                                                instname: marketWatch
+                                                    .scrips[idx]['instname'],
+                                                symbol: marketWatch.scrips[idx]
+                                                    ['symbol'],
+                                                expDate: marketWatch.scrips[idx]
+                                                    ['expDate'],
+                                                option: marketWatch.scrips[idx]
+                                                    ['option']);
+                                        marketWatch.singlePageloader(true);
+                                        Navigator.pushNamed(
+                                            context, Routes.optionChain,
+                                            arguments: depthArgs);
+                                        marketWatch.setOptionScript(
                                             context,
-                                            marketWatch.scrips[idx],
-                                            "Option|-|Deph");
+                                            marketWatch.scrips[idx]['exch'],
+                                            marketWatch.scrips[idx]['token'],
+                                            marketWatch.scrips[idx]['tsym']);
                                       }
                                       handler(false);
                                     })

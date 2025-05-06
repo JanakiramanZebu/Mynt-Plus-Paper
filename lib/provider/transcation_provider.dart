@@ -82,6 +82,8 @@ class TranctionProvider extends DefaultChangeNotifier {
   String _funderror = '';
   String get funderror => _funderror;
 
+  String _allacc = "";
+
   String _maxfunderror = '';
   String get maxfunderror => _maxfunderror;
 
@@ -224,6 +226,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     _textValue = decryptclientcheck!.companyCode![0];
     _companycode = decryptclientcheck!.companyCode!;
     _selectedIndex = -1;
+    setAccountslist(_accno);
     if (_companycode.contains("NSE_FNO")) {
       _textValue = "NSE_FNO";
     } else if (_companycode.contains("NSE_CASH")) {
@@ -513,7 +516,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       if (hdfcpaymentdata!.data!.verifiedVPAStatus1 == "Available" ||
           hdfcpaymentdata!.data!.verifiedVPAStatus2 == "Available") {
         _hdfctranction =
-            await api.getHdfcTranction(upiId, amount, accno, clientId);
+            await api.getHdfcTranction(upiId, amount, _allacc, clientId);
       }
       //print("HDFC BANK ${hdfcpaymentdata!.data!.clientVPA![0]}");
     } catch (e) {
@@ -533,7 +536,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       togglefundLoadingOn(true);
 
       _hdfcdirectpayment =
-          await api.getUPIAppsPayment(amt, bankaccno, clientid, name);
+          await api.getUPIAppsPayment(amt, _allacc, clientid, name);
       if (defaultTargetPlatform == TargetPlatform.iOS) {
       } else {
         if (_fundTokenValidation?.emsg == "invalid token") {
@@ -550,6 +553,36 @@ class TranctionProvider extends DefaultChangeNotifier {
     } finally {
       togglefundLoadingOn(false);
     }
+  }
+
+  setAccountslist(String accno){
+    
+    List<AccountItem> items = [];
+    for (var i = 0; i < _bankdetails!.dATA!.length; i++) {
+      if(accno != _bankdetails?.dATA?[i][2]){
+      items.add(AccountItem(
+          accno: _bankdetails?.dATA?[i][2], ifsc: _bankdetails?.dATA?[i][3]));
+    }}
+    _allacc = "$accno${items.isNotEmpty ? '!' : ''}${getFormattedAccountNumbers(items)}";
+    print("_allacc $_allacc");
+  }
+
+  String setAccountis(AccountItem item) {
+    String selectedAccNo = item.accno;
+    if (item.ifsc.startsWith("SBIN") || item.ifsc.startsWith("CBIN")) {
+      int bankcount = selectedAccNo.length;
+      if (bankcount <= 17) {
+        int remaining = 17 - bankcount;
+        String paddedAccountNumber = '0' * remaining + selectedAccNo;
+        selectedAccNo = paddedAccountNumber;
+      }
+    }
+    return selectedAccNo;
+  }
+
+  String getFormattedAccountNumbers(List<AccountItem> items) {
+    List<String> selectedAccounts = items.take(3).map(setAccountis).toList();
+    return selectedAccounts.join("!");
   }
 
   Future<void> checkAndLaunchUrl(String url, BuildContext context) async {
