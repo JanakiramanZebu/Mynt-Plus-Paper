@@ -501,7 +501,7 @@ class OrderBook extends ConsumerWidget {
                                                               : assets
                                                                   .warningIcon),
                                                       Text(
-                                                          " ${orderBook[itemIndex].status![0].toUpperCase()}${orderBook[itemIndex].status!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
+                                                          " ${orderBook[itemIndex].stIntrn![0].toUpperCase()}${orderBook[itemIndex].stIntrn!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
                                                           style: textStyle(
                                                               theme.isDarkMode
                                                                   ? colors
