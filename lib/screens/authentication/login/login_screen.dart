@@ -26,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     context.read(versionProvider).checkVersion(context);
+    context.read(authProvider).setChangetotp(true);
     super.initState();
   }
 
@@ -38,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final auth = watch(authProvider);
       final forpass = watch(changePasswordProvider);
       final theme = watch(themeProvider);
-    final ledgerprovider = context.read(ledgerProvider);
+      final ledgerprovider = context.read(ledgerProvider);
 
       return GestureDetector(
         onTap: () {
@@ -47,10 +48,10 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         child: auth.initLoad
             ? PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+                canPop: false,
+                onPopInvokedWithResult: (didPop, result) async {
+                  if (didPop) return;
+                },
                 child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
@@ -451,11 +452,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             )),
-                        onPressed: (
-                          
-                          (auth.loginMethCtrl.text.isEmpty ||
-                                auth.passCtrl.text.isEmpty)
-                                )
+                        onPressed: ((auth.loginMethCtrl.text.isEmpty ||
+                                auth.passCtrl.text.isEmpty))
                             // ||
                             //     internet.connectionStatus ==
                             //         ConnectivityResult.none)
@@ -465,8 +463,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 SystemSound.play(SystemSoundType.click);
                                 auth.optError = "";
                                 auth.submitLogin(context, false);
-                                          ledgerprovider.setterfornullallSwitch = null;
-
+                                ledgerprovider.setterfornullallSwitch = null;
                               },
                         child: auth.loading
                             ? const SizedBox(

@@ -346,51 +346,62 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                       style: textStyles.resendOtpstyle
                                           .copyWith(color: colors.colorGrey)),
                                   InkWell(
-                                    onTap: () {
-                                      showModalBottomSheet(
-                                        barrierColor: Colors.transparent,
-                                        context: context,
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(16)),
-                                        ),
-                                        isScrollControlled: true,
-                                        builder: (context) => Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16),
-                                          child: SingleChildScrollView(
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const CustomDragHandler(),
-                                                const SizedBox(height: 12),
-                                                const Text(
-                                                  'Enable TOTP Authentication',
-                                                  style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                const SizedBox(height: 16),
-                                                _buildStep("Login to mynt.zebuetrade.com"),
-                                                _buildStep("Click on the User menu (top-right)."),
-                                                _buildStep("Select Settings."),
-                                                _buildStep("Navigate to the TOTP section."),
-                                                _buildStep("Enter the 6-digit code to verify."),
-                                                const SizedBox(height: 100),
-                                              ],
+                                      onTap: () {
+                                        showModalBottomSheet(
+                                          barrierColor: Colors.transparent,
+                                          context: context,
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.vertical(
+                                                top: Radius.circular(16)),
+                                          ),
+                                          isScrollControlled: true,
+                                          builder: (context) => Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16),
+                                            child: SingleChildScrollView(
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  const CustomDragHandler(),
+                                                  const SizedBox(height: 12),
+                                                  const Text(
+                                                    'Enable TOTP Authentication',
+                                                    style: TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  const SizedBox(height: 16),
+                                                  _buildStep(
+                                                      "Login to mynt.zebuetrade.com"),
+                                                  _buildStep(
+                                                      "Click on the User menu (top-right)."),
+                                                  _buildStep(
+                                                      "Select Settings."),
+                                                  _buildStep(
+                                                      "Navigate to the TOTP section."),
+                                                  _buildStep(
+                                                      "Enter the 6-digit code to verify."),
+                                                  const SizedBox(height: 120),
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                    child: const Icon(
-                                      Icons.info_outline,
-                                      size: 16,
-                                    ),
-                                  )
+                                        );
+                                      },
+                                      child: Text(
+                                        "->",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            color: colors.colorLightBlue),
+                                      )
+                                      // const Icon(
+                                      //   Icons.info_outline,
+                                      //   size: 16,
+                                      // ),
+                                      )
                                 ],
                               )
                             ]

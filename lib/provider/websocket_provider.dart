@@ -518,12 +518,12 @@ class WebSocketProvider extends ChangeNotifier {
                 ref(orderProvider).fetchTradeBook(context);
                 ref(orderProvider).fetchGTTOrderBook(context, "");
                 ref(fundProvider).fetchFunds(context);
-                if (res['status'].toString() == "COMPLETE") {
+                // if (res['status'].toString() == "COMPLETE") {
                   Timer(
                       const Duration(seconds: 1),
                       () => ref(portfolioProvider)
                           .fetchPositionBook(context, false));
-                }
+                // }
                 holdStartTime = null;
               });
           }
