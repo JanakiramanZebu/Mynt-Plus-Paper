@@ -38,6 +38,7 @@ import '../screens/ipo/mainstream_order_screen/order_screen.dart';
 import '../screens/ipo/sme_order_screen/sme_order.dart';
 import '../screens/market_watch/edit_scrip.dart';
 import '../screens/market_watch/futures/future_screen.dart';
+import '../screens/market_watch/option_chain/option_chain_ss.dart';
 import '../screens/market_watch/option_chain/strategy/option_strategey.dart';
 import '../screens/market_watch/search_screen.dart';
 import '../screens/mutual_fund/mf_nfo_screen.dart';
@@ -99,7 +100,6 @@ import '../sharedWidget/internet_widget.dart';
 import 'route_names.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../screens/mutual_fund/sip_calculator_screen.dart';
-
 
 String? currentRouteName;
 
@@ -291,6 +291,25 @@ class AppRoutes {
             );
           },
         );
+
+
+      case Routes.optionChain:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                OptionChainSS(wlValue: args),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(0.0, 1.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+
       // case Routes.gttOrderScreen:
       //   return PageRouteBuilder(
       //     pageBuilder: (context, animation, secondaryAnimation) =>
@@ -734,7 +753,7 @@ class AppRoutes {
               return SlideTransition(
                   position: animation.drive(tween), child: child);
             });
-case Routes.taxpnlscreen:
+      case Routes.taxpnlscreen:
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 TaxPnlScreen(),
@@ -749,7 +768,7 @@ case Routes.taxpnlscreen:
                   position: animation.drive(tween), child: child);
             });
 
-            case Routes.eqtaxpnleq:
+      case Routes.eqtaxpnleq:
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 EqTaxpnlEq(),
@@ -779,37 +798,7 @@ case Routes.taxpnlscreen:
                   position: animation.drive(tween), child: child);
             });
 
-            case Routes.pledgeunpledgeresponse:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PledgenUnpledgeResponse(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
-
-      case Routes.pledgeandun:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PledgenUnpledge(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
-
-            case Routes.pledgeunpledgeresponse:
+      case Routes.pledgeunpledgeresponse:
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 PledgenUnpledgeResponse(ddd: args),
@@ -843,21 +832,6 @@ case Routes.taxpnlscreen:
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 CDSLWebView(argument: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
-
-      case Routes.taxpnlscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                TaxPnlScreen(),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               const begin = Offset(-1.0, 0.0);
@@ -1356,7 +1330,7 @@ case Routes.taxpnlscreen:
           },
         );
 
-              case Routes.mfsipcalscreen:
+      case Routes.mfsipcalscreen:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               const MFSIPSCREEN(),
@@ -1374,7 +1348,7 @@ case Routes.taxpnlscreen:
             );
           },
         );
-        case Routes.mfcagrcalss:
+      case Routes.mfcagrcalss:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               const MFCAGRCAL(),

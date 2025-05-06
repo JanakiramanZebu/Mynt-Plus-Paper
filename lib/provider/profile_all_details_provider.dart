@@ -4,7 +4,6 @@ import 'package:mynt_plus/api/core/api_export.dart';
 import 'package:mynt_plus/locator/locator.dart';
 import 'package:mynt_plus/locator/preference.dart';
 import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_model.dart';
-import 'package:mynt_plus/models/client_profile_all_details/details_change_current_status_model.dart';
 import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -18,7 +17,6 @@ class ProfileProvider extends DefaultChangeNotifier {
   ProfileProvider(this.ref);
 
 
-  late DetailsChangeCurrentStatus _detailsChangeCurrentStatus;
 
   late ProfileAllDetails _clientAllDetails;
   ProfileAllDetails get clientAllDetails => _clientAllDetails;
@@ -214,7 +212,6 @@ void openInWebURL(BuildContext context,String urlArgs) async {
 
   Future getDetailsChangeCurrentStatus() async {
     try {
-     _detailsChangeCurrentStatus = await api.getDetailsChangeCurrentStatusApi();
     }catch(e){}
      notifyListeners();
     }

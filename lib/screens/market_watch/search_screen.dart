@@ -8,7 +8,6 @@ import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/thems.dart';
-import '../../provider/user_profile_providerNEWUI.dart';
 import '../../res/res.dart';
 import '../../routes/app_routes.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
@@ -50,12 +49,14 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
           onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return; // If system handled back, do nothing
 
-            context
-                .read(marketWatchProvider)
-                .requestMWScrip(context: context, isSubscribe: true);
+            if (!(["Option||Is", "Chart||Is"].contains(widget.isBasket))) {
+              context
+                  .read(marketWatchProvider)
+                  .requestMWScrip(context: context, isSubscribe: true);
+            }
             await searchScrip.searchClear();
             currentRouteName = 'homeScreen';
-            Navigator.of(context).pop();
+            Navigator.pop(context);
           },
           child: GestureDetector(
               onTap: () => FocusManager.instance.primaryFocus!.unfocus(),
@@ -66,8 +67,11 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                       titleSpacing: 3,
                       leading: InkWell(
                           onTap: () {
-                            context.read(marketWatchProvider).requestMWScrip(
-                                context: context, isSubscribe: true);
+                            if (!(["Option||Is", "Chart||Is"]
+                                .contains(widget.isBasket))) {
+                              context.read(marketWatchProvider).requestMWScrip(
+                                  context: context, isSubscribe: true);
+                            }
                             searchScrip.searchClear();
                             searchScrip.setpageName("");
                             currentRouteName = 'homeScreen';

@@ -82,6 +82,8 @@ class TranctionProvider extends DefaultChangeNotifier {
   String _funderror = '';
   String get funderror => _funderror;
 
+  String _allacc = "";
+
   String _maxfunderror = '';
   String get maxfunderror => _maxfunderror;
 
@@ -224,6 +226,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     _textValue = decryptclientcheck!.companyCode![0];
     _companycode = decryptclientcheck!.companyCode!;
     _selectedIndex = -1;
+    setAccountslist(_accno);
     if (_companycode.contains("NSE_FNO")) {
       _textValue = "NSE_FNO";
     } else if (_companycode.contains("NSE_CASH")) {
@@ -367,10 +370,10 @@ class TranctionProvider extends DefaultChangeNotifier {
             context: context,
             builder: (BuildContext context) {
               return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+                  canPop: false,
+                  onPopInvokedWithResult: (didPop, result) async {
+                    if (didPop) return;
+                  },
                   child: const UPIAppsPaymentSuccessAlert());
             });
       }
@@ -416,43 +419,35 @@ class TranctionProvider extends DefaultChangeNotifier {
       double marg = 0;
       double reqs = 0;
 
-      if (double.tryParse(_payoutdetails!.totalLedger.toString())! > 0) {
-        if (double.tryParse(_payoutdetails!.brkcollamt.toString())! > 0) {
-          marg = double.tryParse(_payoutdetails!.brkcollamt.toString())! -
-              double.tryParse(_payoutdetails!.margin.toString())!;
-        } else {
-          if (double.tryParse(_payoutdetails!.collateral.toString())! > 0) {
-            marg = double.tryParse(_payoutdetails!.collateral.toString())! -
-                double.tryParse(_payoutdetails!.margin.toString())!;
-          }
-        }
+      double ledger =
+          double.tryParse(_payoutdetails!.totalLedger.toString()) ?? 0;
 
-        if (marg <= 0 && double.tryParse(_payoutdetails!.fD.toString())! > 0) {
-          reqs = marg + double.tryParse(_payoutdetails!.fD.toString())!;
-        }
+      double brkColl =
+          double.tryParse(_payoutdetails!.brkcollamt.toString()) ?? 0;
+      double collateral =
+          double.tryParse(_payoutdetails!.collateral.toString()) ?? 0;
+      double margin = double.tryParse(_payoutdetails!.margin.toString()) ?? 0;
+      double fd = double.tryParse(_payoutdetails!.fD.toString()) ?? 0;
 
-        if (marg <= 0 &&
-            double.tryParse(_payoutdetails!.totalLedger.toString())! > 0) {
-          reqs =
-              marg + double.tryParse(_payoutdetails!.totalLedger.toString())!;
+      if (ledger > 0) {
+        marg = brkColl > 0
+            ? brkColl - margin
+            : collateral > 0
+                ? collateral - margin
+                : 0;
+
+        if (marg <= 0 && fd > 0) {
+          reqs = marg + fd;
+        }
+        if (reqs <= 0) {
+          reqs = reqs + ledger;
         }
       }
 
-      _payoutdetails!.withdrawAmount =
-          (double.tryParse(_payoutdetails!.margin.toString())! > 0 &&
-                  (reqs > 0 || marg > 0))
-              ? ((90 / 100) *
-                      (reqs > 0
-                          ? reqs
-                          : double.tryParse(
-                                  _payoutdetails!.totalLedger.toString()) ??
-                              0))
-                  .toStringAsFixed(2)
-              : (double.tryParse(_payoutdetails!.withdrawAmount
-                          .toString()
-                          .toString()) ??
-                      0)
-                  .toStringAsFixed(2);
+      _payoutdetails!.withdrawAmount = (margin > 0 && (reqs > 0 || marg > 0))
+          ? ((reqs > 0 ? reqs : ledger)).toStringAsFixed(2)
+          : (double.tryParse(_payoutdetails!.withdrawAmount.toString()) ?? 0)
+              .toStringAsFixed(2);
 
       //  print("------------ ${ApiLinks.token}");
 
@@ -521,7 +516,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       if (hdfcpaymentdata!.data!.verifiedVPAStatus1 == "Available" ||
           hdfcpaymentdata!.data!.verifiedVPAStatus2 == "Available") {
         _hdfctranction =
-            await api.getHdfcTranction(upiId, amount, accno, clientId);
+            await api.getHdfcTranction(upiId, amount, _allacc, clientId);
       }
       //print("HDFC BANK ${hdfcpaymentdata!.data!.clientVPA![0]}");
     } catch (e) {
@@ -541,7 +536,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       togglefundLoadingOn(true);
 
       _hdfcdirectpayment =
-          await api.getUPIAppsPayment(amt, bankaccno, clientid, name);
+          await api.getUPIAppsPayment(amt, _allacc, clientid, name);
       if (defaultTargetPlatform == TargetPlatform.iOS) {
       } else {
         if (_fundTokenValidation?.emsg == "invalid token") {
@@ -560,6 +555,36 @@ class TranctionProvider extends DefaultChangeNotifier {
     }
   }
 
+  setAccountslist(String accno){
+    
+    List<AccountItem> items = [];
+    for (var i = 0; i < _bankdetails!.dATA!.length; i++) {
+      if(accno != _bankdetails?.dATA?[i][2]){
+      items.add(AccountItem(
+          accno: _bankdetails?.dATA?[i][2], ifsc: _bankdetails?.dATA?[i][3]));
+    }}
+    _allacc = "$accno${items.isNotEmpty ? '!' : ''}${getFormattedAccountNumbers(items)}";
+    print("_allacc $_allacc");
+  }
+
+  String setAccountis(AccountItem item) {
+    String selectedAccNo = item.accno;
+    if (item.ifsc.startsWith("SBIN") || item.ifsc.startsWith("CBIN")) {
+      int bankcount = selectedAccNo.length;
+      if (bankcount <= 17) {
+        int remaining = 17 - bankcount;
+        String paddedAccountNumber = '0' * remaining + selectedAccNo;
+        selectedAccNo = paddedAccountNumber;
+      }
+    }
+    return selectedAccNo;
+  }
+
+  String getFormattedAccountNumbers(List<AccountItem> items) {
+    List<String> selectedAccounts = items.take(3).map(setAccountis).toList();
+    return selectedAccounts.join("!");
+  }
+
   Future<void> checkAndLaunchUrl(String url, BuildContext context) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -575,10 +600,10 @@ class TranctionProvider extends DefaultChangeNotifier {
           context: context,
           builder: (BuildContext context) {
             return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+                canPop: false,
+                onPopInvokedWithResult: (didPop, result) async {
+                  if (didPop) return;
+                },
                 child: const PaymentCancelAlert());
           });
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -617,10 +642,10 @@ class TranctionProvider extends DefaultChangeNotifier {
             context: context,
             builder: (BuildContext context) {
               return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+                  canPop: false,
+                  onPopInvokedWithResult: (didPop, result) async {
+                    if (didPop) return;
+                  },
                   child: const UpiIdSucessorFaliureScreen());
             });
       }

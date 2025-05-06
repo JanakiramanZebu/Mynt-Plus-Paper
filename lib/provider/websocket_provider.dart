@@ -24,6 +24,8 @@ class WebSocketProvider extends ChangeNotifier {
   final Reader ref;
   WebSocketProvider(this.ref);
 
+  Timer? holdStartTime;
+
   // Map to track active subscriptions and their timers
   final Map<String, Timer> _subscriptionTimers = {};
 
@@ -291,6 +293,9 @@ class WebSocketProvider extends ChangeNotifier {
               if (res["pc"] != null) {
                 _socketDatas["${res['tk']}"]["pc"] = res["pc"];
               }
+              if (res["ap"] != null) {
+                _socketDatas["${res['tk']}"]["ap"] = res["ap"];
+              }
 
               if (res["o"] != null) {
                 _socketDatas["${res['tk']}"]["o"] = res["o"];
@@ -435,6 +440,7 @@ class WebSocketProvider extends ChangeNotifier {
               _socketDatas["${res['tk']}"] = <String, dynamic>{};
             }
             _socketDatas["${res['tk']}"]["pc"] = res["pc"] ?? "0.00";
+            _socketDatas["${res['tk']}"]["ap"] = res["ap"] ?? "0.00";
             _socketDatas["${res['tk']}"]["o"] = res["o"] ?? "0.00";
             _socketDatas["${res['tk']}"]["h"] = res["h"] ?? "0.00";
             _socketDatas["${res['tk']}"]["l"] = res["l"] ?? "0.00";
@@ -498,23 +504,28 @@ class WebSocketProvider extends ChangeNotifier {
 
             // log("Soxket data ${jsonEncode(_socketDatas)}");
           } else if (res['t'].toString().toLowerCase() == "om") {
-            if (!ref(orderProvider).sliceorderapi) {
-              ref(indexListProvider)
-                  .logError
-                  .add({"type": "Order Response", "Error": "$res"});
-              ref(portfolioProvider).fetchHoldings(context, "");
-
-              ref(orderProvider).fetchOrderBook(context, true);
-              ref(orderProvider).fetchTradeBook(context);
-              ref(orderProvider).fetchGTTOrderBook(context, "");
-              ref(fundProvider).fetchFunds(context);
-              if (res['status'].toString() == "COMPLETE") {
-                Timer(
-                    const Duration(seconds: 1),
-                    () => ref(portfolioProvider)
-                        .fetchPositionBook(context, false));
+              if (holdStartTime != null && holdStartTime!.isActive) {
+                holdStartTime!.cancel();
               }
-            }
+
+              holdStartTime = Timer(const Duration(milliseconds: 500), () {
+        
+                ref(indexListProvider)
+                    .logError
+                    .add({"type": "Order Response", "Error": "$res"});
+                ref(portfolioProvider).fetchHoldings(context, "");
+                ref(orderProvider).fetchOrderBook(context, true);
+                ref(orderProvider).fetchTradeBook(context);
+                ref(orderProvider).fetchGTTOrderBook(context, "");
+                ref(fundProvider).fetchFunds(context);
+                if (res['status'].toString() == "COMPLETE") {
+                  Timer(
+                      const Duration(seconds: 1),
+                      () => ref(portfolioProvider)
+                          .fetchPositionBook(context, false));
+                }
+                holdStartTime = null;
+              });
           }
 
           notifyListeners();

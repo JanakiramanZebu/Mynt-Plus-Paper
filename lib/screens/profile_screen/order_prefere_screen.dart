@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/all.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 
-import '../../api/core/api_core.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../models/marketwatch_model/scrip_info.dart';
@@ -30,7 +30,7 @@ class OrderPreference extends StatefulWidget {
 }
 
 class _OrderPreference extends State<OrderPreference> {
-  Map<String, dynamic> localdata = {};
+  Map localdata = {};
   String priceType = "Limit";
   String expriceType = "Market";
   String orderType = "Intraday";
@@ -52,13 +52,9 @@ class _OrderPreference extends State<OrderPreference> {
   @override
   void initState() {
     gobackOP = widget.isRollback == "yes" ? true : false;
-    String getlocal = "";
-    if (pref.showOrderpref != null) {
-      getlocal = pref.showOrderpref!;
-    }
+    localdata = context.read(authProvider).ordgrefis;
 
-    if (getlocal != "") {
-      localdata = jsonDecode(getlocal);
+    if (localdata.isNotEmpty) {
       priceType = localdata['prc'];
       orderType = localdata['prd'];
       validity = localdata['validity'];
@@ -622,20 +618,26 @@ class _OrderPreference extends State<OrderPreference> {
   }
 
   Future<void> setPrefOrderPrefer(BuildContext context) async {
-    Map<String, dynamic> local = {
-      "prc": priceType,
-      "prd": orderType,
-      "qtypref": QtyPrefer == OrdQtyPref.mktlot ? 'lot' : 'qty',
-      "qty": qtyCtrl.text,
-      "validity": validity,
-      "mrkprot": mktProtCtrl.text,
-      "expos": expriceType
+    Map local = {
+      "clientid": pref.clientId,
+      "metadata": {
+        "prc": priceType,
+        "prd": orderType,
+        "qtypref": QtyPrefer == OrdQtyPref.mktlot ? 'lot' : 'qty',
+        "qty": qtyCtrl.text,
+        "validity": validity,
+        "mrkprot": mktProtCtrl.text,
+        "expos": expriceType
+      },
+      "source": "MOB"
     };
-    String jsonString = jsonEncode(local);
-    await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
+    await context.read(authProvider).getPrefOrderPrefer(local, true);
+
+    // await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
     ScaffoldMessenger.of(context).showSnackBar(
         successMessage(context, "Order Preference hav been saved"));
-    await pref.init();
+    // await pref.init();
+    await context.read(authProvider).setPrefOrderPrefer();
     Navigator.pop(context);
     if (gobackOP) {
       Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {

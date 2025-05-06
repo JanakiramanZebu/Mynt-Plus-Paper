@@ -23,3 +23,11 @@ class BankDetails {
     return data;
   }
 }
+
+
+class AccountItem {
+  String accno;
+  String ifsc;
+
+  AccountItem({required this.accno, required this.ifsc});
+}

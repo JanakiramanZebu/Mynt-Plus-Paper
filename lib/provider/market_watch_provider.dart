@@ -266,6 +266,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   List<OptionValues> get optChainCallUP => _optChainCallUp;
   List<OptionValues> get optChainPutDown => _optChainPutDown;
   List<OptionValues> get optChainCallDown => _optChainCallDown;
+
+  final ScrollController _scrollController = ScrollController();
+  ScrollController get scrollController => _scrollController;
+
   MarketWatchProvider(this.ref);
 
   String _wlName = "";
@@ -345,6 +349,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  getOptionawait(String exch, String token) {
+    final portfolios = ref(portfolioProvider).oplists;
+    bool value = (linkedscript.contains(exch) ||
+        (portfolios.isNotEmpty && portfolios.contains(int.parse(token))));
+    return value;
+  }
+
   calldepthApis(BuildContext context, raw, basket) async {
     ref(userProfileProvider).setonloadChartdialog(true);
     chngDephBtn(basket == "Option|-|Deph" ? "Option" : "Overview");
@@ -381,12 +392,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     singlePageloader(false);
     await fetchScripQuote("${flow ? raw['token'] : raw.token}",
         "${flow ? raw['exch'] : raw.exch}", context);
-    final portfolios = ref(portfolioProvider);
-
-    if (linkedscript.contains(flow ? raw['exch'] : raw.exch) ||
-        (portfolios.oplists.isNotEmpty &&
-            portfolios.oplists
-                .contains(int.parse(flow ? raw['token'] : raw.token)))) {
+    if (getOptionawait(flow ? raw['exch'] : raw.exch, flow ? raw['token'] : raw.token)) {
       await fetchScripInfo("${flow ? raw['token'] : raw.token}",
           "${flow ? raw['exch'] : raw.exch}", context);
       await fetchLinkeScrip("${flow ? raw['token'] : raw.token}",
@@ -636,11 +642,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  List<ChartArgs> _chartTabs = [];
+  final List<ChartArgs> _chartTabs = [];
   ChartArgs? _activeTab;
-
   List<ChartArgs> get chartTabs => _chartTabs;
   ChartArgs? get activeTab => _activeTab;
+
+  final List<ChartArgs> _optionTabs = [];
+  ChartArgs? _oactiveTab;
+  List<ChartArgs> get optionTabs => _optionTabs;
+  ChartArgs? get oactiveTab => _oactiveTab;
 
   final List<ChartArgs> defaultChartTabs = [
     ChartArgs(tsym: "Nifty 50", token: "26000", exch: "NSE"),
@@ -652,38 +662,58 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   void loadDefaultTabs() {
     if (_chartTabs.isEmpty) {
       _chartTabs.addAll(defaultChartTabs);
-      _activeTab = _chartTabs.first;
+      _oactiveTab = _chartTabs.first;
+      notifyListeners();
+    }
+    if (_optionTabs.isEmpty) {
+      _optionTabs.addAll(defaultChartTabs);
+      _oactiveTab = _optionTabs.first;
       notifyListeners();
     }
   }
 
-  void addChartTab(ChartArgs tab) {
-    if (!_chartTabs.any((t) => t.token == tab.token)) {
-      _chartTabs.add(tab);
+  void addChartTab(ChartArgs tab, bool type) {
+    if (type) {
+      if (!_optionTabs.any((t) => t.token == tab.token)) {
+        _optionTabs.add(tab);
+      }
+      _activeTab = tab;
+    } else {
+      if (!_chartTabs.any((t) => t.token == tab.token)) {
+        _chartTabs.add(tab);
+      }
+      _activeTab = tab;
     }
-    _activeTab = tab;
     notifyListeners();
   }
 
-  void selectChartTab(String token) {
-    _activeTab = _chartTabs.firstWhere(
-      (tab) => tab.token == token,
-      orElse: () => ChartArgs(
-          tsym: '',
-          token: '',
-          exch: ''), // <- this works if ChartArgs? is allowed
-    );
+  void selectChartTab(String token, bool type) {
+    if (type) {
+      _oactiveTab = _optionTabs.firstWhere(
+        (tab) => tab.token == token,
+        orElse: () => ChartArgs(
+            tsym: '',
+            token: '',
+            exch: ''), // <- this works if ChartArgs? is allowed
+      );
+    } else {
+      _activeTab = _chartTabs.firstWhere(
+        (tab) => tab.token == token,
+        orElse: () => ChartArgs(
+            tsym: '',
+            token: '',
+            exch: ''), // <- this works if ChartArgs? is allowed
+      );
+    }
     notifyListeners();
   }
 
-  void removeChartTab(ChartArgs tab) {
-    _chartTabs.removeWhere((t) => t.token == tab.token);
-    notifyListeners();
-  }
-
-  void clearAllTabs() {
-    _chartTabs.clear();
-    _activeTab = null;
+  void removeChartTab(ChartArgs tab, bool type) {
+    if (type) {
+      _optionTabs.removeWhere((t) => t.token == tab.token);
+    } else {
+      _chartTabs.removeWhere((t) => t.token == tab.token);
+    }
     notifyListeners();
   }
 
@@ -693,13 +723,69 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref(themeProvider).isDarkMode}')");
     if (_chartTabs.length == 5 &&
         (_chartTabs.any((t) => t.token == token)) != true) {
-      removeChartTab(_chartTabs.last);
+      removeChartTab(_chartTabs.last, false);
     }
     if (token != "0123") {
-      addChartTab(ChartArgs(tsym: tsym, token: token, exch: exch));
+      addChartTab(ChartArgs(tsym: tsym, token: token, exch: exch), false);
     }
-    selectChartTab(token.toString());
+    selectChartTab(token.toString(), false);
+    scrollToSelectedTab(false);
     notifyListeners();
+  }
+
+  void setOptionScript(
+      BuildContext context, String exch, String token, String tsym) async {
+    toggleLoad(true);
+    singlePageloader(true);
+    notifyListeners();
+    await fetchScripQuoteIndex(token, exch, context);
+    if (exch == "BFO" || exch == "NFO" || (exch == "MCX" && _getQuotes.instname == "OPTFUT")) {
+      await fetchStikePrc(
+          "${_getQuotes.undTk}", "${_getQuotes.undExch}", context);
+    } else {
+      updateOptStrPrc(_getQuotes.lp.toString());
+    }
+
+    await ref(websocketProvider).establishConnection(
+        channelInput: (_getQuotes.exch == "BFO" || _getQuotes.exch == "NFO" ||
+                (_getQuotes.exch == "MCX" && _getQuotes.instname == "OPTFUT"))
+            ? '${_getQuotes.undExch}|${_getQuotes.undTk!}'
+            : '${_getQuotes.exch}|${_getQuotes.token!}',
+        task: "t",
+        context: context);
+
+    await fetchLinkeScrip(token, exch, context);
+
+    await fetchOPtionChain(
+        context: context,
+        exchange: optionExch!,
+        numofStrike: numStrike,
+        strPrc: optionStrPrc,
+        tradeSym: selectedTradeSym!);
+    singlePageloader(false);
+    toggleLoad(false);
+    if (_optionTabs.length == 5 &&
+        (_optionTabs.any((t) => t.token == token)) != true) {
+      removeChartTab(_optionTabs.last, true);
+    }
+    addChartTab(ChartArgs(tsym: tsym, token: token, exch: exch), true);
+
+    selectChartTab(token.toString(), true);
+    scrollToSelectedTab(true);
+    notifyListeners();
+  }
+
+  void scrollToSelectedTab(bool type) {
+    final selectedIndex = type
+        ? _optionTabs.indexWhere((tab) => tab.token == _oactiveTab?.token)
+        : _chartTabs.indexWhere((tab) => tab.token == _activeTab?.token);
+    if (_scrollController.hasClients && selectedIndex != -1) {
+      _scrollController.animateTo(
+        selectedIndex * 120.0, // Adjust width estimate based on Chip size
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   setpageName(String name) {
@@ -1052,9 +1138,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
 // Fetching data from the api and stored in a variable
-  Future fetchScripInfo(String token, String exch, BuildContext context) async {
+  Future fetchScripInfo(String token, String exch, BuildContext context,
+      [bool order = false]) async {
     try {
-      if (storeQuotes.containsKey(token) && storeQuotes[token]?['s'] != null) {
+      if (order == false &&
+          storeQuotes.containsKey(token) &&
+          storeQuotes[token]?['s'] != null) {
         _scripInfoModel = storeQuotes[token]?['s'];
         ConstantName.sessCheck = true;
         print('qqq if si');
@@ -1171,12 +1260,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           "case": "Click here to view the trading view chart."
         }
       ];
-
-      final portfolios = ref(portfolioProvider);
-
-      if (linkedscript.contains(exch) ||
-          (portfolios.oplists.isNotEmpty &&
-              portfolios.oplists.contains(int.parse(token)))) {
+      if (getOptionawait(exch, token)) {
         _depthBtns.add({
           "btnName": "Option",
           "imgPath": assets.optChainIcon,
@@ -1258,7 +1342,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_getStikePrc!.stat == "Ok") {
         ConstantName.sessCheck = true;
-        if (_getStikePrc!.exch == "NSE" ||
+        if (_getStikePrc!.exch == "NSE" || _getStikePrc!.exch == "BSE" ||
             (_getStikePrc!.exch == "MCX" &&
                 _getStikePrc!.instname == "FUTCOM")) {
           _optionStrPrc = "${_getStikePrc!.lp}";
@@ -1913,8 +1997,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (element.optt == "CE") {
         _optChainCall.add(element);
         // int callLength = _optChainCall.length ~/ 2;
-        if (strPrc <
-            double.parse(element.strprc.toString())) {
+        if (strPrc < double.parse(element.strprc.toString())) {
           _optChainCallDown.add(element);
         } else {
           _optChainCallUp.add(element);
@@ -1922,8 +2005,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       } else {
         _optChainPut.add(element);
         // int putLength = _optChainPut.length ~/ 2;
-        if (strPrc <
-            double.parse(element.strprc.toString())) {
+        if (strPrc < double.parse(element.strprc.toString())) {
           _optChainPutDown.add(element);
         } else {
           _optChainPutUp.add(element);

@@ -8,8 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/screens/dashboard_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../locator/constant.dart';
-import '../models/marketwatch_model/get_quotes.dart';
+import '../locator/preference.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
@@ -27,7 +28,6 @@ import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/internet_widget.dart';
 import 'market_watch/index/index_screen.dart';
-import 'market_watch/scrip_depth_info.dart';
 import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen.dart';
@@ -209,7 +209,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           final portfolio = watch(portfolioProvider);
           final userProfile = watch(userProfileProvider);
           final websocket = watch(websocketProvider);
-          final theme = context.read(themeProvider);
+          final theme = watch(themeProvider);
+          final funds = watch(fundProvider);
+          Preferences pref = Preferences();
 
           return GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
@@ -563,6 +565,39 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                               ),
                                                           ]),
                                                         )
+                                                      ] else if (indexProvide
+                                                                  .selectedBtmIndx ==
+                                                              2 &&
+                                                          portfolio
+                                                                  .selectedTab ==
+                                                              2) ...[
+                                                        Padding(
+                                                          padding: const EdgeInsets.only(right: 15, top: 16),
+                                                          child: InkWell(
+                                                            onTap: () async {
+                                                              await funds
+                                                                  .fetchHstoken(
+                                                                      context);
+                                                              Future.delayed(
+                                                                  const Duration(
+                                                                      microseconds:
+                                                                          10),
+                                                                  () {
+                                                                launch(
+                                                                    'https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
+                                                              });
+                                                            },
+                                                            child: Text(
+                                                              "Web",
+                                                              style: textStyle(
+                                                                  colors
+                                                                      .colorBlue,
+                                                                  14,
+                                                                  FontWeight
+                                                                      .w600),
+                                                            ),
+                                                          ),
+                                                        ),
                                                       ] else if (indexProvide
                                                                   .selectedBtmIndx ==
                                                               3 &&
@@ -1489,7 +1524,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         mktwth.singlePageloader(true);
 
         mktwth.calldepthApis(context, mktwth.getQuotes, "");
-       
+
         // DepthInputArgs depthArgs = DepthInputArgs(
         //     exch: '${mktwth.getQuotes?.exch}',
         //     token: '${mktwth.getQuotes?.token}',

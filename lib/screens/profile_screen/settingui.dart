@@ -66,15 +66,93 @@ class SettingsScreen extends ConsumerWidget {
                             secretKey:
                                 context.read(apikeyprovider).totpkey!.pwd));
                   } else if (index == 2) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          backgroundColor:
+                              context.read(themeProvider).isDarkMode
+                                  ? const Color.fromARGB(255, 18, 18, 18)
+                                  : colors.colorWhite,
+                          titleTextStyle: textStyles.appBarTitleTxt.copyWith(
+                              color: context.read(themeProvider).isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack),
+                          titlePadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                          shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(14))),
+                          scrollable: true,
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 14),
+                          insetPadding:
+                              const EdgeInsets.symmetric(horizontal: 20),
+                          title: const Text("Freeze Account!"),
+                          content: SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Are you sure you want to Freeze yor Account?",
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          16,
+                                          FontWeight.w600),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      "* Note: Open order(s) will be cancelled, but position(s) will not be closed",
+                                      style: textStyle(colors.colorGrey, 12,
+                                          FontWeight.w600),
+                                    )
+                                  ])),
+                          actions: [
+                            TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text("Cancel",
+                                    style: textStyles.textBtn.copyWith(
+                                        color: context
+                                                .read(themeProvider)
+                                                .isDarkMode
+                                            ? colors.colorLightBlue
+                                            : colors.colorBlue))),
+                            ElevatedButton(
+                                onPressed: () async {
+                                  usersettings.fetchFreezeAc(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    backgroundColor: theme.isDarkMode
+                                        ? colors.colorbluegrey
+                                        : colors.colorBlack,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(50))),
+                                child: Text("Continue",
+                                    style: textStyle(
+                                        !context.read(themeProvider).isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        14,
+                                        FontWeight.w500))),
+                          ],
+                        );
+                      },
+                    );
+                  } else if (index == 3) {
                     context.read(changePasswordProvider).userIdController.text =
                         "${pref.clientId}";
                     Navigator.pushNamed(context, Routes.changePass,
                         arguments: "Yes");
-                  } else if (index == 4) {
+                  } else if (index == 5) {
                     // String pwd = apikeys.totpkey!.pwd;
                     // _showAlertDialog(context, pwd, theme);
                     Navigator.pushNamed(context, Routes.logError);
-                  } else if (index == 3) {
+                  } else if (index == 4) {
                     showDialog(
                         context: context,
                         builder: (BuildContext context) {
@@ -181,17 +259,22 @@ class SettingsScreen extends ConsumerWidget {
                                     ])),
                           );
                         });
-                  } else if (index == 5) {
+                  } else if (index == 6) {
                     Navigator.pushNamed(context, Routes.orderPrefer);
                   }
                 },
                 dense: true,
                 minLeadingWidth: 20,
-                leading: SvgPicture.asset(
-                  usersettings.settingmenu[index]['leading'],
-                  width: 19,
-                  color: const Color(0xff666666),
-                ),
+                leading: index == 2
+                    ? const Icon(
+                        Icons.lock_outline_rounded,
+                        size: 21,
+                      )
+                    : SvgPicture.asset(
+                        usersettings.settingmenu[index]['leading'],
+                        width: 19,
+                        color: const Color(0xff666666),
+                      ),
                 title: Text(usersettings.settingmenu[index]['title'],
                     style: textStyle(
                         theme.isDarkMode
@@ -329,7 +412,7 @@ class SettingsScreen extends ConsumerWidget {
                               ),
                             ),
                     ],
-                    index != 0
+                    index != 2 && index != 0
                         ? SvgPicture.asset(
                             usersettings.settingmenu[index]['trailing'])
                         : Container()

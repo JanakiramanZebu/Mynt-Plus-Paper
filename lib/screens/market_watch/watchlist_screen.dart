@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
-import 'package:mynt_plus/provider/portfolio_provider.dart';
-// import 'package:mynt_plus/models/marketwatch_model/get_quotes.dart';
+import '../../models/marketwatch_model/get_quotes.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
 
@@ -31,7 +30,6 @@ class _WatchListScreen extends State<WatchListScreen> {
   final PageController _controller = PageController(initialPage: 0);
 
   late SwipeActionController swipecontroller;
-  List linkedscript = ['NFO', 'BFO', 'MCX', 'NCOM', 'BCOM', 'CDS'];
   @override
   void initState() {
     FirebaseAnalytics.instance.logScreenView(
@@ -40,14 +38,6 @@ class _WatchListScreen extends State<WatchListScreen> {
     );
     swipecontroller = SwipeActionController(selectedIndexPathsChangeCallback:
         (changedIndexPaths, selected, currentCount) {
-      print(
-          'cell at ${changedIndexPaths.toString()} is/are ${selected ? 'selected' : 'unselected'} ,current selected count is $currentCount');
-
-      /// I just call setState() to update simply in this example.
-      /// But the whole page will be rebuilt.
-      /// So when you are developing,you'd better update a little piece
-      /// of UI sub tree for best performance....
-
       setState(() {});
     });
     super.initState();
@@ -58,7 +48,6 @@ class _WatchListScreen extends State<WatchListScreen> {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final marketWatch = watch(marketWatchProvider);
       final userProfile = watch(userProfileProvider);
-      final portfolios = watch(portfolioProvider);
 
       final socketDatas = watch(websocketProvider).socketDatas;
       final theme = context.read(themeProvider);
@@ -155,10 +144,24 @@ class _WatchListScreen extends State<WatchListScreen> {
                                 "null") {
                               marketWatch.scrips[idx]['change'] = "0.00";
                             }
-                            if (marketWatch.scrips[idx]['perChange']
-                                    .toString() ==
-                                "null") {
-                              marketWatch.scrips[idx]['perChange'] = "0.00";
+                            if ((marketWatch.scrips[idx]['perChange']
+                                            .toString() ==
+                                        "null" ||
+                                    marketWatch.scrips[idx]['perChange']
+                                            .toString() ==
+                                        "0.00") &&
+                                marketWatch.scrips[idx]['ltp'] != '0.00') {
+                              marketWatch.scrips[idx]['perChange'] = marketWatch
+                                          .scrips[idx]['change']
+                                          .toString() !=
+                                      "0.00"
+                                  ? ((double.parse(marketWatch.scrips[idx]
+                                                  ['change']) /
+                                              double.parse(marketWatch
+                                                  .scrips[idx]['ltp'])) *
+                                          100)
+                                      .toStringAsFixed(2)
+                                  : "0.00";
                             }
                             if (marketWatch.scrips[idx]['close'].toString() ==
                                 "null") {
@@ -166,11 +169,9 @@ class _WatchListScreen extends State<WatchListScreen> {
                             }
                           }
 
-                          bool opt = linkedscript
-                                  .contains(marketWatch.scrips[idx]['exch']) ||
-                              (portfolios.oplists.isNotEmpty &&
-                                  portfolios.oplists.contains(int.parse(
-                                      marketWatch.scrips[idx]['token'])));
+                          bool opt = marketWatch.getOptionawait(
+                              marketWatch.scrips[idx]['exch'],
+                              marketWatch.scrips[idx]['token']);
 
                           if (index.isOdd) {
                             return const ListDivider();
@@ -216,10 +217,35 @@ class _WatchListScreen extends State<WatchListScreen> {
                                     onTap: (handler) async {
                                       // marketWatch.calldepthApis();
                                       if (opt) {
-                                        await marketWatch.calldepthApis(
+                                        // await marketWatch.calldepthApis(
+                                        //     context,
+                                        //     marketWatch.scrips[idx],
+                                        //     "Option|-|Deph");
+                                        DepthInputArgs depthArgs =
+                                            DepthInputArgs(
+                                                exch: marketWatch.scrips[idx]
+                                                    ['exch'],
+                                                token: marketWatch.scrips[idx]
+                                                    ['token'],
+                                                tsym: marketWatch.scrips[idx]
+                                                    ['tsym'],
+                                                instname: marketWatch
+                                                    .scrips[idx]['instname'],
+                                                symbol: marketWatch.scrips[idx]
+                                                    ['symbol'],
+                                                expDate: marketWatch.scrips[idx]
+                                                    ['expDate'],
+                                                option: marketWatch.scrips[idx]
+                                                    ['option']);
+                                        marketWatch.singlePageloader(true);
+                                        Navigator.pushNamed(
+                                            context, Routes.optionChain,
+                                            arguments: depthArgs);
+                                        marketWatch.setOptionScript(
                                             context,
-                                            marketWatch.scrips[idx],
-                                            "Option|-|Deph");
+                                            marketWatch.scrips[idx]['exch'],
+                                            marketWatch.scrips[idx]['token'],
+                                            marketWatch.scrips[idx]['tsym']);
                                       }
                                       handler(false);
                                     })
@@ -422,7 +448,10 @@ class _WatchListScreen extends State<WatchListScreen> {
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       Map depthData, bool transType) async {
     await context.read(marketWatchProvider).fetchScripInfo(
-        depthData['token'].toString(), depthData['exch'].toString(), context);
+        depthData['token'].toString(),
+        depthData['exch'].toString(),
+        context,
+        true);
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: depthData['exch'].toString(),
         tSym: depthData['tsym'].toString(),

@@ -15,6 +15,7 @@ import 'package:mynt_plus/models/mf_model/mf_sip_reject_reason.dart';
 import 'package:mynt_plus/models/mf_model/mf_sip_single_page_provider.dart';
 import 'package:mynt_plus/models/mf_model/pause_sip_model.dart';
 import 'package:mynt_plus/models/mf_model/sip_mf_list_model.dart';
+import 'package:mynt_plus/provider/portfolio_provider.dart';
 // import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_export.dart';
@@ -46,6 +47,7 @@ import '../models/mf_model/top_schemes_model.dart';
 import '../models/mf_model/x_sip_cancel_order_model.dart';
 import '../res/res.dart';
 // import '../routes/route_names.dart';
+import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'core/default_change_notifier.dart';
@@ -202,7 +204,7 @@ class MFProvider extends DefaultChangeNotifier {
   String _selechip = "";
   String get selctedchip => _selechip;
 
-    String _droupreason = "";
+  String _droupreason = "";
   String get droupreason => _droupreason;
 
   String _orderseltab = "";
@@ -211,7 +213,7 @@ class MFProvider extends DefaultChangeNotifier {
   bool? _bestmfloader = false;
   bool? get bestmfloader => _bestmfloader;
 
-   bool? _watchbatchval = false;
+  bool? _watchbatchval = false;
   bool? get watchbatchval => _watchbatchval;
 
   bool? _holdstatload = false;
@@ -225,8 +227,8 @@ class MFProvider extends DefaultChangeNotifier {
   TextEditingController installmentAmt = TextEditingController();
   TextEditingController redemptionQty = TextEditingController();
   TextEditingController redemptionAmount = TextEditingController();
-   TextEditingController rejectsip = TextEditingController();
-   TextEditingController pausesip = TextEditingController();
+  TextEditingController rejectsip = TextEditingController();
+  TextEditingController pausesip = TextEditingController();
 
   String? invAmtError,
       upiError,
@@ -244,7 +246,7 @@ class MFProvider extends DefaultChangeNotifier {
   String _namechange = "";
   String get namechange => _namechange;
 
-    String _orderpagetitle = "";
+  String _orderpagetitle = "";
   String get orderpagetitle => _orderpagetitle;
 
   orderpagetite(String name) {
@@ -252,16 +254,15 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-
-    orderrejectupdate(String name) {
+  orderrejectupdate(String name) {
     _droupreason = name;
     // print("djfj${_droupreason}");
     notifyListeners();
   }
 
-cleartext(){
-  _droupreason = "";
-}
+  cleartext() {
+    _droupreason = "";
+  }
 
   changename(String name) {
     _namechange = name;
@@ -272,6 +273,33 @@ cleartext(){
     _bestmfloader = true;
     // print("ttttttttttt");
     notifyListeners();
+  }
+
+  mfApicallinit(BuildContext ctx, int tab) async {
+    // loaderfun();
+    mfExTabchange(tab);
+    fetchsiprejreasn();
+    // await fetchnewMFBestList();
+    // await fetchBestMF();
+    Navigator.pushNamed(ctx, Routes.mfmainscreen);
+    // await fetchsiprejreasin();
+    await fetchmfholdingnew();
+
+    await fetchMfOrderbook(ctx);
+    // await fetchmfallcatnew();
+    await ref(portfolioProvider).fetchMFHoldings(ctx);
+    // await fetchMFCategoryType();
+    // await fetchmfNFO(context);
+    await fetchMFWatchlist("", "", ctx, true, "");
+    await fetchmfsiplist();
+    // await fetchBestMF();
+    // await ref(portfolioProvider).fetchMFHoldings(context);
+    // await fetchMFCategoryType();
+    // // await fetchmfNFO(context);
+    // await fetchMFWatchlist("", "", context, true, "");
+    // Navigator.pushNamed(context, Routes.mfmainscreen);
+    // launch(
+    //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
   }
 
   mfExTabchange(int tab) {
@@ -354,7 +382,6 @@ redemptionQty.text = _holssinglelist![0].nET!;
   mf_catge_newlist? _mfallcatnewlist;
   mf_catge_newlist? get mfallcatnewlist => _mfallcatnewlist;
 
-  
   final_list_model? _mfcatlistview;
   final_list_model? get mfcatlistview => _mfcatlistview;
 
@@ -371,10 +398,10 @@ redemptionQty.text = _holssinglelist![0].nET!;
   XsipOrderCancleResponces? get xsipOrderCancleResponces =>
       _xsipOrderCancleResponces;
 
-        mf_sip_cancel_message? _mfsipcancelmess;
+  mf_sip_cancel_message? _mfsipcancelmess;
   mf_sip_cancel_message? get mfsipcancelmess => _mfsipcancelmess;
 
-   pause_spi_res ? _mfsippause;
+  pause_spi_res? _mfsippause;
   pause_spi_res? get mfsippause => _mfsippause;
 
   AllPaymentMfModel? _allPaymentMfModel;
@@ -383,11 +410,10 @@ redemptionQty.text = _holssinglelist![0].nET!;
   List<MutualFundList>? _bestmfFilter = [];
   List<MutualFundList>? get bestmfFilter => _bestmfFilter;
 
-
-   List<Fund>? _catnewlist = [];
+  List<Fund>? _catnewlist = [];
   List<Fund>? get catnewlist => _catnewlist;
 
-     List<DataMod>? _holssinglelist = [];
+  List<DataMod>? _holssinglelist = [];
   List<DataMod>? get holssinglelist => _holssinglelist;
 
   // List<MutualFundList>? _bestmfList = [];
@@ -497,7 +523,7 @@ redemptionQty.text = _holssinglelist![0].nET!;
       "title": "Fixed Income",
       "sub": []
     },
-     {
+    {
       "dataIcon": 'assets/explore/gold.png',
       "description":
           "Invest in gold and related securities. Hedge against inflation.",
@@ -510,7 +536,6 @@ redemptionQty.text = _holssinglelist![0].nET!;
       "title": "Hybrid",
       "sub": []
     },
-   
     {
       "dataIcon": 'assets/explore/solution.png',
       "description":
@@ -577,9 +602,7 @@ final List _mfrejectsiplist = [
         }
     ];
 
-List? get mfrejectsiplist => _mfrejectsiplist;
-
-
+  List? get mfrejectsiplist => _mfrejectsiplist;
 
   // makefalse(String isn) {
   //   int index = _topmutualfund!.indexWhere((element) => element.iSIN == isn);
@@ -1232,14 +1255,14 @@ List? get mfrejectsiplist => _mfrejectsiplist;
     } catch (e, stackTrace) {
       debugPrint("Error fetching MF Best List: $e\n$stackTrace");
     } finally {
-       _bestmfloader = false;
+      _bestmfloader = false;
       notifyListeners();
     }
   }
 
   Future<void> fetchmfsiplist() async {
     try {
-       _bestmfloader = true;
+      _bestmfloader = true;
       _mfsiporderlist = await api.getSiplist();
       // print("sipppppres${_mfsiporderlist?.toJson()}");
       notifyListeners();
@@ -1325,10 +1348,10 @@ List? get mfrejectsiplist => _mfrejectsiplist;
 
   Future<void> fetchmfholdingnew() async {
     try {
-       _holdstatload = true;
+      _holdstatload = true;
       _mfholdingnew = await api.getmfholdnewapi();
       // print("themffffff${value}");
-      
+
       // print("holdinglist${_mfholdingnew?.toJson()}");
 
       notifyListeners();
@@ -1342,21 +1365,20 @@ List? get mfrejectsiplist => _mfrejectsiplist;
     }
   }
 
- void fetchmfholdsingpage(String isin) async {
-  // print("qqqq|${isin}---");
+  void fetchmfholdsingpage(String isin) async {
+    // print("qqqq|${isin}---");
 
-  for (var item in _mfholdingnew?.data ?? []) {
-    if (isin == item.iSIN) {
-      // print("ininin");
-      
-      // Ensure item is not null before adding it to the list
-      _holssinglelist = item != null ? [item] : [];
-      
-      // print("ttttttt$_holssinglelist");
+    for (var item in _mfholdingnew?.data ?? []) {
+      if (isin == item.iSIN) {
+        // print("ininin");
+
+        // Ensure item is not null before adding it to the list
+        _holssinglelist = item != null ? [item] : [];
+
+        // print("ttttttt$_holssinglelist");
+      }
     }
   }
-}
-
 
   Future fetchMFCategoryList(String type, String subtype) async {
     try {
@@ -1476,10 +1498,6 @@ List? get mfrejectsiplist => _mfrejectsiplist;
               .toStringAsFixed(2)
         });
 
-
-
-
-
         for (var element in _mfReturnsGridview) {
           for (var returns in trailingReturns.entries) {
             if (element['duration'] == returns.key) {
@@ -1505,8 +1523,6 @@ List? get mfrejectsiplist => _mfrejectsiplist;
       // stopwatch = Stopwatch()..start();
       // await fetchSchemePeer(isin, "10Year");
       // stopwatch.stop(); // Stop timer
-
-      
 
       log('Time taken 4: ${stopwatch.elapsedMilliseconds} ms');
       stopwatch = Stopwatch()..start();
@@ -1609,7 +1625,7 @@ List? get mfrejectsiplist => _mfrejectsiplist;
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-    }finally{
+    } finally {
       notifyListeners();
     }
   }
@@ -1830,7 +1846,7 @@ List? get mfrejectsiplist => _mfrejectsiplist;
   Future cancelredumorder(BuildContext context, orderno) async {
     try {
       // _mforderloader = true;
-toggleLoadingOn(true);
+      toggleLoadingOn(true);
       try {
         toggleLoadingOn(true);
         _mfLumpSumOrderbook = await api.redemptioncancelapi(orderno);
@@ -1852,87 +1868,82 @@ toggleLoadingOn(true);
         // }
       } catch (e) {
         toggleLoadingOn(false);
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "Something Went Wrong"));
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, "Something Went Wrong"));
         log("Failed to Create Mandate :: ${e.toString()}");
         notifyListeners();
       }
     } catch (e) {
-       toggleLoadingOn(false);
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "Something Went Wrong"));
+      toggleLoadingOn(false);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(warningMessage(context, "Something Went Wrong"));
       log("Failed to fetchMfOrderbook :: ${e.toString()}");
       notifyListeners();
-    }
-    finally {
-              toggleLoadingOn(false);
+    } finally {
+      toggleLoadingOn(false);
       // _mforderloader = false;
       notifyListeners();
     }
   }
 
-
-Future cancelsiporder(BuildContext context, orderno,siprefno  ) async {
-  // print("WWWWWW{${orderno},1111${siprefno},22222222!!${droupreason}!!,33333333${rejectsip.text}}");
-  if( droupreason != ""){
-    toggleLoadingOn(true);
-    try {
-          toggleLoadingOn(true);
+  Future cancelsiporder(BuildContext context, orderno, siprefno) async {
+    // print("WWWWWW{${orderno},1111${siprefno},22222222!!${droupreason}!!,33333333${rejectsip.text}}");
+    if (droupreason != "") {
+      toggleLoadingOn(true);
       try {
-    toggleLoadingOn(true);
+        toggleLoadingOn(true);
+        try {
+          toggleLoadingOn(true);
 
-        _mfsipcancelmess = await api.cancelsipapi(orderno,siprefno,droupreason,rejectsip.text);
-        // print("@@@1111111111111111$_mfLumpSumOrderbook");
+          _mfsipcancelmess = await api.cancelsipapi(
+              orderno, siprefno, droupreason, rejectsip.text);
+          // print("@@@1111111111111111$_mfLumpSumOrderbook");
           // Navigator.pop(context);
-        fetchmfsiplist();
-if(_mfsipcancelmess?.stat == "Not Ok") {
-  toggleLoadingOn(false);
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "${_mfsipcancelmess?.emsg}"));
+          fetchmfsiplist();
+          if (_mfsipcancelmess?.stat == "Not Ok") {
+            toggleLoadingOn(false);
+            ScaffoldMessenger.of(context).showSnackBar(
+                warningMessage(context, "${_mfsipcancelmess?.emsg}"));
             Navigator.pop(context);
-      }
-      if(_mfsipcancelmess?.stat == "Ok") {
-  toggleLoadingOn(false);
+          }
+          if (_mfsipcancelmess?.stat == "Ok") {
+            toggleLoadingOn(false);
             Navigator.pop(context);
 
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "Sip su ${_mfsipcancelmess?.msg}"));
+            ScaffoldMessenger.of(context).showSnackBar(
+                warningMessage(context, "Sip su ${_mfsipcancelmess?.msg}"));
             Navigator.pop(context);
-      }
-       
+          }
+        } catch (e) {
+          toggleLoadingOn(false);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context)
+              .showSnackBar(warningMessage(context, "Something Went Wrong"));
+          log("Failed to Create Mandate :: ${e.toString()}");
+          notifyListeners();
+        }
       } catch (e) {
-         toggleLoadingOn(false);
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "Something Went Wrong"));
-        log("Failed to Create Mandate :: ${e.toString()}");
-        notifyListeners();
-
-      }
-    } catch (e) {
-       toggleLoadingOn(false);
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "Something Went Wrong"));
-      log("Failed to fetchMfOrderbook :: ${e.toString()}");
-      notifyListeners();
-
-    }
-    finally {
         toggleLoadingOn(false);
-      // _mforderloader = false;
-      notifyListeners();
-      // Navigator.pop(context);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, "Something Went Wrong"));
+        log("Failed to fetchMfOrderbook :: ${e.toString()}");
+        notifyListeners();
+      } finally {
+        toggleLoadingOn(false);
+        // _mforderloader = false;
+        notifyListeners();
+        // Navigator.pop(context);
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          warningMessage(context, "SIP Reject Reason Is Required*"));
     }
-  }else{
-     ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "SIP Reject Reason Is Required*"));
-  }
-  rejectsip.text = "";
-  pausesip.text = "";
-  cleartext();
+    rejectsip.text = "";
+    pausesip.text = "";
+    cleartext();
   }
 
 
@@ -1964,9 +1975,8 @@ if(_mfsippause?.stat == "Not Ok") {
         ScaffoldMessenger.of(context).showSnackBar(warningMessage(
             context, " ${_mfsippause?.msg}"));
             Navigator.pop(context);
-      }
-       
-      } catch (e) {
+          }
+        } catch (e) {
           toggleLoadingOn(false);
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(warningMessage(
@@ -1977,30 +1987,26 @@ if(_mfsippause?.stat == "Not Ok") {
       }
     } catch (e) {
         toggleLoadingOn(false);
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "Something Went Wrong"));
-      log("Failed to fetchMfOrderbook :: ${e.toString()}");
-      notifyListeners();
-      // Navigator.pop(context);
-    }
-    finally {
-           toggleLoadingOn(false);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, "Something Went Wrong"));
+        log("Failed to fetchMfOrderbook :: ${e.toString()}");
+        notifyListeners();
+        // Navigator.pop(context);
+      } finally {
+        toggleLoadingOn(false);
 
-      notifyListeners();
-      Navigator.pop(context);
+        notifyListeners();
+        Navigator.pop(context);
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          warningMessage(context, "No of installments is Required*"));
     }
-  }else{
-     ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "No of installments is Required*"));
-  }
     rejectsip.text = "";
-  pausesip.text = "";
-  cleartext();
+    pausesip.text = "";
+    cleartext();
   }
-
-
-
 
   Future<void> fetchmfallcatnew() async {
     try {
@@ -2034,9 +2040,7 @@ if(_mfsippause?.stat == "Not Ok") {
       for (var i = 0; i < _mfallcatnewlist!.data![5].values!.length; i++) {
         _mFCategoryTypesStatic[4]['sub']
             .add(_mfallcatnewlist!.data![5].values![i].name);
-        
       }
-
 
       // print("Transformed Data: ");
     } catch (e) {
@@ -2045,50 +2049,51 @@ if(_mfsippause?.stat == "Not Ok") {
     }
   }
 
-void fetchcatdatanew(String tit, String chi) {
-  // print("qqqq|${tit}----${chi}");
+  void fetchcatdatanew(String tit, String chi) {
+    // print("qqqq|${tit}----${chi}");
 
-  // Define mapping of title to index dynamically
-  Map<String, int> categoryIndex = {
-    'Equity': 0,
-    'Fixed Income': 1,
-    'Gold': 2,
-    'Hybrid': 3,
-    'Solution': 5
-  };
+    // Define mapping of title to index dynamically
+    Map<String, int> categoryIndex = {
+      'Equity': 0,
+      'Fixed Income': 1,
+      'Gold': 2,
+      'Hybrid': 3,
+      'Solution': 5
+    };
 
-  // Check if the category exists in the map
-  if (!categoryIndex.containsKey(tit)) {
-    // print("Invalid category or missing data.");
-    return;
-  }
-
-  int index = categoryIndex[tit]!; // Get the correct index
-
-  // Null safety checks
-  if (_mfallcatnewlist?.data == null || _mfallcatnewlist!.data!.length <= index) {
-    // print("otherr or null data");
-    return;
-  }
-
-  // Iterate through values and find matching `chi`
-  for (var item in _mfallcatnewlist!.data![index].values ?? []) {
-    // print("nameee ${item.name}");
-
-    if (chi == item.name) {
-      // print("statisfyyy ${item.values}");
-
-      // Assign values safely
-      _catnewlist = List<Fund>.from(item.values ?? []);
-
-      // Notify listeners AFTER updating _catnewlist
-      notifyListeners();
+    // Check if the category exists in the map
+    if (!categoryIndex.containsKey(tit)) {
+      // print("Invalid category or missing data.");
       return;
     }
-  }
 
-  // print("No matching data found.");
-}
+    int index = categoryIndex[tit]!; // Get the correct index
+
+    // Null safety checks
+    if (_mfallcatnewlist?.data == null ||
+        _mfallcatnewlist!.data!.length <= index) {
+      // print("otherr or null data");
+      return;
+    }
+
+    // Iterate through values and find matching `chi`
+    for (var item in _mfallcatnewlist!.data![index].values ?? []) {
+      // print("nameee ${item.name}");
+
+      if (chi == item.name) {
+        // print("statisfyyy ${item.values}");
+
+        // Assign values safely
+        _catnewlist = List<Fund>.from(item.values ?? []);
+
+        // Notify listeners AFTER updating _catnewlist
+        notifyListeners();
+        return;
+      }
+    }
+
+    // print("No matching data found.");
+  }
 
 // void fetchmatchisan(String isin) {
 //   final watchlistIsins = _mfWatchlist!.map((item) => item.iSIN).toSet();
@@ -2097,18 +2102,14 @@ void fetchcatdatanew(String tit, String chi) {
 //     _factSheetDataModel!.data!.isAdd = watchlistIsins.contains(isin);
 //   }
 // }
-void fetchmatchisan(String isin) {
-  bool isMatch = _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == isin);
+  void fetchmatchisan(String isin) {
+    bool isMatch = _mfWatchlist!.any((watchListMf) => watchListMf.iSIN == isin);
 
 //  if(isMatch == true)
     _watchbatchval = isMatch;
     // print("Updated isAdd to: ${_watchbatchval}");
-notifyListeners();
-}
-
-
-
-
+    notifyListeners();
+  }
 
   Future fetchVerifyUpi(
     BuildContext context,
@@ -2171,18 +2172,17 @@ notifyListeners();
       String noofinstallment,
       String enddate,
       String mandateId) async {
-        
     try {
       // print("welcoooo");
-    toggleLoadingOn(true);
+      toggleLoadingOn(true);
 // print("okokok11ttt${loading}");
- 
+
       _xsipOrderResponces = await api.getXsipPurchase(schemecode, startDate,
           freqtype, amt, noofinstallment, endDate, mandateId);
 // print("okokok11${loading}");
       if (_xsipOrderResponces?.stat == 'OK') {
-         toggleLoadingOn(false);
-         
+        toggleLoadingOn(false);
+
         // toggleLoad(false);
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_xsipOrderResponces!.responseMessage}"));
@@ -2198,26 +2198,25 @@ notifyListeners();
             "",
             upiId.text,
             schemecode);
-             Navigator.pop(context);
+        Navigator.pop(context);
       } else {
         toggleLoadingOn(false);
         ScaffoldMessenger.of(context).showSnackBar(
             warningMessage(context, "${_xsipOrderResponces!.responseMessage}"));
-            Navigator.pop(context);
+        Navigator.pop(context);
       }
-       fetchmfsiplist();
-          fetchMfOrderbook(context);
+      fetchmfsiplist();
+      fetchMfOrderbook(context);
       // print("object ${_xsipOrderResponces!.responseMessage} ");
     } catch (e) {
       log("Failed to Place X-sip :: ${e.toString()}");
       toggleLoadingOn(false);
       notifyListeners();
-       ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "Network Error"));
-            Navigator.pop(context);
-    
-    }finally{
-       toggleLoadingOn(false);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(warningMessage(context, "Network Error"));
+      Navigator.pop(context);
+    } finally {
+      toggleLoadingOn(false);
       notifyListeners();
     }
   }
@@ -2310,9 +2309,9 @@ notifyListeners();
         upi,
         schemeCode);
     if (_allPaymentMfModel?.stat == "Not Ok") {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(warningMessage(context, "${_allPaymentMfModel!.response_message}"));
-           Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+          warningMessage(context, "${_allPaymentMfModel!.response_message}"));
+      Navigator.pop(context);
     } else if (_allPaymentMfModel?.stat == "Ok" &&
         _allPaymentMfModel?.type == "NET BANKING") {
       Navigator.pop(context);
@@ -2721,7 +2720,7 @@ notifyListeners();
     // print("Change made");
     final RegExp upiRegex =
         RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
-        // print("mfOrderTpye${mfOrderTpye}");
+    // print("mfOrderTpye${mfOrderTpye}");
     if (mfOrderTpye == "One-time") {
       if (invAmt.text.isEmpty) {
         invAmtError = "Please enter Investment amount";

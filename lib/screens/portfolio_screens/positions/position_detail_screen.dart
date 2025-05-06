@@ -605,7 +605,7 @@ class PositionDetailScreen extends ConsumerWidget {
                               await context
                                   .read(marketWatchProvider)
                                   .fetchScripInfo("${positionList.token}",
-                                      '${positionList.exch}', context);
+                                      '${positionList.exch}', context, true);
                               int lotsize = int.parse(context
                                   .read(marketWatchProvider)
                                   .scripInfoModel!
@@ -664,7 +664,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                   await context
                                       .read(marketWatchProvider)
                                       .fetchScripInfo("${positionList.token}",
-                                          '${positionList.exch}', context);
+                                          '${positionList.exch}', context, true);
                                   Navigator.pop(context);
                                   OrderScreenArgs orderArgs = OrderScreenArgs(
                                       exchange: '${positionList.exch}',

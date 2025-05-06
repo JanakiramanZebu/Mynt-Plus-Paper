@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../provider/fund_provider.dart';
@@ -25,6 +26,7 @@ class HoldingScreen extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final holdingProvide = watch(portfolioProvider);
     final socketDatas = watch(websocketProvider).socketDatas;
+    final mf = watch(mfProvider);
     final theme = context.read(themeProvider);
 
     double totalPnlHolding = 0.0;
@@ -174,7 +176,7 @@ class HoldingScreen extends ConsumerWidget {
                                   ])
                             ])
                       ])),
-              if (holdingProvide.holdingsModel!.isNotEmpty)
+              
                 Container(
                     decoration: BoxDecoration(
                         color: theme.isDarkMode
@@ -190,35 +192,66 @@ class HoldingScreen extends ConsumerWidget {
                         padding: const EdgeInsets.only(
                             left: 16, right: 2, top: 8, bottom: 8),
                         child: Row(
-                            mainAxisAlignment: holdingProvide.showEdis
-                                ? MainAxisAlignment.spaceBetween
-                                : MainAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              if (holdingProvide.showEdis)
-                                SizedBox(
-                                    height: 27,
-                                    child: OutlinedButton(
-                                        style: OutlinedButton.styleFrom(
-                                            side: BorderSide(
-                                                color: colors.colorGrey),
-                                            shape: const RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(32)))),
-                                        onPressed: () async {
-                                          await context
-                                              .read(fundProvider)
-                                              .fetchHstoken(context);
-                                          await context
-                                              .read(fundProvider)
-                                              .eDis(context);
-                                        },
-                                        child: Text("E-DIS",
-                                            style: textStyle(
-                                                !theme.isDarkMode
-                                                    ? colors.colorBlack
-                                                    : colors.colorWhite,
-                                                12,
-                                                FontWeight.w600)))),
+                              Row(
+                                children: [
+                                  if (holdingProvide.holdingsModel!.isNotEmpty && holdingProvide.showEdis) ...[
+                                    SizedBox(
+                                        height: 27,
+                                        child: OutlinedButton(
+                                            style: OutlinedButton.styleFrom(
+                                                side: BorderSide(
+                                                    color: colors.colorGrey),
+                                                shape:
+                                                    const RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                                Radius.circular(
+                                                                    32)))),
+                                            onPressed: () async {
+                                              await context
+                                                  .read(fundProvider)
+                                                  .fetchHstoken(context);
+                                              await context
+                                                  .read(fundProvider)
+                                                  .eDis(context);
+                                            },
+                                            child: Text("E-DIS",
+                                                style: textStyle(
+                                                    !theme.isDarkMode
+                                                        ? colors.colorBlack
+                                                        : colors.colorWhite,
+                                                    12,
+                                                    FontWeight.w600)))),
+                                    const SizedBox(
+                                      width: 8,
+                                    )
+                                  ],
+                                  SizedBox(
+                                      height: 27,
+                                      child: OutlinedButton(
+                                          style: OutlinedButton.styleFrom(
+                                              side: BorderSide(
+                                                  color: colors.colorGrey),
+                                              shape:
+                                                  const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  32)))),
+                                          onPressed: () async {
+                                            await mf.mfApicallinit(context, 2);
+                                          },
+                                          child: Text("My MF",
+                                              style: textStyle(
+                                                  !theme.isDarkMode
+                                                      ? colors.colorBlack
+                                                      : colors.colorWhite,
+                                                  12,
+                                                  FontWeight.w600)))),
+                                ],
+                              ),
                               if (holdingProvide.holdingsModel!.length > 1)
                                 Row(children: [
                                   if (!holdingProvide.showSearchHold)

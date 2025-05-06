@@ -4,7 +4,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
@@ -34,7 +33,6 @@ class ChartScreenWebView extends StatefulWidget {
 }
 
 class _ChartScreenWebViewState extends State<ChartScreenWebView> {
-  final ScrollController _scrollController = ScrollController();
   double progress = 0;
   final Preferences prefs = locator<Preferences>();
   SharedPreferences? sharedPrefs;
@@ -44,7 +42,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     Future.microtask(() {
       context.read(marketWatchProvider).loadDefaultTabs();
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelectedTab());
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => context.read(marketWatchProvider).scrollToSelectedTab(false));
   }
 
   // @override
@@ -53,19 +52,19 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   //   WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelectedTab());
   // }
 
-  void _scrollToSelectedTab() {
-    final tvChart = context.read(marketWatchProvider);
+  // void _scrollToSelectedTab() {
+  //   final tvChart = context.read(marketWatchProvider);
 
-    final selectedIndex = tvChart.chartTabs
-        .indexWhere((tab) => tab.token == tvChart.activeTab?.token);
-    if (_scrollController.hasClients && selectedIndex != -1) {
-      _scrollController.animateTo(
-        selectedIndex * 120.0, // Adjust width estimate based on Chip size
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
+  //   final selectedIndex = tvChart.chartTabs
+  //       .indexWhere((tab) => tab.token == tvChart.activeTab?.token);
+  //   if (_scrollController.hasClients && selectedIndex != -1) {
+  //     _scrollController.animateTo(
+  //       selectedIndex * 120.0, // Adjust width estimate based on Chip size
+  //       duration: const Duration(milliseconds: 300),
+  //       curve: Curves.easeInOut,
+  //     );
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -92,27 +91,27 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                 tvChart, theme, userProfile.showchartof, chartUpdate, context),
             const SizedBox(height: 4),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
               child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // IconButton(
-                    //   padding: const EdgeInsets.all(0),
-                    //   icon: Icon(Icons.restart_alt,
-                    //       color: theme.isDarkMode
-                    //           ? colors.colorWhite
-                    //           : colors.colorBlack), // Back icon
-                    //   onPressed: () {
-                    //     ConstantName.chartwebViewController?.loadUrl(
-                    //       urlRequest: URLRequest(
-                    //         url: WebUri(
-                    //           "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}",
-                    //         ),
-                    //       ),
-                    //     );
-                    //   },
-                    // ),
+                    IconButton(
+                      padding: const EdgeInsets.all(0),
+                      icon: Icon(Icons.restart_alt,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack), // Back icon
+                      onPressed: () {
+                        ConstantName.chartwebViewController?.loadUrl(
+                          urlRequest: URLRequest(
+                            url: WebUri(
+                              "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}",
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     Expanded(
                         child: InkWell(
                       onTap: () async {
@@ -174,53 +173,53 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 6),
-        height: 32,
+        height: 40,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            IconButton(
-              padding: const EdgeInsets.all(0),
-              icon: SvgPicture.asset(assets.backArrow,
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack), // Back icon
-              onPressed: () async {
-                userProfile.setChartdialog(false);
-                tvChart.chngDephBtn("Overview");
-                tvChart.singlePageloader(true);
-                await tvChart.calldepthApis(context, tvChart.getQuotes, "");
-
-                // DepthInputArgs depthArgs = DepthInputArgs(
-                //     exch: '${tvChart.getQuotes?.exch}',
-                //     token: '${tvChart.getQuotes?.token}',
-                //     tsym: '${tvChart.getQuotes?.tsym}',
-                //     instname: tvChart.getQuotes?.instname ?? "",
-                //     symbol: '${tvChart.getQuotes?.symbol}',
-                //     expDate: '${tvChart.getQuotes?.expDate}',
-                //     option: '${tvChart.getQuotes?.option}');
-
-                // showModalBottomSheet(
-                //     isScrollControlled: true,
-                //     useSafeArea: true,
-                //     isDismissible: true,
-                //     shape: const RoundedRectangleBorder(
-                //         borderRadius:
-                //             BorderRadius.vertical(top: Radius.circular(16))),
-                //     context: context,
-                //     builder: (context) => Container(
-                //         padding: EdgeInsets.only(
-                //           bottom: MediaQuery.of(context).viewInsets.bottom,
-                //         ),
-                //         child:
-                //             ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
-                tvChart.singlePageloader(false);
-                tvChart.setChartScript('ABC', '0123', 'ABCD');
-                chartUpdate.changeOrientation('portrait');
-              },
+            SizedBox(
+              width: 44,
+              child: IconButton(
+                padding: const EdgeInsets.all(0),
+                icon: const Icon(Icons.chevron_left, size: 38,),
+                onPressed: () async {
+                  userProfile.setChartdialog(false);
+                  tvChart.chngDephBtn("Overview");
+                  tvChart.singlePageloader(true);
+                  await tvChart.calldepthApis(context, tvChart.getQuotes, "");
+              
+                  // DepthInputArgs depthArgs = DepthInputArgs(
+                  //     exch: '${tvChart.getQuotes?.exch}',
+                  //     token: '${tvChart.getQuotes?.token}',
+                  //     tsym: '${tvChart.getQuotes?.tsym}',
+                  //     instname: tvChart.getQuotes?.instname ?? "",
+                  //     symbol: '${tvChart.getQuotes?.symbol}',
+                  //     expDate: '${tvChart.getQuotes?.expDate}',
+                  //     option: '${tvChart.getQuotes?.option}');
+              
+                  // showModalBottomSheet(
+                  //     isScrollControlled: true,
+                  //     useSafeArea: true,
+                  //     isDismissible: true,
+                  //     shape: const RoundedRectangleBorder(
+                  //         borderRadius:
+                  //             BorderRadius.vertical(top: Radius.circular(16))),
+                  //     context: context,
+                  //     builder: (context) => Container(
+                  //         padding: EdgeInsets.only(
+                  //           bottom: MediaQuery.of(context).viewInsets.bottom,
+                  //         ),
+                  //         child:
+                  //             ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
+                  tvChart.singlePageloader(false);
+                  tvChart.setChartScript('ABC', '0123', 'ABCD');
+                  chartUpdate.changeOrientation('portrait');
+                },
+              ),
             ),
             Expanded(
               child: ListView.separated(
-                controller: _scrollController,
+                controller: tvChart.scrollController,
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.only(right: 8),
                 itemCount:
@@ -284,7 +283,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                           : null,
                       onDeleted: index > 1
                           ? () async {
-                              tvChart.removeChartTab(tab);
+                              tvChart.removeChartTab(tab, false);
                               if (tvChart.activeTab?.token == tab.token) {
                                 await tvChart.fetchScripQuoteIndex(
                                     last.token, last.exch, context);
@@ -302,15 +301,16 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
             ),
             IconButton(
               padding: const EdgeInsets.all(0),
-              icon: Text("+",
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      32,
-                      FontWeight.normal)),
-              // Icon(Icons.add_circle_outline,
-              //     color: theme.isDarkMode
-              //         ? colors.colorWhite
-              // : colors.colorBlack),
+              icon:
+                  // Text("+",
+                  //     style: textStyle(
+                  //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  //         32,
+                  //         FontWeight.normal)),
+                  Icon(Icons.add_circle_outline,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack),
               onPressed: () async {
                 context
                     .read(marketWatchProvider)
@@ -347,7 +347,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       chartUpdate, BuildContext context) {
     return SizedBox(
       height: (MediaQuery.of(context).size.height -
-          (TargetPlatform.iOS == defaultTargetPlatform ? 160 : 140)),
+          (TargetPlatform.iOS == defaultTargetPlatform ? 180 : 150)),
       child: InAppWebView(
         key: context.read(userProfileProvider).webViewKey,
         gestureRecognizers: {
@@ -420,7 +420,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     final raw = context.read(marketWatchProvider).getQuotes;
     await context
         .read(marketWatchProvider)
-        .fetchScripInfo(raw!.token.toString(), raw.exch.toString(), ctx);
+        .fetchScripInfo(raw!.token.toString(), raw.exch.toString(), ctx, true);
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: raw.exch.toString(),
         tSym: raw.tsym.toString(),

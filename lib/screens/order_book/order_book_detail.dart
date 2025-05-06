@@ -150,7 +150,7 @@ class OrderBookDetail extends ConsumerWidget {
                           "After Market Order",
                           orderBookData.amo ?? "-",
                           "Status",
-                          "${orderBookData.status![0].toUpperCase()}${orderBookData.status!.toLowerCase().replaceAll("_", " ").substring(1)}",
+                          "${orderBookData.stIntrn![0].toUpperCase()}${orderBookData.stIntrn!.toLowerCase().replaceAll("_", " ").substring(1)}",
                           theme),
                       const SizedBox(height: 4),
                       rowOfInfoData(
@@ -208,7 +208,7 @@ class OrderBookDetail extends ConsumerWidget {
                               ? assets.cancelledIcon
                               : assets.warningIcon),
                       Text(
-                          "  ${orderBookData.status![0].toUpperCase()}${orderBookData.status!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
+                          "  ${orderBookData.stIntrn![0].toUpperCase()}${orderBookData.stIntrn!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
                           style: textStyle(
                               theme.isDarkMode
                                   ? colors.colorWhite
@@ -571,7 +571,7 @@ class OrderBookDetail extends ConsumerWidget {
                         await watch(marketWatchProvider).fetchScripInfo(
                             "${orderBookData.token}",
                             "${orderBookData.exch}",
-                            context);
+                            context, true);
 
                         OrderScreenArgs orderArgs = OrderScreenArgs(
                             exchange: orderBookData.exch.toString(),
