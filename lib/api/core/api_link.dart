@@ -51,6 +51,7 @@ class ApiLinks {
   String get deleteMWScrips => '$goMyntURL/DeleteMultiMWScrips';
   String get addMWScrips => '$goMyntURL/AddMultiScripsToMW';
   String get searchScrip => '$goMyntURL/SearchScrip';
+  String get searchScripNew => '${bemynt}global/SearchScrip';
   String get technicalData => '$goMyntURL/GetTechnicals';
   String get watchListrename => '$goMyntURL/RenameMW';
 

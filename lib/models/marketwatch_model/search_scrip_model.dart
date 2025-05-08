@@ -74,7 +74,7 @@ class ScripValue {
     weekly = json['weekly'];
     isAdded = isAdded == null ? false : json['isAdded'];
     expDate = json['expDate'];
-    symbol = json['symbol'];
+    symbol = json['symname'];
     option = json['option'];
   }
 
@@ -94,7 +94,7 @@ class ScripValue {
     data['isAdded'] = isAdded;
     data['option'] = option;
     data['expDate'] = expDate;
-    data['symbol'] = symbol;
+    data['symname'] = symbol;
     return data;
   }
 }

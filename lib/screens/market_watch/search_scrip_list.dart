@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../res/res.dart';
-import '../../models/marketwatch_model/search_scrip_model.dart';
+import '../../models/marketwatch_model/search_scrip_new_model.dart';
 import '../../provider/thems.dart';
 import '../../routes/app_routes.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -11,7 +11,7 @@ import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/no_data_found.dart';
 
 class SearchScripList extends ConsumerWidget {
-  final List<ScripValue> searchValue;
+  final List<ScripNewValue> searchValue;
   final String wlName;
   final String isBasket;
   const SearchScripList(

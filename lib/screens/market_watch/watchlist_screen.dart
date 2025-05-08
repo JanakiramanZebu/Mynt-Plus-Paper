@@ -177,7 +177,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                             return const ListDivider();
                           }
                           return SwipeActionCell(
-                            isDraggable: false,
+                            isDraggable: true,
                             fullSwipeFactor: 0.7,
                             controller: swipecontroller,
                             index: index,
