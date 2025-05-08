@@ -99,61 +99,90 @@ class OptChainCallList extends ConsumerWidget {
                   handler(false);
                 }),
           ],
-          child: GestureDetector(
-            onLongPress: () async {
-              if (scripData.isPreDefWLs == "Yes") {
-                Fluttertoast.showToast(
-                    msg:
-                        "This is a pre-defined watchlist that cannot be Added!",
-                    timeInSecForIosWeb: 2,
-                    backgroundColor: colors.colorBlack,
-                    textColor: colors.colorWhite,
-                    fontSize: 14.0);
-              } else {
-                await watch(websocketProvider).establishConnection(
-                    channelInput:
-                        "${callData![itemIndex].exch}|${callData![itemIndex].token}",
-                    task: "t",
-                    context: context);
-                await scripData.addDelMarketScrip(
-                    scripData.wlName,
-                    "${callData![itemIndex].exch}|${callData![itemIndex].token}",
-                    context,
-                    true,
-                    true,
-                    false,
-                    true);
-              }
-            },
-            onTap: () async {
-              await scripData.fetchScripQuoteIndex(
-                  "${callData![itemIndex].token}",
-                  "${callData![itemIndex].exch}",
-                  context);
-              final quots = scripData.getQuotes;
-              DepthInputArgs depthArgs = DepthInputArgs(
-                  exch: quots!.exch.toString(),
-                  token: quots.token.toString(),
-                  tsym: quots.tsym.toString(),
-                  instname: quots.instname.toString(),
-                  symbol: quots.symbol.toString(),
-                  expDate: quots.expDate.toString(),
-                  option: quots.option.toString());
-              Navigator.pop(context);
-              await scripData.calldepthApis(context, depthArgs, "");
-            },
-            child: InkWell(
-                child: Container(
-              height: 58,
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
+          child: InkWell(
+             onLongPress: () async {
+            if (scripData.isPreDefWLs == "Yes") {
+              Fluttertoast.showToast(
+                  msg:
+                      "This is a pre-defined watchlist that cannot be Added!",
+                  timeInSecForIosWeb: 2,
+                  backgroundColor: colors.colorBlack,
+                  textColor: colors.colorWhite,
+                  fontSize: 14.0);
+            } else {
+              await watch(websocketProvider).establishConnection(
+                  channelInput:
+                      "${callData![itemIndex].exch}|${callData![itemIndex].token}",
+                  task: "t",
+                  context: context);
+              await scripData.addDelMarketScrip(
+                  scripData.wlName,
+                  "${callData![itemIndex].exch}|${callData![itemIndex].token}",
+                  context,
+                  true,
+                  true,
+                  false,
+                  true);
+            }
+          },
+          onTap: () async {
+            await scripData.fetchScripQuoteIndex(
+                "${callData![itemIndex].token}",
+                "${callData![itemIndex].exch}",
+                context);
+            final quots = scripData.getQuotes;
+            DepthInputArgs depthArgs = DepthInputArgs(
+                exch: quots!.exch.toString(),
+                token: quots.token.toString(),
+                tsym: quots.tsym.toString(),
+                instname: quots.instname.toString(),
+                symbol: quots.symbol.toString(),
+                expDate: quots.expDate.toString(),
+                option: quots.option.toString());
+            Navigator.pop(context);
+            await scripData.calldepthApis(context, depthArgs, "");
+          },
+                     
+              child: Container(
+            height: 58,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("${callData![itemIndex].oiLack ?? 0.00}",
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            13,
+                            FontWeight.w500)),
+                    const SizedBox(height: 3),
+                    Text(
+                        "(${callData![itemIndex].oiPerChng == "NaN" ? "0.00" : callData![itemIndex].oiPerChng ?? 0.00}%)",
+                        style: textStyle(
+                            callData![itemIndex].oiPerChng == null ||
+                                    callData![itemIndex].oiPerChng == "0.00"
+                                ? colors.ltpgrey
+                                : callData![itemIndex]
+                                        .oiPerChng!
+                                        .startsWith("-")
+                                    ? colors.darkred
+                                    : colors.ltpgreen,
+                            11,
+                            FontWeight.w500)),
+                  ],
+                ),
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("${callData![itemIndex].oiLack ?? 0.00}",
+                      Text(
+                          "${callData![itemIndex].lp ?? callData![itemIndex].close ?? 0.00}",
                           style: textStyle(
                               theme.isDarkMode
                                   ? colors.colorWhite
@@ -161,14 +190,13 @@ class OptChainCallList extends ConsumerWidget {
                               13,
                               FontWeight.w500)),
                       const SizedBox(height: 3),
-                      Text(
-                          "(${callData![itemIndex].oiPerChng == "NaN" ? "0.00" : callData![itemIndex].oiPerChng ?? 0.00}%)",
+                      Text("(${callData![itemIndex].perChange ?? 0.00}%)",
                           style: textStyle(
-                              callData![itemIndex].oiPerChng == null ||
-                                      callData![itemIndex].oiPerChng == "0.00"
+                              callData![itemIndex].perChange == null ||
+                                      callData![itemIndex].perChange == "0.00"
                                   ? colors.ltpgrey
                                   : callData![itemIndex]
-                                          .oiPerChng!
+                                          .perChange!
                                           .startsWith("-")
                                       ? colors.darkred
                                       : colors.ltpgreen,
@@ -176,45 +204,16 @@ class OptChainCallList extends ConsumerWidget {
                               FontWeight.w500)),
                     ],
                   ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                            "${callData![itemIndex].lp ?? callData![itemIndex].close ?? 0.00}",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                13,
-                                FontWeight.w500)),
-                        const SizedBox(height: 3),
-                        Text("(${callData![itemIndex].perChange ?? 0.00}%)",
-                            style: textStyle(
-                                callData![itemIndex].perChange == null ||
-                                        callData![itemIndex].perChange == "0.00"
-                                    ? colors.ltpgrey
-                                    : callData![itemIndex]
-                                            .perChange!
-                                            .startsWith("-")
-                                        ? colors.darkred
-                                        : colors.ltpgreen,
-                                11,
-                                FontWeight.w500)),
-                      ],
-                    ),
-                  )
-                  // ,SvgPicture.asset(assets.suitcase,
-                  //                         height: 12,
-                  //                         width: 16,
-                  //                         color: theme.isDarkMode
-                  //                             ? colors.colorLightBlue
-                  //                             : colors.colorBlue),
-                ],
-              ),
-            )),
-          ),
+                )
+                // ,SvgPicture.asset(assets.suitcase,
+                //                         height: 12,
+                //                         width: 16,
+                //                         color: theme.isDarkMode
+                //                             ? colors.colorLightBlue
+                //                             : colors.colorBlue),
+              ],
+            ),
+          )),
         );
       },
       // separatorBuilder: (BuildContext context, int index) {

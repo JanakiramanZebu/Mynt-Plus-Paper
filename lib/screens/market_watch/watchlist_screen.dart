@@ -294,145 +294,140 @@ class _WatchListScreen extends State<WatchListScreen> {
                                         }),
                                   ]
                                 : [],
-                            child: GestureDetector(
-                              onLongPress: () {
-                                if (marketWatch.isPreDefWLs == "Yes") {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      warningMessage(context,
-                                          "This is a pre-defined watchlist that cannot be edited!"));
-                                } else {
-                                  context
-                                      .read(marketWatchProvider)
-                                      .requestMWScrip(
-                                          context: context, isSubscribe: false);
-                                  Navigator.pushNamed(context, Routes.editScrip,
-                                      arguments: marketWatch.wlName);
-                                }
-                              },
-                              onTap: () async {
-                                await marketWatch.calldepthApis(
-                                    context, marketWatch.scrips[idx], "");
-                              },
-                              child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  dense: true,
-                                  title: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
+                            child: ListTile(
+                                onLongPress: () {
+                                  if (marketWatch.isPreDefWLs == "Yes") {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        warningMessage(context,
+                                            "This is a pre-defined watchlist that cannot be edited!"));
+                                  } else {
+                                    context
+                                        .read(marketWatchProvider)
+                                        .requestMWScrip(
+                                            context: context,
+                                            isSubscribe: false);
+                                    Navigator.pushNamed(
+                                        context, Routes.editScrip,
+                                        arguments: marketWatch.wlName);
+                                  }
+                                },
+                                onTap: () async {
+                                  await marketWatch.calldepthApis(
+                                      context, marketWatch.scrips[idx], "");
+                                },
+                                contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                dense: true,
+                                title: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                        "${marketWatch.scrips[idx]["symbol"].toString().toUpperCase()} ",
+                                        style: textStyles.scripNameTxtStyle
+                                            .copyWith(
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack)),
+                                    if (marketWatch.scrips[idx]["option"]
+                                        .toString()
+                                        .isNotEmpty)
                                       Text(
-                                          "${marketWatch.scrips[idx]["symbol"].toString().toUpperCase()} ",
+                                          "${marketWatch.scrips[idx]["option"]}",
                                           style: textStyles.scripNameTxtStyle
                                               .copyWith(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack)),
-                                      if (marketWatch.scrips[idx]["option"]
-                                          .toString()
-                                          .isNotEmpty)
-                                        Text(
-                                            "${marketWatch.scrips[idx]["option"]}",
-                                            style: textStyles.scripNameTxtStyle
-                                                .copyWith(
-                                                    color: const Color(
-                                                        0xff666666))),
-                                    ],
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 3),
-                                      Row(
-                                        children: [
-                                          CustomExchBadge(
-                                              exch:
-                                                  '${marketWatch.scrips[idx]["exch"]}'),
-                                          if (marketWatch.scrips[idx]['expDate']
-                                              .toString()
-                                              .isNotEmpty)
-                                            Text(
-                                                " ${marketWatch.scrips[idx]['expDate']}  ",
-                                                style: textStyles
-                                                    .scripExchTxtStyle
-                                                    .copyWith(
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors
-                                                                .colorBlack)),
-                                          if (marketWatch.scrips[idx]
-                                                  ['holdingQty'] !=
-                                              null) ...[
-                                            SvgPicture.asset(assets.suitcase,
-                                                height: 12,
-                                                width: 16,
-                                                color: theme.isDarkMode
-                                                    ? colors.colorLightBlue
-                                                    : colors.colorBlue),
-                                            Text(
-                                                " ${marketWatch.scrips[idx]['holdingQty']}",
-                                                style: textStyles
-                                                    .scripExchTxtStyle
-                                                    .copyWith(
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .colorLightBlue
-                                                            : colors.colorBlue,
-                                                        fontWeight:
-                                                            FontWeight.w600))
-                                          ]
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  trailing: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                                  color:
+                                                      const Color(0xff666666))),
+                                  ],
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 3),
+                                    Row(
                                       children: [
-                                        Text(
-                                            "₹${marketWatch.scrips[idx]['ltp'] ?? 0.00}",
-                                            style: textStyle(
-                                                theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                14,
-                                                FontWeight.w600)),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          "${marketWatch.scrips[idx]["change"].toString() == "null" ? 0.00 : marketWatch.scrips[idx]['change']} (${marketWatch.scrips[idx]['perChange'].toString() == "null" ? 0.00 : marketWatch.scrips[idx]["perChange"]}%)",
+                                        CustomExchBadge(
+                                            exch:
+                                                '${marketWatch.scrips[idx]["exch"]}'),
+                                        if (marketWatch.scrips[idx]['expDate']
+                                            .toString()
+                                            .isNotEmpty)
+                                          Text(
+                                              " ${marketWatch.scrips[idx]['expDate']}  ",
+                                              style: textStyles
+                                                  .scripExchTxtStyle
+                                                  .copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack)),
+                                        if (marketWatch.scrips[idx]
+                                                ['holdingQty'] !=
+                                            null) ...[
+                                          SvgPicture.asset(assets.suitcase,
+                                              height: 12,
+                                              width: 16,
+                                              color: theme.isDarkMode
+                                                  ? colors.colorLightBlue
+                                                  : colors.colorBlue),
+                                          Text(
+                                              " ${marketWatch.scrips[idx]['holdingQty']}",
+                                              style: textStyles
+                                                  .scripExchTxtStyle
+                                                  .copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .colorLightBlue
+                                                          : colors.colorBlue,
+                                                      fontWeight:
+                                                          FontWeight.w600))
+                                        ]
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                trailing: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                          "₹${marketWatch.scrips[idx]['ltp'] ?? 0.00}",
                                           style: textStyle(
-                                              marketWatch.scrips[idx]['change']
-                                                          .toString()
-                                                          .startsWith("-") ||
-                                                      marketWatch.scrips[idx]
-                                                              ['perChange']
-                                                          .toString()
-                                                          .startsWith('-')
-                                                  ? colors.darkred
-                                                  : (marketWatch.scrips[idx]['change']
-                                                                      .toString() ==
-                                                                  "null" ||
-                                                              marketWatch.scrips[idx]['perChange']
-                                                                      .toString() ==
-                                                                  "null") ||
-                                                          (marketWatch.scrips[idx]['change']
-                                                                      .toString() ==
-                                                                  "0.00" ||
-                                                              marketWatch
-                                                                      .scrips[idx]
-                                                                          ['perChange']
-                                                                      .toString() ==
-                                                                  "0.00")
-                                                      ? colors.ltpgrey
-                                                      : colors.ltpgreen,
-                                              12,
-                                              FontWeight.w600),
-                                        )
-                                      ])),
-                            ),
+                                              theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              14,
+                                              FontWeight.w600)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "${marketWatch.scrips[idx]["change"].toString() == "null" ? 0.00 : marketWatch.scrips[idx]['change']} (${marketWatch.scrips[idx]['perChange'].toString() == "null" ? 0.00 : marketWatch.scrips[idx]["perChange"]}%)",
+                                        style: textStyle(
+                                            marketWatch.scrips[idx]['change']
+                                                        .toString()
+                                                        .startsWith("-") ||
+                                                    marketWatch.scrips[idx]
+                                                            ['perChange']
+                                                        .toString()
+                                                        .startsWith('-')
+                                                ? colors.darkred
+                                                : (marketWatch.scrips[idx]['change']
+                                                                    .toString() ==
+                                                                "null" ||
+                                                            marketWatch.scrips[idx]['perChange']
+                                                                    .toString() ==
+                                                                "null") ||
+                                                        (marketWatch.scrips[idx]['change']
+                                                                    .toString() ==
+                                                                "0.00" ||
+                                                            marketWatch.scrips[idx]
+                                                                        ['perChange']
+                                                                    .toString() ==
+                                                                "0.00")
+                                                    ? colors.ltpgrey
+                                                    : colors.ltpgreen,
+                                            12,
+                                            FontWeight.w600),
+                                      )
+                                    ])),
                           );
                         },
                         // separatorBuilder: (BuildContext context, int index) {

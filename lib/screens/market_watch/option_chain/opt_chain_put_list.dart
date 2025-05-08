@@ -91,8 +91,8 @@ class OptChainPutList extends ConsumerWidget {
                     handler(false);
                   }),
             ],
-            child: GestureDetector(
-              onLongPress: () async {
+            child: InkWell(
+                onLongPress: () async {
                 if (scripData.isPreDefWLs == "Yes") {
                   Fluttertoast.showToast(
                       msg:
@@ -134,80 +134,79 @@ class OptChainPutList extends ConsumerWidget {
                 Navigator.pop(context);
                 await scripData.calldepthApis(context, depthArgs, "");
               },
-              child: InkWell(
-                  child: Container(
-                height: 58,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // SvgPicture.asset(assets.suitcase,
-                    //                         height: 12,
-                    //                         width: 16,
-                    //                         color: theme.isDarkMode
-                    //                             ? colors.colorLightBlue
-                    //                             : colors.colorBlue),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                              "${putData![itemIndex].lp ?? putData![itemIndex].close ?? 0.00}",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  13,
-                                  FontWeight.w500)),
-                          const SizedBox(height: 3),
-                          Text("(${putData![itemIndex].perChange ?? 0.00}%)",
-                              style: textStyle(
-                                  putData![itemIndex].perChange == null ||
-                                          putData![itemIndex].perChange ==
-                                              "0.00"
-                                      ? colors.ltpgrey
-                                      : putData![itemIndex]
-                                              .perChange!
-                                              .startsWith("-")
-                                          ? colors.darkred
-                                          : colors.ltpgreen,
-                                  11,
-                                  FontWeight.w500)),
-                        ],
-                      ),
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text("${putData![itemIndex].oiLack ?? 0.00}",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                13,
-                                FontWeight.w500)),
-                        const SizedBox(height: 3),
-                        Text(
-                            "(${putData![itemIndex].oiPerChng == "NaN" ? "0.00" : putData![itemIndex].oiPerChng ?? 0.00}%)",
-                            style: textStyle(
-                                putData![itemIndex].oiPerChng == null ||
-                                        putData![itemIndex].oiPerChng == "0.00"
-                                    ? colors.ltpgrey
-                                    : putData![itemIndex]
-                                            .oiPerChng!
-                                            .startsWith("-")
-                                        ? colors.darkred
-                                        : colors.ltpgreen,
-                                11,
-                                FontWeight.w500)),
-                      ],
-                    ),
-                  ],
-                ),
-              )),
-            ));
+             
+                 child: Container(
+               height: 58,
+               padding: const EdgeInsets.symmetric(vertical: 10),
+               child: Row(
+                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                 children: [
+                   // SvgPicture.asset(assets.suitcase,
+                   //                         height: 12,
+                   //                         width: 16,
+                   //                         color: theme.isDarkMode
+                   //                             ? colors.colorLightBlue
+                   //                             : colors.colorBlue),
+                   Expanded(
+                     child: Column(
+                       mainAxisAlignment: MainAxisAlignment.center,
+                       crossAxisAlignment: CrossAxisAlignment.center,
+                       children: [
+                         Text(
+                             "${putData![itemIndex].lp ?? putData![itemIndex].close ?? 0.00}",
+                             style: textStyle(
+                                 theme.isDarkMode
+                                     ? colors.colorWhite
+                                     : colors.colorBlack,
+                                 13,
+                                 FontWeight.w500)),
+                         const SizedBox(height: 3),
+                         Text("(${putData![itemIndex].perChange ?? 0.00}%)",
+                             style: textStyle(
+                                 putData![itemIndex].perChange == null ||
+                                         putData![itemIndex].perChange ==
+                                             "0.00"
+                                     ? colors.ltpgrey
+                                     : putData![itemIndex]
+                                             .perChange!
+                                             .startsWith("-")
+                                         ? colors.darkred
+                                         : colors.ltpgreen,
+                                 11,
+                                 FontWeight.w500)),
+                       ],
+                     ),
+                   ),
+                   Column(
+                     mainAxisAlignment: MainAxisAlignment.center,
+                     crossAxisAlignment: CrossAxisAlignment.center,
+                     children: [
+                       Text("${putData![itemIndex].oiLack ?? 0.00}",
+                           style: textStyle(
+                               theme.isDarkMode
+                                   ? colors.colorWhite
+                                   : colors.colorBlack,
+                               13,
+                               FontWeight.w500)),
+                       const SizedBox(height: 3),
+                       Text(
+                           "(${putData![itemIndex].oiPerChng == "NaN" ? "0.00" : putData![itemIndex].oiPerChng ?? 0.00}%)",
+                           style: textStyle(
+                               putData![itemIndex].oiPerChng == null ||
+                                       putData![itemIndex].oiPerChng == "0.00"
+                                   ? colors.ltpgrey
+                                   : putData![itemIndex]
+                                           .oiPerChng!
+                                           .startsWith("-")
+                                       ? colors.darkred
+                                       : colors.ltpgreen,
+                               11,
+                               FontWeight.w500)),
+                     ],
+                   ),
+                 ],
+               ),
+             )));
       },
       // separatorBuilder: (BuildContext context, int index) {
       //   return const ListDivider();
