@@ -187,8 +187,10 @@ class _Allholdings extends State<Allholdings> {
                           double panelsum = 0;
                           double panelinv = 0;
                           if (asa.allholds[key]['keysval'] != 'Null') {
-                            panelsum = (asa.allholds[key]['keysval'] ?? 0.0).toDouble();
-                            panelinv = (asa.allholds[key]['keysinv'] ?? 0.0).toDouble();
+                            panelsum = (asa.allholds[key]['keysval'] ?? 0.0)
+                                .toDouble();
+                            panelinv = (asa.allholds[key]['keysinv'] ?? 0.0)
+                                .toDouble();
                           }
                           String keych =
                               (panelsum - panelinv).toStringAsFixed(2);
@@ -526,19 +528,31 @@ class _Allholdings extends State<Allholdings> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(50))),
                         onPressed: () {
-                          asa.fetchCamRedirct(context);
+                          if (asa.loading == false) {
+                            asa.fetchCamRedirct(context);
+                          }
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                               vertical: 12, horizontal: 8),
-                          child: Text("Sync",
-                              textAlign: TextAlign.center,
-                              style: textStyle(
-                                  !theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  16,
-                                  FontWeight.w600)),
+                          child: asa.loading
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                      color: !theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack),
+                                )
+                              : Text("Sync",
+                                  textAlign: TextAlign.center,
+                                  style: textStyle(
+                                      !theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      16,
+                                      FontWeight.w600)),
                         )),
                   ],
                 ));

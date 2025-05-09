@@ -249,7 +249,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchCamRedirct(BuildContext context) async {
     try {
-      toggleLoad(true);
+      toggleLoadingOn(true);
       _camsrespons = await api.getcamsapi();
       Navigator.pushNamed(context, Routes.camsWebView,
           arguments: _camsrespons!.redirectionurl);
@@ -257,7 +257,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       ref(indexListProvider).logError.add({"type": "Fetch API", "Error": "$e"});
       notifyListeners();
     } finally {
-      toggleLoad(false);
+      toggleLoadingOn(false);
     }
   }
 
@@ -290,8 +290,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             children: [
               Text(
                   // "MF Holding${_mfHoldingsModel!.isNotEmpty ? "s (${_mfHoldingsModel!.length})" : ""}"
-                  "Funds"
-                  )
+                  "Funds")
             ]),
       ),
       //   ]

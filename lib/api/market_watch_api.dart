@@ -178,8 +178,9 @@ mixin MarketWatchApi on ApiCore {
           body:
               '''jData={"uid":"${prefs.clientId}","stext":"${searchText.replaceAll("&", "%26")}","cat":"$categ","fil":${exchs.toList()}}&jKey=${prefs.clientSession}''');
 
-      //  print("Search Scrip => ${res.body}");
+       print("Search Scrip => ${res.body}");
       final json = jsonDecode(res.body);
+       print("Search Scrip => ${json['values'].length}");
       return SearchScripNewModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;

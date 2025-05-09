@@ -1442,19 +1442,21 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       } // _searchScripModel = await api.getSearchScrip(searchText: searchText);
       _searchScripModel = await api.getSearchScripNew(
           searchText: searchText, categ: segment, exchs: _exarr);
-
+  print("object d");
       _allSearchScrip = [];
       // _equitySearchScrip = [];
       // _fNoSearchScrip = [];
       // _currencySearchScrip = [];
       // _commoditySearchScrip = [];
       if (_searchScripModel?.stat == "Ok") {
+  print("object if 1");
         ConstantName.sessCheck = true;
 
         final values = _searchScripModel!.values!;
         _isAdded = List<bool>.filled(values.length, false);
 
         if (values.isNotEmpty) {
+  print("object if 2");
           // final Set<String> currencySet = {
           //   "FUTCUR",
           //   "FUTIRC",
@@ -1512,6 +1514,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             //   }
             // }
           }
+          print("_allSearchScrip ${_allSearchScrip?.length}");
 
           _searchErrorText = "";
           notifyListeners();

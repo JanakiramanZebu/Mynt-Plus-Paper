@@ -37,6 +37,7 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
 
     tabCtrl.addListener(() {
       if (tabCtrl.indexIsChanging) {
+        context.read(marketWatchProvider).searchClear();
         context
             .read(marketWatchProvider)
             .scripSearch(_searchvalue, context, tabCtrl.index);

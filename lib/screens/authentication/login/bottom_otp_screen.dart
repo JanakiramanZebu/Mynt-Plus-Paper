@@ -196,9 +196,11 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                         FontWeight.w900)),
                                 InkWell(
                                   onTap: () {
-                                    auth.setChangetotp(!auth.totp);
-                                    // Navigator.pop(context);
-                                    auth.submitLogin(context, true);
+                                    if (!auth.loading) {
+                                      auth.setChangetotp(!auth.totp);
+                                      // Navigator.pop(context);
+                                      auth.submitLogin(context, true);
+                                    }
                                   },
                                   child: Text(
                                       auth.totp ? 'Get OTP' : 'Enter TOTP',
@@ -240,6 +242,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
                               child: Pinput(
+                                enabled: !auth.loading,
                                 autofocus: false,
                                 focusNode: _focusNode,
                                 separatorBuilder: (index) =>
@@ -305,7 +308,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                         ),
                         child: Row(
                           children: [
-                            if (!auth.totp && _start == 0)
+                            if (!auth.totp && _start == 0 && !auth.loading)
                               InkWell(
                                 onTap:
                                     //  internet
@@ -331,7 +334,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                             ? colors.colorLightBlue
                                             : colors.colorBlue)),
                               ),
-                            if (!auth.totp) ...[
+                            if (!auth.totp && !auth.loading) ...[
                               Text(" $resendTime",
                                   style: textStyles.resendOtpstyle.copyWith(
                                       color: resendTime == "00 : 00"
@@ -339,7 +342,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                           : theme.isDarkMode
                                               ? colors.colorLightBlue
                                               : colors.colorBlue))
-                            ] else ...[
+                            ] else if(!auth.loading) ...[
                               Row(
                                 children: [
                                   Text("Go to User → Settings → TOTP on Web ",

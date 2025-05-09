@@ -30,6 +30,8 @@ class _WatchListScreen extends State<WatchListScreen> {
   final PageController _controller = PageController(initialPage: 0);
 
   late SwipeActionController swipecontroller;
+  bool _isDisposed = false;
+
   @override
   void initState() {
     FirebaseAnalytics.instance.logScreenView(
@@ -38,9 +40,19 @@ class _WatchListScreen extends State<WatchListScreen> {
     );
     swipecontroller = SwipeActionController(selectedIndexPathsChangeCallback:
         (changedIndexPaths, selected, currentCount) {
-      setState(() {});
+      if (!_isDisposed) {
+        setState(() {});
+      }
     });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _controller.dispose();
+    swipecontroller.dispose();
+    super.dispose();
   }
 
   @override
@@ -120,68 +132,48 @@ class _WatchListScreen extends State<WatchListScreen> {
                                   icon: assets.addCircleIcon)
                             ]),
                       ))
-                    : ListView.builder(
+                    : ListView.separated(
                         physics: const BouncingScrollPhysics(),
-                        shrinkWrap: false,
-                        itemCount: marketWatch.scrips.length * 2 - 1,
-                        // itemCount: marketWatch.marketWatchScripData[marketWatch.marketWatchlist!.values![index]],
-                        itemBuilder: (BuildContext context, int index) {
-                          int idx = index ~/ 2;
+                        itemCount: marketWatch.scrips.length,
+                        separatorBuilder: (context, index) => const ListDivider(),
+                        itemBuilder: (BuildContext context, int idx) {
+                          final scrip = marketWatch.scrips[idx];
 
                           // The market watch scrip data item list is provided here. These scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the market watch list.
                           if (socketDatas
-                              .containsKey(marketWatch.scrips[idx]['token'])) {
-                            marketWatch.scrips[idx]['ltp'] =
-                                "${socketDatas["${marketWatch.scrips[idx]['token']}"]['lp'] ?? 0.00}";
-                            marketWatch.scrips[idx]['change'] =
-                                "${socketDatas["${marketWatch.scrips[idx]['token']}"]['chng'] ?? 0.00}";
-                            marketWatch.scrips[idx]['perChange'] =
-                                "${socketDatas["${marketWatch.scrips[idx]['token']}"]['pc'] ?? 0.00}";
-                            marketWatch.scrips[idx]['close'] =
-                                "${socketDatas["${marketWatch.scrips[idx]['token']}"]['c'] ?? 0.00}";
+                              .containsKey(scrip['token'])) {
+                            scrip['ltp'] = "${socketDatas["${scrip['token']}"]['lp'] ?? 0.00}";
+                            scrip['change'] = "${socketDatas["${scrip['token']}"]['chng'] ?? 0.00}";
+                            scrip['perChange'] = "${socketDatas["${scrip['token']}"]['pc'] ?? 0.00}";
+                            scrip['close'] = "${socketDatas["${scrip['token']}"]['c'] ?? 0.00}";
 
-                            if (marketWatch.scrips[idx]['change'].toString() ==
-                                "null") {
-                              marketWatch.scrips[idx]['change'] = "0.00";
+                            if (scrip['change'].toString() == "null") {
+                              scrip['change'] = "0.00";
                             }
-                            if ((marketWatch.scrips[idx]['perChange']
-                                            .toString() ==
-                                        "null" ||
-                                    marketWatch.scrips[idx]['perChange']
-                                            .toString() ==
-                                        "0.00") &&
-                                marketWatch.scrips[idx]['ltp'] != '0.00') {
-                              marketWatch.scrips[idx]['perChange'] = marketWatch
-                                          .scrips[idx]['change']
-                                          .toString() !=
-                                      "0.00"
-                                  ? ((double.parse(marketWatch.scrips[idx]
-                                                  ['change']) /
-                                              double.parse(marketWatch
-                                                  .scrips[idx]['ltp'])) *
+                            if ((scrip['perChange'].toString() == "null" ||
+                                    scrip['perChange'].toString() == "0.00") &&
+                                scrip['ltp'] != '0.00') {
+                              scrip['perChange'] = scrip['change'].toString() != "0.00"
+                                  ? ((double.parse(scrip['change']) /
+                                              double.parse(scrip['ltp'])) *
                                           100)
                                       .toStringAsFixed(2)
                                   : "0.00";
                             }
-                            if (marketWatch.scrips[idx]['close'].toString() ==
-                                "null") {
-                              marketWatch.scrips[idx]['close'] = "0.00";
+                            if (scrip['close'].toString() == "null") {
+                              scrip['close'] = "0.00";
                             }
                           }
 
                           bool opt = marketWatch.getOptionawait(
-                              marketWatch.scrips[idx]['exch'],
-                              marketWatch.scrips[idx]['token']);
+                              scrip['exch'], scrip['token']);
 
-                          if (index.isOdd) {
-                            return const ListDivider();
-                          }
                           return SwipeActionCell(
                             isDraggable: true,
                             fullSwipeFactor: 0.7,
                             controller: swipecontroller,
-                            index: index,
-                            key: ValueKey(marketWatch.scrips[idx]),
+                            index: idx,
+                            key: ValueKey(scrip),
                             leadingActions: [
                               SwipeAction(
                                   performsFirstActionWithFullSwipe: true,
@@ -194,9 +186,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                                   onTap: (handler) async {
                                     userProfile.setonloadChartdialog(true);
                                     await marketWatch.fetchScripQuoteIndex(
-                                        marketWatch.scrips[idx]['token'],
-                                        marketWatch.scrips[idx]['exch'],
-                                        context);
+                                        scrip['token'], scrip['exch'], context);
                                     userProfile.setChartdialog(true);
                                     marketWatch.setChartScript(
                                         marketWatch.getQuotes!.exch.toString(),
@@ -223,39 +213,29 @@ class _WatchListScreen extends State<WatchListScreen> {
                                         //     "Option|-|Deph");
                                         DepthInputArgs depthArgs =
                                             DepthInputArgs(
-                                                exch: marketWatch.scrips[idx]
-                                                    ['exch'],
-                                                token: marketWatch.scrips[idx]
-                                                    ['token'],
-                                                tsym: marketWatch.scrips[idx]
-                                                    ['tsym'],
-                                                instname: marketWatch
-                                                    .scrips[idx]['instname'],
-                                                symbol: marketWatch.scrips[idx]
-                                                    ['symbol'],
-                                                expDate: marketWatch.scrips[idx]
-                                                    ['expDate'],
-                                                option: marketWatch.scrips[idx]
-                                                    ['option']);
+                                                exch: scrip['exch'],
+                                                token: scrip['token'],
+                                                tsym: scrip['tsym'],
+                                                instname: scrip['instname'],
+                                                symbol: scrip['symbol'],
+                                                expDate: scrip['expDate'],
+                                                option: scrip['option']);
                                         marketWatch.singlePageloader(true);
                                         Navigator.pushNamed(
                                             context, Routes.optionChain,
                                             arguments: depthArgs);
                                         marketWatch.setOptionScript(
                                             context,
-                                            marketWatch.scrips[idx]['exch'],
-                                            marketWatch.scrips[idx]['token'],
-                                            marketWatch.scrips[idx]['tsym']);
+                                            scrip['exch'],
+                                            scrip['token'],
+                                            scrip['tsym']);
                                       }
                                       handler(false);
                                     })
                               ],
                             ],
-                            trailingActions: (marketWatch.scrips[idx]
-                                            ['instname'] !=
-                                        "UNDIND" &&
-                                    marketWatch.scrips[idx]['instname'] !=
-                                        "COM")
+                            trailingActions: (scrip['instname'] != "UNDIND" &&
+                                    scrip['instname'] != "COM")
                                 ? [
                                     SwipeAction(
                                         performsFirstActionWithFullSwipe: true,
@@ -271,7 +251,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                                           await placeOrderInput(
                                               marketWatch,
                                               context,
-                                              marketWatch.scrips[idx],
+                                              scrip,
                                               true);
                                           handler(false);
                                         }),
@@ -288,7 +268,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                                           await placeOrderInput(
                                               marketWatch,
                                               context,
-                                              marketWatch.scrips[idx],
+                                              scrip,
                                               false);
                                           handler(false);
                                         }),
@@ -313,7 +293,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                                 },
                                 onTap: () async {
                                   await marketWatch.calldepthApis(
-                                      context, marketWatch.scrips[idx], "");
+                                      context, scrip, "");
                                 },
                                 contentPadding:
                                     const EdgeInsets.symmetric(horizontal: 16),
@@ -322,17 +302,15 @@ class _WatchListScreen extends State<WatchListScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                        "${marketWatch.scrips[idx]["symbol"].toString().toUpperCase()} ",
+                                        "${scrip["symbol"].toString().toUpperCase()} ",
                                         style: textStyles.scripNameTxtStyle
                                             .copyWith(
                                                 color: theme.isDarkMode
                                                     ? colors.colorWhite
                                                     : colors.colorBlack)),
-                                    if (marketWatch.scrips[idx]["option"]
-                                        .toString()
-                                        .isNotEmpty)
+                                    if (scrip["option"].toString().isNotEmpty)
                                       Text(
-                                          "${marketWatch.scrips[idx]["option"]}",
+                                          "${scrip["option"]}",
                                           style: textStyles.scripNameTxtStyle
                                               .copyWith(
                                                   color:
@@ -347,22 +325,19 @@ class _WatchListScreen extends State<WatchListScreen> {
                                     Row(
                                       children: [
                                         CustomExchBadge(
-                                            exch:
-                                                '${marketWatch.scrips[idx]["exch"]}'),
-                                        if (marketWatch.scrips[idx]['expDate']
+                                            exch: '${scrip["exch"]}'),
+                                        if (scrip['expDate']
                                             .toString()
                                             .isNotEmpty)
                                           Text(
-                                              " ${marketWatch.scrips[idx]['expDate']}  ",
+                                              " ${scrip['expDate']}  ",
                                               style: textStyles
                                                   .scripExchTxtStyle
                                                   .copyWith(
                                                       color: theme.isDarkMode
                                                           ? colors.colorWhite
                                                           : colors.colorBlack)),
-                                        if (marketWatch.scrips[idx]
-                                                ['holdingQty'] !=
-                                            null) ...[
+                                        if (scrip['holdingQty'] != null) ...[
                                           SvgPicture.asset(assets.suitcase,
                                               height: 12,
                                               width: 16,
@@ -370,7 +345,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                                                   ? colors.colorLightBlue
                                                   : colors.colorBlue),
                                           Text(
-                                              " ${marketWatch.scrips[idx]['holdingQty']}",
+                                              " ${scrip['holdingQty']}",
                                               style: textStyles
                                                   .scripExchTxtStyle
                                                   .copyWith(
@@ -390,7 +365,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                          "₹${marketWatch.scrips[idx]['ltp'] ?? 0.00}",
+                                          "₹${scrip['ltp'] ?? 0.00}",
                                           style: textStyle(
                                               theme.isDarkMode
                                                   ? colors.colorWhite
@@ -399,29 +374,23 @@ class _WatchListScreen extends State<WatchListScreen> {
                                               FontWeight.w600)),
                                       const SizedBox(height: 4),
                                       Text(
-                                        "${marketWatch.scrips[idx]["change"].toString() == "null" ? 0.00 : marketWatch.scrips[idx]['change']} (${marketWatch.scrips[idx]['perChange'].toString() == "null" ? 0.00 : marketWatch.scrips[idx]["perChange"]}%)",
+                                        "${scrip["change"].toString() == "null" ? 0.00 : scrip['change']} (${scrip['perChange'].toString() == "null" ? 0.00 : scrip["perChange"]}%)",
                                         style: textStyle(
-                                            marketWatch.scrips[idx]['change']
-                                                        .toString()
-                                                        .startsWith("-") ||
-                                                    marketWatch.scrips[idx]
-                                                            ['perChange']
+                                            scrip['change'].toString().startsWith("-") ||
+                                                    scrip['perChange']
                                                         .toString()
                                                         .startsWith('-')
                                                 ? colors.darkred
-                                                : (marketWatch.scrips[idx]['change']
-                                                                    .toString() ==
+                                                : (scrip['change'].toString() ==
                                                                 "null" ||
-                                                            marketWatch.scrips[idx]['perChange']
+                                                            scrip['perChange']
                                                                     .toString() ==
                                                                 "null") ||
-                                                        (marketWatch.scrips[idx]['change']
-                                                                    .toString() ==
-                                                                "0.00" ||
-                                                            marketWatch.scrips[idx]
-                                                                        ['perChange']
-                                                                    .toString() ==
-                                                                "0.00")
+                                                        (scrip['change'].toString() ==
+                                                                    "0.00" ||
+                                                                scrip['perChange']
+                                                                        .toString() ==
+                                                                    "0.00")
                                                     ? colors.ltpgrey
                                                     : colors.ltpgreen,
                                             12,
@@ -430,9 +399,6 @@ class _WatchListScreen extends State<WatchListScreen> {
                                     ])),
                           );
                         },
-                        // separatorBuilder: (BuildContext context, int index) {
-                        //   return const ListDivider();
-                        // }
                       ),
           );
         },

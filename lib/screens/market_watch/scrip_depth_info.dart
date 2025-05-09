@@ -44,10 +44,54 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
   double initSize = 0.88;
   ChartArgs? chartArgs;
   String regtoken = "";
+  
+  // Cache for text styles
+  static final Map<String, TextStyle> _textStyleCache = {};
+  static final Map<String, TextStyle> _titleStyleCache = {};
+  static final Map<String, TextStyle> _valueStyleCache = {};
+  
+  // Memoized text styles
+  TextStyle _getTextStyle(Color color, double size, FontWeight weight) {
+    final key = '${color.value}_${size}_${weight.index}';
+    return _textStyleCache.putIfAbsent(
+      key,
+      () => TextStyle(
+        color: color,
+        fontSize: size,
+        fontWeight: weight,
+      ),
+    );
+  }
+
+  TextStyle _getTitleStyle(Color color) {
+    final key = '${color.value}_title';
+    return _titleStyleCache.putIfAbsent(
+      key,
+      () => _getTextStyle(color, 12, FontWeight.w500),
+    );
+  }
+
+  TextStyle _getValueStyle(Color color) {
+    final key = '${color.value}_value';
+    return _valueStyleCache.putIfAbsent(
+      key,
+      () => _getTextStyle(color, 14, FontWeight.w500),
+    );
+  }
 
   @override
   void initState() {
+    super.initState();
     regtoken = widget.wlValue.token;
+    _initializeSize();
+    
+    FirebaseAnalytics.instance.logScreenView(
+      screenName: 'Stock details',
+      screenClass: 'ScripDepthInfo',
+    );
+  }
+
+  void _initializeSize() {
     setState(() {
       initSize = (context.read(marketWatchProvider).actDeptBtn != "Overview" ||
               widget.wlValue.instname != "UNDIND" &&
@@ -55,49 +99,124 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
           ? 0.88
           : 0.38;
       chartArgs = ChartArgs(
-          exch: widget.wlValue.exch,
-          tsym: widget.wlValue.tsym,
-          token: widget.wlValue.token);
-
-      //   if ((widget.wlValue.exch == "NSE" || widget.wlValue.exch == "BSE") &&
-      //       (widget.wlValue.instname != "UNDIND")) {
-
-      // // context.read(marketWatchProvider).fetchFundamentalData(
-      // //         tradeSym:
-      // //             "${context.read(marketWatchProvider).getQuotes!.exch}:${context.read(marketWatchProvider).getQuotes!.tsym}");
-
-      //   }
+        exch: widget.wlValue.exch,
+        tsym: widget.wlValue.tsym,
+        token: widget.wlValue.token,
+      );
     });
-
-    FirebaseAnalytics.instance.logScreenView(
-      screenName: 'Stock details',
-      screenClass: 'ScripDepthInfo', // Customize if needed.
-    );
-    super.initState();
   }
 
-// getFundamental()async{
-//  await  context.read(marketWatchProvider).fetchFundamentalData(
-//             tradeSym:
-//                 "${context.read(marketWatchProvider).getQuotes!.exch}:${context.read(marketWatchProvider).getQuotes!.tsym}");
-//  if ( context.read(marketWatchProvider).fundamentalData!.emsg != "error in data fetch") {
-//         if ( context.read(marketWatchProvider).fundamentalData!.msg != "no data found") {
+  // Preprocess depth data
+  void _processDepthData(GetQuotes depthData, Map<String, dynamic> socketData) {
+    depthData.ap = "${socketData['ap']}";
+    depthData.lp = "${socketData['lp']}";
+    depthData.pc = "${socketData['pc']}";
+    depthData.o = "${socketData['o']}";
+    depthData.l = "${socketData['l']}";
+    depthData.c = "${socketData['c']}";
+    depthData.chng = "${socketData['chng']}";
+    depthData.h = "${socketData['h']}";
+    depthData.poi = "${socketData['poi']}";
+    depthData.v = "${socketData['v']}";
+    depthData.toi = "${socketData['toi']}";
+    depthData.sp1 = "${socketData['sp1']}";
+    depthData.sp2 = "${socketData['sp2']}";
+    depthData.sp3 = "${socketData['sp3']}";
+    depthData.sp4 = "${socketData['sp4']}";
+    depthData.sp5 = "${socketData['sp5']}";
+    depthData.bp1 = "${socketData['bp1']}";
+    depthData.bp2 = "${socketData['bp2']}";
+    depthData.bp3 = "${socketData['bp3']}";
+    depthData.bp4 = "${socketData['bp4']}";
+    depthData.bp5 = "${socketData['bp5']}";
+    depthData.sq1 = "${socketData['sq1']}";
+    depthData.sq2 = "${socketData['sq2']}";
+    depthData.sq3 = "${socketData['sq3']}";
+    depthData.sq4 = "${socketData['sq4']}";
+    depthData.sq5 = "${socketData['sq5']}";
+    depthData.bq1 = "${socketData['bq1']}";
+    depthData.bq2 = "${socketData['bq2']}";
+    depthData.bq3 = "${socketData['bq3']}";
+    depthData.bq4 = "${socketData['bq4']}";
+    depthData.bq5 = "${socketData['bq5']}";
+    depthData.tbq = "${socketData['tbq']}";
+    depthData.tsq = "${socketData['tsq']}";
+    depthData.wk52H = "${socketData['52h']}";
+    depthData.wk52L = "${socketData['52l']}";
+    depthData.lc = "${socketData['lc']}";
+    depthData.uc = "${socketData['uc']}";
+    depthData.ltq = "${socketData['ltq']}";
+    depthData.ltt = "${socketData['ltt']}";
+    depthData.ft = "${socketData['ft']}";
+  }
 
-//            context
-//                                       .read(marketWatchProvider)
-//                                       .depthBtns
-//                                       .add({
-//                                     "btnName": "Fundamental",
-//                                     "imgPath": assets.dInfo,
-//                                     "key": context
-//                                         .read(showcaseProvide)
-//                                         .fundamentalcase,
-//                                     "case":
-//                                         "Click here to view fundamental data."
-//                                   });
-//         }}
+  // Memoized row builder
+  Widget _buildInfoRow(String title1, String value1, String title2, String value2, ThemesProvider theme) {
+    return Row(children: [
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title1, style: _getTitleStyle(const Color(0xff666666))),
+            const SizedBox(height: 2),
+            Text(value1, style: _getValueStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack)),
+            const SizedBox(height: 2),
+            Divider(color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider)
+          ],
+        ),
+      ),
+      const SizedBox(width: 24),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title2, style: _getTitleStyle(const Color(0xff666666))),
+            const SizedBox(height: 2),
+            Text(value2, style: _getValueStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack)),
+            const SizedBox(height: 2),
+            Divider(color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider)
+          ],
+        ),
+      )
+    ]);
+  }
 
-// }
+  // Memoized depth percentage builder
+  Widget _buildDepthPercentage(String qty, String price, bool isBuy, MarketWatchProvider scripInfo, ThemesProvider theme) {
+    final maxQty = isBuy ? scripInfo.maxBuyQty : scripInfo.maxSellQty;
+    final barPercentage = (((int.tryParse(qty) ?? 0) / maxQty) * 100 / 100).clamp(0.0, 1.0);
+    final color = isBuy ? colors.ltpgreen : colors.darkred;
+    
+    return Stack(children: [
+      Transform.flip(
+        flipX: !isBuy,
+        child: LinearPercentIndicator(
+          lineHeight: 20.0,
+          backgroundColor: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          percent: barPercentage,
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          progressColor: color.withOpacity(.2),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: 1.5),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              " ${qty != "null" ? qty : '0'} ",
+              style: _getTextStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 13, FontWeight.w500),
+            ),
+            Text(
+              " ${price != "null" ? price : '0.00'} ",
+              style: _getTextStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 13, FontWeight.w500),
+            ),
+          ],
+        ),
+      )
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -139,49 +258,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
           // This scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the scrip details.
 
           if (socketDatas.containsKey(regtoken)) {
-            depthData.ap = "${socketDatas[regtoken]['ap']}";
-            depthData.lp = "${socketDatas[regtoken]['lp']}";
-            depthData.pc = "${socketDatas[regtoken]['pc']}";
-            depthData.o = "${socketDatas[regtoken]['o']}";
-            depthData.l = "${socketDatas[regtoken]['l']}";
-            depthData.c = "${socketDatas[regtoken]['c']}";
-            depthData.chng = "${socketDatas[regtoken]['chng']}";
-
-            depthData.h = "${socketDatas[regtoken]['h']}";
-            depthData.poi = "${socketDatas[regtoken]['poi']}";
-            depthData.v = "${socketDatas[regtoken]['v']}";
-            depthData.toi = "${socketDatas[regtoken]['toi']}";
-
-            depthData.sp1 = "${socketDatas[regtoken]['sp1']}";
-            depthData.sp2 = "${socketDatas[regtoken]['sp2']}";
-            depthData.sp3 = "${socketDatas[regtoken]['sp3']}";
-            depthData.sp4 = "${socketDatas[regtoken]['sp4']}";
-            depthData.sp5 = "${socketDatas[regtoken]['sp5']}";
-            depthData.bp1 = "${socketDatas[regtoken]['bp1']}";
-            depthData.bp2 = "${socketDatas[regtoken]['bp2']}";
-            depthData.bp3 = "${socketDatas[regtoken]['bp3']}";
-            depthData.bp4 = "${socketDatas[regtoken]['bp4']}";
-            depthData.bp5 = "${socketDatas[regtoken]['bp5']}";
-
-            depthData.sq1 = "${socketDatas[regtoken]['sq1']}";
-            depthData.sq2 = "${socketDatas[regtoken]['sq2']}";
-            depthData.sq3 = "${socketDatas[regtoken]['sq3']}";
-            depthData.sq4 = "${socketDatas[regtoken]['sq4']}";
-            depthData.sq5 = "${socketDatas[regtoken]['sq5']}";
-            depthData.bq1 = "${socketDatas[regtoken]['bq1']}";
-            depthData.bq2 = "${socketDatas[regtoken]['bq2']}";
-            depthData.bq3 = "${socketDatas[regtoken]['bq3']}";
-            depthData.bq4 = "${socketDatas[regtoken]['bq4']}";
-            depthData.bq5 = "${socketDatas[regtoken]['bq5']}";
-            depthData.tbq = "${socketDatas[regtoken]['tbq']}";
-            depthData.tsq = "${socketDatas[regtoken]['tsq']}";
-            depthData.wk52H = "${socketDatas[regtoken]['52h']}";
-            depthData.wk52L = "${socketDatas[regtoken]['52l']}";
-            depthData.lc = "${socketDatas[regtoken]['lc']}";
-            depthData.uc = "${socketDatas[regtoken]['uc']}";
-            depthData.ltq = "${socketDatas[regtoken]['ltq']}";
-            depthData.ltt = "${socketDatas[regtoken]['ltt']}";
-            depthData.ft = "${socketDatas[regtoken]['ft']}";
+            _processDepthData(depthData, socketDatas[regtoken]);
 
             if (scripInfo.actDeptBtn == "Overview") {
               if ((depthData.exch == "NSE" || depthData.exch == "BSE") &&
@@ -647,7 +724,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 const SizedBox(height: 4),
-                                                rowOfInfoData(
+                                                _buildInfoRow(
                                                     "Open",
                                                     "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}",
                                                     "Close",
@@ -681,7 +758,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                           : colors
                                                               .colorDivider),
                                                 ] else ...[
-                                                  rowOfInfoData(
+                                                  _buildInfoRow(
                                                       "Low",
                                                       "${depthData.l}",
                                                       "High",
@@ -720,7 +797,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                               .colorDivider),
                                                   const SizedBox(height: 6)
                                                 ] else ...[
-                                                  rowOfInfoData(
+                                                  _buildInfoRow(
                                                       "52 Week Low",
                                                       "${depthData.wk52L}",
                                                       "52 Week High",
@@ -773,37 +850,42 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                               ]),
                                                           const SizedBox(
                                                               height: 7),
-                                                          depthPercentageBuy(
+                                                          _buildDepthPercentage(
                                                               "${depthData.bq1 ?? 0}",
                                                               "${depthData.bp1 ?? 0.00}",
+                                                              true,
                                                               scripInfo,
                                                               theme),
                                                           const SizedBox(
                                                               height: 6),
-                                                          depthPercentageBuy(
+                                                          _buildDepthPercentage(
                                                               "${depthData.bq2 ?? 0}",
                                                               "${depthData.bp2 ?? 0.00}",
+                                                              true,
                                                               scripInfo,
                                                               theme),
                                                           const SizedBox(
                                                               height: 6),
-                                                          depthPercentageBuy(
+                                                          _buildDepthPercentage(
                                                               "${depthData.bq3 ?? 0}",
                                                               "${depthData.bp3 ?? 0.00}",
+                                                              true,
                                                               scripInfo,
                                                               theme),
                                                           const SizedBox(
                                                               height: 6),
-                                                          depthPercentageBuy(
+                                                          _buildDepthPercentage(
                                                               "${depthData.bq4 ?? 0}",
                                                               "${depthData.bp4 ?? 0.00}",
+                                                              true,
                                                               scripInfo,
                                                               theme),
                                                           const SizedBox(
                                                               height: 6),
-                                                          depthPercentageBuy(
+                                                          _buildDepthPercentage(
                                                               "${depthData.bq5 ?? 0}",
                                                               "${depthData.bp5 ?? 0.00}",
+                                                              true,
                                                               scripInfo,
                                                               theme)
                                                         ])),
@@ -839,37 +921,42 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                               ]),
                                                           const SizedBox(
                                                               height: 7),
-                                                          depthPercentageSell(
+                                                          _buildDepthPercentage(
                                                               "${depthData.sq1 ?? 0}",
                                                               "${depthData.sp1 ?? 0.00}",
+                                                              false,
                                                               scripInfo,
                                                               theme),
                                                           const SizedBox(
                                                               height: 6),
-                                                          depthPercentageSell(
+                                                          _buildDepthPercentage(
                                                               "${depthData.sq2 ?? 0}",
                                                               "${depthData.sp2 ?? 0.00}",
+                                                              false,
                                                               scripInfo,
                                                               theme),
                                                           const SizedBox(
                                                               height: 6),
-                                                          depthPercentageSell(
+                                                          _buildDepthPercentage(
                                                               "${depthData.sq3 ?? 0}",
                                                               "${depthData.sp3 ?? 0.00}",
+                                                              false,
                                                               scripInfo,
                                                               theme),
                                                           const SizedBox(
                                                               height: 6),
-                                                          depthPercentageSell(
+                                                          _buildDepthPercentage(
                                                               "${depthData.sq4 ?? 0}",
                                                               "${depthData.sp4 ?? 0.00}",
+                                                              false,
                                                               scripInfo,
                                                               theme),
                                                           const SizedBox(
                                                               height: 6),
-                                                          depthPercentageSell(
+                                                          _buildDepthPercentage(
                                                               "${depthData.sq5 ?? 0}",
                                                               "${depthData.sp5 ?? 0.00}",
+                                                              false,
                                                               scripInfo,
                                                               theme)
                                                         ]))
@@ -954,21 +1041,21 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                         "UNDIND" &&
                                                     widget.wlValue.instname !=
                                                         "COM")) ...[
-                                                  rowOfInfoData(
+                                                  _buildInfoRow(
                                                       "Avg Price",
                                                       "${depthData.ap ?? 0.00}",
                                                       "Volume",
                                                       "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}",
                                                       theme),
                                                   const SizedBox(height: 4),
-                                                  rowOfInfoData(
+                                                  _buildInfoRow(
                                                       "Lower Circuit",
                                                       "${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
                                                       "Upper Circuit",
                                                       "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'}",
                                                       theme),
                                                   const SizedBox(height: 4),
-                                                  rowOfInfoData(
+                                                  _buildInfoRow(
                                                       "Last Trade Qty",
                                                       "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}",
                                                       "Last Trade Time",
@@ -980,7 +1067,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                   const SizedBox(height: 4),
                                                   if (depthData.seg !=
                                                       "EQT") ...[
-                                                    rowOfInfoData(
+                                                    _buildInfoRow(
                                                         "Open Intrest",
                                                         "${depthData.oi ?? 0.00}",
                                                         "Change in OI",
@@ -1366,119 +1453,5 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
               14,
               FontWeight.w500))
     ]);
-  }
-
-  Row rowOfInfoData(String title1, String value1, String title2, String value2,
-      ThemesProvider theme) {
-    return Row(children: [
-      Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title1,
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
-        const SizedBox(height: 2),
-        Text(value1,
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w500)),
-        const SizedBox(height: 2),
-        Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider)
-      ])),
-      const SizedBox(width: 24),
-      Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title2,
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
-        const SizedBox(height: 2),
-        Text(
-          value2,
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              14,
-              FontWeight.w500),
-        ),
-        const SizedBox(height: 2),
-        Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider)
-      ]))
-    ]);
-  }
-
-  Stack depthPercentageSell(
-      sellQty, sellPrc, MarketWatchProvider scripInfo, ThemesProvider theme) {
-    String val =
-        ((((int.tryParse("$sellQty") ?? 0) / (scripInfo.maxSellQty)) * 100) /
-                100)
-            .toStringAsFixed(2);
-    double barPercentage = double.parse(val);
-
-    return Stack(children: [
-      Transform.flip(
-          flipX: true,
-          child: LinearPercentIndicator(
-              lineHeight: 20.0,
-              backgroundColor:
-                  !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              percent: barPercentage.isNaN
-                  ? 0.00
-                  : barPercentage >= 1
-                      ? 1
-                      : barPercentage,
-              padding: const EdgeInsets.symmetric(horizontal: 0),
-              progressColor: colors.darkred.withOpacity(.2))),
-      Padding(
-          padding: const EdgeInsets.only(top: 1.5),
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                qtyDepthTexts(sellPrc, theme, false),
-                qtyDepthTexts(sellQty, theme, true)
-              ]))
-    ]);
-  }
-
-  Stack depthPercentageBuy(
-      buyQty, buyPrc, MarketWatchProvider scripInfo, ThemesProvider theme) {
-    String val =
-        ((((int.tryParse("$buyQty") ?? 0) / (scripInfo.maxBuyQty)) * 100) / 100)
-            .toStringAsFixed(2);
-    double barPercentage = double.parse(val);
-    return Stack(children: [
-      LinearPercentIndicator(
-          lineHeight: 20.0,
-          backgroundColor:
-              !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          percent: barPercentage.isNaN
-              ? 0.00
-              : barPercentage >= 1
-                  ? 1
-                  : barPercentage,
-          padding: const EdgeInsets.symmetric(horizontal: 0),
-          progressColor: colors.ltpgreen.withOpacity(.2)),
-      Padding(
-          padding: const EdgeInsets.only(top: 1.5),
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                qtyDepthTexts(buyQty, theme, true),
-                qtyDepthTexts(buyPrc, theme, false)
-              ]))
-    ]);
-  }
-
-  Text qtyDepthTexts(String? text, ThemesProvider theme, bool type) {
-    return Text(
-        " ${text != "null" ? text ?? 0 : type ? '0' : '0.00'} ",
-        style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            13,
-            FontWeight.w500));
   }
 }

@@ -381,24 +381,44 @@ class OrderProvider extends DefaultChangeNotifier {
 
   tabSize() {
     _orderTabName = [
-      Tab(text: "All (${_allOrder!.length})"),
-      Tab(text: "Open (${_openOrder!.length})"),
-      Tab(text: "Executed (${_executedOrder!.length})"),
+      Tab(text: _allOrder!.isNotEmpty ? "All (${_allOrder!.length})" : "All"),
       Tab(
           text:
-              "GTT Order (${_gttOrderBookModel == null ? 0 : _gttOrderBookModel!.length})"),
-      Tab(text: "Basket Order (${_bsktList.length})"),
-      Tab(text: "Trade Book (${_tradeBook == null ? 0 : _tradeBook!.length})"),
+              _openOrder!.isNotEmpty ? "Open (${_openOrder!.length})" : "Open"),
       Tab(
-          text:
-              "Alert (${ref(marketWatchProvider).alertPendingModel!.length})"),
+          text: _executedOrder!.isNotEmpty
+              ? "Executed (${_executedOrder!.length})"
+              : "Executed"),
       Tab(
-          text:
-              "SIP Order(${_siporderBookModel?.sipDetails?.length == null ? 0 : _siporderBookModel!.sipDetails!.length})")
+        text: (_gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty)
+            ? "GTT Order (${_gttOrderBookModel!.length})"
+            : "GTT Order",
+      ),
+      Tab(
+        text: _bsktList.isNotEmpty
+            ? "Basket Order (${_bsktList.length})"
+            : "Basket Order",
+      ),
+      Tab(
+        text: (_tradeBook != null && _tradeBook!.isNotEmpty)
+            ? "Trade Book (${_tradeBook!.length})"
+            : "Trade Book",
+      ),
+      Tab(
+        text: (ref(marketWatchProvider).alertPendingModel != null &&
+                ref(marketWatchProvider).alertPendingModel!.isNotEmpty)
+            ? "Alert (${ref(marketWatchProvider).alertPendingModel!.length})"
+            : "Alert",
+      ),
+      Tab(
+        text: (_siporderBookModel?.sipDetails?.isNotEmpty ?? false)
+            ? "SIP Order (${_siporderBookModel!.sipDetails!.length})"
+            : "SIP Order",
+      ),
     ];
     notifyListeners();
   }
-
+  
   showOrderSearch(bool value) {
     _showSearchOrder = value;
     if (!_showSearchOrder) {
