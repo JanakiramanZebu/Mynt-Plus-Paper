@@ -36,8 +36,8 @@ mixin ApiCore {
   
   Map<String, String> get testingrameshheader {
     return {
-      'Authorization': "3bff029349529662bebb88576c4b77bde027416141f218011e9e99be2637b1ab",
-      'clientid': "ZP00172",
+      'Authorization': "00290a98a8d0afb10cb38afb57d83d3409efebf2227257284b56be866d514c89",
+      'clientid': "TN1V2",
       'Content-Type': 'application/json'
     };
   }

@@ -177,12 +177,15 @@ class Routes {
 
   //reports
   static const String ledgerscreen = 'LedgerScreen';
+  static const String positionscreen = 'PositionScreen';
   static const String holdingscreen = 'HoldingScreen';
   static const String pnlscreen = 'PnlScreen';
   static const String calenderpnlScreen = 'CalenderpnlScreen';
   static const String taxpnlscreen = 'Taxpnlscreen';
+  static const String caeventmainpage = 'CAEventMainPage';
   static const String tradebook = 'Tradebook';
   static const String pledgeandun = 'PledgenUnpledge';
+  static const String pledgehistorymainscreen = 'PledgeHistoryMainScreen';
   static const String pledgeunpledgeresponse = 'PledgenUnpledgeResponse';
   static const String pdfdownload = 'PdfDownload';
 

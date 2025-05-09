@@ -56,377 +56,437 @@ class PledgenUnpledgeResponse extends StatelessWidget {
 
       final ledgerprovider = watch(ledgerProvider);
 
-      return Scaffold(
-        appBar: AppBar(
-          // automaticallyImplyLeading: false,
-          leadingWidth: 41,
-          titleSpacing: 6,
-          centerTitle: false,
-          leading: const CustomBackBtn(),
-          elevation: 0.2,
-          title: TextWidget.heroText(
-              text: "Pledge Report Details",
-              textOverflow: TextOverflow.ellipsis,
-              theme: theme.isDarkMode,
-              fw: 1),
-
-          // leading: InkWell(
-          //   onTap: () {
-
-          //   },
-          //   child: Icon(Icons.ios_share)),
-        ),
-        body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.reportsloading,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Text("${ddd}")
-              // Padding(
-              //     padding: EdgeInsets.only(left: 4.0, top: 10.0),
-              //     child: Text(
-              //       "Financial activities through debits and credits ",
-              //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
-              //     )),
-              Container(
-                width: screenWidth,
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: theme.isDarkMode
-                          ? const Color(0xffB5C0CF).withOpacity(.15)
-                          : const Color(0xffF1F3F8)),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            headingstat("Client Name", '${ledgerprovider.cdslresponsedata?.cLIENTNAME}', theme),
-                            headingstat("Status", '${ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.resstatus == '1' ? 'Rejected' :ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.resstatus == '0' ? 'Success' : 'Pending'}', theme),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            left: 16.0, right: 16.0, bottom: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            headingstat("Client ID ",'${ledgerprovider.cdslresponsedata?.clientBoId}', theme),
-                            headingstat("CDSL Req", '${ledgerprovider.cdslresponsedata?.pledgeReqTime}', theme),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            left: 16.0, right: 16.0, bottom: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            headingstat("BO ID", '${ledgerprovider.cdslresponsedata?.clientBoId}', theme),
-                            headingstat("CDSL Res",'${ledgerprovider.cdslresponsedata?.cDSLRespTime}', theme),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            left: 16.0, right: 16.0, bottom: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            headingstat("Request ID", '${ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.reqid }', theme),
-                            headingstat("CDSL ID", '${ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.resid }', theme),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+      return WillPopScope(
+        onWillPop: () async {
+          await ledgerprovider.getCurrentDate("pandu");
+          ledgerprovider.fetchpledgeandunpledge(context);
+          Navigator.pop(context);
+          // print("objectobjectobjectobjectobjectobjectobjectobject");
+          return true;
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            // automaticallyImplyLeading: false,
+            leadingWidth: 41,
+            titleSpacing: 6,
+            centerTitle: false,
+            // leading: const CustomBackBtn(),
+            elevation: 0.2,
+            title: TextWidget.heroText(
+                text: "Pledge Report Details",
+                textOverflow: TextOverflow.ellipsis,
+                theme: theme.isDarkMode,
+                fw: 1),
+            leading: InkWell(
+              onTap: () async {
+                await ledgerprovider.getCurrentDate("pandu");
+                ledgerprovider.fetchpledgeandunpledge(context);
+                Navigator.pop(context);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SvgPicture.asset(
+                  assets.backArrow,
+                  width: 46,
+                  height: 46,
                 ),
               ),
+            ),
 
-              // Padding(
-              //   padding: const EdgeInsets.only(
-              //     top: 2.0,
-              //     bottom: 0.0,
-              //   ),
-              //   child: Divider(
-              //     color: theme.isDarkMode
-              //         ? const Color(0xffB5C0CF).withOpacity(.15)
-              //         : const Color(0xffF1F3F8),
-              //     thickness: 7.0,
-              //   ),
-              // ),
+            //   child: Icon(Icons.ios_share)),
+          ),
+          body: TransparentLoaderScreen(
+            isLoading: ledgerprovider.reportsloading,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Text("${ddd}")
+                // Padding(
+                //     padding: EdgeInsets.only(left: 4.0, top: 10.0),
+                //     child: Text(
+                //       "Financial activities through debits and credits ",
+                //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+                //     )),
+                Container(
+                  width: screenWidth,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: theme.isDarkMode
+                            ? const Color(0xffB5C0CF).withOpacity(.15)
+                            : const Color(0xffF1F3F8)),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              headingstat(
+                                  "Client Name",
+                                  '${ledgerprovider.cdslresponsedata?.cLIENTNAME}',
+                                  theme),
+                              headingstat(
+                                  "Status",
+                                  '${ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.resstatus == '1' ? 'Rejected' : ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.resstatus == '0' ? 'Success' : 'Pending'}',
+                                  theme),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 16.0, right: 16.0, bottom: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              headingstat(
+                                  "Client ID ",
+                                  '${ledgerprovider.cdslresponsedata?.clientBoId}',
+                                  theme),
+                              headingstat(
+                                  "CDSL Req",
+                                  '${ledgerprovider.cdslresponsedata?.pledgeReqTime}',
+                                  theme),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 16.0, right: 16.0, bottom: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              headingstat(
+                                  "BO ID",
+                                  '${ledgerprovider.cdslresponsedata?.clientBoId}',
+                                  theme),
+                              headingstat(
+                                  "CDSL Res",
+                                  '${ledgerprovider.cdslresponsedata?.cDSLRespTime}',
+                                  theme),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 16.0, right: 16.0, bottom: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              headingstat(
+                                  "Request ID",
+                                  '${ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.reqid}',
+                                  theme),
+                              headingstat(
+                                  "CDSL ID",
+                                  '${ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.resid}',
+                                  theme),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
-              // Padding(
-              //   padding: const EdgeInsets.only(left: 30 , right: 30),
-              //   child: Row(
-              //     children: [
-              //       // Static Column
-              //       Column(
-              //         children: [
-              //           Container(
-              //             margin: EdgeInsets.only(top: 20),
-              //             width: 100,
-              //             color: Colors
-              //                 .cardbgrey, // Header cell for the static column
-              //             padding: EdgeInsets.all(8.0),
-              //             child: Text(
-              //               'Exchange',
-              //               style: TextStyle(fontWeight: FontWeight.bold),
-              //             ),
-              //           ),
-              //           for (var item in ledgerprovider.ledgerAllData?.fullStat!)
-              //             Container(
-              //               width: 100, // Fixed width for the static column
-              //               height: 50,
+                // Padding(
+                //   padding: const EdgeInsets.only(
+                //     top: 2.0,
+                //     bottom: 0.0,
+                //   ),
+                //   child: Divider(
+                //     color: theme.isDarkMode
+                //         ? const Color(0xffB5C0CF).withOpacity(.15)
+                //         : const Color(0xffF1F3F8),
+                //     thickness: 7.0,
+                //   ),
+                // ),
 
-              //               padding: EdgeInsets.all(8.0),
-              //               decoration: BoxDecoration(
-              //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
-              //               ),
-              //               child: Text("${item.cOCD}",
-              //               style: textStyle(Colors.black, 14, FontWeight.w600),
-              //               ),
-              //             ),
-              //         ],
-              //       ),
-              //       // Scrollable Content
+                // Padding(
+                //   padding: const EdgeInsets.only(left: 30 , right: 30),
+                //   child: Row(
+                //     children: [
+                //       // Static Column
+                //       Column(
+                //         children: [
+                //           Container(
+                //             margin: EdgeInsets.only(top: 20),
+                //             width: 100,
+                //             color: Colors
+                //                 .cardbgrey, // Header cell for the static column
+                //             padding: EdgeInsets.all(8.0),
+                //             child: Text(
+                //               'Exchange',
+                //               style: TextStyle(fontWeight: FontWeight.bold),
+                //             ),
+                //           ),
+                //           for (var item in ledgerprovider.ledgerAllData?.fullStat!)
+                //             Container(
+                //               width: 100, // Fixed width for the static column
+                //               height: 50,
 
-              //       Expanded(
-              //         child: SingleChildScrollView(
-              //           scrollDirection: Axis.horizontal,
-              //           child: Column(
-              //             children: [
-              //               // Header Row for the scrollable content
-              //               Row(
-              //                 children: [
-              //                   for (int i = 0; i < Header.length; i++)
-              //                     Container(
-              //                        margin: EdgeInsets.only(top: 20),
-              //                       width: i == 4 ? 275 : 100, // Column width
+                //               padding: EdgeInsets.all(8.0),
+                //               decoration: BoxDecoration(
+                //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
+                //               ),
+                //               child: Text("${item.cOCD}",
+                //               style: textStyle(Colors.black, 14, FontWeight.w600),
+                //               ),
+                //             ),
+                //         ],
+                //       ),
+                //       // Scrollable Content
 
-              //                       padding: EdgeInsets.all(8.0),
-              //                       color: Color(0xFFEEEEEE),
-              //                       child: Text(
-              //                         '${Header[i]}',
-              //                         style:
-              //                             TextStyle(fontWeight: FontWeight.bold),
-              //                       ),
-              //                     ),
-              //                 ],
-              //               ),
-              //               // Data Rows for the scrollable content
-              //               for (int rowIndex = 0;
-              //                   rowIndex <
-              //                       ledgerprovider
-              //                           .ledgerAllData?.fullStat?.length;
-              //                   rowIndex++)
-              //                 Row(
-              //                   children: [
-              //                     for (int colIndex = 0; colIndex < 5; colIndex++)
-              //                       Container(
-              //                          width: colIndex == 4 ? 275 : 100,  // Column width
-              //                         height: 50,
-              //                         padding: EdgeInsets.all(8.0),
-              //                         decoration: BoxDecoration(
-              //                           border: Border.all(color: Color.fromARGB(255, 224, 224, 224)),
-              //                         ),
-              //                         child: Text(colIndex == 0 ? dateFormatChangeForLedger(ledgerprovider
-              //                             .tablearray[rowIndex][colIndex]) : ledgerprovider
-              //                             .tablearray[rowIndex][colIndex] ,
-              //                             textAlign: colIndex == 1 ||colIndex == 2 || colIndex == 3  ? TextAlign.right : TextAlign.start ,
-              //                             ) ,
-              //                         //  child: Text(  ledgerprovider
-              //                         //     .tablearray[rowIndex][colIndex] ) ,
-              //                       ),
-              //                   ],
-              //                 ),
-              //             ],
-              //           ),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
+                //       Expanded(
+                //         child: SingleChildScrollView(
+                //           scrollDirection: Axis.horizontal,
+                //           child: Column(
+                //             children: [
+                //               // Header Row for the scrollable content
+                //               Row(
+                //                 children: [
+                //                   for (int i = 0; i < Header.length; i++)
+                //                     Container(
+                //                        margin: EdgeInsets.only(top: 20),
+                //                       width: i == 4 ? 275 : 100, // Column width
 
-              ledgerprovider.cdslresponsedata == null ||
-                      ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.isinresdtls == null
-                  // Handle the null or empty case
-                  ? Center(
-                      child: Padding(
-                      padding: EdgeInsets.only(top: 60),
-                      child: NoDataFound(),
-                    ))
-                  : Expanded(
-                      child: SingleChildScrollView(
-                        child: ListView.separated(
-                          physics: ScrollPhysics(),
-                          itemCount: ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.isinresdtls?.length ?? 0,
-                          shrinkWrap: true,
-                          itemBuilder: (context, index) {
-                            final val = ledgerprovider.cdslresponsedata!.cDSLResp!.pledgeresdtls!.pledgeresdtlstwo!.isinresdtls![index];
-                            return Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 16.0, top: 8.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      TextWidget.subText(
-                                          align: TextAlign.start,
-                                          text: "${val.isin}",
-                                          textOverflow: TextOverflow.ellipsis,
-                                          theme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          fw: 1),
-                                      Padding(
-                                        padding: const EdgeInsets.only(right :16.0),
-                                        child: TextWidget.subText(
+                //                       padding: EdgeInsets.all(8.0),
+                //                       color: Color(0xFFEEEEEE),
+                //                       child: Text(
+                //                         '${Header[i]}',
+                //                         style:
+                //                             TextStyle(fontWeight: FontWeight.bold),
+                //                       ),
+                //                     ),
+                //                 ],
+                //               ),
+                //               // Data Rows for the scrollable content
+                //               for (int rowIndex = 0;
+                //                   rowIndex <
+                //                       ledgerprovider
+                //                           .ledgerAllData?.fullStat?.length;
+                //                   rowIndex++)
+                //                 Row(
+                //                   children: [
+                //                     for (int colIndex = 0; colIndex < 5; colIndex++)
+                //                       Container(
+                //                          width: colIndex == 4 ? 275 : 100,  // Column width
+                //                         height: 50,
+                //                         padding: EdgeInsets.all(8.0),
+                //                         decoration: BoxDecoration(
+                //                           border: Border.all(color: Color.fromARGB(255, 224, 224, 224)),
+                //                         ),
+                //                         child: Text(colIndex == 0 ? dateFormatChangeForLedger(ledgerprovider
+                //                             .tablearray[rowIndex][colIndex]) : ledgerprovider
+                //                             .tablearray[rowIndex][colIndex] ,
+                //                             textAlign: colIndex == 1 ||colIndex == 2 || colIndex == 3  ? TextAlign.right : TextAlign.start ,
+                //                             ) ,
+                //                         //  child: Text(  ledgerprovider
+                //                         //     .tablearray[rowIndex][colIndex] ) ,
+                //                       ),
+                //                   ],
+                //                 ),
+                //             ],
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+
+                ledgerprovider.cdslresponsedata == null ||
+                        ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls
+                                ?.pledgeresdtlstwo?.isinresdtls ==
+                            null
+                    // Handle the null or empty case
+                    ? Center(
+                        child: Padding(
+                        padding: EdgeInsets.only(top: 60),
+                        child: NoDataFound(),
+                      ))
+                    : Expanded(
+                        child: SingleChildScrollView(
+                          child: ListView.separated(
+                            physics: ScrollPhysics(),
+                            itemCount: ledgerprovider
+                                    .cdslresponsedata
+                                    ?.cDSLResp
+                                    ?.pledgeresdtls
+                                    ?.pledgeresdtlstwo
+                                    ?.isinresdtls
+                                    ?.length ??
+                                0,
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              final val = ledgerprovider
+                                  .cdslresponsedata!
+                                  .cDSLResp!
+                                  .pledgeresdtls!
+                                  .pledgeresdtlstwo!
+                                  .isinresdtls![index];
+                              return Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 16.0, top: 8.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        TextWidget.subText(
                                             align: TextAlign.start,
-                                            text: "${val.quantity}",
+                                            text: "${val.isin}",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? colors.colorWhite
                                                 : colors.colorBlack,
                                             fw: 1),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 2.0),
-                                  child: Divider(
-                                    color: const Color.fromARGB(
-                                        255, 212, 212, 212),
-                                    thickness: 0.5,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 16.0, right: 16.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          TextWidget.subText(
-                                              text: "Req ID :  ",
-                                              color: Color(0xFF696969),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child: TextWidget.subText(
+                                              align: TextAlign.start,
+                                              text: "${val.quantity}",
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 0),
-                                          TextWidget.subText(
-                                              text: "${val.isinreqid}",
                                               color: theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack,
-                                              textOverflow:
-                                                  TextOverflow.ellipsis,
-                                              theme: theme.isDarkMode,
                                               fw: 1),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2.0),
+                                    child: Divider(
+                                      color: const Color.fromARGB(
+                                          255, 212, 212, 212),
+                                      thickness: 0.5,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 16.0, right: 16.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            TextWidget.subText(
+                                                text: "Req ID :  ",
+                                                color: Color(0xFF696969),
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                            TextWidget.subText(
+                                                text: "${val.isinreqid}",
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 1),
 
-                                          //         Text(
-                                          // " (${value.tRADEDATE})",
-                                          // style: textStyle(
-                                          //     theme.isDarkMode
-                                          //         ? colors.colorWhite
-                                          //         : colors.colorBlack,
-                                          //     12,
-                                          //     FontWeight.w600)),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              TextWidget.subText(
-                                                  text: "Res ID : ",
-                                                  color: Color(0xFF696969),
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 0),
-                                              TextWidget.subText(
-                                                  text: "${val.isinresid}",
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                            //         Text(
+                                            // " (${value.tRADEDATE})",
+                                            // style: textStyle(
+                                            //     theme.isDarkMode
+                                            //         ? colors.colorWhite
+                                            //         : colors.colorBlack,
+                                            //     12,
+                                            //     FontWeight.w600)),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                TextWidget.subText(
+                                                    text: "Res ID : ",
+                                                    color: Color(0xFF696969),
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+                                                TextWidget.subText(
+                                                    text: "${val.isinresid}",
+                                                    color: theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 1),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 16.0, right: 16.0, top: 8.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              TextWidget.subText(
-                                                  text: "Status : ",
-                                                  color: Color(0xFF696969),
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 0),
-                                              TextWidget.subText(
-                                                  text: "${val.status == '1' ? 'Rejected' : val.status == '0' ? 'Success' : 'Pending' }",
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1),
-                                                
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      
-                                    ],
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 16.0, right: 16.0, top: 8.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                TextWidget.subText(
+                                                    text: "Status : ",
+                                                    color: Color(0xFF696969),
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+                                                TextWidget.subText(
+                                                    text:
+                                                        "${val.status == '1' ? 'Rejected' : val.status == '0' ? 'Success' : 'Pending'}",
+                                                    color: theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 1),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
+                                ],
+                              );
+                            },
+                            separatorBuilder:
+                                (BuildContext context, int index) {
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 2.0,
+                                  bottom: 0.0,
                                 ),
-                              ],
-                            );
-                          },
-                          separatorBuilder: (BuildContext context, int index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                top: 2.0,
-                                bottom: 0.0,
-                              ),
-                              child: Divider(
-                                color: theme.isDarkMode
-                                    ? const Color(0xffB5C0CF).withOpacity(.15)
-                                    : const Color(0xffF1F3F8),
-                                thickness: 7.0,
-                              ),
-                            );
-                          },
+                                child: Divider(
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffB5C0CF).withOpacity(.15)
+                                      : const Color(0xffF1F3F8),
+                                  thickness: 7.0,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
-                    ),
-            ],
+              ],
+            ),
           ),
         ),
       );

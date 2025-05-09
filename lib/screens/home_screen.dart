@@ -1187,6 +1187,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       indexProvide.bottomMenu(
                                                           4, context);
                                                       portfolio.cancelTimer();
+
+
+                                                      //reports  ......................................
                                                       if (reportsprovider.ledgerAllData == null) {
                                                         await reportsprovider.getCurrentDate('else');
                                                         reportsprovider.fetchLegerData(context, reportsprovider.startDate, reportsprovider.endDate); 
@@ -1221,7 +1224,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         await reportsprovider.getCurrentDate('else');
                                                         reportsprovider.fetchpdfdownload(context, reportsprovider.startDate, reportsprovider.today);
                                                       }
-
+                                                      //  if (reportsprovider.pledgeandunpledge == null) {
+                                                        
+                                                      //    await reportsprovider.getCurrentDate("pandu");
+                                                      //    reportsprovider.fetchpledgeandunpledge(context);
+                                                      // }
+                                                      // if (reportsprovider.positiondata == null) {
+                                                      //    reportsprovider.fetchposition(context);
+                                                      // }
+                                                       if (reportsprovider.caeventalldata == null) {
+                                                        await reportsprovider.getCurrentDate('caevent'); 
+                                                        reportsprovider.fetchcaeventsdata(context,
+                                                              reportsprovider.startDate,
+                                                              reportsprovider.endDate);
+                                                      }
+                                                       
+                                                        // ..............................................//
                                                       await context
                                                           .read(fundProvider)
                                                           .fetchFunds(context);

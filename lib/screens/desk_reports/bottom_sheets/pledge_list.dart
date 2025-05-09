@@ -40,8 +40,8 @@ class _PledgeList extends State<PledgeList> {
     double screenheight = MediaQuery.of(context).size.height;
     double notional = 0.0;
     return Consumer(builder: (context, ScopedReader watch, _) {
-      final ledgerdata = watch(ledgerProvider);
-      String selectedValue = ledgerdata.segmentvalue;
+      final ledgerprovider = watch(ledgerProvider);
+      String selectedValue = ledgerprovider.segmentvalue;
 
       List<DropdownItem> dropdownItems = [];
 
@@ -56,7 +56,7 @@ class _PledgeList extends State<PledgeList> {
           value: "Margin Trading Facility",
           label: "Margin Trading Facility",
           isEnabled:
-              ledgerdata.segresponse['mtf_status'] == false ? false : true,
+              ledgerprovider.segresponse['mtf_status'] == false ? false : true,
         ),
       );
 // Optional: remove duplicates if needed (based on value)
@@ -116,10 +116,10 @@ class _PledgeList extends State<PledgeList> {
                                 left: 16.0, right: 16.0, top: 8.0),
                             child: ListView.separated(
                               physics: ScrollPhysics(),
-                              itemCount: ledgerdata.listforpledge.length,
+                              itemCount: ledgerprovider.listforpledge.length,
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
-                                final value = ledgerdata.listforpledge[index];
+                                final value = ledgerprovider.listforpledge[index];
                                 return Column(
                                   children: [
                                     Row(
@@ -249,7 +249,7 @@ class _PledgeList extends State<PledgeList> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0 , left: 16.0),
+                      padding: const EdgeInsets.only(bottom: 12.0, left: 16.0),
                       child: Container(
                           height: 35,
                           width: screenWidth * 0.43,
@@ -264,8 +264,8 @@ class _PledgeList extends State<PledgeList> {
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(50))),
                               onPressed: () {
-                                 Navigator.pop(context);
-                                // ledgerdata.screenclickedpledge = '';
+                                Navigator.pop(context);
+                                // ledgerprovider.screenclickedpledge = '';
                               },
                               child: Text("Cancel",
                                   textAlign: TextAlign.center,
@@ -292,19 +292,17 @@ class _PledgeList extends State<PledgeList> {
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(50))),
                               onPressed: () async {
-                                  await ledgerdata.beforecdsl(
+                                
+                                 ledgerprovider.beforecdsl(
                                     context,
-                                     ledgerdata.pledgeandunpledge!.cLIENTCODE.toString(),
-                                                ledgerdata
-                                                    .pledgeandunpledge!.bOID
-                                                    .toString(),
-                                                ledgerdata
-                                                    .pledgeandunpledge!
-                                                    .cLIENTNAME
-                                                    .toString(),
-                                                ledgerdata.listforpledge
-                                  );
-                                  
+                                    ledgerprovider.pledgeandunpledge!.cLIENTCODE
+                                        .toString(),
+                                    ledgerprovider.pledgeandunpledge!.bOID
+                                        .toString(),
+                                    ledgerprovider.pledgeandunpledge!.cLIENTNAME
+                                        .toString(),
+                                    ledgerprovider.listforpledge); 
+                                Navigator.pop(context); 
                               },
                               child: Text("Submit",
                                   textAlign: TextAlign.center,

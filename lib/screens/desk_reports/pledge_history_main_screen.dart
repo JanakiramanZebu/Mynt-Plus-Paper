@@ -2,48 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/desk_reports/com_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/desk_reports/cur_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/desk_reports/der_taxpnl_screen.dart';
-import 'package:mynt_plus/screens/desk_reports/equity_taxpnl_screen.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../sharedWidget/loader_ui.dart';
-import 'tax_pnl_screens/charges_value_screen.dart';
-import 'tax_pnl_screens/chart_for_tax_scree.dart';
+import 'pledge_history_screen.dart';
 import 'tax_pnl_screens/pnl_value_screen.dart';
-import 'tax_pnl_screens/turnover_value_screen.dart';
+import 'unpledge_history_screen.dart';
 
-class TaxPnlScreen extends StatefulWidget {
-  const TaxPnlScreen({super.key});
+class PledgeHistoryMainScreen extends StatefulWidget {
+  const PledgeHistoryMainScreen({super.key});
 
   @override
-  _TaxPnlScreenState createState() => _TaxPnlScreenState();
+  _PledgeMainScreen createState() => _PledgeMainScreen();
 }
 
-class _TaxPnlScreenState extends State<TaxPnlScreen>
+class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
     with SingleTickerProviderStateMixin {
   final tablistitems = [
     {
-      "title": "Profit & Loss",
+      "title": "Pledge",
       "index": 0,
     },
     {
-      "title": "Turnover",
+      "title": "Unpledge",
       "index": 1,
     },
-    {
-      "title": "Charges",
-      "index": 2,
-    }
+     
   ];
   late TabController _tabController;
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // 4 Tabs
+    _tabController = TabController(length: 2, vsync: this); // 4 Tabs
   }
 
   @override
@@ -68,7 +60,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.heroText(
-                  text: "Tax P&L",
+                  text: "Pledge History",
                   
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
@@ -112,9 +104,8 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
           //   child: Icon(Icons.ios_share)),
         ),
         body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.taxderloading,
-          child: Stack(
-            children: [
+          isLoading: ledgerprovider.pledgehistory,
+          child:  
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -122,83 +113,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                   //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
                   //   child: BarChartWidget(),
                   // ),
-                  Container(
-                      width: screenWidth,
-                      child: Container(
-                          decoration: BoxDecoration(
-                              color: theme.isDarkMode
-                                  ? const Color(0xffB5C0CF).withOpacity(.15)
-                                  : const Color(0xffF1F3F8)),
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 16.0, right: 16.0),
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Financial Year",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w500),
-                                ),
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.arrow_left,
-                                          color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack),
-                                      onPressed: () => {
-                                        ledgerprovider.fetchtaxpnleqdata(
-                                            context,
-                                            ledgerprovider.yearforTaxpnl - 1)
-                                      },
-                                    ),
-                                    // Center(
-                                    //   child: Container(
-                                    //     width: screenWidth * 0.5,
-                                    //     alignment: Alignment.centerLeft,
-                                    //     padding: const EdgeInsets.symmetric(
-                                    //         vertical: 10, horizontal: 10),
-                                    //     decoration: BoxDecoration(
-                                    //         borderRadius: BorderRadius.circular(30),
-                                    //         color: theme.isDarkMode
-                                    //             ? const Color(0xffB5C0CF).withOpacity(.15)
-                                    //             : const Color(0xffF1F3F8)),
-                                    //     child: Center(
-                                    //       child:
-                                    Text("${ledgerprovider.yearforTaxpnl}",
-                                        textAlign: TextAlign.right,
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            14,
-                                            FontWeight.w500)),
-              
-                                    //     ),
-                                    //   ),
-                                    // ),
-                                    IconButton(
-                                      icon: Icon(Icons.arrow_right,
-                                          color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack),
-                                      onPressed: () => {
-                                        ledgerprovider.fetchtaxpnleqdata(
-                                            context,
-                                            ledgerprovider.yearforTaxpnl + 1)
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ))),
+                   
 
                   Padding(
                     padding: const EdgeInsets.only(top :8.0),
@@ -236,54 +151,18 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                     child: TabBarView(
                       physics: const NeverScrollableScrollPhysics(),
                       controller: _tabController,
-                      children: [
-                        TaxpnlvalueScreen(),
-                        TaxTurnOver(),
-                        TaxCharges(),
+                      children: [ 
+                        PledgeHistoryScreen(),
+                        UnpledgeHistoryScreen(),
+                        
                       ],
                     ),
                   ),
                 ],
               ),
-              Positioned(
-                bottom: 20,
-                left: 20,
-                right: 20,
-                child: Container(
-                    height: 40,
-                    width: 65,
-                    
-                    margin: const EdgeInsets.only(right: 12, top: 15),
-                    child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                            backgroundColor: theme.isDarkMode
-                                ? colors.colorbluegrey
-                                : colors.colorBlack,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50))),
-                        onPressed: () async {
-                          ledgerprovider.pdfdownloadfortaxpnl(
-                              context,
-                              ledgerprovider.taxpnleq?.data?.toJson() ?? {},
-                              ledgerprovider.taxpnldercomcur?.data?.toJson() ??
-                                  {},
-                              ledgerprovider.taxpnleqCharge?.toJson() ?? {},
-                              ledgerprovider.yearforTaxpnl);
-                        },
-                        child: Text("Download",
-                            textAlign: TextAlign.center,
-                            style: textStyle(
-                                !theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                12,
-                                FontWeight.w500)))),
-              ),
-              SizedBox(height: 20.0,)
-            ],
-          ),
+               
+            
+         
         ),
       );
     });
