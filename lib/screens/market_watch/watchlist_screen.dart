@@ -135,17 +135,21 @@ class _WatchListScreen extends State<WatchListScreen> {
                     : ListView.separated(
                         physics: const BouncingScrollPhysics(),
                         itemCount: marketWatch.scrips.length,
-                        separatorBuilder: (context, index) => const ListDivider(),
+                        separatorBuilder: (context, index) =>
+                            const ListDivider(),
                         itemBuilder: (BuildContext context, int idx) {
                           final scrip = marketWatch.scrips[idx];
 
                           // The market watch scrip data item list is provided here. These scrips are subscribed to Websocket, and we verify that the conditions fit the market watch scrip before adding the data to the market watch list.
-                          if (socketDatas
-                              .containsKey(scrip['token'])) {
-                            scrip['ltp'] = "${socketDatas["${scrip['token']}"]['lp'] ?? 0.00}";
-                            scrip['change'] = "${socketDatas["${scrip['token']}"]['chng'] ?? 0.00}";
-                            scrip['perChange'] = "${socketDatas["${scrip['token']}"]['pc'] ?? 0.00}";
-                            scrip['close'] = "${socketDatas["${scrip['token']}"]['c'] ?? 0.00}";
+                          if (socketDatas.containsKey(scrip['token'])) {
+                            scrip['ltp'] =
+                                "${socketDatas["${scrip['token']}"]['lp'] ?? 0.00}";
+                            scrip['change'] =
+                                "${socketDatas["${scrip['token']}"]['chng'] ?? 0.00}";
+                            scrip['perChange'] =
+                                "${socketDatas["${scrip['token']}"]['pc'] ?? 0.00}";
+                            scrip['close'] =
+                                "${socketDatas["${scrip['token']}"]['c'] ?? 0.00}";
 
                             if (scrip['change'].toString() == "null") {
                               scrip['change'] = "0.00";
@@ -153,12 +157,13 @@ class _WatchListScreen extends State<WatchListScreen> {
                             if ((scrip['perChange'].toString() == "null" ||
                                     scrip['perChange'].toString() == "0.00") &&
                                 scrip['ltp'] != '0.00') {
-                              scrip['perChange'] = scrip['change'].toString() != "0.00"
-                                  ? ((double.parse(scrip['change']) /
-                                              double.parse(scrip['ltp'])) *
-                                          100)
-                                      .toStringAsFixed(2)
-                                  : "0.00";
+                              scrip['perChange'] =
+                                  scrip['change'].toString() != "0.00"
+                                      ? ((double.parse(scrip['change']) /
+                                                  double.parse(scrip['ltp'])) *
+                                              100)
+                                          .toStringAsFixed(2)
+                                      : "0.00";
                             }
                             if (scrip['close'].toString() == "null") {
                               scrip['close'] = "0.00";
@@ -248,11 +253,8 @@ class _WatchListScreen extends State<WatchListScreen> {
                                             fontWeight: FontWeight.w700,
                                             color: colors.ltpgreen),
                                         onTap: (handler) async {
-                                          await placeOrderInput(
-                                              marketWatch,
-                                              context,
-                                              scrip,
-                                              true);
+                                          await placeOrderInput(marketWatch,
+                                              context, scrip, true);
                                           handler(false);
                                         }),
                                     SwipeAction(
@@ -265,11 +267,8 @@ class _WatchListScreen extends State<WatchListScreen> {
                                             fontWeight: FontWeight.w700,
                                             color: colors.darkred),
                                         onTap: (handler) async {
-                                          await placeOrderInput(
-                                              marketWatch,
-                                              context,
-                                              scrip,
-                                              false);
+                                          await placeOrderInput(marketWatch,
+                                              context, scrip, false);
                                           handler(false);
                                         }),
                                   ]
@@ -309,12 +308,31 @@ class _WatchListScreen extends State<WatchListScreen> {
                                                     ? colors.colorWhite
                                                     : colors.colorBlack)),
                                     if (scrip["option"].toString().isNotEmpty)
-                                      Text(
-                                          "${scrip["option"]}",
+                                      Text("${scrip["option"]}",
                                           style: textStyles.scripNameTxtStyle
                                               .copyWith(
                                                   color:
                                                       const Color(0xff666666))),
+                                    if (scrip["weekly"] != null)
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5, vertical: 3),
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(3),
+                                            color: theme.isDarkMode
+                                                ? const Color(0xff666666)
+                                                    .withOpacity(.3)
+                                                : const Color(0xffF1F3F8)),
+                                        child: Text("${scrip["weekly"]}",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? const Color(0xffFFFFFF)
+                                                    : const Color(0xff666666),
+                                                10,
+                                                FontWeight.w700)),
+                                      )
                                   ],
                                 ),
                                 subtitle: Column(
@@ -329,8 +347,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                                         if (scrip['expDate']
                                             .toString()
                                             .isNotEmpty)
-                                          Text(
-                                              " ${scrip['expDate']}  ",
+                                          Text(" ${scrip['expDate']}  ",
                                               style: textStyles
                                                   .scripExchTxtStyle
                                                   .copyWith(
@@ -344,8 +361,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                                               color: theme.isDarkMode
                                                   ? colors.colorLightBlue
                                                   : colors.colorBlue),
-                                          Text(
-                                              " ${scrip['holdingQty']}",
+                                          Text(" ${scrip['holdingQty']}",
                                               style: textStyles
                                                   .scripExchTxtStyle
                                                   .copyWith(
@@ -364,8 +380,7 @@ class _WatchListScreen extends State<WatchListScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text(
-                                          "₹${scrip['ltp'] ?? 0.00}",
+                                      Text("₹${scrip['ltp'] ?? 0.00}",
                                           style: textStyle(
                                               theme.isDarkMode
                                                   ? colors.colorWhite
@@ -376,7 +391,9 @@ class _WatchListScreen extends State<WatchListScreen> {
                                       Text(
                                         "${scrip["change"].toString() == "null" ? 0.00 : scrip['change']} (${scrip['perChange'].toString() == "null" ? 0.00 : scrip["perChange"]}%)",
                                         style: textStyle(
-                                            scrip['change'].toString().startsWith("-") ||
+                                            scrip['change']
+                                                        .toString()
+                                                        .startsWith("-") ||
                                                     scrip['perChange']
                                                         .toString()
                                                         .startsWith('-')
@@ -386,11 +403,12 @@ class _WatchListScreen extends State<WatchListScreen> {
                                                             scrip['perChange']
                                                                     .toString() ==
                                                                 "null") ||
-                                                        (scrip['change'].toString() ==
-                                                                    "0.00" ||
-                                                                scrip['perChange']
-                                                                        .toString() ==
-                                                                    "0.00")
+                                                        (scrip['change']
+                                                                    .toString() ==
+                                                                "0.00" ||
+                                                            scrip['perChange']
+                                                                    .toString() ==
+                                                                "0.00")
                                                     ? colors.ltpgrey
                                                     : colors.ltpgreen,
                                             12,

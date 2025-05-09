@@ -65,7 +65,7 @@ class _OptionChainSSState extends State<OptionChainSS> {
         canPop: true,
         onPopInvokedWithResult: (didPop, result) async {
           // if (didPop) return;
-          // Navigator.pop(context);
+          Navigator.pop(context);
           await context
               .read(marketWatchProvider)
               .calldepthApis(context, widget.wlValue, "");
