@@ -9,6 +9,7 @@ class Sip_single_page {
     String? schemename;
      String? Msg;
   String? internalrefernumber;
+  String?frequency_type;
 
   Sip_single_page(
       {this.clientCode,
@@ -20,7 +21,8 @@ class Sip_single_page {
        this.schemename,
       this.stat,
       this.internalrefernumber,
-      this.Msg,});
+      this.Msg,
+      this.frequency_type});
 
   Sip_single_page.fromJson(Map<String, dynamic> json) {
     clientCode = json['client_code'];
@@ -35,6 +37,8 @@ class Sip_single_page {
     sipregnno = json['sipregnno'];
     stat = json['stat'];
     Msg = json['msg'];
+    frequency_type = json['frequency_type'];
+
   }
 
   Map<String, dynamic> toJson() {
@@ -51,6 +55,7 @@ class Sip_single_page {
     data['sipregnno'] = this.sipregnno;
     data['stat'] = this.stat;
      data['msg'] = this.Msg;
+     data['frequency_type'] = this.frequency_type;
     return data;
   }
 }
@@ -68,6 +73,7 @@ class InvList {
   String? registerCancel;
   String? schemename;
   String? sipregndate;
+  
 
   InvList(
       {this.iSIN,

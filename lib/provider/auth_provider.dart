@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
+// import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:mynt_plus/provider/mf_provider.dart';
@@ -52,6 +53,10 @@ class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final Reader ref;
+  final String _version = "1.0.80(02)";
+  late final String _versiontext =
+      "Version 3.0.2 Build $_version Released on 08 May";
+  String get versiontext => _versiontext;
 
   //  Text field controller for Login and otp screen
 
@@ -59,13 +64,16 @@ class AuthProvider extends DefaultChangeNotifier {
   final TextEditingController passCtrl = TextEditingController();
   final TextEditingController otpCtrl = TextEditingController();
 
-  bool _totp = false;
+  bool _totp = true;
   bool get totp => _totp;
 
   late TabController exploreTab;
 
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
+
+  Map _ordgrefis = {};
+  Map get ordgrefis => _ordgrefis;
 
   setChangetotp(bool value) {
     _totp = value;
@@ -1057,9 +1065,19 @@ class AuthProvider extends DefaultChangeNotifier {
                 });
           }
         }
-        {
-          await ref(fundProvider).fetchFunds(context);
-        }
+        // {
+        await ref(fundProvider).fetchFunds(context);
+        Map data = {
+          "uid": "${pref.clientId}_${pref.imei}",
+          "log": {
+            "version": _version,
+            "os": defaultTargetPlatform.toString(),
+            "devices": pref.deviceName!.toString(),
+            "date": DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())
+          }
+        };
+        api.setAppversion(data);
+        // }
       }
     } finally {
       initLaod(false);
@@ -1084,23 +1102,48 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   setPrefOrderPrefer() async {
-    String getlocal = "";
+    Map getlocal = await api.setOrderprefer({}, false);
+    Map local = {};
+    String getapplocal = "";
     if (pref.showOrderpref != null) {
-      getlocal = pref.showOrderpref!;
+      getapplocal = pref.showOrderpref!;
     }
-    if (!(getlocal.isNotEmpty && getlocal.contains("expos"))) {
-      Map<String, String> local = {
-        "prc": "Limit",
-        "prd": "Intraday",
-        "qtypref": "qty",
-        "qty": "1",
-        "validity": "DAY",
-        "mrkprot": "1",
-        "expos": "Market"
+
+    if (getlocal.isNotEmpty &&
+        getlocal.containsKey("metadata") &&
+        getlocal["metadata"].containsKey("expos")) {
+      _ordgrefis = getlocal['metadata'];
+    } else if ((getapplocal.isNotEmpty && getapplocal.contains("expos"))) {
+      local = {
+        "clientid": pref.clientId,
+        "metadata": jsonDecode(getapplocal),
+        "source": "MOB"
       };
-      String jsonString = jsonEncode(local);
-      await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
+      _ordgrefis = jsonDecode(getapplocal);
+      await api.setOrderprefer(local, true);
+    } else {
+      local = {
+        "clientid": pref.clientId,
+        "metadata": {
+          "prc": "Limit",
+          "prd": "Intraday",
+          "qtypref": "qty",
+          "qty": "1",
+          "validity": "DAY",
+          "mrkprot": "1",
+          "expos": "Market"
+        },
+        "source": "MOB"
+      };
+      _ordgrefis = local['metadata'];
+      await api.setOrderprefer(local, true);
+      // String jsonString = jsonEncode(local);
+      // await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
     }
+  }
+
+  getPrefOrderPrefer(Map data, bool url) async {
+    await api.setOrderprefer(data, url);
   }
 
   setProfileAPicalls() async {

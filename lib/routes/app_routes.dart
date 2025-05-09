@@ -2,6 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:mynt_plus/screens/bonds/bonds_common_search_screen.dart';
 import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
+import 'package:mynt_plus/screens/mutual_fund/cagr_calculator_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_sip_details_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/order_single_page.dart';
@@ -40,6 +41,7 @@ import '../screens/ipo/mainstream_order_screen/order_screen.dart';
 import '../screens/ipo/sme_order_screen/sme_order.dart';
 import '../screens/market_watch/edit_scrip.dart';
 import '../screens/market_watch/futures/future_screen.dart';
+import '../screens/market_watch/option_chain/option_chain_ss.dart';
 import '../screens/market_watch/option_chain/strategy/option_strategey.dart';
 import '../screens/market_watch/search_screen.dart';
 import '../screens/mutual_fund/mf_nfo_screen.dart';
@@ -100,6 +102,7 @@ import '../screens/stocks/explore/stocks/trade_action/sector_themeatic_details.d
 import '../sharedWidget/internet_widget.dart';
 import 'route_names.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../screens/mutual_fund/sip_calculator_screen.dart';
 
 String? currentRouteName;
 
@@ -291,6 +294,25 @@ class AppRoutes {
             );
           },
         );
+
+
+      case Routes.optionChain:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                OptionChainSS(wlValue: args),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(0.0, 1.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+
       // case Routes.gttOrderScreen:
       //   return PageRouteBuilder(
       //     pageBuilder: (context, animation, secondaryAnimation) =>
@@ -899,21 +921,6 @@ class AppRoutes {
                   position: animation.drive(tween), child: child);
             });
 
-      case Routes.taxpnlscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                TaxPnlScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
-
 ///////////////////////////////
       case Routes.settingscreen:
         return PageRouteBuilder(
@@ -1386,6 +1393,43 @@ class AppRoutes {
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               const MFNFOScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+
+      case Routes.mfsipcalscreen:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const MFSIPSCREEN(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(-1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+      case Routes.mfcagrcalss:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const MFCAGRCAL(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(-1.0, 0.0);
             const end = Offset.zero;

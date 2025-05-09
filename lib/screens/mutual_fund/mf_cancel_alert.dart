@@ -80,7 +80,19 @@ class MfCancelAlert extends ConsumerWidget {
                         
                      Navigator.pop(context);
                   },
-                  child: Text("Yes",
+                  child: mfData.loading == true
+                        ? const SizedBox(
+                            height: 15,
+                            width: 15,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.0,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color.fromARGB(99, 48, 48, 48)),
+                              backgroundColor:
+                                  Color.fromARGB(255, 255, 255, 255),
+                            ),
+                          )
+                        :  Text("Yes",
                       style: textStyle(
                           theme.isDarkMode
                               ? colors.colorBlack

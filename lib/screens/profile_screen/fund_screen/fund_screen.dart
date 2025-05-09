@@ -1374,7 +1374,9 @@ class _FundScreenState extends State<FundScreen> {
                 itemBuilder: (BuildContext context, int index) {
                   return InkWell(
                     onTap: () {
+
                       fund.bankselection(index);
+                      fund.setAccountslist(fund.bankdetails!.dATA![index][2].toString());
 
                       Navigator.pop(context);
                     },

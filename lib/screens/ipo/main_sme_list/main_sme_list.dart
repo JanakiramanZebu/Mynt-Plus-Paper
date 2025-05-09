@@ -217,7 +217,7 @@ class MainSmeListCard extends StatelessWidget {
                                            ],
                                          ),
 
-                                          openIpos[index].totalsub != ''
+                                          openIpos[index].totalsub != null && openIpos[index].totalsub != ''
                                            ? Column(
                                                crossAxisAlignment:
                                                    CrossAxisAlignment.start,

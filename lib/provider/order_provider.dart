@@ -139,9 +139,6 @@ class OrderProvider extends DefaultChangeNotifier {
   bool _showtradebookSearch = false;
   bool get showtradebookSearch => _showtradebookSearch;
 
-  bool _sliceorderapi = false;
-  bool get sliceorderapi => _sliceorderapi;
-
   String _ip = "";
   String get ip => _ip;
 
@@ -188,11 +185,6 @@ class OrderProvider extends DefaultChangeNotifier {
 
   setOrderloader(bool value) {
     _orderloader = value;
-    notifyListeners();
-  }
-
-  setsliceOrderloader(bool value) {
-    _sliceorderapi = value;
     notifyListeners();
   }
 
@@ -364,7 +356,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
           final parsedDate = formatDate(expDateStr);
           if (parsedDate.isBefore(now)) {
-            removeBsktScrip(index, val); 
+            removeBsktScrip(index, val);
           }
         } catch (e) {
           print('Error parsing expDate for ${item['tsym']}: $e');
@@ -558,26 +550,27 @@ class OrderProvider extends DefaultChangeNotifier {
 
       if (_placeOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
-        _orderBookModel = await fetchOrderBook(context, true);
-        if (_orderBookModel!.isNotEmpty) {
-          if (_orderBookModel![0].stat != "Not_Ok") {
-            ConstantName.sessCheck = true;
-            for (var element in _orderBookModel!) {
-              if (element.norenordno == _placeOrderModel!.norenordno) {
+        // _orderBookModel = await fetchOrderBook(context, true);
+        // if (_orderBookModel!.isNotEmpty) {
+        //   if (_orderBookModel![0].stat != "Not_Ok") {
+        //     ConstantName.sessCheck = true;
+        //     for (var element in _orderBookModel!) {
+        //       if (element.norenordno == _placeOrderModel!.norenordno) {
                 ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                    context,
-                    "Your ${element.trantype == "B" ? "buy" : "sell"} order ${element.norenordno} for ${element.tsym} in ${element.exch} is ${element.status}"));
-              }
-            }
+                    context, "Order placed successfully."
+                    // "Your ${element.trantype == "B" ? "buy" : "sell"} order ${element.norenordno} for ${element.tsym} in ${element.exch} is ${element.status}"
+                    ));
+              // }
+        //     }
             notifyListeners();
-          } else {
-            if (_orderBookModel![0].emsg ==
-                    "Session Expired :  Invalid Session Key" &&
-                _orderBookModel![0].stat == "Not_Ok") {
-              ref(authProvider).ifSessionExpired(context);
-            }
-          }
-        }
+        //   } else {
+        //     if (_orderBookModel![0].emsg ==
+        //             "Session Expired :  Invalid Session Key" &&
+        //         _orderBookModel![0].stat == "Not_Ok") {
+        //       ref(authProvider).ifSessionExpired(context);
+        //     }
+        //   }
+        // }
 
         if (!isExit) {
           Navigator.pop(context);

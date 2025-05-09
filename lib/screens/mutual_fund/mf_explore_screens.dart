@@ -83,7 +83,7 @@ class _ExploreScreensState extends State<MFExploreScreens>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this, initialIndex: 0);
+    _tabController = TabController(length: 4, vsync: this, initialIndex: context.read(mfProvider).activeTab ?? 0);
   }
 
   @override

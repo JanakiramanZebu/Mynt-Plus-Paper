@@ -8,7 +8,6 @@ import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/thems.dart';
-import '../../provider/user_profile_providerNEWUI.dart';
 import '../../res/res.dart';
 import '../../routes/app_routes.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
@@ -27,15 +26,22 @@ class SearchScreen extends StatefulWidget {
 
 class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
   late TabController tabCtrl;
+  String _searchvalue = "";
+  int tabcount = 5;
 
   @override
   void initState() {
-    tabCtrl = TabController(
-        length: context.read(marketWatchProvider).searchTabList.length,
-        vsync: this,
-        initialIndex: 0);
-
+    tabcount = widget.isBasket == "Basket" ? 5 : 6;
+    tabCtrl = TabController(length: tabcount, vsync: this, initialIndex: 0);
     super.initState();
+
+    tabCtrl.addListener(() {
+      if (tabCtrl.indexIsChanging) {
+        context
+            .read(marketWatchProvider)
+            .scripSearch(_searchvalue, context, tabCtrl.index);
+      }
+    });
   }
 
   TextEditingController textCtrl = TextEditingController();
@@ -48,14 +54,16 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
       return PopScope(
           canPop: true, // Allows back navigation
           onPopInvokedWithResult: (didPop, result) async {
-            if (didPop) return; // If system handled back, do nothing
+            // if (didPop) return; // If system handled back, do nothing
 
-            context
-                .read(marketWatchProvider)
-                .requestMWScrip(context: context, isSubscribe: true);
+            if (!(["Option||Is", "Chart||Is"].contains(widget.isBasket))) {
+              context
+                  .read(marketWatchProvider)
+                  .requestMWScrip(context: context, isSubscribe: true);
+            }
             await searchScrip.searchClear();
             currentRouteName = 'homeScreen';
-            Navigator.of(context).pop();
+            // Navigator.pop(context);
           },
           child: GestureDetector(
               onTap: () => FocusManager.instance.primaryFocus!.unfocus(),
@@ -66,8 +74,11 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                       titleSpacing: 3,
                       leading: InkWell(
                           onTap: () {
-                            context.read(marketWatchProvider).requestMWScrip(
-                                context: context, isSubscribe: true);
+                            if (!(["Option||Is", "Chart||Is"]
+                                .contains(widget.isBasket))) {
+                              context.read(marketWatchProvider).requestMWScrip(
+                                  context: context, isSubscribe: true);
+                            }
                             searchScrip.searchClear();
                             searchScrip.setpageName("");
                             currentRouteName = 'homeScreen';
@@ -144,12 +155,14 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                                       borderSide: BorderSide.none,
                                       borderRadius: BorderRadius.circular(30))),
                               onChanged: (value) async {
+                                _searchvalue = value;
                                 if (value.isEmpty) {
                                   searchScrip.searchClear();
                                 }
                                 if (internet.connectionStatus !=
                                     ConnectivityResult.none) {
-                                  searchScrip.scripSearch(value, context);
+                                  searchScrip.scripSearch(
+                                      value, context, tabCtrl.index);
                                 }
                               }))),
                   body: Stack(children: [
@@ -189,30 +202,37 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                               controller: tabCtrl,
                               tabs: context
                                   .read(marketWatchProvider)
-                                  .searchTabList)),
+                                  .searchTabList
+                                  .sublist(0, tabcount))),
                       Expanded(
-                          child: TabBarView(controller: tabCtrl, children: [
-                        SearchScripList(
-                            wlName: widget.wlName,
-                            searchValue: searchScrip.allSearchScrip!,
-                            isBasket: widget.isBasket),
-                        SearchScripList(
-                            wlName: widget.wlName,
-                            searchValue: searchScrip.equitySearchScrip!,
-                            isBasket: widget.isBasket),
-                        SearchScripList(
-                            wlName: widget.wlName,
-                            searchValue: searchScrip.fNoSearchScrip!,
-                            isBasket: widget.isBasket),
-                        SearchScripList(
-                            wlName: widget.wlName,
-                            searchValue: searchScrip.currencySearchScrip!,
-                            isBasket: widget.isBasket),
-                        SearchScripList(
-                            wlName: widget.wlName,
-                            searchValue: searchScrip.commoditySearchScrip!,
-                            isBasket: widget.isBasket)
-                      ]))
+                        child:
+                            // TabBarView(controller: tabCtrl, children: [
+                            SearchScripList(
+                                wlName: widget.wlName,
+                                searchValue: searchScrip.allSearchScrip!,
+                                isBasket: widget.isBasket),
+                        // SearchScripList(
+                        //     wlName: widget.wlName,
+                        //     searchValue: searchScrip.allSearchScrip!,
+                        //     isBasket: widget.isBasket),
+                        // SearchScripList(
+                        //     wlName: widget.wlName,
+                        //     searchValue: searchScrip.allSearchScrip!,
+                        //     isBasket: widget.isBasket),
+                        // SearchScripList(
+                        //     wlName: widget.wlName,
+                        //     searchValue: searchScrip.allSearchScrip!,
+                        //     isBasket: widget.isBasket),
+                        // SearchScripList(
+                        //     wlName: widget.wlName,
+                        //     searchValue: searchScrip.allSearchScrip!,
+                        //     isBasket: widget.isBasket),
+                        // SearchScripList(
+                        //     wlName: widget.wlName,
+                        //     searchValue: searchScrip.allSearchScrip!,
+                        //     isBasket: widget.isBasket),
+                        // ])
+                      )
                     ]),
                     if (internet.connectionStatus ==
                         ConnectivityResult.none) ...[const NoInternetWidget()]

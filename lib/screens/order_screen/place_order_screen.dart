@@ -16,6 +16,7 @@ import '../../models/order_book_model/order_margin_model.dart';
 import '../../models/order_book_model/place_gtt_order.dart';
 import '../../models/order_book_model/place_order_model.dart';
 import '../../models/order_book_model/sip_place_order.dart';
+import '../../provider/auth_provider.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/order_input_provider.dart';
@@ -115,18 +116,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
     return ((input / interval).round() * interval);
   }
 
-  Map<String, dynamic> localdata = {};
+  Map localdata = {};
   bool defaultparams = false;
   final GlobalKey<TooltipState> tooltipKey = GlobalKey<TooltipState>();
 
   @override
   void initState() {
-    String getlocal = "";
-    if (pref.showOrderpref != null) {
-      getlocal = pref.showOrderpref!;
-    }
-    if (getlocal != "" && !widget.orderArg.isModify) {
-      localdata = jsonDecode(getlocal);
+    localdata = context.read(authProvider).ordgrefis;
+    if (localdata.isNotEmpty && !widget.orderArg.isModify) {
       defaultparams = true;
     }
 
@@ -2511,6 +2508,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, priceType == "Limit" || priceType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
                                                               textCtrl: priceCtrl,
                                                               textAlign: TextAlign.start)),
+                                                  const SizedBox(height: 8),
+                                                  Text(
+                                                      "Cir Lv : ${widget.scripInfo.lc ?? 0.00} - ${widget.scripInfo.uc ?? 0.00}",
+                                                      style: textStyle(
+                                                          const Color(
+                                                              0xff666666),
+                                                          12,
+                                                          FontWeight.w500))
                                                 ]))
                                           ])),
                                   const SizedBox(height: 3),
@@ -4551,8 +4556,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
               "Quantity should be multiple of lot size $lotSize => $q"));
         } else if (20 < quantity) {
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-              context, "Quantity can only be split into a maximum of 20 slice. (Ex: $frezQty x 20 = ${frezQty * 20})"));
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+              "Quantity can only be split into a maximum of 20 slice. (Ex: $frezQty x 20 = ${frezQty * 20})"));
         } else {
           showModalBottomSheet(
             isScrollControlled: true,

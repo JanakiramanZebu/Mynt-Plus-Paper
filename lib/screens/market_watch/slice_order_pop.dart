@@ -11,6 +11,7 @@ import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
+import '../../sharedWidget/snack_bar.dart';
 
 class SliceOrderSheet extends StatefulWidget {
   final ScripInfoModel scripInfo;
@@ -234,14 +235,10 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
         onPressed: () async {
           if (!orders.orderloader) {
             orders.setOrderloader(true);
-            orders.setsliceOrderloader(true);
             final iterations = widget.quantity >= 20 ? 20 : widget.quantity;
             for (var i = 0; i < iterations; i++) {
               final placeOrderInput = _buildOrderInput(orderInput);
-              if (i == iterations - 1) {
-                orders.setsliceOrderloader(false);
-              }
-               orders.slicePlaceOrder(context, placeOrderInput);
+              orders.slicePlaceOrder(context, placeOrderInput);
               // if (orders.placeOrderModel!.emsg ==
               //     "Session Expired :  Invalid Session Key") break;
             }
@@ -254,6 +251,8 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
 
             // await orders.fetchOrderBook(context, true);
             await indexpro.bottomMenu(3, context);
+            ScaffoldMessenger.of(context).showSnackBar(
+                successMessage(context, "Order placed successfully."));
             Navigator.pop(context);
             Navigator.pop(context);
             orders.setOrderloader(false);

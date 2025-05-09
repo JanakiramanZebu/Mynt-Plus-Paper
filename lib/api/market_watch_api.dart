@@ -15,6 +15,7 @@ import '../models/marketwatch_model/scrip_info.dart';
 import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_model.dart';
+import '../models/marketwatch_model/search_scrip_new_model.dart';
 import '../models/marketwatch_model/watchlist_rename_model.dart';
 import 'core/api_core.dart';
 
@@ -164,6 +165,22 @@ mixin MarketWatchApi on ApiCore {
       final json = jsonDecode(res.body);
 
       return SearchScripModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+    Future<SearchScripNewModel> getSearchScripNew({required String searchText, required String categ, required List exchs}) async {
+    try {
+      final uri = Uri.parse(apiLinks.searchScripNew);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}","stext":"${searchText.replaceAll("&", "%26")}","cat":"$categ","fil":${exchs.toList()}}&jKey=${prefs.clientSession}''');
+
+      //  print("Search Scrip => ${res.body}");
+      final json = jsonDecode(res.body);
+      return SearchScripNewModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

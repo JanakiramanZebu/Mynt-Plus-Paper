@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/provider/mf_provider.dart';
+// import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/routes/route_names.dart';
+// import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/screens/mutual_fund/redemption_bottomsheet_mf.dart';
 import 'package:mynt_plus/screens/portfolio_screens/mfHoldings/filter_scrip_bottom_sheet.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+// import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+// import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 
 class MFHoldingScreen extends StatefulWidget {
   const MFHoldingScreen({super.key});
@@ -28,7 +28,7 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
     return Consumer(builder: (context, ScopedReader watch, _) {
       final mfHolding = watch(portfolioProvider);
       final theme = watch(themeProvider);
-      final mforderbook = watch(mfProvider);
+      // final mforderbook = watch(mfProvider);
 
       return GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -319,12 +319,12 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
                                   //     );
                                   //   }
                                   // },
-                                   onTap: () async {
-                                   _showBottomSheet(
-                                        context,
-                                        RedemptionBottomScreen(mfHoldingData:mfHolding.mfHoldingsModel![index]),
-                                      );
-                                   },
+                                  //  onTap: () async {
+                                  //  _showBottomSheet(
+                                  //       context,
+                                  //       RedemptionBottomScreen(mfHoldingData:mfHolding.mfHoldingsModel![index]),
+                                  //     );
+                                  //  },
                                  child: Container(
   padding: const EdgeInsets.all(0), // Set even padding
   child: Column(

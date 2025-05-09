@@ -70,6 +70,7 @@ class MainIPO {
   String? updateIpoDate;
   String? key;
   String? ipostatus;
+  String? totalsub;
 
   MainIPO(
       {this.asbanonasba,
@@ -115,6 +116,7 @@ class MainIPO {
       this.tplusmodificationto,
       this.type,
       this.updateIpoDate,
+  this.totalsub,
       this.key});
 
   MainIPO.fromJson(Map<String, dynamic> json) {
@@ -152,6 +154,7 @@ class MainIPO {
     minPrice = json['minPrice'].toString();
     minvalue = json['minvalue'].toString();
     name = json['name'].toString();
+    totalsub = json['totalsub'].toString();
     opendatetime = json['opendatetime'].toString();
     registrar = json['registrar'].toString();
     seriesDetails = json['seriesDetails'].toString();
@@ -207,6 +210,7 @@ class MainIPO {
     data['minPrice'] = minPrice;
     data['minvalue'] = minvalue;
     data['name'] = name;
+    data['totalsub'] = totalsub;
     data['opendatetime'] = opendatetime;
     data['registrar'] = registrar;
     data['seriesDetails'] = seriesDetails;

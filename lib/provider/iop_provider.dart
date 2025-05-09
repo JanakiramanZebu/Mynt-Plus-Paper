@@ -1382,7 +1382,7 @@ class IPOProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       _mainStreamIpoModel = await api.fetchmainstreamoipo();
-      print("object ${_mainStreamIpoModel!.mainIPO![0].asbanonasba}");
+      // print("object ${_mainStreamIpoModel!.mainIPO![0].asbanonasba}");
       getipoorderbookmodel(true);
       notifyListeners();
 

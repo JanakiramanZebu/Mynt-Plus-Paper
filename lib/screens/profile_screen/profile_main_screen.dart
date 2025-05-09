@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:mynt_plus/provider/ledger_provider.dart';
+// import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -17,6 +17,8 @@ import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/bonds_provider.dart';
 import '../../provider/fund_provider.dart';
+import '../../provider/index_list_provider.dart';
+import '../../provider/ledger_provider.dart';
 import '../../provider/notification_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/transcation_provider.dart';
@@ -39,6 +41,8 @@ class UserAccountScreen extends ConsumerWidget {
     final mf = watch(mfProvider);
     final portfolio = watch(portfolioProvider);
     final reportsprovider = watch(ledgerProvider);
+    final auth = watch(authProvider);
+    final indexProvide = watch(indexListProvider);
 
     //  int currentYear = DateTime.now().year;
     final funds = watch(fundProvider);
@@ -59,12 +63,14 @@ class UserAccountScreen extends ConsumerWidget {
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
                         onTap: () async {
-                          if ([3, 4, 5, 6, 10].contains(index)) {
+                          if (["Verified P&L", "Corporate Action", "CA Events", "Pledge & Unpledge", "OptionZ"].contains(acttitle)) {
                             await funds.fetchHstoken(context);
                           }
                           if (acttitle == "Fund") {
                             await funds.fetchFunds(context);
-                            Navigator.pushNamed(context, Routes.fund);
+                            indexProvide.bottomMenu(2, context);
+                            portfolio.changeTabIndex(2);
+                            // Navigator.pushNamed(context, Routes.fund);
                           } else if (acttitle == "My Account") {
                             Navigator.pushNamed(context, Routes.myAcc);
                           } else if (acttitle == "Reports") {
@@ -169,31 +175,7 @@ class UserAccountScreen extends ConsumerWidget {
                             // launch(
                             //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
                           } else if (acttitle == "Mutual Fund") {
-                            // mf.loaderfun();
-                            mf.mfExTabchange(0);
-                            mf.fetchsiprejreasn();
-                            // await mf.fetchnewMFBestList();
-                            // await mf.fetchBestMF();
-                            Navigator.pushNamed(context, Routes.mfmainscreen);
-                            // await mf.fetchsiprejreasin();
-                            await mf.fetchmfholdingnew();
-
-                            await mf.fetchMfOrderbook(context);
-                            // await mf.fetchmfallcatnew();
-                            await portfolio.fetchMFHoldings(context);
-                            // await mf.fetchMFCategoryType();
-                            // await mf.fetchmfNFO(context);
-                            await mf.fetchMFWatchlist(
-                                "", "", context, true, "");
-                            await mf.fetchmfsiplist();
-                            // await mf.fetchBestMF();
-                            // await portfolio.fetchMFHoldings(context);
-                            // await mf.fetchMFCategoryType();
-                            // // await mf.fetchmfNFO(context);
-                            // await mf.fetchMFWatchlist("", "", context, true, "");
-                            // Navigator.pushNamed(context, Routes.mfmainscreen);
-                            // launch(
-                            //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                            mf.mfApicallinit(context, 0);
                           } else if (acttitle == "OptionZ") {
                             funds.optionZ(context);
                           } else if (acttitle == "Refer") {
@@ -261,7 +243,7 @@ class UserAccountScreen extends ConsumerWidget {
                             width: 19,
                             color: const Color(0xff666666)),
                         title: Text(
-                            "${index == 0 ? "₹${getFormatter(value: double.parse(funds.fundDetailModel!.avlMrg ?? "0.00"), v4d: false, noDecimal: false)}" : userProfile.profileMenu[index]['title']}",
+                            "${acttitle == "Fund" ? "₹${getFormatter(value: double.parse(funds.fundDetailModel!.avlMrg ?? "0.00"), v4d: false, noDecimal: false)}" : userProfile.profileMenu[index]['title']}",
                             style: textStyle(
                                 Color(
                                     theme.isDarkMode ? 0xffffffff : 0xff000000),
@@ -275,7 +257,7 @@ class UserAccountScreen extends ConsumerWidget {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (index == 0) ...[
+                            if (acttitle == "Fund") ...[
                               Container(
                                   height: 32,
                                   width: 125,
@@ -322,7 +304,7 @@ class UserAccountScreen extends ConsumerWidget {
                                               12,
                                               FontWeight.w500))))
                             ],
-                            if (index == 11) ...[
+                            if (acttitle == "Refer") ...[
                               TextButton(
                                   onPressed: () async {
                                     await Share.share(
@@ -333,120 +315,122 @@ class UserAccountScreen extends ConsumerWidget {
                                       style: theme.isDarkMode
                                           ? textStyles.darktextBtn
                                           : textStyles.textBtn))
-                            ] else if (index == 12) ...[
-                              TextButton(
-                                  onPressed: () async {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          backgroundColor: context
-                                                  .read(themeProvider)
-                                                  .isDarkMode
-                                              ? const Color.fromARGB(
-                                                  255, 18, 18, 18)
-                                              : colors.colorWhite,
-                                          titleTextStyle: textStyles
-                                              .appBarTitleTxt
-                                              .copyWith(
-                                                  color: context
-                                                          .read(themeProvider)
-                                                          .isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack),
-                                          titlePadding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 14, vertical: 12),
-                                          shape: const RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(14))),
-                                          scrollable: true,
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 14),
-                                          insetPadding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 20),
-                                          title: const Text("Freeze Account!"),
-                                          content: SizedBox(
-                                              width: MediaQuery.of(context)
-                                                  .size
-                                                  .width,
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      "Are you sure you want to Freeze yor Account?",
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          16,
-                                                          FontWeight.w600),
-                                                    ),
-                                                    const SizedBox(height: 10),
-                                                    Text(
-                                                      "* Note: Open order(s) will be cancelled, but position(s) will not be closed",
-                                                      style: textStyle(
-                                                          colors.colorGrey,
-                                                          12,
-                                                          FontWeight.w600),
-                                                    )
-                                                  ])),
-                                          actions: [
-                                            TextButton(
-                                                onPressed: () =>
-                                                    Navigator.of(context).pop(),
-                                                child: Text("Cancel",
-                                                    style: textStyles.textBtn.copyWith(
-                                                        color: context
-                                                                .read(
-                                                                    themeProvider)
-                                                                .isDarkMode
-                                                            ? colors
-                                                                .colorLightBlue
-                                                            : colors
-                                                                .colorBlue))),
-                                            ElevatedButton(
-                                                onPressed: () async {
-                                                  userProfile
-                                                      .fetchFreezeAc(context);
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                    elevation: 0,
-                                                    backgroundColor: theme
-                                                            .isDarkMode
-                                                        ? colors.colorbluegrey
-                                                        : colors.colorBlack,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        50))),
-                                                child: Text("Continue",
-                                                    style: textStyle(
-                                                        !context
-                                                                .read(
-                                                                    themeProvider)
-                                                                .isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500))),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
-                                  child: Text("Freeze Account",
-                                      style: theme.isDarkMode
-                                          ? textStyles.darktextBtn
-                                          : textStyles.textBtn))
-                            ] else ...[
+                            ]
+                            // else if (acttitle == "Settings") ...[
+                            //   TextButton(
+                            //       onPressed: () async {
+                            //         showDialog(
+                            //           context: context,
+                            //           builder: (BuildContext context) {
+                            //             return AlertDialog(
+                            //               backgroundColor: context
+                            //                       .read(themeProvider)
+                            //                       .isDarkMode
+                            //                   ? const Color.fromARGB(
+                            //                       255, 18, 18, 18)
+                            //                   : colors.colorWhite,
+                            //               titleTextStyle: textStyles
+                            //                   .appBarTitleTxt
+                            //                   .copyWith(
+                            //                       color: context
+                            //                               .read(themeProvider)
+                            //                               .isDarkMode
+                            //                           ? colors.colorWhite
+                            //                           : colors.colorBlack),
+                            //               titlePadding:
+                            //                   const EdgeInsets.symmetric(
+                            //                       horizontal: 14, vertical: 12),
+                            //               shape: const RoundedRectangleBorder(
+                            //                   borderRadius: BorderRadius.all(
+                            //                       Radius.circular(14))),
+                            //               scrollable: true,
+                            //               contentPadding:
+                            //                   const EdgeInsets.symmetric(
+                            //                       horizontal: 14),
+                            //               insetPadding:
+                            //                   const EdgeInsets.symmetric(
+                            //                       horizontal: 20),
+                            //               title: const Text("Freeze Account!"),
+                            //               content: SizedBox(
+                            //                   width: MediaQuery.of(context)
+                            //                       .size
+                            //                       .width,
+                            //                   child: Column(
+                            //                       crossAxisAlignment:
+                            //                           CrossAxisAlignment.start,
+                            //                       children: [
+                            //                         Text(
+                            //                           "Are you sure you want to Freeze yor Account?",
+                            //                           style: textStyle(
+                            //                               theme.isDarkMode
+                            //                                   ? colors
+                            //                                       .colorWhite
+                            //                                   : colors
+                            //                                       .colorBlack,
+                            //                               16,
+                            //                               FontWeight.w600),
+                            //                         ),
+                            //                         const SizedBox(height: 10),
+                            //                         Text(
+                            //                           "* Note: Open order(s) will be cancelled, but position(s) will not be closed",
+                            //                           style: textStyle(
+                            //                               colors.colorGrey,
+                            //                               12,
+                            //                               FontWeight.w600),
+                            //                         )
+                            //                       ])),
+                            //               actions: [
+                            //                 TextButton(
+                            //                     onPressed: () =>
+                            //                         Navigator.of(context).pop(),
+                            //                     child: Text("Cancel",
+                            //                         style: textStyles.textBtn.copyWith(
+                            //                             color: context
+                            //                                     .read(
+                            //                                         themeProvider)
+                            //                                     .isDarkMode
+                            //                                 ? colors
+                            //                                     .colorLightBlue
+                            //                                 : colors
+                            //                                     .colorBlue))),
+                            //                 ElevatedButton(
+                            //                     onPressed: () async {
+                            //                       userProfile
+                            //                           .fetchFreezeAc(context);
+                            //                     },
+                            //                     style: ElevatedButton.styleFrom(
+                            //                         elevation: 0,
+                            //                         backgroundColor: theme
+                            //                                 .isDarkMode
+                            //                             ? colors.colorbluegrey
+                            //                             : colors.colorBlack,
+                            //                         shape:
+                            //                             RoundedRectangleBorder(
+                            //                                 borderRadius:
+                            //                                     BorderRadius
+                            //                                         .circular(
+                            //                                             50))),
+                            //                     child: Text("Continue",
+                            //                         style: textStyle(
+                            //                             !context
+                            //                                     .read(
+                            //                                         themeProvider)
+                            //                                     .isDarkMode
+                            //                                 ? colors.colorWhite
+                            //                                 : colors.colorBlack,
+                            //                             14,
+                            //                             FontWeight.w500))),
+                            //               ],
+                            //             );
+                            //           },
+                            //         );
+                            //       },
+                            //       child: Text("Freeze Account",
+                            //           style: theme.isDarkMode
+                            //               ? textStyles.darktextBtn
+                            //               : textStyles.textBtn))
+                            // ]
+                            else ...[
                               SvgPicture.asset(
                                   userProfile.profileMenu[index]['trailing'])
                             ]
@@ -572,8 +556,7 @@ class UserAccountScreen extends ConsumerWidget {
               Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                      "Version 3.0.2 Build 1.0.77(03+05) Released on 23 Apr",
+                  child: Text(auth.versiontext,
                       style: textStyle(
                           const Color(0xff666666), 11, FontWeight.w500)))
             ]));

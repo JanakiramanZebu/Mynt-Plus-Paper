@@ -193,7 +193,13 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "TOTP",
-        "subTitle": "TOTP",
+        "subTitle": "Time-based One-Time Password",
+        "leading": "assets/icon/key-01.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
+      {
+        "title": "Freeze Account",
+        "subTitle": "Temporarily disabling access",
         "leading": "assets/icon/key-01.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
@@ -209,12 +215,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "leading": "assets/icon/theme_icon.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
-      // {
-      //   "title": "TOTP",
-      //   "subTitle": "TOTP",
-      //   "leading": "assets/icon/key-01.svg",
-      //   "trailing": "assets/profile/greater_arrow.svg"
-      // },
       {
         "title": "Log",
         "subTitle": "Log message",

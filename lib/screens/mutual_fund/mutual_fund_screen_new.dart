@@ -26,26 +26,25 @@ class MutualFundNewScreen extends ConsumerWidget {
           // const SizedBox(height: 8),
 
           // if (portfolio.mfTotInveest > 0) ...[
-          
+
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(
-                    color: theme.isDarkMode ? Color(0xFF2A2A2A): Color(0xFFE0E0E0),
+                    color: theme.isDarkMode
+                        ? Color(0xFF2A2A2A)
+                        : Color(0xFFE0E0E0),
                     width: 1), // Black border with 2px width
                 borderRadius:
                     BorderRadius.circular(8), // Optional: rounded corners
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: 
-                SizedBox(
-                  child:
-                  
-                   Skeletonizer(
-                    enabled : mfData.holdstatload!,
-                     child: Column(
+                child: SizedBox(
+                  child: Skeletonizer(
+                    enabled: mfData.holdstatload!,
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // const Text(
@@ -57,7 +56,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                         //   ),
                         // ),
                         // const SizedBox(height: 8),
-                     
+
                         // const SizedBox(height: 5),
                         // const Center(
                         // const Text(
@@ -68,9 +67,9 @@ class MutualFundNewScreen extends ConsumerWidget {
                         //     fontWeight: FontWeight.w500,
                         //   ),
                         // ),
-                     
+
                         // const SizedBox(height: 5),
-                     
+
                         // Text(
                         //   portfolio.mfTotCurrentVal != null
                         //       ? portfolio.mfTotCurrentVal.toStringAsFixed(2)
@@ -82,10 +81,9 @@ class MutualFundNewScreen extends ConsumerWidget {
                         //   ),
                         // ),
                         // // ),
-                     
+
                         // const SizedBox(height: 6),
-                     
-                     
+
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -95,7 +93,9 @@ class MutualFundNewScreen extends ConsumerWidget {
                                 Text(
                                   "Purchase ",
                                   style: TextStyle(
-                                    color: theme.isDarkMode ? Color(0xFF666666) : Color(0xFF666666),
+                                    color: theme.isDarkMode
+                                        ? Color(0xFF666666)
+                                        : Color(0xFF666666),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -106,8 +106,9 @@ class MutualFundNewScreen extends ConsumerWidget {
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500,
-                                    color: theme.isDarkMode 
-                                        ? const Color.fromARGB(255, 255, 255, 255)
+                                    color: theme.isDarkMode
+                                        ? const Color.fromARGB(
+                                            255, 255, 255, 255)
                                         : const Color.fromARGB(255, 0, 0, 0),
                                   ),
                                 ),
@@ -126,7 +127,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  "${(mfData.mfholdingnew?.gainOrLoss == "" ||mfData.mfholdingnew?.gainOrLoss == null) ? "0.00" : mfData.mfholdingnew?.gainOrLoss}",
+                                  "${(mfData.mfholdingnew?.gainOrLoss == "" || mfData.mfholdingnew?.gainOrLoss == null) ? "0.00" : mfData.mfholdingnew?.gainOrLoss}",
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500,
@@ -164,8 +165,9 @@ class MutualFundNewScreen extends ConsumerWidget {
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500,
-                                    color: theme.isDarkMode 
-                                        ? const Color.fromARGB(255, 255, 255, 255)
+                                    color: theme.isDarkMode
+                                        ? const Color.fromARGB(
+                                            255, 255, 255, 255)
                                         : const Color.fromARGB(255, 0, 0, 0),
                                   ),
                                 ),
@@ -184,35 +186,35 @@ class MutualFundNewScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                       "${mfData.mfholdingnew?.percentage?.toString() ?? "0"}%", // Ensures percentage is always a valid string
-                       style: TextStyle(
-                         fontSize: 18,
-                         fontWeight: FontWeight.w500,
-                         color: (double.tryParse(mfData.mfholdingnew?.percentage?.toString() ?? "0") ?? 0) >= 0
-                             ? Colors.green
-                             : const Color(0xFFFF1717), // Red color for negative values
-                       ),
-                     ),
-                     
+                                  "${mfData.mfholdingnew?.percentage?.toString() ?? "0"}%", // Ensures percentage is always a valid string
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: (double.tryParse(mfData.mfholdingnew
+                                                        ?.percentage
+                                                        ?.toString() ??
+                                                    "0") ??
+                                                0) >=
+                                            0
+                                        ? Colors.green
+                                        : const Color(
+                                            0xFFFF1717), // Red color for negative values
+                                  ),
+                                ),
                               ],
                             ),
                           ],
                         ),
-                     
                       ],
-                                      
-                                       ),
-                   ),
-
-
-                
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
           // ],
 
-          buildSlidingPanelContent(mfData.bestMFListStaticnew, mfData,theme),
+          buildSlidingPanelContent(mfData.bestMFListStaticnew, mfData, theme),
           const SizedBox(height: 16),
 
           Padding(
@@ -222,84 +224,117 @@ class MutualFundNewScreen extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 19,
                 fontWeight: FontWeight.w600,
-                color: theme.isDarkMode 
-                                        ? const Color.fromARGB(255, 255, 255, 255)
-                                        : const Color.fromARGB(255, 0, 0, 0),
+                color: theme.isDarkMode
+                    ? const Color.fromARGB(255, 255, 255, 255)
+                    : const Color.fromARGB(255, 0, 0, 0),
               ),
             ),
           ),
-          Column(
-            children: [
-              nfoCard(context, mfData , theme),
-              // Container(
-              //   padding: const EdgeInsets.all(16.0),
-              //   margin: const EdgeInsets.all(16.0),
-              //   decoration: BoxDecoration(
-              //     color: Colors.grey[100],
-              //     borderRadius: BorderRadius.circular(10.0),
-              //   ),
-              //   child: InkWell(
-              //     onTap: () {
-              //       //  Navigator.pushNamed(
-              //       //       context, Routes.mfStockDetail
-              //       //  );
-              //     },
-              //     child: Row(
-              //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //       children: [
-              //         Expanded(
-              //           child: InkWell(
-              //             onTap: () {
-              //               tabController.animateTo(1);
-              //               mfData.mfExTabchange(1);
-              //               // Animate to Tab 2 (Index 1)
-              //             },
-              //             child: const Column(
-              //               crossAxisAlignment: CrossAxisAlignment.start,
-              //               children: [
-              //                 Row(
-              //                   children: [
-              //                     Text(
-              //                       "Watchlist",
-              //                       style: TextStyle(
-              //                         fontSize: 17,
-              //                         fontWeight: FontWeight.bold,
-              //                       ),
-              //                     ),
-              //                     SizedBox(width: 4),
-              //                     Icon(
-              //                       Icons.arrow_forward,
-              //                       size: 16,
-              //                       color: Colors.black,
-              //                     ),
-              //                   ],
-              //                 ),
-              //                 SizedBox(height: 8),
-              //                 Text(
-              //                   "Now track your favourite MF by adding them to your watchlist.",
-              //                   style: TextStyle(
-              //                     fontSize: 14,
-              //                     color: Color(0xFF666666),
-              //                   ),
-              //                 ),
-              //               ],
-              //             ),
-              //           ),
-              //         ),
-              //         // ignore: prefer_const_constructors
-              //         SizedBox(width: 20),
-              //         SvgPicture.asset(
-              //           'assets/explore/Binocular.svg',
-              //           width: 46,
-              //           height: 46,
-              //         ),
-              //       ],
-              //     ),
-
-              //   ),
-              // )
-            ],
+          Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: Column(
+              
+              children: [
+                nfoCard(context, mfData, theme),
+                // Container(
+                //   padding: const EdgeInsets.all(16.0),
+                //   margin: const EdgeInsets.all(16.0),
+                //   decoration: BoxDecoration(
+                //     color: Colors.grey[100],
+                //     borderRadius: BorderRadius.circular(10.0),
+                //   ),
+                //   child: InkWell(
+                //     onTap: () {
+                //       //  Navigator.pushNamed(
+                //       //       context, Routes.mfStockDetail
+                //       //  );
+                //     },
+                //     child: Row(
+                //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //       children: [
+                //         Expanded(
+                //           child: InkWell(
+                //             onTap: () {
+                //               tabController.animateTo(1);
+                //               mfData.mfExTabchange(1);
+                //               // Animate to Tab 2 (Index 1)
+                //             },
+                //             child: const Column(
+                //               crossAxisAlignment: CrossAxisAlignment.start,
+                //               children: [
+                //                 Row(
+                //                   children: [
+                //                     Text(
+                //                       "Watchlist",
+                //                       style: TextStyle(
+                //                         fontSize: 17,
+                //                         fontWeight: FontWeight.bold,
+                //                       ),
+                //                     ),
+                //                     SizedBox(width: 4),
+                //                     Icon(
+                //                       Icons.arrow_forward,
+                //                       size: 16,
+                //                       color: Colors.black,
+                //                     ),
+                //                   ],
+                //                 ),
+                //                 SizedBox(height: 8),
+                //                 Text(
+                //                   "Now track your favourite MF by adding them to your watchlist.",
+                //                   style: TextStyle(
+                //                     fontSize: 14,
+                //                     color: Color(0xFF666666),
+                //                   ),
+                //                 ),
+                //               ],
+                //             ),
+                //           ),
+                //         ),
+                //         // ignore: prefer_const_constructors
+                //         SizedBox(width: 20),
+                //         SvgPicture.asset(
+                //           'assets/explore/Binocular.svg',
+                //           width: 46,
+                //           height: 46,
+                //         ),
+                //       ],
+                //     ),
+            
+                //   ),
+                // )
+              ],
+            ),
           ),
+
+          // Padding(
+          //   padding: const EdgeInsets.only(left: 16, top: 10, bottom: 0),
+          //   child: Text(
+          //     "Financial Tools",
+          //     style: TextStyle(
+          //       fontSize: 19,
+          //       fontWeight: FontWeight.w600,
+          //       color: theme.isDarkMode
+          //           ? const Color.fromARGB(255, 255, 255, 255)
+          //           : const Color.fromARGB(255, 0, 0, 0),
+          //     ),
+          //   ),
+          // ),
+
+         Padding(
+           padding: const EdgeInsets.all(0.0),
+           child: Row(
+             children: [
+               Expanded(
+                 child: sipcaltor(context, mfData, theme),
+               ),
+               Expanded(
+                 child: cargrcalss(context, mfData, theme),
+               ),
+             ],
+           ),
+         ),
+
 
           Container(
             padding: const EdgeInsets.all(0),
@@ -314,7 +349,8 @@ class MutualFundNewScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w600,
-                      color: theme.isDarkMode ? Colors.white : Color(0xFF181B19),
+                      color:
+                          theme.isDarkMode ? Colors.white : Color(0xFF181B19),
                     ),
                   ),
                 ),
@@ -333,7 +369,8 @@ class MutualFundNewScreen extends ConsumerWidget {
                           description: mfData.mFCategoryTypesStatic[index]
                               ['description'],
                           chips: mfData.mFCategoryTypesStatic[index]['sub'],
-                          watch: watch ,theme: theme);
+                          watch: watch,
+                          theme: theme);
                     },
                     separatorBuilder: (BuildContext context, int index) {
                       return const SizedBox(height: 20);
@@ -435,10 +472,11 @@ class MutualFundNewScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildSlidingPanelContent(bestMFList, MFProvider mfData , theme) {
+  Widget buildSlidingPanelContent(bestMFList, MFProvider mfData, theme) {
     return Container(
       padding: const EdgeInsets.all(16.0),
-      color: theme.isDarkMode ? const Color(0xFF1E1E1E) : const Color(0xFFF1F3F8),
+      color:
+          theme.isDarkMode ? const Color(0xFF1E1E1E) : const Color(0xFFF1F3F8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -451,7 +489,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                 style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.w600,
-                    color: theme.isDarkMode ? Colors.white: Color(0xFF181B19)),
+                    color: theme.isDarkMode ? Colors.white : Color(0xFF181B19)),
               ),
             ],
           ),
@@ -459,7 +497,7 @@ class MutualFundNewScreen extends ConsumerWidget {
           Text(
             "Find the right mutual fund across these asset classes",
             style: TextStyle(
-                color: theme.isDarkMode ? Colors.white: Color(0xFF666666),
+                color: theme.isDarkMode ? Colors.white : Color(0xFF666666),
                 fontSize: 14,
                 fontWeight: FontWeight.w500),
           ),
@@ -510,7 +548,9 @@ class MutualFundNewScreen extends ConsumerWidget {
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 16, horizontal: 16),
                                     decoration: BoxDecoration(
-                                      color: theme.isDarkMode ? const Color.fromARGB(255, 0, 0, 0): colors.colorWhite,
+                                      color: theme.isDarkMode
+                                          ? const Color.fromARGB(255, 0, 0, 0)
+                                          : colors.colorWhite,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Column(
@@ -528,8 +568,12 @@ class MutualFundNewScreen extends ConsumerWidget {
                                           bestMFList[index]['title'],
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          style: textStyle( theme.isDarkMode ? Colors.white: colors.colorBlack,
-                                              19, FontWeight.w600),
+                                          style: textStyle(
+                                              theme.isDarkMode
+                                                  ? Colors.white
+                                                  : colors.colorBlack,
+                                              19,
+                                              FontWeight.w600),
                                         ),
                                         Text(
                                           "${bestMFList[index]['subtitle']}",
@@ -566,7 +610,8 @@ class MutualFundNewScreen extends ConsumerWidget {
       required String title,
       required String description,
       required List<dynamic> chips,
-      required ScopedReader watch,theme}) {
+      required ScopedReader watch,
+      theme}) {
     final mfData = watch(mfProvider);
     return InkWell(
       onTap: () async {
@@ -577,9 +622,12 @@ class MutualFundNewScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? const Color.fromARGB(255, 0, 0, 0): Colors.white,
+          color: theme.isDarkMode
+              ? const Color.fromARGB(255, 0, 0, 0)
+              : Colors.white,
           border: Border.all(
-            color:  theme.isDarkMode ? Color(0xFF2A2A2A) : const Color(0xFFDDDDDD),
+            color:
+                theme.isDarkMode ? Color(0xFF2A2A2A) : const Color(0xFFDDDDDD),
             width: 1.0,
           ),
           borderRadius: BorderRadius.circular(10),
@@ -598,7 +646,9 @@ class MutualFundNewScreen extends ConsumerWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 19,
-                 color: theme.isDarkMode ? Colors.white :Color.fromARGB(255, 0, 0, 0),
+                color: theme.isDarkMode
+                    ? Colors.white
+                    : Color.fromARGB(255, 0, 0, 0),
               ),
             ),
             const SizedBox(height: 8),
@@ -631,16 +681,22 @@ class MutualFundNewScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: theme.isDarkMode ? Colors.white : Color.fromARGB(255, 0, 0, 0),
+                            color: theme.isDarkMode
+                                ? Colors.white
+                                : Color.fromARGB(255, 0, 0, 0),
                           ),
                           textAlign: TextAlign.center,
                         ),
                         shape: const StadiumBorder(),
-                        backgroundColor: theme.isDarkMode ? Color.fromARGB(255, 0, 0, 0) : Colors.white,
+                        backgroundColor: theme.isDarkMode
+                            ? Color.fromARGB(255, 0, 0, 0)
+                            : Colors.white,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 2.0, vertical: 2.0),
                         side: BorderSide(
-                          color:theme.isDarkMode ? Color(0xFF2A2A2A): Color(0xFF666666),
+                          color: theme.isDarkMode
+                              ? Color(0xFF2A2A2A)
+                              : Color(0xFF666666),
                           width: 1.0,
                         ),
                       ),
@@ -655,7 +711,7 @@ class MutualFundNewScreen extends ConsumerWidget {
     );
   }
 
-  Widget nfoCard(context, mf , theme) {
+  Widget nfoCard(context, mf, theme) {
     return GestureDetector(
       onTap: () async {
         //  mf.fetchmfNFO(context);
@@ -665,7 +721,9 @@ class MutualFundNewScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         margin: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: theme.isDarkMode ?const Color.fromARGB(255, 0, 0, 0): Colors.white,
+          color: theme.isDarkMode
+              ? const Color.fromARGB(255, 0, 0, 0)
+              : Colors.white,
           borderRadius: BorderRadius.circular(10.0),
           border: Border.all(
             color: theme.isDarkMode ? Color(0xFF2A2A2A) : Colors.grey.shade300,
@@ -743,4 +801,95 @@ class MutualFundNewScreen extends ConsumerWidget {
       ),
     );
   }
+
+Widget sipcaltor(context, mf, theme) {
+  return GestureDetector(
+    onTap: () async {
+      Navigator.pushNamed(context, Routes.mfsipcalscreen);
+    },
+    child: Container(
+      padding: const EdgeInsets.all(16.0),
+      margin: const EdgeInsets.only(left:16,right:0,top:0),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode
+            ? const Color.fromARGB(255, 0, 0, 0)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(10.0),
+        border: Border.all(
+          color: theme.isDarkMode ? const Color(0xFF2A2A2A) : Colors.grey.shade300,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Center(
+            child: SvgPicture.asset(
+              'assets/explore/sipca.svg',
+              width: 38,
+              height: 34,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              "SIP Calculator",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: theme.isDarkMode ? Colors.white : Colors.black,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget cargrcalss(context, mf, theme) {
+  return GestureDetector(
+    onTap: () async {
+      Navigator.pushNamed(context, Routes.mfcagrcalss);
+    },
+    child: Container(
+      padding: const EdgeInsets.all(16.0),
+      margin: const EdgeInsets.only(left:16,right:16,top:0),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode
+            ? const Color.fromARGB(255, 0, 0, 0)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(10.0),
+        border: Border.all(
+          color: theme.isDarkMode ? const Color(0xFF2A2A2A) : Colors.grey.shade300,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Center(
+            child: SvgPicture.asset(
+              'assets/explore/cagrcal.svg',
+              width: 40,
+              height: 34,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              "CAGR Calculator",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: theme.isDarkMode ? Colors.white : Colors.black,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 }

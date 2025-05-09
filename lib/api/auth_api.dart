@@ -132,6 +132,37 @@ mixin AuthApi on ApiCore {
     }
   }
 
+  Future setAppversion(Map data) async {
+    try {
+      final uri = Uri.parse(apiLinks.weblog);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders, body: jsonEncode(data));
+      final json = jsonDecode(res.body);
+
+      return json;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future setOrderprefer(Map data, bool head) async {
+    try {
+      final uri = Uri.parse(head
+          ? apiLinks.setpref
+          : "${apiLinks.getpref}?clientid=${prefs.clientId}&source=MOB");
+      final res = head
+          ? await apiClient.post(uri,
+              headers: defaultHeaders, body: jsonEncode(data))
+          : await apiClient.get(uri, headers: defaultHeaders);
+      final json = jsonDecode(res.body);
+      print("object pref $json");
+
+      return json;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Future<ValidateSession> getValidateSession(
   //     {required String deviceInfo}) async {
   //   try {

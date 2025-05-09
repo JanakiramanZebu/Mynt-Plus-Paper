@@ -283,13 +283,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
       ),
       // if (_mfHoldingsModel!.isNotEmpty) ...[
       //   if (_mfHoldingsModel![0].stat != "Not_Ok") ...[
-      Tab(
+      const Tab(
         child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                  "MF Holding${_mfHoldingsModel!.isNotEmpty ? "s (${_mfHoldingsModel!.length})" : ""}")
+                  // "MF Holding${_mfHoldingsModel!.isNotEmpty ? "s (${_mfHoldingsModel!.length})" : ""}"
+                  "Funds"
+                  )
             ]),
       ),
       //   ]
@@ -1088,15 +1090,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
         int fullOrders = qty ~/ frzqty;
         int remainingQty = qty % frzqty;
 
-        ref(orderProvider).setsliceOrderloader(true);
         for (int i = 0; i < fullOrders; i++) {
           placeOrderInput.qty = frzqty.toString();
           _placeOrderModel =
               await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
-
-          if (i == fullOrders - 1) {
-            ref(orderProvider).setsliceOrderloader(false);
-          }
         }
 
         if (remainingQty > 0) {

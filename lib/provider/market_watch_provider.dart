@@ -28,7 +28,7 @@ import '../models/marketwatch_model/pre_define_wl_model.dart';
 import '../models/marketwatch_model/scrip_info.dart';
 import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
-import '../models/marketwatch_model/search_scrip_model.dart';
+import '../models/marketwatch_model/search_scrip_new_model.dart';
 import '../models/marketwatch_model/watchlist_rename_model.dart';
 import '../res/res.dart';
 import '../screens/market_watch/scrip_depth_info.dart';
@@ -110,7 +110,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     Tab(text: "Equity"),
     Tab(text: "F&O"),
     Tab(text: "Currency"),
-    Tab(text: "Commodity")
+    Tab(text: "Commodity"),
+    Tab(text: "Indices")
   ];
 
   List<Tab> get searchTabList => _searchTabList;
@@ -192,20 +193,20 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   AddDeleteScripModel? _addDeleteScripModel;
   AddDeleteScripModel? get addDeleteScripModel => _addDeleteScripModel;
 
-  SearchScripModel? _searchScripModel;
+  SearchScripNewModel? _searchScripModel;
 
-  SearchScripModel? get searchScripModel => _searchScripModel;
+  SearchScripNewModel? get searchScripModel => _searchScripModel;
 
-  List<ScripValue>? _allSearchScrip = [];
-  List<ScripValue>? get allSearchScrip => _allSearchScrip;
-  List<ScripValue>? _equitySearchScrip = [];
-  List<ScripValue>? get equitySearchScrip => _equitySearchScrip;
-  List<ScripValue>? _currencySearchScrip = [];
-  List<ScripValue>? get currencySearchScrip => _currencySearchScrip;
-  List<ScripValue>? _commoditySearchScrip = [];
-  List<ScripValue>? get commoditySearchScrip => _commoditySearchScrip;
-  List<ScripValue>? _fNoSearchScrip = [];
-  List<ScripValue>? get fNoSearchScrip => _fNoSearchScrip;
+  List<ScripNewValue>? _allSearchScrip = [];
+  List<ScripNewValue>? get allSearchScrip => _allSearchScrip;
+  List<ScripNewValue>? _equitySearchScrip = [];
+  List<ScripNewValue>? get equitySearchScrip => _equitySearchScrip;
+  List<ScripNewValue>? _currencySearchScrip = [];
+  List<ScripNewValue>? get currencySearchScrip => _currencySearchScrip;
+  List<ScripNewValue>? _commoditySearchScrip = [];
+  List<ScripNewValue>? get commoditySearchScrip => _commoditySearchScrip;
+  List<ScripNewValue>? _fNoSearchScrip = [];
+  List<ScripNewValue>? get fNoSearchScrip => _fNoSearchScrip;
 
   CancelAlertModel? _cancelalert;
   CancelAlertModel? get cancelalert => _cancelalert;
@@ -266,6 +267,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   List<OptionValues> get optChainCallUP => _optChainCallUp;
   List<OptionValues> get optChainPutDown => _optChainPutDown;
   List<OptionValues> get optChainCallDown => _optChainCallDown;
+
+  final ScrollController _scrollController = ScrollController();
+  ScrollController get scrollController => _scrollController;
+
   MarketWatchProvider(this.ref);
 
   String _wlName = "";
@@ -315,6 +320,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   StockData? _fundamentalData;
   StockData? get fundamentalData => _fundamentalData;
 
+  List<String> _exarr = [];
+
   final String _firstGetData = "0";
   String get fistGetData => _firstGetData;
 
@@ -343,6 +350,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   singlePageloader(bool value) {
     _scripDepthloader = value;
     notifyListeners();
+  }
+
+  getOptionawait(String exch, String token) {
+    final portfolios = ref(portfolioProvider).oplists;
+    bool value = (linkedscript.contains(exch) ||
+        (portfolios.isNotEmpty && portfolios.contains(int.parse(token))));
+    return value;
   }
 
   calldepthApis(BuildContext context, raw, basket) async {
@@ -381,12 +395,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     singlePageloader(false);
     await fetchScripQuote("${flow ? raw['token'] : raw.token}",
         "${flow ? raw['exch'] : raw.exch}", context);
-    final portfolios = ref(portfolioProvider);
-
-    if (linkedscript.contains(flow ? raw['exch'] : raw.exch) ||
-        (portfolios.oplists.isNotEmpty &&
-            portfolios.oplists
-                .contains(int.parse(flow ? raw['token'] : raw.token)))) {
+    if (getOptionawait(
+        flow ? raw['exch'] : raw.exch, flow ? raw['token'] : raw.token)) {
       await fetchScripInfo("${flow ? raw['token'] : raw.token}",
           "${flow ? raw['exch'] : raw.exch}", context);
       await fetchLinkeScrip("${flow ? raw['token'] : raw.token}",
@@ -636,11 +646,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  List<ChartArgs> _chartTabs = [];
+  final List<ChartArgs> _chartTabs = [];
   ChartArgs? _activeTab;
-
   List<ChartArgs> get chartTabs => _chartTabs;
   ChartArgs? get activeTab => _activeTab;
+
+  final List<ChartArgs> _optionTabs = [];
+  ChartArgs? _oactiveTab;
+  List<ChartArgs> get optionTabs => _optionTabs;
+  ChartArgs? get oactiveTab => _oactiveTab;
 
   final List<ChartArgs> defaultChartTabs = [
     ChartArgs(tsym: "Nifty 50", token: "26000", exch: "NSE"),
@@ -652,38 +666,58 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   void loadDefaultTabs() {
     if (_chartTabs.isEmpty) {
       _chartTabs.addAll(defaultChartTabs);
-      _activeTab = _chartTabs.first;
+      _oactiveTab = _chartTabs.first;
+      notifyListeners();
+    }
+    if (_optionTabs.isEmpty) {
+      _optionTabs.addAll(defaultChartTabs);
+      _oactiveTab = _optionTabs.first;
       notifyListeners();
     }
   }
 
-  void addChartTab(ChartArgs tab) {
-    if (!_chartTabs.any((t) => t.token == tab.token)) {
-      _chartTabs.add(tab);
+  void addChartTab(ChartArgs tab, bool type) {
+    if (type) {
+      if (!_optionTabs.any((t) => t.token == tab.token)) {
+        _optionTabs.add(tab);
+      }
+      _activeTab = tab;
+    } else {
+      if (!_chartTabs.any((t) => t.token == tab.token)) {
+        _chartTabs.add(tab);
+      }
+      _activeTab = tab;
     }
-    _activeTab = tab;
     notifyListeners();
   }
 
-  void selectChartTab(String token) {
-    _activeTab = _chartTabs.firstWhere(
-      (tab) => tab.token == token,
-      orElse: () => ChartArgs(
-          tsym: '',
-          token: '',
-          exch: ''), // <- this works if ChartArgs? is allowed
-    );
+  void selectChartTab(String token, bool type) {
+    if (type) {
+      _oactiveTab = _optionTabs.firstWhere(
+        (tab) => tab.token == token,
+        orElse: () => ChartArgs(
+            tsym: '',
+            token: '',
+            exch: ''), // <- this works if ChartArgs? is allowed
+      );
+    } else {
+      _activeTab = _chartTabs.firstWhere(
+        (tab) => tab.token == token,
+        orElse: () => ChartArgs(
+            tsym: '',
+            token: '',
+            exch: ''), // <- this works if ChartArgs? is allowed
+      );
+    }
     notifyListeners();
   }
 
-  void removeChartTab(ChartArgs tab) {
-    _chartTabs.removeWhere((t) => t.token == tab.token);
-    notifyListeners();
-  }
-
-  void clearAllTabs() {
-    _chartTabs.clear();
-    _activeTab = null;
+  void removeChartTab(ChartArgs tab, bool type) {
+    if (type) {
+      _optionTabs.removeWhere((t) => t.token == tab.token);
+    } else {
+      _chartTabs.removeWhere((t) => t.token == tab.token);
+    }
     notifyListeners();
   }
 
@@ -693,13 +727,72 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref(themeProvider).isDarkMode}')");
     if (_chartTabs.length == 5 &&
         (_chartTabs.any((t) => t.token == token)) != true) {
-      removeChartTab(_chartTabs.last);
+      removeChartTab(_chartTabs.last, false);
     }
     if (token != "0123") {
-      addChartTab(ChartArgs(tsym: tsym, token: token, exch: exch));
+      addChartTab(ChartArgs(tsym: tsym, token: token, exch: exch), false);
     }
-    selectChartTab(token.toString());
+    selectChartTab(token.toString(), false);
+    scrollToSelectedTab(false);
     notifyListeners();
+  }
+
+  void setOptionScript(
+      BuildContext context, String exch, String token, String tsym) async {
+    toggleLoad(true);
+    singlePageloader(true);
+    notifyListeners();
+    await fetchScripQuoteIndex(token, exch, context);
+    if (exch == "BFO" ||
+        exch == "NFO" ||
+        (exch == "MCX" && _getQuotes.instname == "OPTFUT")) {
+      await fetchStikePrc(
+          "${_getQuotes.undTk}", "${_getQuotes.undExch}", context);
+    } else {
+      updateOptStrPrc(_getQuotes.lp.toString());
+    }
+
+    await ref(websocketProvider).establishConnection(
+        channelInput: (_getQuotes.exch == "BFO" ||
+                _getQuotes.exch == "NFO" ||
+                (_getQuotes.exch == "MCX" && _getQuotes.instname == "OPTFUT"))
+            ? '${_getQuotes.undExch}|${_getQuotes.undTk!}'
+            : '${_getQuotes.exch}|${_getQuotes.token!}',
+        task: "t",
+        context: context);
+
+    await fetchLinkeScrip(token, exch, context);
+
+    await fetchOPtionChain(
+        context: context,
+        exchange: optionExch!,
+        numofStrike: numStrike,
+        strPrc: optionStrPrc,
+        tradeSym: selectedTradeSym!);
+    singlePageloader(false);
+    toggleLoad(false);
+    if (_optionTabs.length == 5 &&
+        (_optionTabs.any((t) => t.token == token)) != true) {
+      removeChartTab(_optionTabs.last, true);
+    }
+    addChartTab(ChartArgs(tsym: tsym, token: token, exch: exch), true);
+
+    selectChartTab(token.toString(), true);
+    scrollToSelectedTab(true);
+    notifyListeners();
+  }
+
+  void scrollToSelectedTab(bool type) {
+    final selectedIndex = type
+        ? _optionTabs.indexWhere((tab) => tab.token == _oactiveTab?.token)
+        : _chartTabs.indexWhere((tab) => tab.token == _activeTab?.token);
+    if (_scrollController.hasClients && selectedIndex != -1) {
+      _scrollController.animateTo(
+        selectedIndex * 120.0, // Adjust width estimate based on Chip size
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   setpageName(String name) {
@@ -729,9 +822,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Search scrip by tarde symbol
 
-  scripSearch(String value, BuildContext context) async {
-    if (value.length > 1) {
-      await fetchSearchScrip(searchText: value, context: context);
+  scripSearch(String value, BuildContext context, int? seg) async {
+    if (value.length > 2) {
+      await fetchSearchScrip(
+          searchText: value,
+          context: context,
+          segment: ["", "EQ", "FO", "CUR", "COM", "IDX"][seg ?? 0]);
     } else {
       searchClear();
     }
@@ -1052,9 +1148,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
 // Fetching data from the api and stored in a variable
-  Future fetchScripInfo(String token, String exch, BuildContext context) async {
+  Future fetchScripInfo(String token, String exch, BuildContext context,
+      [bool order = false]) async {
     try {
-      if (storeQuotes.containsKey(token) && storeQuotes[token]?['s'] != null) {
+      if (order == false &&
+          storeQuotes.containsKey(token) &&
+          storeQuotes[token]?['s'] != null) {
         _scripInfoModel = storeQuotes[token]?['s'];
         ConstantName.sessCheck = true;
         print('qqq if si');
@@ -1171,12 +1270,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           "case": "Click here to view the trading view chart."
         }
       ];
-
-      final portfolios = ref(portfolioProvider);
-
-      if (linkedscript.contains(exch) ||
-          (portfolios.oplists.isNotEmpty &&
-              portfolios.oplists.contains(int.parse(token)))) {
+      if (getOptionawait(exch, token)) {
         _depthBtns.add({
           "btnName": "Option",
           "imgPath": assets.optChainIcon,
@@ -1259,6 +1353,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (_getStikePrc!.stat == "Ok") {
         ConstantName.sessCheck = true;
         if (_getStikePrc!.exch == "NSE" ||
+            _getStikePrc!.exch == "BSE" ||
             (_getStikePrc!.exch == "MCX" &&
                 _getStikePrc!.instname == "FUTCOM")) {
           _optionStrPrc = "${_getStikePrc!.lp}";
@@ -1335,101 +1430,91 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
   Future fetchSearchScrip(
-      {required String searchText, required BuildContext context}) async {
+      {required String searchText,
+      required BuildContext context,
+      required String segment}) async {
     try {
       toggleLoadingOn(true);
-
-      _searchScripModel = await api.getSearchScrip(searchText: searchText);
+      if (_exarr.isEmpty) {
+        List<String> rawList =
+            ref(userProfileProvider).userDetailModel?.exarr ?? [];
+        _exarr = rawList.map((e) => '"${e.toString()}"').toList();
+      } // _searchScripModel = await api.getSearchScrip(searchText: searchText);
+      _searchScripModel = await api.getSearchScripNew(
+          searchText: searchText, categ: segment, exchs: _exarr);
 
       _allSearchScrip = [];
-      _equitySearchScrip = [];
-      _fNoSearchScrip = [];
-      _currencySearchScrip = [];
-      _commoditySearchScrip = [];
-      if (_searchScripModel!.stat == "Ok") {
+      // _equitySearchScrip = [];
+      // _fNoSearchScrip = [];
+      // _currencySearchScrip = [];
+      // _commoditySearchScrip = [];
+      if (_searchScripModel?.stat == "Ok") {
         ConstantName.sessCheck = true;
-        _isAdded = List<bool>.filled(_searchScripModel!.values!.length, false);
-        if (_searchScripModel!.values!.isNotEmpty) {
-          for (var i = 0; i < _searchScripModel!.values!.length; i++) {
-// Seperating Trade symbol(symbol,exp date, Option)
-            if (_searchScripModel!.values![i].exch == "BFO" &&
-                _searchScripModel!.values![i].dname != null) {
-              List<String> splitVal =
-                  _searchScripModel!.values![i].dname!.split(" ");
 
-              _searchScripModel!.values![i].symbol = splitVal[0];
-              _searchScripModel!.values![i].expDate =
-                  "${splitVal[1]} ${splitVal[2]}";
-              _searchScripModel!.values![i].option = splitVal.length > 4
+        final values = _searchScripModel!.values!;
+        _isAdded = List<bool>.filled(values.length, false);
+
+        if (values.isNotEmpty) {
+          // final Set<String> currencySet = {
+          //   "FUTCUR",
+          //   "FUTIRC",
+          //   "FUTIRT",
+          //   "OPTCUR",
+          //   "OPTIRC"
+          // };
+          // final Set<String> commoditySet = {
+          //   "AUCSO",
+          //   "FUTCOM",
+          //   "FUTIDX",
+          //   "OPTFUT"
+          // };
+          // final Set<String> fnoSet = {"FUTIDX", "FUTSTK", "OPTIDX", "OPTSTK"};
+
+          for (int i = 0; i < values.length; i++) {
+            final val = values[i];
+            final exch = val.exch;
+            final dname = val.dname;
+            // final instname = val.instname?.toUpperCase() ?? "";
+            final tsym = val.tsym;
+
+            if (exch == "BFO" && dname != null) {
+              final splitVal = dname.split(" ");
+              val.symbol = splitVal[0];
+              val.expDate = "${splitVal[1]} ${splitVal[2]}";
+              val.option = splitVal.length > 4
                   ? "${splitVal[3]} ${splitVal[4]}"
                   : splitVal[3];
             } else {
-              Map spilitSymbol =
-                  spilitTsym(value: "${_searchScripModel!.values![i].tsym}");
-
-              _searchScripModel!.values![i].symbol =
-                  "${spilitSymbol["symbol"]}";
-              _searchScripModel!.values![i].expDate =
-                  "${spilitSymbol["expDate"]}";
-              _searchScripModel!.values![i].option =
-                  "${spilitSymbol["option"]}";
+              final spilitSymbol = spilitTsym(value: tsym ?? "");
+              val.symbol = spilitSymbol["symbol"];
+              val.expDate = spilitSymbol["expDate"];
+              val.option = spilitSymbol["option"];
             }
-            for (var j = 0; j < _scrips.length; j++) {
-              if (_searchScripModel!.values![i].tsym == _scrips[j]['tsym']) {
+
+            for (var scrip in _scrips) {
+              if (tsym == scrip['tsym']) {
                 _isAdded![i] = true;
-              }
-            }
-            if (_searchScripModel!.values![i].instname!.toUpperCase() !=
-                "COM") {
-              _allSearchScrip?.add(_searchScripModel!.values![i]);
-              if (_searchScripModel!
-                          .values![i].instname!
-                          .toUpperCase() ==
-                      "FUTCUR" ||
-                  _searchScripModel!
-                          .values![i].instname!
-                          .toUpperCase() ==
-                      "FUTIRC" ||
-                  _searchScripModel!
-                          .values![i].instname!
-                          .toUpperCase() ==
-                      "FUTIRT" ||
-                  _searchScripModel!.values![i].instname!.toUpperCase() ==
-                      "OPTCUR" ||
-                  _searchScripModel!.values![i].instname!.toUpperCase() ==
-                      "OPTIRC") {
-                _currencySearchScrip!.add(_searchScripModel!.values![i]);
-              } else if (_searchScripModel!
-                          .values![i].instname!
-                          .toUpperCase() ==
-                      "AUCSO" ||
-                  _searchScripModel!
-                          .values![i].instname!
-                          .toUpperCase() ==
-                      "FUTCOM" ||
-                  _searchScripModel!.values![i].instname!.toUpperCase() ==
-                      "FUTIDX" ||
-                  _searchScripModel!.values![i].instname!.toUpperCase() ==
-                      "OPTFUT") {
-                _commoditySearchScrip!.add(_searchScripModel!.values![i]);
-              } else if ((_searchScripModel!.values![i].instname!.toUpperCase() ==
-                          "FUTIDX" ||
-                      _searchScripModel!.values![i].instname!.toUpperCase() ==
-                          "FUTSTK") ||
-                  (_searchScripModel!.values![i].instname!.toUpperCase() ==
-                          "OPTIDX" ||
-                      _searchScripModel!.values![i].instname!.toUpperCase() ==
-                          "OPTSTK")) {
-                _fNoSearchScrip!.add(_searchScripModel!.values![i]);
-              } else {
-                _equitySearchScrip!.add(_searchScripModel!.values![i]);
+                break;
               }
             }
 
-            notifyListeners();
+            // if (instname != "COM") {
+            _allSearchScrip?.add(val);
+
+            //   if (currencySet.contains(instname)) {
+            //     _currencySearchScrip?.add(val);
+            //   } else if (commoditySet.contains(instname)) {
+            //     _commoditySearchScrip?.add(val);
+            //   } else if (fnoSet.contains(instname)) {
+            //     _fNoSearchScrip?.add(val);
+            //   } else {
+            //     _equitySearchScrip?.add(val);
+            //   }
+            // }
           }
 
           _searchErrorText = "";
+          notifyListeners();
         }
       } else {
         _searchErrorText = "No Data Found";
@@ -1913,8 +1998,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (element.optt == "CE") {
         _optChainCall.add(element);
         // int callLength = _optChainCall.length ~/ 2;
-        if (strPrc <
-            double.parse(element.strprc.toString())) {
+        if (strPrc < double.parse(element.strprc.toString())) {
           _optChainCallDown.add(element);
         } else {
           _optChainCallUp.add(element);
@@ -1922,8 +2006,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       } else {
         _optChainPut.add(element);
         // int putLength = _optChainPut.length ~/ 2;
-        if (strPrc <
-            double.parse(element.strprc.toString())) {
+        if (strPrc < double.parse(element.strprc.toString())) {
           _optChainPutDown.add(element);
         } else {
           _optChainPutUp.add(element);

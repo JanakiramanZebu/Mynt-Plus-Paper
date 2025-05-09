@@ -176,6 +176,10 @@ class Assets {
   final String hybridimg = "assets/icon/balancehy.svg";
   final String sectorical = "assets/icon/sectorical.svg";
   final String growthnew = "assets/icon/growthnew.svg";
+  final String sipca = "assets/explore/sipca.svg";
+  final String cagrcal = "assets/explore/cagrcal.svg";
+
+
 
   // payment icons
   final String upiIcon = "assets/icon/icons8-bhim.svg";
