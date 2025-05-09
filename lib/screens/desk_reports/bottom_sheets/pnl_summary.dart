@@ -199,7 +199,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             color: Color(0xFF696969),
-                                            fw: 1),
+                                            fw: 0),
                                         TextWidget.subText(
                                             text:
                                                 "${double.tryParse(value.bQTY.toString())!.toInt()} @ ₹${double.parse(value.bRATE.toString()).toStringAsFixed(2)}",
@@ -213,7 +213,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                                         : theme.isDarkMode
                                                             ? colors.colorWhite
                                                             : colors.colorBlack,
-                                            fw: 0),
+                                            fw:1),
                                       ],
                                     ),
                                     Row(
@@ -223,7 +223,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             color: Color(0xFF696969),
-                                            fw: 1),
+                                            fw: 0),
                                         TextWidget.subText(
                                             text:
                                                 "${double.tryParse(value.nETQTY!)!.toInt()}",
@@ -232,7 +232,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                             color: theme.isDarkMode
                                                 ? colors.colorWhite
                                                 : colors.colorBlack,
-                                            fw: 0),
+                                            fw: 1),
                                         // Text(
                                         //   ("${ledgerdata.ledgerBillData!.transactions![index].bAMT}"
                                         //                ) ,
@@ -349,7 +349,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             color: Color(0xFF696969),
-                                            fw: 1),
+                                            fw: 0),
                                         TextWidget.subText(
                                             text:
                                                 "${double.tryParse(value.sQTY.toString())!.toInt()} @ ₹ ${double.parse(value.sRATE.toString()).toStringAsFixed(2)}",
@@ -363,7 +363,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                                         : theme.isDarkMode
                                                             ? colors.colorWhite
                                                             : colors.colorBlack,
-                                            fw: 0),
+                                            fw: 1),
                                       ],
                                     ),
                                     Row(
@@ -373,7 +373,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             color: Color(0xFF696969),
-                                            fw: 1),
+                                            fw: 0),
                                         TextWidget.subText(
                                             text: "₹${value.nRATE}",
                                             textOverflow: TextOverflow.ellipsis,
@@ -381,7 +381,7 @@ class _PnlSummarBottom extends State<PnlSummarBottom> {
                                             color: theme.isDarkMode
                                                         ? colors.colorWhite
                                                         : colors.colorBlack,
-                                            fw: 0),
+                                            fw: 1),
                                       ],
                                     ),
 

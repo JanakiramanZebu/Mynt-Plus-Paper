@@ -322,4 +322,6 @@ class ApiLinks {
   String get reportsapi => 'https://rekycbe.mynt.in/report/';
   String get reportspledge => 'https://rekycbe.mynt.in/pledge/';
   String get fundforprofile => 'https://fundapi.mynt.in/api/';
+    String get caevents => 'https://v3.mynt.in/equity/';
+    String get position => 'https://be.zebull.in/api/';
 }

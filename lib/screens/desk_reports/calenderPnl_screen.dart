@@ -31,6 +31,15 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
       final ledgerprovider = watch(ledgerProvider);
       final sortedDates = ledgerprovider.grouped.keys.toList()
         ..sort((a, b) => b.compareTo(a));
+      Future<void> _refresh() async {
+        await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
+        print("refresh ");
+        await ledgerprovider.getCurrentDate('else');
+        ledgerprovider.calendarProvider();
+        ledgerprovider.fetchcalenderpnldata(context, ledgerprovider.startDate,
+            ledgerprovider.today, 'Equity');
+      }
+
       if (ledgerprovider.calenderpnlAllData != null) {
         netvalue = (ledgerprovider.calenderpnlAllData?.realized ?? 0.0) -
             (ledgerprovider.calenderpnlAllData!.totalCharges ?? 0.0);
@@ -55,508 +64,538 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
               theme: theme.isDarkMode,
               fw: 1),
         ),
-        body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.calendarpnlloading,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: screenWidth,
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? const Color(0xffB5C0CF).withOpacity(.15)
-                              : const Color(0xffF1F3F8)),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Realised P&L",
-                                      style: textStyle(const Color(0xFF696969),
-                                          14, FontWeight.w500),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        "${ledgerprovider.calenderpnlAllData != null ? ledgerprovider.calenderpnlAllData!.realized.toStringAsFixed(2) : 0.0} ",
-                                        style: ledgerprovider
-                                                    .calenderpnlAllData !=
-                                                null
-                                            ? ledgerprovider.calenderpnlAllData!
-                                                        .realized !=
-                                                    0
-                                                ? ledgerprovider
-                                                            .calenderpnlAllData!
-                                                            .realized <
-                                                        0
-                                                    ? textStyle(Colors.red, 16,
-                                                        FontWeight.w600)
-                                                    : textStyle(Colors.green,
-                                                        16, FontWeight.w600)
-                                                : textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    16,
-                                                    FontWeight.w600)
-                                            : textStyle(
-                                                theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                16,
-                                                FontWeight.w600),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      "Unrealised P&L",
-                                      textAlign: TextAlign.right,
-                                      style: textStyle(const Color(0xFF696969),
-                                          14, FontWeight.w500),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        ledgerprovider.calenderpnlAllData !=
-                                                null
-                                            ? ledgerprovider
-                                                .calenderpnlAllData!.unrealized
-                                                .toStringAsFixed(2)
-                                            : '0.0',
-                                        style: ledgerprovider
-                                                    .calenderpnlAllData !=
-                                                null
-                                            ? ledgerprovider.calenderpnlAllData!
-                                                        .unrealized !=
-                                                    0
-                                                ? ledgerprovider
-                                                            .calenderpnlAllData!
-                                                            .unrealized <
-                                                        0
-                                                    ? textStyle(Colors.red, 16,
-                                                        FontWeight.w600)
-                                                    : textStyle(Colors.green,
-                                                        16, FontWeight.w600)
-                                                : textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    16,
-                                                    FontWeight.w600)
-                                            : textStyle(
-                                                theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                16,
-                                                FontWeight.w600),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 18.0,
-                                right: 18.0,
-                                top: 4.0,
-                                bottom: 18.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Charges and Taxes",
-                                      style: textStyle(const Color(0xFF696969),
-                                          14, FontWeight.w500),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        ledgerprovider.calenderpnlAllData !=
-                                                null
-                                            ? ledgerprovider.calenderpnlAllData!
-                                                        .totalCharges !=
-                                                    null
-                                                ? ledgerprovider
-                                                    .calenderpnlAllData!
-                                                    .totalCharges!
-                                                    .toStringAsFixed(2)
-                                                : '0.0'
-                                            : '0.0',
-                                        textAlign: TextAlign.right,
-                                        style: textStyle(
-                                            Colors.red, 16, FontWeight.w600),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      "Net Realised P&L",
-                                      textAlign: TextAlign.right,
-                                      style: textStyle(const Color(0xFF696969),
-                                          14, FontWeight.w500),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        netvalue.toStringAsFixed(2),
-                                        textAlign: TextAlign.right,
-                                        style: netvalue != 0
-                                            ? netvalue > 0
-                                                ? textStyle(Colors.green, 16,
-                                                    FontWeight.w600)
-                                                : textStyle(Colors.red, 16,
-                                                    FontWeight.w600)
-                                            : textStyle(
-                                                theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                16,
-                                                FontWeight.w600),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 16, bottom: 5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+        body: RefreshIndicator(
+          onRefresh: _refresh,
+          child: TransparentLoaderScreen(
+            isLoading: ledgerprovider.calendarpnlloading,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
                     Container(
-                      // width: screenWidth * 0.45,
-                      height: 35.0,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? const Color(0xff3A3A3A)
-                            : const Color(0xffF1F3F8),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: ledgerprovider.selectedFinancialYear,
-                          dropdownColor: theme.isDarkMode
-                              ? const Color(0xff3A3A3A)
-                              : const Color(0xffF1F3F8),
-                          items:
-                              ledgerprovider.availableFinancialYears.map((fy) {
-                            return DropdownMenuItem<String>(
-                              value: fy,
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 4.0),
-                                child: Text(
-                                  fy,
-                                  style: textStyle(
-                                    theme.isDarkMode
-                                        ? Colors.white
-                                        : Colors.black,
-                                    12,
-                                    FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (newFY) {
-                            if (newFY != null) {
-                              ledgerprovider.setFinancialYear(newFY);
-                              // Call API after updating financial year
-                              ledgerprovider.fetchcalenderpnldata(
-                                context,
-                                ledgerprovider.formattedStartDate,
-                                ledgerprovider.formattedendDate,
-                                ledgerprovider.selectedSegment,
-                              );
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                    Container(
-                      height: 35.0,
-                      // width: screenWidth * 0.45,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? const Color(0xff3A3A3A)
-                            : const Color(0xffF1F3F8),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: ledgerprovider.selectedSegment,
-                          dropdownColor: theme.isDarkMode
-                              ? const Color(0xff3A3A3A)
-                              : const Color(0xffF1F3F8),
-                          items: ledgerprovider.availableSegments.map((seg) {
-                            return DropdownMenuItem<String>(
-                              value: seg,
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 4.0),
-                                child: Text(
-                                  seg,
-                                  style: textStyle(
-                                    theme.isDarkMode
-                                        ? Colors.white
-                                        : Colors.black,
-                                    12,
-                                    FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (seg) {
-                            if (seg != null) {
-                              ledgerprovider.setSegment(seg);
-                              ledgerprovider.fetchcalenderpnldata(
-                                context,
-                                ledgerprovider.formattedStartDate,
-                                ledgerprovider.formattedendDate,
-                                ledgerprovider.selectedSegment,
-                              );
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          top: 8.0, right: 2.0, bottom: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("M",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  12,
-                                  FontWeight.w500)),
-                          const SizedBox(width: 6),
-                          CustomSwitch(
-                              onChanged: (bool value) {
-                                // print('object ${value}');
-                                ledgerprovider.chngPnlmonthordaily(
-                                    !ledgerprovider.isMonthly);
-                              },
-                              color: theme.isDarkMode
-                                  ? const Color(0xffB5C0CF).withOpacity(.15)
-                                  : const Color(0xffF1F3F8),
-                              value: ledgerprovider.isMonthly),
-                          const SizedBox(width: 6),
-                          Text("D",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  12,
-                                  FontWeight.w500)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
-                    child: TextWidget.overlineText(
-                        text: "M-Monthly and D-Daily",
-                        color: Color.fromARGB(255, 105, 105, 105),
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        align: TextAlign.end,
-                        fw: 0),
-                  ),
-                ],
-              ),
-              ledgerprovider.calenderpnlAllData == null
-                  ? const Center(
-                      child: Padding(
-                      padding: EdgeInsets.only(top: 60),
-                      child: NoDataFound(),
-                    ))
-                  : Expanded(
-                      child: SingleChildScrollView(
-                        physics: const ScrollPhysics(),
+                      width: screenWidth,
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: theme.isDarkMode
+                                ? const Color(0xffB5C0CF).withOpacity(.15)
+                                : const Color(0xffF1F3F8)),
                         child: Column(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: CalendarTabs(
-                                theme: theme,
-                                heatmapData: ledgerprovider.heatmapData,
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Realised P&L",
+                                        style: textStyle(
+                                            const Color(0xFF696969),
+                                            14,
+                                            FontWeight.w500),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 8.0),
+                                        child: Text(
+                                          "${ledgerprovider.calenderpnlAllData != null ? ledgerprovider.calenderpnlAllData!.realized.toStringAsFixed(2) : 0.0} ",
+                                          style: ledgerprovider
+                                                      .calenderpnlAllData !=
+                                                  null
+                                              ? ledgerprovider
+                                                          .calenderpnlAllData!
+                                                          .realized !=
+                                                      0
+                                                  ? ledgerprovider
+                                                              .calenderpnlAllData!
+                                                              .realized <
+                                                          0
+                                                      ? textStyle(Colors.red,
+                                                          16, FontWeight.w600)
+                                                      : textStyle(Colors.green,
+                                                          16, FontWeight.w600)
+                                                  : textStyle(
+                                                      theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
+                                                      16,
+                                                      FontWeight.w600)
+                                              : textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  16,
+                                                  FontWeight.w600),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        "Unrealised P&L",
+                                        textAlign: TextAlign.right,
+                                        style: textStyle(
+                                            const Color(0xFF696969),
+                                            14,
+                                            FontWeight.w500),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 8.0),
+                                        child: Text(
+                                          ledgerprovider.calenderpnlAllData !=
+                                                  null
+                                              ? ledgerprovider
+                                                  .calenderpnlAllData!
+                                                  .unrealized
+                                                  .toStringAsFixed(2)
+                                              : '0.0',
+                                          style: ledgerprovider
+                                                      .calenderpnlAllData !=
+                                                  null
+                                              ? ledgerprovider
+                                                          .calenderpnlAllData!
+                                                          .unrealized !=
+                                                      0
+                                                  ? ledgerprovider
+                                                              .calenderpnlAllData!
+                                                              .unrealized <
+                                                          0
+                                                      ? textStyle(Colors.red,
+                                                          16, FontWeight.w600)
+                                                      : textStyle(Colors.green,
+                                                          16, FontWeight.w600)
+                                                  : textStyle(
+                                                      theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
+                                                      16,
+                                                      FontWeight.w600)
+                                              : textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  16,
+                                                  FontWeight.w600),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Divider(
-                                  color: theme.isDarkMode
-                                      ? const Color(0xffB5C0CF).withOpacity(.15)
-                                      : const Color(0xffF1F3F8),
-                                  thickness: 1.0,
-                                ),
-                                Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 16.0, top: 8.0, bottom: 8.0),
-                                    child: TextWidget.titleText(
-                                        text: "Date-specific Information",
-                                        color: Color.fromARGB(255, 0, 0, 0),
-                                        textOverflow: TextOverflow.ellipsis,
-                                        theme: theme.isDarkMode,
-                                        fw: 0)),
-                                Divider(
-                                  color: theme.isDarkMode
-                                      ? const Color(0xffB5C0CF).withOpacity(.15)
-                                      : const Color(0xffF1F3F8),
-                                  thickness: 1.0,
-                                ),
-                                sortedDates.length == 0
-                                    ? const Center(
-                                        child: Padding(
-                                        padding: EdgeInsets.only(top: 30),
-                                        child: NoDataFound(),
-                                      ))
-                                    : ListView.separated(
-                                        shrinkWrap: true,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemCount: sortedDates.length,
-                                        itemBuilder: (context, index) {
-                                          final dateKey = sortedDates[index];
-                                          final tradesForDate =
-                                              ledgerprovider.grouped[dateKey]!;
-                                          // Calculate total realized PnL for this date
-                                          final totalRealisedPnl =
-                                              tradesForDate.fold<double>(
-                                                  0.0,
-                                                  (sum, item) =>
-                                                      sum +
-                                                      double.parse(
-                                                          item.realisedpnl!));
-
-                                          // Format the date (e.g. "03 Oct 2024")
-                                          final dateString =
-                                              '${dateKey.day.toString().padLeft(2, '0')} '
-                                              '${_monthName(dateKey.month)} '
-                                              '${dateKey.year}';
-                                          return Theme(
-                                              data: Theme.of(context).copyWith(
-                                                  dividerColor:
-                                                      Colors.transparent),
-                                              child: InkWell(
-                                                onTap: () {
-                                                  _showBottomSheet(
-                                                      context,
-                                                      tradesForDate,
-                                                      theme,
-                                                      dateString,
-                                                      screenWidth);
-                                                },
-                                                child: Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                      vertical: 16.0,
-                                                      horizontal: 16.0),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      TextWidget.subText(
-                                                          text:
-                                                              "${dateString} (${tradesForDate.length})",
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 0),
-                                                      TextWidget.subText(
-                                                          text:
-                                                              "₹${(totalRealisedPnl).toStringAsFixed(2)} ",
-                                                          color: totalRealisedPnl !=
-                                                                  0
-                                                              ? totalRealisedPnl >
-                                                                      0
-                                                                  ? Colors.green
-                                                                  : totalRealisedPnl <
-                                                                          0
-                                                                      ? Colors
-                                                                          .red
-                                                                      : Colors
-                                                                          .black
-                                                              : theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack,
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 0),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ));
-                                        },
-                                        separatorBuilder:
-                                            (BuildContext context, int index) {
-                                          return Divider(
-                                            color: theme.isDarkMode
-                                                ? const Color(0xffB5C0CF)
-                                                    .withOpacity(.15)
-                                                : const Color(0xffF1F3F8),
-                                            thickness: 7.0,
-                                          );
-                                        },
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 18.0,
+                                  right: 18.0,
+                                  top: 4.0,
+                                  bottom: 18.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Charges and Taxes",
+                                        style: textStyle(
+                                            const Color(0xFF696969),
+                                            14,
+                                            FontWeight.w500),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 8.0),
+                                        child: Text(
+                                          ledgerprovider.calenderpnlAllData !=
+                                                  null
+                                              ? ledgerprovider
+                                                          .calenderpnlAllData!
+                                                          .totalCharges !=
+                                                      null
+                                                  ? ledgerprovider
+                                                      .calenderpnlAllData!
+                                                      .totalCharges!
+                                                      .toStringAsFixed(2)
+                                                  : '0.0'
+                                              : '0.0',
+                                          textAlign: TextAlign.right,
+                                          style: textStyle(
+                                              Colors.red, 16, FontWeight.w600),
+                                        ),
                                       )
-                              ],
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        "Net Realised P&L",
+                                        textAlign: TextAlign.right,
+                                        style: textStyle(
+                                            const Color(0xFF696969),
+                                            14,
+                                            FontWeight.w500),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 8.0),
+                                        child: Text(
+                                          netvalue.toStringAsFixed(2),
+                                          textAlign: TextAlign.right,
+                                          style: netvalue != 0
+                                              ? netvalue > 0
+                                                  ? textStyle(Colors.green, 16,
+                                                      FontWeight.w600)
+                                                  : textStyle(Colors.red, 16,
+                                                      FontWeight.w600)
+                                              : textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  16,
+                                                  FontWeight.w600),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
-            ],
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16, bottom: 5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Container(
+                        // width: screenWidth * 0.45,
+                        height: 35.0,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? const Color(0xff3A3A3A)
+                              : const Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: ledgerprovider.selectedFinancialYear,
+                            dropdownColor: theme.isDarkMode
+                                ? const Color(0xff3A3A3A)
+                                : const Color(0xffF1F3F8),
+                            items: ledgerprovider.availableFinancialYears
+                                .map((fy) {
+                              return DropdownMenuItem<String>(
+                                value: fy,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 4.0),
+                                  child: Text(
+                                    fy,
+                                    style: textStyle(
+                                      theme.isDarkMode
+                                          ? Colors.white
+                                          : Colors.black,
+                                      12,
+                                      FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (newFY) {
+                              if (newFY != null) {
+                                ledgerprovider.setFinancialYear(newFY);
+                                // Call API after updating financial year
+                                ledgerprovider.fetchcalenderpnldata(
+                                  context,
+                                  ledgerprovider.formattedStartDate,
+                                  ledgerprovider.formattedendDate,
+                                  ledgerprovider.selectedSegment,
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      Container(
+                        height: 35.0,
+                        // width: screenWidth * 0.45,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? const Color(0xff3A3A3A)
+                              : const Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: ledgerprovider.selectedSegment,
+                            dropdownColor: theme.isDarkMode
+                                ? const Color(0xff3A3A3A)
+                                : const Color(0xffF1F3F8),
+                            items: ledgerprovider.availableSegments.map((seg) {
+                              return DropdownMenuItem<String>(
+                                value: seg,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 4.0),
+                                  child: Text(
+                                    seg,
+                                    style: textStyle(
+                                      theme.isDarkMode
+                                          ? Colors.white
+                                          : Colors.black,
+                                      12,
+                                      FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (seg) {
+                              if (seg != null) {
+                                ledgerprovider.setSegment(seg);
+                                ledgerprovider.fetchcalenderpnldata(
+                                  context,
+                                  ledgerprovider.formattedStartDate,
+                                  ledgerprovider.formattedendDate,
+                                  ledgerprovider.selectedSegment,
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            top: 8.0, right: 2.0, bottom: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("M",
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    12,
+                                    FontWeight.w500)),
+                            const SizedBox(width: 6),
+                            CustomSwitch(
+                                onChanged: (bool value) {
+                                  // print('object ${value}');
+                                  ledgerprovider.chngPnlmonthordaily(
+                                      !ledgerprovider.isMonthly);
+                                },
+                                color: theme.isDarkMode
+                                    ? const Color(0xffB5C0CF).withOpacity(.15)
+                                    : const Color(0xffF1F3F8),
+                                value: ledgerprovider.isMonthly),
+                            const SizedBox(width: 6),
+                            Text("D",
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    12,
+                                    FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+                      child: TextWidget.overlineText(
+                          text: "M-Monthly and D-Daily",
+                          color: Color.fromARGB(255, 105, 105, 105),
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                          align: TextAlign.end,
+                          fw: 0),
+                    ),
+                  ],
+                ),
+                ledgerprovider.calenderpnlAllData == null
+                    ? const Center(
+                        child: Padding(
+                        padding: EdgeInsets.only(top: 60),
+                        child: NoDataFound(),
+                      ))
+                    : Expanded(
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CalendarTabs(
+                                  theme: theme,
+                                  heatmapData: ledgerprovider.heatmapData,
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Divider(
+                                    color: theme.isDarkMode
+                                        ? const Color(0xffB5C0CF)
+                                            .withOpacity(.15)
+                                        : const Color(0xffF1F3F8),
+                                    thickness: 1.0,
+                                  ),
+                                  Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 16.0, top: 8.0, bottom: 8.0),
+                                      child: TextWidget.titleText(
+                                          text: "Date-specific Information",
+                                          color: Color.fromARGB(255, 0, 0, 0),
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          fw: 0)),
+                                  Divider(
+                                    color: theme.isDarkMode
+                                        ? const Color(0xffB5C0CF)
+                                            .withOpacity(.15)
+                                        : const Color(0xffF1F3F8),
+                                    thickness: 1.0,
+                                  ),
+                                  sortedDates.length == 0
+                                      ? const Center(
+                                          child: Padding(
+                                          padding: EdgeInsets.only(top: 30),
+                                          child: NoDataFound(),
+                                        ))
+                                      : ListView.separated(
+                                          shrinkWrap: true,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          itemCount: sortedDates.length,
+                                          itemBuilder: (context, index) {
+                                            final dateKey = sortedDates[index];
+                                            final tradesForDate = ledgerprovider
+                                                .grouped[dateKey]!;
+                                            // Calculate total realized PnL for this date
+                                            final totalRealisedPnl =
+                                                tradesForDate.fold<double>(
+                                                    0.0,
+                                                    (sum, item) =>
+                                                        sum +
+                                                        double.parse(
+                                                            item.realisedpnl!));
+
+                                            // Format the date (e.g. "03 Oct 2024")
+                                            final dateString =
+                                                '${dateKey.day.toString().padLeft(2, '0')} '
+                                                '${_monthName(dateKey.month)} '
+                                                '${dateKey.year}';
+                                            return Theme(
+                                                data: Theme.of(context)
+                                                    .copyWith(
+                                                        dividerColor:
+                                                            Colors.transparent),
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    _showBottomSheet(
+                                                        context,
+                                                        tradesForDate,
+                                                        theme,
+                                                        dateString,
+                                                        screenWidth);
+                                                  },
+                                                  child: Padding(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            vertical: 16.0,
+                                                            horizontal: 16.0),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        TextWidget.subText(
+                                                            text:
+                                                                "${dateString} (${tradesForDate.length})",
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            textOverflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            theme: theme
+                                                                .isDarkMode,
+                                                            fw: 0),
+                                                        TextWidget.subText(
+                                                            text:
+                                                                "₹${(totalRealisedPnl).toStringAsFixed(2)} ",
+                                                            color: totalRealisedPnl !=
+                                                                    0
+                                                                ? totalRealisedPnl >
+                                                                        0
+                                                                    ? Colors
+                                                                        .green
+                                                                    : totalRealisedPnl <
+                                                                            0
+                                                                        ? Colors
+                                                                            .red
+                                                                        : Colors
+                                                                            .black
+                                                                : theme
+                                                                        .isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorBlack,
+                                                            textOverflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            theme: theme
+                                                                .isDarkMode,
+                                                            fw: 0),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ));
+                                          },
+                                          separatorBuilder:
+                                              (BuildContext context,
+                                                  int index) {
+                                            return Divider(
+                                              color: theme.isDarkMode
+                                                  ? const Color(0xffB5C0CF)
+                                                      .withOpacity(.15)
+                                                  : const Color(0xffF1F3F8),
+                                              thickness: 7.0,
+                                            );
+                                          },
+                                        )
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+              ],
+            ),
           ),
         ),
       );

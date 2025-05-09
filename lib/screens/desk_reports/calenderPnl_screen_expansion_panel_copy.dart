@@ -47,7 +47,9 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 ledgerprovider.setFinancialYear("");
                 Navigator.pop(context);
               },
-              child: const CustomBackBtn()),
+            child: SvgPicture.asset(assets.backArrow,
+                color:
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack)),
           elevation: 0.2,
           title: TextWidget.heroText(
               text: "Calender P&L",

@@ -7,6 +7,8 @@ class PledgeAndUnpledgeModel {
   String? estTotalAvailable;
   String? marginTotalAvailable;
   String? noOfNonApprovedStocks;
+  String? cashEquivalent;
+  String? noncashEquivalent;
   String? noOfStocks;
   String? pledgeHistory;
   String? stocksValue;
@@ -21,6 +23,8 @@ class PledgeAndUnpledgeModel {
       this.estTotalAvailable,
       this.marginTotalAvailable,
       this.noOfNonApprovedStocks,
+      this.cashEquivalent,
+      this.noncashEquivalent,
       this.noOfStocks,
       this.pledgeHistory,
       this.stocksValue,
@@ -40,6 +44,8 @@ class PledgeAndUnpledgeModel {
     estTotalAvailable = json['est_total_available'].toString();
     marginTotalAvailable = json['margin_total_available'].toString();
     noOfNonApprovedStocks = json['no_of_non_approved_stocks'].toString();
+    cashEquivalent = json['cashEquivalent'].toString();
+    noncashEquivalent = json['noncashEquivalent'].toString();
     noOfStocks = json['no_of_stocks'].toString();
     pledgeHistory = json['pledge_history'].toString();
     stocksValue = json['stocks_value'].toString();
@@ -58,6 +64,8 @@ class PledgeAndUnpledgeModel {
     data['est_total_available'] = estTotalAvailable;
     data['margin_total_available'] = marginTotalAvailable;
     data['no_of_non_approved_stocks'] = noOfNonApprovedStocks;
+    data['cashEquivalent'] = cashEquivalent;
+    data['noncashEquivalent'] = noncashEquivalent;
     data['no_of_stocks'] = noOfStocks;
     data['pledge_history'] = pledgeHistory;
     data['stocks_value'] = stocksValue;
@@ -98,8 +106,10 @@ class Data {
   CashEqColl? cashEqColl;
   List<String>? eligibleSegments;
   String? estPercentage;
+  String? cRnc;
   String? estimated;
   String? dummvalue;
+  String? segmentselect;
   String? dummunpledgevalue;
   String? deleteselected;
   String? initiated;
@@ -139,8 +149,10 @@ class Data {
       this.cashEqColl,
       this.eligibleSegments,
       this.estPercentage,
+      this.cRnc,
       this.estimated,
       this.dummvalue,
+      this.segmentselect,
       this.dummunpledgevalue,
       this.deleteselected,
       this.initiated,
@@ -182,8 +194,10 @@ class Data {
         : null;
     eligibleSegments = json['eligible_segments'].cast<String>();
     estPercentage = json['est_percentage'].toString();
+    cRnc = json['c_nc'].toString();
     estimated = json['estimated'].toString();
     dummvalue = json['dummvalue'].toString(); 
+    segmentselect = json['segmentselect'].toString(); 
     dummunpledgevalue = json['dummunpledgevalue'].toString();
     deleteselected = json['deleteselected'].toString();
     initiated = json['initiated'].toString();
@@ -227,6 +241,7 @@ class Data {
     }
     data['eligible_segments'] = eligibleSegments;
     data['est_percentage'] = estPercentage;
+    data['c_nc'] = cRnc;
     data['estimated'] = estimated;
     data['initiated'] = initiated;
     data['margin'] = margin;

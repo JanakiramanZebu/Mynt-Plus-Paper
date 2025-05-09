@@ -106,7 +106,7 @@ class UserAccountScreen extends ConsumerWidget {
                             if (reportsprovider.taxpnldercomcur == null &&
                                 reportsprovider.taxpnleq == null) {
                               await reportsprovider.getYearlistTaxpnl();
-                              reportsprovider.getCurrentDate('');
+                              await reportsprovider.getCurrentDate('');
                               reportsprovider.fetchtaxpnleqdata(
                                   context, reportsprovider.yearforTaxpnl);
 
@@ -128,6 +128,9 @@ class UserAccountScreen extends ConsumerWidget {
                                   reportsprovider.startDate,
                                   reportsprovider.today);
                             }
+                            // if (reportsprovider.positiondata == null) {
+                            //   reportsprovider.fetchposition(context);
+                            // }
                             Navigator.pushNamed(context, Routes.reports);
                           } else if (acttitle == "Verified P&L") {
                             Navigator.pushNamed(
@@ -138,12 +141,30 @@ class UserAccountScreen extends ConsumerWidget {
                                 context, Routes.reportWebViewApp,
                                 arguments: "corporateaction");
                           } else if (acttitle == "CA Events") {
+                            // await reportsprovider.getCurrentDate('caevent');
+                            // // reportsprovider.fetchcaeventsdata(context,
+                            // //       reportsprovider.startDate,
+                            // //       reportsprovider.endDate);
+                            // if (reportsprovider.caeventalldata == null) {
+                            //   await reportsprovider.getCurrentDate('caevent');
+                            //   reportsprovider.fetchcaeventsdata(
+                            //       context,
+                            //       reportsprovider.startDate,
+                            //       reportsprovider.endDate);
+                            // }
+                            // reportsprovider.taxpnlExTabchange(0);
+                            // Navigator.pushNamed(context, Routes.caeventmainpage,
+                            //     arguments: "DDDDD");
                             Navigator.pushNamed(
                                 context, Routes.reportWebViewApp,
                                 arguments: "event");
                           } else if (acttitle == "Pledge & Unpledge") {
                             // reportsprovider.fetchpledgeandunpledge(context);
                             // reportsprovider.getCurrentDate("pandu");
+                            // // if (reportsprovider.pledgeandunpledge == null) {
+                            // //   reportsprovider.getCurrentDate("pandu");
+                            // //   reportsprovider.fetchpledgeandunpledge(context);
+                            // // }
                             // Navigator.pushNamed(context, Routes.pledgeandun,
                             //     arguments: "DDDDD");
                             Navigator.pushNamed(

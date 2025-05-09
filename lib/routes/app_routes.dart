@@ -16,6 +16,7 @@ import '../screens/bonds/bonds_order_screen/order_screen.dart';
 import '../screens/bonds/bonds_orderbook_screen/bonds_order_book_main_screen.dart';
 import '../screens/bonds/bonds_orderbook_screen/bonds_orderbook_details/close_order_details.dart';
 import '../screens/bonds/bonds_orderbook_screen/bonds_orderbook_details/open_order_details.dart';
+import '../screens/desk_reports/ca_event_main_page.dart';
 import '../screens/desk_reports/calendarpnl_heatmap/headmap_calendar.dart';
 import '../screens/desk_reports/calenderPnl_screen.dart';
 import '../screens/desk_reports/cdsl_pledge.dart';
@@ -23,8 +24,10 @@ import '../screens/desk_reports/equity_taxpnl_screen.dart';
 import '../screens/desk_reports/holding_screen.dart';
 import '../screens/desk_reports/ledger_screen.dart';
 import '../screens/desk_reports/pdf_downalod_screen.dart';
+import '../screens/desk_reports/pledge_history_main_screen.dart';
 import '../screens/desk_reports/pledge_unpledge_response_screen.dart';
 import '../screens/desk_reports/pledge_unpledge_screen.dart';
+import '../screens/desk_reports/position_screen.dart';
 import '../screens/desk_reports/profitnloss_screen.dart';
 import '../screens/desk_reports/tax_pnl_screen.dart';
 import '../screens/desk_reports/tradebook_screen.dart';
@@ -677,6 +680,21 @@ class AppRoutes {
                   position: animation.drive(tween), child: child);
             });
 
+      case Routes.positionscreen:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                PositionScreen(ddd: args),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+
       case Routes.pnlscreen:
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
@@ -768,10 +786,70 @@ class AppRoutes {
                   position: animation.drive(tween), child: child);
             });
 
+      case Routes.caeventmainpage:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                CAEventMainPage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+
       case Routes.eqtaxpnleq:
         return PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 EqTaxpnlEq(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+
+      case Routes.pledgeandun:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                PledgenUnpledge(ddd: args),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+
+            case Routes.pledgehistorymainscreen:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                PledgeHistoryMainScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                  position: animation.drive(tween), child: child);
+            });
+
+      case Routes.pledgeunpledgeresponse:
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                PledgenUnpledgeResponse(ddd: args),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               const begin = Offset(-1.0, 0.0);

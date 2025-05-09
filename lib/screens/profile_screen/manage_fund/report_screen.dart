@@ -89,27 +89,30 @@ class ReportsScreen extends ConsumerWidget {
                     arguments: "DDDDD");
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,
                 //     arguments: "pnl");
-                   // else if (index == 2) {
-              //   Navigator.pushNamed(context, Routes.reportWebViewApp,
-              //       arguments: "positions");
-              // }
-              }
-                 else if (index == 3) {
+                // else if (index == 2) {
+                //   Navigator.pushNamed(context, Routes.reportWebViewApp,
+                //       arguments: "positions");
+                // }
+              } else if (index == 3) {
+                      // ledgerdate.fetchposition(context);
+                //               ledgerdate.fetchposition(context);
+
+                // Navigator.pushNamed(context, Routes.positionscreen,
+                //     arguments: "DDDDD");
+
                 Navigator.pushNamed(context, Routes.reportWebViewApp,
                     arguments: "positions");
-              }
-               else if (index == 4) {
-                
-              //   await ledgerdate.getCurrentDate('else');
-                 
-              //       ledgerdate.calendarProvider();
-              // ledgerdate.fetchcalenderpnldata(
-              //       ledgerdate.startDate, ledgerdate.today,'Equity');
+              } else if (index == 4) {
+                //   await ledgerdate.getCurrentDate('else');
+
+                //       ledgerdate.calendarProvider();
+                // ledgerdate.fetchcalenderpnldata(
+                //       ledgerdate.startDate, ledgerdate.today,'Equity');
                 Navigator.pushNamed(context, Routes.pnlscreen,
                     arguments: "DDDDD");
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,
                 //     arguments: "calenderpnl");
-              } else if (index ==5) {
+              } else if (index == 5) {
                 // await ledgerdate.getYearlistTaxpnl();
                 // ledgerdate.getCurrentDate('');
                 // print("year${ledgerdate.taxpnlyeararray[0]}");
@@ -124,9 +127,9 @@ class ReportsScreen extends ConsumerWidget {
                 // Navigator.pushNamed(context, Routes.eqtaxpnleq,
                 //     arguments: "DDDDD");
 
-                     Navigator.pushNamed(context, Routes.taxpnlscreen,
+                Navigator.pushNamed(context, Routes.taxpnlscreen,
                     arguments: "DDDDD");
-                    
+
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,
                 //     arguments: "taxpnl");
               } else if (index == 6) {
@@ -143,7 +146,7 @@ class ReportsScreen extends ConsumerWidget {
                 //     'https://profile.mynt.in/pdfdownload/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}'
                 //     );
                 //  await ledgerdate.getCurrentDate('else');
-                 
+
                 //  ledgerdate.fetchpdfdownload(
                 //     ledgerdate.startDate, ledgerdate.today);
                 Navigator.pushNamed(context, Routes.pdfdownload,

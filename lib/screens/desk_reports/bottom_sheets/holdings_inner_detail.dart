@@ -134,7 +134,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
                                                   color: Color(0xFF696969),
-                                                  fw: 1),
+                                                  fw: 0),
                                               TextWidget.subText(
                                                   text:
                                                       "${indexval['QUANTITY']}",
@@ -144,7 +144,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                                   color: theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
-                                                  fw: 0),
+                                                  fw: 1),
 
                                               // Text(
                                               //   ("${ledgerdata.ledgerBillData!.transactions![index].bAMT}"
@@ -173,7 +173,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
                                                   color: Color(0xFF696969),
-                                                  fw: 1),
+                                                  fw: 0),
                                               TextWidget.subText(
                                                   text:
                                                       "${(indexval['PRICE_PREMIUM']).toStringAsFixed(2)}",
@@ -183,7 +183,7 @@ class _HoldingInnerDetails extends State<HoldingInnerDetails> {
                                                   color: theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
-                                                  fw: 0),
+                                                  fw: 1),
                                             ],
                                           ),
                                         ],

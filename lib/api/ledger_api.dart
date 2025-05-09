@@ -6,21 +6,25 @@ import 'package:mynt_plus/models/desk_reports_model/pnl_seg_charges_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_core.dart';
+import '../models/desk_reports_model/ca_events_model.dart';
 import '../models/desk_reports_model/calender_pnl_model.dart';
 import '../models/desk_reports_model/cdsl_response_model.dart';
 import '../models/desk_reports_model/dercomcur_taxpnl_model.dart';
 import '../models/desk_reports_model/holdings_model.dart';
 import '../models/desk_reports_model/ledger_bill_model.dart';
 import '../models/desk_reports_model/ledger_model.dart';
+import '../models/desk_reports_model/pledge_history_model.dart';
 import '../models/desk_reports_model/pledge_segment_check_model.dart';
 import '../models/desk_reports_model/pledge_unpledge_model.dart';
 import '../models/desk_reports_model/pnl_model.dart';
 import '../models/desk_reports_model/pnl_summary_model.dart';
+import '../models/desk_reports_model/position_model.dart';
 import '../models/desk_reports_model/tax_pnl_Eq_charge_model.dart';
 import '../models/desk_reports_model/taxpnl_eq_model.dart';
 import '../models/desk_reports_model/tradebook_model.dart';
 import 'dart:convert';
 
+import '../models/desk_reports_model/unpledge_history_model.dart';
 import '../sharedWidget/fund_function.dart';
 // import 'package:permission_handler/permission_handler.dart';
 
@@ -51,6 +55,51 @@ mixin LedgerApi on ApiCore {
     }
   }
 
+  Future<UnpledgeHistoryModel> getunpledgehistory() async {
+    try {
+      final uri = Uri.parse('${apiLinks.reportspledge}/unpledge_history');
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
+          body: jsonEncode({
+            "clientid": "${prefs.clientId}", 
+            "date": "", 
+
+          }));
+
+      final json = jsonDecode((res.body)); 
+      // if (json['stat'] != 'Not Ok') {
+        return UnpledgeHistoryModel.fromJson(json as Map<String, dynamic>);
+      // } else {
+        // return UnpledgeHistoryModel.fromJson({});
+      // }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<PledgeHistoryModel> getpledgehistory() async {
+    try {
+      final uri = Uri.parse('${apiLinks.reportspledge}/PledgeHistory');
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
+          body: jsonEncode({
+            "clientid": "${prefs.clientId}"
+
+          }));
+
+      final json = jsonDecode((res.body)); 
+      // if (json['stat'] != 'Not Ok') {
+        return PledgeHistoryModel.fromJson(json as Map<String, dynamic>);
+      // } else {
+        // return UnpledgeHistoryModel.fromJson({});
+      // }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<HoldingModel> getHoldingsdata(String from) async {
     try {
       final uri = Uri.parse('${apiLinks.reportsapi}/getHoldings');
@@ -71,6 +120,36 @@ mixin LedgerApi on ApiCore {
       } else {
         return HoldingModel.fromJson({});
       }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<PositionModel> getposition() async {
+    try {
+      const ip = '192.168.5.22'; // the real server IP
+      const hostHeader = 'be.zebull.in'; // whatever your fake hostname was
+      final uri = Uri(
+        scheme: 'https',
+        host: ip,
+        path: '/api/GetPosition',
+      );
+      // final uri = Uri.parse('${apiLinks.position}GetPosition');
+      final res = await apiClient.post(uri,
+          headers: {
+            'Content-Type': 'application/json',
+            'Host': hostHeader,
+          },
+          // headers: testingrameshheader,
+          body: jsonEncode({"client_id": "${prefs.clientId}"}));
+
+      final json = jsonDecode((res.body)); 
+      // if (json['stat'] != 'Not Ok') {
+        // return PositionModel.fromJson(json as Map<String, dynamic>);
+      return PositionModel.fromJson({'data': json}); 
+      // } else {
+        // return PositionModel.fromJson({});
+      // }
     } catch (e) {
       rethrow;
     }
@@ -255,7 +334,7 @@ mixin LedgerApi on ApiCore {
     }
   }
 
-   Future getpdffileapitaxpnl(eq, der, eqcharge, year) async {
+  Future getpdffileapitaxpnl(eq, der, eqcharge, year) async {
     try {
       // final url = Uri.parse('${apiLinks.reportsapi}/getdocdownloadsmobile?cc=${prefs.clientId}&recno=${recno}');
       // final url = Uri.parse(
@@ -367,7 +446,7 @@ mixin LedgerApi on ApiCore {
     }
   }
 
-   Future getpdffileapipnl(resp, sdate, edate, string, notional, value) async {
+  Future getpdffileapipnl(resp, sdate, edate, string, notional, value) async {
     try {
       // final uri = Uri.parse('${apiLinks.reportsapi}/taxpnl_pdf');
       final uri = Uri.parse('${apiLinks.reportsapi}/notional_p_and_l');
@@ -443,6 +522,40 @@ mixin LedgerApi on ApiCore {
       final json = jsonDecode((res.body));
       // if (json['stat'] != 'Not OK') {
       return PledgeAndUnpledgeModel.fromJson(json as Map<String, dynamic>);
+      // } else {
+      // return PdfDownloadModel.fromJson({});
+      // }
+
+      // log("MF Master ==>$json");
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<CAEventsModel> getcaevents(start, end) async {
+    try {
+      final uri = Uri.parse('${apiLinks.caevents}getEquityCorporateActions');
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
+          body:
+              // jsonEncode({"cc": "${prefs.clientId}", "from": from, "to": to}));
+              jsonEncode({
+            "fromDate": start.split("/")[2] +
+                "-" +
+                start.split("/")[1] +
+                "-" +
+                start.split("/")[0],
+            "toDate": end.split("/")[2] +
+                "-" +
+                end.split("/")[1] +
+                "-" +
+                end.split("/")[0]
+          }));
+
+      final json = jsonDecode((res.body));
+      // if (json['stat'] != 'Not OK') {
+      return CAEventsModel.fromJson(json as Map<String, dynamic>);
       // } else {
       // return PdfDownloadModel.fromJson({});
       // }
@@ -568,7 +681,8 @@ mixin LedgerApi on ApiCore {
     }
   }
 
-  Future geturlforcdsl(String ccode,String boid,String cname,List list) async {
+  Future geturlforcdsl(
+      String ccode, String boid, String cname, List list) async {
     try {
       final uri = Uri.parse('${apiLinks.reportspledge}/response');
 
@@ -577,15 +691,15 @@ mixin LedgerApi on ApiCore {
           // headers: testingrameshheader,
           body: jsonEncode({
             "uccid": ccode,
-            "client_bo_id":boid,
+            "client_bo_id": boid,
             "CLIENT_NAME": cname,
             "pledgeReq": list
           }));
       final json = jsonDecode((res.body));
       print("${json}");
-      
+
       // log("MF Master ==>$json");
-      return  json;
+      return json;
 
       // return PnlSegCharge.fromJson({'data': json});
     } catch (e) {
@@ -602,13 +716,13 @@ mixin LedgerApi on ApiCore {
           // headers: testingrameshheader,
           body: jsonEncode({
             "reqid": response,
-            
           }));
       final json = jsonDecode((res.body));
       print("${json}");
-      
+
       // log("MF Master ==>$json");
-      return CdslReponseModel.fromJson(json as Map<String, dynamic>);;
+      return CdslReponseModel.fromJson(json as Map<String, dynamic>);
+      ;
 
       // return PnlSegCharge.fromJson({'data': json});
     } catch (e) {
