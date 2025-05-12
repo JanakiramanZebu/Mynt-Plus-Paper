@@ -323,8 +323,9 @@ class MFProvider extends DefaultChangeNotifier {
 
     notifyListeners();
   }
-   void recdemevalu(){
-redemptionQty.text = _holssinglelist![0].nET!;
+
+  void recdemevalu() {
+    redemptionQty.text = _holssinglelist![0].nET!;
   }
 
   String _paymentName = "UPI";
@@ -547,60 +548,21 @@ redemptionQty.text = _holssinglelist![0].nET!;
 
   List get mFCategoryTypesStatic => _mFCategoryTypesStatic;
 
-final List _mfrejectsiplist = [
-        {
-            "id": "01",
-            "reason_name": "Non availability of Funds"
-        },
-        {
-            "id": "02",
-            "reason_name": "Scheme not performing"
-        },
-        {
-            "id": "03",
-            "reason_name": "Service issue"
-        },
-        {
-            "id": "04",
-            "reason_name": "Load Revised"
-        },
-        {
-            "id": "05",
-            "reason_name": "Wish to invest in other schemes"
-        },
-        {
-            "id": "06",
-            "reason_name": "Change in Fund Manager"
-        },
-        {
-            "id": "07",
-            "reason_name": "Goal Achieved"
-        },
-        {
-            "id": "08",
-            "reason_name": "Not comfortable with market volatility"
-        },
-        {
-            "id": "09",
-            "reason_name": "Will be restarting SIP after few months"
-        },
-        {
-            "id": "10",
-            "reason_name": "Modifications in bank/mandate/date etc"
-        },
-        {
-            "id": "11",
-            "reason_name": "I have decided to invest elsewhere"
-        },
-        {
-            "id": "12",
-            "reason_name": "This is not the right time to invest"
-        },
-        {
-            "id": "13",
-            "reason_name": "Others (pls specify the reason)"
-        }
-    ];
+  final List _mfrejectsiplist = [
+    {"id": "01", "reason_name": "Non availability of Funds"},
+    {"id": "02", "reason_name": "Scheme not performing"},
+    {"id": "03", "reason_name": "Service issue"},
+    {"id": "04", "reason_name": "Load Revised"},
+    {"id": "05", "reason_name": "Wish to invest in other schemes"},
+    {"id": "06", "reason_name": "Change in Fund Manager"},
+    {"id": "07", "reason_name": "Goal Achieved"},
+    {"id": "08", "reason_name": "Not comfortable with market volatility"},
+    {"id": "09", "reason_name": "Will be restarting SIP after few months"},
+    {"id": "10", "reason_name": "Modifications in bank/mandate/date etc"},
+    {"id": "11", "reason_name": "I have decided to invest elsewhere"},
+    {"id": "12", "reason_name": "This is not the right time to invest"},
+    {"id": "13", "reason_name": "Others (pls specify the reason)"}
+  ];
 
   List? get mfrejectsiplist => _mfrejectsiplist;
 
@@ -838,6 +800,19 @@ final List _mfrejectsiplist = [
   }
 
   chngPayName(String val) {
+    if (val == "Net banking") {
+      upiError = "";
+    } else {
+      final RegExp upiRegex =
+          RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
+      if (upiId.text.isEmpty) {
+        upiError = "Please enter UPI ID";
+      } else if (!upiRegex.hasMatch(upiId.text)) {
+        upiError = "Please enter valid UPI ID";
+      } else {
+        upiError = "";
+      }
+    }
     _paymentName = val;
     notifyListeners();
   }
@@ -1851,9 +1826,9 @@ final List _mfrejectsiplist = [
         toggleLoadingOn(true);
         _mfLumpSumOrderbook = await api.redemptioncancelapi(orderno);
         // print("@@@1111111111111111$_mfLumpSumOrderbook");
-      await  fetchMfOrderbook(context);
+        await fetchMfOrderbook(context);
 
-          Navigator.pop(context);
+        Navigator.pop(context);
 
         ScaffoldMessenger.of(context).showSnackBar(warningMessage(
             context, "Your Request to Cancel Order  is confirmed"));
@@ -1946,46 +1921,45 @@ final List _mfrejectsiplist = [
     cleartext();
   }
 
-
-
-  Future pausesiporder(BuildContext context, orderno ,freqty , nxtdate  ) async {
-
-  print("@@@@@@@@{${orderno},${pausesip.text},freqty${freqty},nxtdate${nxtdate}}");
-  if( pausesip.text != ""){
-        toggleLoadingOn(true);
-    try {
-       toggleLoadingOn(true);
-
+  Future pausesiporder(BuildContext context, orderno, freqty, nxtdate) async {
+    print(
+        "@@@@@@@@{${orderno},${pausesip.text},freqty${freqty},nxtdate${nxtdate}}");
+    if (pausesip.text != "") {
+      toggleLoadingOn(true);
       try {
-            toggleLoadingOn(true);
-        _mfsippause = await api.pausesipapi(orderno,pausesip.text,freqty,nxtdate);
-        print("function coming");
-        print("pausee sip${_mfsippause?.toJson()}");
-        print("pausee sip${_mfsippause?.toString()}");
+        toggleLoadingOn(true);
+
+        try {
+          toggleLoadingOn(true);
+          _mfsippause =
+              await api.pausesipapi(orderno, pausesip.text, freqty, nxtdate);
+          print("function coming");
+          print("pausee sip${_mfsippause?.toJson()}");
+          print("pausee sip${_mfsippause?.toString()}");
 
           // Navigator.pop(context);
-        // fetchmfsiplist();
-if(_mfsippause?.stat == "Not Ok") {
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "${_mfsipcancelmess?.msg}"));
+          // fetchmfsiplist();
+          if (_mfsippause?.stat == "Not Ok") {
+            ScaffoldMessenger.of(context).showSnackBar(
+                warningMessage(context, "${_mfsipcancelmess?.msg}"));
             Navigator.pop(context);
-      }
-      if(_mfsippause?.stat == "Ok") {
-        fetchmfsiplist();
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, " ${_mfsippause?.msg}"));
+          }
+          if (_mfsippause?.stat == "Ok") {
+            fetchmfsiplist();
+            ScaffoldMessenger.of(context)
+                .showSnackBar(warningMessage(context, " ${_mfsippause?.msg}"));
             Navigator.pop(context);
           }
         } catch (e) {
           toggleLoadingOn(false);
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "Something Went Wrong"));
-        print("Failed to Create Mandate :: ${e.toString()}");
-        notifyListeners();
-        // Navigator.pop(context);
-      }
-    } catch (e) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(warningMessage(context, "Something Went Wrong"));
+          print("Failed to Create Mandate :: ${e.toString()}");
+          notifyListeners();
+          // Navigator.pop(context);
+        }
+      } catch (e) {
         toggleLoadingOn(false);
         Navigator.pop(context);
         ScaffoldMessenger.of(context)
@@ -2357,14 +2331,15 @@ if(_mfsippause?.stat == "Not Ok") {
   List<double> frqCustHeight() {
     List<double> itemsHeights = [];
     if (_mfSIPModel?.data != null) {
-    for (var i = 0; i < (_mfSIPModel!.data!.length * 2) - 1; i++) {
-      if (i.isEven) {
-        itemsHeights.add(40);
+      for (var i = 0; i < (_mfSIPModel!.data!.length * 2) - 1; i++) {
+        if (i.isEven) {
+          itemsHeights.add(40);
+        }
+        if (i.isOdd) {
+          itemsHeights.add(4);
+        }
       }
-      if (i.isOdd) {
-        itemsHeights.add(4);
-      }
-    }}
+    }
     return itemsHeights;
   }
 
@@ -2777,57 +2752,57 @@ if(_mfsippause?.stat == "Not Ok") {
         invDurationError == "";
   }
 
-bool checkRedemption(String? redQty, String? minRedQty, String? holdQty, String? nav) {
-  redemptionError = "";
-  redemptionOrderError = "";
+  bool checkRedemption(
+      String? redQty, String? minRedQty, String? holdQty, String? nav) {
+    redemptionError = "";
+    redemptionOrderError = "";
 
-  if (redQty == null || redQty.trim().isEmpty) {
-    redemptionError = "Please enter Redemption Qty";
-  } else {
-    try {
-      double red = double.parse(redQty);
-      double hold = double.tryParse(holdQty ?? "") ?? 0;
-      double min = double.tryParse(minRedQty ?? "") ?? 0;
-      double navVal = double.tryParse(nav ?? "") ?? 0;
+    if (redQty == null || redQty.trim().isEmpty) {
+      redemptionError = "Please enter Redemption Qty";
+    } else {
+      try {
+        double red = double.parse(redQty);
+        double hold = double.tryParse(holdQty ?? "") ?? 0;
+        double min = double.tryParse(minRedQty ?? "") ?? 0;
+        double navVal = double.tryParse(nav ?? "") ?? 0;
 
-      if (red > hold) {
-        redemptionError = "Redemption Qty should not exceed $holdQty";
-      } else if (red < min) {
-        redemptionError = "Redemption Qty should not be less than $minRedQty";
-      } else if (red == 0) {
-        redemptionError = "Redemption Qty should not be 0";
-      } else {
-        redemptionAmount.text = (red * navVal).toStringAsFixed(4);
-        redemptionError = "";
-        redemptionOrderError = "";
+        if (red > hold) {
+          redemptionError = "Redemption Qty should not exceed $holdQty";
+        } else if (red < min) {
+          redemptionError = "Redemption Qty should not be less than $minRedQty";
+        } else if (red == 0) {
+          redemptionError = "Redemption Qty should not be 0";
+        } else {
+          redemptionAmount.text = (red * navVal).toStringAsFixed(4);
+          redemptionError = "";
+          redemptionOrderError = "";
+        }
+      } catch (e) {
+        redemptionError = "Invalid number format";
       }
-    } catch (e) {
-      redemptionError = "Invalid number format";
     }
+
+    notifyListeners();
+    return redemptionError == "";
   }
-
-  notifyListeners();
-  return redemptionError == "";
-}
-
 
   mfRedemption(BuildContext context, String scheme, String qty) async {
     print("remmfujnnn");
     print("scheme ${scheme}");
     print("qtyqty ${qty}");
-     try {
+    try {
       toggleLoadingOn(true);
 
-    _redemptionData = await api.getMFRedemption(scheme, qty);
-    if (_redemptionData!.stat == "Ok") {
-       fetchMfOrderbook(context);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(successMessage(context, "${_redemptionData!.msg}"));
-      Navigator.pop(context);
-    } else {
-      redemptionOrderError = _redemptionData!.emsg;
-    }
+      _redemptionData = await api.getMFRedemption(scheme, qty);
+      if (_redemptionData!.stat == "Ok") {
+        fetchMfOrderbook(context);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(successMessage(context, "${_redemptionData!.msg}"));
+        Navigator.pop(context);
+      } else {
+        redemptionOrderError = _redemptionData!.emsg;
       }
+    }
     // notifyListeners();
     catch (e) {
       debugPrint("rererer $e");
@@ -2839,7 +2814,4 @@ bool checkRedemption(String? redQty, String? minRedQty, String? holdQty, String?
       notifyListeners();
     }
   }
-
-
-
 }
