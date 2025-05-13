@@ -11,14 +11,29 @@ class CurStrkprice extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-    final strikePrc = watch(marketWatchProvider).getStikePrc?? watch(marketWatchProvider).getQuotes;
-    final socketDatas = watch(websocketProvider).socketDatas;
-    strikePrc!.lp = strikePrc.lp ?? "0.00";
-    if (socketDatas.containsKey(token)) {
-      strikePrc.lp = "${socketDatas[token]['lp']}";
-    }
-
-    watch(marketWatchProvider).updateOptStrPrc("${strikePrc.lp}");
+    final strikePrc = watch(marketWatchProvider).getStikePrc ?? watch(marketWatchProvider).getQuotes;
+    
+    return StreamBuilder<Map>(
+      stream: watch(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return _buildStrikePriceWidget(strikePrc!.lp ?? "0.00");
+        }
+        
+        final socketDatas = snapshot.data!;
+        String price = strikePrc!.lp ?? "0.00";
+        
+        if (socketDatas.containsKey(token)) {
+          price = "${socketDatas[token]['lp']}";
+        }
+        
+        watch(marketWatchProvider).updateOptStrPrc(price);
+        return _buildStrikePriceWidget(price);
+      },
+    );
+  }
+  
+  Widget _buildStrikePriceWidget(String price) {
     return Row(
       children: [
         const Expanded(
@@ -29,7 +44,7 @@ class CurStrkprice extends ConsumerWidget {
                 color: const Color(0xff666666),
                 borderRadius: BorderRadius.circular(40)),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            child: Text("₹${strikePrc.lp}",
+            child: Text("₹$price",
                 style:
                     textStyle(const Color(0xffffffff), 13, FontWeight.w600))),
         const Expanded(

@@ -29,84 +29,94 @@ class OptChainCallList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-    final socketDatas = watch(websocketProvider).socketDatas;
     final scripData = watch(marketWatchProvider);
     final theme = watch(themeProvider);
 
-    // Preprocess data
-    final List<OptionValues> processedData = callData!.map((option) {
-      if (socketDatas.containsKey(option.token)) {
-        final socketData = socketDatas[option.token];
-        option.lp = "${socketData['lp']}";
-        option.perChange = "${socketData['pc']}";
+    return StreamBuilder<Map>(
+      stream: watch(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         
-        final oi = double.parse("${socketData['oi']}");
-        option.oiLack = (oi / 100000).toStringAsFixed(2);
+        final socketDatas = snapshot.data!;
         
-        final poi = double.parse("${socketData['poi'] ?? 0.00}");
-        option.oiPerChng = ((poi / oi) * 100).toStringAsFixed(2);
-      }
-      return option;
-    }).toList();
+        // Preprocess data
+        final List<OptionValues> processedData = callData!.map((option) {
+          if (socketDatas.containsKey(option.token)) {
+            final socketData = socketDatas[option.token];
+            option.lp = "${socketData['lp']}";
+            option.perChange = "${socketData['pc']}";
+            
+            final oi = double.parse("${socketData['oi']}");
+            option.oiLack = (oi / 100000).toStringAsFixed(2);
+            
+            final poi = double.parse("${socketData['poi'] ?? 0.00}");
+            option.oiPerChng = ((poi / oi) * 100).toStringAsFixed(2);
+          }
+          return option;
+        }).toList();
 
-    return ListView.separated(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      reverse: isCallUp,
-      itemCount: processedData.length,
-      separatorBuilder: (context, index) => const ListDivider(),
-      itemBuilder: (BuildContext context, int index) {
-        final option = processedData[index];
-        
-        return SwipeActionCell(
-          isDraggable: true,
-          fullSwipeFactor: 0.7,
-          controller: swipe,
-          index: index,
-          key: ValueKey(option.token),
-          leadingActions: [
-            SwipeAction(
-              performsFirstActionWithFullSwipe: true,
-              title: "SELL",
-              color: Color(theme.isDarkMode ? 0xfffbbbb6 : 0xfffee8e7),
-              style: _getActionStyle(colors.darkred),
-              onTap: (handler) async {
-                await placeOrderInput(scripData, context, option, false);
-                handler(false);
-              },
-            ),
-          ],
-          trailingActions: [
-            SwipeAction(
-              performsFirstActionWithFullSwipe: true,
-              title: "BUY",
-              color: Color(theme.isDarkMode ? 0xffcaedc4 : 0xffedf9eb),
-              style: _getActionStyle(colors.ltpgreen),
-              onTap: (handler) async {
-                await placeOrderInput(scripData, context, option, true);
-                handler(false);
-              },
-            ),
-          ],
-          child: InkWell(
-            onLongPress: () => _handleLongPress(context, watch, scripData, option),
-            onTap: () => _handleTap(context, watch, scripData, option),
-            child: Container(
-              height: 58,
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildOIData(theme, option),
-                  Expanded(
-                    child: _buildPriceData(theme, option),
+        return ListView.separated(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          reverse: isCallUp,
+          itemCount: processedData.length,
+          separatorBuilder: (context, index) => const ListDivider(),
+          itemBuilder: (BuildContext context, int index) {
+            final option = processedData[index];
+            
+            return SwipeActionCell(
+              isDraggable: true,
+              fullSwipeFactor: 0.7,
+              controller: swipe,
+              index: index,
+              key: ValueKey(option.token),
+              leadingActions: [
+                SwipeAction(
+                  performsFirstActionWithFullSwipe: true,
+                  title: "SELL",
+                  color: Color(theme.isDarkMode ? 0xfffbbbb6 : 0xfffee8e7),
+                  style: _getActionStyle(colors.darkred),
+                  onTap: (handler) async {
+                    await placeOrderInput(scripData, context, option, false);
+                    handler(false);
+                  },
+                ),
+              ],
+              trailingActions: [
+                SwipeAction(
+                  performsFirstActionWithFullSwipe: true,
+                  title: "BUY",
+                  color: Color(theme.isDarkMode ? 0xffcaedc4 : 0xffedf9eb),
+                  style: _getActionStyle(colors.ltpgreen),
+                  onTap: (handler) async {
+                    await placeOrderInput(scripData, context, option, true);
+                    handler(false);
+                  },
+                ),
+              ],
+              child: InkWell(
+                onLongPress: () => _handleLongPress(context, watch, scripData, option),
+                onTap: () => _handleTap(context, watch, scripData, option),
+                child: Container(
+                  height: 58,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildOIData(theme, option),
+                      Expanded(
+                        child: _buildPriceData(theme, option),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
-      },
+      }
     );
   }
 

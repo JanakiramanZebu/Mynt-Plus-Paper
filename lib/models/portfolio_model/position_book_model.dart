@@ -59,6 +59,7 @@ class PositionBookModel {
   String? dname;
   String? bookedPnL;
   bool? isExitSelection;
+  bool? isAlreadyGroup;
   PositionBookModel(
       {this.actid,
       this.bep,
@@ -118,7 +119,8 @@ class PositionBookModel {
       this.qty,
       this.unRealMtm,
       this.bookedPnL,
-      this.isExitSelection});
+      this.isExitSelection,
+      this.isAlreadyGroup});
 
   PositionBookModel.fromJson(Map<String, dynamic> json) {
     actid = json['actid'];
@@ -181,6 +183,7 @@ class PositionBookModel {
     isExitSelection = json['isExitSelection'];
     unRealMtm = json['unRealMtm'];
     bookedPnL = json['bookedPnL'];
+    isAlreadyGroup = json['isAlreadyGroup'];
   }
 
   Map<String, dynamic> toJson() {
@@ -245,6 +248,7 @@ class PositionBookModel {
     data['unRealMtm'] = unRealMtm;
     data['bookedPnL'] = bookedPnL;
     data['isExitSelection'] = isExitSelection;
+    data['isAlreadyGroup'] = isAlreadyGroup;
     return data;
   }
 }

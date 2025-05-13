@@ -29,7 +29,6 @@ class PositionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final positionBook = watch(portfolioProvider);
-    final socketDatas = watch(websocketProvider).socketDatas;
     final theme = context.read(themeProvider);
     return positionBook.posloader
         ? const Center(child: CircularProgressIndicator())
@@ -42,10 +41,36 @@ class PositionScreen extends ConsumerWidget {
                       ? const Color(0xffB5C0CF).withOpacity(.15)
                       : const Color(0xffF1F3F8),
                   padding: const EdgeInsets.all(16),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                  child: StreamBuilder<Map>(
+                    stream: watch(websocketProvider).socketDataStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        final socketDatas = snapshot.data!;
+                        
+                        for (var position in listofPosition) {
+                          if (socketDatas.containsKey(position.token)) {
+                            final socketData = socketDatas[position.token];
+                            
+                            // Only update with non-zero values, otherwise keep existing values
+                            final lp = socketData['lp']?.toString();
+                            if (lp != null && lp != "null" && lp != "0" && lp != "0.0" && lp != "0.00") {
+                              position.lp = lp;
+                            }
+                            
+                            final pc = socketData['pc']?.toString();
+                            if (pc != null && pc != "null" && pc != "0" && pc != "0.0" && pc != "0.00") {
+                              position.perChange = pc;
+                            }
+                          }
+                        }
+                        
+                        positionBook.positionCal(positionBook.isDay);
+                      }
+                      
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
@@ -60,7 +85,6 @@ class PositionScreen extends ConsumerWidget {
                                   const SizedBox(width: 6),
                                   CustomSwitch(
                                       onChanged: (bool value) {
-                                        // print('object ${value}');
                                         positionBook.chngPositionPnl(
                                             !positionBook.isNetPnl);
                                       },
@@ -78,147 +102,75 @@ class PositionScreen extends ConsumerWidget {
                                           FontWeight.w500)),
                                 ],
                               ),
-                              // InkWell(
-                              //   onTap: positionBook.isDay
-                              //       ? null
-                              //       : () {
-                              //           positionBook.chngPositionPnl(false);
-                              //         },
-                              //   child: Container(
-                              //     padding:
-                              //         EdgeInsets.all(positionBook.isDay ? 0 : 8),
-                              //     decoration: positionBook.isDay
-                              //         ? null
-                              //         : BoxDecoration(
-                              //             borderRadius: BorderRadius.circular(6),
-                              //             color: !positionBook.isNetPnl
-                              //                 ? const Color.fromARGB(
-                              //                         255, 5, 107, 241)
-                              //                     .withOpacity(.2)
-                              //                 : Colors.transparent),
-                              //     child: Column(
-                              //       crossAxisAlignment: CrossAxisAlignment.start,
-                              //       children: [
-                              //         Text(
-                              //             positionBook.isDay
-                              //                 ? "Unrealised MTM"
-                              //                 : "Net MTM",
-                              //             style: textStyle(
-                              //                 const Color(0xff5E6B7D),
-                              //                 12,
-                              //                 FontWeight.w500)),
-                              //         const SizedBox(height: 6),
-                              //         Text(
-                              //             "₹${positionBook.isDay ? positionBook.totUnRealMtm : positionBook.totMtM}",
-                              //             style: textStyle(
-                              //                 positionBook.isDay
-                              //                     ? positionBook.totUnRealMtm
-                              //                             .startsWith("-")
-                              //                         ? colors.darkred
-                              //                         : positionBook
-                              //                                     .totUnRealMtm ==
-                              //                                 "0.00"
-                              //                             ? colors.ltpgrey
-                              //                             : colors.ltpgreen
-                              //                     : positionBook.totMtM
-                              //                             .startsWith("-")
-                              //                         ? colors.darkred
-                              //                         : positionBook.totMtM ==
-                              //                                 "0.00"
-                              //                             ? colors.ltpgrey
-                              //                             : colors.ltpgreen,
-                              //                 16,
-                              //                 FontWeight.w500)),
-                              //       ],
-                              //     ),
-                              //   ),
-                              // ),
-
-                              // InkWell(
-                              //   onTap: positionBook.isDay
-                              //       ? null
-                              //       : () {
-                              //           positionBook.chngPositionPnl(true);
-                              //         },
-                              //   child: Container(
-                              //     padding:
-                              //         EdgeInsets.all(positionBook.isDay ? 0 : 8),
-                              //     decoration: positionBook.isDay
-                              //         ? null
-                              //         : BoxDecoration(
-                              //             borderRadius: BorderRadius.circular(6),
-                              //             color: positionBook.isNetPnl
-                              //                 ? const Color.fromARGB(
-                              //                         255, 5, 107, 241)
-                              //                     .withOpacity(.2)
-                              //                 : Colors.transparent),
-                              //     child:
                               Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                        !positionBook.isNetPnl
-                                            ? "Net MTM"
-                                            : "Net P&L",
-                                        style: textStyle(
-                                            const Color(0xff5E6B7D),
-                                            12,
-                                            FontWeight.w500)),
-                                    const SizedBox(height: 6),
-                                    Row(children: [
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
                                       !positionBook.isNetPnl
-                                          ? Text(
-                                              "₹${positionBook.isDay ? positionBook.totUnRealMtm : positionBook.totMtM}",
-                                              style: textStyle(
-                                                  positionBook.isDay
-                                                      ? positionBook
-                                                              .totUnRealMtm
-                                                              .startsWith("-")
-                                                          ? colors.darkred
-                                                          : positionBook
-                                                                      .totUnRealMtm ==
-                                                                  "0.00"
-                                                              ? colors.ltpgrey
-                                                              : colors.ltpgreen
-                                                      : positionBook.totMtM
-                                                              .startsWith("-")
-                                                          ? colors.darkred
-                                                          : positionBook
-                                                                      .totMtM ==
-                                                                  "0.00"
-                                                              ? colors.ltpgrey
-                                                              : colors.ltpgreen,
-                                                  16,
-                                                  FontWeight.w500))
-                                          : Text(
-                                              "₹${positionBook.isDay ? positionBook.totBookedPnL : positionBook.totPnL}",
-                                              style: textStyle(
-                                                  positionBook.isDay
-                                                      ? positionBook
-                                                              .totBookedPnL
-                                                              .startsWith("-")
-                                                          ? colors.darkred
-                                                          : positionBook
-                                                                      .totBookedPnL ==
-                                                                  "0.00"
-                                                              ? colors.ltpgrey
-                                                              : colors.ltpgreen
-                                                      : positionBook.totPnL
-                                                              .startsWith("-")
-                                                          ? colors.darkred
-                                                          : positionBook
-                                                                      .totPnL ==
-                                                                  "0.00"
-                                                              ? colors.ltpgrey
-                                                              : colors.ltpgreen,
-                                                  16,
-                                                  FontWeight.w500))
-                                    ])
-                                  ]),
-                              // ),
-                              // )
-                            ])
-                      ])),
+                                          ? "Net MTM"
+                                          : "Net P&L",
+                                      style: textStyle(
+                                          const Color(0xff5E6B7D),
+                                          12,
+                                          FontWeight.w500)),
+                                  const SizedBox(height: 6),
+                                  Row(children: [
+                                    !positionBook.isNetPnl
+                                        ? Text(
+                                            "₹${positionBook.isDay ? positionBook.totUnRealMtm : positionBook.totMtM}",
+                                            style: textStyle(
+                                                positionBook.isDay
+                                                    ? positionBook
+                                                            .totUnRealMtm
+                                                            .startsWith("-")
+                                                        ? colors.darkred
+                                                        : positionBook
+                                                                    .totUnRealMtm ==
+                                                                "0.00"
+                                                            ? colors.ltpgrey
+                                                            : colors.ltpgreen
+                                                    : positionBook.totMtM
+                                                            .startsWith("-")
+                                                        ? colors.darkred
+                                                        : positionBook
+                                                                    .totMtM ==
+                                                                "0.00"
+                                                            ? colors.ltpgrey
+                                                            : colors.ltpgreen,
+                                                16,
+                                                FontWeight.w500))
+                                        : Text(
+                                            "₹${positionBook.isDay ? positionBook.totBookedPnL : positionBook.totPnL}",
+                                            style: textStyle(
+                                                positionBook.isDay
+                                                    ? positionBook
+                                                            .totBookedPnL
+                                                            .startsWith("-")
+                                                        ? colors.darkred
+                                                        : positionBook
+                                                                    .totBookedPnL ==
+                                                                "0.00"
+                                                            ? colors.ltpgrey
+                                                            : colors.ltpgreen
+                                                    : positionBook.totPnL
+                                                            .startsWith("-")
+                                                        ? colors.darkred
+                                                        : positionBook
+                                                                    .totPnL ==
+                                                                "0.00"
+                                                            ? colors.ltpgrey
+                                                            : colors.ltpgreen,
+                                                16,
+                                                FontWeight.w500))
+                                  ])
+                                ],
+                              ),
+                            ],
+                          )
+                        ],
+                      );
+                    },
+                  )),
               if (positionBook.postionBookModel!.isNotEmpty && listofPosition.length > 1)
                 Container(
                   padding: const EdgeInsets.only(
@@ -233,33 +185,6 @@ class PositionScreen extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // temporary hide
-                      // Row(
-                      //   children: [
-                      //     Text("DAY",
-                      //         style: textStyle(
-                      //             theme.isDarkMode
-                      //                 ? colors.colorWhite
-                      //                 : colors.colorBlack,
-                      //             13,
-                      //             FontWeight.w500)),
-                      //     const SizedBox(width: 6),
-                      //     CustomSwitch(
-                      //         onChanged: (bool value) {
-                      //           positionBook.chngPositionPnl(true);
-                      //           positionBook.positionToggle(value, context);
-                      //         },
-                      //         value: positionBook.isDay),
-                      //     const SizedBox(width: 6),
-                      //     Text("NET",
-                      //         style: textStyle(
-                      //             theme.isDarkMode
-                      //                 ? colors.colorWhite
-                      //                 : colors.colorBlack,
-                      //             13,
-                      //             FontWeight.w500)),
-                      //   ],
-                      // ),
                       if (listofPosition.length > 1 &&
                           positionBook.posSelection == "All position") ...[
                         Row(
@@ -407,131 +332,133 @@ class PositionScreen extends ConsumerWidget {
                       onRefresh: () async {
                         await positionBook.fetchPositionBook(context, false);
                       },
-                      child: positionBook.positionSearchItem.isEmpty
-                          ? listofPosition.isNotEmpty
-                              ? positionBook.posSelection == "Group by symbol"
-                                  ? const PositionGroupSymbol()
-                                  : ListView.builder(
-                                      physics: const AlwaysScrollableScrollPhysics(),
-                                      shrinkWrap: false,
-                                      itemBuilder: (context, idx) {
-                                        final index = idx ~/ 2;
-                                        // The Position  data item list is provided here. These scrips are subscribed to Websocket, and we verify that the conditions fit the Position scrip before adding the data to the Position list.
+                      child: StreamBuilder<Map>(
+                        stream: watch(websocketProvider).socketDataStream,
+                        builder: (context, snapshot) {
+                          final socketDatas = snapshot.data ?? {};
+                          
+                          for (var position in positionBook.positionSearchItem.isEmpty 
+                              ? listofPosition 
+                              : positionBook.positionSearchItem) {
+                            if (socketDatas.containsKey(position.token)) {
+                              final socketData = socketDatas[position.token];
+                              
+                              // Only update with non-zero values, otherwise keep existing values
+                              final lp = socketData['lp']?.toString();
+                              if (lp != null && lp != "null" && lp != "0" && lp != "0.0" && lp != "0.00") {
+                                position.lp = lp;
+                              }
+                              
+                              final pc = socketData['pc']?.toString();
+                              if (pc != null && pc != "null" && pc != "0" && pc != "0.0" && pc != "0.00") {
+                                position.perChange = pc;
+                              }
+                            }
+                          }
+                          
+                          positionBook.positionCal(positionBook.isDay);
+                          
+                          if (positionBook.positionSearchItem.isEmpty) {
+                            if (listofPosition.isNotEmpty) {
+                              return positionBook.posSelection == "Group by symbol"
+                                ? const PositionGroupSymbol()
+                                : ListView.builder(
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    shrinkWrap: false,
+                                    itemBuilder: (context, idx) {
+                                      final index = idx ~/ 2;
 
-                                        if (socketDatas.containsKey(
-                                            listofPosition[index].token)) {
-                                          listofPosition[index].lp =
-                                              "${socketDatas["${listofPosition[index].token}"]['lp']}";
-
-                                          listofPosition[index].perChange =
-                                              "${socketDatas["${listofPosition[index].token}"]['pc']}";
-
-                                          // WidgetsBinding.instance
-                                          //     .addPostFrameCallback((_) {
-                                          positionBook
-                                              .positionCal(positionBook.isDay);
-                                          // });
-                                        }
-                                        if (idx.isOdd) {
-                                          return Container(
-                                              color: theme.isDarkMode
-                                                  ? listofPosition[index]
-                                                              .netqty ==
-                                                          "0"
-                                                      ? colors.colorBlack
-                                                      : colors.darkGrey
-                                                  : listofPosition[index]
-                                                              .netqty ==
-                                                          "0"
-                                                      ? colors.colorWhite
-                                                      : const Color(0xffF1F3F8),
-                                              height: 6);
-                                        }
-                                        return InkWell(
-                                            onLongPress: () {
-                                              if (positionBook.openPosition!
-                                                          .length >
-                                                      1 &&
-                                                  listofPosition[index].qty !=
-                                                      "0") {
-                                                Navigator.pushNamed(context,
-                                                    Routes.positionExit,
-                                                    arguments: listofPosition);
-                                              }
-                                            },
-                                            onTap: () async {
-                                              await context
-                                                  .read(marketWatchProvider)
-                                                  .fetchLinkeScrip(
-                                                      "${listofPosition[index].token}",
-                                                      "${listofPosition[index].exch}",
-                                                      context);
-
-                                              await watch(marketWatchProvider)
-                                                  .fetchScripQuote(
-                                                      "${listofPosition[index].token}",
-                                                      "${listofPosition[index].exch}",
-                                                      context);
-
-                                              if ((listofPosition[index].exch ==
-                                                      "NSE" ||
-                                                  listofPosition[index].exch ==
-                                                      "BSE")) {
-                                                context
-                                                    .read(marketWatchProvider)
-                                                    .depthBtns
-                                                    .add({
-                                                  "btnName": "Fundamental",
-                                                  "imgPath": assets.dInfo,
-                                                  "case":
-                                                      "Click here to view fundamental data."
-                                                });
-
-                                                await context
-                                                    .read(marketWatchProvider)
-                                                    .fetchTechData(
-                                                        context: context,
-                                                        exch:
-                                                            "${listofPosition[index].exch}",
-                                                        tradeSym:
-                                                            "${listofPosition[index].tsym}",
-                                                        lastPrc:
-                                                            "${listofPosition[index].lp}");
-                                              }
+                                      if (idx.isOdd) {
+                                        return Container(
+                                            color: theme.isDarkMode
+                                                ? listofPosition[index]
+                                                            .netqty ==
+                                                        "0"
+                                                    ? colors.colorBlack
+                                                    : colors.darkGrey
+                                                : listofPosition[index]
+                                                            .netqty ==
+                                                        "0"
+                                                    ? colors.colorWhite
+                                                    : const Color(0xffF1F3F8),
+                                            height: 6);
+                                      }
+                                      
+                                      return InkWell(
+                                        onLongPress: () {
+                                          if (positionBook.openPosition!
+                                                    .length > 1 &&
+                                                listofPosition[index].qty !=
+                                                    "0") {
                                               Navigator.pushNamed(context,
-                                                  Routes.positionDetail,
-                                                  arguments:
-                                                      listofPosition[index]);
-                                            },
-                                            child: PositionListCard(
-                                                positionList:
-                                                    listofPosition[index]));
-                                      },
-                                      itemCount: listofPosition.length * 2 - 1,
-                                    )
-                              : const Center(
+                                                  Routes.positionExit,
+                                                  arguments: listofPosition);
+                                          }
+                                        },
+                                        onTap: () async {
+                                          await context
+                                              .read(marketWatchProvider)
+                                              .fetchLinkeScrip(
+                                                  "${listofPosition[index].token}",
+                                                  "${listofPosition[index].exch}",
+                                                  context);
+
+                                          await watch(marketWatchProvider)
+                                              .fetchScripQuote(
+                                                  "${listofPosition[index].token}",
+                                                  "${listofPosition[index].exch}",
+                                                  context);
+
+                                          if ((listofPosition[index].exch ==
+                                                  "NSE" ||
+                                              listofPosition[index].exch ==
+                                                  "BSE")) {
+                                            context
+                                                .read(marketWatchProvider)
+                                                .depthBtns
+                                                .add({
+                                              "btnName": "Fundamental",
+                                              "imgPath": assets.dInfo,
+                                              "case":
+                                                  "Click here to view fundamental data."
+                                            });
+
+                                            await context
+                                                .read(marketWatchProvider)
+                                                .fetchTechData(
+                                                    context: context,
+                                                    exch:
+                                                        "${listofPosition[index].exch}",
+                                                    tradeSym:
+                                                        "${listofPosition[index].tsym}",
+                                                    lastPrc:
+                                                        "${listofPosition[index].lp}");
+                                          }
+                                          Navigator.pushNamed(context,
+                                              Routes.positionDetail,
+                                              arguments:
+                                                  listofPosition[index]);
+                                        },
+                                        child: PositionListCard(
+                                            positionList:
+                                                listofPosition[index]),
+                                      );
+                                    },
+                                    itemCount: listofPosition.length * 2 - 1,
+                                  );
+                            } else {
+                              return const Center(
                                 child: SizedBox(
                                     height: 500, child: NoDataFound()),
-                              )
-                          : ListView.builder(
+                              );
+                            }
+                          } else {
+                            return ListView.builder(
                               physics: const AlwaysScrollableScrollPhysics(),
                               shrinkWrap: false,
                               itemBuilder: (context, idx) {
                                 final index = idx ~/ 2;
 
-                                if (socketDatas.containsKey(positionBook
-                                    .positionSearchItem[index].token)) {
-                                  positionBook.positionSearchItem[index].lp =
-                                      "${socketDatas["${positionBook.positionSearchItem[index].token}"]['lp']}";
-
-                                  positionBook
-                                          .positionSearchItem[index].perChange =
-                                      "${socketDatas["${positionBook.positionSearchItem[index].token}"]['pc']}";
-
-                                  // WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  //   positionBook.positionCal(positionBook.isDay);
-                                  // });
-                                }
                                 if (idx.isOdd) {
                                   return Container(
                                       color: theme.isDarkMode
@@ -549,61 +476,67 @@ class PositionScreen extends ConsumerWidget {
                                               : const Color(0xffF1F3F8),
                                       height: 6);
                                 }
+                                
                                 return InkWell(
-                                    onTap: () async {
+                                  onTap: () async {
+                                    await context
+                                        .read(marketWatchProvider)
+                                        .fetchLinkeScrip(
+                                            "${positionBook.positionSearchItem[index].token}",
+                                            "${positionBook.positionSearchItem[index].exch}",
+                                            context);
+
+                                    await watch(marketWatchProvider).fetchScripQuote(
+                                        "${positionBook.positionSearchItem[index].token}",
+                                        "${positionBook.positionSearchItem[index].exch}",
+                                        context);
+
+                                    if ((positionBook
+                                                .positionSearchItem[index]
+                                                .exch ==
+                                            "NSE" ||
+                                        positionBook.positionSearchItem[index]
+                                                .exch ==
+                                            "BSE")) {
+                                      context
+                                          .read(marketWatchProvider)
+                                          .depthBtns
+                                          .add({
+                                        "btnName": "Fundamental",
+                                        "imgPath": assets.dInfo,
+                                        "case":
+                                            "Click here to view fundamental data."
+                                      });
+
                                       await context
                                           .read(marketWatchProvider)
-                                          .fetchLinkeScrip(
-                                              "${positionBook.positionSearchItem[index].token}",
-                                              "${positionBook.positionSearchItem[index].exch}",
-                                              context);
-
-                                      await watch(marketWatchProvider).fetchScripQuote(
-                                          "${positionBook.positionSearchItem[index].token}",
-                                          "${positionBook.positionSearchItem[index].exch}",
-                                          context);
-
-                                      if ((positionBook
-                                                  .positionSearchItem[index]
-                                                  .exch ==
-                                              "NSE" ||
-                                          positionBook.positionSearchItem[index]
-                                                  .exch ==
-                                              "BSE")) {
-                                        context
-                                            .read(marketWatchProvider)
-                                            .depthBtns
-                                            .add({
-                                          "btnName": "Fundamental",
-                                          "imgPath": assets.dInfo,
-                                          "case":
-                                              "Click here to view fundamental data."
-                                        });
-
-                                        await context
-                                            .read(marketWatchProvider)
-                                            .fetchTechData(
-                                                context: context,
-                                                exch:
-                                                    "${positionBook.positionSearchItem[index].exch}",
-                                                tradeSym:
-                                                    "${positionBook.positionSearchItem[index].tsym}",
-                                                lastPrc:
-                                                    "${positionBook.positionSearchItem[index].lp}");
-                                      }
-                                      Navigator.pushNamed(
-                                          context, Routes.positionDetail,
-                                          arguments: positionBook
-                                              .positionSearchItem[index]);
-                                    },
-                                    child: PositionListCard(
-                                        positionList: positionBook
-                                            .positionSearchItem[index]));
+                                          .fetchTechData(
+                                              context: context,
+                                              exch:
+                                                  "${positionBook.positionSearchItem[index].exch}",
+                                              tradeSym:
+                                                  "${positionBook.positionSearchItem[index].tsym}",
+                                              lastPrc:
+                                                  "${positionBook.positionSearchItem[index].lp}");
+                                    }
+                                    Navigator.pushNamed(
+                                        context, Routes.positionDetail,
+                                        arguments: positionBook
+                                            .positionSearchItem[index]);
+                                  },
+                                  child: PositionListCard(
+                                      positionList: positionBook
+                                          .positionSearchItem[index]),
+                                );
                               },
                               itemCount:
-                                  positionBook.positionSearchItem.length * 2 -
-                                      1,
-                            )))
+                                  positionBook.positionSearchItem.length * 2 - 1,
+                            );
+                          }
+                        },
+                      ),
+                  ),
+              ),
             ]),
           );
   }

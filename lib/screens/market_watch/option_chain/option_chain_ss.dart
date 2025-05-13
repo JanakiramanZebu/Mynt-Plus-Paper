@@ -38,7 +38,11 @@ class _OptionChainSSState extends State<OptionChainSS> {
   String regtoken = "";
 
   final ScrollController _controller = ScrollController();
+  final ScrollController _mainScrollController = ScrollController();
+  final GlobalKey _strikePriceKey = GlobalKey();
+  
   late SwipeActionController swipecontroller;
+  
   @override
   void initState() {
     regtoken = widget.wlValue.token;
@@ -55,8 +59,22 @@ class _OptionChainSSState extends State<OptionChainSS> {
     Future.microtask(() {
       context.read(marketWatchProvider).loadDefaultTabs();
     });
-    // WidgetsBinding.instance.addPostFrameCallback(
-    //     (_) => context.read(marketWatchProvider).scrollToSelectedTab(true));
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _scrollToCurrentStrikePrice();
+      });
+    });
+  }
+  
+  void _scrollToCurrentStrikePrice() {
+    if (_strikePriceKey.currentContext != null) {
+      Scrollable.ensureVisible(
+        _strikePriceKey.currentContext!,
+        alignment: 0.5,
+        duration: const Duration(milliseconds: 300),
+      );
+    }
   }
 
   @override
@@ -83,6 +101,14 @@ class _OptionChainSSState extends State<OptionChainSS> {
           final scripInfo = watch(marketWatchProvider);
           final theme = context.read(themeProvider);
 
+          // Determine if data is fully loaded
+          final bool isLoading = scripInfo.isLoad || 
+                              scripInfo.scripDepthloader || 
+                              scripInfo.optChainCallUP.isEmpty || 
+                              scripInfo.optChainPutUp.isEmpty ||
+                              scripInfo.optChainCallDown.isEmpty || 
+                              scripInfo.optChainPutDown.isEmpty;
+
           return Scaffold(
             appBar: AppBar(
               leading: IconButton(
@@ -90,8 +116,7 @@ class _OptionChainSSState extends State<OptionChainSS> {
                   icon: const Icon(Icons.chevron_left, size: 38),
                   onPressed: () async {
                     final wsProvider = context.read(websocketProvider);
-                    final currentContext =
-                        context; 
+                    final currentContext = context; 
                     Navigator.pop(context);
                     await scripInfo.calldepthApis(
                         currentContext, depthData, "");
@@ -183,6 +208,11 @@ class _OptionChainSSState extends State<OptionChainSS> {
                                                       scripInfo.optionStrPrc,
                                                   tradeSym: scripInfo
                                                       .selectedTradeSym!);
+                                                      
+                                          // Add a delay to ensure the UI is updated before scrolling
+                                          Future.delayed(const Duration(milliseconds: 300), () {
+                                            _scrollToCurrentStrikePrice();
+                                          });
                                         },
                                         child: Text(
                                             scripInfo.sortDate[index]
@@ -302,8 +332,13 @@ class _OptionChainSSState extends State<OptionChainSS> {
                                                                               numofStrike: scripInfo.numStrikes[index],
                                                                               strPrc: scripInfo.optionStrPrc,
                                                                               tradeSym: scripInfo.selectedTradeSym!);
-                                                                          Navigator.pop(
-                                                                              context);
+                                                                          
+                                                                          Navigator.pop(context);
+                                                                          // Add a delay to ensure the UI is updated before scrolling
+                                                                          Future.delayed(const Duration(milliseconds: 200), () {
+                                                                            _scrollToCurrentStrikePrice();
+                                                                          });
+
                                                                         },
                                                                         contentPadding: const EdgeInsets
                                                                             .symmetric(
@@ -390,86 +425,70 @@ class _OptionChainSSState extends State<OptionChainSS> {
                                     color: colors.colorBlue),
                                 Text(
                                     " Long press to add Watchlist / Swipe to Trade",
-                                    // ${scripInfo.wlName}'s
                                     style: textStyle(
                                         colors.colorBlue, 12, FontWeight.w500))
                               ])),
                     Expanded(
-                        child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Column(children: [
-                        if (scripInfo.isLoad || scripInfo.scripDepthloader) ...[
-                          const Center(
-                              child: CircularProgressIndicator(
-                                  color: Color(0xff0037B7)))
-                        ] else ...[
-                          Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12.0),
-                              child: Row(
-                                  children: (scripInfo
-                                              .optChainCallUP.isNotEmpty &&
-                                          scripInfo.optChainPutUp.isNotEmpty)
-                                      ? <Widget>[
-                                          Flexible(
-                                            child: OptChainCallList(
-                                                swipe: swipecontroller,
-                                                callData:
-                                                    scripInfo.optChainCallUP,
-                                                isCallUp: true),
-                                          ),
-                                          SizedBox(
-                                            width: 100,
-                                            child: StrikePriceListCard(
-                                                strike:
-                                                    scripInfo.optChainCallUP,
-                                                isCallUp: true),
-                                          ),
-                                          Flexible(
-                                            child: OptChainPutList(
-                                                putData:
-                                                    scripInfo.optChainPutUp,
-                                                isPutUp: true),
-                                          )
-                                        ]
-                                      : [])),
-                          CurStrkprice(
-                              token:
-                                  depthData.undTk ?? depthData.token ?? "0.00"),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 12.0),
-                            child: Row(
-                                children: (scripInfo
-                                            .optChainCallDown.isNotEmpty &&
-                                        scripInfo.optChainPutDown.isNotEmpty)
-                                    ? [
-                                        Flexible(
-                                          child: OptChainCallList(
-                                              swipe: swipecontroller,
-                                              callData:
-                                                  scripInfo.optChainCallDown,
-                                              isCallUp: false),
-                                        ),
-                                        SizedBox(
-                                          width: 100,
-                                          child: StrikePriceListCard(
-                                              strike:
-                                                  scripInfo.optChainCallDown,
-                                              isCallUp: false),
-                                        ),
-                                        Flexible(
-                                          child: OptChainPutList(
-                                              putData:
-                                                  scripInfo.optChainPutDown,
-                                              isPutUp: false),
-                                        )
-                                      ]
-                                    : []),
-                          )
-                        ]
-                      ]),
-                    )),
+                      child: isLoading 
+                        ? const Center(child: CircularProgressIndicator(color: Color(0xff0037B7)))
+                        : SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            controller: _mainScrollController,
+                            child: Column(children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                child: Row(
+                                  children: <Widget>[
+                                    Flexible(
+                                      child: OptChainCallList(
+                                          swipe: swipecontroller,
+                                          callData: scripInfo.optChainCallUP,
+                                          isCallUp: true),
+                                    ),
+                                    SizedBox(
+                                      width: 100,
+                                      child: StrikePriceListCard(
+                                          strike: scripInfo.optChainCallUP,
+                                          isCallUp: true),
+                                    ),
+                                    Flexible(
+                                      child: OptChainPutList(
+                                          putData: scripInfo.optChainPutUp,
+                                          isPutUp: true),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              CurStrkprice(
+                                key: _strikePriceKey,
+                                token: depthData.undTk ?? depthData.token ?? "0.00"),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                child: Row(
+                                  children: <Widget>[
+                                    Flexible(
+                                      child: OptChainCallList(
+                                          swipe: swipecontroller,
+                                          callData: scripInfo.optChainCallDown,
+                                          isCallUp: false),
+                                    ),
+                                    SizedBox(
+                                      width: 100,
+                                      child: StrikePriceListCard(
+                                          strike: scripInfo.optChainCallDown,
+                                          isCallUp: false),
+                                    ),
+                                    Flexible(
+                                      child: OptChainPutList(
+                                          putData: scripInfo.optChainPutDown,
+                                          isPutUp: false),
+                                    )
+                                  ],
+                                ),
+                              )
+                            ]),
+                        ),
+                    ),
                     if (!scripInfo.scripDepthloader &&
                         scripInfo.getQuotes?.instname != "UNDIND" &&
                         scripInfo.getQuotes?.instname != "COM")
