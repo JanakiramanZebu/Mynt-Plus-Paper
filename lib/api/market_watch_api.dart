@@ -170,14 +170,15 @@ mixin MarketWatchApi on ApiCore {
     }
   }
 
-    Future<SearchScripNewModel> getSearchScripNew({required String searchText, required String categ, required List exchs}) async {
+    Future<SearchScripNewModel> getSearchScripNew({required String searchText, required String categ, required List exchs, required bool opt}) async {
     try {
       final uri = Uri.parse(apiLinks.searchScripNew);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","stext":"${searchText.replaceAll("&", "%26")}","cat":"$categ","fil":${exchs.toList()}}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","stext":"${searchText.replaceAll("&", "%26")}","cat":"$categ","fil":${exchs.toList()},"opt":"${opt.toString()}"}&jKey=${prefs.clientSession}''');
 
+       print('''jData={"uid":"${prefs.clientId}","stext":"${searchText.replaceAll("&", "%26")}","cat":"$categ","fil":${exchs.toList()},"opt":"$opt"}&jKey=${prefs.clientSession}''');
        print("Search Scrip => ${res.body}");
       final json = jsonDecode(res.body);
        print("Search Scrip => ${json['values'].length}");

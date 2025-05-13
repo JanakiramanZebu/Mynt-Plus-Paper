@@ -1922,8 +1922,8 @@ class MFProvider extends DefaultChangeNotifier {
   }
 
   Future pausesiporder(BuildContext context, orderno, freqty, nxtdate) async {
-    print(
-        "@@@@@@@@{${orderno},${pausesip.text},freqty${freqty},nxtdate${nxtdate}}");
+    // print(
+    //     "@@@@@@@@{${orderno},${pausesip.text},freqty${freqty},nxtdate${nxtdate}}");
     if (pausesip.text != "") {
       toggleLoadingOn(true);
       try {
@@ -1933,9 +1933,9 @@ class MFProvider extends DefaultChangeNotifier {
           toggleLoadingOn(true);
           _mfsippause =
               await api.pausesipapi(orderno, pausesip.text, freqty, nxtdate);
-          print("function coming");
-          print("pausee sip${_mfsippause?.toJson()}");
-          print("pausee sip${_mfsippause?.toString()}");
+          // print("function coming");
+          // print("pausee sip${_mfsippause?.toJson()}");
+          // print("pausee sip${_mfsippause?.toString()}");
 
           // Navigator.pop(context);
           // fetchmfsiplist();
@@ -2787,9 +2787,9 @@ class MFProvider extends DefaultChangeNotifier {
   }
 
   mfRedemption(BuildContext context, String scheme, String qty) async {
-    print("remmfujnnn");
-    print("scheme ${scheme}");
-    print("qtyqty ${qty}");
+    // print("remmfujnnn");
+    // print("scheme ${scheme}");
+    // print("qtyqty ${qty}");
     try {
       toggleLoadingOn(true);
 

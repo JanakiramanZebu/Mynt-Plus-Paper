@@ -40,7 +40,7 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
         context.read(marketWatchProvider).searchClear();
         context
             .read(marketWatchProvider)
-            .scripSearch(_searchvalue, context, tabCtrl.index);
+            .scripSearch(_searchvalue, context, tabCtrl.index, widget.isBasket);
       }
     });
   }
@@ -163,7 +163,7 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                                 if (internet.connectionStatus !=
                                     ConnectivityResult.none) {
                                   searchScrip.scripSearch(
-                                      value, context, tabCtrl.index);
+                                      value, context, tabCtrl.index, widget.isBasket);
                                 }
                               }))),
                   body: Stack(children: [

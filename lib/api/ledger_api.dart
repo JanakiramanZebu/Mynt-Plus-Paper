@@ -1,9 +1,9 @@
 import 'dart:developer';
-import 'dart:io';
+// import 'dart:io';
 
 import 'package:mynt_plus/models/desk_reports_model/pdf_download_model.dart';
 import 'package:mynt_plus/models/desk_reports_model/pnl_seg_charges_model.dart';
-import 'package:path_provider/path_provider.dart';
+// import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_core.dart';
 import '../models/desk_reports_model/ca_events_model.dart';
@@ -44,7 +44,7 @@ mixin LedgerApi on ApiCore {
           }));
 
       final json = jsonDecode((res.body));
-      print("${json['stat']}");
+      // print("${json['stat']}");
       if (json['stat'] != 'Not Ok') {
         return LedgerModelData.fromJson(json as Map<String, dynamic>);
       } else {
@@ -235,7 +235,7 @@ mixin LedgerApi on ApiCore {
                         : 'CD_NSE,CD_BSE,CD_MCX,CD_USE'
           }));
 
-      print(" ${res.body} reswwwww");
+      // print(" ${res.body} reswwwww");
       if (res.body == 'No Data') {
         return CalenderpnlModel.fromJson({"data": res.body});
       } else {
@@ -265,7 +265,7 @@ mixin LedgerApi on ApiCore {
             "to": to
           }));
 
-      print(" ${res.body} reswwwww");
+      // print(" ${res.body} reswwwww");
       final json = jsonDecode((res.body));
 
       // final resval = res.body;
@@ -722,7 +722,6 @@ mixin LedgerApi on ApiCore {
 
       // log("MF Master ==>$json");
       return CdslReponseModel.fromJson(json as Map<String, dynamic>);
-      ;
 
       // return PnlSegCharge.fromJson({'data': json});
     } catch (e) {

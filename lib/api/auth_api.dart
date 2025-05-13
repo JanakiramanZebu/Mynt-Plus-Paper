@@ -155,7 +155,7 @@ mixin AuthApi on ApiCore {
               headers: defaultHeaders, body: jsonEncode(data))
           : await apiClient.get(uri, headers: defaultHeaders);
       final json = jsonDecode(res.body);
-      print("object pref $json");
+      // print("object pref $json");
 
       return json;
     } catch (e) {

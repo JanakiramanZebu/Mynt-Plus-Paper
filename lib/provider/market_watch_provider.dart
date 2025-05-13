@@ -822,12 +822,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Search scrip by tarde symbol
 
-  scripSearch(String value, BuildContext context, int? seg) async {
+  scripSearch(String value, BuildContext context, int? seg, String options) async {
     if (value.length > 2) {
       await fetchSearchScrip(
           searchText: value,
           context: context,
-          segment: ["", "EQ", "FO", "CUR", "COM", "IDX"][seg ?? 0]);
+          segment: ["", "EQ", "FO", "CUR", "COM", "IDX"][seg ?? 0],
+          option: options == "Option||Is");
     } else {
       searchClear();
     }
@@ -1432,7 +1433,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   Future fetchSearchScrip(
       {required String searchText,
       required BuildContext context,
-      required String segment}) async {
+      required String segment,
+      required bool option}) async {
     try {
       toggleLoadingOn(true);
       if (_exarr.isEmpty) {
@@ -1441,7 +1443,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _exarr = rawList.map((e) => '"${e.toString()}"').toList();
       } // _searchScripModel = await api.getSearchScrip(searchText: searchText);
       _searchScripModel = await api.getSearchScripNew(
-          searchText: searchText, categ: segment, exchs: _exarr);
+          searchText: searchText, categ: segment, exchs: _exarr, opt: option);
   print("object d");
       _allSearchScrip = [];
       // _equitySearchScrip = [];

@@ -55,8 +55,8 @@ class _OptionChainSSState extends State<OptionChainSS> {
     Future.microtask(() {
       context.read(marketWatchProvider).loadDefaultTabs();
     });
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => context.read(marketWatchProvider).scrollToSelectedTab(true));
+    // WidgetsBinding.instance.addPostFrameCallback(
+    //     (_) => context.read(marketWatchProvider).scrollToSelectedTab(true));
   }
 
   @override
@@ -64,8 +64,7 @@ class _OptionChainSSState extends State<OptionChainSS> {
     return PopScope(
         canPop: true,
         onPopInvokedWithResult: (didPop, result) async {
-          // if (didPop) return;
-          Navigator.pop(context);
+          if (didPop) return;
           await context
               .read(marketWatchProvider)
               .calldepthApis(context, widget.wlValue, "");
@@ -77,6 +76,7 @@ class _OptionChainSSState extends State<OptionChainSS> {
                 task: "ud",
                 context: context,
               );
+          Navigator.pop(context);
         },
         child: Consumer(builder: (context, ScopedReader watch, _) {
           final depthData = watch(marketWatchProvider).getQuotes!;
@@ -389,7 +389,8 @@ class _OptionChainSSState extends State<OptionChainSS> {
                                 SvgPicture.asset(assets.dInfo,
                                     color: colors.colorBlue),
                                 Text(
-                                    " Long press to add ${scripInfo.wlName}'s Watchlist",
+                                    " Long press to add Watchlist / Swipe to Trade",
+                                    // ${scripInfo.wlName}'s
                                     style: textStyle(
                                         colors.colorBlue, 12, FontWeight.w500))
                               ])),

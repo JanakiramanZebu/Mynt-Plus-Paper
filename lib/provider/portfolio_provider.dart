@@ -1254,7 +1254,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         } else {
           var tempunpnl = (lastPrice != 0.0
                   ? lastPrice
-                  : (element.lp != null
+                  : (element.lp != null && element.lp.toString() != 'null'
                       ? double.parse(element.lp.toString())
                       : 0)) -
               double.parse(element.netupldprc.toString());
