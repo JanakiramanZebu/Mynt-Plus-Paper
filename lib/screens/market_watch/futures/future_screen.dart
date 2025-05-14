@@ -15,151 +15,131 @@ class FutureScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final future = watch(marketWatchProvider);
-    final socketDatas = watch(websocketProvider).socketDatas;
     final theme = context.read(themeProvider);
-    // final internet = watch(networkStateProvider);
-    return
-
-        // WillPopScope(
-        //     onWillPop: () async {
-        //       future.requestWSFut(context: context, isSubscribe: false);
-        //       await future.requestWSMarketWatchScrip(
-        //           context: context, isSubscribe: true);
-
-        //       return true;
-        //     },
-        //     child: Scaffold(
-        //         backgroundColor: const Color(0xffFFFFFF),
-        //         appBar: AppBar(
-        //           backgroundColor: const Color(0xffFFFFFF),
-        //           elevation: 0.3,
-        //           centerTitle: false,
-        //           iconTheme: const IconThemeData(color: Color(0xff000000)),
-        //           title: Row(
-        //             children: [
-        //               Text("Futures",
-        //                   style: textStyle(
-        //                       const Color(0xff000000), 18, FontWeight.w600)),
-        //               Text(" (${future.fut!.length})",
-        //                   style: textStyle(colors.colorBlue, 17, FontWeight.w600)),
-        //             ],
-        //           ),
-        //         ),
-        //         body: Stack(
-        //           children: [
-
-        ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: future.fut!.length,
-      separatorBuilder: (BuildContext context, int index) {
-        return const ListDivider();
-      },
-      itemBuilder: (BuildContext context, int index) {
-        if (socketDatas.containsKey(future.fut![index].token)) {
-          future.fut![index].ltp =
-              "${socketDatas["${future.fut![index].token}"]['lp']}";
-          future.fut![index].change =
-              "${socketDatas["${future.fut![index].token}"]['chng']}";
-          future.fut![index].perChange =
-              "${socketDatas["${future.fut![index].token}"]['pc']}";
-        }
-        return InkWell(
-          onLongPress: () async {
-             await future.addDelMarketScrip(
-                    future.wlName,
-                    "${future.fut![index].exch}|${future.fut![index].token}",
-                    context,
-                    true,
-                    true,
-                    false,
-                    true);
+    
+    return StreamBuilder<Map>(
+      stream: watch(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        final socketDatas = snapshot.data ?? {};
+        
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: future.fut!.length,
+          separatorBuilder: (BuildContext context, int index) {
+            return const ListDivider();
           },
-            onTap: () async {
-              Navigator.pop(context);
-              await watch(marketWatchProvider)
-                  .calldepthApis(context, future.fut![index], "");
-            },
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              dense: true,
-              title: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text("${future.fut![index].symbol} ",
-                      style: textStyles.scripNameTxtStyle.copyWith(
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack)),
-                  if (future.fut![index].option!.isNotEmpty)
-                    Text("${future.fut![index].option}",
-                        style: textStyles.scripNameTxtStyle
-                            .copyWith(color: const Color(0xff666666))),
-                ],
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text("${future.fut![index].exch}  ",
-                          style: textStyles.scripExchTxtStyle),
-                      if (future.fut![index].expDate!.isNotEmpty)
-                        Text("${future.fut![index].expDate}  ",
-                            style: textStyles.scripExchTxtStyle
-                                .copyWith(color: colors.colorBlack)),
-                    ],
-                  ),
-                ],
-              ),
-              trailing: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                      "₹${future.fut![index].ltp ?? future.fut![index].close ?? 0.00}",
+          itemBuilder: (BuildContext context, int index) {
+            // Create a local copy of the data to avoid modifying original
+            var displayData = future.fut![index];
+            
+            // Update with socket data if available
+            if (socketDatas.containsKey(displayData.token)) {
+              final socketData = socketDatas[displayData.token];
+              // Only update with valid values
+              final lp = socketData['lp']?.toString();
+              if (lp != null && lp != "null" && lp != "0" && lp != "0.00") {
+                displayData.ltp = lp;
+              }
+              
+              final chng = socketData['chng']?.toString();
+              if (chng != null && chng != "null") {
+                displayData.change = chng;
+              }
+              
+              final pc = socketData['pc']?.toString();
+              if (pc != null && pc != "null") {
+                displayData.perChange = pc;
+              }
+            }
+            
+            return InkWell(
+              onLongPress: () async {
+                await future.addDelMarketScrip(
+                  future.wlName,
+                  "${displayData.exch}|${displayData.token}",
+                  context,
+                  true,
+                  true,
+                  false,
+                  true);
+              },
+              onTap: () async {
+                Navigator.pop(context);
+                await watch(marketWatchProvider)
+                    .calldepthApis(context, displayData, "");
+              },
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                dense: true,
+                title: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text("${displayData.symbol} ",
+                        style: textStyles.scripNameTxtStyle.copyWith(
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack)),
+                    if (displayData.option!.isNotEmpty)
+                      Text("${displayData.option}",
+                          style: textStyles.scripNameTxtStyle
+                              .copyWith(color: const Color(0xff666666))),
+                  ],
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text("${displayData.exch}  ",
+                            style: textStyles.scripExchTxtStyle),
+                        if (displayData.expDate!.isNotEmpty)
+                          Text("${displayData.expDate}  ",
+                              style: textStyles.scripExchTxtStyle
+                                  .copyWith(color: colors.colorBlack)),
+                      ],
+                    ),
+                  ],
+                ),
+                trailing: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                        "₹${displayData.ltp ?? displayData.close ?? 0.00}",
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w600)),
+                    const SizedBox(height: 4),
+                    Text(
+                      "${displayData.change == "null" ? "0.00 " : double.parse("${displayData.change}").toStringAsFixed(2)} "
+                      "${displayData.perChange == "null" ? "(0.00%)" : "(${displayData.perChange ?? 0.00}%)"}",
                       style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          14,
-                          FontWeight.w600)),
-                  const SizedBox(height: 4),
-                  Text(
-                    "${future.fut![index].change == "null" ? "0.00 " : double.parse("${future.fut![index].change}").toStringAsFixed(2)} "
-                    "${future.fut![index].perChange == "null" ? "(0.00%)" : "(${future.fut![index].perChange ?? 0.00}%)"}",
-                    style: textStyle(
-                        future.fut![index].change!.startsWith("-") ||
-                                future.fut![index].perChange!.startsWith('-')
-                            ? colors.darkred
-                            : (future.fut![index].change == "null" ||
-                                        future.fut![index].perChange ==
-                                            "null") ||
-                                    (future.fut![index].change == "0.00" ||
-                                        future.fut![index].perChange == "0.00")
-                                ? colors.ltpgrey
-                                : colors.ltpgreen,
-                        12,
-                        FontWeight.w600),
-                  ),
-                ],
-              ),
-            )
-
-            // FutureListCard(
-            //     key: Key(index.toString()),
-            //     scripData: future.fut![index])
-
+                          displayData.change!.startsWith("-") ||
+                                  displayData.perChange!.startsWith('-')
+                              ? colors.darkred
+                              : (displayData.change == "null" ||
+                                          displayData.perChange ==
+                                              "null") ||
+                                      (displayData.change == "0.00" ||
+                                          displayData.perChange == "0.00")
+                                  ? colors.ltpgrey
+                                  : colors.ltpgreen,
+                          12,
+                          FontWeight.w600),
+                    ),
+                  ],
+                ),
+              )
             );
-      },
-      //               ),
-      //               if (internet.connectionStatus == ConnectivityResult.none) ...[
-      //                 const NoInternetWidget()
-      //               ]
-      //             ],
-      //           ))
+          },
+        );
+      }
     );
   }
 

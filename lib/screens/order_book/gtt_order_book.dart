@@ -21,7 +21,6 @@ class GttOrderBook extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-    final socketDatas = watch(websocketProvider).socketDatas;
     final order = watch(orderProvider);
     final theme = context.read(themeProvider);
     return Column(children: [
@@ -138,284 +137,311 @@ class GttOrderBook extends ConsumerWidget {
           ),
         ),
       Expanded(
-        child: ListView(
-          children: [
-            if (order.gttOrderBookSearch!.isEmpty)
-              gttOrderBook.isNotEmpty
-                  ? ListView.separated(
-                      primary: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        if (socketDatas
-                            .containsKey(gttOrderBook[index].token)) {
-                          gttOrderBook[index].ltp =
-                              "${socketDatas["${gttOrderBook[index].token}"]['lp']}";
-                          gttOrderBook[index].perChange =
-                              "${socketDatas["${gttOrderBook[index].token}"]['pc']}";
-                        }
-                        return InkWell(
-                            onTap: () async {
-                              await context
-                                  .read(marketWatchProvider)
-                                  .fetchLinkeScrip(
+        child: StreamBuilder<Map>(
+          stream: watch(websocketProvider).socketDataStream,
+          builder: (context, snapshot) {
+            final socketDatas = snapshot.data ?? {};
+            
+            // Update order book data with real-time values
+            if (snapshot.hasData) {
+              for (var order in gttOrderBook) {
+                if (socketDatas.containsKey(order.token)) {
+                  final lp = socketDatas[order.token]['lp']?.toString();
+                  final pc = socketDatas[order.token]['pc']?.toString();
+                  
+                  if (lp != null && lp != "null") {
+                    order.ltp = lp;
+                  }
+                  
+                  if (pc != null && pc != "null") {
+                    order.perChange = pc;
+                  }
+                }
+              }
+              
+              if (order.gttOrderBookSearch!.isNotEmpty) {
+                for (var searchOrder in order.gttOrderBookSearch!) {
+                  if (socketDatas.containsKey(searchOrder.token)) {
+                    final lp = socketDatas[searchOrder.token]['lp']?.toString();
+                    final pc = socketDatas[searchOrder.token]['pc']?.toString();
+                    
+                    if (lp != null && lp != "null") {
+                      searchOrder.ltp = lp;
+                    }
+                    
+                    if (pc != null && pc != "null") {
+                      searchOrder.perChange = pc;
+                    }
+                  }
+                }
+              }
+            }
+            
+            return ListView(
+              children: [
+                if (order.gttOrderBookSearch!.isEmpty)
+                  gttOrderBook.isNotEmpty
+                      ? ListView.separated(
+                          primary: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                                onTap: () async {
+                                  await context
+                                      .read(marketWatchProvider)
+                                      .fetchLinkeScrip(
+                                          "${gttOrderBook[index].token}",
+                                          "${gttOrderBook[index].exch}",
+                                          context);
+
+                                  await watch(marketWatchProvider).fetchScripQuote(
                                       "${gttOrderBook[index].token}",
                                       "${gttOrderBook[index].exch}",
                                       context);
 
-                              await watch(marketWatchProvider).fetchScripQuote(
-                                  "${gttOrderBook[index].token}",
-                                  "${gttOrderBook[index].exch}",
-                                  context);
+                                  if ((gttOrderBook[index].exch == "NSE" ||
+                                      gttOrderBook[index].exch == "BSE")) {
+                                    context
+                                        .read(marketWatchProvider)
+                                        .depthBtns
+                                        .add({
+                                      "btnName": "Fundamental",
+                                      "imgPath": assets.dInfo,
+                                      "key": context
+                                          .read(showcaseProvide)
+                                          .fundamentalcase,
+                                      "case": "Click here to view fundamental data."
+                                    });
 
-                              if ((gttOrderBook[index].exch == "NSE" ||
-                                  gttOrderBook[index].exch == "BSE")) {
-                                context
-                                    .read(marketWatchProvider)
-                                    .depthBtns
-                                    .add({
-                                  "btnName": "Fundamental",
-                                  "imgPath": assets.dInfo,
-                                  "key": context
-                                      .read(showcaseProvide)
-                                      .fundamentalcase,
-                                  "case": "Click here to view fundamental data."
-                                });
+                                    await context
+                                        .read(marketWatchProvider)
+                                        .fetchTechData(
+                                            context: context,
+                                            exch: "${gttOrderBook[index].exch}",
+                                            tradeSym: "${gttOrderBook[index].tsym}",
+                                            lastPrc: "${gttOrderBook[index].prc}");
+                                  }
 
-                                await context
-                                    .read(marketWatchProvider)
-                                    .fetchTechData(
-                                        context: context,
-                                        exch: "${gttOrderBook[index].exch}",
-                                        tradeSym: "${gttOrderBook[index].tsym}",
-                                        lastPrc: "${gttOrderBook[index].prc}");
-                              }
-
-                              Navigator.pushNamed(
-                                  context, Routes.gttOrderDetail,
-                                  arguments: gttOrderBook[index]);
-                            },
-                            child: Container(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(children: [
-                                              Text(
-                                                  "${gttOrderBook[index].symbol} ",
-                                                  overflow: TextOverflow
-                                                      .ellipsis,
-                                                  style: textStyles
-                                                      .scripNameTxtStyle
-                                                      .copyWith(
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack)),
-                                              Text(
-                                                  "${gttOrderBook[index].option} ",
-                                                  overflow: TextOverflow
-                                                      .ellipsis,
-                                                  style: textStyles
-                                                      .scripNameTxtStyle
-                                                      .copyWith(
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack)),
-                                            ]),
-                                            Row(
+                                  Navigator.pushNamed(
+                                      context, Routes.gttOrderDetail,
+                                      arguments: gttOrderBook[index]);
+                                },
+                                child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceBetween,
                                               children: [
-                                                Text(" LTP: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                if (socketDatas.containsKey(
-                                                    gttOrderBook[index]
-                                                        .token)) ...[
+                                                Row(children: [
                                                   Text(
-                                                      "₹${gttOrderBook[index].ltp ?? gttOrderBook[index].close ?? 0.00}",
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          14,
-                                                          FontWeight.w500)),
-                                                ]
-                                                // SvgPicture.asset(assets.rightArrowIcon),
-                                              ],
-                                            )
-                                          ]),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
+                                                      "${gttOrderBook[index].symbol} ",
+                                                      overflow: TextOverflow
+                                                          .ellipsis,
+                                                      style: textStyles
+                                                          .scripNameTxtStyle
+                                                          .copyWith(
+                                                              color: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack)),
+                                                  Text(
+                                                      "${gttOrderBook[index].option} ",
+                                                      overflow: TextOverflow
+                                                          .ellipsis,
+                                                      style: textStyles
+                                                          .scripNameTxtStyle
+                                                          .copyWith(
+                                                              color: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack)),
+                                                ]),
+                                                Row(
+                                                  children: [
+                                                    Text(" LTP: ",
+                                                        style: textStyle(
+                                                            const Color(0xff5E6B7D),
+                                                            13,
+                                                            FontWeight.w600)),
+                                                    Text(
+                                                        "₹${gttOrderBook[index].ltp ?? gttOrderBook[index].close ?? 0.00}",
+                                                        style: textStyle(
+                                                            theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            14,
+                                                            FontWeight.w500)),
+                                                  ],
+                                                )
+                                              ]),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceBetween,
                                               children: [
-                                                CustomExchBadge(
-                                                    exch:
-                                                        "${gttOrderBook[index].exch}"),
+                                                Row(
+                                                  children: [
+                                                    CustomExchBadge(
+                                                        exch:
+                                                            "${gttOrderBook[index].exch}"),
+                                                    Text(
+                                                        " ${gttOrderBook[index].expDate} ",
+                                                        overflow:
+                                                            TextOverflow.ellipsis,
+                                                        style: textStyles
+                                                            .scripExchTxtStyle
+                                                            .copyWith(
+                                                          color: theme.isDarkMode
+                                                              ? colors.colorWhite
+                                                              : colors.colorBlack,
+                                                        ))
+                                                  ],
+                                                ),
                                                 Text(
-                                                    " ${gttOrderBook[index].expDate} ",
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: textStyles
-                                                        .scripExchTxtStyle
-                                                        .copyWith(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                    ))
-                                              ],
-                                            ),
-                                            Text(
-                                                " (${gttOrderBook[index].perChange ?? 0.00}%)",
-                                                style: textStyle(
-                                                    gttOrderBook[index]
-                                                            .perChange!
-                                                            .startsWith("-")
-                                                        ? colors.darkred
-                                                        : gttOrderBook[index]
-                                                                    .perChange ==
-                                                                "0.00"
-                                                            ? colors.ltpgrey
-                                                            : colors.ltpgreen,
-                                                    12,
-                                                    FontWeight.w500)),
-                                          ]),
-                                      const SizedBox(height: 4),
-                                      Divider(
-                                          color: theme.isDarkMode
-                                              ? colors.darkColorDivider
-                                              : colors.colorDivider),
-                                      const SizedBox(height: 2),
-                                      Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(children: [
-                                              Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                          horizontal: 8,
-                                                          vertical: 2),
-                                                  decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      color: theme.isDarkMode
-                                                          ? Color(gttOrderBook[index].trantype == "S" ? 0XFFf44336 : 0xff43A833)
-                                                              .withOpacity(.2)
-                                                          : Color(
-                                                              gttOrderBook[index].trantype == "S"
-                                                                  ? 0xffFCF3F3
-                                                                  : 0xffECF8F1)),
-                                                  child: Text(gttOrderBook[index].trantype == "S" ? "SELL" : "BUY",
-                                                      style: textStyle(
-                                                          gttOrderBook[index].trantype == "S"
-                                                              ? colors.darkred
-                                                              : colors.ltpgreen,
-                                                          12,
-                                                          FontWeight.w600))),
-                                              Container(
-                                                  margin: const EdgeInsets.only(
-                                                      left: 7),
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                          horizontal: 7,
-                                                          vertical: 2),
-                                                  decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      color: theme.isDarkMode
-                                                          ? const Color(0xff666666)
-                                                              .withOpacity(.2)
-                                                          : const Color(
-                                                                  0xff999999)
-                                                              .withOpacity(.2)),
-                                                  child: Text(
-                                                      "${gttOrderBook[index].placeOrderParams!.sPrdtAli}",
-                                                      style: textStyle(
-                                                          const Color(0xff666666),
-                                                          11,
-                                                          FontWeight.w600)))
-                                            ]),
-                                            Row(children: [
-                                              Text("Qty: ",
-                                                  style: textStyle(
-                                                      const Color(0xff5E6B7D),
-                                                      14,
-                                                      FontWeight.w500)),
-                                              Text(
-                                                  "${gttOrderBook[index].qty ?? 0}",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      14,
-                                                      FontWeight.w500))
-                                            ])
-                                          ]),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Text(
-                                                    "${gttOrderBook[index].aiT!.replaceAll("_B_O", "").replaceAll("_A_O", "").replaceAll("_", " ")} ",
+                                                    " (${gttOrderBook[index].perChange ?? 0.00}%)",
                                                     style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    formatDateTime(
-                                                        value:
-                                                            gttOrderBook[index]
-                                                                .norentm!),
-                                                    style: textStyle(
-                                                        const Color(0xff666666),
+                                                        gttOrderBook[index]
+                                                                .perChange!
+                                                                .startsWith("-")
+                                                            ? colors.darkred
+                                                            : gttOrderBook[index]
+                                                                        .perChange ==
+                                                                    "0.00"
+                                                                ? colors.ltpgrey
+                                                                : colors.ltpgreen,
                                                         12,
                                                         FontWeight.w500)),
-                                              ],
-                                            ),
-                                            Row(children: [
-                                              Text("Price: ",
-                                                  style: textStyle(
-                                                      const Color(0xff5E6B7D),
-                                                      14,
-                                                      FontWeight.w500)),
-                                              Text(
-                                                  "${gttOrderBook[index].prc ?? 0.00}",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      14,
-                                                      FontWeight.w500))
-                                            ])
-                                          ])
-                                    ]))
+                                              ]),
+                                          const SizedBox(height: 4),
+                                          Divider(
+                                              color: theme.isDarkMode
+                                                  ? colors.darkColorDivider
+                                                  : colors.colorDivider),
+                                          const SizedBox(height: 2),
+                                          Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Row(children: [
+                                                  Container(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                              horizontal: 8,
+                                                              vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                  4),
+                                                          color: theme.isDarkMode
+                                                              ? Color(gttOrderBook[index].trantype == "S" ? 0XFFf44336 : 0xff43A833)
+                                                                  .withOpacity(.2)
+                                                              : Color(
+                                                                  gttOrderBook[index].trantype == "S"
+                                                                      ? 0xffFCF3F3
+                                                                      : 0xffECF8F1)),
+                                                      child: Text(gttOrderBook[index].trantype == "S" ? "SELL" : "BUY",
+                                                          style: textStyle(
+                                                              gttOrderBook[index].trantype == "S"
+                                                                  ? colors.darkred
+                                                                  : colors.ltpgreen,
+                                                              12,
+                                                              FontWeight.w600))),
+                                                  Container(
+                                                      margin: const EdgeInsets.only(
+                                                          left: 7),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                              horizontal: 7,
+                                                              vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                  4),
+                                                          color: theme.isDarkMode
+                                                              ? const Color(0xff666666)
+                                                                  .withOpacity(.2)
+                                                              : const Color(0xff999999)
+                                                                  .withOpacity(.2)),
+                                                      child: Text(
+                                                          "${gttOrderBook[index].placeOrderParams!.sPrdtAli}",
+                                                          style: textStyle(
+                                                              const Color(0xff666666),
+                                                              11,
+                                                              FontWeight.w600)))
+                                                ]),
+                                                Row(children: [
+                                                  Text("Qty: ",
+                                                      style: textStyle(
+                                                          const Color(0xff5E6B7D),
+                                                          14,
+                                                          FontWeight.w500)),
+                                                  Text(
+                                                      "${gttOrderBook[index].qty ?? 0}",
+                                                      style: textStyle(
+                                                          theme.isDarkMode
+                                                              ? colors.colorWhite
+                                                              : colors.colorBlack,
+                                                          14,
+                                                          FontWeight.w500))
+                                                ])
+                                              ]),
+                                          const SizedBox(height: 10),
+                                          Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                        "${gttOrderBook[index].aiT!.replaceAll("_B_O", "").replaceAll("_A_O", "").replaceAll("_", " ")} ",
+                                                        style: textStyle(
+                                                            theme.isDarkMode
+                                                                ? colors.colorWhite
+                                                                : colors.colorBlack,
+                                                            14,
+                                                            FontWeight.w500)),
+                                                    Text(
+                                                        formatDateTime(
+                                                            value:
+                                                                gttOrderBook[index]
+                                                                    .norentm!),
+                                                        style: textStyle(
+                                                            const Color(0xff666666),
+                                                            12,
+                                                            FontWeight.w500)),
+                                                  ],
+                                                ),
+                                                Row(children: [
+                                                  Text("Price: ",
+                                                      style: textStyle(
+                                                          const Color(0xff5E6B7D),
+                                                          14,
+                                                          FontWeight.w500)),
+                                                  Text(
+                                                      "${gttOrderBook[index].prc ?? 0.00}",
+                                                      style: textStyle(
+                                                          theme.isDarkMode
+                                                              ? colors.colorWhite
+                                                              : colors.colorBlack,
+                                                          14,
+                                                          FontWeight.w500))
+                                                ])
+                                              ])
+                                        ]))
 
                             // GTTOrderBookList( gttOrderBook: gttOrderBook[index])
 
@@ -431,271 +457,266 @@ class GttOrderBook extends ConsumerWidget {
                       },
                     )
                   : const SizedBox(height: 500, child: NoDataFound()),
-            if (order.gttOrderBookSearch!.isNotEmpty)
-              ListView.separated(
-                primary: true,
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  if (socketDatas
-                      .containsKey(order.gttOrderBookSearch![index].token)) {
-                    order.gttOrderBookSearch![index].ltp =
-                        "${socketDatas["${gttOrderBook[index].token}"]['lp']}";
-                    order.gttOrderBookSearch![index].perChange =
-                        "${socketDatas["${gttOrderBook[index].token}"]['pc']}";
-                  }
-                  return InkWell(
-                      onTap: () async {
-                        await context.read(marketWatchProvider).fetchLinkeScrip(
-                            "${order.gttOrderBookSearch![index].token}",
-                            "${order.gttOrderBookSearch![index].exch}",
-                            context);
+                if (order.gttOrderBookSearch!.isNotEmpty)
+                  ListView.separated(
+                    primary: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                          onTap: () async {
+                            await context.read(marketWatchProvider).fetchLinkeScrip(
+                                "${order.gttOrderBookSearch![index].token}",
+                                "${order.gttOrderBookSearch![index].exch}",
+                                context);
 
-                        await watch(marketWatchProvider).fetchScripQuote(
-                            "${order.gttOrderBookSearch![index].token}",
-                            "${order.gttOrderBookSearch![index].exch}",
-                            context);
+                            await watch(marketWatchProvider).fetchScripQuote(
+                                "${order.gttOrderBookSearch![index].token}",
+                                "${order.gttOrderBookSearch![index].exch}",
+                                context);
 
-                        if ((order.gttOrderBookSearch![index].exch == "NSE" ||
-                            order.gttOrderBookSearch![index].exch == "BSE")) {
-                          context.read(marketWatchProvider).depthBtns.add({
-                            "btnName": "Fundamental",
-                            "imgPath": assets.dInfo,
-                            "key":
-                                context.read(showcaseProvide).fundamentalcase,
-                            "case": "Click here to view fundamental data."
-                          });
+                            if ((order.gttOrderBookSearch![index].exch == "NSE" ||
+                                order.gttOrderBookSearch![index].exch == "BSE")) {
+                              context.read(marketWatchProvider).depthBtns.add({
+                                "btnName": "Fundamental",
+                                "imgPath": assets.dInfo,
+                                "key":
+                                    context.read(showcaseProvide).fundamentalcase,
+                                "case": "Click here to view fundamental data."
+                              });
 
-                          await context.read(marketWatchProvider).fetchTechData(
-                              context: context,
-                              exch: "${order.gttOrderBookSearch![index].exch}",
-                              tradeSym:
-                                  "${order.gttOrderBookSearch![index].tsym}",
-                              lastPrc:
-                                  "${order.gttOrderBookSearch![index].prc}");
-                        }
+                              await context.read(marketWatchProvider).fetchTechData(
+                                  context: context,
+                                  exch: "${order.gttOrderBookSearch![index].exch}",
+                                  tradeSym:
+                                      "${order.gttOrderBookSearch![index].tsym}",
+                                  lastPrc:
+                                      "${order.gttOrderBookSearch![index].prc}");
+                            }
 
-                        Navigator.pushNamed(context, Routes.gttOrderDetail,
-                            arguments: order.gttOrderBookSearch![index]);
-                      },
-                      child: Container(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(children: [
-                                        Text(
-                                            "${order.gttOrderBookSearch![index].symbol} ",
-                                            overflow: TextOverflow.ellipsis,
-                                            style: textStyles.scripNameTxtStyle
-                                                .copyWith(
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack)),
-                                        Text(
-                                            "${order.gttOrderBookSearch![index].option} ",
-                                            overflow: TextOverflow.ellipsis,
-                                            style: textStyles.scripNameTxtStyle
-                                                .copyWith(
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack)),
-                                      ]),
-                                      Row(
+                            Navigator.pushNamed(context, Routes.gttOrderDetail,
+                                arguments: order.gttOrderBookSearch![index]);
+                          },
+                          child: Container(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(" LTP: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  13,
-                                                  FontWeight.w600)),
-                                          if (socketDatas.containsKey(order
-                                              .gttOrderBookSearch![index]
-                                              .token)) ...[
+                                          Row(children: [
                                             Text(
-                                                "₹${order.gttOrderBookSearch![index].ltp ?? order.gttOrderBookSearch![index].close ?? 0.00}",
+                                                "${order.gttOrderBookSearch![index].symbol} ",
+                                                overflow: TextOverflow.ellipsis,
+                                                style: textStyles.scripNameTxtStyle
+                                                    .copyWith(
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack)),
+                                            Text(
+                                                "${order.gttOrderBookSearch![index].option} ",
+                                                overflow: TextOverflow.ellipsis,
+                                                style: textStyles.scripNameTxtStyle
+                                                    .copyWith(
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack)),
+                                          ]),
+                                          Row(
+                                            children: [
+                                              Text(" LTP: ",
+                                                  style: textStyle(
+                                                      const Color(0xff5E6B7D),
+                                                      13,
+                                                      FontWeight.w600)),
+                                              if (socketDatas.containsKey(order
+                                                  .gttOrderBookSearch![index]
+                                                  .token)) ...[
+                                                Text(
+                                                    "₹${order.gttOrderBookSearch![index].ltp ?? order.gttOrderBookSearch![index].close ?? 0.00}",
+                                                    style: textStyle(
+                                                        theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                                                        14,
+                                                        FontWeight.w500)),
+                                              ]
+                                              // SvgPicture.asset(assets.rightArrowIcon),
+                                            ],
+                                          )
+                                        ]),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              CustomExchBadge(
+                                                  exch:
+                                                      "${order.gttOrderBookSearch![index].exch}"),
+                                              Text(
+                                                  " ${order.gttOrderBookSearch![index].expDate} ",
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: textStyles
+                                                      .scripExchTxtStyle
+                                                      .copyWith(
+                                                    color: theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                  ))
+                                            ],
+                                          ),
+                                          Text(
+                                              " (${order.gttOrderBookSearch![index].perChange ?? 0.00}%)",
+                                              style: textStyle(
+                                                  order.gttOrderBookSearch![index]
+                                                          .perChange!
+                                                          .startsWith("-")
+                                                      ? colors.darkred
+                                                      : order
+                                                                  .gttOrderBookSearch![
+                                                                      index]
+                                                                  .perChange ==
+                                                              "0.00"
+                                                          ? colors.ltpgrey
+                                                          : colors.ltpgreen,
+                                                  12,
+                                                  FontWeight.w500)),
+                                        ]),
+                                    const SizedBox(height: 4),
+                                    Divider(
+                                        color: theme.isDarkMode
+                                            ? colors.darkColorDivider
+                                            : colors.colorDivider),
+                                    const SizedBox(height: 2),
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(children: [
+                                            Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(4),
+                                                    color: theme.isDarkMode
+                                                        ? Color(order.gttOrderBookSearch![index].trantype == "S" ? 0XFFf44336 : 0xff43A833)
+                                                            .withOpacity(.2)
+                                                        : Color(order.gttOrderBookSearch![index].trantype == "S"
+                                                            ? 0xffFCF3F3
+                                                            : 0xffECF8F1)),
+                                                child: Text(
+                                                    gttOrderBook[index].trantype == "S"
+                                                        ? "SELL"
+                                                        : "BUY",
+                                                    style: textStyle(
+                                                        order.gttOrderBookSearch![index].trantype == "S"
+                                                            ? colors.darkred
+                                                            : colors.ltpgreen,
+                                                        12,
+                                                        FontWeight.w600))),
+                                            Container(
+                                                margin:
+                                                    const EdgeInsets.only(left: 7),
+                                                padding: const EdgeInsets.symmetric(
+                                                    horizontal: 7, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(4),
+                                                    color: theme.isDarkMode
+                                                        ? const Color(0xff666666)
+                                                            .withOpacity(.2)
+                                                        : const Color(0xff999999)
+                                                            .withOpacity(.2)),
+                                                child: Text(
+                                                    "${order.gttOrderBookSearch![index].placeOrderParams!.sPrdtAli}",
+                                                    style: textStyle(
+                                                        const Color(0xff666666),
+                                                        11,
+                                                        FontWeight.w600)))
+                                          ]),
+                                          Row(children: [
+                                            Text("Qty: ",
+                                                style: textStyle(
+                                                    const Color(0xff5E6B7D),
+                                                    14,
+                                                    FontWeight.w500)),
+                                            Text(
+                                                "${order.gttOrderBookSearch![index].qty ?? 0}",
                                                 style: textStyle(
                                                     theme.isDarkMode
                                                         ? colors.colorWhite
                                                         : colors.colorBlack,
                                                     14,
+                                                    FontWeight.w500))
+                                          ])
+                                        ]),
+                                    const SizedBox(height: 10),
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                  "${order.gttOrderBookSearch![index].aiT!.replaceAll("_B_O", "").replaceAll("_A_O", "").replaceAll("_", " ")} ",
+                                                  style: textStyle(
+                                                      theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
+                                                      14,
+                                                      FontWeight.w500)),
+                                              Text(
+                                                  formatDateTime(
+                                                      value: gttOrderBook[index]
+                                                          .norentm!),
+                                                  style: textStyle(
+                                                      const Color(0xff666666),
+                                                      12,
+                                                      FontWeight.w500)),
+                                            ],
+                                          ),
+                                          Row(children: [
+                                            Text("Price: ",
+                                                style: textStyle(
+                                                    const Color(0xff5E6B7D),
+                                                    14,
                                                     FontWeight.w500)),
-                                          ]
-                                          // SvgPicture.asset(assets.rightArrowIcon),
-                                        ],
-                                      )
-                                    ]),
-                                const SizedBox(height: 4),
-                                Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          CustomExchBadge(
-                                              exch:
-                                                  "${order.gttOrderBookSearch![index].exch}"),
-                                          Text(
-                                              " ${order.gttOrderBookSearch![index].expDate} ",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyles
-                                                  .scripExchTxtStyle
-                                                  .copyWith(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                              ))
-                                        ],
-                                      ),
-                                      Text(
-                                          " (${order.gttOrderBookSearch![index].perChange ?? 0.00}%)",
-                                          style: textStyle(
-                                              order.gttOrderBookSearch![index]
-                                                      .perChange!
-                                                      .startsWith("-")
-                                                  ? colors.darkred
-                                                  : order
-                                                              .gttOrderBookSearch![
-                                                                  index]
-                                                              .perChange ==
-                                                          "0.00"
-                                                      ? colors.ltpgrey
-                                                      : colors.ltpgreen,
-                                              12,
-                                              FontWeight.w500)),
-                                    ]),
-                                const SizedBox(height: 4),
-                                Divider(
-                                    color: theme.isDarkMode
-                                        ? colors.darkColorDivider
-                                        : colors.colorDivider),
-                                const SizedBox(height: 2),
-                                Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(children: [
-                                        Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 2),
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                                color: theme.isDarkMode
-                                                    ? Color(order.gttOrderBookSearch![index].trantype == "S" ? 0XFFf44336 : 0xff43A833)
-                                                        .withOpacity(.2)
-                                                    : Color(order.gttOrderBookSearch![index].trantype == "S"
-                                                        ? 0xffFCF3F3
-                                                        : 0xffECF8F1)),
-                                            child: Text(
-                                                gttOrderBook[index].trantype == "S"
-                                                    ? "SELL"
-                                                    : "BUY",
+                                            Text(
+                                                "${order.gttOrderBookSearch![index].prc ?? 0.00}",
                                                 style: textStyle(
-                                                    order.gttOrderBookSearch![index].trantype == "S"
-                                                        ? colors.darkred
-                                                        : colors.ltpgreen,
-                                                    12,
-                                                    FontWeight.w600))),
-                                        Container(
-                                            margin:
-                                                const EdgeInsets.only(left: 7),
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 7, vertical: 2),
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                                color: theme.isDarkMode
-                                                    ? const Color(0xff666666)
-                                                        .withOpacity(.2)
-                                                    : const Color(0xff999999)
-                                                        .withOpacity(.2)),
-                                            child: Text(
-                                                "${order.gttOrderBookSearch![index].placeOrderParams!.sPrdtAli}",
-                                                style: textStyle(
-                                                    const Color(0xff666666),
-                                                    11,
-                                                    FontWeight.w600)))
-                                      ]),
-                                      Row(children: [
-                                        Text("Qty: ",
-                                            style: textStyle(
-                                                const Color(0xff5E6B7D),
-                                                14,
-                                                FontWeight.w500)),
-                                        Text(
-                                            "${order.gttOrderBookSearch![index].qty ?? 0}",
-                                            style: textStyle(
-                                                theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                14,
-                                                FontWeight.w500))
-                                      ])
-                                    ]),
-                                const SizedBox(height: 10),
-                                Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                              "${order.gttOrderBookSearch![index].aiT!.replaceAll("_B_O", "").replaceAll("_A_O", "").replaceAll("_", " ")} ",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500)),
-                                          Text(
-                                              formatDateTime(
-                                                  value: gttOrderBook[index]
-                                                      .norentm!),
-                                              style: textStyle(
-                                                  const Color(0xff666666),
-                                                  12,
-                                                  FontWeight.w500)),
-                                        ],
-                                      ),
-                                      Row(children: [
-                                        Text("Price: ",
-                                            style: textStyle(
-                                                const Color(0xff5E6B7D),
-                                                14,
-                                                FontWeight.w500)),
-                                        Text(
-                                            "${order.gttOrderBookSearch![index].prc ?? 0.00}",
-                                            style: textStyle(
-                                                theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                14,
-                                                FontWeight.w500))
-                                      ])
-                                    ])
-                              ]))
+                                                    theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    14,
+                                                    FontWeight.w500))
+                                          ])
+                                        ])
+                                  ]))
 
-                      // GTTOrderBookList( gttOrderBook: gttOrderBook[index])
+                          // GTTOrderBookList( gttOrderBook: gttOrderBook[index])
 
-                      );
-                },
-                itemCount: order.gttOrderBookSearch!.length,
-                separatorBuilder: (BuildContext context, int index) {
-                  return Container(
-                      color: theme.isDarkMode
-                          ? colors.darkGrey
-                          : const Color(0xffF1F3F8),
-                      height: 6);
-                },
-              ),
-          ],
+                          );
+                    },
+                    itemCount: order.gttOrderBookSearch!.length,
+                    separatorBuilder: (BuildContext context, int index) {
+                      return Container(
+                          color: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
+                          height: 6);
+                    },
+                  ),
+              ],
+            );
+          },
         ),
       )
     ]);

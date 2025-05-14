@@ -335,7 +335,7 @@ class _OptionChainSSState extends State<OptionChainSS> {
                                                                           
                                                                           Navigator.pop(context);
                                                                           // Add a delay to ensure the UI is updated before scrolling
-                                                                          Future.delayed(const Duration(milliseconds: 200), () {
+                                                                          Future.delayed(const Duration(milliseconds: 300), () {
                                                                             _scrollToCurrentStrikePrice();
                                                                           });
 
@@ -600,6 +600,10 @@ class _OptionChainSSState extends State<OptionChainSS> {
                   onTap: () async {
                     tvChart.setOptionScript(context, tab.exch.toString(),
                         tab.token.toString(), tab.tsym.toString());
+
+                         Future.delayed(const Duration(milliseconds: 500), () {
+                                                                            _scrollToCurrentStrikePrice();
+                                                                          });
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Chip(

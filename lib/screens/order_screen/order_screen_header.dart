@@ -13,30 +13,47 @@ class OrderScreenHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-    final socketDatas = watch(websocketProvider).socketDatas;
-    final theme=watch(themeProvider);
-    if (socketDatas.containsKey(headerData.token)) {
-      headerData.ltp = "${socketDatas[headerData.token]['lp']}";
-      headerData.perChange = "${socketDatas[headerData.token]['pc']}";
-    }
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          "₹${headerData.ltp} ",
-           style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+    final theme = watch(themeProvider);
+    
+    return StreamBuilder<Map>(
+      stream: watch(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        final socketDatas = snapshot.data ?? {};
+        
+        // Update header data with real-time values
+        if (snapshot.hasData && socketDatas.containsKey(headerData.token)) {
+          final lp = socketDatas[headerData.token]['lp']?.toString();
+          final pc = socketDatas[headerData.token]['pc']?.toString();
+          
+          if (lp != null && lp != "null") {
+            headerData.ltp = lp;
+          }
+          
+          if (pc != null && pc != "null") {
+            headerData.perChange = pc;
+          }
+        }
+        
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              "₹${headerData.ltp} ",
+               style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                                           16, FontWeight.w600)
-        ),
-        Text(
-          " (${headerData.perChange ?? 0.00}%)",
-          style: textStyle(
-              headerData.perChange!.startsWith("-")
-                  ? colors.darkred
-                  : colors.ltpgreen,
-              13,
-              FontWeight.w600),
-        ),
-      ],
+            ),
+            Text(
+              " (${headerData.perChange ?? 0.00}%)",
+              style: textStyle(
+                  headerData.perChange!.startsWith("-")
+                      ? colors.darkred
+                      : colors.ltpgreen,
+                  13,
+                  FontWeight.w600),
+            ),
+          ],
+        );
+      }
     );
   }
 

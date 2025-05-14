@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import 'package:google_fonts/google_fonts.dart'; 
-  import '../../models/order_book_model/gtt_order_book.dart';
+import '../../models/order_book_model/gtt_order_book.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/order_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
-  import '../../routes/route_names.dart';
+import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/scrip_info_btns.dart'; 
@@ -18,16 +18,38 @@ class GttOrderDetail extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-   final scripInfo = watch(marketWatchProvider);        final theme = context.read(themeProvider);
-    final socketDatas = watch(websocketProvider).socketDatas;
-    if (socketDatas.containsKey(gttOrderBook.token)) {
-      gttOrderBook.ltp = "${socketDatas["${gttOrderBook.token}"]['lp']}";
-      gttOrderBook.perChange = "${socketDatas["${gttOrderBook.token}"]['pc']}";
-
-      gttOrderBook.change = "${socketDatas["${gttOrderBook.token}"]['chng']}";
-    }
-    return Scaffold(
-        appBar: AppBar(
+    final scripInfo = watch(marketWatchProvider);
+    final theme = context.read(themeProvider);
+    
+    return StreamBuilder<Map>(
+      stream: watch(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        final socketDatas = snapshot.data ?? {};
+        
+        // Update model with real-time data if available
+        GttOrderBookModel displayData = gttOrderBook;
+        if (socketDatas.containsKey(displayData.token)) {
+          final socketData = socketDatas[displayData.token];
+          
+          // Only update with valid values
+          final lp = socketData['lp']?.toString();
+          if (lp != null && lp != "null" && lp != "0") {
+            displayData.ltp = lp;
+          }
+          
+          final pc = socketData['pc']?.toString();
+          if (pc != null && pc != "null") {
+            displayData.perChange = pc;
+          }
+          
+          final chng = socketData['chng']?.toString();
+          if (chng != null && chng != "null") {
+            displayData.change = chng;
+          }
+        }
+        
+        return Scaffold(
+          appBar: AppBar(
             elevation: .2,
             leadingWidth: 41,
             centerTitle: false,
@@ -35,209 +57,206 @@ class GttOrderDetail extends ConsumerWidget {
             leading: const CustomBackBtn(),
             shadowColor: const Color(0xffECEFF3),
             title:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Text("${gttOrderBook.symbol}",
-                          style: textStyles.appBarTitleTxt.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack)),
-                      Text(" ${gttOrderBook.option} ",
-                          overflow: TextOverflow.ellipsis,
-                          style: textStyles.scripNameTxtStyle.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack)),
-                    ],
-                  ),
-                  Text("₹${gttOrderBook.ltp}",
-                      style: textStyle(
-                         theme.isDarkMode?colors.colorWhite:colors.colorBlack, 16, FontWeight.w600)),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Row(children: [
-                     CustomExchBadge(exch: "${gttOrderBook.exch}"),
-                      Text("  ${gttOrderBook.expDate}",
-                          style: textStyle(
-                              theme.isDarkMode?colors.colorWhite:colors.colorBlack, 12, FontWeight.w600))
-                    ]),
-                    Text(
-                        "${double.parse("${gttOrderBook.change ?? 0.00} ").toStringAsFixed(2)} (${gttOrderBook.perChange ?? 0.00}%)",
+                    Row(
+                      children: [
+                        Text("${displayData.symbol}",
+                            style: textStyles.appBarTitleTxt.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack)),
+                        Text(" ${displayData.option} ",
+                            overflow: TextOverflow.ellipsis,
+                            style: textStyles.scripNameTxtStyle.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack)),
+                      ],
+                    ),
+                    Text("₹${displayData.ltp}",
                         style: textStyle(
-                            (gttOrderBook.change == "null" ||
-                                        gttOrderBook.change == null) ||
-                                    gttOrderBook.change == "0.00"
-                                ? colors.ltpgrey
-                                : gttOrderBook.change!.startsWith("-") ||
-                                        gttOrderBook.perChange!.startsWith("-")
-                                    ? colors.darkred
-                                    : colors.ltpgreen,
-                            12,
-                            FontWeight.w500))
-                  ])
-            ])),
-       
-        body: ListView(
-          children: [
-            ScripInfoBtns(
-                exch: '${gttOrderBook.exch}',
-                token: '${gttOrderBook.token}',
-                insName: '', tsym: '${gttOrderBook.tsym}'),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Order details",
-                      style: textStyle(
-                          theme.isDarkMode?colors.colorWhite:colors.colorBlack, 16, FontWeight.w600)),
-                  const SizedBox(height: 16),
-                  rowOfInfoData(
-                      "Transaction Type",
-                      gttOrderBook.trantype == "B" ? "Buy" : "Sell",
-                      "Price Type",
-                      "${gttOrderBook.prctyp}",theme),
-                  const SizedBox(height: 4),
-                  rowOfInfoData("Price", "${gttOrderBook.prc}", "Qty",
-                      "${gttOrderBook.qty}",theme),
-                  const SizedBox(height: 4),
-                ],
+                           theme.isDarkMode?colors.colorWhite:colors.colorBlack, 16, FontWeight.w600)),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(children: [
+                       CustomExchBadge(exch: "${displayData.exch}"),
+                        Text("  ${displayData.expDate}",
+                            style: textStyle(
+                                theme.isDarkMode?colors.colorWhite:colors.colorBlack, 12, FontWeight.w600))
+                      ]),
+                      Text(
+                          "${double.parse("${displayData.change ?? 0.00} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",
+                          style: textStyle(
+                              (displayData.change == "null" ||
+                                          displayData.change == null) ||
+                                      displayData.change == "0.00"
+                                  ? colors.ltpgrey
+                                  : displayData.change!.startsWith("-") ||
+                                          displayData.perChange!.startsWith("-")
+                                      ? colors.darkred
+                                      : colors.ltpgreen,
+                              12,
+                              FontWeight.w500))
+                    ])
+              ])),
+         
+          body: ListView(
+            children: [
+              ScripInfoBtns(
+                  exch: '${displayData.exch}',
+                  token: '${displayData.token}',
+                  insName: '', tsym: '${displayData.tsym}'),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Order details",
+                        style: textStyle(
+                            theme.isDarkMode?colors.colorWhite:colors.colorBlack, 16, FontWeight.w600)),
+                    const SizedBox(height: 16),
+                    rowOfInfoData(
+                        "Transaction Type",
+                        displayData.trantype == "B" ? "Buy" : "Sell",
+                        "Price Type",
+                        "${displayData.prctyp}",theme),
+                    const SizedBox(height: 4),
+                    rowOfInfoData("Price", "${displayData.prc}", "Qty",
+                        "${displayData.qty}",theme),
+                    const SizedBox(height: 4),
+                  ],
+                ),
               ),
-            ),
-            // ScripInfoBtns(
-            //     exch: '${gttOrderBook.exch}',
-            //     token: '${gttOrderBook.token}',
-            //     insName: ''),
-          ],
-        ),
-        bottomNavigationBar: BottomAppBar(
-   
-            shape: const CircularNotchedRectangle(),
-            child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () async {
-                        await scripInfo.fetchScripInfo("${gttOrderBook.token}",
-                            "${gttOrderBook.exch}", context);
-                        Navigator.pop(context);
+            ],
+          ),
+          bottomNavigationBar: BottomAppBar(
+              shape: const CircularNotchedRectangle(),
+              child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          await scripInfo.fetchScripInfo("${displayData.token}",
+                              "${displayData.exch}", context);
+                          Navigator.pop(context);
 
-                        Navigator.pushNamed(context, Routes.modifyGtt,
-                            arguments: {
-                              "gttOrderBook": gttOrderBook,
-                              "scripInfo": context
-                                  .read(marketWatchProvider)
-                                  .scripInfoModel!
-                            });
-                      },
-                      child: Container(
-                        height: 40,
-                        decoration: BoxDecoration(
-                            border: Border.all(color:theme.isDarkMode?colors.colorbluegrey:colors.colorBlack,),
-                            borderRadius: BorderRadius.circular(108)),
-                        child: Center(
-                          child: Text("Modify Order",
-                              style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14,
-                                  FontWeight.w600)),
+                          Navigator.pushNamed(context, Routes.modifyGtt,
+                              arguments: {
+                                "gttOrderBook": displayData,
+                                "scripInfo": context
+                                    .read(marketWatchProvider)
+                                    .scripInfoModel!
+                              });
+                        },
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                              border: Border.all(color:theme.isDarkMode?colors.colorbluegrey:colors.colorBlack,),
+                              borderRadius: BorderRadius.circular(108)),
+                          child: Center(
+                            child: Text("Modify Order",
+                                style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14,
+                                    FontWeight.w600)),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: InkWell(
-                      onTap: () async {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog( backgroundColor:theme.isDarkMode? const Color.fromARGB(255, 18, 18, 18):colors.colorWhite,
-                                          
-                              titleTextStyle: textStyle(
-                                  theme.isDarkMode?colors.colorWhite:colors.colorBlack, 17, FontWeight.w600),
-                              contentTextStyle: textStyle(
-                                  const Color(0XFF666666), 14, FontWeight.w500),
-                              titlePadding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 10),
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(14))),
-                              scrollable: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                              ),
-                              insetPadding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              title: Row(
-                                children: [
-                                  Text("${gttOrderBook.tsym}"),
-                                   CustomExchBadge(exch: "${gttOrderBook.exch}")
-                                ],
-                              ),
-                              content: SizedBox(
-                                width: MediaQuery.of(context).size.width,
-                                child: const Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog( backgroundColor:theme.isDarkMode? const Color.fromARGB(255, 18, 18, 18):colors.colorWhite,
+                                            
+                                titleTextStyle: textStyle(
+                                    theme.isDarkMode?colors.colorWhite:colors.colorBlack, 17, FontWeight.w600),
+                                contentTextStyle: textStyle(
+                                    const Color(0XFF666666), 14, FontWeight.w500),
+                                titlePadding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 10),
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(14))),
+                                scrollable: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
+                                insetPadding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                title: Row(
                                   children: [
-                                    Text("Do you want to Cancel this order?")
+                                    Text("${displayData.tsym}"),
+                                     CustomExchBadge(exch: "${displayData.exch}")
                                   ],
                                 ),
-                              ),
-                              actions: [
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text(
-                                      "No",
-                                      style: textStyle(theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
-                                          14, FontWeight.w500),
-                                    )),
-                                ElevatedButton( style: ElevatedButton.styleFrom(
-                                                    elevation: 0,
-                                                    backgroundColor:
-                                                         theme.isDarkMode?colors.colorWhite:colors.colorBlack,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              50),
-                                                    )),
-                                    onPressed: () async {
-                                      await context
-                                          .read(orderProvider)
-                                          .fetchGttCancelOrder(
-                                              "${gttOrderBook.alId}", context);
-                                    },
-                                    child: Text(
-                                      "Yes",
-                                      style: textStyle(theme.isDarkMode?colors.colorBlack:colors.colorBlack,
-                                          14, FontWeight.w500),
-                                    )),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      child: Container(
-                        height: 40,
-                        decoration: BoxDecoration(
-                            color: colors.darkred,
-                            borderRadius: BorderRadius.circular(108)),
-                        child: Center(
-                          child: Text("Cancel Order",
-                              style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14,
-                                  FontWeight.w600)),
+                                content: SizedBox(
+                                  width: MediaQuery.of(context).size.width,
+                                  child: const Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text("Do you want to Cancel this order?")
+                                    ],
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text(
+                                        "No",
+                                        style: textStyle(theme.isDarkMode?colors.colorLightBlue:colors.colorBlue,
+                                            14, FontWeight.w500),
+                                      )),
+                                  ElevatedButton( style: ElevatedButton.styleFrom(
+                                                      elevation: 0,
+                                                      backgroundColor:
+                                                           theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                50),
+                                                      )),
+                                      onPressed: () async {
+                                        await context
+                                            .read(orderProvider)
+                                            .fetchGttCancelOrder(
+                                                "${displayData.alId}", context);
+                                      },
+                                      child: Text(
+                                        "Yes",
+                                        style: textStyle(theme.isDarkMode?colors.colorBlack:colors.colorBlack,
+                                            14, FontWeight.w500),
+                                      )),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                              color: colors.darkred,
+                              borderRadius: BorderRadius.circular(108)),
+                          child: Center(
+                            child: Text("Cancel Order",
+                                style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14,
+                                    FontWeight.w600)),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ]))));
+                  ]))));
+      },
+    );
   }
 
   Row rowOfInfoData(

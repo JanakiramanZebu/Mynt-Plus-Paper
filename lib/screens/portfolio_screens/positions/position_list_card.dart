@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 
@@ -15,156 +16,179 @@ class PositionListCard extends ConsumerWidget {
   Widget build(BuildContext context, watch) {
     final positions = watch(portfolioProvider);
     final theme = context.read(themeProvider);
-    return Container(
-        color: theme.isDarkMode
-            ? positionList.qty == "0"
-                ? colors.darkGrey
-                : colors.colorBlack
-            : Color(positionList.qty == "0" ? 0xffF1F3F8 : 0xffffffff),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Row(children: [
-                  Text("${positionList.symbol} ${positionList.expDate} ",
-                      overflow: TextOverflow.ellipsis,
-                      style: textStyles.scripNameTxtStyle.copyWith(
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack)),
-                  Text("${positionList.option} ",
-                      overflow: TextOverflow.ellipsis,
-                      style: textStyles.scripNameTxtStyle.copyWith(
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack)),
+    
+    return StreamBuilder<Map>(
+      stream: watch(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        // Update position data with real-time values if available
+        if (snapshot.hasData && snapshot.data!.containsKey(positionList.token)) {
+          final socketData = snapshot.data![positionList.token];
+          
+          // Only update with valid data
+          final lp = socketData['lp']?.toString();
+          if (lp != null && lp != "null" && lp != "0" && lp != "0.00") {
+            positionList.lp = lp;
+          }
+          
+          // Update PNL calculations if needed
+          if (positions.isDay && positionList.lp != null && positionList.lp != "0.00") {
+            // Positions might need to recalculate profit/loss based on updated LTP
+            positions.positionCal(positions.isDay);
+          }
+        }
+        
+        return Container(
+          color: theme.isDarkMode
+              ? positionList.qty == "0"
+                  ? colors.darkGrey
+                  : colors.colorBlack
+              : Color(positionList.qty == "0" ? 0xffF1F3F8 : 0xffffffff),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Row(children: [
+                    Text("${positionList.symbol} ${positionList.expDate} ",
+                        overflow: TextOverflow.ellipsis,
+                        style: textStyles.scripNameTxtStyle.copyWith(
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack)),
+                    Text("${positionList.option} ",
+                        overflow: TextOverflow.ellipsis,
+                        style: textStyles.scripNameTxtStyle.copyWith(
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack)),
+                  ]),
+                  Row(children: [
+                    Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: theme.isDarkMode
+                                ? positionList.qty == "0"
+                                    ? colors.colorBlack
+                                    : const Color(0xff666666).withOpacity(.2)
+                                : positionList.qty == "0"
+                                    ? colors.colorWhite
+                                    : const Color(0xffECEDEE)),
+                        child: Text("${positionList.exch}",
+                            overflow: TextOverflow.ellipsis,
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : const Color(0xff666666),
+                                10,
+                                FontWeight.w500))),
+                    const SizedBox(width: 9),
+                    Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: theme.isDarkMode
+                                ? positionList.qty == "0"
+                                    ? colors.colorBlack
+                                    : const Color(0xff666666).withOpacity(.2)
+                                : positionList.qty == "0"
+                                    ? colors.colorWhite
+                                    : const Color(0xffECEDEE)),
+                        child: Text("${positionList.sPrdtAli}",
+                            overflow: TextOverflow.ellipsis,
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : const Color(0xff666666),
+                                10,
+                                FontWeight.w500))),
+                  ])
                 ]),
-                Row(children: [
-                  Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(2),
-                          color: theme.isDarkMode
-                              ? positionList.qty == "0"
-                                  ? colors.colorBlack
-                                  : const Color(0xff666666).withOpacity(.2)
-                              : positionList.qty == "0"
-                                  ? colors.colorWhite
-                                  : const Color(0xffECEDEE)),
-                      child: Text("${positionList.exch}",
-                          overflow: TextOverflow.ellipsis,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : const Color(0xff666666),
-                              10,
-                              FontWeight.w500))),
-                  const SizedBox(width: 9),
-                  Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(2),
-                          color: theme.isDarkMode
-                              ? positionList.qty == "0"
-                                  ? colors.colorBlack
-                                  : const Color(0xff666666).withOpacity(.2)
-                              : positionList.qty == "0"
-                                  ? colors.colorWhite
-                                  : const Color(0xffECEDEE)),
-                      child: Text("${positionList.sPrdtAli}",
-                          overflow: TextOverflow.ellipsis,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : const Color(0xff666666),
-                              10,
-                              FontWeight.w500))),
-                ])
-              ]),
-              const SizedBox(height: 4),
-              Divider(
-                  color: theme.isDarkMode
-                      ? colors.darkGrey
-                      : Color(
-                          positionList.netqty == "0" ? 0xffffffff : 0xffECEDEE),
-                  thickness: 1.2),
-              const SizedBox(height: 2),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Row(children: [
-                  Text("Qty: ",
-                      style: textStyle(
-                          const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                  Text(
-                      "${((int.tryParse(positionList.qty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          14,
-                          FontWeight.w500))
-                ]),
-                positions.isNetPnl
-                    ? Text("₹${positionList.profitNloss ?? positionList.rpnl}",
+                const SizedBox(height: 4),
+                Divider(
+                    color: theme.isDarkMode
+                        ? colors.darkGrey
+                        : Color(
+                            positionList.netqty == "0" ? 0xffffffff : 0xffECEDEE),
+                    thickness: 1.2),
+                const SizedBox(height: 2),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Row(children: [
+                    Text("Qty: ",
                         style: textStyle(
-                            positionList.profitNloss != null
-                                ? positionList.profitNloss!.startsWith("-")
-                                    ? colors.darkred
-                                    : positionList.profitNloss == "0.00"
-                                        ? colors.ltpgrey
-                                        : colors.ltpgreen
-                                : positionList.rpnl!.startsWith("-")
-                                    ? colors.darkred
-                                    : positionList.rpnl == "0.00"
-                                        ? colors.ltpgrey
-                                        : colors.ltpgreen,
-                            15,
-                            FontWeight.w600))
-                    : Text("₹${positionList.mTm}",
+                            const Color(0xff5E6B7D), 14, FontWeight.w500)),
+                    Text(
+                        "${((int.tryParse(positionList.qty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
                         style: textStyle(
-                            positionList.mTm!.startsWith("-")
-                                ? colors.darkred
-                                : positionList.mTm == "0.00"
-                                    ? colors.ltpgrey
-                                    : colors.ltpgreen,
-                            15,
-                            FontWeight.w600))
-              ]),
-              const SizedBox(height: 10),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Row(children: [
-                  Text("Avg: ",
-                      style: textStyle(
-                          const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                  Text(
-                      positions.isDay
-                          ? "${positionList.avgPrc}"
-                          : positions.isNetPnl
-                              ? "${positionList.netupldprc}"
-                              : "${positionList.netavgprc}",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          14,
-                          FontWeight.w500))
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w500))
+                  ]),
+                  positions.isNetPnl
+                      ? Text("₹${positionList.profitNloss ?? positionList.rpnl}",
+                          style: textStyle(
+                              positionList.profitNloss != null
+                                  ? positionList.profitNloss!.startsWith("-")
+                                      ? colors.darkred
+                                      : positionList.profitNloss == "0.00"
+                                          ? colors.ltpgrey
+                                          : colors.ltpgreen
+                                  : positionList.rpnl!.startsWith("-")
+                                      ? colors.darkred
+                                      : positionList.rpnl == "0.00"
+                                          ? colors.ltpgrey
+                                          : colors.ltpgreen,
+                              15,
+                              FontWeight.w600))
+                      : Text("₹${positionList.mTm}",
+                          style: textStyle(
+                              positionList.mTm!.startsWith("-")
+                                  ? colors.darkred
+                                  : positionList.mTm == "0.00"
+                                      ? colors.ltpgrey
+                                      : colors.ltpgreen,
+                              15,
+                              FontWeight.w600))
                 ]),
-                Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  Text(" LTP: ",
-                      style: textStyle(
-                          const Color(0xff5E6B7D), 13, FontWeight.w600)),
-                  Text("₹${positionList.lp}",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          14,
-                          FontWeight.w500))
+                const SizedBox(height: 10),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Row(children: [
+                    Text("Avg: ",
+                        style: textStyle(
+                            const Color(0xff5E6B7D), 14, FontWeight.w500)),
+                    Text(
+                        positions.isDay
+                            ? "${positionList.avgPrc}"
+                            : positions.isNetPnl
+                                ? "${positionList.netupldprc}"
+                                : "${positionList.netavgprc}",
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w500))
+                  ]),
+                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                    Text(" LTP: ",
+                        style: textStyle(
+                            const Color(0xff5E6B7D), 13, FontWeight.w600)),
+                    Text("₹${positionList.lp}",
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w500))
+                  ]),
                 ]),
-              ]),
-            ]));
+              ]));
+      }
+    );
   }
 }

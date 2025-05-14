@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
@@ -17,7 +18,7 @@ class ExitHoldingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = context.read(themeProvider);
     final holdings = watch(portfolioProvider);
-    // final socketDatas = watch(websocketProvider).socketDatas;
+    
     return PopScope(
       canPop: true, // Allows back navigation
       onPopInvokedWithResult: (didPop, result) async {
@@ -84,667 +85,649 @@ class ExitHoldingsScreen extends ConsumerWidget {
             ),
           ],
         ),
-        body: ListView(
-          children: [
-            if (holdings.sealableHoldings.isNotEmpty) ...[
-              Container(
-                decoration: BoxDecoration(
-                    color: theme.isDarkMode
-                        ? colors.darkGrey
-                        : const Color(0xffF1F3F8),
-                    border: holdings.sealableHoldings[0].isExitHoldings!
-                        ? Border(
-                            bottom:
-                                BorderSide(color: colors.colorWhite, width: 6))
-                        : null),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: Text(
-                    "Sellable Holdings(${holdings.sealableHoldings.length})",
-                    style: textStyles.appBarTitleTxt.copyWith(
+        body: StreamBuilder<Map>(
+          stream: watch(websocketProvider).socketDataStream,
+          builder: (context, snapshot) {
+            final socketDatas = snapshot.data ?? {};
+            
+            // Update holdings data with real-time values if available
+            if (snapshot.hasData && holdings.sealableHoldings.isNotEmpty) {
+              for (var index = 0; index < holdings.sealableHoldings.length; index++) {
+                final token = holdings.sealableHoldings[index].exchTsym![0].token;
+                if (socketDatas.containsKey(token)) {
+                  final lp = socketDatas[token]['lp']?.toString();
+                  final pc = socketDatas[token]['pc']?.toString();
+                  final c = socketDatas[token]['c']?.toString();
+                  
+                  if (lp != null && lp != "null") {
+                    holdings.sealableHoldings[index].exchTsym![0].lp = lp;
+                  }
+                  
+                  if (pc != null && pc != "null") {
+                    holdings.sealableHoldings[index].exchTsym![0].perChange = pc;
+                  }
+                  
+                  if (c != null && c != "null") {
+                    holdings.sealableHoldings[index].exchTsym![0].close = c;
+                  }
+                }
+              }
+              
+              for (var index = 0; index < holdings.nonSealableHoldings.length; index++) {
+                final token = holdings.nonSealableHoldings[index].exchTsym![0].token;
+                if (socketDatas.containsKey(token)) {
+                  final lp = socketDatas[token]['lp']?.toString();
+                  final pc = socketDatas[token]['pc']?.toString();
+                  final c = socketDatas[token]['c']?.toString();
+                  
+                  if (lp != null && lp != "null") {
+                    holdings.nonSealableHoldings[index].exchTsym![0].lp = lp;
+                  }
+                  
+                  if (pc != null && pc != "null") {
+                    holdings.nonSealableHoldings[index].exchTsym![0].perChange = pc;
+                  }
+                  
+                  if (c != null && c != "null") {
+                    holdings.nonSealableHoldings[index].exchTsym![0].close = c;
+                  }
+                }
+              }
+              
+              // Calculate values for each holding
+              for (var index = 0; index < holdings.sealableHoldings.length; index++) {
+                if (holdings.sealableHoldings[index].exchTsym != null && 
+                    holdings.sealableHoldings[index].exchTsym!.isNotEmpty) {
+                  final exchTsym = holdings.sealableHoldings[index].exchTsym![0];
+                  final ltp = double.tryParse(exchTsym.lp ?? "0") ?? 0.0;
+                  final qty = holdings.sealableHoldings[index].currentQty ?? 0;
+                  final avgPrice = double.tryParse(holdings.sealableHoldings[index].upldprc ?? "0") ?? 0.0;
+                  
+                  if (ltp > 0 && qty > 0) {
+                    holdings.sealableHoldings[index].currentValue = (ltp * qty).toStringAsFixed(2);
+                    
+                    if (avgPrice > 0) {
+                      final pnl = (ltp - avgPrice) * qty;
+                      exchTsym.profitNloss = pnl.toStringAsFixed(2);
+                      
+                      if (avgPrice > 0) {
+                        final pnlPerc = (pnl / (avgPrice * qty)) * 100;
+                        exchTsym.pNlChng = pnlPerc.toStringAsFixed(2);
+                      }
+                    }
+                  }
+                }
+              }
+              
+              // Do the same for non-saleable holdings
+              for (var index = 0; index < holdings.nonSealableHoldings.length; index++) {
+                if (holdings.nonSealableHoldings[index].exchTsym != null && 
+                    holdings.nonSealableHoldings[index].exchTsym!.isNotEmpty) {
+                  final exchTsym = holdings.nonSealableHoldings[index].exchTsym![0];
+                  final ltp = double.tryParse(exchTsym.lp ?? "0") ?? 0.0;
+                  final qty = holdings.nonSealableHoldings[index].currentQty ?? 0;
+                  final avgPrice = double.tryParse(holdings.nonSealableHoldings[index].upldprc ?? "0") ?? 0.0;
+                  
+                  if (ltp > 0 && qty > 0) {
+                    holdings.nonSealableHoldings[index].currentValue = (ltp * qty).toStringAsFixed(2);
+                    
+                    if (avgPrice > 0) {
+                      final pnl = (ltp - avgPrice) * qty;
+                      exchTsym.profitNloss = pnl.toStringAsFixed(2);
+                      
+                      if (avgPrice > 0) {
+                        final pnlPerc = (pnl / (avgPrice * qty)) * 100;
+                        exchTsym.pNlChng = pnlPerc.toStringAsFixed(2);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
+            return ListView(
+              children: [
+                if (holdings.sealableHoldings.isNotEmpty) ...[
+                  Container(
+                    decoration: BoxDecoration(
                         color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack)),
-              ),
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: holdings.sealableHoldings.length,
-                itemBuilder: (BuildContext context, int index) {
-                  // if (socketDatas.containsKey(
-                  //     holdings.sealableHoldings[index].exchTsym![0].token)) {
-                  //   holdings.sealableHoldings[index].exchTsym![0].lp =
-                  //       "${socketDatas["${holdings.sealableHoldings[index].exchTsym![0].token}"]['lp']}";
-
-                  //   holdings.sealableHoldings[index].exchTsym![0].perChange =
-                  //       "${socketDatas["${holdings.sealableHoldings[index].exchTsym![0].token}"]['pc']}";
-
-                  //   holdings.sealableHoldings[index].exchTsym![0].close =
-                  //       "${socketDatas["${holdings.sealableHoldings[index].exchTsym![0].token}"]['c']}";
-                  //   holdings.holdingCalc();
-                  // }
-                  return InkWell(
-                      onTap: () {
-                        holdings.selectExitHoldings(index);
-                      },
-                      child: Container(
-                        color: theme.isDarkMode
-                            ? holdings.sealableHoldings[index].isExitHoldings!
-                                ? colors.darkGrey
-                                : colors.colorBlack
-                            : holdings.sealableHoldings[index].isExitHoldings!
-                                ? const Color(0xffF1F3F8)
-                                : colors.colorWhite,
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            ? colors.darkGrey
+                            : const Color(0xffF1F3F8),
+                        border: holdings.sealableHoldings[0].isExitHoldings!
+                            ? Border(
+                                bottom:
+                                    BorderSide(color: colors.colorWhite, width: 6))
+                            : null),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Text(
+                        "Sellable Holdings(${holdings.sealableHoldings.length})",
+                        style: textStyles.appBarTitleTxt.copyWith(
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack)),
+                  ),
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: holdings.sealableHoldings.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return InkWell(
+                          onTap: () {
+                            holdings.selectExitHoldings(index);
+                          },
+                          child: Container(
+                            color: theme.isDarkMode
+                                ? holdings.sealableHoldings[index].isExitHoldings!
+                                    ? colors.darkGrey
+                                    : colors.colorBlack
+                                : holdings.sealableHoldings[index].isExitHoldings!
+                                    ? const Color(0xffF1F3F8)
+                                    : colors.colorWhite,
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                    "${holdings.sealableHoldings[index].exchTsym![0].tsym} ",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: textStyles.scripNameTxtStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)),
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(" LTP: ",
-                                        style: textStyle(
-                                            const Color(0xff5E6B7D),
-                                            13,
-                                            FontWeight.w600)),
                                     Text(
-                                        "₹${holdings.sealableHoldings[index].exchTsym![0].lp}",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            14,
-                                            FontWeight.w500)),
+                                        "${holdings.sealableHoldings[index].exchTsym![0].tsym} ",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: textStyles.scripNameTxtStyle
+                                            .copyWith(
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack)),
+                                    Row(
+                                      children: [
+                                        Text(" LTP: ",
+                                            style: textStyle(
+                                                const Color(0xff5E6B7D),
+                                                13,
+                                                FontWeight.w600)),
+                                        Text(
+                                            "₹${holdings.sealableHoldings[index].exchTsym![0].lp}",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                14,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
                                   ],
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                CustomExchBadge(
-                                    exch:
-                                        "${holdings.sealableHoldings[index].exchTsym![0].exch}"),
-                                Text(
-                                    " (${holdings.sealableHoldings[index].exchTsym![0].perChange}%)",
-                                    style: textStyle(
-                                        holdings.sealableHoldings[index]
-                                                .exchTsym![0].perChange!
-                                                .startsWith("-")
-                                            ? colors.darkred
-                                            : holdings
-                                                        .sealableHoldings[index]
-                                                        .exchTsym![0]
-                                                        .perChange ==
-                                                    "0.00"
-                                                ? colors.ltpgrey
-                                                : colors.ltpgreen,
-                                        12,
-                                        FontWeight.w500)),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Divider(
-                                color: theme.isDarkMode
-                                    ? colors.darkColorDivider
-                                    : colors.colorDivider),
-                            const SizedBox(height: 3),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
+                                const SizedBox(height: 4),
                                 Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("Sellable: ",
-                                        style: textStyle(
-                                            const Color(0xff5E6B7D),
-                                            14,
-                                            FontWeight.w500)),
+                                    CustomExchBadge(
+                                        exch:
+                                            "${holdings.sealableHoldings[index].exchTsym![0].exch}"),
                                     Text(
-                                        "${holdings.sealableHoldings[index].saleableQty ?? 0} ",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            14,
-                                            FontWeight.w500)),
-                                    Text("/ Qty: ",
-                                        style: textStyle(
-                                            const Color(0xff5E6B7D),
-                                            14,
-                                            FontWeight.w500)),
-                                    Text(
-                                        "${holdings.sealableHoldings[index].currentQty ?? 0} @ ₹${holdings.sealableHoldings[index].upldprc ?? holdings.sealableHoldings[index].exchTsym![0].close ?? 0.00}",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            14,
-                                            FontWeight.w500)),
-                                    if (holdings
-                                            .sealableHoldings[index].btstqty !=
-                                        "0")
-                                      Text(
-                                          " T1: ${holdings.sealableHoldings[index].btstqty}",
-                                          style: textStyle(
-                                              const Color(0xff666666),
-                                              12,
-                                              FontWeight.w500))
-                                  ],
-                                ),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                        "₹${holdings.sealableHoldings[index].exchTsym![0].profitNloss}",
+                                        " (${holdings.sealableHoldings[index].exchTsym![0].perChange}%)",
                                         style: textStyle(
                                             holdings.sealableHoldings[index]
-                                                    .exchTsym![0].profitNloss!
-                                                    .startsWith("-")
-                                                ? colors.darkred
-                                                : colors.ltpgreen,
-                                            14,
-                                            FontWeight.w500)),
-                                    Text(
-                                        " (${holdings.sealableHoldings[index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdings.sealableHoldings[index].exchTsym![0].pNlChng}%)",
-                                        style: textStyle(
-                                            holdings.sealableHoldings[index]
-                                                    .exchTsym![0].pNlChng!
+                                                    .exchTsym![0].perChange!
                                                     .startsWith("-")
                                                 ? colors.darkred
                                                 : holdings
-                                                            .sealableHoldings[
-                                                                index]
+                                                            .sealableHoldings[index]
                                                             .exchTsym![0]
-                                                            .pNlChng ==
-                                                        "NaN"
+                                                            .perChange ==
+                                                        "0.00"
                                                     ? colors.ltpgrey
                                                     : colors.ltpgreen,
                                             12,
                                             FontWeight.w500)),
                                   ],
                                 ),
+                                const SizedBox(height: 4),
+                                Divider(
+                                    color: theme.isDarkMode
+                                        ? colors.darkColorDivider
+                                        : colors.colorDivider),
+                                const SizedBox(height: 3),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text("Sellable: ",
+                                            style: textStyle(
+                                                const Color(0xff5E6B7D),
+                                                14,
+                                                FontWeight.w500)),
+                                        Text(
+                                            "${holdings.sealableHoldings[index].saleableQty ?? 0} ",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                14,
+                                                FontWeight.w500)),
+                                        Text("/ Qty: ",
+                                            style: textStyle(
+                                                const Color(0xff5E6B7D),
+                                                14,
+                                                FontWeight.w500)),
+                                        Text(
+                                            "${holdings.sealableHoldings[index].currentQty ?? 0} @ ₹${holdings.sealableHoldings[index].upldprc ?? holdings.sealableHoldings[index].exchTsym![0].close ?? 0.00}",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                14,
+                                                FontWeight.w500)),
+                                        if (holdings
+                                                .sealableHoldings[index].btstqty !=
+                                            "0")
+                                          Text(
+                                              " T1: ${holdings.sealableHoldings[index].btstqty}",
+                                              style: textStyle(
+                                                  const Color(0xff666666),
+                                                  12,
+                                                  FontWeight.w500))
+                                      ],
+                                    ),
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                            "₹${holdings.sealableHoldings[index].exchTsym![0].profitNloss}",
+                                            style: textStyle(
+                                                holdings.sealableHoldings[index]
+                                                        .exchTsym![0].profitNloss!
+                                                        .startsWith("-")
+                                                    ? colors.darkred
+                                                    : colors.ltpgreen,
+                                                14,
+                                                FontWeight.w500)),
+                                        Text(
+                                            " (${holdings.sealableHoldings[index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdings.sealableHoldings[index].exchTsym![0].pNlChng}%)",
+                                            style: textStyle(
+                                                holdings.sealableHoldings[index]
+                                                        .exchTsym![0].pNlChng!
+                                                        .startsWith("-")
+                                                    ? colors.darkred
+                                                    : holdings
+                                                                .sealableHoldings[
+                                                                    index]
+                                                                .exchTsym![0]
+                                                                .pNlChng ==
+                                                            "NaN"
+                                                        ? colors.ltpgrey
+                                                        : colors.ltpgreen,
+                                                12,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
-                          ],
-                        ),
-                      ));
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return Container(
-                      color: theme.isDarkMode
-                          ? !holdings.sealableHoldings[index].isExitHoldings!
+                          ));
+                    },
+                    separatorBuilder: (BuildContext context, int index) {
+                      return Container(
+                          color: theme.isDarkMode
+                              ? !holdings.sealableHoldings[index].isExitHoldings!
+                                  ? colors.darkGrey
+                                  : colors.colorBlack
+                              : !holdings.sealableHoldings[index].isExitHoldings!
+                                  ? const Color(0xffF1F3F8)
+                                  : colors.colorWhite,
+                          height: 6);
+                    },
+                  ),
+                ],
+                if (holdings.nonSealableHoldings.isNotEmpty) ...[
+                  Container(
+                      decoration: BoxDecoration(
+                          color: theme.isDarkMode
                               ? colors.darkGrey
-                              : colors.colorBlack
-                          : !holdings.sealableHoldings[index].isExitHoldings!
-                              ? const Color(0xffF1F3F8)
-                              : colors.colorWhite,
-                      height: 6);
-                },
-              ),
-            ],
-            if (holdings.nonSealableHoldings.isNotEmpty) ...[
-              Container(
-                  decoration: BoxDecoration(
-                      color: theme.isDarkMode
-                          ? colors.darkGrey
-                          : const Color(0xffF1F3F8),
-                      border: holdings.isExitAllHoldings
-                          ? Border(
-                              top: BorderSide(
-                                  color: colors.colorWhite, width: 6))
-                          : null),
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 12, vertical: holdings.showEdis ? 6 : 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                          "Non-Sellable Holdings(${holdings.nonSealableHoldings.length})",
-                          style: textStyles.appBarTitleTxt.copyWith(
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack)),
-                      if (holdings.showEdis)
-                        SizedBox(
-                            height: 27,
-                            child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                    side: BorderSide(
-                                      color: !theme.isDarkMode
-                                          ? colors.colorBlack
-                                          : colors.colorWhite,
+                              : const Color(0xffF1F3F8),
+                          border: holdings.isExitAllHoldings
+                              ? Border(
+                                  top: BorderSide(
+                                      color: colors.colorWhite, width: 6))
+                              : null),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 12, vertical: holdings.showEdis ? 6 : 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                              "Non-Sellable Holdings(${holdings.nonSealableHoldings.length})",
+                              style: textStyles.appBarTitleTxt.copyWith(
+                                  color: theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack)),
+                          if (holdings.showEdis)
+                            SizedBox(
+                                height: 27,
+                                child: OutlinedButton(
+                                    style: OutlinedButton.styleFrom(
+                                        side: BorderSide(
+                                          color: !theme.isDarkMode
+                                              ? colors.colorBlack
+                                              : colors.colorWhite,
+                                        ),
+                                        shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(32)))),
+                                    onPressed: () async {
+                                      await context
+                                          .read(fundProvider)
+                                          .fetchHstoken(context);
+                                      await context
+                                          .read(fundProvider)
+                                          .eDis(context);
+                                    },
+                                    child: Text("E-DIS",
+                                        style: textStyle(
+                                            !theme.isDarkMode
+                                                ? colors.colorBlack
+                                                : colors.colorWhite,
+                                            12,
+                                            FontWeight.w600)))),
+                        ],
+                      )),
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: holdings.nonSealableHoldings.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return InkWell(
+                          onTap: () {
+                            showModalBottomSheet(
+                                isScrollControlled: true,
+                                useSafeArea: true,
+                                isDismissible: true,
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(16))),
+                                context: context,
+                                builder: (context) => Container(
+                                    padding: EdgeInsets.only(
+                                      bottom:
+                                          MediaQuery.of(context).viewInsets.bottom,
                                     ),
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(32)))),
-                                onPressed: () async {
-                                  await context
-                                      .read(fundProvider)
-                                      .fetchHstoken(context);
-                                  await context
-                                      .read(fundProvider)
-                                      .eDis(context);
-                                },
-                                child: Text("E-DIS",
-                                    style: textStyle(
-                                        !theme.isDarkMode
-                                            ? colors.colorBlack
-                                            : colors.colorWhite,
-                                        12,
-                                        FontWeight.w600)))),
-                    ],
-                  )),
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: holdings.nonSealableHoldings.length,
-                itemBuilder: (BuildContext context, int index) {
-                  // if (socketDatas.containsKey(
-                  //     holdings.nonSealableHoldings[index].exchTsym![0].token)) {
-                  //   holdings.nonSealableHoldings[index].exchTsym![0].lp =
-                  //       "${socketDatas["${holdings.nonSealableHoldings[index].exchTsym![0].token}"]['lp']}";
-
-                  //   holdings.nonSealableHoldings[index].exchTsym![0].perChange =
-                  //       "${socketDatas["${holdings.nonSealableHoldings[index].exchTsym![0].token}"]['pc']}";
-
-                  //   holdings.nonSealableHoldings[index].exchTsym![0].close =
-                  //       "${socketDatas["${holdings.nonSealableHoldings[index].exchTsym![0].token}"]['c']}";
-                  //   holdings.holdingCalc();
-                  // }
-                  return InkWell(
-                      onTap: () {
-                        showModalBottomSheet(
-                            isScrollControlled: true,
-                            useSafeArea: true,
-                            isDismissible: true,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(16))),
-                            context: context,
-                            builder: (context) => Container(
-                                padding: EdgeInsets.only(
-                                  bottom:
-                                      MediaQuery.of(context).viewInsets.bottom,
-                                ),
-                                child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(16),
-                                        color: theme.isDarkMode
-                                            ? colors.colorBlack
-                                            : colors.colorWhite,
-                                        boxShadow: const [
-                                          BoxShadow(
-                                              color: Color(0xff999999),
-                                              blurRadius: 4.0,
-                                              offset: Offset(2.0, 0.0))
-                                        ]),
-                                    child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const CustomDragHandler(),
-                                          Text('Verify Holdings',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  16,
-                                                  FontWeight.w600)),
-                                          Column(children: [
-                                            const SizedBox(height: 12),
-                                            Text(
-                                                holdings
-                                                                .nonSealableHoldings[
-                                                                    index]
-                                                                .brkcolqty ==
-                                                            null ||
-                                                        holdings
-                                                                .nonSealableHoldings[
-                                                                    index]
-                                                                .brkcolqty ==
-                                                            "0"
-                                                    ? "You are unable to exit because there are no sealable quantity. Kindly do E-DIS."
-                                                    : "You are unable to exit because the stock is pledged. Kindly unpledge and do E-DIS.",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    12,
-                                                    FontWeight.w500)),
-                                            const SizedBox(height: 12)
-                                          ]),
-                                          SizedBox(
-                                              width: MediaQuery.of(context)
-                                                  .size
-                                                  .width,
-                                              child: ElevatedButton(
-                                                  onPressed: () async {
-                                                    if (holdings
-                                                                .nonSealableHoldings[
-                                                                    index]
-                                                                .brkcolqty ==
-                                                            null ||
-                                                        holdings
-                                                                .nonSealableHoldings[
-                                                                    index]
-                                                                .brkcolqty ==
-                                                            "0") {
-                                                      await context
-                                                          .read(fundProvider)
-                                                          .fetchHstoken(
-                                                              context);
-
-                                                      Navigator.pop(context);
-                                                      await context
-                                                          .read(fundProvider)
-                                                          .eDis(context);
-                                                    } else {
-                                                      await context
-                                                          .read(fundProvider)
-                                                          .fetchHstoken(
-                                                              context);
-                                                      Navigator.pop(context);
-                                                      Navigator.pushNamed(
-                                                          context,
-                                                          Routes
-                                                              .reportWebViewApp,
-                                                          arguments: "pledge");
-                                                    }
-                                                  },
-                                                  style: ElevatedButton.styleFrom(
-                                                      elevation: 0,
-                                                      backgroundColor: theme
-                                                              .isDarkMode
+                                    child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(16),
+                                            color: theme.isDarkMode
+                                                ? colors.colorBlack
+                                                : colors.colorWhite,
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                  color: Color(0xff999999),
+                                                  blurRadius: 4.0,
+                                                  offset: Offset(2.0, 0.0))
+                                            ]),
+                                        child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const CustomDragHandler(),
+                                              Text('Verify Holdings',
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: textStyle(
+                                                      theme.isDarkMode
                                                           ? colors.colorWhite
                                                           : colors.colorBlack,
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          50))),
-                                                  child: Text("Continue",
-                                                      style: textStyle(
-                                                          !theme.isDarkMode
+                                                      16,
+                                                      FontWeight.w600)),
+                                              Column(children: [
+                                                const SizedBox(height: 12),
+                                                Text(
+                                                    holdings
+                                                                    .nonSealableHoldings[
+                                                                        index]
+                                                                    .brkcolqty ==
+                                                                null ||
+                                                            holdings
+                                                                    .nonSealableHoldings[
+                                                                        index]
+                                                                    .brkcolqty ==
+                                                                "0"
+                                                        ? "You are unable to exit because there are no sealable quantity. Kindly do E-DIS."
+                                                        : "You are unable to exit because the stock is pledged. Kindly unpledge and do E-DIS.",
+                                                    style: textStyle(
+                                                        theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                                                        12,
+                                                        FontWeight.w500)),
+                                                const SizedBox(height: 12)
+                                              ]),
+                                              SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                      .size
+                                                      .width,
+                                                  child: ElevatedButton(
+                                                      onPressed: () async {
+                                                        if (holdings
+                                                                    .nonSealableHoldings[
+                                                                        index]
+                                                                    .brkcolqty ==
+                                                                null ||
+                                                            holdings
+                                                                    .nonSealableHoldings[
+                                                                        index]
+                                                                    .brkcolqty ==
+                                                                "0") {
+                                                          await context
+                                                              .read(fundProvider)
+                                                              .fetchHstoken(
+                                                                  context);
+
+                                                          Navigator.pop(context);
+                                                          await context
+                                                              .read(fundProvider)
+                                                              .eDis(context);
+                                                        } else {
+                                                          await context
+                                                              .read(fundProvider)
+                                                              .fetchHstoken(
+                                                                  context);
+                                                          Navigator.pop(context);
+                                                          Navigator.pushNamed(
+                                                              context,
+                                                              Routes
+                                                                  .reportWebViewApp,
+                                                              arguments: "pledge");
+                                                        }
+                                                      },
+                                                      style: ElevatedButton.styleFrom(
+                                                          elevation: 0,
+                                                          backgroundColor: theme
+                                                                  .isDarkMode
                                                               ? colors.colorWhite
                                                               : colors.colorBlack,
-                                                          14,
-                                                          FontWeight.w500)))),
-                                          const SizedBox(height: 14)
-                                        ]))));
-
-                        //  showDialog(
-                        //             context: context,
-                        //             builder: (BuildContext context) {
-                        //               return AlertDialog(
-                        //                 backgroundColor:
-                        //                     context.read(themeProvider).isDarkMode
-                        //                         ? const Color.fromARGB(255, 18, 18, 18)
-                        //                         : colors.colorWhite,
-                        //                 titleTextStyle: textStyles.appBarTitleTxt
-                        //                     .copyWith(
-                        //                         color: context
-                        //                                 .read(themeProvider)
-                        //                                 .isDarkMode
-                        //                             ? colors.colorWhite
-                        //                             : colors.colorBlack),
-                        //                 contentTextStyle: textStyles.menuTxt,
-                        //                 titlePadding: const EdgeInsets.symmetric(
-                        //                     horizontal: 14, vertical: 12),
-                        //                 shape: const RoundedRectangleBorder(
-                        //                     borderRadius:
-                        //                         BorderRadius.all(Radius.circular(14))),
-                        //                 scrollable: true,
-                        //                 contentPadding: const EdgeInsets.symmetric(
-                        //                   horizontal: 14,
-                        //                 ),
-                        //                 insetPadding:
-                        //                     const EdgeInsets.symmetric(horizontal: 20),
-                        //                 title: const Text("Verify Holdings"),
-                        //                 content: SizedBox(
-                        //                   width: MediaQuery.of(context).size.width,
-                        //                   child: Column(
-                        //                     crossAxisAlignment:
-                        //                         CrossAxisAlignment.start,
-                        //                     children: [
-                        //                       Text(holdings.nonSealableHoldings[index]
-                        //                                       .brkcolqty ==
-                        //                                   null ||
-                        //                               holdings
-                        //                                       .nonSealableHoldings[
-                        //                                           index]
-                        //                                       .brkcolqty ==
-                        //                                   "0"
-                        //                           ? "Did not done E-Dis"
-                        //                           : "This Stock was Pledged!")
-                        //                     ],
-                        //                   ),
-                        //                 ),
-                        //                 actions: [
-                        //                   SizedBox(
-                        //                     width: MediaQuery.of(context).size.width,
-                        //                     child: ElevatedButton(
-                        //                         onPressed: () async {
-                        //                           if (holdings
-                        //                                       .nonSealableHoldings[
-                        //                                           index]
-                        //                                       .brkcolqty ==
-                        //                                   null ||
-                        //                               holdings
-                        //                                       .nonSealableHoldings[
-                        //                                           index]
-                        //                                       .brkcolqty ==
-                        //                                   "0") {
-                        //                             await context
-                        //                                 .read(fundProvider)
-                        //                                 .fetchHstoken(context);
-
-                        //                             Navigator.pop(context);
-                        //                             await context
-                        //                                 .read(fundProvider)
-                        //                                 .eDis(context);
-                        //                           } else {
-                        //                             Navigator.pop(context);
-                        //                           }
-                        //                         },
-                        //                         style: ElevatedButton.styleFrom(
-                        //                             elevation: 0,
-                        //                             backgroundColor:
-                        //                                 const Color(0xff000000),
-                        //                             shape: RoundedRectangleBorder(
-                        //                               borderRadius:
-                        //                                   BorderRadius.circular(50),
-                        //                             )),
-                        //                         child: Text("Ok",
-                        //                             style: textStyle(
-                        //                                 !context
-                        //                                         .read(themeProvider)
-                        //                                         .isDarkMode
-                        //                                     ? colors.colorWhite
-                        //                                     : colors.colorBlack,
-                        //                                 14,
-                        //                                 FontWeight.w500))),
-                        //                   ),
-                        //                 ],
-                        //               );
-                        //             });
-                      },
-                      child: Container(
-                        color: theme.isDarkMode
-                            ? holdings
-                                    .nonSealableHoldings[index].isExitHoldings!
-                                ? colors.darkGrey
-                                : colors.colorBlack
-                            : holdings
-                                    .nonSealableHoldings[index].isExitHoldings!
-                                ? const Color(0xffF1F3F8)
-                                : colors.colorWhite,
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              50))),
+                                                      child: Text("Continue",
+                                                          style: textStyle(
+                                                              !theme.isDarkMode
+                                                                  ? colors.colorWhite
+                                                                  : colors.colorBlack,
+                                                              14,
+                                                              FontWeight.w500)))),
+                                              const SizedBox(height: 14)
+                                            ]))));
+                          },
+                          child: Container(
+                            color: theme.isDarkMode
+                                ? holdings
+                                        .nonSealableHoldings[index].isExitHoldings!
+                                    ? colors.darkGrey
+                                    : colors.colorBlack
+                                : holdings
+                                        .nonSealableHoldings[index].isExitHoldings!
+                                    ? const Color(0xffF1F3F8)
+                                    : colors.colorWhite,
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                    "${holdings.nonSealableHoldings[index].exchTsym![0].tsym} ",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: textStyles.scripNameTxtStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)),
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(" LTP: ",
-                                        style: textStyle(
-                                            const Color(0xff5E6B7D),
-                                            13,
-                                            FontWeight.w600)),
                                     Text(
-                                        "₹${holdings.nonSealableHoldings[index].exchTsym![0].lp}",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            14,
-                                            FontWeight.w500)),
+                                        "${holdings.nonSealableHoldings[index].exchTsym![0].tsym} ",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: textStyles.scripNameTxtStyle
+                                            .copyWith(
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack)),
+                                    Row(
+                                      children: [
+                                        Text(" LTP: ",
+                                            style: textStyle(
+                                                const Color(0xff5E6B7D),
+                                                13,
+                                                FontWeight.w600)),
+                                        Text(
+                                            "₹${holdings.nonSealableHoldings[index].exchTsym![0].lp}",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                14,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
                                   ],
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                CustomExchBadge(
-                                    exch:
-                                        "${holdings.nonSealableHoldings[index].exchTsym![0].exch}"),
-                                Text(
-                                    " (${holdings.nonSealableHoldings[index].exchTsym![0].perChange}%)",
-                                    style: textStyle(
-                                        holdings.nonSealableHoldings[index]
-                                                .exchTsym![0].perChange!
-                                                .startsWith("-")
-                                            ? colors.darkred
-                                            : holdings
-                                                        .nonSealableHoldings[
-                                                            index]
-                                                        .exchTsym![0]
-                                                        .perChange ==
-                                                    "0.00"
-                                                ? colors.ltpgrey
-                                                : colors.ltpgreen,
-                                        12,
-                                        FontWeight.w500)),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Divider(
-                                color: theme.isDarkMode
-                                    ? colors.darkColorDivider
-                                    : colors.colorDivider),
-                            const SizedBox(height: 3),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
+                                const SizedBox(height: 4),
                                 Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("Qty: ",
-                                        style: textStyle(
-                                            const Color(0xff5E6B7D),
-                                            14,
-                                            FontWeight.w500)),
+                                    CustomExchBadge(
+                                        exch:
+                                            "${holdings.nonSealableHoldings[index].exchTsym![0].exch}"),
                                     Text(
-                                        "${holdings.nonSealableHoldings[index].currentQty ?? 0} @ ₹${holdings.nonSealableHoldings[index].upldprc ?? holdings.nonSealableHoldings[index].exchTsym![0].close ?? 0.00}",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            14,
-                                            FontWeight.w500)),
-                                    if (holdings.nonSealableHoldings[index]
-                                            .btstqty !=
-                                        "0")
-                                      Text(
-                                          " T1: ${holdings.nonSealableHoldings[index].btstqty}",
-                                          style: textStyle(
-                                              const Color(0xff666666),
-                                              12,
-                                              FontWeight.w500))
-                                  ],
-                                ),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                        "₹${holdings.nonSealableHoldings[index].exchTsym![0].profitNloss}",
+                                        " (${holdings.nonSealableHoldings[index].exchTsym![0].perChange}%)",
                                         style: textStyle(
                                             holdings.nonSealableHoldings[index]
-                                                    .exchTsym![0].profitNloss!
-                                                    .startsWith("-")
-                                                ? colors.darkred
-                                                : colors.ltpgreen,
-                                            14,
-                                            FontWeight.w500)),
-                                    Text(
-                                        " (${holdings.nonSealableHoldings[index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdings.nonSealableHoldings[index].exchTsym![0].pNlChng}%)",
-                                        style: textStyle(
-                                            holdings.nonSealableHoldings[index]
-                                                    .exchTsym![0].pNlChng!
+                                                    .exchTsym![0].perChange!
                                                     .startsWith("-")
                                                 ? colors.darkred
                                                 : holdings
                                                             .nonSealableHoldings[
                                                                 index]
                                                             .exchTsym![0]
-                                                            .pNlChng ==
-                                                        "NaN"
+                                                            .perChange ==
+                                                        "0.00"
                                                     ? colors.ltpgrey
                                                     : colors.ltpgreen,
                                             12,
                                             FontWeight.w500)),
                                   ],
                                 ),
+                                const SizedBox(height: 4),
+                                Divider(
+                                    color: theme.isDarkMode
+                                        ? colors.darkColorDivider
+                                        : colors.colorDivider),
+                                const SizedBox(height: 3),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text("Qty: ",
+                                            style: textStyle(
+                                                const Color(0xff5E6B7D),
+                                                14,
+                                                FontWeight.w500)),
+                                        Text(
+                                            "${holdings.nonSealableHoldings[index].currentQty ?? 0} @ ₹${holdings.nonSealableHoldings[index].upldprc ?? holdings.nonSealableHoldings[index].exchTsym![0].close ?? 0.00}",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                14,
+                                                FontWeight.w500)),
+                                        if (holdings.nonSealableHoldings[index]
+                                                .btstqty !=
+                                            "0")
+                                          Text(
+                                              " T1: ${holdings.nonSealableHoldings[index].btstqty}",
+                                              style: textStyle(
+                                                  const Color(0xff666666),
+                                                  12,
+                                                  FontWeight.w500))
+                                      ],
+                                    ),
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                            "₹${holdings.nonSealableHoldings[index].exchTsym![0].profitNloss}",
+                                            style: textStyle(
+                                                holdings.nonSealableHoldings[index]
+                                                        .exchTsym![0].profitNloss!
+                                                        .startsWith("-")
+                                                    ? colors.darkred
+                                                    : colors.ltpgreen,
+                                                14,
+                                                FontWeight.w500)),
+                                        Text(
+                                            " (${holdings.nonSealableHoldings[index].exchTsym![0].pNlChng == "NaN" ? 0.0 : holdings.nonSealableHoldings[index].exchTsym![0].pNlChng}%)",
+                                            style: textStyle(
+                                                holdings.nonSealableHoldings[index]
+                                                        .exchTsym![0].pNlChng!
+                                                        .startsWith("-")
+                                                    ? colors.darkred
+                                                    : holdings
+                                                                .nonSealableHoldings[
+                                                                    index]
+                                                                .exchTsym![0]
+                                                                .pNlChng ==
+                                                            "NaN"
+                                                        ? colors.ltpgrey
+                                                        : colors.ltpgreen,
+                                                12,
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
+                                  ],
+                                )
                               ],
-                            )
-                          ],
-                        ),
-                      ));
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return Container(
-                      color: theme.isDarkMode
-                          ? !holdings.nonSealableHoldings[index].isExitHoldings!
-                              ? colors.darkGrey
-                              : colors.colorBlack
-                          : !holdings.nonSealableHoldings[index].isExitHoldings!
-                              ? const Color(0xffF1F3F8)
-                              : colors.colorWhite,
-                      height: 6);
-                },
-              )
-            ]
-          ],
+                            ),
+                          ));
+                    },
+                    separatorBuilder: (BuildContext context, int index) {
+                      return Container(
+                          color: theme.isDarkMode
+                              ? !holdings.nonSealableHoldings[index].isExitHoldings!
+                                  ? colors.darkGrey
+                                  : colors.colorBlack
+                              : !holdings.nonSealableHoldings[index].isExitHoldings!
+                                  ? const Color(0xffF1F3F8)
+                                  : colors.colorWhite,
+                          height: 6);
+                    },
+                  )
+                ]
+              ],
+            );
+          }
         ),
         bottomNavigationBar: BottomAppBar(
             padding: const EdgeInsets.symmetric(horizontal: 16),

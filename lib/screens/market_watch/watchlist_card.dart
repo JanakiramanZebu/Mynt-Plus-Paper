@@ -17,7 +17,6 @@ class WatchlistCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final marketWatch = watch(marketWatchProvider);
-    // final socketDatas = watch(websocketProvider).socketDatas;
     final theme = context.read(themeProvider);
 
     if (context

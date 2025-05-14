@@ -16,128 +16,152 @@ class TradeBookDetail extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final socketDatas = watch(websocketProvider).socketDatas;
-    if (socketDatas.containsKey(tradeData.token)) {
-      tradeData.ltp = "${socketDatas["${tradeData.token}"]['lp']}";
-      tradeData.perChange = "${socketDatas["${tradeData.token}"]['pc']}";
-
-      tradeData.change = "${socketDatas["${tradeData.token}"]['chng']}";
-    }
-    return Scaffold(
-      appBar: AppBar(
-          elevation: .2,
-          leadingWidth: 41,
-          centerTitle: false,
-          titleSpacing: 6,
-          leading: const CustomBackBtn(),
-          title:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+    final theme = context.read(themeProvider);
+    
+    return StreamBuilder<Map>(
+      stream: watch(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        // Create a copy of trade data to avoid directly modifying the original
+        var displayData = tradeData;
+        
+        // Update with WebSocket data if available
+        final socketDatas = snapshot.data ?? {};
+        if (socketDatas.containsKey(tradeData.token)) {
+          final socketData = socketDatas[tradeData.token];
+          
+          // Only update with non-zero values
+          final lp = socketData['lp']?.toString();
+          if (lp != null && lp != "null" && lp != "0" && lp != "0.00") {
+            displayData.ltp = lp;
+          }
+          
+          final pc = socketData['pc']?.toString();
+          if (pc != null && pc != "null" && pc != "0" && pc != "0.00") {
+            displayData.perChange = pc;
+          }
+          
+          final chng = socketData['chng']?.toString();
+          if (chng != null && chng != "null") {
+            displayData.change = chng;
+          }
+        }
+        
+        return Scaffold(
+          appBar: AppBar(
+              elevation: .2,
+              leadingWidth: 41,
+              centerTitle: false,
+              titleSpacing: 6,
+              leading: const CustomBackBtn(),
+              title:
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("${tradeData.symbol}",
-                        style: textStyles.appBarTitleTxt.copyWith(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack)),
-                    Text(" ${tradeData.option} ",
-                        overflow: TextOverflow.ellipsis,
-                        style: textStyles.scripNameTxtStyle.copyWith(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack)),
-                  ],
-                ),
-                Text("₹${tradeData.ltp}",
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        16,
-                        FontWeight.w600)),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Row(children: [
-                    CustomExchBadge(exch: tradeData.exch!),
-                    Text("  ${tradeData.expDate}",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            12,
-                            FontWeight.w600))
-                  ]),
-                  Text(
-                      "${double.parse("${tradeData.change != "null" ? tradeData.change ?? 0.00 : 0.0} ").toStringAsFixed(2)} (${tradeData.perChange ?? 0.00}%)",
-                      style: textStyle(
-                          (tradeData.change == "null" ||
-                                      tradeData.change == null) ||
-                                  tradeData.change == "0.00"
-                              ? colors.ltpgrey
-                              : tradeData.change!.startsWith("-") ||
-                                      tradeData.perChange!.startsWith("-")
-                                  ? colors.darkred
-                                  : colors.ltpgreen,
-                          12,
-                          FontWeight.w500))
-                ])
-          ])),
-      body: ListView(
-        children: [
-          ScripInfoBtns(
-              exch: '${tradeData.exch}',
-              token: '${tradeData.token}',
-              insName: '',
-              tsym: '${tradeData.tsym}'),
-          Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 12),
-                    Text("Order details",
+                    Row(
+                      children: [
+                        Text("${displayData.symbol}",
+                            style: textStyles.appBarTitleTxt.copyWith(
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack)),
+                        Text(" ${displayData.option} ",
+                            overflow: TextOverflow.ellipsis,
+                            style: textStyles.scripNameTxtStyle.copyWith(
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack)),
+                      ],
+                    ),
+                    Text("₹${displayData.ltp}",
                         style: textStyle(
                             theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
                             16,
                             FontWeight.w600)),
-                    const SizedBox(height: 16),
-                    rowOfInfoData(
-                        "Transaction Type",
-                        tradeData.trantype == "B" ? "Buy" : "Sell",
-                        "Price Type",
-                        "${tradeData.prctyp}",
-                        theme),
-                    const SizedBox(height: 4),
-                    rowOfInfoData(
-                        "Price", "${tradeData.avgprc}", "", "", theme),
-                    const SizedBox(height: 4),
-                    rowOfInfoData("Filled Qty", "${tradeData.flqty}", "Fill Id",
-                        tradeData.flid ?? "-", theme),
-                    const SizedBox(height: 4),
-                    rowOfInfoData("Validity", "${tradeData.ret}", "Product",
-                        "${tradeData.sPrdtAli}", theme),
-                    const SizedBox(height: 4),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(children: [
+                        CustomExchBadge(exch: displayData.exch!),
+                        Text("  ${displayData.expDate}",
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                12,
+                                FontWeight.w600))
+                      ]),
+                      Text(
+                          "${double.parse("${displayData.change != "null" ? displayData.change ?? 0.00 : 0.0} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",
+                          style: textStyle(
+                              (displayData.change == "null" ||
+                                          displayData.change == null) ||
+                                      displayData.change == "0.00"
+                                  ? colors.ltpgrey
+                                  : displayData.change!.startsWith("-") ||
+                                          displayData.perChange!.startsWith("-")
+                                      ? colors.darkred
+                                      : colors.ltpgreen,
+                              12,
+                              FontWeight.w500))
+                    ])
+              ])),
+          body: ListView(
+            children: [
+              ScripInfoBtns(
+                  exch: '${displayData.exch}',
+                  token: '${displayData.token}',
+                  insName: '',
+                  tsym: '${displayData.tsym}'),
+              Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 12),
+                        Text("Order details",
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                16,
+                                FontWeight.w600)),
+                        const SizedBox(height: 16),
+                        rowOfInfoData(
+                            "Transaction Type",
+                            displayData.trantype == "B" ? "Buy" : "Sell",
+                            "Price Type",
+                            "${displayData.prctyp}",
+                            theme),
+                        const SizedBox(height: 4),
+                        rowOfInfoData(
+                            "Price", "${displayData.avgprc}", "", "", theme),
+                        const SizedBox(height: 4),
+                        rowOfInfoData("Filled Qty", "${displayData.flqty}", "Fill Id",
+                            displayData.flid ?? "-", theme),
+                        const SizedBox(height: 4),
+                        rowOfInfoData("Validity", "${displayData.ret}", "Product",
+                            "${displayData.sPrdtAli}", theme),
+                        const SizedBox(height: 4),
 
-                    rowOfInfoData(
-                        "Order Id",
-                        "${tradeData.norenordno}",
-                        "Date & Time",
-                        formatDateTime(value: tradeData.norentm!),
-                        theme),
-                    //
-                  ])),
-        ],
-      ),
+                        rowOfInfoData(
+                            "Order Id",
+                            "${displayData.norenordno}",
+                            "Date & Time",
+                            formatDateTime(value: displayData.norentm!),
+                            theme),
+                        //
+                      ])),
+            ],
+          ),
+        );
+      },
     );
   }
 
