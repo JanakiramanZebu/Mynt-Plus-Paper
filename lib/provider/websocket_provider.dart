@@ -422,6 +422,7 @@ class WebSocketProvider extends ChangeNotifier {
         // Only update if the change is actually different
         if (data["chng"] != newChng) {
           data["chng"] = newChng;
+          data["pc"] = res["pc"];
           hasUpdates = true;
         }
       }
@@ -493,11 +494,11 @@ class WebSocketProvider extends ChangeNotifier {
       // If in low bandwidth mode, consider batching or prioritizing subscriptions
       // For example, we might only subscribe to the most important symbols
       final symbols = channelInput.split('#');
-      if (symbols.length > 10) {
-        // If too many symbols, only subscribe to the first 10 in low bandwidth mode
-        final prioritySymbols = symbols.take(10).join('#');
-        channelInput = prioritySymbols;
-      }
+      // if (symbols.length > 10) {
+      //   // If too many symbols, only subscribe to the first 10 in low bandwidth mode
+      //   final prioritySymbols = symbols.take(10).join('#');
+        channelInput = symbols.join('#');
+      // }
     }
     
     if (task.toLowerCase() != "u" && 
