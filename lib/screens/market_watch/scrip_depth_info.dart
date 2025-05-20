@@ -794,31 +794,31 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                               .w600))
                                                                 ]),
                 const SizedBox(height: 7),
-                                                            _buildDepthPercentage(
+                                                            _buildBidDepthPercentage(
                                                                 "${depthData.bq1 ?? 0}",
                                                                 "${depthData.bp1 ?? 0.00}",
                                                                 scripInfo,
                                                                 theme),
                 const SizedBox(height: 6),
-                                                            _buildDepthPercentage(
+                                                            _buildBidDepthPercentage(
                                                                 "${depthData.bq2 ?? 0}",
                                                                 "${depthData.bp2 ?? 0.00}",
                                                                 scripInfo,
                                                                 theme),
                 const SizedBox(height: 6),
-                                                            _buildDepthPercentage(
+                                                            _buildBidDepthPercentage(
                                                                 "${depthData.bq3 ?? 0}",
                                                                 "${depthData.bp3 ?? 0.00}",
                                                                 scripInfo,
                                                                 theme),
                 const SizedBox(height: 6),
-                                                            _buildDepthPercentage(
+                                                            _buildBidDepthPercentage(
                                                                 "${depthData.bq4 ?? 0}",
                                                                 "${depthData.bp4 ?? 0.00}",
                                                                 scripInfo,
                                                                 theme),
                 const SizedBox(height: 6),
-                                                            _buildDepthPercentage(
+                                                            _buildBidDepthPercentage(
                                                                 "${depthData.bq5 ?? 0}",
                                                                 "${depthData.bp5 ?? 0.00}",
                                                                 scripInfo,

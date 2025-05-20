@@ -107,6 +107,40 @@ import '../screens/mutual_fund/sip_calculator_screen.dart';
 String? currentRouteName;
 
 class AppRoutes {
+  // Define constants for transitions
+static const Duration _transitionDuration = Duration(milliseconds: 180); // Slightly faster
+static const Curve _standardCurve = Curves.easeOutQuart; // Smooth acceleration-deceleration
+
+// Helper method to create optimized transitions
+static PageRouteBuilder _createRoute({
+  required Widget Function(BuildContext, Animation<double>, Animation<double>) pageBuilder,
+  Offset beginOffset = const Offset(0.0, 0.0),
+}) {
+  return PageRouteBuilder(
+    pageBuilder: pageBuilder,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      // Slide transition
+      final slideTween = Tween(
+        begin: beginOffset,
+        end: Offset.zero,
+      ).chain(CurveTween(curve: _standardCurve));
+      
+      // Add subtle fade for enhanced experience
+      final fadeTween = Tween(begin: 0.85, end: 1.0)
+          .chain(CurveTween(curve: _standardCurve));
+      
+      return FadeTransition(
+        opacity: animation.drive(fadeTween),
+        child: SlideTransition(
+          position: animation.drive(slideTween),
+          child: child,
+        ),
+      );
+    },
+    transitionDuration: _transitionDuration,
+  );
+}
+
   static Route router(RouteSettings settings) {
     currentRouteName = settings.name;
 
@@ -123,59 +157,21 @@ class AppRoutes {
       // case Routes.homeScreen:
       //   return MaterialPageRoute(builder: (_) => const HomeScreenDashBoard());
       case Routes.loginScreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const LoginScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0); // Start from the right
-            const end = Offset.zero; // End at the original position
-            const curve = Curves.easeInOut; // Smooth transition curve
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            final offsetAnimation = animation.drive(tween);
-
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const LoginScreen(),
+          beginOffset: const Offset(1.0, 0.0),
         );
 
       case Routes.loginScreenBanner:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const LoginBannerScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const LoginBannerScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.forgotPass:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const ForgotPassUnblockUser(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-
-            const end = Offset.zero; // End at the original position
-            const curve = Curves.easeInOut; // Smooth transition curve
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            final offsetAnimation = animation.drive(tween);
-
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const ForgotPassUnblockUser(),
+          beginOffset: const Offset(1.0, 0.0),
         );
 
       case Routes.changePass:
@@ -195,123 +191,50 @@ class AppRoutes {
       case Routes.stock:
         return MaterialPageRoute(builder: (_) => const StockScreen());
       case Routes.searchScrip:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => SearchScreen(
+        return _createRoute(
+          pageBuilder: (_, __, ___) => SearchScreen(
             wlName: args,
             isBasket: args,
           ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+          beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.editScrip:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              EditScrip(wlName: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => EditScrip(wlName: args),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.upiautopay:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const UpiPayement(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final tween = Tween<Offset>(
-                begin: const Offset(0, 1), end: const Offset(.0, .0));
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const UpiPayement(),
+          beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.notificationscreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const NotificationScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final tween = Tween<Offset>(
-                begin: const Offset(0, 1), end: const Offset(.0, .0));
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const NotificationScreen(),
+          beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.windowsetting:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const WindowSettings(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final tween = Tween<Offset>(
-                begin: const Offset(0, 1), end: const Offset(.0, .0));
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const WindowSettings(),
+          beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.placeOrderScreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              PlaceOrderScreen(
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PlaceOrderScreen(
             orderArg: args['orderArg'],
             scripInfo: args['scripInfo'],
             isBasket: args["isBskt"],
           ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+          beginOffset: const Offset(0.0, 1.0),
         );
 
 
       case Routes.optionChain:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                OptionChainSS(wlValue: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => OptionChainSS(wlValue: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       // case Routes.gttOrderScreen:
       //   return PageRouteBuilder(
@@ -334,44 +257,19 @@ class AppRoutes {
       //   );
 
       case Routes.modifyGtt:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => ModifyGTT(
+        return _createRoute(
+          pageBuilder: (_, __, ___) => ModifyGTT(
               gttOrderBook: args['gttOrderBook'], scripInfo: args['scripInfo']),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+          beginOffset: const Offset(0.0, 1.0),
         );
 
       case Routes.modifyOrder:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              ModifyPlaceOrderScreen(
+        return _createRoute(
+          pageBuilder: (_, __, ___) => ModifyPlaceOrderScreen(
                   orderArg: args['orderArg'],
                   modifyOrderArgs: args['modifyOrderArgs'],
                   scripInfo: args['scripInfo']),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+          beginOffset: const Offset(0.0, 1.0),
         );
       // case Routes.chartWebView:
       //   return PageRouteBuilder(
@@ -393,566 +291,204 @@ class AppRoutes {
       //   );
 
       case Routes.futures:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const FutureScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const FutureScreen(),
+          beginOffset: const Offset(0.0, 1.0),
+        );
       case Routes.holdingDetail:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                HoldingDetailScreen(
+        return _createRoute(
+          pageBuilder: (_, __, ___) => HoldingDetailScreen(
                   exchTsym: args['exchTsym'],
-                  holdingData: args['holdingData'],
-                ),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+                  holdingData: args['holdingData']),
+          beginOffset: const Offset(0.0, 1.0),
+        );
       case Routes.holdingExit:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const ExitHoldingsScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const ExitHoldingsScreen(),
+          beginOffset: const Offset(0.0, 1.0),
+        );
       case Routes.edis:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                EdisWebview(
-                  params: args,
-                ),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => EdisWebview(
+                  params: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.optionZWebView:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              OptionZWebView(argument: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => OptionZWebView(argument: args),
+          beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.camsWebView:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              CamsWebView(argument: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => CamsWebView(argument: args),
+          beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.orderDetail:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              OrderBookDetail(orderBookData: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => OrderBookDetail(orderBookData: args),
+          beginOffset: const Offset(0.0, 1.0),
         );
 
       case Routes.bsktScripList:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                BasketScripList(bsktName: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => BasketScripList(bsktName: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.tradeDetail:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              TradeBookDetail(tradeData: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => TradeBookDetail(tradeData: args),
+          beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.gttOrderDetail:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              GttOrderDetail(gttOrderBook: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => GttOrderDetail(gttOrderBook: args),
+          beginOffset: const Offset(0.0, 1.0),
         );
 
       case Routes.positionDetail:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              PositionDetailScreen(positionList: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PositionDetailScreen(positionList: args),
+          beginOffset: const Offset(0.0, 1.0),
         );
 
       case Routes.positionGroupDetail:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              PositionGroupDetail(positionData: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PositionGroupDetail(positionData: args),
+          beginOffset: const Offset(0.0, 1.0),
         );
 
       case Routes.positionExit:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              ExitPositionScreen(exitPositionList: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => ExitPositionScreen(exitPositionList: args),
+          beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.orderExit:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              ExitOrderScreen(exitOrdersList: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => ExitOrderScreen(exitOrdersList: args),
+          beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.reports:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const ReportsScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const ReportsScreen(),
+          beginOffset: const Offset(0.0, 1.0),
         );
 
       // reports_dm
       case Routes.ledgerscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                LedgerScreen(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => LedgerScreen(ddd: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.positionscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PositionScreen(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PositionScreen(ddd: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.pnlscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PnlScreen(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PnlScreen(ddd: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.calenderpnlScreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                CalenderpnlScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => CalenderpnlScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       // rough
 
       case Routes.heatmapcalendarscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                HeatmapCalendarScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => HeatmapCalendarScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.holdingscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                HoldingScreen(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => HoldingScreen(ddd: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.tradebook:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                Tradebook(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => Tradebook(ddd: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
       case Routes.taxpnlscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                TaxPnlScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => TaxPnlScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.caeventmainpage:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                CAEventMainPage(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => CAEventMainPage(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.eqtaxpnleq:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                EqTaxpnlEq(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => EqTaxpnlEq(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.pledgeandun:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PledgenUnpledge(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PledgenUnpledge(ddd: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
             case Routes.pledgehistorymainscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PledgeHistoryMainScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PledgeHistoryMainScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.pledgeunpledgeresponse:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PledgenUnpledgeResponse(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PledgenUnpledgeResponse(ddd: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.pledgeandun:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PledgenUnpledge(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PledgenUnpledge(ddd: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.pledgeunpledgeresponse:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PledgenUnpledgeResponse(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PledgenUnpledgeResponse(ddd: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.pdfdownload:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PdfDownload(ddd: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PdfDownload(ddd: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.cdslWebView:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                CDSLWebView(argument: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => CDSLWebView(argument: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
 ///////////////////////////////
       case Routes.settingscreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const SettingMainScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final tween = Tween<Offset>(
-                begin: const Offset(0, 1), end: const Offset(.0, .0));
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const SettingMainScreen(),
+          beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.myAcc:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              // MyAccount
-              const ProfileDetailsMainScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const ProfileDetailsMainScreen(),
+          beginOffset: const Offset(0.0, 1.0),
         );
 
       // case Routes.profileDetail:
@@ -975,782 +511,274 @@ class AppRoutes {
       //   );
 
       case Routes.bankDetail:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const BankDetail(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const BankDetail(),
+          beginOffset: const Offset(0.0, 1.0),
         );
 
       case Routes.setautopay:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const SetAutoPay(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const SetAutoPay(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.allIndex:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const AllIndicesScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const AllIndicesScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.allTrade:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const AllTrade(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const AllTrade(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.reportWebViewApp:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                ReportWebViewApp(argument: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => ReportWebViewApp(argument: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.ipowebview:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                IpoWebview(argument: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => IpoWebview(argument: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.fund:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const SecureFund(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const SecureFund(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.fundTransaction:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                FundTransaction(argument: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => FundTransaction(argument: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
       case Routes.profileWebViewApp:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                ProfileWebViewApp(argument: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => ProfileWebViewApp(argument: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
       case Routes.allnews:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const NewsListData(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const NewsListData(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.profilesettingscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const SettingsScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              final tween = Tween<Offset>(
-                  begin: const Offset(0, 1), end: const Offset(.0, .0));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const SettingsScreen(),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.repeatOrd:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                RepeatOrder(orderBookList: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              final tween = Tween<Offset>(
-                  begin: const Offset(0, 1), end: const Offset(.0, .0));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => RepeatOrder(orderBookList: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.notificationpage:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const Notificationpage(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              final tween = Tween<Offset>(
-                  begin: const Offset(0, 1), end: const Offset(.0, .0));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const Notificationpage(),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.ipo:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const IPOScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              final tween = Tween<Offset>(
-                  begin: const Offset(0, 1), end: const Offset(.0, .0));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const IPOScreen(),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.applyIPO:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                ApplyIpoScreen(mainstream: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => ApplyIpoScreen(mainstream: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.smeapplyIPO:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                SMEApplyIpoScreen(smeipo: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => SMEApplyIpoScreen(smeipo: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.ipoorderbook:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const IpoOrderbookMainScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              final tween = Tween<Offset>(
-                  begin: const Offset(0, 1), end: const Offset(.0, .0));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const IpoOrderbookMainScreen(),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.modifyipoorder:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                ModifyIpoOrderScreen(modifyipoorder: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
-
-      case Routes.ipoopendetailsscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                IpoOpenOrderDetails(ipodetails: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0, 1);
-              const end = Offset(0, 0);
-              const curve = Curves.bounceIn;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => ModifyIpoOrderScreen(modifyipoorder: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.ipoclosedetailsscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                IpoCloseOrderDetails(ipoclose: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0, 1);
-              const end = Offset(0, 0);
-              const curve = Curves.bounceIn;
+        return _createRoute(
+          pageBuilder: (_, __, ___) => IpoCloseOrderDetails(ipoclose: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+      case Routes.ipoclosedetailsscreen:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => IpoCloseOrderDetails(ipoclose: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.sectorThematicDetail:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                SectorThematicDetail(data: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => SectorThematicDetail(data: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.pendingalertdetails:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PendingAlertDetails(alert: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PendingAlertDetails(alert: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.qrscanner:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const BarcodeScannerWithScanWindow(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const BarcodeScannerWithScanWindow(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.bonds:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const BondsScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const BondsScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
       case Routes.mfmainscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const MfmainScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              final tween = Tween<Offset>(
-                  begin: const Offset(0, 1), end: const Offset(.0, .0));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const MfmainScreen(),
+          beginOffset: const Offset(0.0, 1.0),
+        );
       case Routes.mfCategoryList:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              MFCategoryListScreen(title: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => MFCategoryListScreen(title: args),
+          beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfnfoscreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const MFNFOScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const MFNFOScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.mfsipcalscreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const MFSIPSCREEN(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const MFSIPSCREEN(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfcagrcalss:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const MFCAGRCAL(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const MFCAGRCAL(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfOrderbookscreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const MfOrderBookScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const MfOrderBookScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfSipdetScren:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const mfSipdetScren(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const mfSipdetScren(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.mfholdsinlepage:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const mfholdsinlepage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const mfholdsinlepage(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.mforderdetscreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const mforderdetscreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const mforderdetscreen(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.iposearchscreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const IpoCommonSearch(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const IpoCommonSearch(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.bondssearchScreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const BondsCommonSearch(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const BondsCommonSearch(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.bondsclosedetailsscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                // BondsCloseOrderDetails(bondsCloseDetails:args),
-                BondsCloseOrderDetails(bondsCloseDetails: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0, 1);
-              const end = Offset(0, 0);
-              const curve = Curves.bounceIn;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => BondsCloseOrderDetails(bondsCloseDetails: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.bondsopendetailsscreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                BondsOpenOrderDetails(bondsdetails: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0, 1);
-              const end = Offset(0, 0);
-              const curve = Curves.bounceIn;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => BondsOpenOrderDetails(bondsdetails: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
       case Routes.bondsorderbook:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const BondsOrderbookMainScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              final tween = Tween<Offset>(
-                  begin: const Offset(0, 1), end: const Offset(.0, .0));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const BondsOrderbookMainScreen(),
+          beginOffset: const Offset(0.0, 1.0),
+        );
 
       case Routes.bondsPlaceOrder:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                ApplyBondsScreen(
-                  bondInfo: args,
-                ),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              final tween = Tween<Offset>(
-                  begin: const Offset(0, 1), end: const Offset(.0, .0));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => ApplyBondsScreen(
+                    bondInfo: args,
+                  ),
+          beginOffset: const Offset(0.0, 1.0),
+        );
       case Routes.mfsearchscreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const MfCommonSearch(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const MfCommonSearch(),
+          beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.mfWatchlist:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const MFWatchlistScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-                position: animation.drive(tween), child: child);
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const MFWatchlistScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfStockDetail:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                MFStockDetailScreen(mfStockData: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                position: animation.drive(tween),
-                child: child,
-              );
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => MFStockDetailScreen(mfStockData: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.mforderScreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                MFOrderScreen(mfData: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => MFOrderScreen(mfData: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
       case Routes.sipDetails:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              SipOrderDetails(sipdetails: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+        return _createRoute(
+          pageBuilder: (_, __, ___) => SipOrderDetails(sipdetails: args),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       /////
       case Routes.fundscreen:
-        return PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              FundScreen(dd: args),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(-1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            return SlideTransition(
-                position: animation.drive(tween), child: child);
-          },
-          // settings: RouteSettings(),
-          // maintainState: true,
-          // fullscreenDialog: false,
-          // opaque: true,
+        return _createRoute(
+          pageBuilder: (_, __, ___) => FundScreen(dd: args),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.optionStrategy:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const OptionStrategey(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const OptionStrategey(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.bestMfScreen:
-        return PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                SaveTaxesScreen(title: args),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(-1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              final tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                  position: animation.drive(tween), child: child);
-            });
+        return _createRoute(
+          pageBuilder: (_, __, ___) => SaveTaxesScreen(title: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       default:
         return _errorRoute();
