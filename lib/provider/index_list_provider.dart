@@ -497,19 +497,35 @@ class IndexListProvider extends DefaultChangeNotifier {
 // Verifying the client's session each time
   checkSession(BuildContext context) async {
     try {
-      toggleLoadingOn(true);
+      // Don't show loading indicator for session checks - this causes visible UI lag
+      bool wasLoadingOn = loading;
+      if (wasLoadingOn) {
+        toggleLoadingOn(false);
+      }
+      
       _checkSess = await api.getAddDeleteSciptoMW(
           isAdd: false, scripToken: "", wlname: "");
-      if (_checkSess!.emsg == "Session Expired :  Invalid Session Key" &&
-          _checkSess!.stat == "Not_Ok") {
+      
+      if (_checkSess?.stat == null || 
+          (_checkSess!.emsg == "Session Expired :  Invalid Session Key" && 
+           _checkSess!.stat == "Not_Ok")) {
+        // Directly call ifSessionExpired without waiting, as it handles cleanup
         ref(authProvider).ifSessionExpired(context);
+        return;
       }
-      else{
-      _checkSess!.stat = "Ok";
+      else {
+        _checkSess!.stat = "Ok";
       }
+      
+      // Only restore loading state if it was on before
+      if (wasLoadingOn) {
+        toggleLoadingOn(true);
+      }
+      
       notifyListeners();
-    } finally {
-      toggleLoadingOn(false);
+    } catch (e) {
+      // In case of any error, assume session is invalid
+      ref(authProvider).ifSessionExpired(context);
     }
   }
 

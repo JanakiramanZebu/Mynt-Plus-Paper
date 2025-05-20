@@ -17,12 +17,15 @@ class ScripInfoBtns extends ConsumerWidget {
   final String exch;
   final String insName;
   final String tsym;
-  const ScripInfoBtns(
-      {super.key,
+  final Function(Function)? navigationLock;
+  
+  const ScripInfoBtns({
+      super.key,
       required this.exch,
       required this.token,
       required this.insName,
-      required this.tsym});
+      required this.tsym,
+      this.navigationLock});
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
@@ -57,104 +60,98 @@ class ScripInfoBtns extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(98)),
                 child: InkWell(
                     onTap: () async {
-                      userProfile.setonloadChartdialog(true);
-                      marketwatch.singlePageloader(true);
+                      // Use navigation lock if provided, otherwise execute directly
+                      final action = () async {
+                        userProfile.setonloadChartdialog(true);
+                        marketwatch.singlePageloader(true);
 
-                      if (marketwatch.depthBtns[index]['btnName'] != "Chart") {
-                        DepthInputArgs depthArgs = DepthInputArgs(
-                            exch: exch,
-                            token: token,
-                            tsym: '${marketwatch.getQuotes!.tsym}',
-                            instname: marketwatch.getQuotes!.instname ?? "",
-                            symbol: '${marketwatch.getQuotes!.symbol}',
-                            expDate: '${marketwatch.getQuotes!.expDate}',
-                            option: '${marketwatch.getQuotes!.option}');
-                        Navigator.pop(context);
+                        if (marketwatch.depthBtns[index]['btnName'] != "Chart") {
+                          DepthInputArgs depthArgs = DepthInputArgs(
+                              exch: exch,
+                              token: token,
+                              tsym: '${marketwatch.getQuotes!.tsym}',
+                              instname: marketwatch.getQuotes!.instname ?? "",
+                              symbol: '${marketwatch.getQuotes!.symbol}',
+                              expDate: '${marketwatch.getQuotes!.expDate}',
+                              option: '${marketwatch.getQuotes!.option}');
+                          Navigator.pop(context);
 
-                        showModalBottomSheet(
-                            barrierColor: Colors.transparent,
-                            isScrollControlled: true,
-                            useSafeArea: true,
-                            isDismissible: true,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(16))),
-                            backgroundColor: const Color(0xffffffff),
-                            context: context,
-                            builder: (context) => ScripDepthInfo(
-                                wlValue: depthArgs, isBasket: ''));
-                      }
-                      if (marketwatch.depthBtns[index]['btnName'] == "Option") {
-                        // if ((marketwatch.getQuotes!.exch ==
-                        //             "NSE" ||
-                        //         marketwatch.getQuotes!.exch ==
-                        //             "BSE") &&
-                        //     (marketwatch.getQuotes!.instname !=
-                        //         "UNDIND")) {
-                        //   await marketwatch.fetchTechData(
-                        //       exch:
-                        //           "${marketwatch.getQuotes!.exch}",
-                        //       tradeSym:
-                        //           "${marketwatch.getQuotes!.exch}",
-                        //       lastPrc:
-                        //           "${marketwatch.getQuotes!.lp ?? marketwatch.getQuotes!.c ?? 0.00}",
-                        //       context: context);
-                        // }
-                        if (exch == "NFO" ||
-                            (exch == "MCX" && insName == "OPTFUT")) {
-                          await marketwatch.fetchStikePrc(
-                              "${marketwatch.getQuotes!.undTk}",
-                              "${marketwatch.getQuotes!.undExch}",
-                              context);
+                          showModalBottomSheet(
+                              barrierColor: Colors.transparent,
+                              isScrollControlled: true,
+                              useSafeArea: true,
+                              isDismissible: true,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(16))),
+                              backgroundColor: const Color(0xffffffff),
+                              context: context,
+                              builder: (context) => ScripDepthInfo(
+                                  wlValue: depthArgs, isBasket: ''));
+                        }
+                        if (marketwatch.depthBtns[index]['btnName'] == "Option") {
+                          if (exch == "NFO" ||
+                              (exch == "MCX" && insName == "OPTFUT")) {
+                            await marketwatch.fetchStikePrc(
+                                "${marketwatch.getQuotes!.undTk}",
+                                "${marketwatch.getQuotes!.undExch}",
+                                context);
+                          }
+
+                          await context.read(websocketProvider).establishConnection(
+                              channelInput: (exch == "NFO" ||
+                                      (exch == "MCX" && insName == "OPTFUT"))
+                                  ? '${marketwatch.getQuotes!.undExch ?? marketwatch.getQuotes!.exch}|${marketwatch.getQuotes!.undTk ?? marketwatch.getQuotes!.token}'
+                                  : '${marketwatch.getQuotes!.exch}|${marketwatch.getQuotes!.token!}',
+                              task: "t",
+                              context: context);
+
+                          await marketwatch.fetchOPtionChain(
+                              context: context,
+                              exchange: marketwatch.optionExch!,
+                              numofStrike: marketwatch.numStrike,
+                              strPrc: marketwatch.optionStrPrc,
+                              tradeSym: marketwatch.selectedTradeSym!);
+                        } else if (marketwatch.depthBtns[index]['btnName'] ==
+                            "Future") {
+                          await marketwatch.requestWSFut(
+                              context: context, isSubscribe: true);
+                        } else if (marketwatch.depthBtns[index]['btnName'] ==
+                            "Chart") {
+                          Navigator.pop(context);
+                          userProfile.setChartdialog(true);
+                          marketwatch.setChartScript(exch, token, tsym);
                         }
 
-                        await context.read(websocketProvider).establishConnection(
-                            channelInput: (exch == "NFO" ||
-                                    (exch == "MCX" && insName == "OPTFUT"))
-                                ? '${marketwatch.getQuotes!.undExch ?? marketwatch.getQuotes!.exch}|${marketwatch.getQuotes!.undTk ?? marketwatch.getQuotes!.token}'
-                                : '${marketwatch.getQuotes!.exch}|${marketwatch.getQuotes!.token!}',
-                            task: "t",
-                            context: context);
+                        marketwatch
+                            .chngDephBtn(marketwatch.depthBtns[index]['btnName']);
 
-                        await marketwatch.fetchOPtionChain(
-                            context: context,
-                            exchange: marketwatch.optionExch!,
-                            numofStrike: marketwatch.numStrike,
-                            strPrc: marketwatch.optionStrPrc,
-                            tradeSym: marketwatch.selectedTradeSym!);
-                      } else if (marketwatch.depthBtns[index]['btnName'] ==
-                          "Future") {
-                        await marketwatch.requestWSFut(
-                            context: context, isSubscribe: true);
-                      } else if (marketwatch.depthBtns[index]['btnName'] ==
-                          "Chart") {
-                        Navigator.pop(context);
-                        userProfile.setChartdialog(true);
-                        marketwatch.setChartScript(exch, token, tsym);
-                      }
-
-                      marketwatch
-                          .chngDephBtn(marketwatch.depthBtns[index]['btnName']);
-
-                      if (marketwatch.actDeptBtn == "Overview") {
-                        await watch(websocketProvider).establishConnection(
-                            channelInput: "$exch|$token",
-                            task: "d",
-                            context: context);
-                      }
-
-                      if (marketwatch.actDeptBtn == "Fundamental") {
-                        if ((exch == "NSE" || exch == "BSE") &&
-                            (insName != "UNDIND")) {
-                          await context
-                              .read(marketWatchProvider)
-                              .fetchFundamentalData(
-                                  tradeSym:
-                                      "${context.read(marketWatchProvider).getQuotes!.exch}:${context.read(marketWatchProvider).getQuotes!.tsym}");
+                        if (marketwatch.actDeptBtn == "Overview") {
+                          await watch(websocketProvider).establishConnection(
+                              channelInput: "$exch|$token",
+                              task: "d",
+                              context: context);
                         }
-                        marketwatch.chngshareHold("Promoter Holding");
+
+                        if (marketwatch.actDeptBtn == "Fundamental") {
+                          if ((exch == "NSE" || exch == "BSE") &&
+                              (insName != "UNDIND")) {
+                            await context
+                                .read(marketWatchProvider)
+                                .fetchFundamentalData(
+                                    tradeSym:
+                                        "${context.read(marketWatchProvider).getQuotes!.exch}:${context.read(marketWatchProvider).getQuotes!.tsym}");
+                          }
+                          marketwatch.chngshareHold("Promoter Holding");
+                        }
+                        marketwatch.singlePageloader(false);
+                      };
+                      
+                      if (navigationLock != null) {
+                        navigationLock!(action);
+                      } else {
+                        await action();
                       }
-                      marketwatch.singlePageloader(false);
                     },
                     child: Row(
                       children: [

@@ -1152,25 +1152,51 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // This method calls and returns to the login screen whenever the client session expires.
   ifSessionExpired(BuildContext context) {
-    pref.clearClientSession();
-    pref.setLogout(true);
-    ref(indexListProvider).bottomMenu(1, context);
-
-    pref.setHideLoginOptBtn(false);
-    loginMethCtrl.text = pref.clientId!;
-    pref.setMobileLogin(false);
-    pref.clearClientSession();
-
-    ConstantName.sessCheck = false;
-    ref(websocketProvider).closeSocket(true);
-    ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, "Session Expired,Kindly login Again!"));
-    ConstantName.timer!.cancel();
-
-    ref(websocketProvider).websockConn(false);
-    if (currentRouteName != Routes.loginScreen) {
-      Navigator.pushNamedAndRemoveUntil(
-          context, Routes.loginScreen, (route) => false);
-    }
+    // Check if we're already in the process of showing the login screen
+    // to prevent multiple calls to this method
+    if (ConstantName.isSessionExpiring) return;
+    ConstantName.isSessionExpiring = true;
+    
+    // Prepare session cleanup operations asynchronously
+    Future.microtask(() {
+      // Clear all session data first
+      pref.clearClientSession();
+      pref.setLogout(true);
+      pref.setHideLoginOptBtn(false);
+      pref.setMobileLogin(false);
+      
+      // Prefill the login field for convenience
+      loginMethCtrl.text = pref.clientId ?? "";
+      
+      // Close WebSocket early to stop needless data flow
+      ref(websocketProvider).closeSocket(true);
+      ref(websocketProvider).websockConn(false);
+      
+      if (ConstantName.timer != null) {
+        ConstantName.timer!.cancel();
+      }
+      
+      ConstantName.sessCheck = false;
+      
+      // Navigate to login screen immediately without waiting for other operations
+      if (currentRouteName != Routes.loginScreen) {
+        // A short delay ensures that any pending UI operations are completed
+        Future.delayed(Duration.zero, () {
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+              context, Routes.loginScreen, (route) => false);
+            
+            // Show the message only after navigation for better UX
+            ScaffoldMessenger.of(context).showSnackBar(
+              warningMessage(context, "Session Expired, Please log in again"));
+          }
+          
+          // Reset the flag after navigation is complete
+          ConstantName.isSessionExpiring = false;
+        });
+      } else {
+        ConstantName.isSessionExpiring = false;
+      }
+    });
   }
 }

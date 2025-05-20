@@ -25,6 +25,9 @@ class ConstantName {
   static Timer? charttimer;
   static ChartArgs? chartArgs;
   static bool sessCheck = false;
+  
+  // Flag to prevent multiple session expiration handlers from running simultaneously
+  static bool isSessionExpiring = false;
 
   static String phoneNum = "(+91) 93 8010 8010";
   static String gamil = "assist@zebuetrade.com";

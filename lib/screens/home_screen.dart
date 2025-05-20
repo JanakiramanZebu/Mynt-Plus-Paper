@@ -89,71 +89,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.resumed:
-        // await context.read(portfolioProvider).fetchPositionBook(context, false);
-
-        // if (context.read(portfolioProvider).postionBookModel![0].stat == "Ok") {
-        //   context.read(portfolioProvider).fetchHoldings(context, "");
-        //   context.read(orderProvider).fetchOrderBook(context, false);
-        //   context.read(orderProvider).fetchTradeBook(context);
-        // }
-
-        if (context.read(websocketProvider).wsConnected == false ||
-            context.read(websocketProvider).wsConnected == true) {
-          if (ConstantName.lastSubscribe.isNotEmpty) {
-            context.read(websocketProvider).establishConnection(
-                channelInput: ConstantName.lastSubscribe,
-                task: "t",
-                context: context);
-          }
-          if (ConstantName.lastSubscribeDepth.isNotEmpty) {
-            context.read(websocketProvider).establishConnection(
-                channelInput: ConstantName.lastSubscribeDepth,
-                task: "d",
-                context: context);
-          }
-          if (context.read(networkStateProvider).connectionStatus !=
-              ConnectivityResult.none) {
-            context.read(websocketProvider).changeconnectioncount();
-            if (context.read(indexListProvider).selectedBtmIndx == 1) {
-              context
-                  .read(marketWatchProvider)
-                  .requestMWScrip(context: context, isSubscribe: true);
+        // Don't use await to avoid blocking the UI thread
+        // Check session status in the background to prevent freezing
+        Future.microtask(() async {
+          try {
+            // Check session status without loading indicators
+            await context.read(indexListProvider).checkSession(context);
+            
+            // Only load data if session is valid and app is still mounted
+            if (mounted && context.read(indexListProvider).checkSess?.stat == "Ok") {
+              // Load these in parallel for better performance
+              final futures = [
+                context.read(portfolioProvider).fetchPositionBook(context, false),
+                context.read(portfolioProvider).fetchHoldings(context, ""),
+                context.read(orderProvider).fetchOrderBook(context, false),
+                context.read(orderProvider).fetchTradeBook(context),
+              ];
+              
+              await Future.wait(futures);
             }
-            if (context.read(indexListProvider).selectedBtmIndx == 2) {
-              context
-                  .read(portfolioProvider)
-                  .requestWSHoldings(context: context, isSubscribe: true);
-              context.read(portfolioProvider).timerfunc();
-              context
-                  .read(portfolioProvider)
-                  .requestWSPosition(context: context, isSubscribe: true);
-            }
-            if (context.read(indexListProvider).selectedBtmIndx == 3) {
-              context
-                  .read(orderProvider)
-                  .requestWSOrderBook(context: context, isSubscribe: true);
-            }
+            
+            // Handle WebSocket connections after session validation
+            _handleWebSocketConnections();
+          } catch (e) {
+            print("Error during app resume: $e");
           }
-        }
-        print("app in resumed");
-        final userProfile = context.read(userProfileProvider);
-        final scriptInfo = context.read(marketWatchProvider).getQuotes;
-        if (userProfile.showchartof) {
-          if (scriptInfo!.exch != null) {
-            context.read(marketWatchProvider).setChartScript(
-                scriptInfo.exch.toString(),
-                scriptInfo.token.toString(),
-                scriptInfo.tsym.toString());
-            // await context.read(websocketProvider).establishConnection(
-            //     channelInput: "${scriptInfo?.exch}|${scriptInfo?.token}",
-            //     task: "d",
-            //     context: context);
-          } else {
-            userProfile.setChartdialog(false);
-          }
-        }
-
+        });
+        
+        // Handle chart data in a separate task
+        _handleChartData();
         break;
+        
       case AppLifecycleState.inactive:
         if (context.read(indexListProvider).selectedBtmIndx == 2) {
           context.read(portfolioProvider).cancelTimer();
@@ -162,12 +128,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         userProfile.setonloadChartdialog(false);
         print("app in inactive");
         break;
+        
       case AppLifecycleState.paused:
         if (context.read(indexListProvider).selectedBtmIndx == 2) {
           context.read(portfolioProvider).cancelTimer();
         }
         print("app in paused");
         break;
+        
       case AppLifecycleState.detached:
         if (context.read(indexListProvider).selectedBtmIndx == 2) {
           context.read(portfolioProvider).cancelTimer();
@@ -176,10 +144,74 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         userProfile.setonloadChartdialog(false);
         print("app in detached");
         break;
+        
       case AppLifecycleState.hidden:
         if (context.read(indexListProvider).selectedBtmIndx == 2) {
           context.read(portfolioProvider).cancelTimer();
         }
+    }
+  }
+  
+  // Extract WebSocket connection logic to separate method
+  void _handleWebSocketConnections() {
+    if (!mounted) return;
+    
+    final websocket = context.read(websocketProvider);
+    
+    if (websocket.wsConnected == false || websocket.wsConnected == true) {
+      if (ConstantName.lastSubscribe.isNotEmpty) {
+        websocket.establishConnection(
+          channelInput: ConstantName.lastSubscribe,
+          task: "t",
+          context: context);
+      }
+      
+      if (ConstantName.lastSubscribeDepth.isNotEmpty) {
+        websocket.establishConnection(
+          channelInput: ConstantName.lastSubscribeDepth,
+          task: "d",
+          context: context);
+      }
+      
+      if (context.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+        websocket.changeconnectioncount();
+        
+        final indexProvide = context.read(indexListProvider);
+        if (indexProvide.selectedBtmIndx == 1) {
+          context.read(marketWatchProvider)
+              .requestMWScrip(context: context, isSubscribe: true);
+        }
+        
+        if (indexProvide.selectedBtmIndx == 2) {
+          context.read(portfolioProvider)
+              .requestWSHoldings(context: context, isSubscribe: true);
+          context.read(portfolioProvider).timerfunc();
+          context.read(portfolioProvider)
+              .requestWSPosition(context: context, isSubscribe: true);
+        }
+        
+        if (indexProvide.selectedBtmIndx == 3) {
+          context.read(orderProvider)
+              .requestWSOrderBook(context: context, isSubscribe: true);
+        }
+      }
+    }
+  }
+  
+  // Extract chart data handling to separate method
+  void _handleChartData() {
+    if (!mounted) return;
+    
+    final userProfile = context.read(userProfileProvider);
+    final scriptInfo = context.read(marketWatchProvider).getQuotes;
+    
+    if (userProfile.showchartof && scriptInfo?.exch != null) {
+      context.read(marketWatchProvider).setChartScript(
+        scriptInfo!.exch.toString(),
+        scriptInfo.token.toString(),
+        scriptInfo.tsym.toString());
+    } else if (userProfile.showchartof) {
+      userProfile.setChartdialog(false);
     }
   }
 

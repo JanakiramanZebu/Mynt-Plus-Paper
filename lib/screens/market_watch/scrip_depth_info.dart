@@ -793,44 +793,34 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                           FontWeight
                                                                               .w600))
                                                                 ]),
-                                                            const SizedBox(
-                                                                height: 7),
+                const SizedBox(height: 7),
                                                             _buildDepthPercentage(
                                                                 "${depthData.bq1 ?? 0}",
                                                                 "${depthData.bp1 ?? 0.00}",
-                                                                true,
                                                                 scripInfo,
                                                                 theme),
-                                                            const SizedBox(
-                                                                height: 6),
+                const SizedBox(height: 6),
                                                             _buildDepthPercentage(
                                                                 "${depthData.bq2 ?? 0}",
                                                                 "${depthData.bp2 ?? 0.00}",
-                                                                true,
                                                                 scripInfo,
                                                                 theme),
-                                                            const SizedBox(
-                                                                height: 6),
+                const SizedBox(height: 6),
                                                             _buildDepthPercentage(
                                                                 "${depthData.bq3 ?? 0}",
                                                                 "${depthData.bp3 ?? 0.00}",
-                                                                true,
                                                                 scripInfo,
                                                                 theme),
-                                                            const SizedBox(
-                                                                height: 6),
+                const SizedBox(height: 6),
                                                             _buildDepthPercentage(
                                                                 "${depthData.bq4 ?? 0}",
                                                                 "${depthData.bp4 ?? 0.00}",
-                                                                true,
                                                                 scripInfo,
                                                                 theme),
-                                                            const SizedBox(
-                                                                height: 6),
+                const SizedBox(height: 6),
                                                             _buildDepthPercentage(
                                                                 "${depthData.bq5 ?? 0}",
                                                                 "${depthData.bp5 ?? 0.00}",
-                                                                true,
                                                                 scripInfo,
                                                                 theme)
                                                           ])),
@@ -864,44 +854,34 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                           FontWeight
                                                                               .w600))
                                                                 ]),
-                                                            const SizedBox(
-                                                                height: 7),
-                                                            _buildDepthPercentage(
-                                                                "${depthData.sq1 ?? 0}",
+                const SizedBox(height: 7),
+                                                            _buildAskDepthPercentage(
                                                                 "${depthData.sp1 ?? 0.00}",
-                                                                false,
+                                                                "${depthData.sq1 ?? 0}",
                                                                 scripInfo,
                                                                 theme),
-                                                            const SizedBox(
-                                                                height: 6),
-                                                            _buildDepthPercentage(
-                                                                "${depthData.sq2 ?? 0}",
+                const SizedBox(height: 6),
+                                                            _buildAskDepthPercentage(
                                                                 "${depthData.sp2 ?? 0.00}",
-                                                                false,
+                                                                "${depthData.sq2 ?? 0}",
                                                                 scripInfo,
                                                                 theme),
-                                                            const SizedBox(
-                                                                height: 6),
-                                                            _buildDepthPercentage(
-                                                                "${depthData.sq3 ?? 0}",
+                const SizedBox(height: 6),
+                                                            _buildAskDepthPercentage(
                                                                 "${depthData.sp3 ?? 0.00}",
-                                                                false,
+                                                                "${depthData.sq3 ?? 0}",
                                                                 scripInfo,
                                                                 theme),
-                                                            const SizedBox(
-                                                                height: 6),
-                                                            _buildDepthPercentage(
-                                                                "${depthData.sq4 ?? 0}",
+                const SizedBox(height: 6),
+                                                            _buildAskDepthPercentage(
                                                                 "${depthData.sp4 ?? 0.00}",
-                                                                false,
+                                                                "${depthData.sq4 ?? 0}",
                                                                 scripInfo,
                                                                 theme),
-                                                            const SizedBox(
-                                                                height: 6),
-                                                            _buildDepthPercentage(
-                                                                "${depthData.sq5 ?? 0}",
+                const SizedBox(height: 6),
+                                                            _buildAskDepthPercentage(
                                                                 "${depthData.sp5 ?? 0.00}",
-                                                                false,
+                                                                "${depthData.sq5 ?? 0}",
                                                                 scripInfo,
                                                                 theme)
                                                           ]))
@@ -1305,6 +1285,91 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
               theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               14,
               FontWeight.w500))
+    ]);
+  }
+
+  // Ask side (Price on left, Qty on right)
+  Widget _buildAskDepthPercentage(String price, String qty, MarketWatchProvider scripInfo, ThemesProvider theme) {
+    final maxQty = scripInfo.maxSellQty;
+    final barPercentage = (((int.tryParse(qty) ?? 0) / maxQty) * 100 / 100).clamp(0.0, 1.0);
+    final color = colors.darkred;
+    
+    return Stack(children: [
+      Transform.flip(
+        flipX: true,
+        child: LinearPercentIndicator(
+          lineHeight: 20.0,
+          backgroundColor: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          percent: barPercentage,
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          progressColor: color.withOpacity(.2),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: 1.5),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              " ${price != "null" ? price : '0.00'} ",
+              style: TextStyle(
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                fontSize: 13,
+                fontWeight: FontWeight.w500
+              ),
+            ),
+            Text(
+              " ${qty != "null" ? qty : '0'} ",
+              style: TextStyle(
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                fontSize: 13,
+                fontWeight: FontWeight.w500
+              ),
+            ),
+          ],
+        ),
+      )
+    ]);
+  }
+
+  // Bid side (Qty on left, Price on right)
+  Widget _buildBidDepthPercentage(String qty, String price, MarketWatchProvider scripInfo, ThemesProvider theme) {
+    final maxQty = scripInfo.maxBuyQty;
+    final barPercentage = (((int.tryParse(qty) ?? 0) / maxQty) * 100 / 100).clamp(0.0, 1.0);
+    final color = colors.ltpgreen;
+    
+    return Stack(children: [
+      LinearPercentIndicator(
+        lineHeight: 20.0,
+        backgroundColor: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        percent: barPercentage,
+        padding: const EdgeInsets.symmetric(horizontal: 0),
+        progressColor: color.withOpacity(.2),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: 1.5),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              " ${qty != "null" ? qty : '0'} ",
+              style: TextStyle(
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                fontSize: 13,
+                fontWeight: FontWeight.w500
+              ),
+            ),
+            Text(
+              " ${price != "null" ? price : '0.00'} ",
+              style: TextStyle(
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                fontSize: 13,
+                fontWeight: FontWeight.w500
+              ),
+            ),
+          ],
+        ),
+      )
     ]);
   }
 }

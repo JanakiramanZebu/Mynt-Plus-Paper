@@ -170,6 +170,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   bool _tphloader = false;
   bool get tphloader => _tphloader;
+  
+  // Navigation locks to prevent duplicate actions
+  bool _isFilterNavigating = false;
+  bool get isFilterNavigating => _isFilterNavigating;
+  
+  void setFilterNavigating(bool value) {
+    _isFilterNavigating = value;
+    notifyListeners();
+  }
 
 // Position Grouping -----------
 
@@ -803,203 +812,226 @@ class PortfolioProvider extends DefaultChangeNotifier {
   }
 
   pnlHoldCal() {
+    // Early return if no holdings
+    if (holdingsModel == null || holdingsModel!.isEmpty) return;
+    
     // Use local variables for performance and minimize string conversions
     double totalPnl = 0.0;
     double dayChange = 0.0;
     double invest = 0.0;
     double currentVal = 0.0;
     
-    // Single loop through all holdings
-    if (holdingsModel != null) {
-      for (var holding in holdingsModel!) {
-        // Use null-safe direct access with double.tryParse for better performance
-        final profitNloss = double.tryParse("${holding.exchTsym![0].profitNloss ?? 0.0}") ?? 0.0;
-        final oneDayChg = double.tryParse("${holding.exchTsym![0].oneDayChg ?? 0.0}") ?? 0.0;
-        final invested = double.tryParse("${holding.invested ?? 0.0}") ?? 0.0;
-        final currentValue = double.tryParse("${holding.currentValue ?? 0.0}") ?? 0.0;
+    // Process holdings in batches to reduce UI blocking
+    const int batchSize = 10;
+    final int totalHoldings = holdingsModel!.length;
+    int processedCount = 0;
+    
+    void processBatch(int startIndex) {
+      final int endIndex = (startIndex + batchSize) < totalHoldings ? 
+                          startIndex + batchSize : totalHoldings;
+      
+      for (int i = startIndex; i < endIndex; i++) {
+        final holding = holdingsModel![i];
         
-        // Accumulate values
+        // Direct non-null access with fallbacks
+        final profitNloss = double.tryParse(holding.exchTsym![0].profitNloss ?? '0.0') ?? 0.0;
+        final oneDayChg = double.tryParse(holding.exchTsym![0].oneDayChg ?? '0.0') ?? 0.0;
+        final invested = double.tryParse(holding.invested ?? '0.0') ?? 0.0;
+        final currentValue = double.tryParse(holding.currentValue ?? '0.0') ?? 0.0;
+        
+        // Accumulate totals
         totalPnl += profitNloss;
         dayChange += oneDayChg;
         invest += invested;
         currentVal += currentValue;
       }
+      
+      processedCount = endIndex;
+      
+      // If there are more holdings to process, schedule next batch
+      if (processedCount < totalHoldings) {
+        Future.microtask(() => processBatch(processedCount));
+      } else {
+        // All batches processed, update class variables
+        _totalPnlHolding = totalPnl;
+        _oneDayChng = dayChange;
+        _totalCurrentVal = currentVal;
+        _totInvesHold = invest.toStringAsFixed(2);
+        
+        // Calculate percentages
+        _oneDayChngPer = currentVal > 0 ? (dayChange / currentVal) * 100 : 0.0;
+        _totPnlPercHolding = invest > 0 ? ((totalPnl / invest) * 100).toStringAsFixed(2) : '0.00';
+        
+        notifyListeners();
+      }
     }
     
-    // Update class variables in batch
-    _totalPnlHolding = totalPnl;
-    _oneDayChng = dayChange;
-    _totalCurrentVal = currentVal;
-    _totInvesHold = invest.toStringAsFixed(2);
-    
-    // Calculate percentages only once after all values are accumulated
-    _oneDayChngPer = currentVal > 0 ? (dayChange / currentVal) * 100 : 0.0;
-    _totPnlPercHolding = invest > 0 ? ((totalPnl / invest) * 100).toStringAsFixed(2) : "0.00";
-    
-    notifyListeners();
+    // Start processing in batches
+    processBatch(0);
   }
 
   // Optimize position calculations
   positionCal(bool isDay) {
-    double totalMtm = 0.00;
-    double totalPnl = 0.00;
-    double unRealMtm = 0.00;
-    double bookPnl = 0.00;
-    var qty = 0;
-    double avgPrc = 0.00;
-    String pnl = "0.00";
+    // Use local variables for accumulating totals
+    double totalMtm = 0.0;
+    double totalPnl = 0.0;
+    double unRealMtm = 0.0;
+    double bookPnl = 0.0;
     
-    // Process positions once with optimized calculations
-    for (var element in _allPostionList) {
+    // Process each position once with optimized calculations
+    for (var position in _allPostionList) {
       // Parse the last price once and handle null values efficiently
-      final lastPrice = double.tryParse(element.lp ?? "0.00") ?? 0.00;
+      final lastPrice = double.tryParse(position.lp ?? "0.00") ?? 0.0;
+      final prcFtr = double.tryParse(position.prcftr ?? "1.0") ?? 1.0;
+      final mult = double.tryParse(position.mult ?? "1.0") ?? 1.0;
       
       if (isDay) {
-        // Day calculation optimization
-        element.avgPrc = element.netqty == "0" ? "0.00" : element.dayavgprc;
-        avgPrc = double.tryParse(element.avgPrc ?? "0.00") ?? 0.00;
+        // DAY POSITION CALCULATION
+        position.avgPrc = position.netqty == "0" ? "0.00" : position.dayavgprc;
+        final avgPrc = double.tryParse(position.avgPrc ?? "0.00") ?? 0.0;
         
         // Calculate quantity with safe int parsing
-        if (element.exch == "MCX") {
-          final lotSize = double.tryParse(element.ls ?? "0") ?? 1.0;
-          qty = ((int.tryParse(element.daybuyqty ?? "0") ?? 0) - 
-                 (int.tryParse(element.daysellqty ?? "0") ?? 0)) ~/ lotSize.toInt();
+        int qty;
+        if (position.exch == "MCX") {
+          final lotSize = double.tryParse(position.ls ?? "1") ?? 1.0;
+          qty = ((int.tryParse(position.daybuyqty ?? "0") ?? 0) - 
+                 (int.tryParse(position.daysellqty ?? "0") ?? 0)) ~/ lotSize.toInt();
         } else {
-          qty = (int.tryParse(element.daybuyqty ?? "0") ?? 0) - 
-                (int.parse(element.daysellqty ?? "0") ?? 0);
+          qty = (int.tryParse(position.daybuyqty ?? "0") ?? 0) - 
+                (int.tryParse(position.daysellqty ?? "0") ?? 0);
         }
         
-        element.qty = "$qty";
+        position.qty = "$qty";
         
         if (qty != 0) {
           // Simplified P&L calculation with null safety
-          final dayBuyAvg = double.tryParse(element.daybuyavgprc ?? "0.00") ?? 0.00;
-          final daySellAvg = double.tryParse(element.daysellavgprc ?? "0.00") ?? 0.00;
-          final mult = int.tryParse(element.mult ?? "0") ?? 0;
+          final dayBuyAvg = double.tryParse(position.daybuyavgprc ?? "0.00") ?? 0.0;
+          final daySellAvg = double.tryParse(position.daysellavgprc ?? "0.00") ?? 0.0;
           
-          if (element.netqty == "0") {
-            pnl = qty > 0
+          String pnl;
+          if (position.netqty == "0") {
+            pnl = (qty > 0)
                 ? ((qty * lastPrice) - (qty * dayBuyAvg)).toStringAsFixed(2)
                 : ((qty * lastPrice) - (qty * daySellAvg)).toStringAsFixed(2);
-          } else if (element.exch == "MCX" || element.exch == "CDS") {
+          } else if (position.exch == "MCX" || position.exch == "CDS") {
             pnl = ((lastPrice - avgPrc) * (mult * qty)).toStringAsFixed(2);
           } else {
             pnl = ((lastPrice - avgPrc) * qty).toStringAsFixed(2);
           }
           
-          element.profitNloss = pnl;
-          unRealMtm += double.tryParse(pnl) ?? 0.00;
-          bookPnl += ((qty * dayBuyAvg) - (qty * daySellAvg));
+          position.profitNloss = pnl;
+          unRealMtm += double.tryParse(pnl) ?? 0.0;
+          
+          // Calculate booked P&L
+          if (position.netqty == "0") {
+            bookPnl += double.tryParse(position.rpnl ?? "0.00") ?? 0.0;
+          } else {
+            bookPnl += (qty * dayBuyAvg) - (qty * daySellAvg);
+          }
         } else {
-          bookPnl += double.parse(element.rpnl ?? "0.00") ?? 0.00;
+          // For positions with zero quantity
+          position.profitNloss = position.rpnl ?? "0.00";
+          bookPnl += double.tryParse(position.rpnl ?? "0.00") ?? 0.0;
         }
       } else {
-        // Net calculation optimization
-        element.qty = element.netqty ?? "0";
-        qty = int.tryParse(element.qty ?? "0") ?? 0;
+        // NET POSITION CALCULATION
+        position.qty = position.netqty ?? "0";
+        final qty = int.tryParse(position.qty ?? "0") ?? 0;
         
         // Determine which price to use based on conditions
         if (qty == 0) {
-          element.avgPrc = "0.00";
+          position.avgPrc = "0.00";
         } else if (_isNetPnl) {
-          if (element.netavgprc != "0.00") {
-            element.avgPrc = element.netavgprc;
-          } else if (element.upldprc == "0.00") {
-            element.avgPrc = element.dayavgprc;
-          } else {
-            element.avgPrc = element.upldprc;
-          }
+          position.avgPrc = position.netavgprc != "0.00" ? position.netavgprc :
+                           position.upldprc == "0.00" ? position.dayavgprc : position.upldprc;
         } else {
-          element.avgPrc = element.netavgprc;
+          position.avgPrc = position.netavgprc;
         }
         
-        // Optimize P&L and MTM calculations
+        // Calculate MTM and P&L
         if (qty == 0) {
           // For closed positions
-          String finpnl;
+          final rpnl = double.tryParse(position.rpnl ?? "0.00") ?? 0.0;
+          position.mTm = position.rpnl ?? "0.00";
           
-          if (element.cfbuyqty != "0") {
-            // Pre-calculate values to improve readability and performance
-            final daySellavgPrc = double.tryParse(element.daysellavgprc ?? "0.00") ?? 0.00;
-            final daySellQty = int.tryParse(element.daysellqty ?? "0") ?? 0;
-            final prcFtr = double.tryParse(element.prcftr ?? "1.0") ?? 1.0;
-            final cfBuyQty = int.tryParse(element.cfbuyqty ?? "0") ?? 0;
-            final upldPrc = double.tryParse(element.upldprc ?? "0.00") ?? 0.00;
-            final dayBuyQty = double.tryParse(element.daybuyqty ?? "0.00") ?? 0.00;
-            final dayBuyAvgPrc = double.tryParse(element.daybuyavgprc ?? "0.00") ?? 0.00;
+          // Calculate P&L for closed positions
+          if (position.cfbuyqty != "0") {
+            final cfBuyQty = int.tryParse(position.cfbuyqty ?? "0") ?? 0;
+            final daySellQty = int.tryParse(position.daysellqty ?? "0") ?? 0;
+            final dayBuyQty = int.tryParse(position.daybuyqty ?? "0") ?? 0;
+            final daySellavgPrc = double.tryParse(position.daysellavgprc ?? "0.00") ?? 0.0;
+            final upldPrc = double.tryParse(position.upldprc ?? "0.00") ?? 0.0;
+            final dayBuyAvgPrc = double.tryParse(position.daybuyavgprc ?? "0.00") ?? 0.0;
             
-            final sellValue = daySellavgPrc * (daySellQty * prcFtr);
-            final cfBuyValue = (cfBuyQty * prcFtr) * upldPrc;
-            final dayBuyValue = (dayBuyQty * prcFtr) * dayBuyAvgPrc;
+            // Calculate P&L components
+            final sellValue = daySellavgPrc * daySellQty * prcFtr;
+            final cfBuyValue = cfBuyQty * prcFtr * upldPrc;
+            final dayBuyValue = dayBuyQty * prcFtr * dayBuyAvgPrc;
             
-            finpnl = (sellValue - cfBuyValue - dayBuyValue).toString();
-          } else if (element.cfsellqty != "0") {
-            // Similar optimization for the second case
-            final daySellQty = double.tryParse(element.daysellqty ?? "0.00") ?? 0.00;
-            final prcFtr = double.tryParse(element.prcftr ?? "1.0") ?? 1.0;
-            final daySellavgPrc = double.tryParse(element.daysellavgprc ?? "0.00") ?? 0.00;
-            final cfSellQty = int.tryParse(element.cfsellqty ?? "0") ?? 0;
-            final upldPrc = double.tryParse(element.upldprc ?? "0.00") ?? 0.00;
-            final dayBuyAvgPrc = double.tryParse(element.daybuyavgprc ?? "0.00") ?? 0.00;
-            final dayBuyQty = double.tryParse(element.daybuyqty ?? "0.00") ?? 0.00;
+            position.profitNloss = (sellValue - cfBuyValue - dayBuyValue).toStringAsFixed(2);
+          } else if (position.cfsellqty != "0") {
+            final cfSellQty = int.tryParse(position.cfsellqty ?? "0") ?? 0;
+            final daySellQty = int.tryParse(position.daysellqty ?? "0") ?? 0;
+            final dayBuyQty = int.tryParse(position.daybuyqty ?? "0") ?? 0;
+            final daySellavgPrc = double.tryParse(position.daysellavgprc ?? "0.00") ?? 0.0;
+            final upldPrc = double.tryParse(position.upldprc ?? "0.00") ?? 0.0;
+            final dayBuyAvgPrc = double.tryParse(position.daybuyavgprc ?? "0.00") ?? 0.0;
             
-            final sellDayValue = (daySellQty * prcFtr) * daySellavgPrc;
-            final sellCfValue = (cfSellQty * prcFtr) * upldPrc;
-            final buyValue = dayBuyAvgPrc * (dayBuyQty * prcFtr);
+            // Calculate P&L components
+            final daySellValue = daySellQty * prcFtr * daySellavgPrc;
+            final cfSellValue = cfSellQty * prcFtr * upldPrc;
+            final dayBuyValue = dayBuyQty * prcFtr * dayBuyAvgPrc;
             
-            finpnl = (sellDayValue + sellCfValue - buyValue).toString();
+            position.profitNloss = (daySellValue + cfSellValue - dayBuyValue).toStringAsFixed(2);
           } else {
-            finpnl = element.rpnl?.toString() ?? "0.00";
+            position.profitNloss = position.rpnl ?? "0.00";
           }
           
-          element.profitNloss = (double.tryParse(finpnl) ?? 0.00).toStringAsFixed(2);
+          totalMtm += rpnl;
+          totalPnl += double.tryParse(position.profitNloss ?? "0.00") ?? 0.0;
         } else {
-          // For open positions with efficient property access
-          final netUpldPrc = double.tryParse(element.netupldprc ?? "0.00") ?? 0.00;
-          final prcFtr = double.tryParse(element.prcftr ?? "1.0") ?? 1.0;
-          final tempPnl = double.tryParse(element.temppnl ?? "0.00") ?? 0.00;
+          // For open positions
+          final netAvgPrc = double.tryParse(position.netavgprc ?? "0.00") ?? 0.0;
+          final upldPrc = double.tryParse(position.upldprc ?? "0.00") ?? 0.0;
+          final rpnl = double.tryParse(position.rpnl ?? "0.00") ?? 0.0;
           
-          // Use effective last price, safely handling nulls
-          final effectiveLastPrice = lastPrice != 0.0 ? lastPrice : 
-                                   element.lp != null && element.lp != "null" ? 
-                                   double.tryParse(element.lp ?? '') ?? 0.0 : 0.0;
+          // Calculate MTM based on exchange
+          double mtmValue;
+          if (["NSE", "BSE", "NFO", "BFO"].contains(position.exch)) {
+            mtmValue = (lastPrice - netAvgPrc) * (qty * prcFtr) + rpnl;
+          } else {
+            mtmValue = (lastPrice - netAvgPrc) * (mult * qty * prcFtr) + rpnl;
+          }
           
-          final tempUnpnl = effectiveLastPrice - netUpldPrc;
-          element.profitNloss = (tempUnpnl * (qty * prcFtr) + tempPnl).toStringAsFixed(2);
+          position.mTm = mtmValue.toStringAsFixed(2);
+          
+          // Calculate P&L
+          final effectiveUpldPrc = upldPrc == 0.0 ? 
+                               double.tryParse(position.avgPrc ?? "0.00") ?? 0.0 : 
+                               upldPrc;
+          
+          double pnlValue;
+          if (position.exch == "MCX" || position.exch == "CDS") {
+            pnlValue = (lastPrice - effectiveUpldPrc) * (mult * qty * prcFtr) + rpnl;
+          } else {
+            pnlValue = (lastPrice - effectiveUpldPrc) * (qty * prcFtr) + rpnl;
+          }
+          
+          position.profitNloss = pnlValue.toStringAsFixed(2);
+          
+          totalMtm += mtmValue;
+          totalPnl += pnlValue;
         }
-        
-        // Calculate MTM based on exchange
-        double finmtm;
-        final rpnl = double.tryParse(element.rpnl ?? "0.00") ?? 0.00;
-        
-        if (["NFO", "BFO", "NSE", "BSE"].contains(element.exch)) {
-          final netAvgPrc = double.tryParse(element.netavgprc ?? "0.00") ?? 0.00;
-          final prcFtr = double.tryParse(element.prcftr ?? "1.0") ?? 1.0;
-          
-          finmtm = qty == 0 ? rpnl : 
-                  (lastPrice - netAvgPrc) * (qty * prcFtr) + rpnl;
-        } else {
-          final netAvgPrc = double.tryParse(element.netavgprc ?? "0.00") ?? 0.00;
-          final mult = double.tryParse(element.mult ?? "1.0") ?? 1.0;
-          final prcFtr = double.tryParse(element.prcftr ?? "1.0") ?? 1.0;
-          
-          finmtm = qty == 0 ? rpnl :
-                  (lastPrice - netAvgPrc) * (mult * (qty * prcFtr)) + rpnl;
-        }
-        
-        element.mTm = finmtm.toStringAsFixed(2);
-        
-        // Add to totals with safe parsing
-        totalMtm += double.tryParse(element.mTm ?? "0.00") ?? 0.00;
-        totalPnl += double.tryParse(element.profitNloss ?? element.rpnl ?? "0.00") ?? 0.00;
       }
     }
     
-    // Update all class variables once at the end
+    // Update class variables once at the end
     _totMtm = totalMtm.toStringAsFixed(2);
     _totPnL = totalPnl.toStringAsFixed(2);
     _totUnRealMtm = unRealMtm.toStringAsFixed(2);
     _totBookedPnL = bookPnl.toStringAsFixed(2);
+    
+    notifyListeners();
   }
 
 // websocket Connection Request for Position scrip
@@ -1630,87 +1662,104 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   // Optimized for fast updates from websocket
   void updateHoldingValues(String token, Map<String, dynamic> socketData) {
-    var index = _holdingsModel?.indexWhere((holding) => holding.exchTsym![0].token == token) ?? -1;
-
-    if (index != -1) {
-      var holding = _holdingsModel![index];
-
-      // Get new values from socket data
-      final newLp = socketData['lp']?.toString();
-      final newPc = socketData['pc']?.toString();
-      final newClose = socketData['c']?.toString();
-
-      // Only update if non-zero values are received, otherwise keep existing values
-      if (newLp != null && newLp != "null" && newLp != "0" && newLp != "0.0" && newLp != "0.00") {
-        holding.exchTsym![0].lp = newLp;
+    // Early return if no token or data
+    if (token == null || socketData == null || _holdingsModel == null) return;
+    
+    // Use indexWhere with efficient stopping
+    var index = -1;
+    for (int i = 0; i < _holdingsModel!.length; i++) {
+      if (_holdingsModel![i].exchTsym![0].token == token) {
+        index = i;
+        break;
       }
-      
-      if (newPc != null && newPc != "null" && newPc != "0" && newPc != "0.0" && newPc != "0.00") {
-        holding.exchTsym![0].perChange = newPc;
-      } else if (holding.exchTsym![0].perChange == null || holding.exchTsym![0].perChange == "null" || 
-                holding.exchTsym![0].perChange == "0" || holding.exchTsym![0].perChange == "0.0" || 
-                holding.exchTsym![0].perChange == "0.00") {
-        // If existing perChange is null/zero but we have valid lp and close, calculate it
-        final lpValue = double.tryParse(holding.exchTsym![0].lp ?? "0.00") ?? 0.0;
-        final closeValue = double.tryParse(holding.exchTsym![0].close ?? "0.00") ?? 0.0;
-        if (closeValue > 0) {
-          holding.exchTsym![0].perChange = ((lpValue / closeValue - 1) * 100).toStringAsFixed(2);
-        }
-      }
-      
-      if (newClose != null && newClose != "null" && newClose != "0" && newClose != "0.0" && newClose != "0.00") {
-        holding.exchTsym![0].close = newClose;
-      }
-
-      // Batch calculate all derived values using the most up-to-date data
-      final qty = holding.currentQty ?? 0;
-      final lpDouble = double.tryParse(holding.exchTsym![0].lp ?? '0.0') ?? 0.0;
-      
-      if (lpDouble > 0) {
-        // Calculate current value only if lp is valid
-        holding.currentValue = (qty * lpDouble).toStringAsFixed(2);
-        
-        // Calculate average cost with fallback to closing price
-        final closeVal = double.tryParse(holding.exchTsym![0].close ?? "0.00") ?? 0.0;
-        final avgCost = double.tryParse(holding.upldprc == "0.00"
-            ? (closeVal > 0 ? closeVal.toString() : holding.exchTsym![0].close ?? '0.0')
-            : holding.upldprc ?? '0.00') ?? 0.0;
-            
-        if (avgCost > 0) {
-          holding.invested = (qty * avgCost).toStringAsFixed(2);
-          
-          final investedValue = double.tryParse(holding.invested ?? '0.00') ?? 0.00;
-          
-          // Calculate profit/loss
-          if (qty == 0) {
-            final sellAmt = double.tryParse(holding.sellAmt ?? "0.00") ?? 0.0;
-            final usedQty = int.tryParse(holding.usedqty ?? "0") ?? 1;
-            if (usedQty > 0) {
-              final price = sellAmt / usedQty;
-              final pnl = price - avgCost;
-              holding.exchTsym![0].profitNloss = (pnl * usedQty).toStringAsFixed(2);
-            }
-          } else {
-            final currentValue = double.tryParse(holding.currentValue ?? "0.00") ?? 0.0;
-            holding.exchTsym![0].profitNloss = (currentValue - investedValue).toStringAsFixed(2);
-          }
-          
-          // Calculate percentage change if invested amount exists
-          if (investedValue > 0.0) {
-            final profitValue = double.tryParse(holding.exchTsym![0].profitNloss ?? "0.00") ?? 0.0;
-            holding.exchTsym![0].pNlChng = ((profitValue / investedValue) * 100).toStringAsFixed(2);
-          }
-          
-          // Calculate one day change if close value is valid
-          if (closeVal > 0) {
-            holding.exchTsym![0].oneDayChg = ((lpDouble - closeVal) * qty).toStringAsFixed(2);
-          }
-        }
-      }
-
-      // Update UI based on changes
-      notifyListeners();
     }
+    
+    if (index == -1) return; // Not found, nothing to update
+    
+    var holding = _holdingsModel![index];
+    bool hasUpdates = false;
+
+    // Get new values from socket data
+    final newLp = socketData['lp']?.toString();
+    final newPc = socketData['pc']?.toString();
+    final newChng = socketData['chng']?.toString();
+    final newClose = socketData['c']?.toString();
+
+    // Only update if valid values are received
+    if (_isValidValue(newLp)) {
+      holding.exchTsym![0].lp = newLp;
+      hasUpdates = true;
+    }
+    
+    if (_isValidValue(newPc)) {
+      holding.exchTsym![0].perChange = newPc;
+      hasUpdates = true;
+    }
+    
+    if (_isValidValue(newChng)) {
+      holding.exchTsym![0].change = newChng;
+      hasUpdates = true;
+    }
+    
+    if (_isValidValue(newClose)) {
+      holding.exchTsym![0].close = newClose;
+      hasUpdates = true;
+    }
+
+    // Only recalculate if we've actually updated any values
+    if (hasUpdates) {
+      _updateDerivedValues(holding);
+    }
+  }
+  
+  // Helper method to check if a value is valid
+  bool _isValidValue(String? value) {
+    return value != null && 
+           value != "null" && 
+           value != "0" && 
+           value != "0.0" && 
+           value != "0.00";
+  }
+  
+  // Helper method to update derived values
+  void _updateDerivedValues(HoldingsModel holding) {
+    final qty = holding.currentQty ?? 0;
+    if (qty <= 0) return; // Nothing to calculate for zero quantity
+    
+    final lpDouble = double.tryParse(holding.exchTsym![0].lp ?? '0.0') ?? 0.0;
+    if (lpDouble <= 0) return; // Can't calculate with invalid price
+    
+    // Update current value
+    holding.currentValue = (qty * lpDouble).toStringAsFixed(2);
+    
+    // Get average cost with fallback to closing price
+    final closeVal = double.tryParse(holding.exchTsym![0].close ?? "0.00") ?? 0.0;
+    final avgCost = double.tryParse(holding.upldprc == "0.00"
+        ? (closeVal > 0 ? closeVal.toString() : holding.exchTsym![0].close ?? '0.0')
+        : holding.upldprc ?? '0.00') ?? 0.0;
+        
+    if (avgCost <= 0) return; // Can't calculate with invalid cost
+    
+    holding.invested = (qty * avgCost).toStringAsFixed(2);
+    final investedValue = double.tryParse(holding.invested ?? '0.00') ?? 0.00;
+    
+    // Calculate profit/loss
+    final currentValue = double.tryParse(holding.currentValue ?? "0.00") ?? 0.0;
+    holding.exchTsym![0].profitNloss = (currentValue - investedValue).toStringAsFixed(2);
+    
+    // Calculate percentage change if invested amount exists
+    if (investedValue > 0.0) {
+      final profitValue = double.tryParse(holding.exchTsym![0].profitNloss ?? "0.00") ?? 0.0;
+      holding.exchTsym![0].pNlChng = ((profitValue / investedValue) * 100).toStringAsFixed(2);
+    }
+    
+    // Calculate one day change if close value is valid
+    if (closeVal > 0) {
+      holding.exchTsym![0].oneDayChg = ((lpDouble - closeVal) * qty).toStringAsFixed(2);
+    }
+    
+    // Update totals
+    updateHoldingStat();
   }
 
   updateHoldingStat() {
@@ -2016,190 +2065,140 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
-  positionGroupCal(
-      bool isDay, List groupData, String groupName, bool iscusGrop) {
-    // double totalMtm = 0.00;
-    // double totalPnl = 0.00;
-    double unRealMtm = 0.00;
-    double bookPnl = 0.00;
-
-    int qty = 0;
-    double totalProfitNloss = 0.00;
-    double totalMtms = 0.00;
-
-    double avgPrc = 0.00;
-    String pnl = "0.00";
-
-    if (groupData.isNotEmpty) {
-      for (var element in groupData) {
-        double lastPrice = double.parse(
-            element["lp"] == null || element["lp"] == "null"
-                ? "0.00"
-                : "${element["lp"]}");
-        if (isDay) {
-          element["avgPrc"] =
-              element["netqty"] == "0" ? "0.00" : element["dayavgprc"];
-
-          avgPrc = double.parse(element["avgPrc"] ?? "0.00");
-          qty = (int.parse("${element["daybuyqty"] ?? 0}") -
-              int.parse("${element["daysellqty"] ?? 0}"));
-
-          element["qty"] = "$qty";
-
-          if (qty != 0) {
-            pnl = element["netqty"] == "0"
-                ? qty > 0
-                    ? ((qty * lastPrice) -
-                            (qty *
-                                double.parse(
-                                    element['daybuyavgprc'] ?? "0.00")))
-                        .toStringAsFixed(2)
-                    : ((qty * lastPrice) -
-                            (qty *
-                                double.parse(
-                                    element['daysellavgprc'] ?? "0.00")))
-                        .toStringAsFixed(2)
-                : (element["exch"] == "MCX" || element["exch"] == "CDS")
-                    ? ((lastPrice - avgPrc) *
-                            (int.parse("${element['mult'] ?? 0}") * qty))
-                        .toStringAsFixed(2)
-                    : ((lastPrice - avgPrc) * qty).toStringAsFixed(2);
-
-            element["profitNloss"] = pnl;
-
-            unRealMtm += double.parse(pnl);
-
-            bookPnl +=
-                ((qty * double.parse(element['daybuyavgprc'] ?? "0.00")) -
-                    (qty * double.parse(element['daysellavgprc'] ?? "0.00")));
-            _groupedBySymbol[groupName]['totPnl'] =
-                unRealMtm.toStringAsFixed(2);
+  positionGroupCal(bool isDay, List groupData, String groupName, bool iscusGrop) {
+    if (groupData.isEmpty) return;
+    
+    double totalProfitNloss = 0.0;
+    double totalMtm = 0.0;
+    bool hasExitPositions = false;
+    
+    for (var position in groupData) {
+      // Get common values used in calculations
+      final lastPrice = double.tryParse(position["lp"] ?? "0.00") ?? 0.0;
+      final prcFtr = double.tryParse(position["prcftr"] ?? "1.0") ?? 1.0;
+      final mult = double.tryParse(position["mult"] ?? "1.0") ?? 1.0;
+      
+      if (isDay) {
+        // DAY POSITION GROUP CALCULATION
+        position["avgPrc"] = position["netqty"] == "0" ? "0.00" : position["dayavgprc"];
+        final avgPrc = double.tryParse(position["avgPrc"] ?? "0.00") ?? 0.0;
+        
+        // Calculate quantity
+        final dayBuyQty = int.tryParse(position["daybuyqty"] ?? "0") ?? 0;
+        final daySellQty = int.tryParse(position["daysellqty"] ?? "0") ?? 0;
+        final qty = dayBuyQty - daySellQty;
+        
+        position["qty"] = "$qty";
+        
+        if (qty != 0) {
+          hasExitPositions = true;
+          
+          // Calculate P&L
+          final dayBuyAvg = double.tryParse(position["daybuyavgprc"] ?? "0.00") ?? 0.0;
+          final daySellAvg = double.tryParse(position["daysellavgprc"] ?? "0.00") ?? 0.0;
+          
+          String pnl;
+          if (position["netqty"] == "0") {
+            pnl = qty > 0
+                ? ((qty * lastPrice) - (qty * dayBuyAvg)).toStringAsFixed(2)
+                : ((qty * lastPrice) - (qty * daySellAvg)).toStringAsFixed(2);
+          } else if (position["exch"] == "MCX" || position["exch"] == "CDS") {
+            pnl = ((lastPrice - avgPrc) * (mult * qty)).toStringAsFixed(2);
           } else {
-            element["profitNloss"] = element["rpnl"];
-            bookPnl += double.parse(element["rpnl"] ?? "0.00");
-            _groupedBySymbol[groupName]['totPnl'] = bookPnl.toStringAsFixed(2);
+            pnl = ((lastPrice - avgPrc) * qty).toStringAsFixed(2);
           }
+          
+          position["profitNloss"] = pnl;
+          totalProfitNloss += double.tryParse(pnl) ?? 0.0;
         } else {
-          element["qty"] = "${element["netqty"]}";
-
-          qty = int.parse(element["qty"] ?? "0");
-
-          element["avgPrc"] = qty == 0
-              ? "0.00"
-              : _isNetPnl
-                  ? element["upldprc"] == "0.00"
-                      ? element["dayavgprc"]
-                      : element["upldprc"]
-                  : element["netavgprc"];
-
-          avgPrc = double.parse(element["avgPrc"] ?? "0.00");
-          if (element["exch"] == "MCX" || element["exch"] == "CDS") {
-            double value =
-                (lastPrice - double.parse(element["netavgprc"] ?? "0.00")) *
-                    (int.parse("${element['mult'] ?? 0}") * qty);
-
-            element['mTm'] =
-                qty == 0 ? element["rpnl"] : value.toStringAsFixed(2);
-
-            if (qty == 0) {
-              if (element["cfbuyqty"] != "0") {
-                element['profitNloss'] = ((double.parse(
-                                "${element['daysellavgprc'] ?? 0.00}") *
-                            int.parse("${element['daysellqty'] ?? 0}")) -
-                        (int.parse("${element['cfbuyqty'] ?? 0}") *
-                            double.parse("${element['upldprc'] ?? 0.00}")) -
-                        (int.parse("${element['daybuyqty'] ?? 0}") *
-                            double.parse("${element['daybuyavgprc'] ?? 0.00}")))
-                    .toStringAsFixed(2);
-              } else if (element['cfsellqty'] != "0") {
-                element['profitNloss'] = ((int.parse(
-                                "${element['cfsellqty'] ?? 0}") *
-                            double.parse("${element['upldprc'] ?? 0.00}")) -
-                        (double.parse("${element['daybuyavgprc'] ?? 0.00}") *
-                            int.parse("${element['daybuyqty'] ?? 0}")) -
-                        (int.parse("${element['daysellqty'] ?? 0}") *
-                            double.parse(
-                                "${element['daysellavgprc'] ?? 0.00}")))
-                    .toStringAsFixed(2);
-              }
-            } else {
-              element['profitNloss'] = ((lastPrice -
-                          double.parse(
-                              "${element['upldprc'] == "0.00" ? element['avgPrc'] : element['upldprc']}")) *
-                      (int.parse("${element['mult'] ?? 0}") * qty))
-                  .toStringAsFixed(2);
-            }
-          } else {
-            double value =
-                (((lastPrice - double.parse(element['netavgprc'] ?? "0.00")) *
-                        qty) +
-                    double.parse("${element['rpnl'] ?? 0.00}"));
-
-            element['mTm'] =
-                qty != 0 ? value.toStringAsFixed(2) : "${element['rpnl']}";
-
-            if (qty == 0) {
-              if (element['cfbuyqty'] != "0") {
-                element['profitNloss'] =
-                    (double.parse("${element['daysellavgprc'] ?? 0.00}") *
-                                int.parse("${element['daysellqty'] ?? 0}") -
-                            int.parse("${element['cfbuyqty'] ?? 0}") *
-                                double.parse("${element['upldprc'] ?? 0.00}"))
-                        .toStringAsFixed(2);
-              } else if (element['cfsellqty'] != "0") {
-                element['profitNloss'] =
-                    (int.parse("${element['cfsellqty'] ?? 0}") *
-                                double.parse("${element['upldprc'] ?? 0.00}") -
-                            double.parse("${element['daybuyavgprc'] ?? 0.00}") *
-                                int.parse("${element['daybuyqty'] ?? 0}"))
-                        .toStringAsFixed(2);
-              } else {
-                element['profitNloss'] = element['rpnl'];
-              }
-            } else {
-              element['profitNloss'] = (((lastPrice -
-                              double.parse(
-                                  "${element['upldprc'] == "0.00" ? element['avgPrc'] : element['upldprc']}")) *
-                          qty) +
-                      double.parse("${element['rpnl'] ?? 0.00}"))
-                  .toStringAsFixed(2);
-            }
-          }
-
-          totalMtms += double.parse(element['mTm'] ?? "0.00");
-          totalProfitNloss += double.parse(
-              "${element['profitNloss'] ?? element['rpnl'] ?? 0.00}");
-
-          _groupedBySymbol[groupName]['totPnl'] =
-              totalProfitNloss.toStringAsFixed(2);
-
-          _groupedBySymbol[groupName]['totMtm'] = totalMtms.toStringAsFixed(2);
+          // For closed positions
+          final rpnl = double.tryParse(position["rpnl"] ?? "0.00") ?? 0.0;
+          position["profitNloss"] = position["rpnl"];
+          totalProfitNloss += rpnl;
         }
-
-        bool shouldExit = groupData.any((item) => item['qty'] != '0');
-
-        _groupedBySymbol[groupName]['isexit'] = "$shouldExit";
+      } else {
+        // NET POSITION GROUP CALCULATION
+        final netQty = int.tryParse(position["netqty"] ?? "0") ?? 0;
+        position["qty"] = "${position["netqty"]}";
+        
+        // Set avgPrc based on conditions
+        if (netQty == 0) {
+          position["avgPrc"] = "0.00";
+        } else if (_isNetPnl) {
+          position["avgPrc"] = position["upldprc"] == "0.00"
+              ? position["dayavgprc"]
+              : position["upldprc"];
+        } else {
+          position["avgPrc"] = position["netavgprc"];
+        }
+        
+        if (netQty != 0) {
+          hasExitPositions = true;
+        }
+        
+        // Calculate MTM
+        final netAvgPrc = double.tryParse(position["netavgprc"] ?? "0.00") ?? 0.0;
+        final rpnl = double.tryParse(position["rpnl"] ?? "0.00") ?? 0.0;
+        
+        double mtmValue;
+        if (netQty == 0) {
+          mtmValue = rpnl;
+        } else if (position["exch"] == "MCX" || position["exch"] == "CDS") {
+          mtmValue = (lastPrice - netAvgPrc) * (mult * netQty * prcFtr) + rpnl;
+        } else {
+          mtmValue = (lastPrice - netAvgPrc) * (netQty * prcFtr) + rpnl;
+        }
+        
+        position["mTm"] = mtmValue.toStringAsFixed(2);
+        totalMtm += mtmValue;
+        
+        // Calculate P&L
+        if (netQty == 0) {
+          // Use rpnl for closed positions
+          position["profitNloss"] = position["rpnl"];
+          totalProfitNloss += rpnl;
+        } else {
+          // Calculate P&L for open positions
+          final effectivePrice = double.tryParse(
+              position["upldprc"] == "0.00" ? position["avgPrc"] : position["upldprc"]) ?? 0.0;
+          
+          double pnlValue;
+          if (position["exch"] == "MCX" || position["exch"] == "CDS") {
+            pnlValue = (lastPrice - effectivePrice) * (mult * netQty * prcFtr) + rpnl;
+          } else {
+            pnlValue = (lastPrice - effectivePrice) * (netQty * prcFtr) + rpnl;
+          }
+          
+          position["profitNloss"] = pnlValue.toStringAsFixed(2);
+          totalProfitNloss += pnlValue;
+        }
       }
     }
-
-    double ctotPnl = 0.00;
-
-    double ctotMtm = 0.00;
-
-    for (var element in _groupPositionSym) {
-      if (_groupedBySymbol[element]["isCustomGrp"] == false) {
-        ctotPnl += double.parse(_groupedBySymbol[element]['totPnl']);
-        ctotMtm += double.parse(_groupedBySymbol[element]['totMtm']);
+    
+    // Update group summary
+    _groupedBySymbol[groupName]['totPnl'] = totalProfitNloss.toStringAsFixed(2);
+    _groupedBySymbol[groupName]['totMtm'] = totalMtm.toStringAsFixed(2);
+    _groupedBySymbol[groupName]['isexit'] = "$hasExitPositions";
+    
+    // Update total P&L and MTM
+    _updateTotalGroupValues();
+  }
+  
+  // Helper method to update total group values
+  void _updateTotalGroupValues() {
+    double totalPnl = 0.0;
+    double totalMtm = 0.0;
+    
+    for (var symbol in _groupPositionSym) {
+      if (_groupedBySymbol[symbol]["isCustomGrp"] == false) {
+        totalPnl += double.tryParse(_groupedBySymbol[symbol]['totPnl'] ?? "0.00") ?? 0.0;
+        totalMtm += double.tryParse(_groupedBySymbol[symbol]['totMtm'] ?? "0.00") ?? 0.0;
       }
     }
-
-    _totMtm = ctotMtm.toStringAsFixed(2);
-
-    _totPnL = ctotPnl.toStringAsFixed(2);
-    _totUnRealMtm = unRealMtm.toStringAsFixed(2);
-
-    _totBookedPnL = bookPnl.toStringAsFixed(2);
-
+    
+    _totMtm = totalMtm.toStringAsFixed(2);
+    _totPnL = totalPnl.toStringAsFixed(2);
+    
     notifyListeners();
   }
   

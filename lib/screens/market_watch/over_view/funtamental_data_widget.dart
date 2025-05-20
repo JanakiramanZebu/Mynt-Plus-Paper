@@ -16,47 +16,104 @@ class FundamentalDataWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final theme = context.read(themeProvider);
-    final funData =
-        watch(marketWatchProvider).fundamentalData!.fundamental!.isEmpty
-            ? null
-            : watch(marketWatchProvider).fundamentalData!.fundamental![0];
-    return watch(marketWatchProvider).fundamentalData!.fundamental!.isEmpty
-        ? const Center(child: NoDataFound())
-        : Padding(
+    
+    // Get fundamental data - using more focused approach instead of watching entire provider
+    final marketWatchProv = watch(marketWatchProvider);
+    final fundamentalData = marketWatchProv.fundamentalData;
+    final tsym = marketWatchProv.getQuotes?.tsym;
+    
+    if (fundamentalData?.fundamental?.isEmpty ?? true) {
+      return const Center(child: NoDataFound());
+    }
+    
+    // Cache the fundamental data to avoid repeated access
+    final funData = fundamentalData!.fundamental![0];
+    final symbolName = tsym?.replaceAll("-EQ", "") ?? "";
+    
+    return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 const SizedBox(height: 6),
-                Text("Fundamental Ratios",
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        20,
-                        FontWeight.w600)),
-                const SizedBox(height: 5),
+          _FundamentalHeader(theme: theme, symbolName: symbolName),
+          const SizedBox(height: 16),
+          _FundamentalRatiosSection(funData: funData, theme: theme),
+          // These widgets are optimized internally
+          const FinancialWidget(), 
+          const SizedBox(height: 4),
+          const PriceComparision(),
+          const SizedBox(height: 8),
+          const StocksHoldingsWidget()
+        ],
+      ),
+    );
+  }
 
+  // Extracted static method to avoid recreating text style
+  static TextStyle textStyle(Color color, double fontSize, FontWeight fWeight) {
+    return GoogleFonts.inter(
+        textStyle: TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  }
+}
+
+// Extracted header section to avoid rebuilding when data doesn't change
+class _FundamentalHeader extends StatelessWidget {
+  final ThemesProvider theme;
+  final String symbolName;
+
+  const _FundamentalHeader({required this.theme, required this.symbolName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Fundamental Ratios",
+          style: FundamentalDataWidget.textStyle(
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                        20,
+              FontWeight.w600
+          )
+        ),
+                const SizedBox(height: 5),
                 Text(
-                    "Fundamental breakdown of ${watch(marketWatchProvider).getQuotes!.tsym!.replaceAll("-EQ", "")} information",
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
+          "Fundamental breakdown of $symbolName information",
+          style: FundamentalDataWidget.textStyle(
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                         12,
-                        FontWeight.w500)),
-                const SizedBox(height: 16),
-                rowOfInfoData(
+              FontWeight.w500
+          )
+        ),
+      ],
+    );
+  }
+}
+
+// Extracted ratios section to avoid rebuilding when other parts change
+class _FundamentalRatiosSection extends StatelessWidget {
+  final dynamic funData;
+  final ThemesProvider theme;
+
+  const _FundamentalRatiosSection({required this.funData, required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _rowOfInfoData(
                     "PE RATIO",
-                    "${funData!.pe}",
+            "${funData.pe}",
                     "SECTOR PE",
                     "${funData.sectorPe}",
                     "EVEBITDA",
                     "${funData.evEbitda}",
                     theme),
                 const SizedBox(height: 14),
-                rowOfInfoData(
+        _rowOfInfoData(
                     "PB RATIO",
                     "${funData.priceBookValue}",
                     "EPS",
@@ -65,7 +122,7 @@ class FundamentalDataWidget extends ConsumerWidget {
                     "${funData.dividendYieldPercent}",
                     theme),
                 const SizedBox(height: 14),
-                rowOfInfoData(
+        _rowOfInfoData(
                     "ROCE",
                     "${funData.rocePercent}",
                     "ROE",
@@ -74,8 +131,7 @@ class FundamentalDataWidget extends ConsumerWidget {
                     "${funData.debtToEquity}",
                     theme),
                 const SizedBox(height: 14),
-                // if (watch(stocksProvide).moreFunRatio) ...[
-                rowOfInfoData(
+        _rowOfInfoData(
                     "PRICE TO SALE",
                     "${funData.salesToWorkingCapital}",
                     "BOOK VALUE",
@@ -83,29 +139,12 @@ class FundamentalDataWidget extends ConsumerWidget {
                     "FACE VALUE",
                     "${funData.fv}",
                     theme),
-                // ],
                 const SizedBox(height: 20),
-                // Center(
-                //     child: TextButton(
-                //         onPressed: () {
-                //           watch(stocksProvide).showMoreFunRatio();
-                //         },
-                //         child: Text(
-                //             watch(stocksProvide).moreFunRatio
-                //                 ? "Show less"
-                //                 : "Show more",
-                //             style:
-                //                 textStyle(colors.colorBlue, 13, FontWeight.w500)))),
-                const FinancialWidget(), const SizedBox(height: 4),
-                const PriceComparision(),
-                const SizedBox(height: 8),
-                const StocksHoldingsWidget()
               ],
-            ),
           );
   }
 
-  Row rowOfInfoData(String title1, String value1, String title2, String value2,
+  Row _rowOfInfoData(String title1, String value1, String title2, String value2,
       String title3, String value3, ThemesProvider theme) {
     return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,11 +155,11 @@ class FundamentalDataWidget extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                 Text(title1,
-                    style: textStyle(
+                    style: FundamentalDataWidget.textStyle(
                         const Color(0xff666666), 10, FontWeight.w400)),
                 const SizedBox(height: 4),
                 Text(value1,
-                    style: textStyle(
+                    style: FundamentalDataWidget.textStyle(
                         theme.isDarkMode
                             ? colors.colorWhite
                             : colors.colorBlack,
@@ -138,12 +177,12 @@ class FundamentalDataWidget extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                 Text(title2,
-                    style: textStyle(
+                    style: FundamentalDataWidget.textStyle(
                         const Color(0xff666666), 10, FontWeight.w400)),
                 const SizedBox(height: 4),
                 Text(
                   value2,
-                  style: textStyle(
+                  style: FundamentalDataWidget.textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       14,
                       FontWeight.w600),
@@ -160,11 +199,11 @@ class FundamentalDataWidget extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                 Text(title3,
-                    style: textStyle(
+                    style: FundamentalDataWidget.textStyle(
                         const Color(0xff666666), 10, FontWeight.w400)),
                 const SizedBox(height: 4),
                 Text(value3,
-                    style: textStyle(
+                    style: FundamentalDataWidget.textStyle(
                         theme.isDarkMode
                             ? colors.colorWhite
                             : colors.colorBlack,
@@ -177,11 +216,5 @@ class FundamentalDataWidget extends ConsumerWidget {
                         : colors.colorDivider)
               ]))
         ]);
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

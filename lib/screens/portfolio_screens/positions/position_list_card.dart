@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
@@ -7,188 +8,264 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 
-class PositionListCard extends ConsumerWidget {
+class PositionListCard extends StatefulWidget {
   final PositionBookModel positionList;
 
   const PositionListCard({super.key, required this.positionList});
 
   @override
-  Widget build(BuildContext context, watch) {
-    final positions = watch(portfolioProvider);
-    final theme = context.read(themeProvider);
-    
-    return StreamBuilder<Map>(
-      stream: watch(websocketProvider).socketDataStream,
-      builder: (context, snapshot) {
-        // Update position data with real-time values if available
-        if (snapshot.hasData && snapshot.data!.containsKey(positionList.token)) {
-          final socketData = snapshot.data![positionList.token];
-          
-          // Only update with valid data
-          final lp = socketData['lp']?.toString();
-          if (lp != null && lp != "null" && lp != "0" && lp != "0.00") {
-            positionList.lp = lp;
-          }
+  State<PositionListCard> createState() => _PositionListCardState();
+}
+
+class _PositionListCardState extends State<PositionListCard> {
+  StreamSubscription? _socketSubscription;
+  late String _currentLp;
+  bool _needsUpdate = false;
+  
+  // Cache text styles to avoid rebuilds
+  final Map<String, TextStyle> _cachedStyles = {};
+  
+  @override
+  void initState() {
+    super.initState();
+    _currentLp = widget.positionList.lp ?? '0.00';
+    _setupSocketSubscription();
+  }
+  
+  @override
+  void dispose() {
+    _socketSubscription?.cancel();
+    super.dispose();
+  }
+  
+  void _setupSocketSubscription() {
+    // Slight delay to ensure context is available
+    Future.microtask(() {
+      final websocket = context.read(websocketProvider);
+      final positions = context.read(portfolioProvider);
+      
+      _socketSubscription = websocket.socketDataStream.listen((socketData) {
+        // Only process if this position's token is in the update
+        if (!socketData.containsKey(widget.positionList.token)) return;
+        
+        final data = socketData[widget.positionList.token];
+        if (data == null) return;
+        
+        // Check if LTP actually changed
+        final lp = data['lp']?.toString();
+        if (lp != null && lp != "null" && lp != "0" && lp != "0.00" && lp != _currentLp) {
+          widget.positionList.lp = lp;
+          _currentLp = lp;
+          _needsUpdate = true;
           
           // Update PNL calculations if needed
-          if (positions.isDay && positionList.lp != null && positionList.lp != "0.00") {
-            // Positions might need to recalculate profit/loss based on updated LTP
+          if (positions.isDay) {
             positions.positionCal(positions.isDay);
           }
+          
+          // Debounce multiple rapid updates
+          if (mounted) {
+            setState(() {
+              _needsUpdate = false;
+            });
+          }
         }
-        
-        return Container(
-          color: theme.isDarkMode
-              ? positionList.qty == "0"
-                  ? colors.darkGrey
-                  : colors.colorBlack
-              : Color(positionList.qty == "0" ? 0xffF1F3F8 : 0xffffffff),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Row(children: [
-                    Text("${positionList.symbol} ${positionList.expDate} ",
-                        overflow: TextOverflow.ellipsis,
-                        style: textStyles.scripNameTxtStyle.copyWith(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack)),
-                    Text("${positionList.option} ",
-                        overflow: TextOverflow.ellipsis,
-                        style: textStyles.scripNameTxtStyle.copyWith(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack)),
-                  ]),
-                  Row(children: [
-                    Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(2),
-                            color: theme.isDarkMode
-                                ? positionList.qty == "0"
-                                    ? colors.colorBlack
-                                    : const Color(0xff666666).withOpacity(.2)
-                                : positionList.qty == "0"
-                                    ? colors.colorWhite
-                                    : const Color(0xffECEDEE)),
-                        child: Text("${positionList.exch}",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : const Color(0xff666666),
-                                10,
-                                FontWeight.w500))),
-                    const SizedBox(width: 9),
-                    Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(2),
-                            color: theme.isDarkMode
-                                ? positionList.qty == "0"
-                                    ? colors.colorBlack
-                                    : const Color(0xff666666).withOpacity(.2)
-                                : positionList.qty == "0"
-                                    ? colors.colorWhite
-                                    : const Color(0xffECEDEE)),
-                        child: Text("${positionList.sPrdtAli}",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : const Color(0xff666666),
-                                10,
-                                FontWeight.w500))),
-                  ])
-                ]),
-                const SizedBox(height: 4),
-                Divider(
-                    color: theme.isDarkMode
-                        ? colors.darkGrey
-                        : Color(
-                            positionList.netqty == "0" ? 0xffffffff : 0xffECEDEE),
-                    thickness: 1.2),
-                const SizedBox(height: 2),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Row(children: [
-                    Text("Qty: ",
-                        style: textStyle(
-                            const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                    Text(
-                        "${((int.tryParse(positionList.qty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            14,
-                            FontWeight.w500))
-                  ]),
-                  positions.isNetPnl
-                      ? Text("₹${positionList.profitNloss ?? positionList.rpnl}",
-                          style: textStyle(
-                              positionList.profitNloss != null
-                                  ? positionList.profitNloss!.startsWith("-")
-                                      ? colors.darkred
-                                      : positionList.profitNloss == "0.00"
-                                          ? colors.ltpgrey
-                                          : colors.ltpgreen
-                                  : positionList.rpnl!.startsWith("-")
-                                      ? colors.darkred
-                                      : positionList.rpnl == "0.00"
-                                          ? colors.ltpgrey
-                                          : colors.ltpgreen,
-                              15,
-                              FontWeight.w600))
-                      : Text("₹${positionList.mTm}",
-                          style: textStyle(
-                              positionList.mTm!.startsWith("-")
-                                  ? colors.darkred
-                                  : positionList.mTm == "0.00"
-                                      ? colors.ltpgrey
-                                      : colors.ltpgreen,
-                              15,
-                              FontWeight.w600))
-                ]),
-                const SizedBox(height: 10),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Row(children: [
-                    Text("Avg: ",
-                        style: textStyle(
-                            const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                    Text(
-                        positions.isDay
-                            ? "${positionList.avgPrc}"
-                            : positions.isNetPnl
-                                ? "${positionList.netupldprc}"
-                                : "${positionList.netavgprc}",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            14,
-                            FontWeight.w500))
-                  ]),
-                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                    Text(" LTP: ",
-                        style: textStyle(
-                            const Color(0xff5E6B7D), 13, FontWeight.w600)),
-                    Text("₹${positionList.lp}",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            14,
-                            FontWeight.w500))
-                  ]),
-                ]),
-              ]));
-      }
+      });
+    });
+  }
+  
+  // Get cached text style to avoid rebuilding styles
+  TextStyle _getStyle(Color color, double size, FontWeight weight, {String? key}) {
+    final cacheKey = key ?? '${color.value}|$size|${weight.index}';
+    if (!_cachedStyles.containsKey(cacheKey)) {
+      _cachedStyles[cacheKey] = textStyle(color, size, weight);
+    }
+    return _cachedStyles[cacheKey]!;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(builder: (context, watch, _) {
+      final positions = watch(portfolioProvider);
+      final theme = context.read(themeProvider);
+      
+      // Calculate colors and values once
+      final isZeroQty = widget.positionList.qty == "0";
+      final netQtyZero = widget.positionList.netqty == "0";
+      final bgColor = theme.isDarkMode
+          ? isZeroQty ? colors.darkGrey : colors.colorBlack
+          : Color(isZeroQty ? 0xffF1F3F8 : 0xffffffff);
+      
+      final ContainerColor = theme.isDarkMode
+          ? isZeroQty ? colors.colorBlack : const Color(0xff666666).withOpacity(.2)
+          : isZeroQty ? colors.colorWhite : const Color(0xffECEDEE);
+      
+      final dividerColor = theme.isDarkMode
+          ? colors.darkGrey
+          : Color(netQtyZero ? 0xffffffff : 0xffECEDEE);
+      
+      final txtColor = theme.isDarkMode
+          ? colors.colorWhite
+          : colors.colorBlack;
+      
+      // Get formatted quantity value
+      final qty = "${((int.tryParse(widget.positionList.qty.toString()) ?? 0) / 
+          (widget.positionList.exch == 'MCX' ? 
+           (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)).toInt()}";
+      
+      // Get PNL and determine its color
+      final pnlValue = positions.isNetPnl
+          ? "₹${widget.positionList.profitNloss ?? widget.positionList.rpnl}"
+          : "₹${widget.positionList.mTm}";
+          
+      final pnlColor = _getPnlColor(positions.isNetPnl 
+          ? (widget.positionList.profitNloss ?? widget.positionList.rpnl)
+          : widget.positionList.mTm);
+      
+      // Get average price display value
+      final avgPrice = positions.isDay
+          ? "${widget.positionList.avgPrc}"
+          : positions.isNetPnl
+              ? "${widget.positionList.netupldprc}"
+              : "${widget.positionList.netavgprc}";
+      
+      return Container(
+        color: bgColor,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildHeaderRow(theme, txtColor, ContainerColor),
+              const SizedBox(height: 4),
+              Divider(color: dividerColor, thickness: 1.2),
+              const SizedBox(height: 2),
+              _buildQuantityRow(txtColor, qty, pnlValue, pnlColor),
+              const SizedBox(height: 10),
+              _buildAveragePriceRow(txtColor, avgPrice),
+            ]),
+      );
+    });
+  }
+  
+  Color _getPnlColor(String? value) {
+    if (value == null) return colors.ltpgrey;
+    if (value.startsWith("-")) return colors.darkred;
+    if (value == "0.00") return colors.ltpgrey;
+    return colors.ltpgreen;
+  }
+  
+  Widget _buildHeaderRow(ThemesProvider theme, Color txtColor, Color containerColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+      children: [
+        Row(children: [
+          Text(
+            "${widget.positionList.symbol} ${widget.positionList.expDate} ",
+            overflow: TextOverflow.ellipsis,
+            style: textStyles.scripNameTxtStyle.copyWith(color: txtColor),
+          ),
+          Text(
+            "${widget.positionList.option} ",
+            overflow: TextOverflow.ellipsis,
+            style: textStyles.scripNameTxtStyle.copyWith(color: txtColor),
+          ),
+        ]),
+        Row(children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(2),
+              color: containerColor,
+            ),
+            child: Text(
+              "${widget.positionList.exch}",
+              overflow: TextOverflow.ellipsis,
+              style: _getStyle(
+                theme.isDarkMode ? colors.colorWhite : const Color(0xff666666),
+                10,
+                FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(width: 9),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(2),
+              color: containerColor,
+            ),
+            child: Text(
+              "${widget.positionList.sPrdtAli}",
+              overflow: TextOverflow.ellipsis,
+              style: _getStyle(
+                theme.isDarkMode ? colors.colorWhite : const Color(0xff666666),
+                10,
+                FontWeight.w500,
+              ),
+            ),
+          ),
+        ])
+      ],
+    );
+  }
+  
+  Widget _buildQuantityRow(Color txtColor, String qty, String pnlValue, Color pnlColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+      children: [
+        Row(children: [
+          Text(
+            "Qty: ",
+            style: _getStyle(const Color(0xff5E6B7D), 14, FontWeight.w500, key: 'qty-label'),
+          ),
+          Text(
+            qty,
+            style: _getStyle(txtColor, 14, FontWeight.w500, key: 'qty-value'),
+          )
+        ]),
+        // Wrap the PNL in RepaintBoundary as it changes frequently
+        RepaintBoundary(
+          child: Text(
+            pnlValue,
+            style: _getStyle(pnlColor, 15, FontWeight.w600),
+          ),
+        )
+      ],
+    );
+  }
+  
+  Widget _buildAveragePriceRow(Color txtColor, String avgPrice) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+      children: [
+        Row(children: [
+          Text(
+            "Avg: ",
+            style: _getStyle(const Color(0xff5E6B7D), 14, FontWeight.w500, key: 'avg-label'),
+          ),
+          Text(
+            avgPrice,
+            style: _getStyle(txtColor, 14, FontWeight.w500, key: 'avg-value'),
+          )
+        ]),
+        // Wrap LTP in RepaintBoundary as it changes frequently
+        RepaintBoundary(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end, 
+            children: [
+              Text(
+                " LTP: ",
+                style: _getStyle(const Color(0xff5E6B7D), 13, FontWeight.w600, key: 'ltp-label'),
+              ),
+              Text(
+                "₹${widget.positionList.lp}",
+                style: _getStyle(txtColor, 14, FontWeight.w500, key: 'ltp-value'),
+              )
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

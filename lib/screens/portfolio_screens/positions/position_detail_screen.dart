@@ -33,6 +33,10 @@ class PositionDetailScreen extends ConsumerWidget {
           final lp = socketDatas["${positionList.token}"]['lp']?.toString();
           final pc = socketDatas["${positionList.token}"]['pc']?.toString();
           final chng = socketDatas["${positionList.token}"]['chng']?.toString();
+          final close = socketDatas["${positionList.token}"]['c']?.toString(); // Get close price from socket data
+          
+          // Store previous values to detect changes
+          final prevLtp = positionList.lp;
           
           if (lp != null && lp != "null") {
             positionList.lp = lp;
@@ -59,7 +63,50 @@ class PositionDetailScreen extends ConsumerWidget {
               // Calculate MTM
               positionList.mTm = pnl.toStringAsFixed(2);
             }
+            
+            // Calculate change value if it's missing or invalid but we have close price from socket
+            if ((positionList.chng == null || positionList.chng == "null" || positionList.chng == "0" || positionList.chng == "0.00") 
+                && ltp > 0 && close != null && close != "null") {
+              final closePrice = double.tryParse(close) ?? 0.0;
+              if (closePrice > 0) {
+                positionList.chng = (ltp - closePrice).toStringAsFixed(2);
+              }
+            }
+            
+            // If we still don't have valid change value but have perChange, try to calculate change
+            if ((positionList.chng == null || positionList.chng == "null" || positionList.chng == "0" || positionList.chng == "0.00") 
+                && ltp > 0 && positionList.perChange != null && positionList.perChange != "null") {
+              final perChange = double.tryParse(positionList.perChange!) ?? 0.0;
+              if (perChange != 0) {
+                // Calculate implied close price and then change value
+                final impliedClosePrice = ltp / (1 + (perChange / 100));
+                positionList.chng = (ltp - impliedClosePrice).toStringAsFixed(2);
+              }
+            }
           }
+        }
+        
+        // Make a final check to ensure change value is valid - calculate it from perChange and LTP if needed
+        if ((positionList.chng == null || positionList.chng == "null" || positionList.chng == "0" || positionList.chng == "0.00") 
+            && positionList.lp != null && positionList.perChange != null) {
+          final ltp = double.tryParse(positionList.lp!) ?? 0.0;
+          final perChange = double.tryParse(positionList.perChange!) ?? 0.0;
+          
+          if (ltp > 0 && perChange != 0) {
+            // Calculate implied close price from percentage change
+            final impliedClosePrice = ltp / (1 + (perChange / 100));
+            positionList.chng = (ltp - impliedClosePrice).toStringAsFixed(2);
+          }
+        }
+        
+        // Make sure the formatting of the change display matches the text format
+        final changeTextDisplay = positionList.chng ?? "0.00";
+        try {
+          // Ensure change value is properly formatted even if it's a string already
+          positionList.chng = double.parse(changeTextDisplay).toStringAsFixed(2);
+        } catch (e) {
+          // If parsing fails, leave it as is but ensure it's not null
+          positionList.chng = changeTextDisplay;
         }
         
         return Scaffold(
