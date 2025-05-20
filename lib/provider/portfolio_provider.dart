@@ -532,7 +532,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
           _holdingsModel!.sort(
               (a, b) => a.exchTsym![0].tsym!.compareTo(b.exchTsym![0].tsym!));
-
+          _sealableHoldings = [];
+          _nonSealableHoldings = [];
           for (var element in _holdingsModel!) {
             element.isExitHoldings = false;
 
@@ -564,7 +565,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             element.invested = (qty * avgCost).toStringAsFixed(2);
 
             invest += double.parse("${element.invested}");
-            if (element.npoadqty.toString() != "null") {
+            if (element.npoadqty.toString() != "null" || element.npoadt1qty.toString() != "null") {
               _showEdis = true;
             }
 
